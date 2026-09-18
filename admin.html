@@ -125,8 +125,39 @@ td{color:#c0d2d8}tr:hover td{background:rgba(0,180,200,.04)}
 .period-title{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:10px}.period-title h2{margin:0!important}.period-title .small{margin-top:0}.small-inline{font-size:10px;color:#6a8088;font-weight:500}.period-table-wrap,.table-scroll{overflow:auto}.period-table{min-width:760px}.period-table th:not(:first-child),.period-table td:not(:first-child){text-align:center}.period-table td:first-child{font-weight:700;color:#d4e3e7}.period-table td:nth-child(n+2){font-family:var(--mono);font-weight:800;font-size:13px}.asf-table td.good{color:#3dff9a}.asf-table td.bad{color:#ff6b7a}.asf-table td.warn{color:#e4b927}.rate-row td{border-top:1px solid rgba(228,185,39,.12)}.live-grid{margin-top:12px}.live-grid .card{min-height:118px}.life-panel .grid{margin-top:12px}.life-meta{display:flex;gap:24px;flex-wrap:wrap;padding:12px 2px 2px;color:#9bb0b7;font-size:12px}.life-meta strong{color:#d6e5e8}.manage-panel .note strong{color:#e7f2f5}.manage-panel{border-color:rgba(200,16,46,.25)}.manage-panel .danger{min-width:190px}.period-table tr:hover td{background:rgba(0,180,200,.035)}
 @media(max-width:800px){.period-table{min-width:700px}}
 </style>
+
+<style id="verix-admin-auth">
+.protected-area{display:none}
+.protected-area.unlocked{display:block}
+.auth-nav{display:none!important}
+.admin-header.authenticated .auth-hint{color:#3dff9a}
+.admin-header.authenticated .auth-hint::before{content:"● ";color:var(--green)}
+.auth-hint{font:700 11px/1.4 var(--mono);color:#e4b927;margin-top:8px}
+.auth-lock{max-width:620px;margin:34px auto 0;padding:26px 24px;border:1px solid rgba(78,200,220,.22);border-radius:14px;background:linear-gradient(160deg,rgba(9,23,30,.96),rgba(4,12,17,.98));box-shadow:0 14px 35px rgba(0,0,0,.35);text-align:center}
+.auth-lock .lock-icon{width:50px;height:50px;margin:0 auto 12px;border-radius:12px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(78,200,220,.28);background:rgba(78,200,220,.07);font-size:22px}
+.auth-lock h2{margin:0 0 7px;font-size:18px;letter-spacing:.8px;text-transform:uppercase}
+.auth-lock p{margin:0;color:var(--muted);font-size:12px;line-height:1.5}
+@media(max-width:700px){.auth-lock{margin-top:24px;padding:22px 18px}}
+</style>
+<style id="verix-minimal-login">
+html,body{min-height:100%;}
+body.auth-mode{background:#03080c;overflow:hidden;}
+.auth-screen{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:#03080c;}
+.auth-screen form{margin:0;padding:0;width:min(360px,86vw);}
+.auth-screen input{width:100%;height:52px;padding:0 16px;border:1px solid rgba(120,160,175,.42);border-radius:10px;outline:none;background:#071118;color:#e8f0f2;font:700 16px var(--mono);text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.28),inset 0 0 18px rgba(78,200,220,.025);}
+.auth-screen input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(78,200,220,.12),0 10px 30px rgba(0,0,0,.28);}
+.auth-screen input.bad{border-color:var(--red);box-shadow:0 0 0 3px rgba(200,16,46,.12);}
+.dashboard-shell{display:none;}
+</style>
 </head>
-<body>
+<body class="auth-mode">
+<div class="auth-screen" id="authScreen">
+  <form id="authForm" autocomplete="off">
+    <input id="loginToken" type="password" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Password">
+  </form>
+</div>
+
+<div class="dashboard-shell" id="dashboardShell">
 <div class="wrap">
 
 <div class="topbar">
@@ -151,9 +182,12 @@ td{color:#c0d2d8}tr:hover td{background:rgba(0,180,200,.04)}
     <button class="primary" onclick="loadStats()">Atualizar</button>
     <button class="secondary" onclick="clearToken()">Limpar token</button>
   </div>
-  <div class="status" id="status">O token fica só nesta sessão (sessionStorage) e não vai na URL.</div>
+  <div class="auth-hint" id="authHint">Acesso protegido · os dados só são carregados após autenticação.</div>
+  <div class="status" id="status">Introduz o ADMIN_TOKEN para desbloquear o painel.</div>
 </header>
 
+
+<div id="protectedArea" class="protected-area">
 <!-- Insights -->
 <div class="insights" id="insights">
   <div class="insight"><strong id="ins1t">—</strong><span id="ins1d">Carregue dados para ver o estado atual.</span><span class="tag tag-info" id="ins1k">—</span></div>
@@ -288,7 +322,10 @@ td{color:#c0d2d8}tr:hover td{background:rgba(0,180,200,.04)}
   <div style="margin-top:12px"><button class="danger" id="resetBtn" onclick="resetTelemetry()">Resetar telemetria</button></div>
 </section>
 
+</div>
+
 <div class="footer-note">VÉRIX · Telemetria anónima · sem nomes, mecanográficos, matrículas ou conteúdo operacional</div>
+</div>
 </div>
 <script>
 const API='https://verix-api.vxops.workers.dev/stats';
@@ -375,13 +412,19 @@ function buildInsights(o,v,mods30,peak){
 }
 async function loadStats(){
   const token=$('token').value.trim();
-  if(!token){$('status').textContent='Introduz o ADMIN_TOKEN.';return}
-  sessionStorage.setItem('verix_admin_token',token);
-  $('status').textContent='A carregar…';
+  if(!token){
+    lockDashboard('Introduz o ADMIN_TOKEN para desbloquear o painel.');
+    return false;
+  }
+
+  $('status').textContent='A validar acesso…';
+
   try{
     const r=await fetch(API,{headers:{'X-Admin-Token':token},cache:'no-store'});
     const d=await r.json();
     if(!r.ok||!d.ok) throw Error(d.error||('HTTP '+r.status));
+
+    unlockDashboard();
 
     const o=d.overview||{}, v=d.vehicle||{};
     const l24=d.last_24h||{},l7=d.last_7d||{},l30=d.last_30d||{},l90=d.last_90d||{};
@@ -442,33 +485,73 @@ async function loadStats(){
     $('peak').textContent=d.peak_hour_30d?.hour?d.peak_hour_30d.hour+' — média '+Number(d.peak_hour_30d.avg_users||0).toLocaleString('pt-PT',{maximumFractionDigits:2})+' utilizadores':'—';
     $('panelUpdated').textContent=new Date().toLocaleString('pt-PT');
     buildInsights(o,v,mods30,d.peak_hour_30d);
-    $('status').textContent='Atualizado em '+(d.generated_at?new Date(d.generated_at).toLocaleString('pt-PT'):'agora');
+    $('status').textContent='Acesso autorizado · atualizado em '+(d.generated_at?new Date(d.generated_at).toLocaleString('pt-PT'):'agora');
+    return true;
+
   }catch(e){
-    $('status').textContent='Erro: '+e.message;
+    lockDashboard('Acesso recusado · verifica o ADMIN_TOKEN.');
+    $('status').textContent='Acesso recusado: '+e.message;
+    return false;
   }
 }
-async function resetTelemetry(){
-  const token=$('token').value.trim();
-  if(!token){$('status').textContent='Introduz o ADMIN_TOKEN antes do reset.';return}
-  if(!confirm('ATENÇÃO: esta operação apaga toda a telemetria de events, sessions e installations.\n\nAs tabelas são mantidas, mas os dados históricos serão eliminados.\n\nContinuar?'))return;
-  const btn=$('resetBtn');
-  const old=btn.textContent;btn.disabled=true;btn.textContent='A resetar…';
-  try{
-    const r=await fetch(RESET_API,{method:'POST',headers:{'X-Admin-Token':token,'Content-Type':'application/json'},body:JSON.stringify({confirm:'RESET_VERIX'}),cache:'no-store'});
-    const d=await r.json();
-    if(!r.ok||!d.ok)throw Error(d.error||('HTTP '+r.status));
-    alert('Telemetria resetada com sucesso.\n\nEventos: '+(d.after?.events??0)+'\nSessões: '+(d.after?.sessions??0)+'\nInstalações: '+(d.after?.installations??0));
-    await loadStats();
-  }catch(e){
-    alert('Não foi possível resetar: '+e.message);
-  }finally{
-    btn.disabled=false;btn.textContent=old;
+
+function unlockDashboard(){
+  $('protectedArea').classList.add('unlocked');
+  $('dashboardShell').style.display='block';
+  $('authScreen').style.display='none';
+  document.body.classList.remove('auth-mode');
+}
+
+function lockDashboard(message){
+  $('protectedArea').classList.remove('unlocked');
+  $('dashboardShell').style.display='none';
+  $('authScreen').style.display='flex';
+  document.body.classList.add('auth-mode');
+  const login=$('loginToken');
+  if(message){
+    login.classList.add('bad');
   }
 }
-function clearToken(){sessionStorage.removeItem('verix_admin_token');$('token').value='';$('status').textContent='Token limpo.'}
-$('token').value=sessionStorage.getItem('verix_admin_token')||'';
-if($('token').value)loadStats();
-setInterval(()=>{if($('token').value.trim())loadStats()},30000);
+
+function clearToken(){
+  $('token').value='';
+  $('loginToken').value='';
+  $('loginToken').classList.remove('bad');
+  lockDashboard();
+  $('loginToken').focus();
+}
+
+async function authenticateAdmin(){
+  const login=$('loginToken');
+  const value=login.value.trim();
+  if(!value)return false;
+  login.classList.remove('bad');
+  $('token').value=value;
+  const ok=await loadStats();
+  if(!ok){
+    $('token').value='';
+    login.classList.add('bad');
+    login.select();
+    return false;
+  }
+  login.value='';
+  return true;
+}
+
+$('authForm').addEventListener('submit',function(ev){
+  ev.preventDefault();
+  authenticateAdmin();
+});
+
+$('loginToken').addEventListener('input',function(){
+  this.classList.remove('bad');
+});
+
+let autoTimer=setInterval(()=>{
+  if($('protectedArea').classList.contains('unlocked') && $('token').value.trim()) loadStats();
+},30000);
+
+lockDashboard();
 </script>
 </body>
 </html>
