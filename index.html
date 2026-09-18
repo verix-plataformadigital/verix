@@ -1,5 +1,30 @@
-<!-- VÉRIX 1.0 — publicação limpa -->
-<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VÉRIX — Plataforma Digital 1.1</title>
+<!-- VÉRIX 1.1 — publicação com proteção de cache -->
+<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<script>
+(function(){
+  try{
+    var marker='_verix_boot=';
+    var href=window.location.href;
+    if(href.indexOf(marker)===-1){
+      var hash='';
+      var hi=href.indexOf('#');
+      if(hi>=0){hash=href.slice(hi);href=href.slice(0,hi);}
+      window.location.replace(href+(href.indexOf('?')>=0?'&':'?')+marker+Date.now()+hash);
+      return;
+    }
+    if(window.history && history.replaceState){
+      try{
+        var u=new URL(window.location.href);
+        u.searchParams.delete('_verix_boot');
+        history.replaceState(null,document.title,u.pathname+(u.search?'?'+u.searchParams.toString():'')+u.hash);
+      }catch(_e){}
+    }
+  }catch(_e){}
+})();
+</script>
+<title>VÉRIX — Plataforma Digital 1.1</title>
 <meta name="description" content="VÉRIX — Plataforma Digital de apoio ao serviço operacional das forças de segurança.">
 <meta name="theme-color" content="#03080c">
 <meta property="og:type" content="website">
