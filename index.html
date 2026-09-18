@@ -1,10 +1,10 @@
 <!-- VÉRIX 1.0 — publicação limpa -->
-<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VÉRIX — Plataforma Digital 1.0</title>
+<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VÉRIX — Plataforma Digital 1.1</title>
 <meta name="description" content="VÉRIX — Plataforma Digital de apoio ao serviço operacional das forças de segurança.">
 <meta name="theme-color" content="#03080c">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="VÉRIX — Plataforma Digital">
-<meta property="og:title" content="VÉRIX — Plataforma Digital 1.0">
+<meta property="og:title" content="VÉRIX — Plataforma Digital 1.1">
 <meta property="og:description" content="Ferramenta de apoio ao serviço operacional das forças de segurança.">
 <meta property="og:url" content="https://verix.vxops.workers.dev/">
 <meta property="og:image" content="https://verix.vxops.workers.dev/og-verix.png">
@@ -12,7 +12,7 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="VÉRIX — Plataforma Digital 1.0">
+<meta name="twitter:title" content="VÉRIX — Plataforma Digital 1.1">
 <meta name="twitter:description" content="Ferramenta de apoio ao serviço operacional das forças de segurança.">
 <meta name="twitter:image" content="https://verix.vxops.workers.dev/og-verix.png"><hta:application id="VERIX" applicationname="VÉRIX - Plataforma Digital" border="thin" caption="yes" maximizebutton="yes" minimizebutton="yes" sysmenu="yes" scroll="no" singleinstance="yes" /><style>
 :root{--bg:#03080c;--panel:#08131a;--panel2:#0d1b23;--red:#c8102e;--red2:#790719;--green:#008b55;--green2:#005437;--white:#f2f6f7;--muted:#7e949d;--cyan:#65d7e8;--amber:#e4b927;--line:rgba(130,169,180,.24);--glow:rgba(0,139,85,.24)}
@@ -417,10 +417,13 @@ window.inicializarContactosRestaurados=window.inicializarContactosRestaurados||f
     frame.style.zIndex = '2';
   }
 
-  async function carregarConsultaIMT(frameId, overlayId, url) {
+  async function carregarConsultaIMT(frameId, overlayId, url, source) {
     const overlay = document.getElementById(overlayId);
     const frame = document.getElementById(frameId);
     if (!overlay || !frame) return;
+
+    const queryId = window.__VERIX_CURRENT_QUERY_ID || null;
+    const sourceName = source || (frameId === 'reboqueFrame' ? 'livrete' : 'inspecao');
 
     mostrarLoading(frameId, overlayId);
     clearTimeout(imtTimers[frameId]);
@@ -436,6 +439,14 @@ window.inicializarContactosRestaurados=window.inicializarContactosRestaurados||f
       concluida = true;
       clearTimeout(imtTimers[frameId]);
       frame.style.zIndex = '2';
+      frame.onload = null;
+      frame.addEventListener('load',function(){
+        try {
+          if(window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.track === 'function') {
+            window.VERIX_TELEMETRY.track('imt_loaded','consulta',{queryId,source:sourceName});
+          }
+        } catch (_) {}
+      },{once:true});
       frame.src = url;
     } catch (erro) {
       concluida = true;
@@ -447,11 +458,12 @@ window.inicializarContactosRestaurados=window.inicializarContactosRestaurados||f
 
   function repetirConsultaIMT() {
     const mat = (ultimaMatriculaPesquisada || '').trim().toUpperCase();
+    if (!window.__VERIX_CURRENT_QUERY_ID && window.__VERIX_LAST_QUERY_ID) window.__VERIX_CURRENT_QUERY_ID = window.__VERIX_LAST_QUERY_ID;
     if (!mat) return;
 
     const base = 'http://consultapsp.imtt.external.rnsi.local/veiculos/';
-    carregarConsultaIMT('veiculoFrame', 'veiculoLoading', `${base}consulta_inspecao.php?Matricula=${encodeURIComponent(mat)}`);
-    carregarConsultaIMT('reboqueFrame', 'reboqueLoading', `${base}consulta_livrete.php?Matricula=${encodeURIComponent(mat)}`);
+    carregarConsultaIMT('veiculoFrame', 'veiculoLoading', `${base}consulta_inspecao.php?Matricula=${encodeURIComponent(mat)}`, 'inspecao');
+    carregarConsultaIMT('reboqueFrame', 'reboqueLoading', `${base}consulta_livrete.php?Matricula=${encodeURIComponent(mat)}`, 'livrete');
   }
 
 // ========================= MENU OPERACIONAL =========================
@@ -1153,8 +1165,15 @@ function submitConjunto(event) {
       return;
     }
 
-    // Telemetria anónima: conta a consulta sem enviar a matrícula nem o conteúdo dos resultados.
-    try { if (window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.track === 'function') window.VERIX_TELEMETRY.track('vehicle_lookup','consulta'); } catch (_) {}
+    // Uma pesquisa operacional = um query_id. Não são enviados matrícula nem resultados.
+    try {
+      window.__VERIX_CURRENT_QUERY_ID = (window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.newQueryId === 'function')
+        ? window.VERIX_TELEMETRY.newQueryId() : null;
+      if (window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.track === 'function') {
+        window.VERIX_TELEMETRY.track('vehicle_lookup','consulta',{queryId:window.__VERIX_CURRENT_QUERY_ID});
+      }
+      window.__VERIX_LAST_QUERY_ID = window.__VERIX_CURRENT_QUERY_ID;
+    } catch (_) {}
 
     guardarHistorico(valVeiculo, valReboque);
 
@@ -1165,12 +1184,14 @@ function submitConjunto(event) {
     carregarConsultaIMT(
       'veiculoFrame',
       'veiculoLoading',
-      baseIMT + 'consulta_inspecao.php?Matricula=' + encodeURIComponent(placaInspecao)
+      baseIMT + 'consulta_inspecao.php?Matricula=' + encodeURIComponent(placaInspecao),
+      'inspecao'
     );
     carregarConsultaIMT(
       'reboqueFrame',
       'reboqueLoading',
-      baseIMT + 'consulta_livrete.php?Matricula=' + encodeURIComponent(placaLivrete)
+      baseIMT + 'consulta_livrete.php?Matricula=' + encodeURIComponent(placaLivrete),
+      'livrete'
     );
 
     ultimaMatriculaPesquisada = placaInspecao;
@@ -1819,6 +1840,15 @@ function submitConjunto(event) {
   async function consultarSeguroASF(matricula) {
     const mat = (matricula || '').trim().toUpperCase();
     if (!mat) return;
+    const queryId = window.__VERIX_CURRENT_QUERY_ID || null;
+    function registarTelemetriaASF(resultadoTipo) {
+      try {
+        if(window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.track === 'function'){
+          const evento = resultadoTipo==='sim' ? 'vehicle_insurance_yes' : resultadoTipo==='nao' ? 'vehicle_insurance_no' : 'vehicle_insurance_error';
+          window.VERIX_TELEMETRY.track(evento,'consulta',{queryId,source:'asf'});
+        }
+      } catch (_) {}
+    }
 
     const matriculaASF = sanitizarMatriculaASF(mat);
     const dataASF = formatarDataASF();
@@ -1830,7 +1860,11 @@ function submitConjunto(event) {
     // pedido concorrente. Todos os chamadores aguardam o mesmo resultado.
     if (ASF_PEDIDOS_EM_CURSO[chave]) {
       mostrarSeguroLoading(mat, 'Consulta ASF já em curso — a aguardar a mesma resposta');
-      try { await ASF_PEDIDOS_EM_CURSO[chave]; } catch (_) {}
+      try {
+        await ASF_PEDIDOS_EM_CURSO[chave];
+        const shared=ASF_CACHE_SESSAO[chave];
+        registarTelemetriaASF(shared?.resultado?.tipo || 'indisponivel');
+      } catch (_) { registarTelemetriaASF('indisponivel'); }
       return;
     }
 
@@ -1841,6 +1875,7 @@ function submitConjunto(event) {
     if (cached && (agoraASF() - cached.t) <= ASF_CACHE_TTL_MS) {
       mostrarSeguroLoading(mat, 'Resultado recente — sem nova chamada à ASF');
       await new Promise(function(resolve){ setTimeout(resolve, 80); });
+      registarTelemetriaASF(cached.resultado.tipo);
       if (cached.resultado.tipo === 'sim') renderSeguroEncontrado(cached.resultado.node, mat);
       else if (cached.resultado.tipo === 'nao') renderSeguroNaoEncontrado(mat);
       else mostrarSeguroErro(cached.resultado.motivo, mat, cached.diag || 'Resultado obtido anteriormente nesta sessão.');
@@ -1882,17 +1917,17 @@ function submitConjunto(event) {
         ASF_CACHE_SESSAO[chave] = { t: agoraASF(), resultado: resultado, diag: diag };
 
         if (resultado.tipo === 'sim') {
-          try { if (window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.track === 'function') window.VERIX_TELEMETRY.track('vehicle_insurance_yes','consulta'); } catch (_) {}
+          registarTelemetriaASF('sim')
           renderSeguroEncontrado(resultado.node, mat);
           return;
         }
         if (resultado.tipo === 'nao') {
-          try { if (window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.track === 'function') window.VERIX_TELEMETRY.track('vehicle_insurance_no','consulta'); } catch (_) {}
+          registarTelemetriaASF('nao')
           renderSeguroNaoEncontrado(mat);
           return;
         }
 
-        try { if (window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.track === 'function') window.VERIX_TELEMETRY.track('vehicle_insurance_error','consulta'); } catch (_) {}
+        registarTelemetriaASF('indisponivel')
         mostrarSeguroErro(resultado.motivo, mat, diag);
         var ultimoDiag = ASF_DIAGNOSTICO.length ? ASF_DIAGNOSTICO[ASF_DIAGNOSTICO.length - 1] : null;
         console.warn('ASF diagnóstico:', {
@@ -1912,7 +1947,7 @@ function submitConjunto(event) {
         const msg = err && err.name === 'AbortError'
           ? 'A consulta ASF excedeu o tempo de espera.'
           : 'Não foi possível contactar o serviço ASF neste ambiente.';
-        try { if (window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.track === 'function') window.VERIX_TELEMETRY.track('vehicle_insurance_error','consulta'); } catch (_) {}
+        registarTelemetriaASF('indisponivel')
         mostrarSeguroErro(msg, mat, (err && err.message) ? err.message : String(err));
         console.warn('Consulta ASF indisponível:', err);
       } finally {
@@ -17367,250 +17402,136 @@ html body .leg-card-new .copy-all-new{
 }
 </style>
 
-<script id="verix-telemetry-v167-cors-fix">
-<!-- Correção v168: bloqueio de envios concorrentes da fila de telemetria -->
-/* ================================================================
-   VÉRIX — TELEMETRIA ANÓNIMA MÍNIMA
-   Recolhe apenas métricas de utilização. Nunca envia valores de campos,
-   matrículas, nomes, resultados, textos de autos ou coordenadas.
-   O endpoint fica vazio até a infraestrutura Cloudflare ser configurada.
-   ================================================================ */
+<script id="verix-telemetry-v11-fixed">
+/* VÉRIX 1.1 — telemetria anónima: fila offline + deduplicação + query_id. */
 (function(){
   'use strict';
-  const APP_TELEMETRY_ENDPOINT = 'https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/telemetry';
-  const VERIX_VERSION='1.0';
-  const APP_TELEMETRY_VERSION = VERIX_VERSION;
-  const INSTALL_KEY = 'APP_TELEMETRY_INSTALL_V1';
-  const QUEUE_KEY = 'APP_TELEMETRY_QUEUE_V1';
-  const TAB_KEY = 'APP_TELEMETRY_TAB_V1';
-  const SESSION_START_KEY = 'APP_TELEMETRY_SESSION_START_V1';
-  const MAX_QUEUE = 60;
-  // First public web release cleanup: remove local development data only once.
-  (function cleanReleaseLocalData(){
-    const FLAG='VÉRIX_PUBLIC_RELEASE_CLEAN_V10';
-    try{
-      if(localStorage.getItem(FLAG)==='1') return;
-      [
-        'VÉRIX_CINEMETROS_LISTA_RECOLHIDA_V1',
-        'VÉRIX_CINEMETROS_V2',
-        'VÉRIX_CINEMETRO_OPERADOR_V2',
-        'VÉRIX_CONSULTAS_HISTORICO_V1',
-        'VÉRIX_PREFS_V1',
-        'APP_TELEMETRY_QUEUE_V1',
-        'APP_TELEMETRY_INSTALL_V1'
-      ].forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});
-      ['APP_TELEMETRY_TAB_V1','APP_TELEMETRY_SESSION_START_V1'].forEach(k=>{try{sessionStorage.removeItem(k)}catch(e){}});
-      localStorage.setItem('VÉRIX_CINEMETROS_V2','[]');
-      localStorage.setItem(FLAG,'1');
-    }catch(e){}
-  })();
-
-  const FLUSH_EVERY_MS = 20000;
-  const HEARTBEAT_MS = 45000;
-  let queue = [];
-  let flushTimer = null;
-  let flushInProgress = false;
-  let legSearchTimer = null;
-  const recent = Object.create(null);
+  const APP_TELEMETRY_ENDPOINT='https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/telemetry';
+  const VERIX_VERSION='1.1';
+  const APP_TELEMETRY_VERSION=VERIX_VERSION;
+  const INSTALL_KEY='APP_TELEMETRY_INSTALL_V1';
+  const QUEUE_KEY='APP_TELEMETRY_QUEUE_V1';
+  const TAB_KEY='APP_TELEMETRY_TAB_V1';
+  const SESSION_START_KEY='APP_TELEMETRY_SESSION_START_V1';
+  const MAX_QUEUE=300;
+  const FLUSH_EVERY_MS=20000;
+  const HEARTBEAT_MS=45000;
+  const FETCH_TIMEOUT_MS=10000;
+  const RETRY_DELAYS_MS=[2000,5000,15000,30000,60000];
+  const recent=Object.create(null);
+  let queue=[];
+  let flushTimer=null;
+  let flushInProgress=false;
+  let retryAttempt=0;
+  let legSearchTimer=null;
+  let started=false;
+  let heartbeatTimer=null;
+  let periodicFlushTimer=null;
 
   function uid(prefix){
-    try {
-      if (crypto && typeof crypto.randomUUID==='function') return prefix + '-' + crypto.randomUUID();
-    } catch(e){}
-    return prefix + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,12);
+    try{ if(window.crypto&&typeof window.crypto.randomUUID==='function') return prefix+'-'+window.crypto.randomUUID(); }catch(e){}
+    return prefix+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,12);
   }
   function getOrCreate(store,key,prefix){
-    try {
-      let v=store.getItem(key);
-      if(!v){v=uid(prefix);store.setItem(key,v);}
-      return v;
-    } catch(e){ return uid(prefix); }
+    try{let v=store.getItem(key);if(!v){v=uid(prefix);store.setItem(key,v);}return v;}catch(e){return uid(prefix);}
   }
-  const installationId = getOrCreate(localStorage, INSTALL_KEY, 'i');
-  const tabId = getOrCreate(sessionStorage, TAB_KEY, 't');
-  try { sessionStorage.setItem(SESSION_START_KEY, String(Date.now())); } catch(e){}
+  const installationId=getOrCreate(localStorage,INSTALL_KEY,'i');
+  const tabId=getOrCreate(sessionStorage,TAB_KEY,'t');
+  try{sessionStorage.setItem(SESSION_START_KEY,String(Date.now()));}catch(e){}
 
-  function readQueue(){
-    try{ const x=JSON.parse(localStorage.getItem(QUEUE_KEY)||'[]'); return Array.isArray(x)?x:[]; }
-    catch(e){ return []; }
-  }
-  function saveQueue(){
-    try{ localStorage.setItem(QUEUE_KEY, JSON.stringify(queue.slice(-MAX_QUEUE))); }catch(e){}
-  }
-  queue = readQueue();
+  function readQueue(){try{const x=JSON.parse(localStorage.getItem(QUEUE_KEY)||'[]');return Array.isArray(x)?x:[];}catch(e){return [];}}
+  function saveQueue(){try{localStorage.setItem(QUEUE_KEY,JSON.stringify(queue.slice(-MAX_QUEUE)));}catch(e){}}
+  queue=readQueue();
 
-  function pushEvent(event,module){
-    if(!APP_TELEMETRY_ENDPOINT || !event) return;
-    const item={installationId,tabId,appVersion:APP_TELEMETRY_VERSION,event:event,module:module||null};
-    queue.push(item);
-    if(queue.length>=5) flush(); else saveQueue();
+  function cleanMeta(meta){
+    const m=meta&&typeof meta==='object'?meta:{};const out={};
+    if(m.queryId)out.queryId=String(m.queryId).slice(0,120);
+    if(m.source)out.source=String(m.source).slice(0,30);
+    if(m.itemId)out.itemId=String(m.itemId).slice(0,120);
+    if(m.itemLabel)out.itemLabel=String(m.itemLabel).slice(0,180);
+    if(m.copyType)out.copyType=String(m.copyType).slice(0,20);
+    return out;
   }
-
+  function newQueryId(){return uid('q');}
+  function pushEvent(event,module,meta){
+    if(!APP_TELEMETRY_ENDPOINT||!event)return;
+    const item={eventId:uid('e'),installationId,tabId,appVersion:APP_TELEMETRY_VERSION,event:String(event),module:module||null,occurredAt:Date.now(),...cleanMeta(meta)};
+    queue.push(item);saveQueue();
+    if(queue.length>=5)flush();
+  }
   async function sendBatch(items){
-    if(!items.length || !APP_TELEMETRY_ENDPOINT) return false;
-    const body=JSON.stringify({events:items});
+    if(!items.length||!APP_TELEMETRY_ENDPOINT)return false;
+    const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),FETCH_TIMEOUT_MS);
     try{
-      const response=await fetch(APP_TELEMETRY_ENDPOINT,{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body,
-        keepalive:true,
-        mode:'cors',
-        credentials:'omit',
-        cache:'no-store'
-      });
+      const response=await fetch(APP_TELEMETRY_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({events:items}),keepalive:true,mode:'cors',credentials:'omit',cache:'no-store',signal:controller.signal});
       return response.ok;
-    }catch(e){
-      return false;
-    }
+    }catch(e){return false;}finally{clearTimeout(timer);}
   }
-
-  async function flush(){
-    /* Impede dois envios simultâneos da mesma fila.
-       Sem este bloqueio, um novo flush podia arrancar antes de o fetch anterior
-       terminar e enviar novamente os mesmos eventos. */
-    if(!APP_TELEMETRY_ENDPOINT || !queue.length || flushTimer || flushInProgress) return;
-
-    clearTimeout(flushTimer);
-
-    flushTimer=setTimeout(async()=>{
-      flushTimer=null;
-
-      if(flushInProgress) return;
-
-      const batch=queue.slice(0,20);
-      if(!batch.length) return;
-
-      flushInProgress=true;
-
-      try{
-        const ok=await sendBatch(batch);
-
-        if(ok){
-          /* Remove exatamente o lote que foi enviado.
-             Eventos novos entretanto adicionados permanecem na fila. */
-          queue.splice(0,batch.length);
-          saveQueue();
-        }
-      }catch(e){
-        /* Em caso de falha, mantém o lote na fila para nova tentativa. */
-      }finally{
-        flushInProgress=false;
-
-        /* Se entretanto chegaram mais eventos, agenda novo envio. */
-        if(queue.length) flush();
-      }
-    },80);
-  }
-
-  function rateLimited(key,ms){
-    const now=Date.now();
-    if(recent[key] && now-recent[key]<ms)return false;
-    recent[key]=now;return true;
-  }
-
-  function telemetryModule(nome){
-    if(nome==='consulta')pushEvent('module_open','consulta');
-    else if(nome)pushEvent('module_open',String(nome));
-  }
-  function telemetryAction(event,module){ pushEvent(event,module||null); flush(); }
-  /* Exposição controlada para funções operacionais do VÉRIX que vivem fora deste IIFE. */
-  window.telemetryAction = telemetryAction;
-
-  function wrap(name, mapper){
+  function scheduleFlush(delay){if(flushTimer||!queue.length)return;flushTimer=setTimeout(async()=>{flushTimer=null;await flushNow();},Math.max(0,delay||0));}
+  async function flushNow(){
+    if(!APP_TELEMETRY_ENDPOINT||!queue.length||flushInProgress)return;
+    flushInProgress=true;const batch=queue.slice(0,20);
     try{
-      const original=window[name];
-      if(typeof original!=='function' || original.__verixTelemetryWrapped)return;
-      const wrapped=function(){
-        try{ mapper.apply(this,arguments); }catch(e){}
-        return original.apply(this,arguments);
-      };
-      wrapped.__verixTelemetryWrapped=true;
-      wrapped.__verixOriginal=original;
-      window[name]=wrapped;
-    }catch(e){}
+      const ok=await sendBatch(batch);
+      if(ok){queue.splice(0,batch.length);saveQueue();retryAttempt=0;if(queue.length)scheduleFlush(100);}
+      else{const idx=Math.min(retryAttempt,RETRY_DELAYS_MS.length-1);retryAttempt=Math.min(retryAttempt+1,RETRY_DELAYS_MS.length-1);scheduleFlush(RETRY_DELAYS_MS[idx]);}
+    }finally{flushInProgress=false;}
   }
+  function flush(){if(!APP_TELEMETRY_ENDPOINT||!queue.length||flushInProgress||flushTimer)return;scheduleFlush(100);}
+  function rateLimited(key,ms){const now=Date.now();if(recent[key]&&now-recent[key]<ms)return false;recent[key]=now;return true;}
+  function telemetryModule(nome){if(nome)pushEvent('module_open',String(nome));}
+  function telemetryAction(event,module,meta){pushEvent(event,module||null,meta);flush();}
+  window.telemetryAction=telemetryAction;
 
+  function wrap(name,mapper){
+    try{const original=window[name];if(typeof original!=='function'||original.__verixTelemetryWrapped)return;const wrapped=function(){try{mapper.apply(this,arguments);}catch(e){}return original.apply(this,arguments);};wrapped.__verixTelemetryWrapped=true;wrapped.__verixOriginal=original;window[name]=wrapped;}catch(e){}
+  }
   function installWrappers(){
-    wrap('abrirConsultaPrincipal',function(){ telemetryModule('consulta'); });
-    wrap('abrirModulo',function(nome){ if(nome!=='consulta') telemetryModule(nome); });
-    wrap('abrirHistorico',function(){ telemetryAction('history_open','consulta'); });
-    wrap('repetirPesquisaHistorico',function(){ telemetryAction('history_reopen','consulta'); });
-    wrap('verificarSeguro',function(){ telemetryAction('external_tool_open','consulta'); });
-    wrap('consultarIMTERRU',function(){ telemetryAction('external_tool_open','ferramentas'); });
-    wrap('consultarINEM',function(){ telemetryAction('external_tool_open','ferramentas'); });
-    wrap('consultarWAZE',function(){ telemetryAction('external_tool_open','ferramentas'); });
-    wrap('consultarAlcoolTAS',function(){ telemetryAction('alcohol_lookup','alcoolExcel'); });
-    wrap('cinCopiarCodigo',function(){ telemetryAction('cinemometer_copy_code','cinemometro'); });
-    wrap('cinCopiarTexto',function(){ telemetryAction('cinemometer_copy_text','cinemometro'); });
-    wrap('cinCopiarLocal',function(){ telemetryAction('cinemometer_copy_location','cinemometro'); });
-    wrap('cinSelecionarPerfil',function(){ telemetryAction('cinemometer_profile_select','cinemometro'); });
-    wrap('cinNovoPerfil',function(){ telemetryAction('cinemometer_profile_new','cinemometro'); });
-    wrap('cinDuplicarPerfil',function(){ telemetryAction('cinemometer_profile_duplicate','cinemometro'); });
-    wrap('cinEliminarPerfil',function(){ telemetryAction('cinemometer_profile_delete','cinemometro'); });
-    wrap('cinGuardarConfiguracao',function(){ telemetryAction('cinemometer_profile_save','cinemometro'); });
-    wrap('cinRecalcular',function(){ if(rateLimited('cin_calc',4000)) telemetryAction('cinemometer_calculation','cinemometro'); });
+    wrap('abrirConsultaPrincipal',function(){telemetryModule('consulta');});
+    wrap('abrirModulo',function(nome){if(nome!=='consulta')telemetryModule(nome);});
+    wrap('abrirHistorico',function(){telemetryAction('history_open','consulta');});
+    wrap('repetirPesquisaHistorico',function(){telemetryAction('history_reopen','consulta');});
+    wrap('verificarSeguro',function(){telemetryAction('external_tool_open','consulta');});
+    wrap('consultarIMTERRU',function(){telemetryAction('external_tool_open','ferramentas');});
+    wrap('consultarINEM',function(){telemetryAction('external_tool_open','ferramentas');});
+    wrap('consultarWAZE',function(){telemetryAction('external_tool_open','ferramentas');});
+    wrap('consultarAlcoolTAS',function(){telemetryAction('alcohol_lookup','alcoolExcel');});
+    wrap('cinCopiarCodigo',function(){telemetryAction('cinemometer_copy_code','cinemometro');});
+    wrap('cinCopiarTexto',function(){telemetryAction('cinemometer_copy_text','cinemometro');});
+    wrap('cinCopiarLocal',function(){telemetryAction('cinemometer_copy_location','cinemometro');});
+    wrap('cinSelecionarPerfil',function(){telemetryAction('cinemometer_profile_select','cinemometro');});
+    wrap('cinNovoPerfil',function(){telemetryAction('cinemometer_profile_new','cinemometro');});
+    wrap('cinDuplicarPerfil',function(){telemetryAction('cinemometer_profile_duplicate','cinemometro');});
+    wrap('cinEliminarPerfil',function(){telemetryAction('cinemometer_profile_delete','cinemometro');});
+    wrap('cinGuardarConfiguracao',function(){telemetryAction('cinemometer_profile_save','cinemometro');});
+    wrap('cinRecalcular',function(){if(rateLimited('cin_calc',4000))telemetryAction('cinemometer_calculation','cinemometro');});
   }
-
   function bindDomTelemetry(){
     document.addEventListener('click',function(ev){
-      const el=ev.target && ev.target.closest ? ev.target.closest('button,[role="button"]') : null;
-      if(!el)return;
-      if(el.matches('.leg-category')) telemetryAction('legislation_category_open','legislacao');
-      else if(el.matches('.copy-btn-new,.copy-desc-new,.copy-all-new,.copy-btn')) telemetryAction('legislation_copy','legislacao');
-      else if(el.matches('.leg-search-fav')) telemetryAction('legislation_favorite_toggle','legislacao');
-      else if(el.id==='consultaHistoryTool' || el.classList.contains('consulta-history-bottom')) telemetryAction('history_open','consulta');
+      const el=ev.target&&ev.target.closest?ev.target.closest('button,[role="button"]'):null;if(!el)return;
+      if(el.matches('.leg-category'))telemetryAction('legislation_category_open','legislacao');
+      else if(el.matches('.copy-btn-new,.copy-desc-new,.copy-all-new,.copy-btn')){
+        const card=el.closest('.leg-card-new');const title=card?.querySelector('h3')?.textContent?.trim()||'';const code=card?.querySelector('.leg-code-box strong')?.textContent?.trim()||'';const copyType=el.classList.contains('copy-desc-new')?'description':el.classList.contains('copy-all-new')?'all':'code';telemetryAction('legislation_copy','legislacao',{itemId:code||title.slice(0,120),itemLabel:title,copyType});
+      } else if(el.matches('.leg-search-fav'))telemetryAction('legislation_favorite_toggle','legislacao');
+      else if(el.id==='consultaHistoryTool'||el.classList.contains('consulta-history-bottom'))telemetryAction('history_open','consulta');
     },true);
-
     document.addEventListener('input',function(ev){
-      if(ev.target && ev.target.id==='legSearch'){
-        clearTimeout(legSearchTimer);
-        legSearchTimer=setTimeout(function(){
-          const len=(ev.target.value||'').trim().length;
-          if(len>=2) telemetryAction('legislation_search','legislacao');
-        },700);
-      }
-
-      /* Regista uma velocidade efetivamente introduzida pelo operador,
-         sem guardar o valor da velocidade. */
-      if(ev.target && ev.target.id==='cinRegistada'){
-        const value=String(ev.target.value||'').trim();
-        if(value && rateLimited('cin_speed_entry',2000)){
-          telemetryAction('cinemometer_speed_entry','cinemometro');
-        }
-      }
+      if(ev.target&&ev.target.id==='legSearch'){clearTimeout(legSearchTimer);legSearchTimer=setTimeout(function(){const len=(ev.target.value||'').trim().length;if(len>=2&&rateLimited('leg_search',700))telemetryAction('legislation_search','legislacao');},700);}
+      if(ev.target&&ev.target.id==='cinRegistada'){const value=String(ev.target.value||'').trim();if(value&&rateLimited('cin_speed_entry',2000))telemetryAction('cinemometer_speed_entry','cinemometro');}
     },true);
   }
-
-  function openEvent(){
-    pushEvent('app_open',null);
-    flush();
-  }
-  function heartbeat(){ pushEvent('heartbeat',null); flush(); }
-
+  function openEvent(){pushEvent('app_open',null);flush();}
+  function heartbeat(){pushEvent('heartbeat',null);flush();}
   function start(){
-    installWrappers();
-    bindDomTelemetry();
-    openEvent();
-    setInterval(heartbeat,HEARTBEAT_MS);
-    setInterval(flush,FLUSH_EVERY_MS);
-    document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='hidden') flush(); });
-    window.addEventListener('pagehide',function(){ flush(); });
-    /* No caso de algumas funções só ficarem disponíveis depois da montagem inicial. */
-    setTimeout(installWrappers,500);
-    setTimeout(installWrappers,1500);
+    if(started)return;started=true;installWrappers();bindDomTelemetry();openEvent();
+    heartbeatTimer=setInterval(heartbeat,HEARTBEAT_MS);periodicFlushTimer=setInterval(flush,FLUSH_EVERY_MS);
+    document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden')flush();});
+    window.addEventListener('pagehide',function(){flush();});
+    window.addEventListener('online',function(){retryAttempt=0;flush();});
+    setTimeout(installWrappers,500);setTimeout(installWrappers,1500);flush();
   }
-
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start,{once:true}); else start();
-
-  /* API interna para futura configuração/diagnóstico local; nunca expõe dados operacionais. */
-  window.VERIX_TELEMETRY = {
-    enabled: !!APP_TELEMETRY_ENDPOINT,
-    installationId: installationId,
-    track: function(event,module){ pushEvent(event,module||null); flush(); },
-    queueSize: function(){return queue.length;},
-    flush: flush
-  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+  window.VERIX_TELEMETRY={enabled:!!APP_TELEMETRY_ENDPOINT,installationId,tabId,track:function(event,module,meta){pushEvent(event,module||null,meta);flush();},trackAnalytic:function(event,meta){pushEvent(event,null,meta);flush();},newQueryId,queueSize:function(){return queue.length;},flush};
 })();
 </script>
 
