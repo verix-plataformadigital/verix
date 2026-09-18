@@ -1,36 +1,5 @@
 <!-- VÉRIX 1.0 — publicação limpa -->
-<!DOCTYPE html><html lang="pt"><head>
-<script id="verix-session-cache-refresh">
-/* VÉRIX — atualização obrigatória do HTML a cada nova sessão/tab.
-   Faz uma única navegação com URL única para obrigar o browser a obter
-   a versão atual do GitHub Pages, funcionando como um F5/cache-bust. */
-(function(){
-  try {
-    const KEY = 'VERIX_CACHE_REFRESH_SESSION_V1';
-    const params = new URLSearchParams(window.location.search);
-    const refreshParam = params.get('_verix_refresh');
-
-    if (!sessionStorage.getItem(KEY)) {
-      sessionStorage.setItem(KEY, '1');
-
-      const url = new URL(window.location.href);
-      url.searchParams.set('_verix_refresh', String(Date.now()));
-      window.location.replace(url.toString());
-      return;
-    }
-
-    if (refreshParam) {
-      params.delete('_verix_refresh');
-      const cleanQuery = params.toString();
-      const cleanUrl =
-        window.location.pathname +
-        (cleanQuery ? '?' + cleanQuery : '') +
-        window.location.hash;
-      window.history.replaceState(null, '', cleanUrl);
-    }
-  } catch (e) {}
-})();
-</script><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VÉRIX — Plataforma Digital 1.0</title>
+<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VÉRIX — Plataforma Digital 1.0</title>
 <meta name="description" content="VÉRIX — Plataforma Digital de apoio ao serviço operacional das forças de segurança.">
 <meta name="theme-color" content="#03080c">
 <meta property="og:type" content="website">
@@ -91,7 +60,7 @@ button,input{font:inherit}button{cursor:pointer}
 .bottom{position:fixed;z-index:18;left:94px;right:14px;bottom:8px;height:26px;display:flex;align-items:center;justify-content:space-between;color:#5e777f;font-size:7px;font-weight:900;letter-spacing:1px;text-transform:uppercase}.bottom-left{display:flex;gap:20px}.bottom-left span:before{content:"●";color:#2ed887;margin-right:5px}.bottom-right{display:flex;align-items:center;gap:18px}.credit{text-align:right;color:rgba(208,221,225,.45);font-size:7px;line-height:1.35;letter-spacing:.35px;text-transform:none}.credit strong{font-weight:600;color:rgba(225,234,236,.52)}
 /* little tactical details */
 .corner{position:absolute;width:16px;height:16px;border-left:1px solid rgba(105,183,198,.48);border-top:1px solid rgba(105,183,198,.48);z-index:8;pointer-events:none}.corner.tl{left:7px;top:61px}.corner.br{right:7px;bottom:7px;transform:rotate(180deg)}.scan{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:.09;z-index:19;animation:scan 5s linear infinite;pointer-events:none}@keyframes scan{0%{top:55px}100%{top:100%}}
-@media(max-width:1200px){.brand-title{font-size:15px}.brand{left:14px}.brand img{width:48px}.searchbar{left:50%;right:auto;transform:translateX(-50%);width:calc(100% - 360px)}.tools{right:10px}.main{left:14px;grid-template-columns:2.4fr 4fr 2.2fr}.rail{display:none}.insurance{display:block}.bottom{left:14px}}
+@media(max-width:1200px){.brand-title{font-size:15px}.brand{left:14px}.brand img{width:48px}.searchbar{left:50%;right:auto;transform:translateX(-50%);width:calc(100% - 360px)}.tools{right:10px}.main{left:14px;grid-template-columns:3fr 5fr}.rail,.insurance{display:none}.bottom{left:14px}}
 .toast-notification{position:fixed;bottom:36px;right:28px;background:linear-gradient(180deg,#0a8a55,#045b3a);color:#fff;padding:10px 18px;border:1px solid #54ad86;border-radius:7px;font-size:11px;font-weight:900;z-index:99999;box-shadow:0 7px 20px rgba(0,0,0,.45);opacity:0;transform:translateY(50px);transition:.25s;pointer-events:none}.toast-notification.show{transform:translateY(0);opacity:1}
 /* HISTÓRICO OPERACIONAL */
 .history-overlay{position:fixed;inset:0;z-index:1000;background:rgba(1,5,8,.78);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;padding:30px}.history-overlay.show{display:flex}.history-window{width:min(900px,92vw);max-height:min(720px,86vh);background:linear-gradient(180deg,#0b1820,#040b10);border:1px solid #49636e;border-radius:16px;box-shadow:0 30px 90px rgba(0,0,0,.75),0 0 0 1px rgba(0,139,85,.12);overflow:hidden;position:relative}.history-window:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(135deg,transparent 0 72%,rgba(0,139,85,.07) 72.2% 73%,transparent 73.2%),repeating-linear-gradient(0deg,transparent 0 3px,rgba(255,255,255,.012) 3px 4px)}.history-top{height:72px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-bottom:1px solid rgba(126,148,157,.25);background:linear-gradient(90deg,rgba(200,16,46,.22),rgba(5,18,24,.15) 45%,rgba(0,139,85,.16));position:relative;z-index:2}.history-title{font-size:18px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase}.history-sub{font-size:8px;color:#769099;letter-spacing:1.2px;margin-top:4px}.history-close{width:38px;height:38px;border:1px solid #455d66;background:#101e26;color:#dce6e8;border-radius:8px;font-size:20px;font-weight:900;cursor:pointer}.history-close:hover{background:#c8102e;border-color:#e13b56}.history-body{padding:18px 20px 14px;max-height:calc(min(720px,86vh) - 72px);overflow:hidden;position:relative;z-index:2;display:flex;flex-direction:column;min-height:0}.history-list-scroll{flex:1;min-height:0;overflow:auto;padding-right:4px}.history-footer{flex:0 0 auto;background:linear-gradient(180deg,rgba(5,14,19,.96),rgba(4,11,15,1));padding-top:10px;margin-top:8px;position:relative;z-index:3}.history-empty{text-align:center;padding:70px 20px;color:#6e858d;font-size:12px;letter-spacing:.6px}.history-row{display:grid;grid-template-columns:58px 1fr 170px 110px;gap:14px;align-items:center;padding:13px 14px;margin-bottom:8px;border:1px solid rgba(85,112,122,.34);border-radius:9px;background:linear-gradient(90deg,rgba(13,30,39,.92),rgba(6,17,23,.86));cursor:pointer;transition:.16s}.history-row:hover{border-color:rgba(0,139,85,.7);background:linear-gradient(90deg,rgba(0,91,58,.25),rgba(13,30,39,.92));transform:translateX(3px)}.history-index{font-family:monospace;color:#6f858d;font-size:10px;font-weight:900}.history-plates{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.plate-mini{display:inline-flex;align-items:center;padding:6px 10px;border:1px solid #61747b;border-radius:5px;background:#e9eef0;color:#172126;font-family:Arial,sans-serif;font-size:11px;font-weight:900;letter-spacing:1px;box-shadow:inset 0 0 0 2px #d4dcde}.plate-mini.trailer{background:#dce7e2}
@@ -2815,14 +2784,10 @@ function toggleFullscreen() {
    O conteúdo RNSI/IMT é externo; por isso não tentamos aceder ao DOM cross-origin.
    O próprio iframe é reduzido para mostrar o enquadramento integral. */
 #veiculoFrame, #reboqueFrame {
-  /* Aumentamos o viewport interno para mostrar mais da página IMT
-     sem obrigar o operador a fazer scroll dentro do painel. */
-  width: 166.6667% !important;
-  height: 166.6667% !important;
-  transform: scale(0.6) !important;
-  transform-origin: top left !important;
-  max-width: none !important;
-  max-height: none !important;
+  width: 133.3333% !important;
+  height: 133.3333% !important;
+  transform: scale(0.75);
+  transform-origin: top left;
 }
 </style>
 
@@ -6420,40 +6385,6 @@ html body .asf-retry-wait span{display:block;margin-top:3px;color:#7f9299;font-s
 html body .asf-retry-wait.ready{border-color:rgba(0,229,160,.28);background:rgba(0,229,160,.04);color:#55e2a0}
 @media(max-width:700px){html body .asf-retry-wait{font-size:7px}html body .asf-retry-wait strong{font-size:8px}}
 </style>
-
-<style id="verix-asf-always-visible">
-/* VÉRIX — ASF permanece visível em PCs GNR com resolução/viewport mais estreito */
-@media(max-width:1050px){
-  html body .main{
-    left:14px!important;
-    grid-template-columns:1.15fr 1.75fr 1fr!important;
-    gap:8px!important;
-  }
-  html body .rail{display:none!important;}
-  html body .insurance{display:block!important;}
-}
-@media(max-width:850px){
-  html body .main{
-    overflow-x:auto!important;
-    grid-template-columns:260px 380px 260px!important;
-  }
-}
-</style>
-
-
-<style id="verix-imt-vista-total-final">
-/* VÉRIX — IMT: ampliar o viewport interno para reduzir/evitar scroll interno */
-html body #veiculoFrame,
-html body #reboqueFrame{
-  width:166.6667%!important;
-  height:166.6667%!important;
-  max-width:none!important;
-  max-height:none!important;
-  transform:scale(.6)!important;
-  transform-origin:top left!important;
-}
-</style>
-
 </head><body>
 <div class="cinematic-bg"></div>
 <div class="command">
@@ -17437,6 +17368,7 @@ html body .leg-card-new .copy-all-new{
 </style>
 
 <script id="verix-telemetry-v167-cors-fix">
+<!-- Correção v168: bloqueio de envios concorrentes da fila de telemetria -->
 /* ================================================================
    VÉRIX — TELEMETRIA ANÓNIMA MÍNIMA
    Recolhe apenas métricas de utilização. Nunca envia valores de campos,
@@ -17477,6 +17409,7 @@ html body .leg-card-new .copy-all-new{
   const HEARTBEAT_MS = 45000;
   let queue = [];
   let flushTimer = null;
+  let flushInProgress = false;
   let legSearchTimer = null;
   const recent = Object.create(null);
 
@@ -17533,14 +17466,40 @@ html body .leg-card-new .copy-all-new{
   }
 
   async function flush(){
-    if(!APP_TELEMETRY_ENDPOINT || !queue.length || flushTimer) return;
+    /* Impede dois envios simultâneos da mesma fila.
+       Sem este bloqueio, um novo flush podia arrancar antes de o fetch anterior
+       terminar e enviar novamente os mesmos eventos. */
+    if(!APP_TELEMETRY_ENDPOINT || !queue.length || flushTimer || flushInProgress) return;
+
     clearTimeout(flushTimer);
+
     flushTimer=setTimeout(async()=>{
       flushTimer=null;
+
+      if(flushInProgress) return;
+
       const batch=queue.slice(0,20);
-      if(!batch.length)return;
-      const ok=await sendBatch(batch);
-      if(ok){queue.splice(0,batch.length);saveQueue();if(queue.length)flush();}
+      if(!batch.length) return;
+
+      flushInProgress=true;
+
+      try{
+        const ok=await sendBatch(batch);
+
+        if(ok){
+          /* Remove exatamente o lote que foi enviado.
+             Eventos novos entretanto adicionados permanecem na fila. */
+          queue.splice(0,batch.length);
+          saveQueue();
+        }
+      }catch(e){
+        /* Em caso de falha, mantém o lote na fila para nova tentativa. */
+      }finally{
+        flushInProgress=false;
+
+        /* Se entretanto chegaram mais eventos, agenda novo envio. */
+        if(queue.length) flush();
+      }
     },80);
   }
 
