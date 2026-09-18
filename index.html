@@ -1,5 +1,36 @@
 <!-- VÉRIX 1.0 — publicação limpa -->
-<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VÉRIX — Plataforma Digital 1.0</title>
+<!DOCTYPE html><html lang="pt"><head>
+<script id="verix-session-cache-refresh">
+/* VÉRIX — atualização obrigatória do HTML a cada nova sessão/tab.
+   Faz uma única navegação com URL única para obrigar o browser a obter
+   a versão atual do GitHub Pages, funcionando como um F5/cache-bust. */
+(function(){
+  try {
+    const KEY = 'VERIX_CACHE_REFRESH_SESSION_V1';
+    const params = new URLSearchParams(window.location.search);
+    const refreshParam = params.get('_verix_refresh');
+
+    if (!sessionStorage.getItem(KEY)) {
+      sessionStorage.setItem(KEY, '1');
+
+      const url = new URL(window.location.href);
+      url.searchParams.set('_verix_refresh', String(Date.now()));
+      window.location.replace(url.toString());
+      return;
+    }
+
+    if (refreshParam) {
+      params.delete('_verix_refresh');
+      const cleanQuery = params.toString();
+      const cleanUrl =
+        window.location.pathname +
+        (cleanQuery ? '?' + cleanQuery : '') +
+        window.location.hash;
+      window.history.replaceState(null, '', cleanUrl);
+    }
+  } catch (e) {}
+})();
+</script><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VÉRIX — Plataforma Digital 1.0</title>
 <meta name="description" content="VÉRIX — Plataforma Digital de apoio ao serviço operacional das forças de segurança.">
 <meta name="theme-color" content="#03080c">
 <meta property="og:type" content="website">
