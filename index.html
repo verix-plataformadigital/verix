@@ -17360,6 +17360,7 @@ html body .leg-card-new .copy-all-new{
   let queue = [];
   let flushTimer = null;
   let legSearchTimer = null;
+  let cinSpeedTimer = null;
   const recent = Object.create(null);
 
   function uid(prefix){
@@ -17433,8 +17434,10 @@ html body .leg-card-new .copy-all-new{
   }
 
   function telemetryModule(nome){
-    if(nome==='consulta')pushEvent('module_open','consulta');
-    else if(nome)pushEvent('module_open',String(nome));
+    if(!nome)return;
+    const key='module_open:'+String(nome);
+    if(!rateLimited(key,1200))return;
+    pushEvent('module_open',String(nome));
   }
   function telemetryAction(event,module){ pushEvent(event,module||null); flush(); }
   /* Exposição controlada para funções operacionais do VÉRIX que vivem fora deste IIFE. */
@@ -17472,7 +17475,6 @@ html body .leg-card-new .copy-all-new{
     wrap('cinDuplicarPerfil',function(){ telemetryAction('cinemometer_profile_duplicate','cinemometro'); });
     wrap('cinEliminarPerfil',function(){ telemetryAction('cinemometer_profile_delete','cinemometro'); });
     wrap('cinGuardarConfiguracao',function(){ telemetryAction('cinemometer_profile_save','cinemometro'); });
-    wrap('cinRecalcular',function(){ if(rateLimited('cin_calc',4000)) telemetryAction('cinemometer_calculation','cinemometro'); });
   }
 
   function bindDomTelemetry(){
@@ -17486,6 +17488,18 @@ html body .leg-card-new .copy-all-new{
     },true);
 
     document.addEventListener('input',function(ev){
+      if(ev.target && ev.target.id==='cinRegistada'){
+        clearTimeout(cinSpeedTimer);
+        const value=String(ev.target.value||'').trim();
+        if(!value)return;
+        cinSpeedTimer=setTimeout(function(){
+          const latest=String(ev.target.value||'').trim();
+          if(latest===value && Number(latest)>=1 && Number(latest)<=400){
+            telemetryAction('cinemometer_speed_entry','cinemometro');
+          }
+        },900);
+        return;
+      }
       if(ev.target && ev.target.id==='legSearch'){
         clearTimeout(legSearchTimer);
         legSearchTimer=setTimeout(function(){

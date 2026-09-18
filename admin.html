@@ -3,555 +3,172 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>VÉRIX — Painel de Administração</title>
+<title>VÉRIX — Administração</title>
 <style>
-:root{
-  --bg:#03080c;--panel:#0a151c;--line:rgba(100,160,175,.28);--cyan:#4ec8dc;--red:#c8102e;
-  --green:#00b86b;--amber:#e4b927;--text:#e8f0f2;--muted:#7a929c;
-  --font:Segoe UI,Arial,Helvetica,sans-serif;--mono:Consolas,"Courier New",monospace;
-}
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:var(--font);
-  background:radial-gradient(ellipse at 50% -10%,#14303a 0%,transparent 42%),linear-gradient(180deg,#061018,#03080c 55%,#020608)}
-body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.15;
-  background:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);background-size:48px 48px}
-.wrap{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:18px 16px 56px}
-
-/* Sticky top bar */
-.topbar{
-  position:sticky;top:0;z-index:50;margin:0 -16px 16px;padding:12px 16px;
-  background:rgba(4,12,16,.92);backdrop-filter:blur(12px);
-  border-bottom:1px solid rgba(90,150,160,.25);
-  display:flex;flex-wrap:wrap;gap:10px;align-items:center;
-}
-.topbar .brand{font:900 13px/1 var(--mono);letter-spacing:1.5px;color:#e8f4f6;text-transform:uppercase}
-.topbar .brand span{color:var(--cyan)}
-.topbar .grow{flex:1}
-.topbar nav{display:flex;flex-wrap:wrap;gap:6px}
-.topbar nav a{
-  font:700 10px/1 var(--mono);letter-spacing:.8px;text-transform:uppercase;text-decoration:none;
-  color:var(--muted);padding:7px 10px;border-radius:6px;border:1px solid transparent;
-}
-.topbar nav a:hover{color:var(--cyan);border-color:rgba(78,200,220,.3);background:rgba(0,160,180,.08)}
-.live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);display:inline-block;margin-right:6px;animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
-
-.admin-header{
-  position:relative;padding:20px 22px 16px;margin-bottom:14px;
-  border:1px solid var(--line);border-radius:14px;
-  background:linear-gradient(135deg,rgba(12,28,36,.95),rgba(6,14,20,.98));
-  box-shadow:0 16px 40px rgba(0,0,0,.4),inset 0 1px 0 rgba(140,210,220,.08);overflow:hidden;
-}
-.admin-header::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),var(--red),transparent)}
-.admin-header::after{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--cyan),var(--red))}
-.kicker{font:800 10px/1 var(--mono);letter-spacing:2px;color:var(--cyan);text-transform:uppercase;margin-bottom:6px}
-h1{margin:0;font:900 24px/1.15 var(--font);letter-spacing:.4px;color:#f2f8fa;text-transform:uppercase}
-.sub{color:var(--muted);font-size:13px;margin-top:5px}
-.bar{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;align-items:center}
-.input{flex:1;min-width:220px;border:1px solid rgba(100,160,175,.35);border-radius:8px;padding:11px 13px;background:rgba(0,12,18,.75);color:var(--text);font:600 14px var(--mono);outline:none}
-.input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(78,200,220,.15)}
-button{border:0;border-radius:8px;padding:11px 15px;font:800 11px/1 var(--font);letter-spacing:.8px;text-transform:uppercase;cursor:pointer;transition:transform .15s,filter .15s}
-button:hover{transform:translateY(-1px);filter:brightness(1.08)}
-.primary{background:linear-gradient(180deg,#1a8a9a,#0d4a55);color:#e8fcff;border:1px solid rgba(78,200,220,.4)}
-.secondary{background:linear-gradient(180deg,#1e2c34,#121c22);color:#c8d8de;border:1px solid rgba(120,150,160,.3)}
-.danger{background:linear-gradient(180deg,#a01828,#5c0a14);color:#ffd0d4;border:1px solid rgba(200,16,46,.5)}
-.danger:disabled{opacity:.4;cursor:not-allowed}
-.status{font:600 12px/1.4 var(--mono);color:var(--muted);margin-top:10px;padding:8px 12px;border-left:2px solid var(--cyan);background:rgba(0,40,50,.25);border-radius:0 6px 6px 0}
-
-/* Insight strip */
-.insights{
-  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px;
-}
-.insight{
-  padding:12px 14px;border-radius:10px;border:1px solid rgba(90,150,160,.2);
-  background:rgba(8,20,26,.85);font-size:12px;line-height:1.4;color:#9ab0b8;
-}
-.insight strong{display:block;color:#e4f0f3;font-size:13px;margin-bottom:4px;font-weight:800}
-.insight .tag{display:inline-block;margin-top:6px;font:700 9px/1 var(--mono);letter-spacing:.8px;text-transform:uppercase;padding:3px 7px;border-radius:4px}
-.tag-ok{background:rgba(0,180,100,.15);color:#3dff9a}
-.tag-warn{background:rgba(228,185,39,.12);color:#e4b927}
-.tag-bad{background:rgba(200,16,46,.15);color:#ff6b7a}
-.tag-info{background:rgba(78,200,220,.12);color:var(--cyan)}
-
-.section-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:22px 0 12px;padding-bottom:8px;border-bottom:1px solid rgba(90,140,150,.2);scroll-margin-top:64px}
-.section-head h2{margin:0;font:800 13px/1.2 var(--font);letter-spacing:1.2px;text-transform:uppercase;color:#d8e8ec}
-.section-head .grow{flex:1}
-.badge{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:99px;background:rgba(0,180,160,.1);border:1px solid rgba(0,200,160,.25);font:700 10px/1 var(--mono);letter-spacing:.6px;color:#7ed4c0}
-.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
-
-.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:12px}
-.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
-.card{position:relative;padding:15px;border:1px solid rgba(90,150,160,.22);border-radius:12px;background:linear-gradient(160deg,rgba(12,26,34,.95),rgba(6,14,20,.98));box-shadow:0 8px 24px rgba(0,0,0,.25);overflow:hidden}
-.card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--cyan),transparent);opacity:.7}
-.card.accent-red::before{background:linear-gradient(180deg,var(--red),transparent)}
-.card.accent-green::before{background:linear-gradient(180deg,var(--green),transparent)}
-.card.accent-amber::before{background:linear-gradient(180deg,var(--amber),transparent)}
-.label{font:800 10px/1.2 var(--mono);letter-spacing:1.1px;text-transform:uppercase;color:var(--muted)}
-.value{font:900 26px/1.1 var(--mono);margin-top:8px;color:#f0f8fa;letter-spacing:.5px}
-.delta{font:700 11px/1 var(--mono);margin-top:6px}
-.delta.up{color:#3dff9a}.delta.down{color:#ff6b7a}.delta.flat{color:#7a929c}
-.small{font-size:11px;color:#6a8088;margin-top:6px;line-height:1.35}
-.metric-red{color:#ff6b7a!important}.metric-green{color:#3dff9a!important}.metric-blue{color:#5ec8ff!important}.metric-amber{color:#e4b927!important}
-
-section.panel{padding:16px;margin-bottom:14px;border:1px solid rgba(90,150,160,.22);border-radius:14px;background:linear-gradient(180deg,rgba(10,22,28,.9),rgba(5,12,16,.95));box-shadow:0 10px 28px rgba(0,0,0,.28);scroll-margin-top:64px}
-section.panel > h2{margin:0 0 12px;font:800 13px/1.2 var(--font);letter-spacing:1.2px;text-transform:uppercase;color:#c8dde2}
-.cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
-.cols > section.panel{margin-bottom:0}
-
-table{width:100%;border-collapse:collapse;font-size:12px}
-th,td{text-align:left;padding:8px 10px;border-bottom:1px solid rgba(90,140,150,.12)}
-th{color:var(--cyan);font:800 10px/1 var(--mono);letter-spacing:1px;text-transform:uppercase}
-td{color:#c0d2d8}tr:hover td{background:rgba(0,180,200,.04)}
-.rank{font:800 11px var(--mono);color:var(--cyan);width:28px}
-
-.barrow{display:grid;grid-template-columns:minmax(90px,150px) 1fr 64px;gap:10px;align-items:center;margin:9px 0;font-size:12px}
-.barrow > div:first-child{color:#a8c0c8;font-weight:600}
-.track{height:8px;background:rgba(255,255,255,.06);border-radius:20px;overflow:hidden}
-.fill{height:100%;background:linear-gradient(90deg,#0a8a9a,var(--cyan));border-radius:20px;box-shadow:0 0 10px rgba(78,200,220,.3)}
-.barrow strong{color:#e8f4f6;font-family:var(--mono);text-align:right}
-
-.note{font-size:11px;color:#6a8088;margin-top:12px;line-height:1.45;padding:10px 12px;border-left:2px solid rgba(228,185,39,.4);background:rgba(228,185,39,.04);border-radius:0 6px 6px 0}
-.footer-note{text-align:center;font:600 11px/1.4 var(--mono);letter-spacing:.8px;color:#4a6068;margin-top:24px;padding-top:14px;border-top:1px solid rgba(80,120,130,.15)}
-
-.spark{display:flex;align-items:flex-end;gap:2px;height:36px;margin-top:8px}
-.spark i{flex:1;min-width:3px;background:rgba(78,200,220,.35);border-radius:2px 2px 0 0;display:block}
-.spark i.on{background:linear-gradient(180deg,var(--cyan),#0a6a78)}
-
-@media(max-width:1100px){.grid,.grid-3,.insights{grid-template-columns:repeat(2,1fr)}.cols{grid-template-columns:1fr}}
-@media(max-width:560px){.grid,.grid-3,.insights{grid-template-columns:1fr}.bar{flex-direction:column}.input{min-width:0;width:100%}.value{font-size:22px}.topbar nav{display:none}}
-</style>
-<style>
-.period-title{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:10px}.period-title h2{margin:0!important}.period-title .small{margin-top:0}.small-inline{font-size:10px;color:#6a8088;font-weight:500}.period-table-wrap,.table-scroll{overflow:auto}.period-table{min-width:760px}.period-table th:not(:first-child),.period-table td:not(:first-child){text-align:center}.period-table td:first-child{font-weight:700;color:#d4e3e7}.period-table td:nth-child(n+2){font-family:var(--mono);font-weight:800;font-size:13px}.asf-table td.good{color:#3dff9a}.asf-table td.bad{color:#ff6b7a}.asf-table td.warn{color:#e4b927}.rate-row td{border-top:1px solid rgba(228,185,39,.12)}.live-grid{margin-top:12px}.live-grid .card{min-height:118px}.life-panel .grid{margin-top:12px}.life-meta{display:flex;gap:24px;flex-wrap:wrap;padding:12px 2px 2px;color:#9bb0b7;font-size:12px}.life-meta strong{color:#d6e5e8}.manage-panel .note strong{color:#e7f2f5}.manage-panel{border-color:rgba(200,16,46,.25)}.manage-panel .danger{min-width:190px}.period-table tr:hover td{background:rgba(0,180,200,.035)}
-@media(max-width:800px){.period-table{min-width:700px}}
-</style>
-
-<style id="verix-admin-auth">
-.protected-area{display:none}
-.protected-area.unlocked{display:block}
-.auth-nav{display:none!important}
-.admin-header.authenticated .auth-hint{color:#3dff9a}
-.admin-header.authenticated .auth-hint::before{content:"● ";color:var(--green)}
-.auth-hint{font:700 11px/1.4 var(--mono);color:#e4b927;margin-top:8px}
-.auth-lock{max-width:620px;margin:34px auto 0;padding:26px 24px;border:1px solid rgba(78,200,220,.22);border-radius:14px;background:linear-gradient(160deg,rgba(9,23,30,.96),rgba(4,12,17,.98));box-shadow:0 14px 35px rgba(0,0,0,.35);text-align:center}
-.auth-lock .lock-icon{width:50px;height:50px;margin:0 auto 12px;border-radius:12px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(78,200,220,.28);background:rgba(78,200,220,.07);font-size:22px}
-.auth-lock h2{margin:0 0 7px;font-size:18px;letter-spacing:.8px;text-transform:uppercase}
-.auth-lock p{margin:0;color:var(--muted);font-size:12px;line-height:1.5}
-@media(max-width:700px){.auth-lock{margin-top:24px;padding:22px 18px}}
-</style>
-<style id="verix-minimal-login">
-html,body{min-height:100%;}
-body.auth-mode{background:#03080c;overflow:hidden;}
-.auth-screen{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:#03080c;}
-.auth-screen form{margin:0;padding:0;width:min(360px,86vw);}
-.auth-screen input{width:100%;height:52px;padding:0 16px;border:1px solid rgba(120,160,175,.42);border-radius:10px;outline:none;background:#071118;color:#e8f0f2;font:700 16px var(--mono);text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.28),inset 0 0 18px rgba(78,200,220,.025);}
-.auth-screen input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(78,200,220,.12),0 10px 30px rgba(0,0,0,.28);}
-.auth-screen input.bad{border-color:var(--red);box-shadow:0 0 0 3px rgba(200,16,46,.12);}
-.dashboard-shell{display:none;}
+:root{--bg:#03080c;--panel:#09151c;--line:rgba(100,160,175,.24);--cyan:#4ec8dc;--green:#00b86b;--red:#c8102e;--amber:#e4b927;--text:#e8f0f2;--muted:#78909a;--font:Segoe UI,Arial,sans-serif;--mono:Consolas,"Courier New",monospace}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(ellipse at 50% -15%,#16323b 0%,transparent 42%),linear-gradient(180deg,#061018,#03080c 60%,#020608);color:var(--text);font-family:var(--font)}
+#login{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#02070a;z-index:9999}.login-box{width:min(420px,92vw);display:flex;flex-direction:column;gap:12px}.login-box input{width:100%;padding:15px 16px;border:1px solid rgba(100,160,175,.42);border-radius:9px;background:#041015;color:#fff;font:700 15px var(--mono);outline:none}.login-box input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(78,200,220,.12)}.login-box button{padding:13px 16px;border-radius:9px;border:1px solid rgba(78,200,220,.42);background:linear-gradient(180deg,#1a8a9a,#0d4a55);color:#eaffff;font:900 11px var(--font);text-transform:uppercase;letter-spacing:1px;cursor:pointer}.login-error{text-align:center;font:600 11px var(--mono);color:#ff6b7a;min-height:16px}
+#app{display:none}.wrap{max-width:1450px;margin:auto;padding:18px 18px 60px}.top{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;padding:11px 14px;margin:0 -18px 18px;background:rgba(4,12,16,.94);backdrop-filter:blur(12px);border-bottom:1px solid rgba(90,150,160,.22)}.brand{font:900 13px var(--mono);letter-spacing:1.6px}.brand span{color:var(--cyan)}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);margin-right:7px}.top .grow{flex:1}.logout{background:#17242b;color:#cfe1e7;border:1px solid rgba(120,150,160,.28);border-radius:7px;padding:8px 10px;font:800 10px var(--font);cursor:pointer}
+header.panel,section.panel{border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,rgba(10,22,28,.92),rgba(5,12,16,.97));box-shadow:0 10px 28px rgba(0,0,0,.26)}header.panel{padding:20px 22px;margin-bottom:16px;border-left:3px solid var(--cyan)}h1{margin:0;font-size:24px;text-transform:uppercase}.sub{margin-top:6px;color:var(--muted);font-size:13px}.status{margin-top:12px;padding:9px 11px;border-left:2px solid var(--cyan);background:rgba(0,40,50,.2);font:600 11px var(--mono);color:#91a9b1}
+.section-title{display:flex;align-items:center;gap:10px;margin:22px 0 11px;padding-bottom:8px;border-bottom:1px solid rgba(90,140,150,.18)}.section-title h2{margin:0;font-size:13px;letter-spacing:1.2px;text-transform:uppercase}.section-title .grow{flex:1}.live{font:800 10px var(--mono);color:#70e6bf}.live:before{content:'●';color:var(--green);margin-right:6px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.mini{padding:15px;border:1px solid rgba(90,150,160,.22);border-radius:12px;background:linear-gradient(160deg,rgba(12,26,34,.95),rgba(6,14,20,.98))}.mini .label{font:800 10px var(--mono);letter-spacing:1px;text-transform:uppercase;color:var(--muted)}.mini .value{margin-top:7px;font:900 25px var(--mono)}.green{color:#3dff9a}.cyan{color:#62d5e7}.red{color:#ff6b7a}.amber{color:#e4b927}
+section.panel{padding:16px;margin-bottom:14px}.period-wrap{overflow:auto}.period{width:100%;min-width:760px;border-collapse:collapse;font-size:12px}.period th,.period td{padding:9px 10px;border-bottom:1px solid rgba(90,140,150,.12)}.period th{font:800 10px var(--mono);letter-spacing:1px;text-transform:uppercase;color:var(--cyan)}.period th:not(:first-child),.period td:not(:first-child){text-align:center}.period td:first-child{font-weight:700;color:#d7e5e9}.period td:not(:first-child){font:800 13px var(--mono)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}.subpanel{padding:15px;border:1px solid rgba(90,150,160,.18);border-radius:12px;background:rgba(5,14,19,.7)}.subpanel h3{margin:0 0 12px;font-size:13px}.bar{display:grid;grid-template-columns:minmax(120px,170px) 1fr 55px;gap:10px;align-items:center;margin:9px 0;font-size:12px}.track{height:8px;background:rgba(255,255,255,.06);border-radius:12px;overflow:hidden}.fill{height:100%;background:linear-gradient(90deg,#0a8a9a,var(--cyan));border-radius:12px}.bar strong{font:800 12px var(--mono);text-align:right}.table-scroll{overflow:auto}.smalltable{width:100%;border-collapse:collapse;font-size:12px}.smalltable th,.smalltable td{padding:8px;border-bottom:1px solid rgba(90,140,150,.12);text-align:left}.smalltable th{font:800 10px var(--mono);text-transform:uppercase;letter-spacing:1px;color:var(--cyan)}.smalltable td:last-child{text-align:right;font-family:var(--mono);font-weight:800}.note{margin-top:10px;padding:9px 11px;border-left:2px solid rgba(228,185,39,.45);background:rgba(228,185,39,.04);border-radius:0 6px 6px 0;color:#78909a;font-size:11px;line-height:1.45}
+.footer{text-align:center;color:#4e666f;margin-top:24px;padding-top:14px;border-top:1px solid rgba(80,120,130,.15);font:600 10px var(--mono)}
+@media(max-width:950px){.grid4{grid-template-columns:repeat(2,1fr)}.cols{grid-template-columns:1fr}}@media(max-width:560px){.grid4{grid-template-columns:1fr}.wrap{padding:12px}.top{margin:0 -12px 14px}}
 </style>
 </head>
-<body class="auth-mode">
-<div class="auth-screen" id="authScreen">
-  <form id="authForm" autocomplete="off">
-    <input id="loginToken" type="password" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Password">
-  </form>
+<body>
+<div id="login">
+  <div class="login-box">
+    <input id="token" type="password" autocomplete="off" placeholder="PASSWORD">
+    <button onclick="login()">Entrar</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
 </div>
 
-<div class="dashboard-shell" id="dashboardShell">
+<div id="app">
 <div class="wrap">
+  <div class="top"><div class="brand"><span class="dot"></span>VÉRIX <span>//</span> ADMIN</div><div class="grow"></div><button class="logout" onclick="logout()">Sair</button></div>
 
-<div class="topbar">
-  <div class="brand"><span class="live-dot"></span>VÉRIX <span>//</span> ADMIN</div>
-  <div class="grow"></div>
-  <nav>
-    <a href="#sec-summary">Resumo</a>
-    <a href="#sec-asf">ASF</a>
-    <a href="#sec-mods">Módulos</a>
-    <a href="#sec-time">Tempo</a>
-    <a href="#sec-life">Histórico total</a>
-    <a href="#sec-sys">Sistema</a>
-  </nav>
-</div>
+  <header class="panel">
+    <h1>Painel de Administração</h1>
+    <div class="sub">Utilização operacional agregada · sem matrículas, nomes ou conteúdo operacional</div>
+    <div class="status" id="status">A carregar…</div>
+  </header>
 
-<header class="admin-header">
-  <div class="kicker">Ops · Telemetria anónima · v1.0</div>
-  <h1>Painel de Administração</h1>
-  <div class="sub">Estatísticas de utilização da plataforma · sem matrículas, nomes ou dados pessoais</div>
-  <div class="bar">
-    <input id="token" class="input" type="password" autocomplete="off" placeholder="ADMIN_TOKEN">
-    <button class="primary" onclick="loadStats()">Atualizar</button>
-    <button class="secondary" onclick="clearToken()">Limpar token</button>
+  <div class="section-title"><h2>Visão geral</h2><div class="grow"></div><div class="live">Atualização automática · 30 s</div></div>
+  <div class="grid4">
+    <div class="mini"><div class="label">Online agora</div><div class="value green" id="online">—</div></div>
+    <div class="mini"><div class="label">Ativos · 10 min</div><div class="value cyan" id="active10">—</div></div>
+    <div class="mini"><div class="label">Utilizadores únicos · 24h</div><div class="value" id="users24">—</div></div>
+    <div class="mini"><div class="label">Utilizadores únicos · 30d</div><div class="value" id="users30">—</div></div>
   </div>
-  <div class="auth-hint" id="authHint">Acesso protegido · os dados só são carregados após autenticação.</div>
-  <div class="status" id="status">Introduz o ADMIN_TOKEN para desbloquear o painel.</div>
-</header>
 
-
-<div id="protectedArea" class="protected-area">
-<!-- Insights -->
-<div class="insights" id="insights">
-  <div class="insight"><strong id="ins1t">—</strong><span id="ins1d">Carregue dados para ver o estado atual.</span><span class="tag tag-info" id="ins1k">—</span></div>
-  <div class="insight"><strong id="ins2t">—</strong><span id="ins2d">Taxa de respostas válidas sem seguro.</span><span class="tag tag-info" id="ins2k">—</span></div>
-  <div class="insight"><strong id="ins3t">—</strong><span id="ins3d">Módulo com mais atividade em 30 dias.</span><span class="tag tag-info" id="ins3k">—</span></div>
-  <div class="insight"><strong id="ins4t">—</strong><span id="ins4d">Hora com maior afluência média.</span><span class="tag tag-info" id="ins4k">—</span></div>
-</div>
-
-<div class="section-head" id="sec-summary">
-  <h2>Resumo operacional</h2>
-  <span class="grow"></span>
-  <span class="badge" id="refreshState"><span class="live-dot"></span>Auto-refresh · 30 s</span>
-</div>
-
-<section class="panel">
-  <div class="period-title"><h2>Utilização por período</h2><span class="small">Cada linha representa o mesmo indicador em 24h, 7 dias, 30 dias e 90 dias.</span></div>
-  <div class="period-table-wrap">
-    <table class="period-table">
-      <thead><tr><th>Indicador</th><th>24h</th><th>7 dias</th><th>30 dias</th><th>90 dias</th></tr></thead>
-      <tbody>
-        <tr><td>Utilizadores únicos</td><td id="u24">—</td><td id="u7">—</td><td id="u30">—</td><td id="u90">—</td></tr>
-        <tr><td>Eventos</td><td id="e24">—</td><td id="pe7events">—</td><td id="e30">—</td><td id="pe90events">—</td></tr>
-        <tr><td>Sessões iniciadas</td><td id="s24">—</td><td id="s7">—</td><td id="s30">—</td><td>—</td></tr>
-        <tr><td>Eventos / utilizador</td><td id="e24rate">—</td><td id="e7rate">—</td><td id="e30rate">—</td><td id="e90rate">—</td></tr>
-      </tbody>
-    </table>
-  </div>
-</section>
-
-<section class="panel" id="sec-asf">
-  <div class="period-title"><h2>Consultas ASF / matrícula</h2><span class="small">Pedidos, respostas e classificação das consultas. Erros ASF ficam separados dos resultados válidos.</span></div>
-  <div class="period-table-wrap">
-    <table class="period-table asf-table">
-      <thead><tr><th>Indicador</th><th>24h</th><th>7 dias</th><th>30 dias</th><th>90 dias</th></tr></thead>
-      <tbody>
-        <tr><td>Pedidos ASF</td><td id="l24">—</td><td id="l7">—</td><td id="l30">—</td><td id="l90">—</td></tr>
-        <tr><td>Respostas válidas</td><td id="valid24">—</td><td id="valid7">—</td><td id="valid30">—</td><td id="valid90">—</td></tr>
-        <tr><td>Com seguro</td><td class="good" id="yes24">—</td><td class="good" id="yes7">—</td><td class="good" id="yes30">—</td><td class="good" id="yes90">—</td></tr>
-        <tr><td>Sem seguro</td><td class="bad" id="no24">—</td><td class="bad" id="no7">—</td><td class="bad" id="no30">—</td><td class="bad" id="no90">—</td></tr>
-        <tr><td>Erros ASF</td><td class="bad" id="err24">—</td><td class="bad" id="err7">—</td><td class="bad" id="err30">—</td><td class="bad" id="err90">—</td></tr>
-        <tr class="rate-row"><td>% sem seguro <span class="small-inline">(sobre respostas válidas)</span></td><td class="warn" id="rate24">—</td><td class="warn" id="rate7">—</td><td class="warn" id="rate30">—</td><td class="warn" id="rate90">—</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="note">Telemetria: apenas o tipo de resultado. Matrículas e conteúdo ASF não são enviados.</div>
-</section>
-
-<div class="grid live-grid">
-  <div class="card accent-green"><div class="label">Online agora</div><div class="value metric-green" id="activeNow">—</div><div class="small">heartbeat ≤ 2 min</div></div>
-  <div class="card"><div class="label">Ativos — 10 min</div><div class="value" id="active10">—</div><div class="small">atividade recente</div></div>
-  <div class="card"><div class="label">Instalações totais</div><div class="value" id="total">—</div><div class="small">IDs anónimos</div></div>
-  <div class="card"><div class="label">Duração média — 30d</div><div class="value" id="avg">—</div><div class="small">por sessão registada</div></div>
-</div>
-
-<div class="section-head" id="sec-mods"><h2>Módulos e ações</h2></div>
-<div class="cols">
-  <section class="panel"><div class="period-title"><h2>Módulos — 24h</h2><span class="small">Atividade registada</span></div><div id="m24"></div></section>
-  <section class="panel"><div class="period-title"><h2>Módulos — 30 dias</h2><span class="small">Atividade registada</span></div><div id="m30"></div></section>
-</div>
-<div class="cols">
-  <section class="panel"><div class="period-title"><h2>Ações — 24h</h2><span class="small">Eventos por tipo</span></div><div id="ev24"></div></section>
-  <section class="panel"><div class="period-title"><h2>Ações — 30 dias</h2><span class="small">Eventos por tipo</span></div><div id="ev30"></div></section>
-</div>
-
-<div class="section-head" id="sec-time"><h2>Tempo e afluência</h2></div>
-<section class="panel">
-  <div class="period-title"><h2>Evolução diária — 30 dias</h2><span class="small">Um dia por linha · comparação direta</span></div>
-  <div class="spark" id="sparkDaily" title="Eventos por dia (escala relativa)"></div>
-  <div class="table-scroll">
-    <table><thead><tr><th>#</th><th>Dia</th><th>Utilizadores</th><th>Eventos</th><th>Consultas ASF</th><th>Sem seguro</th></tr></thead><tbody id="daily"></tbody></table>
-  </div>
-</section>
-<div class="cols">
+  <div class="section-title"><h2>Atividade operacional</h2></div>
   <section class="panel">
-    <div class="period-title"><h2>Distribuição horária — 24h</h2><span class="small">Últimas 24 horas</span></div>
-    <div class="spark" id="sparkHourly"></div>
-    <div class="table-scroll"><table><thead><tr><th>Hora</th><th>Utilizadores</th><th>Eventos</th></tr></thead><tbody id="hourly"></tbody></table></div>
+    <div class="period-wrap"><table class="period"><thead><tr><th>Indicador</th><th>24h</th><th>7 dias</th><th>30 dias</th><th>90 dias</th></tr></thead><tbody>
+      <tr><td>Pesquisas de veículos</td><td id="v24">—</td><td id="v7">—</td><td id="v30">—</td><td id="v90">—</td></tr>
+      <tr><td>Com seguro</td><td id="ys24" class="green">—</td><td id="ys7" class="green">—</td><td id="ys30" class="green">—</td><td id="ys90" class="green">—</td></tr>
+      <tr><td>Sem seguro</td><td id="ns24" class="red">—</td><td id="ns7" class="red">—</td><td id="ns30" class="red">—</td><td id="ns90" class="red">—</td></tr>
+      <tr><td>Erros / indisponibilidade ASF</td><td id="er24" class="red">—</td><td id="er7" class="red">—</td><td id="er30" class="red">—</td><td id="er90" class="red">—</td></tr>
+      <tr><td>% sem seguro (respostas válidas)</td><td id="rr24" class="amber">—</td><td id="rr7" class="amber">—</td><td id="rr30" class="amber">—</td><td id="rr90" class="amber">—</td></tr>
+      <tr><td>Velocidades inseridas no cinemómetro</td><td id="sp24">—</td><td id="sp7">—</td><td id="sp30">—</td><td id="sp90">—</td></tr>
+      <tr><td>Acessos / consultas de legislação</td><td id="lg24">—</td><td id="lg7">—</td><td id="lg30">—</td><td id="lg90">—</td></tr>
+      <tr><td>Cópias de legislação</td><td id="lc24">—</td><td id="lc7">—</td><td id="lc30">—</td><td id="lc90">—</td></tr>
+      <tr><td>Consultas de álcool</td><td id="al24">—</td><td id="al7">—</td><td id="al30">—</td><td id="al90">—</td></tr>
+    </tbody></table></div>
+    <div class="note">“Acessos / consultas de legislação” soma abertura de categorias e pesquisas. Cópias são contabilizadas separadamente.</div>
   </section>
+
+  <div class="section-title"><h2>Menus consultados</h2></div>
+  <div class="cols">
+    <section class="panel"><div class="subpanel"><h3>24h</h3><div id="mods24"></div></div></section>
+    <section class="panel"><div class="subpanel"><h3>30 dias</h3><div id="mods30"></div></div></section>
+  </div>
+
+  <div class="section-title"><h2>Legislação</h2></div>
   <section class="panel">
-    <div class="period-title"><h2>Afluência média — 30 dias</h2><span class="small">Média de utilizadores por hora</span></div>
-    <div class="table-scroll"><table><thead><tr><th>Hora</th><th>Eventos</th><th>Média users</th></tr></thead><tbody id="hourly30"></tbody></table></div>
+    <div class="grid4">
+      <div class="mini"><div class="label">Acessos / consultas · 24h</div><div class="value" id="legAccess24">—</div></div>
+      <div class="mini"><div class="label">Pesquisas · 24h</div><div class="value" id="legSearch24">—</div></div>
+      <div class="mini"><div class="label">Cópias · 24h</div><div class="value cyan" id="legCopy24">—</div></div>
+      <div class="mini"><div class="label">Cópias · 30d</div><div class="value cyan" id="legCopy30">—</div></div>
+    </div>
   </section>
-</div>
-<section class="panel">
-  <div class="period-title"><h2>Versões — 30 dias</h2><span class="small">Instalações e eventos por versão</span></div>
-  <div class="table-scroll"><table><thead><tr><th>Versão</th><th>Instalações</th><th>Eventos</th><th>Share</th></tr></thead><tbody id="versions"></tbody></table></div>
-</section>
 
-<section class="panel life-panel" id="sec-life">
-  <div class="period-title"><h2>Histórico total · todo o período de vida</h2><span class="badge">♾️ Desde o primeiro registo</span></div>
-  <div class="grid">
-    <div class="card"><div class="label">Eventos totais</div><div class="value" id="allEvents">—</div></div>
-    <div class="card"><div class="label">Utilizadores únicos</div><div class="value" id="allUsers">—</div></div>
-    <div class="card"><div class="label">Instalações</div><div class="value" id="allInst">—</div></div>
-    <div class="card"><div class="label">Sessões totais</div><div class="value" id="allSessions">—</div></div>
-  </div>
-  <div class="period-table-wrap">
-    <table class="period-table asf-table">
-      <thead><tr><th>Indicador ASF</th><th>Total</th><th>Indicador</th><th>Valor</th></tr></thead>
-      <tbody>
-        <tr><td>Pedidos ASF</td><td id="allLookups">—</td><td>Respostas válidas</td><td id="allValid">—</td></tr>
-        <tr><td>Com seguro</td><td class="good" id="allYes">—</td><td>Sem seguro</td><td class="bad" id="allNo">—</td></tr>
-        <tr><td>Erros ASF</td><td class="bad" id="allErr">—</td><td>% sem seguro</td><td class="warn" id="allRate">—</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="life-meta"><span><strong>Duração média:</strong> <span id="allAvg">—</span></span><span><strong>Primeiro registo:</strong> <span id="allFirst">—</span></span></div>
-  <div class="cols">
-    <section class="panel"><div class="period-title"><h2>Módulos — vida</h2><span class="small">Total histórico</span></div><div id="allModules"></div></section>
-    <section class="panel"><div class="period-title"><h2>Ações — vida</h2><span class="small">Total histórico</span></div><div id="allEventsTypes"></div></section>
-  </div>
-  <div class="cols">
-    <section class="panel"><div class="period-title"><h2>Evolução diária — vida</h2><span class="small">Desde o primeiro evento</span></div><div class="table-scroll"><table><thead><tr><th>Dia</th><th>Users</th><th>Eventos</th><th>Consultas</th><th>Sem seg.</th></tr></thead><tbody id="allDaily"></tbody></table></div></section>
-    <section class="panel"><div class="period-title"><h2>Versões — vida</h2><span class="small">Total histórico</span></div><div class="table-scroll"><table><thead><tr><th>Versão</th><th>Instalações</th><th>Eventos</th></tr></thead><tbody id="allVersions"></tbody></table></div></section>
-  </div>
-</section>
+  <div class="section-title"><h2>Cinemómetro</h2></div>
+  <section class="panel">
+    <div class="period-wrap"><table class="period"><thead><tr><th>Indicador</th><th>24h</th><th>7 dias</th><th>30 dias</th><th>90 dias</th></tr></thead><tbody>
+      <tr><td>Velocidades inseridas</td><td id="c24">—</td><td id="c7">—</td><td id="c30">—</td><td id="c90">—</td></tr>
+    </tbody></table></div>
+    <div class="note">Conta uma entrada de velocidade depois de o valor ficar estável no campo. Alterações posteriores contam como novas entradas.</div>
+  </section>
 
-<section class="panel" id="sec-sys">
-  <div class="period-title"><h2>Estado da plataforma</h2><span class="small">Indicadores técnicos do sistema</span></div>
-  <table><tbody>
+  <div class="section-title"><h2>Evolução diária · últimos 30 dias</h2></div>
+  <section class="panel"><div class="table-scroll"><table class="smalltable"><thead><tr><th>Dia</th><th>Utilizadores</th><th>Pesquisas veículos</th><th>Velocidades</th><th>Legislação</th><th>Cópias</th></tr></thead><tbody id="daily"></tbody></table></div></section>
+
+  <div class="section-title"><h2>Histórico total</h2></div>
+  <section class="panel">
+    <div class="period-wrap"><table class="period"><thead><tr><th>Indicador</th><th>Total</th></tr></thead><tbody>
+      <tr><td>Utilizadores únicos</td><td id="allUsers">—</td></tr>
+      <tr><td>Pesquisas de veículos</td><td id="allVehicles">—</td></tr>
+      <tr><td>Com seguro</td><td id="allYes" class="green">—</td></tr>
+      <tr><td>Sem seguro</td><td id="allNo" class="red">—</td></tr>
+      <tr><td>Velocidades inseridas</td><td id="allSpeed">—</td></tr>
+      <tr><td>Acessos / consultas de legislação</td><td id="allLeg">—</td></tr>
+      <tr><td>Cópias de legislação</td><td id="allCopy" class="cyan">—</td></tr>
+      <tr><td>Consultas de álcool</td><td id="allAlcohol">—</td></tr>
+    </tbody></table></div>
+    <div class="note">O histórico total corresponde aos dados que permanecem na D1 desde o último reset.</div>
+  </section>
+
+  <div class="section-title"><h2>Estado</h2></div>
+  <section class="panel"><table class="smalltable"><tbody>
     <tr><td>Primeiro registo conhecido</td><td id="first">—</td></tr>
     <tr><td>Última atividade conhecida</td><td id="last">—</td></tr>
-    <tr><td>Sessões iniciadas — 24h / 7d / 30d</td><td><span id="ss24">—</span> / <span id="ss7">—</span> / <span id="ss30">—</span></td></tr>
-    <tr><td>Hora de maior afluência — 30d</td><td id="peak">—</td></tr>
-    <tr><td>Última atualização do painel</td><td id="panelUpdated">—</td></tr>
-  </tbody></table>
-</section>
+    <tr><td>Última atualização do painel</td><td id="updated">—</td></tr>
+  </tbody></table></section>
 
-<section class="panel manage-panel">
-  <div class="period-title"><h2>Gestão de dados</h2><span class="small">Ação administrativa destrutiva</span></div>
-  <div class="note">O reset apaga <strong>events</strong>, <strong>sessions</strong> e <strong>installations</strong>. A estrutura das tabelas é mantida.</div>
-  <div style="margin-top:12px"><button class="danger" id="resetBtn" onclick="resetTelemetry()">Resetar telemetria</button></div>
-</section>
-
-</div>
-
-<div class="footer-note">VÉRIX · Telemetria anónima · sem nomes, mecanográficos, matrículas ou conteúdo operacional</div>
+  <div class="footer">VÉRIX · Telemetria operacional agregada · sem matrículas, nomes ou conteúdo operacional</div>
 </div>
 </div>
+
 <script>
 const API='https://verix-api.vxops.workers.dev/stats';
-const RESET_API='https://verix-api.vxops.workers.dev/admin/reset';
-const labels={
-  consulta:'Consulta de veículos',cinemometro:'Cinemómetro',legislacao:'Legislação',
-  alcoolExcel:'Álcool',ferramentas:'Ferramentas',contactosExcel:'Contactos'
-};
-const eventLabels={
-  app_open:'Abertura da aplicação',heartbeat:'Heartbeat',module_open:'Abertura de módulo',
-  history_open:'Histórico',history_reopen:'Reabertura do histórico',external_tool_open:'Ferramenta externa',
-  alcohol_lookup:'Consulta de álcool',vehicle_lookup:'Consulta de matrícula',
-  vehicle_insurance_yes:'Resultado: com seguro',vehicle_insurance_no:'Resultado: sem seguro',
-  vehicle_insurance_error:'Erro / indisponibilidade ASF',
-  cinemometer_copy_code:'Cópia de código',cinemometer_copy_text:'Cópia de texto',
-  cinemometer_copy_location:'Cópia de localização',cinemometer_profile_select:'Seleção de perfil',
-  cinemometer_profile_new:'Novo perfil',cinemometer_profile_duplicate:'Duplicação de perfil',
-  cinemometer_profile_delete:'Eliminação de perfil',cinemometer_profile_save:'Gravação de perfil',
-  cinemometer_calculation:'Cálculo de cinemómetro',legislation_category_open:'Abertura de categoria legislativa',
-  legislation_copy:'Cópia de legislação',legislation_favorite_toggle:'Favorito de legislação',
-  legislation_search:'Pesquisa de legislação'
-};
-const $=id=>document.getElementById(id);
+const TOKEN_KEY='verix_admin_token_v2';
+const tokenEl=()=>document.getElementById('token');
 const num=x=>Number(x||0).toLocaleString('pt-PT');
+const pct=x=>Number(x||0).toLocaleString('pt-PT',{minimumFractionDigits:1,maximumFractionDigits:1})+'%';
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-function set(id,v){const el=$(id);if(el)el.textContent=num(v)}
-function pct(id,v){const el=$(id);if(el)el.textContent=Number(v||0).toLocaleString('pt-PT',{minimumFractionDigits:1,maximumFractionDigits:1})+'%'}
-function duration(sec){sec=Number(sec||0);if(!sec)return '—';let m=Math.round(sec/60);return m<60?m+' min':Math.floor(m/60)+' h '+(m%60)+' min'}
-function ratio(a,b){b=Number(b||0);if(!b)return null;return (Number(a||0)/b)*100}
-function rate(events,users){return users?((Number(events||0)/Number(users))*1).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2}):'—'}
-function bars(id,rows){
+function $(id){return document.getElementById(id)}
+function set(id,v){if($(id))$(id).textContent=num(v)}
+function pset(id,v){if($(id))$(id).textContent=pct(v)}
+function opFrom(d,key){return d[key]||{}}
+function drawModules(id,rows){
   const el=$(id); if(!el)return;
-  if(!rows?.length){el.innerHTML='<div class="note">Sem dados.</div>';return}
+  rows=rows||[];
+  if(!rows.length){el.innerHTML='<div class="note">Sem dados.</div>';return}
   const max=Math.max(...rows.map(x=>+x.n||0),1);
   el.innerHTML=rows.map(x=>{
-    const n=+x.n||0,name=labels[x.module]||x.module||'Sem módulo';
-    return `<div class="barrow"><div>${esc(name)}</div><div class="track"><div class="fill" style="width:${n/max*100}%"></div></div><strong>${num(n)}</strong></div>`;
+    const labels={consulta:'Consulta de veículos',cinemometro:'Cinemómetro',legislacao:'Legislação',alcoolExcel:'Álcool',ferramentas:'Ferramentas',contactosExcel:'Contactos',codigosDistrito:'Códigos distrito',informacoes:'Informações',definicoes:'Definições'};
+    const name=labels[x.module]||x.module||'—'; const n=+x.n||0;
+    return `<div class="bar"><div>${esc(name)}</div><div class="track"><div class="fill" style="width:${n/max*100}%"></div></div><strong>${num(n)}</strong></div>`;
   }).join('');
 }
-function events(id,rows){
-  const el=$(id); if(!el)return;
-  if(!rows?.length){el.innerHTML='<div class="note">Sem dados.</div>';return}
-  el.innerHTML='<table><tbody>'+rows.map((x,i)=>`<tr><td class="rank">${i+1}</td><td>${esc(eventLabels[x.event]||x.event)}</td><td>${num(x.n)}</td></tr>`).join('')+'</tbody></table>';
-}
-function spark(id,values){
-  const el=$(id); if(!el)return;
-  if(!values?.length){el.innerHTML='';return}
-  const max=Math.max(...values,1);
-  el.innerHTML=values.map(v=>`<i class="${v/max>0.55?'on':''}" style="height:${Math.max(8,(v/max)*100)}%"></i>`).join('');
-}
-function setInsight(n,title,detail,tag,kind){
-  $('ins'+n+'t').textContent=title;
-  $('ins'+n+'d').textContent=detail;
-  const k=$('ins'+n+'k'); k.textContent=tag; k.className='tag tag-'+(kind||'info');
-}
-function buildInsights(o,v,mods30,peak){
-  const online=+o.active_users_now||0;
-  setInsight(1,
-    online+' online',
-    online?'Operadores com heartbeat nos últimos 2 minutos.':'Ninguém online neste momento.',
-    online>5?'ALTA':online>0?'ATIVA':'QUIETA',
-    online>5?'ok':online>0?'info':'warn'
-  );
-  const rate24=+v.no_insurance_rate_24h||0;
-  setInsight(2,
-    rate24.toFixed(1)+'% sem seguro (24h)',
-    'Percentagem calculada apenas sobre respostas válidas.',
-    rate24>=15?'ATENÇÃO':rate24>=8?'MONITORIZAR':'ESTÁVEL',
-    rate24>=15?'bad':rate24>=8?'warn':'ok'
-  );
-  const top=(mods30||[])[0];
-  const topName=top?(labels[top.module]||top.module):'—';
-  setInsight(3,
-    topName,
-    top?('Módulo mais usado em 30 dias · '+num(top.n)+' eventos'):'Sem dados de módulos.',
-    'TOP MÓDULO','info'
-  );
-  const ph=peak?.hour||'—';
-  setInsight(4,
-    ph!=='—'?'Pico '+ph:'Pico —',
-    peak?.avg_users!=null?('Média '+Number(peak.avg_users).toLocaleString('pt-PT',{maximumFractionDigits:2})+' utilizadores (30d)'):'Sem hora de pico calculada.',
-    'AFLUÊNCIA','info'
-  );
+function renderDaily(rows){
+  const el=$('daily');
+  rows=rows||[];
+  el.innerHTML=rows.map(x=>`<tr><td>${esc(x.day)}</td><td>${num(x.users)}</td><td>${num(x.vehicle_searches)}</td><td>${num(x.speed_entries)}</td><td>${num(x.legislation_accesses)}</td><td>${num(x.legislation_copies)}</td></tr>`).join('') || '<tr><td colspan="6">Sem dados.</td></tr>';
 }
 async function loadStats(){
-  const token=$('token').value.trim();
-  if(!token){
-    lockDashboard('Introduz o ADMIN_TOKEN para desbloquear o painel.');
-    return false;
-  }
-
-  $('status').textContent='A validar acesso…';
-
+  const t=tokenEl().value.trim(); if(!t)return;
   try{
-    const r=await fetch(API,{headers:{'X-Admin-Token':token},cache:'no-store'});
+    const r=await fetch(API,{headers:{'X-Admin-Token':t},cache:'no-store'});
     const d=await r.json();
-    if(!r.ok||!d.ok) throw Error(d.error||('HTTP '+r.status));
-
-    unlockDashboard();
-
-    const o=d.overview||{}, v=d.vehicle||{};
-    const l24=d.last_24h||{},l7=d.last_7d||{},l30=d.last_30d||{},l90=d.last_90d||{};
-
-    set('u24',o.unique_users_24h ?? l24.unique_installations);
-    set('u7',o.unique_installations_7d);
-    set('u30',o.unique_installations_30d);
-    set('u90',o.unique_installations_90d);
-    set('e24',o.events_24h);set('pe7events',l7.events);set('e30',o.events_30d);set('pe90events',l90.events);
-    set('s24',o.sessions_24h);set('s7',o.sessions_7d);set('s30',o.sessions_30d);
-    $('e24rate').textContent=rate(o.events_24h,o.unique_users_24h??l24.unique_installations);
-    $('e7rate').textContent=rate(l7.events,l7.unique_installations);
-    $('e30rate').textContent=rate(o.events_30d,l30.unique_installations);
-    $('e90rate').textContent=rate(l90.events,l90.unique_installations);
-
-    set('l24',v.lookups_24h);set('l7',v.lookups_7d);set('l30',v.lookups_30d);set('l90',v.lookups_90d);
-    const val24=(+v.yes_insurance_24h||0)+(+v.no_insurance_24h||0);
-    const val7=(+v.yes_insurance_7d||0)+(+v.no_insurance_7d||0);
-    const val30=(+v.yes_insurance_30d||0)+(+v.no_insurance_30d||0);
-    const val90=(+v.yes_insurance_90d||0)+(+v.no_insurance_90d||0);
-    set('valid24',val24);set('valid7',val7);set('valid30',val30);set('valid90',val90);
-    set('yes24',v.yes_insurance_24h);set('yes7',v.yes_insurance_7d);set('yes30',v.yes_insurance_30d);set('yes90',v.yes_insurance_90d);
-    set('no24',v.no_insurance_24h);set('no7',v.no_insurance_7d);set('no30',v.no_insurance_30d);set('no90',v.no_insurance_90d);
-    set('err24',v.errors_24h);set('err7',v.errors_7d);set('err30',v.errors_30d);set('err90',v.errors_90d);
-    pct('rate24',v.no_insurance_rate_24h);pct('rate7',v.no_insurance_rate_7d);pct('rate30',v.no_insurance_rate_30d);pct('rate90',v.no_insurance_rate_90d);
-
-    set('activeNow',o.active_users_now);set('active10',o.active_users_10m);set('total',o.total_installations);
-    $('avg').textContent=duration(o.avg_session_seconds_30d);
-
-    const mods30=d.modules_30d||l30.modules||[];
-    bars('m24',d.modules_24h||l24.modules||[]);bars('m30',mods30);
-    events('ev24',d.events_24h||l24.events_by_type||[]);events('ev30',d.events_30d||l30.events_by_type||[]);
-
-    set('allEvents',d.all_time?.events);set('allUsers',d.all_time?.unique_installations);set('allInst',o.total_installations);set('allSessions',o.sessions_all_time||0);
-    set('allLookups',v.lookups_all_time);set('allYes',v.yes_insurance_all_time);set('allNo',v.no_insurance_all_time);set('allErr',v.errors_all_time);
-    set('allValid',(+v.yes_insurance_all_time||0)+(+v.no_insurance_all_time||0));pct('allRate',v.no_insurance_rate_all_time);
-    $('allAvg').textContent=duration(o.avg_session_seconds_all_time);
-    $('allFirst').textContent=o.first_seen?new Date(o.first_seen).toLocaleString('pt-PT'):'—';
-    bars('allModules',d.all_time?.modules||[]);events('allEventsTypes',d.all_time?.events_by_type||[]);
-
-    const ad=d.daily_all_time||[];
-    $('allDaily').innerHTML=ad.map(x=>`<tr><td>${esc(x.day)}</td><td>${num(x.installations)}</td><td>${num(x.events)}</td><td>${num(x.vehicle_lookups)}</td><td>${num(x.no_insurance)}</td></tr>`).join('')||'<tr><td colspan="5">Sem dados.</td></tr>';
-    const av=d.versions_all_time||[];
-    $('allVersions').innerHTML=av.map(x=>`<tr><td>${esc(x.app_version)}</td><td>${num(x.installations)}</td><td>${num(x.events)}</td></tr>`).join('')||'<tr><td colspan="3">Sem dados.</td></tr>';
-
-    const daily=d.daily_30d||[]; spark('sparkDaily',daily.map(x=>+x.events||0));
-    $('daily').innerHTML=daily.map((x,i)=>`<tr><td class="rank">${i+1}</td><td>${esc(x.day)}</td><td>${num(x.installations)}</td><td>${num(x.events)}</td><td>${num(x.vehicle_lookups)}</td><td>${num(x.no_insurance)}</td></tr>`).join('')||'<tr><td colspan="6">Sem dados.</td></tr>';
-    const hourly=d.hourly_24h||[]; spark('sparkHourly',hourly.map(x=>+x.events||0));
-    $('hourly').innerHTML=hourly.map(x=>`<tr><td>${esc(x.hour)}</td><td>${num(x.installations)}</td><td>${num(x.events)}</td></tr>`).join('')||'<tr><td colspan="3">Sem dados.</td></tr>';
-    const h30=d.hourly_30d||[];
-    $('hourly30').innerHTML=h30.map(x=>`<tr><td>${esc(x.hour)}</td><td>${num(x.events)}</td><td>${Number(x.avg_users||0).toLocaleString('pt-PT',{maximumFractionDigits:2})}</td></tr>`).join('')||'<tr><td colspan="3">Sem dados.</td></tr>';
-    const versions=d.versions_30d||[];const vSum=versions.reduce((s,x)=>s+(+x.installations||0),0)||1;
-    $('versions').innerHTML=versions.map(x=>`<tr><td><span class="badge">${esc(x.app_version)}</span></td><td>${num(x.installations)}</td><td>${num(x.events)}</td><td>${ratio(x.installations,vSum).toFixed(1)}%</td></tr>`).join('')||'<tr><td colspan="4">Sem dados.</td></tr>';
-
+    if(!r.ok||!d.ok)throw new Error(d.error||('HTTP '+r.status));
+    const o=d.overview||{},v=d.vehicle||{};
+    const a24=opFrom(d,'operational_24h'),a7=opFrom(d,'operational_7d'),a30=opFrom(d,'operational_30d'),a90=opFrom(d,'operational_90d'),all=opFrom(d,'operational_all_time');
+    set('online',o.active_users_now);set('active10',o.active_users_10m);set('users24',o.unique_installations_24h);set('users30',o.unique_installations_30d);
+    for(const [id,val] of [['v24',a24.vehicle_searches],['v7',a7.vehicle_searches],['v30',a30.vehicle_searches],['v90',a90.vehicle_searches],['ys24',v.yes_insurance_24h],['ys7',v.yes_insurance_7d],['ys30',v.yes_insurance_30d],['ys90',v.yes_insurance_90d],['ns24',v.no_insurance_24h],['ns7',v.no_insurance_7d],['ns30',v.no_insurance_30d],['ns90',v.no_insurance_90d],['er24',v.errors_24h],['er7',v.errors_7d],['er30',v.errors_30d],['er90',v.errors_90d],['sp24',a24.speed_entries],['sp7',a7.speed_entries],['sp30',a30.speed_entries],['sp90',a90.speed_entries],['lg24',a24.legislation_accesses],['lg7',a7.legislation_accesses],['lg30',a30.legislation_accesses],['lg90',a90.legislation_accesses],['lc24',a24.legislation_copies],['lc7',a7.legislation_copies],['lc30',a30.legislation_copies],['lc90',a90.legislation_copies],['al24',a24.alcohol_lookups],['al7',a7.alcohol_lookups],['al30',a30.alcohol_lookups],['al90',a90.alcohol_lookups]])set(id,val);
+    pset('rr24',v.no_insurance_rate_24h);pset('rr7',v.no_insurance_rate_7d);pset('rr30',v.no_insurance_rate_30d);pset('rr90',v.no_insurance_rate_90d);
+    set('c24',a24.speed_entries);set('c7',a7.speed_entries);set('c30',a30.speed_entries);set('c90',a90.speed_entries);
+    drawModules('mods24',a24.module_opens);drawModules('mods30',a30.module_opens);
+    set('legAccess24',a24.legislation_accesses);set('legSearch24',a24.legislation_searches);set('legCopy24',a24.legislation_copies);set('legCopy30',a30.legislation_copies);
+    set('allUsers',d.all_time?.unique_installations);set('allVehicles',all.vehicle_searches);set('allYes',v.yes_insurance_all_time);set('allNo',v.no_insurance_all_time);set('allSpeed',all.speed_entries);set('allLeg',all.legislation_accesses);set('allCopy',all.legislation_copies);set('allAlcohol',all.alcohol_lookups);
+    renderDaily(d.daily_operational_30d||[]);
     $('first').textContent=o.first_seen?new Date(o.first_seen).toLocaleString('pt-PT'):'—';
     $('last').textContent=o.last_activity?new Date(o.last_activity).toLocaleString('pt-PT'):'—';
-    set('ss24',o.sessions_24h);set('ss7',o.sessions_7d);set('ss30',o.sessions_30d);
-    $('peak').textContent=d.peak_hour_30d?.hour?d.peak_hour_30d.hour+' — média '+Number(d.peak_hour_30d.avg_users||0).toLocaleString('pt-PT',{maximumFractionDigits:2})+' utilizadores':'—';
-    $('panelUpdated').textContent=new Date().toLocaleString('pt-PT');
-    buildInsights(o,v,mods30,d.peak_hour_30d);
-    $('status').textContent='Acesso autorizado · atualizado em '+(d.generated_at?new Date(d.generated_at).toLocaleString('pt-PT'):'agora');
-    return true;
-
-  }catch(e){
-    lockDashboard('Acesso recusado · verifica o ADMIN_TOKEN.');
-    $('status').textContent='Acesso recusado: '+e.message;
-    return false;
-  }
+    $('updated').textContent=new Date(d.generated_at||Date.now()).toLocaleString('pt-PT');
+    $('status').textContent='Acesso autorizado · atualizado em '+new Date(d.generated_at||Date.now()).toLocaleString('pt-PT');
+    $('app').style.display='block';$('login').style.display='none';
+  }catch(e){$('loginError').textContent='Password inválida ou serviço indisponível.';$('status').textContent='Erro: '+e.message}
 }
-
-function unlockDashboard(){
-  $('protectedArea').classList.add('unlocked');
-  $('dashboardShell').style.display='block';
-  $('authScreen').style.display='none';
-  document.body.classList.remove('auth-mode');
-}
-
-function lockDashboard(message){
-  $('protectedArea').classList.remove('unlocked');
-  $('dashboardShell').style.display='none';
-  $('authScreen').style.display='flex';
-  document.body.classList.add('auth-mode');
-  const login=$('loginToken');
-  if(message){
-    login.classList.add('bad');
-  }
-}
-
-function clearToken(){
-  $('token').value='';
-  $('loginToken').value='';
-  $('loginToken').classList.remove('bad');
-  lockDashboard();
-  $('loginToken').focus();
-}
-
-async function authenticateAdmin(){
-  const login=$('loginToken');
-  const value=login.value.trim();
-  if(!value)return false;
-  login.classList.remove('bad');
-  $('token').value=value;
-  const ok=await loadStats();
-  if(!ok){
-    $('token').value='';
-    login.classList.add('bad');
-    login.select();
-    return false;
-  }
-  login.value='';
-  return true;
-}
-
-$('authForm').addEventListener('submit',function(ev){
-  ev.preventDefault();
-  authenticateAdmin();
-});
-
-$('loginToken').addEventListener('input',function(){
-  this.classList.remove('bad');
-});
-
-let autoTimer=setInterval(()=>{
-  if($('protectedArea').classList.contains('unlocked') && $('token').value.trim()) loadStats();
-},30000);
-
-lockDashboard();
+async function login(){ $('loginError').textContent=''; await loadStats(); }
+function logout(){tokenEl().value='';$('app').style.display='none';$('login').style.display='flex';}
+$('token').value='';
+setInterval(()=>{if($('app').style.display==='block')loadStats()},30000);
+$('token').addEventListener('keydown',e=>{if(e.key==='Enter')login()});
 </script>
 </body>
 </html>
