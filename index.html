@@ -18311,4 +18311,266 @@ html body .verix-system-message-card .verix-system-developed{
 html body .verix-system-message-card .verix-system-developed strong{display:inline !important;}
 </style>
 </body>
+
+
+<style id="verix-system-message-v2">
+/* =========================================================
+   SYSTEM MESSAGE — faixa aberta (sem caixa prensada)
+   ========================================================= */
+html body .main-menu-screen.show .main-menu-v74-shell > .verix-system-message-card,
+html body .main-menu-screen.show .verix-system-message-card{
+  order:5!important;
+  position:relative!important;
+  width:min(1120px, calc(100% - 56px))!important;
+  min-height:0!important;
+  margin:22px auto 8px!important;
+  padding:16px 8px 12px!important;
+  box-sizing:border-box!important;
+  display:grid!important;
+  grid-template-columns:minmax(210px, 250px) minmax(0, 1fr) minmax(150px, 190px)!important;
+  grid-template-rows:auto auto!important;
+  grid-template-areas:
+    "brand message motto"
+    "contact disclaimer developed"!important;
+  column-gap:28px!important;
+  row-gap:14px!important;
+  align-items:start!important;
+  text-align:left!important;
+  /* SEM caixa */
+  border:none!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+  color:#a8bdc4!important;
+}
+/* só uma linha divisória suave no topo */
+html body .main-menu-screen.show .verix-system-message-card::before{
+  content:""!important;
+  position:absolute!important;
+  left:0!important; right:0!important; top:0!important;
+  height:1px!important;
+  inset:auto!important;
+  top:0!important; left:0!important; right:0!important;
+  border:none!important;
+  border-radius:0!important;
+  background:linear-gradient(90deg, transparent 0%, rgba(100,180,190,.35) 20%, rgba(100,180,190,.35) 80%, transparent 100%)!important;
+  box-shadow:none!important;
+  pointer-events:none!important;
+  z-index:1!important;
+}
+html body .main-menu-screen.show .verix-system-message-card::after{
+  content:""!important;
+  position:absolute!important;
+  left:0!important; right:0!important; bottom:0!important;
+  top:auto!important;
+  width:auto!important; height:1px!important;
+  transform:none!important;
+  border-radius:0!important;
+  background:linear-gradient(90deg, transparent 0%, rgba(80,120,130,.2) 25%, rgba(80,120,130,.2) 75%, transparent 100%)!important;
+  pointer-events:none!important;
+}
+
+/* Sem cantos / símbolo decorativo */
+html body .main-menu-screen.show .verix-system-corner,
+html body .main-menu-screen.show .verix-system-symbol,
+html body .main-menu-screen.show .verix-system-separator,
+html body .main-menu-screen.show .verix-system-continue{
+  display:none!important;
+}
+
+/* Brand */
+html body .main-menu-screen.show .verix-system-heading-rule{
+  grid-area:brand!important;
+  display:flex!important;
+  align-items:flex-start!important;
+  gap:0!important;
+  margin:0!important;
+  padding:4px 0 0!important;
+  border:none!important;
+  font-family:Consolas,"Courier New",monospace!important;
+  font-size:13px!important;
+  font-weight:800!important;
+  letter-spacing:1.1px!important;
+  color:#dcebef!important;
+  white-space:nowrap!important;
+  line-height:1.3!important;
+}
+html body .main-menu-screen.show .verix-system-heading-rule::before{ display:none!important; content:none!important; }
+html body .main-menu-screen.show .verix-system-heading-rule span{ display:none!important; }
+html body .main-menu-screen.show .verix-system-heading-rule b{ font-weight:800!important; }
+html body .main-menu-screen.show .verix-system-heading-rule em{
+  color:#5ec4d4!important;
+  font-style:normal!important;
+  font-weight:700!important;
+}
+
+/* Mensagem */
+html body .main-menu-screen.show .verix-system-update{
+  grid-area:message!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:flex-start!important;
+  gap:5px!important;
+  margin:0!important;
+  padding:4px 12px 0!important;
+  text-align:center!important;
+  border:none!important;
+  background:transparent!important;
+  font-family:"Segoe UI",Arial,sans-serif!important;
+}
+html body .main-menu-screen.show .verix-system-update strong{
+  color:#d8e8ec!important;
+  font-size:12.5px!important;
+  font-weight:650!important;
+  line-height:1.4!important;
+}
+html body .main-menu-screen.show .verix-system-update span{
+  color:#6e8890!important;
+  font-size:11px!important;
+  line-height:1.4!important;
+  margin:0!important;
+}
+
+/* Motto */
+html body .main-menu-screen.show .verix-system-motto{
+  grid-area:motto!important;
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:flex-end!important;
+  margin:0!important;
+  padding:6px 0 0!important;
+  border:none!important;
+  color:#7a929a!important;
+  font-family:Consolas,"Courier New",monospace!important;
+  font-size:9.5px!important;
+  font-weight:700!important;
+  letter-spacing:1.3px!important;
+  white-space:nowrap!important;
+  text-align:right!important;
+  background:transparent!important;
+}
+html body .main-menu-screen.show .verix-system-motto span{
+  margin:0 5px!important;
+  color:#d04558!important;
+}
+
+/* Contacto — sem caixa */
+html body .main-menu-screen.show .verix-system-contact{
+  grid-area:contact!important;
+  display:flex!important;
+  align-items:flex-start!important;
+  gap:8px!important;
+  margin:0!important;
+  padding:0!important;
+  border:none!important;
+  background:transparent!important;
+}
+html body .main-menu-screen.show .verix-system-mail-icon{
+  display:none!important;
+}
+html body .main-menu-screen.show .verix-system-contact-copy{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:3px!important;
+  font-family:"Segoe UI",Arial,sans-serif!important;
+}
+html body .main-menu-screen.show .verix-system-contact-copy span:first-child{
+  color:#7a9098!important;
+  font-size:10.5px!important;
+  font-weight:600!important;
+}
+html body .main-menu-screen.show .verix-system-contact-copy span:last-child,
+html body .main-menu-screen.show .verix-system-contact-copy a{
+  color:#4ec8dc!important;
+  font-size:11.5px!important;
+  font-weight:700!important;
+  text-decoration:none!important;
+}
+html body .main-menu-screen.show .verix-system-contact-copy a:hover{
+  text-decoration:underline!important;
+  color:#8eecf8!important;
+}
+
+/* Disclaimer — texto solto, sem fundo */
+html body .main-menu-screen.show .verix-system-disclaimer{
+  grid-area:disclaimer!important;
+  display:block!important;
+  margin:0!important;
+  padding:0 8px!important;
+  border:none!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:#667a82!important;
+  font-family:"Segoe UI",Arial,sans-serif!important;
+  font-size:10.5px!important;
+  line-height:1.45!important;
+  text-align:center!important;
+  width:auto!important;
+  max-width:none!important;
+}
+html body .main-menu-screen.show .verix-system-shield{
+  display:none!important;
+}
+
+/* Desenvolvido por */
+html body .main-menu-screen.show .verix-system-developed,
+html body .main-menu-screen.show .verix-system-message-card .verix-system-developed{
+  grid-area:developed!important;
+  display:block!important;
+  margin:0!important;
+  padding:0!important;
+  border:none!important;
+  background:transparent!important;
+  text-align:right!important;
+  color:#5a7078!important;
+  font-family:Consolas,"Courier New",monospace!important;
+  font-size:10px!important;
+  font-weight:700!important;
+  letter-spacing:1.5px!important;
+  white-space:nowrap!important;
+  width:auto!important;
+  justify-self:end!important;
+}
+html body .main-menu-screen.show .verix-system-developed strong{
+  color:#b8d0d6!important;
+  font-weight:800!important;
+}
+
+@media(max-width:900px){
+  html body .main-menu-screen.show .verix-system-message-card{
+    grid-template-columns:1fr!important;
+    grid-template-areas:
+      "brand"
+      "message"
+      "contact"
+      "disclaimer"
+      "motto"
+      "developed"!important;
+    column-gap:0!important;
+    row-gap:12px!important;
+    text-align:center!important;
+    padding:14px 12px!important;
+  }
+  html body .main-menu-screen.show .verix-system-heading-rule,
+  html body .main-menu-screen.show .verix-system-update,
+  html body .main-menu-screen.show .verix-system-motto,
+  html body .main-menu-screen.show .verix-system-contact,
+  html body .main-menu-screen.show .verix-system-disclaimer,
+  html body .main-menu-screen.show .verix-system-developed{
+    text-align:center!important;
+    justify-content:center!important;
+    padding-left:0!important;
+    padding-right:0!important;
+  }
+  html body .main-menu-screen.show .verix-system-contact{
+    justify-content:center!important;
+  }
+  html body .main-menu-screen.show .verix-system-developed{
+    justify-self:center!important;
+  }
+}
+</style>
+
 </html>
