@@ -121,6 +121,10 @@ td{color:#c0d2d8}tr:hover td{background:rgba(0,180,200,.04)}
 @media(max-width:1100px){.grid,.grid-3,.insights{grid-template-columns:repeat(2,1fr)}.cols{grid-template-columns:1fr}}
 @media(max-width:560px){.grid,.grid-3,.insights{grid-template-columns:1fr}.bar{flex-direction:column}.input{min-width:0;width:100%}.value{font-size:22px}.topbar nav{display:none}}
 </style>
+<style>
+.period-title{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:10px}.period-title h2{margin:0!important}.period-title .small{margin-top:0}.small-inline{font-size:10px;color:#6a8088;font-weight:500}.period-table-wrap,.table-scroll{overflow:auto}.period-table{min-width:760px}.period-table th:not(:first-child),.period-table td:not(:first-child){text-align:center}.period-table td:first-child{font-weight:700;color:#d4e3e7}.period-table td:nth-child(n+2){font-family:var(--mono);font-weight:800;font-size:13px}.asf-table td.good{color:#3dff9a}.asf-table td.bad{color:#ff6b7a}.asf-table td.warn{color:#e4b927}.rate-row td{border-top:1px solid rgba(228,185,39,.12)}.live-grid{margin-top:12px}.live-grid .card{min-height:118px}.life-panel .grid{margin-top:12px}.life-meta{display:flex;gap:24px;flex-wrap:wrap;padding:12px 2px 2px;color:#9bb0b7;font-size:12px}.life-meta strong{color:#d6e5e8}.manage-panel .note strong{color:#e7f2f5}.manage-panel{border-color:rgba(200,16,46,.25)}.manage-panel .danger{min-width:190px}.period-table tr:hover td{background:rgba(0,180,200,.035)}
+@media(max-width:800px){.period-table{min-width:700px}}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -129,7 +133,7 @@ td{color:#c0d2d8}tr:hover td{background:rgba(0,180,200,.04)}
   <div class="brand"><span class="live-dot"></span>VÉRIX <span>//</span> ADMIN</div>
   <div class="grow"></div>
   <nav>
-    <a href="#sec-live">Ao vivo</a>
+    <a href="#sec-summary">Resumo</a>
     <a href="#sec-asf">ASF</a>
     <a href="#sec-mods">Módulos</a>
     <a href="#sec-time">Tempo</a>
@@ -150,152 +154,142 @@ td{color:#c0d2d8}tr:hover td{background:rgba(0,180,200,.04)}
   <div class="status" id="status">O token fica só nesta sessão (sessionStorage) e não vai na URL.</div>
 </header>
 
-<!-- Derived operational insights -->
+<!-- Insights -->
 <div class="insights" id="insights">
-  <div class="insight"><strong id="ins1t">—</strong><span id="ins1d">Carregue dados para ver insights operacionais.</span><span class="tag tag-info" id="ins1k">—</span></div>
-  <div class="insight"><strong id="ins2t">—</strong><span id="ins2d">Taxa de sinistralidade seguradora (sem seguro).</span><span class="tag tag-info" id="ins2k">—</span></div>
-  <div class="insight"><strong id="ins3t">—</strong><span id="ins3d">Módulo mais usado (30 dias).</span><span class="tag tag-info" id="ins3k">—</span></div>
-  <div class="insight"><strong id="ins4t">—</strong><span id="ins4d">Pico de afluência.</span><span class="tag tag-info" id="ins4k">—</span></div>
+  <div class="insight"><strong id="ins1t">—</strong><span id="ins1d">Carregue dados para ver o estado atual.</span><span class="tag tag-info" id="ins1k">—</span></div>
+  <div class="insight"><strong id="ins2t">—</strong><span id="ins2d">Taxa de respostas válidas sem seguro.</span><span class="tag tag-info" id="ins2k">—</span></div>
+  <div class="insight"><strong id="ins3t">—</strong><span id="ins3d">Módulo com mais atividade em 30 dias.</span><span class="tag tag-info" id="ins3k">—</span></div>
+  <div class="insight"><strong id="ins4t">—</strong><span id="ins4d">Hora com maior afluência média.</span><span class="tag tag-info" id="ins4k">—</span></div>
 </div>
 
-<div class="section-head" id="sec-live">
-  <h2>Ao vivo · utilização</h2>
+<div class="section-head" id="sec-summary">
+  <h2>Resumo operacional</h2>
   <span class="grow"></span>
-  <span class="badge" id="refreshState">Auto-refresh · 30 s</span>
+  <span class="badge" id="refreshState"><span class="live-dot"></span>Auto-refresh · 30 s</span>
 </div>
 
-<div class="grid">
-  <div class="card accent-green"><div class="label">Online agora</div><div class="value metric-green" id="activeNow">—</div><div class="small">heartbeat ≤ 2 min</div></div>
-  <div class="card"><div class="label">Ativos — 10 min</div><div class="value" id="active10">—</div><div class="small">atividade recente</div></div>
-  <div class="card"><div class="label">Únicos — 24h</div><div class="value" id="u24">—</div><div class="small" id="u24share">vs instalações totais</div></div>
-  <div class="card"><div class="label">Instalações totais</div><div class="value" id="total">—</div><div class="small">IDs anónimos</div></div>
-</div>
-<div class="grid">
-  <div class="card"><div class="label">Eventos — 24h</div><div class="value" id="e24">—</div><div class="small" id="e24rate">—</div></div>
-  <div class="card"><div class="label">Eventos — 30d</div><div class="value" id="e30">—</div></div>
-  <div class="card"><div class="label">Sessões — 24h</div><div class="value" id="s24">—</div><div class="small" id="s24avg">—</div></div>
-  <div class="card"><div class="label">Duração média — 30d</div><div class="value" id="avg">—</div></div>
-</div>
-<div class="grid">
-  <div class="card"><div class="label">Únicos — 7d</div><div class="value" id="u7">—</div></div>
-  <div class="card"><div class="label">Únicos — 30d</div><div class="value" id="u30">—</div></div>
-  <div class="card"><div class="label">Únicos — 90d</div><div class="value" id="u90">—</div></div>
-  <div class="card"><div class="label">Sessões — 30d</div><div class="value" id="s30">—</div></div>
-</div>
+<section class="panel">
+  <div class="period-title"><h2>Utilização por período</h2><span class="small">Cada linha representa o mesmo indicador em 24h, 7 dias, 30 dias e 90 dias.</span></div>
+  <div class="period-table-wrap">
+    <table class="period-table">
+      <thead><tr><th>Indicador</th><th>24h</th><th>7 dias</th><th>30 dias</th><th>90 dias</th></tr></thead>
+      <tbody>
+        <tr><td>Utilizadores únicos</td><td id="u24">—</td><td id="u7">—</td><td id="u30">—</td><td id="u90">—</td></tr>
+        <tr><td>Eventos</td><td id="e24">—</td><td id="pe7events">—</td><td id="e30">—</td><td id="pe90events">—</td></tr>
+        <tr><td>Sessões iniciadas</td><td id="s24">—</td><td id="s7">—</td><td id="s30">—</td><td>—</td></tr>
+        <tr><td>Eventos / utilizador</td><td id="e24rate">—</td><td id="e7rate">—</td><td id="e30rate">—</td><td id="e90rate">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
 
 <section class="panel" id="sec-asf">
-<h2>Consultas ASF / matrícula — operacional</h2>
-<div class="grid">
-  <div class="card"><div class="label">Pedidos — 24h</div><div class="value" id="l24">—</div><div class="small" id="l24perUser">—</div></div>
-  <div class="card accent-green"><div class="label">Válidas — 24h</div><div class="value metric-green" id="valid24">—</div><div class="small" id="valid24pct">sucesso</div></div>
-  <div class="card accent-green"><div class="label">Com seguro — 24h</div><div class="value metric-green" id="yes24">—</div></div>
-  <div class="card accent-red"><div class="label">Sem seguro — 24h</div><div class="value metric-red" id="no24">—</div></div>
-</div>
-<div class="grid">
-  <div class="card accent-red"><div class="label">Erros ASF — 24h</div><div class="value metric-red" id="err24">—</div><div class="small" id="err24pct">taxa de erro</div></div>
-  <div class="card accent-amber"><div class="label">% sem seguro — 24h</div><div class="value metric-amber" id="rate24">—</div></div>
-  <div class="card"><div class="label">Pedidos — 7d</div><div class="value" id="l7">—</div></div>
-  <div class="card accent-red"><div class="label">Sem seguro — 7d</div><div class="value metric-red" id="no7">—</div></div>
-</div>
-<div class="grid">
-  <div class="card"><div class="label">Pedidos — 30d</div><div class="value" id="l30">—</div></div>
-  <div class="card accent-green"><div class="label">Válidas — 30d</div><div class="value metric-green" id="valid30">—</div></div>
-  <div class="card accent-red"><div class="label">Sem seguro — 30d</div><div class="value metric-red" id="no30">—</div></div>
-  <div class="card accent-red"><div class="label">Erros — 30d</div><div class="value metric-red" id="err30">—</div></div>
-</div>
-<div class="grid">
-  <div class="card accent-green"><div class="label">Com seguro — 30d</div><div class="value metric-green" id="yes30">—</div></div>
-  <div class="card accent-amber"><div class="label">% sem seguro — 30d</div><div class="value metric-amber" id="rate30">—</div></div>
-  <div class="card"><div class="label">Pedidos — 90d</div><div class="value" id="l90">—</div></div>
-  <div class="card accent-red"><div class="label">Sem seguro — 90d</div><div class="value metric-red" id="no90">—</div></div>
-</div>
-<div class="note">Telemetria só com tipo de resultado. Matrículas e conteúdo ASF não são enviados.</div>
+  <div class="period-title"><h2>Consultas ASF / matrícula</h2><span class="small">Pedidos, respostas e classificação das consultas. Erros ASF ficam separados dos resultados válidos.</span></div>
+  <div class="period-table-wrap">
+    <table class="period-table asf-table">
+      <thead><tr><th>Indicador</th><th>24h</th><th>7 dias</th><th>30 dias</th><th>90 dias</th></tr></thead>
+      <tbody>
+        <tr><td>Pedidos ASF</td><td id="l24">—</td><td id="l7">—</td><td id="l30">—</td><td id="l90">—</td></tr>
+        <tr><td>Respostas válidas</td><td id="valid24">—</td><td id="valid7">—</td><td id="valid30">—</td><td id="valid90">—</td></tr>
+        <tr><td>Com seguro</td><td class="good" id="yes24">—</td><td class="good" id="yes7">—</td><td class="good" id="yes30">—</td><td class="good" id="yes90">—</td></tr>
+        <tr><td>Sem seguro</td><td class="bad" id="no24">—</td><td class="bad" id="no7">—</td><td class="bad" id="no30">—</td><td class="bad" id="no90">—</td></tr>
+        <tr><td>Erros ASF</td><td class="bad" id="err24">—</td><td class="bad" id="err7">—</td><td class="bad" id="err30">—</td><td class="bad" id="err90">—</td></tr>
+        <tr class="rate-row"><td>% sem seguro <span class="small-inline">(sobre respostas válidas)</span></td><td class="warn" id="rate24">—</td><td class="warn" id="rate7">—</td><td class="warn" id="rate30">—</td><td class="warn" id="rate90">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note">Telemetria: apenas o tipo de resultado. Matrículas e conteúdo ASF não são enviados.</div>
 </section>
+
+<div class="grid live-grid">
+  <div class="card accent-green"><div class="label">Online agora</div><div class="value metric-green" id="activeNow">—</div><div class="small">heartbeat ≤ 2 min</div></div>
+  <div class="card"><div class="label">Ativos — 10 min</div><div class="value" id="active10">—</div><div class="small">atividade recente</div></div>
+  <div class="card"><div class="label">Instalações totais</div><div class="value" id="total">—</div><div class="small">IDs anónimos</div></div>
+  <div class="card"><div class="label">Duração média — 30d</div><div class="value" id="avg">—</div><div class="small">por sessão registada</div></div>
+</div>
 
 <div class="section-head" id="sec-mods"><h2>Módulos e ações</h2></div>
 <div class="cols">
-<section class="panel"><h2>Módulos — 24h</h2><div id="m24"></div></section>
-<section class="panel"><h2>Módulos — 30 dias</h2><div id="m30"></div></section>
+  <section class="panel"><div class="period-title"><h2>Módulos — 24h</h2><span class="small">Atividade registada</span></div><div id="m24"></div></section>
+  <section class="panel"><div class="period-title"><h2>Módulos — 30 dias</h2><span class="small">Atividade registada</span></div><div id="m30"></div></section>
 </div>
 <div class="cols">
-<section class="panel"><h2>Tipos de ações — 24h</h2><div id="ev24"></div></section>
-<section class="panel"><h2>Tipos de ações — 30 dias</h2><div id="ev30"></div></section>
+  <section class="panel"><div class="period-title"><h2>Ações — 24h</h2><span class="small">Eventos por tipo</span></div><div id="ev24"></div></section>
+  <section class="panel"><div class="period-title"><h2>Ações — 30 dias</h2><span class="small">Eventos por tipo</span></div><div id="ev30"></div></section>
 </div>
 
-<div class="section-head" id="sec-time"><h2>Tempo · afluência</h2></div>
+<div class="section-head" id="sec-time"><h2>Tempo e afluência</h2></div>
 <section class="panel">
-<h2>Evolução diária — 30 dias</h2>
-<div class="spark" id="sparkDaily" title="Eventos por dia (escala relativa)"></div>
-<table><thead><tr><th>#</th><th>Dia</th><th>Utilizadores</th><th>Eventos</th><th>Consultas</th><th>Sem seguro</th></tr></thead><tbody id="daily"></tbody></table>
+  <div class="period-title"><h2>Evolução diária — 30 dias</h2><span class="small">Um dia por linha · comparação direta</span></div>
+  <div class="spark" id="sparkDaily" title="Eventos por dia (escala relativa)"></div>
+  <div class="table-scroll">
+    <table><thead><tr><th>#</th><th>Dia</th><th>Utilizadores</th><th>Eventos</th><th>Consultas ASF</th><th>Sem seguro</th></tr></thead><tbody id="daily"></tbody></table>
+  </div>
 </section>
 <div class="cols">
-<section class="panel">
-<h2>Distribuição horária — 24h</h2>
-<div class="spark" id="sparkHourly"></div>
-<table><thead><tr><th>Hora</th><th>Utilizadores</th><th>Eventos</th></tr></thead><tbody id="hourly"></tbody></table>
-</section>
-<section class="panel">
-<h2>Afluência média por hora — 30d</h2>
-<table><thead><tr><th>Hora</th><th>Eventos</th><th>Média users</th></tr></thead><tbody id="hourly30"></tbody></table>
-<div class="note">Derivado dos eventos existentes (sem tabela extra).</div>
-</section>
+  <section class="panel">
+    <div class="period-title"><h2>Distribuição horária — 24h</h2><span class="small">Últimas 24 horas</span></div>
+    <div class="spark" id="sparkHourly"></div>
+    <div class="table-scroll"><table><thead><tr><th>Hora</th><th>Utilizadores</th><th>Eventos</th></tr></thead><tbody id="hourly"></tbody></table></div>
+  </section>
+  <section class="panel">
+    <div class="period-title"><h2>Afluência média — 30 dias</h2><span class="small">Média de utilizadores por hora</span></div>
+    <div class="table-scroll"><table><thead><tr><th>Hora</th><th>Eventos</th><th>Média users</th></tr></thead><tbody id="hourly30"></tbody></table></div>
+  </section>
 </div>
+<section class="panel">
+  <div class="period-title"><h2>Versões — 30 dias</h2><span class="small">Instalações e eventos por versão</span></div>
+  <div class="table-scroll"><table><thead><tr><th>Versão</th><th>Instalações</th><th>Eventos</th><th>Share</th></tr></thead><tbody id="versions"></tbody></table></div>
+</section>
 
-<section class="panel">
-<h2>Versões — 30 dias</h2>
-<table><thead><tr><th>Versão</th><th>Instalações</th><th>Eventos</th><th>Share</th></tr></thead><tbody id="versions"></tbody></table>
-</section>
-
-<section class="panel" id="sec-life">
-<h2>Todo o período de vida</h2>
-<div class="grid">
-  <div class="card"><div class="label">Eventos totais</div><div class="value" id="allEvents">—</div></div>
-  <div class="card"><div class="label">Utilizadores únicos</div><div class="value" id="allUsers">—</div></div>
-  <div class="card"><div class="label">Instalações</div><div class="value" id="allInst">—</div></div>
-  <div class="card"><div class="label">Sessões totais</div><div class="value" id="allSessions">—</div></div>
-</div>
-<div class="grid">
-  <div class="card"><div class="label">Pedidos ASF</div><div class="value" id="allLookups">—</div></div>
-  <div class="card accent-green"><div class="label">Com seguro</div><div class="value metric-green" id="allYes">—</div></div>
-  <div class="card accent-red"><div class="label">Sem seguro</div><div class="value metric-red" id="allNo">—</div></div>
-  <div class="card accent-red"><div class="label">Erros ASF</div><div class="value metric-red" id="allErr">—</div></div>
-</div>
-<div class="grid">
-  <div class="card"><div class="label">Respostas válidas</div><div class="value" id="allValid">—</div></div>
-  <div class="card accent-amber"><div class="label">% sem seguro</div><div class="value metric-amber" id="allRate">—</div></div>
-  <div class="card"><div class="label">Duração média</div><div class="value" id="allAvg">—</div></div>
-  <div class="card"><div class="label">Primeiro registo</div><div class="value" style="font-size:14px" id="allFirst">—</div></div>
-</div>
-<div class="cols">
-<section class="panel"><h2>Módulos — vida</h2><div id="allModules"></div></section>
-<section class="panel"><h2>Ações — vida</h2><div id="allEventsTypes"></div></section>
-</div>
-<div class="cols">
-<section class="panel"><h2>Evolução diária — vida</h2><table><thead><tr><th>Dia</th><th>Users</th><th>Eventos</th><th>Consultas</th><th>Sem seg.</th></tr></thead><tbody id="allDaily"></tbody></table></section>
-<section class="panel"><h2>Versões — vida</h2><table><thead><tr><th>Versão</th><th>Instalações</th><th>Eventos</th></tr></thead><tbody id="allVersions"></tbody></table></section>
-</div>
+<section class="panel life-panel" id="sec-life">
+  <div class="period-title"><h2>Histórico total · todo o período de vida</h2><span class="badge">♾️ Desde o primeiro registo</span></div>
+  <div class="grid">
+    <div class="card"><div class="label">Eventos totais</div><div class="value" id="allEvents">—</div></div>
+    <div class="card"><div class="label">Utilizadores únicos</div><div class="value" id="allUsers">—</div></div>
+    <div class="card"><div class="label">Instalações</div><div class="value" id="allInst">—</div></div>
+    <div class="card"><div class="label">Sessões totais</div><div class="value" id="allSessions">—</div></div>
+  </div>
+  <div class="period-table-wrap">
+    <table class="period-table asf-table">
+      <thead><tr><th>Indicador ASF</th><th>Total</th><th>Indicador</th><th>Valor</th></tr></thead>
+      <tbody>
+        <tr><td>Pedidos ASF</td><td id="allLookups">—</td><td>Respostas válidas</td><td id="allValid">—</td></tr>
+        <tr><td>Com seguro</td><td class="good" id="allYes">—</td><td>Sem seguro</td><td class="bad" id="allNo">—</td></tr>
+        <tr><td>Erros ASF</td><td class="bad" id="allErr">—</td><td>% sem seguro</td><td class="warn" id="allRate">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="life-meta"><span><strong>Duração média:</strong> <span id="allAvg">—</span></span><span><strong>Primeiro registo:</strong> <span id="allFirst">—</span></span></div>
+  <div class="cols">
+    <section class="panel"><div class="period-title"><h2>Módulos — vida</h2><span class="small">Total histórico</span></div><div id="allModules"></div></section>
+    <section class="panel"><div class="period-title"><h2>Ações — vida</h2><span class="small">Total histórico</span></div><div id="allEventsTypes"></div></section>
+  </div>
+  <div class="cols">
+    <section class="panel"><div class="period-title"><h2>Evolução diária — vida</h2><span class="small">Desde o primeiro evento</span></div><div class="table-scroll"><table><thead><tr><th>Dia</th><th>Users</th><th>Eventos</th><th>Consultas</th><th>Sem seg.</th></tr></thead><tbody id="allDaily"></tbody></table></div></section>
+    <section class="panel"><div class="period-title"><h2>Versões — vida</h2><span class="small">Total histórico</span></div><div class="table-scroll"><table><thead><tr><th>Versão</th><th>Instalações</th><th>Eventos</th></tr></thead><tbody id="allVersions"></tbody></table></div></section>
+  </div>
 </section>
 
 <section class="panel" id="sec-sys">
-<h2>Estado da plataforma</h2>
-<table><tbody>
-<tr><td>Primeiro registo conhecido</td><td id="first">—</td></tr>
-<tr><td>Última atividade conhecida</td><td id="last">—</td></tr>
-<tr><td>Sessões iniciadas — 24h / 7d / 30d</td><td><span id="ss24">—</span> / <span id="ss7">—</span> / <span id="ss30">—</span></td></tr>
-<tr><td>Hora de maior afluência — 30d</td><td id="peak">—</td></tr>
-<tr><td>Última atualização do painel</td><td id="panelUpdated">—</td></tr>
-</tbody></table>
+  <div class="period-title"><h2>Estado da plataforma</h2><span class="small">Indicadores técnicos do sistema</span></div>
+  <table><tbody>
+    <tr><td>Primeiro registo conhecido</td><td id="first">—</td></tr>
+    <tr><td>Última atividade conhecida</td><td id="last">—</td></tr>
+    <tr><td>Sessões iniciadas — 24h / 7d / 30d</td><td><span id="ss24">—</span> / <span id="ss7">—</span> / <span id="ss30">—</span></td></tr>
+    <tr><td>Hora de maior afluência — 30d</td><td id="peak">—</td></tr>
+    <tr><td>Última atualização do painel</td><td id="panelUpdated">—</td></tr>
+  </tbody></table>
 </section>
 
-<section class="panel">
-<h2>Gestão de dados</h2>
-<div class="note">Reset autenticado no Worker. Apaga events/sessions/installations; mantém estrutura das tabelas.</div>
-<div style="margin-top:12px"><button class="danger" id="resetBtn" onclick="resetTelemetry()" disabled>Resetar telemetria</button></div>
+<section class="panel manage-panel">
+  <div class="period-title"><h2>Gestão de dados</h2><span class="small">Ação administrativa destrutiva</span></div>
+  <div class="note">O reset apaga <strong>events</strong>, <strong>sessions</strong> e <strong>installations</strong>. A estrutura das tabelas é mantida.</div>
+  <div style="margin-top:12px"><button class="danger" id="resetBtn" onclick="resetTelemetry()">Resetar telemetria</button></div>
 </section>
 
 <div class="footer-note">VÉRIX · Telemetria anónima · sem nomes, mecanográficos, matrículas ou conteúdo operacional</div>
 </div>
-
 <script>
 const API='https://verix-api.vxops.workers.dev/stats';
 const RESET_API='https://verix-api.vxops.workers.dev/admin/reset';
@@ -324,7 +318,7 @@ function set(id,v){const el=$(id);if(el)el.textContent=num(v)}
 function pct(id,v){const el=$(id);if(el)el.textContent=Number(v||0).toLocaleString('pt-PT',{minimumFractionDigits:1,maximumFractionDigits:1})+'%'}
 function duration(sec){sec=Number(sec||0);if(!sec)return '—';let m=Math.round(sec/60);return m<60?m+' min':Math.floor(m/60)+' h '+(m%60)+' min'}
 function ratio(a,b){b=Number(b||0);if(!b)return null;return (Number(a||0)/b)*100}
-
+function rate(events,users){return users?((Number(events||0)/Number(users))*1).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2}):'—'}
 function bars(id,rows){
   const el=$(id); if(!el)return;
   if(!rows?.length){el.innerHTML='<div class="note">Sem dados.</div>';return}
@@ -339,7 +333,7 @@ function events(id,rows){
   if(!rows?.length){el.innerHTML='<div class="note">Sem dados.</div>';return}
   el.innerHTML='<table><tbody>'+rows.map((x,i)=>`<tr><td class="rank">${i+1}</td><td>${esc(eventLabels[x.event]||x.event)}</td><td>${num(x.n)}</td></tr>`).join('')+'</tbody></table>';
 }
-function spark(id, values){
+function spark(id,values){
   const el=$(id); if(!el)return;
   if(!values?.length){el.innerHTML='';return}
   const max=Math.max(...values,1);
@@ -350,19 +344,18 @@ function setInsight(n,title,detail,tag,kind){
   $('ins'+n+'d').textContent=detail;
   const k=$('ins'+n+'k'); k.textContent=tag; k.className='tag tag-'+(kind||'info');
 }
-
 function buildInsights(o,v,mods30,peak){
   const online=+o.active_users_now||0;
   setInsight(1,
     online+' online',
-    online? 'Operadores com heartbeat nos últimos 2 minutos.' : 'Ninguém online neste momento.',
+    online?'Operadores com heartbeat nos últimos 2 minutos.':'Ninguém online neste momento.',
     online>5?'ALTA':online>0?'ATIVA':'QUIETA',
     online>5?'ok':online>0?'info':'warn'
   );
   const rate24=+v.no_insurance_rate_24h||0;
   setInsight(2,
     rate24.toFixed(1)+'% sem seguro (24h)',
-    'Percentagem de respostas válidas classificadas como sem seguro.',
+    'Percentagem calculada apenas sobre respostas válidas.',
     rate24>=15?'ATENÇÃO':rate24>=8?'MONITORIZAR':'ESTÁVEL',
     rate24>=15?'bad':rate24>=8?'warn':'ok'
   );
@@ -370,17 +363,16 @@ function buildInsights(o,v,mods30,peak){
   const topName=top?(labels[top.module]||top.module):'—';
   setInsight(3,
     topName,
-    top? ('Módulo mais usado em 30 dias · '+num(top.n)+' eventos') : 'Sem dados de módulos.',
+    top?('Módulo mais usado em 30 dias · '+num(top.n)+' eventos'):'Sem dados de módulos.',
     'TOP MÓDULO','info'
   );
   const ph=peak?.hour||'—';
   setInsight(4,
     ph!=='—'?'Pico '+ph:'Pico —',
-    peak?.avg_users!=null?('Média '+Number(peak.avg_users).toLocaleString('pt-PT',{maximumFractionDigits:2})+' utilizadores (30d)') : 'Sem hora de pico calculada.',
+    peak?.avg_users!=null?('Média '+Number(peak.avg_users).toLocaleString('pt-PT',{maximumFractionDigits:2})+' utilizadores (30d)'):'Sem hora de pico calculada.',
     'AFLUÊNCIA','info'
   );
 }
-
 async function loadStats(){
   const token=$('token').value.trim();
   if(!token){$('status').textContent='Introduz o ADMIN_TOKEN.';return}
@@ -391,95 +383,88 @@ async function loadStats(){
     const d=await r.json();
     if(!r.ok||!d.ok) throw Error(d.error||('HTTP '+r.status));
 
-    const o=d.overview||{}, v=d.vehicle||{}, all=d.all_time||{};
-    set('activeNow',o.active_users_now);
-    set('active10',o.active_users_10m);
-    set('u24',o.unique_users_24h ?? o.unique_installations_24h);
-    set('total',o.total_installations);
-    const tot=+o.total_installations||0, u24=+ (o.unique_users_24h ?? o.unique_installations_24h)||0;
-    $('u24share').textContent=tot? (ratio(u24,tot).toFixed(1)+'% das instalações') : 'vs instalações totais';
+    const o=d.overview||{}, v=d.vehicle||{};
+    const l24=d.last_24h||{},l7=d.last_7d||{},l30=d.last_30d||{},l90=d.last_90d||{};
 
-    set('e24',o.events_24h); set('e30',o.events_30d);
-    $('e24rate').textContent=u24? (num(Math.round((+o.events_24h||0)/u24))+' eventos / user') : '—';
-    set('s24',o.sessions_24h); set('s30',o.sessions_30d);
-    $('s24avg').textContent=u24&&o.sessions_24h? (ratio(o.sessions_24h,u24).toFixed(2)+' sessões / user') : '—';
+    set('u24',o.unique_users_24h ?? l24.unique_installations);
+    set('u7',o.unique_installations_7d);
+    set('u30',o.unique_installations_30d);
+    set('u90',o.unique_installations_90d);
+    set('e24',o.events_24h);set('pe7events',l7.events);set('e30',o.events_30d);set('pe90events',l90.events);
+    set('s24',o.sessions_24h);set('s7',o.sessions_7d);set('s30',o.sessions_30d);
+    $('e24rate').textContent=rate(o.events_24h,o.unique_users_24h??l24.unique_installations);
+    $('e7rate').textContent=rate(l7.events,l7.unique_installations);
+    $('e30rate').textContent=rate(o.events_30d,l30.unique_installations);
+    $('e90rate').textContent=rate(l90.events,l90.unique_installations);
+
+    set('l24',v.lookups_24h);set('l7',v.lookups_7d);set('l30',v.lookups_30d);set('l90',v.lookups_90d);
+    const val24=(+v.yes_insurance_24h||0)+(+v.no_insurance_24h||0);
+    const val7=(+v.yes_insurance_7d||0)+(+v.no_insurance_7d||0);
+    const val30=(+v.yes_insurance_30d||0)+(+v.no_insurance_30d||0);
+    const val90=(+v.yes_insurance_90d||0)+(+v.no_insurance_90d||0);
+    set('valid24',val24);set('valid7',val7);set('valid30',val30);set('valid90',val90);
+    set('yes24',v.yes_insurance_24h);set('yes7',v.yes_insurance_7d);set('yes30',v.yes_insurance_30d);set('yes90',v.yes_insurance_90d);
+    set('no24',v.no_insurance_24h);set('no7',v.no_insurance_7d);set('no30',v.no_insurance_30d);set('no90',v.no_insurance_90d);
+    set('err24',v.errors_24h);set('err7',v.errors_7d);set('err30',v.errors_30d);set('err90',v.errors_90d);
+    pct('rate24',v.no_insurance_rate_24h);pct('rate7',v.no_insurance_rate_7d);pct('rate30',v.no_insurance_rate_30d);pct('rate90',v.no_insurance_rate_90d);
+
+    set('activeNow',o.active_users_now);set('active10',o.active_users_10m);set('total',o.total_installations);
     $('avg').textContent=duration(o.avg_session_seconds_30d);
-    set('u7',o.unique_installations_7d); set('u30',o.unique_installations_30d); set('u90',o.unique_installations_90d);
 
-    const yes24=+v.yes_insurance_24h||0, no24=+v.no_insurance_24h||0, err24=+v.errors_24h||0, l24=+v.lookups_24h||0;
-    const valid24=yes24+no24;
-    set('l24',l24); set('yes24',yes24); set('no24',no24); set('valid24',valid24); set('err24',err24); pct('rate24',v.no_insurance_rate_24h);
-    $('l24perUser').textContent=u24? ( (l24/u24).toFixed(2)+' pedidos / user') : '—';
-    $('valid24pct').textContent=l24? (ratio(valid24,l24).toFixed(1)+'% de sucesso') : 'sucesso';
-    $('err24pct').textContent=l24? (ratio(err24,l24).toFixed(1)+'% erros') : 'taxa de erro';
+    const mods30=d.modules_30d||l30.modules||[];
+    bars('m24',d.modules_24h||l24.modules||[]);bars('m30',mods30);
+    events('ev24',d.events_24h||l24.events_by_type||[]);events('ev30',d.events_30d||l30.events_by_type||[]);
 
-    set('l7',v.lookups_7d); set('no7',v.no_insurance_7d);
-    const yes30=+v.yes_insurance_30d||0, no30=+v.no_insurance_30d||0;
-    set('l30',v.lookups_30d); set('yes30',yes30); set('no30',no30);
-    set('valid30',yes30+no30); set('err30',v.errors_30d); pct('rate30',v.no_insurance_rate_30d);
-    set('l90',v.lookups_90d); set('no90',v.no_insurance_90d);
-
-    set('allEvents',all.events); set('allUsers',all.unique_installations); set('allInst',o.total_installations);
-    set('allSessions',o.sessions_all_time||0);
-    set('allLookups',v.lookups_all_time); set('allYes',v.yes_insurance_all_time); set('allNo',v.no_insurance_all_time);
-    set('allErr',v.errors_all_time);
-    set('allValid',(+v.yes_insurance_all_time||0)+(+v.no_insurance_all_time||0));
-    pct('allRate',v.no_insurance_rate_all_time);
+    set('allEvents',d.all_time?.events);set('allUsers',d.all_time?.unique_installations);set('allInst',o.total_installations);set('allSessions',o.sessions_all_time||0);
+    set('allLookups',v.lookups_all_time);set('allYes',v.yes_insurance_all_time);set('allNo',v.no_insurance_all_time);set('allErr',v.errors_all_time);
+    set('allValid',(+v.yes_insurance_all_time||0)+(+v.no_insurance_all_time||0));pct('allRate',v.no_insurance_rate_all_time);
     $('allAvg').textContent=duration(o.avg_session_seconds_all_time);
     $('allFirst').textContent=o.first_seen?new Date(o.first_seen).toLocaleString('pt-PT'):'—';
-
-    const mods30=d.modules_30d||d.last_30d?.modules||[];
-    bars('allModules',all.modules||[]); events('allEventsTypes',all.events_by_type||[]);
-    bars('m24',d.modules_24h||d.last_24h?.modules||[]); bars('m30',mods30);
-    events('ev24',d.events_24h_by_type||d.last_24h?.events_by_type||[]);
-    events('ev30',d.events_30d_by_type||d.last_30d?.events_by_type||[]);
+    bars('allModules',d.all_time?.modules||[]);events('allEventsTypes',d.all_time?.events_by_type||[]);
 
     const ad=d.daily_all_time||[];
     $('allDaily').innerHTML=ad.map(x=>`<tr><td>${esc(x.day)}</td><td>${num(x.installations)}</td><td>${num(x.events)}</td><td>${num(x.vehicle_lookups)}</td><td>${num(x.no_insurance)}</td></tr>`).join('')||'<tr><td colspan="5">Sem dados.</td></tr>';
     const av=d.versions_all_time||[];
     $('allVersions').innerHTML=av.map(x=>`<tr><td>${esc(x.app_version)}</td><td>${num(x.installations)}</td><td>${num(x.events)}</td></tr>`).join('')||'<tr><td colspan="3">Sem dados.</td></tr>';
 
-    const daily=d.daily_30d||[];
-    spark('sparkDaily', daily.map(x=>+x.events||0));
+    const daily=d.daily_30d||[]; spark('sparkDaily',daily.map(x=>+x.events||0));
     $('daily').innerHTML=daily.map((x,i)=>`<tr><td class="rank">${i+1}</td><td>${esc(x.day)}</td><td>${num(x.installations)}</td><td>${num(x.events)}</td><td>${num(x.vehicle_lookups)}</td><td>${num(x.no_insurance)}</td></tr>`).join('')||'<tr><td colspan="6">Sem dados.</td></tr>';
-
-    const hourly=d.hourly_24h||[];
-    spark('sparkHourly', hourly.map(x=>+x.events||0));
+    const hourly=d.hourly_24h||[]; spark('sparkHourly',hourly.map(x=>+x.events||0));
     $('hourly').innerHTML=hourly.map(x=>`<tr><td>${esc(x.hour)}</td><td>${num(x.installations)}</td><td>${num(x.events)}</td></tr>`).join('')||'<tr><td colspan="3">Sem dados.</td></tr>';
     const h30=d.hourly_30d||[];
     $('hourly30').innerHTML=h30.map(x=>`<tr><td>${esc(x.hour)}</td><td>${num(x.events)}</td><td>${Number(x.avg_users||0).toLocaleString('pt-PT',{maximumFractionDigits:2})}</td></tr>`).join('')||'<tr><td colspan="3">Sem dados.</td></tr>';
-
-    const versions=d.versions_30d||[];
-    const vSum=versions.reduce((s,x)=>s+(+x.installations||0),0)||1;
-    $('versions').innerHTML=versions.map(x=>`<tr><td>${esc(x.app_version)}</td><td>${num(x.installations)}</td><td>${num(x.events)}</td><td>${ratio(x.installations,vSum).toFixed(1)}%</td></tr>`).join('')||'<tr><td colspan="4">Sem dados.</td></tr>';
+    const versions=d.versions_30d||[];const vSum=versions.reduce((s,x)=>s+(+x.installations||0),0)||1;
+    $('versions').innerHTML=versions.map(x=>`<tr><td><span class="badge">${esc(x.app_version)}</span></td><td>${num(x.installations)}</td><td>${num(x.events)}</td><td>${ratio(x.installations,vSum).toFixed(1)}%</td></tr>`).join('')||'<tr><td colspan="4">Sem dados.</td></tr>';
 
     $('first').textContent=o.first_seen?new Date(o.first_seen).toLocaleString('pt-PT'):'—';
     $('last').textContent=o.last_activity?new Date(o.last_activity).toLocaleString('pt-PT'):'—';
-    set('ss24',o.sessions_24h); set('ss7',o.sessions_7d); set('ss30',o.sessions_30d);
-    $('peak').textContent=d.peak_hour_30d?.hour ? d.peak_hour_30d.hour+' — média '+Number(d.peak_hour_30d.avg_users||0).toLocaleString('pt-PT',{maximumFractionDigits:2})+' utilizadores' : '—';
+    set('ss24',o.sessions_24h);set('ss7',o.sessions_7d);set('ss30',o.sessions_30d);
+    $('peak').textContent=d.peak_hour_30d?.hour?d.peak_hour_30d.hour+' — média '+Number(d.peak_hour_30d.avg_users||0).toLocaleString('pt-PT',{maximumFractionDigits:2})+' utilizadores':'—';
     $('panelUpdated').textContent=new Date().toLocaleString('pt-PT');
-
     buildInsights(o,v,mods30,d.peak_hour_30d);
-
     $('status').textContent='Atualizado em '+(d.generated_at?new Date(d.generated_at).toLocaleString('pt-PT'):'agora');
   }catch(e){
     $('status').textContent='Erro: '+e.message;
   }
 }
-
 async function resetTelemetry(){
   const token=$('token').value.trim();
-  if(!token)return;
-  if(!confirm('ATENÇÃO: apaga telemetria (events, sessions, installations). Continuar?'))return;
+  if(!token){$('status').textContent='Introduz o ADMIN_TOKEN antes do reset.';return}
+  if(!confirm('ATENÇÃO: esta operação apaga toda a telemetria de events, sessions e installations.\n\nAs tabelas são mantidas, mas os dados históricos serão eliminados.\n\nContinuar?'))return;
+  const btn=$('resetBtn');
+  const old=btn.textContent;btn.disabled=true;btn.textContent='A resetar…';
   try{
-    const r=await fetch(RESET_API,{method:'POST',headers:{'X-Admin-Token':token,'Content-Type':'application/json'},body:JSON.stringify({confirm:'RESET_VERIX'})});
+    const r=await fetch(RESET_API,{method:'POST',headers:{'X-Admin-Token':token,'Content-Type':'application/json'},body:JSON.stringify({confirm:'RESET_VERIX'}),cache:'no-store'});
     const d=await r.json();
     if(!r.ok||!d.ok)throw Error(d.error||('HTTP '+r.status));
-    alert('Telemetria resetada.');
+    alert('Telemetria resetada com sucesso.\n\nEventos: '+(d.after?.events??0)+'\nSessões: '+(d.after?.sessions??0)+'\nInstalações: '+(d.after?.installations??0));
     await loadStats();
-  }catch(e){alert('Não foi possível resetar: '+e.message)}
+  }catch(e){
+    alert('Não foi possível resetar: '+e.message);
+  }finally{
+    btn.disabled=false;btn.textContent=old;
+  }
 }
-
 function clearToken(){sessionStorage.removeItem('verix_admin_token');$('token').value='';$('status').textContent='Token limpo.'}
 $('token').value=sessionStorage.getItem('verix_admin_token')||'';
 if($('token').value)loadStats();
