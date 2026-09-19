@@ -442,7 +442,7 @@ window.inicializarContactosRestaurados=window.inicializarContactosRestaurados||f
     frame.style.zIndex = '2';
   }
 
-  function carregarConsultaIMT(frameId, overlayId, url, source) {
+  async function carregarConsultaIMT(frameId, overlayId, url, source) {
     const overlay = document.getElementById(overlayId);
     const frame = document.getElementById(frameId);
     if (!overlay || !frame) return;
@@ -455,35 +455,46 @@ window.inicializarContactosRestaurados=window.inicializarContactosRestaurados||f
 
     let concluida = false;
 
-    // O IMT é um serviço interno HTTP/RNSI. Não fazemos fetch() antes do iframe:
-    // esse fetch era desnecessário e podia ser bloqueado pelo browser quando o VÉRIX
-    // era aberto por HTTPS, deixando a consulta presa no estado de carregamento.
-    const terminou = () => {
-      if (concluida) return;
-      concluida = true;
-      clearTimeout(imtTimers[frameId]);
-      try {
-        if (window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.track === 'function') {
-          window.VERIX_TELEMETRY.track('imt_loaded', 'consulta', {queryId, source:sourceName});
-        }
-      } catch (_) {}
-      occultarLoading(frameId, overlayId);
-    };
-
-    frame.onload = terminou;
-
+    // Método comprovado na versão anterior:
+    // 1) testa a acessibilidade do serviço IMT/RNSI;
+    // 2) só depois atribui o URL ao iframe.
+    // O fetch em no-cors não lê o conteúdo; serve apenas para confirmar
+    // que o pedido à rede interna consegue ser efetuado.
     imtTimers[frameId] = setTimeout(() => {
       if (!concluida) mostrarErroRedeIMT(frameId, overlayId);
     }, IMT_TIMEOUT_MS);
 
-    // Carregamento direto no iframe. O browser faz a ligação ao serviço interno
-    // no contexto da máquina do utilizador/RNSI.
     try {
+      await fetch(url, { method: 'GET', mode: 'no-cors', cache: 'no-store' });
+
+      concluida = true;
+      clearTimeout(imtTimers[frameId]);
+
+      // Mantemos a mesma lógica visual da versão que estava operacional.
+      frame.style.zIndex = '2';
+
+      frame.onload = () => {
+        try {
+          if (
+            window.VERIX_TELEMETRY &&
+            typeof window.VERIX_TELEMETRY.track === 'function'
+          ) {
+            window.VERIX_TELEMETRY.track('imt_loaded', 'consulta', {
+              queryId,
+              source: sourceName
+            });
+          }
+        } catch (_) {}
+
+        occultarLoading(frameId, overlayId);
+      };
+
       frame.src = url;
-    } catch (_) {
+    } catch (erro) {
       concluida = true;
       clearTimeout(imtTimers[frameId]);
       mostrarErroRedeIMT(frameId, overlayId);
+      return;
     }
   }
 
@@ -6500,8 +6511,8 @@ html body .asf-retry-wait.ready{border-color:rgba(0,229,160,.28);background:rgba
 </div>
 <button id="consultationBackBtn" class="consultation-back-btn" type="button" onclick="mostrarMenuPrincipal()" aria-label="Voltar">←</button>
 <div class="main">
-  <section class="panel"><div class="head red"><span class="head-title">INSPEÇÃO TÉCNICA</span><span class="head-tag">IMT</span></div><div class="panel-body"><div class="corner tl"></div><div class="corner br"></div><div class="scan"></div><div id="veiculoLoading" class="loading-overlay" style="display:none"><div class="spinner"></div>A CARREGAR CONSULTA<div><small>IMT • ACESSO À REDE RNSI</small></div></div><iframe id="veiculoFrame" onload="occultarLoading('veiculoFrame','veiculoLoading')"></iframe></div></section>
-  <section class="panel verix-livrete-panel"><div class="head green"><span class="head-title">LIVRETE / VEÍCULO</span><span class="head-tag">IMT</span></div><div class="panel-body"><div class="corner tl"></div><div class="corner br"></div><div class="scan"></div><div id="reboqueLoading" class="loading-overlay" style="display:none"><div class="spinner"></div>A CARREGAR CONSULTA<div><small>IMT • ACESSO À REDE RNSI</small></div></div><iframe id="reboqueFrame" onload="occultarLoading('reboqueFrame','reboqueLoading')"></iframe></div></section>
+  <section class="panel"><div class="head red"><span class="head-title">INSPEÇÃO TÉCNICA</span><span class="head-tag">IMT</span></div><div class="panel-body"><div class="corner tl"></div><div class="corner br"></div><div class="scan"></div><div id="veiculoLoading" class="loading-overlay" style="display:none"><div class="spinner"></div>A CARREGAR CONSULTA<div><small>IMT • ACESSO À REDE RNSI</small></div></div><iframe id="veiculoFrame" loading="lazy" onload="occultarLoading('veiculoFrame','veiculoLoading')"></iframe></div></section>
+  <section class="panel verix-livrete-panel"><div class="head green"><span class="head-title">LIVRETE / VEÍCULO</span><span class="head-tag">IMT</span></div><div class="panel-body"><div class="corner tl"></div><div class="corner br"></div><div class="scan"></div><div id="reboqueLoading" class="loading-overlay" style="display:none"><div class="spinner"></div>A CARREGAR CONSULTA<div><small>IMT • ACESSO À REDE RNSI</small></div></div><iframe id="reboqueFrame" loading="lazy" onload="occultarLoading('reboqueFrame','reboqueLoading')"></iframe></div></section>
   <section class="panel insurance"><div class="head red"><span class="head-title">SEGURO AUTO</span><span class="head-tag">ASF</span></div><div id="asfRateWidget" class="asf-rate-widget"><div class="asf-rate-label"><span class="asf-rate-dot"></span>CONSULTAS ASF</div><div class="asf-rate-center"><div id="asfRateMain" class="asf-rate-main">0 <strong>/ 6</strong></div><div id="asfRateSub" class="asf-rate-sub" data-window-state="ready">6 novas pesquisas disponíveis agora</div></div><div id="asfRateCountdown" class="asf-rate-countdown" title="Segundos até poder consultar de novo">LIVRE</div></div><div id="seguroResult" class="insurance-body"><div class="asf-app">
         <div class="asf-status-card wait">
           <div class="asf-status-icon" style="font-size:22px">ASF</div>
