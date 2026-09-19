@@ -1,4 +1,4 @@
-<!-- VÉRIX 1.1 — publicação com proteção de cache -->
+<!-- VÉRIX 1.1 — publicação com proteção de cache + registo robusto de cópias de legislação -->
 <!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -442,7 +442,7 @@ window.inicializarContactosRestaurados=window.inicializarContactosRestaurados||f
     frame.style.zIndex = '2';
   }
 
-  async function carregarConsultaIMT(frameId, overlayId, url, source) {
+  function carregarConsultaIMT(frameId, overlayId, url, source) {
     const overlay = document.getElementById(overlayId);
     const frame = document.getElementById(frameId);
     if (!overlay || !frame) return;
@@ -454,30 +454,36 @@ window.inicializarContactosRestaurados=window.inicializarContactosRestaurados||f
     clearTimeout(imtTimers[frameId]);
 
     let concluida = false;
+
+    // O IMT é um serviço interno HTTP/RNSI. Não fazemos fetch() antes do iframe:
+    // esse fetch era desnecessário e podia ser bloqueado pelo browser quando o VÉRIX
+    // era aberto por HTTPS, deixando a consulta presa no estado de carregamento.
+    const terminou = () => {
+      if (concluida) return;
+      concluida = true;
+      clearTimeout(imtTimers[frameId]);
+      try {
+        if (window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.track === 'function') {
+          window.VERIX_TELEMETRY.track('imt_loaded', 'consulta', {queryId, source:sourceName});
+        }
+      } catch (_) {}
+      occultarLoading(frameId, overlayId);
+    };
+
+    frame.onload = terminou;
+
     imtTimers[frameId] = setTimeout(() => {
       if (!concluida) mostrarErroRedeIMT(frameId, overlayId);
     }, IMT_TIMEOUT_MS);
 
+    // Carregamento direto no iframe. O browser faz a ligação ao serviço interno
+    // no contexto da máquina do utilizador/RNSI.
     try {
-      // no-cors permite testar apenas a conectividade, sem tentar ler o conteúdo.
-      await fetch(url, { method: 'GET', mode: 'no-cors', cache: 'no-store' });
-      concluida = true;
-      clearTimeout(imtTimers[frameId]);
-      frame.style.zIndex = '2';
-      frame.onload = null;
-      frame.addEventListener('load',function(){
-        try {
-          if(window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.track === 'function') {
-            window.VERIX_TELEMETRY.track('imt_loaded','consulta',{queryId,source:sourceName});
-          }
-        } catch (_) {}
-      },{once:true});
       frame.src = url;
-    } catch (erro) {
+    } catch (_) {
       concluida = true;
       clearTimeout(imtTimers[frameId]);
       mostrarErroRedeIMT(frameId, overlayId);
-      return;
     }
   }
 
@@ -6494,8 +6500,8 @@ html body .asf-retry-wait.ready{border-color:rgba(0,229,160,.28);background:rgba
 </div>
 <button id="consultationBackBtn" class="consultation-back-btn" type="button" onclick="mostrarMenuPrincipal()" aria-label="Voltar">←</button>
 <div class="main">
-  <section class="panel"><div class="head red"><span class="head-title">INSPEÇÃO TÉCNICA</span><span class="head-tag">IMT</span></div><div class="panel-body"><div class="corner tl"></div><div class="corner br"></div><div class="scan"></div><div id="veiculoLoading" class="loading-overlay" style="display:none"><div class="spinner"></div>A CARREGAR CONSULTA<div><small>IMT • ACESSO À REDE RNSI</small></div></div><iframe id="veiculoFrame" loading="lazy" onload="occultarLoading('veiculoFrame','veiculoLoading')"></iframe></div></section>
-  <section class="panel verix-livrete-panel"><div class="head green"><span class="head-title">LIVRETE / VEÍCULO</span><span class="head-tag">IMT</span></div><div class="panel-body"><div class="corner tl"></div><div class="corner br"></div><div class="scan"></div><div id="reboqueLoading" class="loading-overlay" style="display:none"><div class="spinner"></div>A CARREGAR CONSULTA<div><small>IMT • ACESSO À REDE RNSI</small></div></div><iframe id="reboqueFrame" loading="lazy" onload="occultarLoading('reboqueFrame','reboqueLoading')"></iframe></div></section>
+  <section class="panel"><div class="head red"><span class="head-title">INSPEÇÃO TÉCNICA</span><span class="head-tag">IMT</span></div><div class="panel-body"><div class="corner tl"></div><div class="corner br"></div><div class="scan"></div><div id="veiculoLoading" class="loading-overlay" style="display:none"><div class="spinner"></div>A CARREGAR CONSULTA<div><small>IMT • ACESSO À REDE RNSI</small></div></div><iframe id="veiculoFrame" onload="occultarLoading('veiculoFrame','veiculoLoading')"></iframe></div></section>
+  <section class="panel verix-livrete-panel"><div class="head green"><span class="head-title">LIVRETE / VEÍCULO</span><span class="head-tag">IMT</span></div><div class="panel-body"><div class="corner tl"></div><div class="corner br"></div><div class="scan"></div><div id="reboqueLoading" class="loading-overlay" style="display:none"><div class="spinner"></div>A CARREGAR CONSULTA<div><small>IMT • ACESSO À REDE RNSI</small></div></div><iframe id="reboqueFrame" onload="occultarLoading('reboqueFrame','reboqueLoading')"></iframe></div></section>
   <section class="panel insurance"><div class="head red"><span class="head-title">SEGURO AUTO</span><span class="head-tag">ASF</span></div><div id="asfRateWidget" class="asf-rate-widget"><div class="asf-rate-label"><span class="asf-rate-dot"></span>CONSULTAS ASF</div><div class="asf-rate-center"><div id="asfRateMain" class="asf-rate-main">0 <strong>/ 6</strong></div><div id="asfRateSub" class="asf-rate-sub" data-window-state="ready">6 novas pesquisas disponíveis agora</div></div><div id="asfRateCountdown" class="asf-rate-countdown" title="Segundos até poder consultar de novo">LIVRE</div></div><div id="seguroResult" class="insurance-body"><div class="asf-app">
         <div class="asf-status-card wait">
           <div class="asf-status-icon" style="font-size:22px">ASF</div>
@@ -8689,6 +8695,16 @@ html body.fixed-workspace-active:not(.cinemometro-page-active) .time{
 (function(){
   function showLegCopyFeedback(btn,label){
     if(!btn)return;
+    /* Registo da legislação APENAS quando a cópia foi concluída com sucesso. */
+    try{
+      const card=btn.closest('.leg-card-new');
+      const itemLabel=card?.querySelector('h3')?.textContent?.trim()||'';
+      const itemId=card?.querySelector('.leg-code-box strong')?.textContent?.trim()||'';
+      const copyType=btn.classList.contains('copy-desc-new')?'description':btn.classList.contains('copy-all-new')?'all':'code';
+      const meta={itemId:itemId||itemLabel.slice(0,120),itemLabel:itemLabel||null,copyType};
+      if(window.VERIX_TELEMETRY&&typeof window.VERIX_TELEMETRY.track==='function') window.VERIX_TELEMETRY.track('legislation_copy','legislacao',meta);
+      else if(typeof window.telemetryAction==='function') window.telemetryAction('legislation_copy','legislacao',meta);
+    }catch(_e){}
     const old=btn.dataset.originalText || btn.textContent;
     btn.dataset.originalText=old;
     btn.textContent=label;
@@ -17535,9 +17551,7 @@ html body .leg-card-new .copy-all-new{
     document.addEventListener('click',function(ev){
       const el=ev.target&&ev.target.closest?ev.target.closest('button,[role="button"]'):null;if(!el)return;
       if(el.matches('.leg-category'))telemetryAction('legislation_category_open','legislacao');
-      else if(el.matches('.copy-btn-new,.copy-desc-new,.copy-all-new,.copy-btn')){
-        const card=el.closest('.leg-card-new');const title=card?.querySelector('h3')?.textContent?.trim()||'';const code=card?.querySelector('.leg-code-box strong')?.textContent?.trim()||'';const copyType=el.classList.contains('copy-desc-new')?'description':el.classList.contains('copy-all-new')?'all':'code';telemetryAction('legislation_copy','legislacao',{itemId:code||title.slice(0,120),itemLabel:title,copyType});
-      } else if(el.matches('.leg-search-fav'))telemetryAction('legislation_favorite_toggle','legislacao');
+      else if(el.matches('.leg-search-fav'))telemetryAction('legislation_favorite_toggle','legislacao');
       else if(el.id==='consultaHistoryTool'||el.classList.contains('consulta-history-bottom'))telemetryAction('history_open','consulta');
     },true);
     document.addEventListener('input',function(ev){
