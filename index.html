@@ -1455,7 +1455,13 @@ function submitConjunto(event) {
     return { tipo: 'indisponivel', motivo: 'Resposta ASF fora do envelope esperado.' };
   }
 
+  function limparPendenteASF() {
+    try { if (ASF_PENDING_TIMER) clearInterval(ASF_PENDING_TIMER); } catch (_) {}
+    ASF_PENDING_TIMER = null;
+  }
+
   function renderSeguroEncontrado(n, matricula) {
+    limparPendenteASF();
     atualizarSeguroNoHistorico(matricula, 'sim');
     const box = document.getElementById('seguroResult');
     if (!box) return;
@@ -1497,6 +1503,7 @@ function submitConjunto(event) {
   }
 
   function renderSeguroNaoEncontrado(matricula) {
+    limparPendenteASF();
     atualizarSeguroNoHistorico(matricula, 'nao');
     const box = document.getElementById('seguroResult');
     if (!box) return;
@@ -1527,6 +1534,7 @@ function submitConjunto(event) {
   }
 
   function mostrarSeguroErro(mensagem, matricula, diagnostico) {
+    limparPendenteASF();
     atualizarSeguroNoHistorico(matricula, 'indisponivel');
     const box = document.getElementById('seguroResult');
     if (!box) return;
@@ -1580,7 +1588,62 @@ function submitConjunto(event) {
     el.innerHTML='<strong>NOVA PESQUISA EM '+seg+' '+(seg===1?'SEGUNDO':'SEGUNDOS')+'</strong>';
   }
 
+  function mostrarSeguroPendenteASF(matricula, uiSeq) {
+    limparPendenteASF();
+    const box = document.getElementById('seguroResult');
+    if (!box) return;
+
+    const matShow = formatarMatriculaDisplay(matricula || '');
+    box.innerHTML = `
+      <div class="asf-app">
+        <div class="asf-app-plate">
+          <div>
+            <div class="asf-app-plate-label">Matrícula</div>
+            <div class="asf-app-plate-badge">${escapeHtml(matShow || '…')}</div>
+          </div>
+        </div>
+
+        <div class="asf-status-card wait asf-pending-card">
+          <div class="asf-pending-icon">…</div>
+          <div class="asf-status-title">Resultado pendente</div>
+          <div id="asfPendingMessage" class="asf-status-sub">Aguarda o intervalo mínimo entre consultas ASF</div>
+        </div>
+      </div>
+    `;
+
+    function atualizar() {
+      if (uiSeq !== ASF_ULTIMA_UI_SEQUENCIA) {
+        limparPendenteASF();
+        return;
+      }
+
+      var atraso = calcularAtrasoCadenciaASF();
+      var fila = Number(ASF_FILA_PENDENTES || 0);
+      var el = document.getElementById('asfPendingMessage');
+      if (!el) {
+        limparPendenteASF();
+        return;
+      }
+
+      if (atraso > 0) {
+        var seg = Math.max(1, Math.ceil(atraso / 1000));
+        el.textContent =
+          'Aguarda ' + seg + (seg === 1 ? ' segundo' : ' segundos') +
+          ' para nova consulta ASF' +
+          (fila > 1 ? ' · consulta em fila' : '');
+      } else if (fila > 1) {
+        el.textContent = 'Resultado pendente · aguarda processamento ASF';
+      } else {
+        el.textContent = 'A preparar consulta ASF…';
+      }
+    }
+
+    atualizar();
+    ASF_PENDING_TIMER = setInterval(atualizar, 250);
+  }
+
   function mostrarSeguroLoading(matricula, extra) {
+    limparPendenteASF();
     const box = document.getElementById('seguroResult');
     if (!box) return;
     const matShow = formatarMatriculaDisplay(matricula || '');
@@ -1643,6 +1706,8 @@ function submitConjunto(event) {
   // processo/página. Isto corrige a regressão introduzida no VÉRIX atual.
   var ASF_FILA_REDE = Promise.resolve();
   var ASF_ULTIMA_UI_SEQUENCIA = 0;
+  var ASF_FILA_PENDENTES = 0;
+  var ASF_PENDING_TIMER = null;
   var asfRequestTimes = [];
   var seguroConsultaSequencia = 0;
   var seguroAbortController = null;
@@ -1986,9 +2051,12 @@ function submitConjunto(event) {
   }
 
   async function enfileirarPedidoASF(url, matricula) {
+    ASF_FILA_PENDENTES += 1;
     var tarefa = ASF_FILA_REDE.then(async function(){
       await aguardarCadenciaFilaASF();
+      ASF_FILA_PENDENTES = Math.max(0, ASF_FILA_PENDENTES - 1);
       registarInicioConsultaASF();
+      limparPendenteASF();
       mostrarSeguroLoading(matricula,1,isHTAHost() ? 'Transporte nativo (WinHTTP / fallback MSXML)' : 'Transporte browser (Fetch)');
       return await obterRespostaASF(url, matricula);
     });
@@ -2040,6 +2108,12 @@ function submitConjunto(event) {
 
     var query=construirQueryASF(matriculaASF,dataASF);
     var url=ASF_API_URL + encodeURIComponent(query);
+
+    var esperaInicial = calcularAtrasoCadenciaASF();
+    var filaOcupada = Number(ASF_FILA_PENDENTES || 0) > 0;
+    if (esperaInicial > 0 || filaOcupada) {
+      mostrarSeguroPendenteASF(mat, uiSeq);
+    }
 
     var tarefa=(async function(){
       try {
@@ -6510,6 +6584,37 @@ html body .asf-retry-wait strong{display:block;color:#ffc44a;font-size:9px;lette
 html body .asf-retry-wait span{display:block;margin-top:3px;color:#7f9299;font-size:7px;text-transform:none;letter-spacing:.15px}
 html body .asf-retry-wait.ready{border-color:rgba(0,229,160,.28);background:rgba(0,229,160,.04);color:#55e2a0}
 @media(max-width:700px){html body .asf-retry-wait{font-size:7px}html body .asf-retry-wait strong{font-size:8px}}
+</style>
+
+<style id="verix-asf-pending-state">
+html body .asf-pending-card{
+  background:linear-gradient(160deg,#68767b 0%,#4f5d62 55%,#414e53 100%)!important;
+  border-color:#89979c!important;
+  color:#edf2f4!important;
+  box-shadow:0 10px 26px rgba(35,45,49,.18)!important;
+}
+html body .asf-pending-card .asf-status-title{
+  color:#f5f7f8!important;
+  text-transform:uppercase!important;
+  letter-spacing:.65px!important;
+}
+html body .asf-pending-card .asf-status-sub{
+  color:#d7e0e3!important;
+  opacity:1!important;
+}
+html body .asf-pending-card:before{
+  background:linear-gradient(135deg,rgba(255,255,255,.18),transparent 42%)!important;
+}
+html body .asf-pending-card .asf-pending-icon{
+  width:56px;height:56px;margin:0 auto 10px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:50%;
+  background:rgba(255,255,255,.12);
+  border:2px solid rgba(255,255,255,.28);
+  color:#eef3f5;
+  font:900 27px/1 Arial,sans-serif;
+  box-shadow:0 4px 14px rgba(0,0,0,.16);
+}
 </style>
 </head><body>
 <div class="cinematic-bg"></div>
