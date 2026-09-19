@@ -442,7 +442,7 @@ window.inicializarContactosRestaurados=window.inicializarContactosRestaurados||f
     frame.style.zIndex = '2';
   }
 
-  async function carregarConsultaIMT(frameId, overlayId, url, source) {
+  function carregarConsultaIMT(frameId, overlayId, url, source) {
     const overlay = document.getElementById(overlayId);
     const frame = document.getElementById(frameId);
     if (!overlay || !frame) return;
@@ -455,46 +455,35 @@ window.inicializarContactosRestaurados=window.inicializarContactosRestaurados||f
 
     let concluida = false;
 
-    // Método comprovado na versão anterior:
-    // 1) testa a acessibilidade do serviço IMT/RNSI;
-    // 2) só depois atribui o URL ao iframe.
-    // O fetch em no-cors não lê o conteúdo; serve apenas para confirmar
-    // que o pedido à rede interna consegue ser efetuado.
+    // O IMT é um serviço interno HTTP/RNSI. Não fazemos fetch() antes do iframe:
+    // esse fetch era desnecessário e podia ser bloqueado pelo browser quando o VÉRIX
+    // era aberto por HTTPS, deixando a consulta presa no estado de carregamento.
+    const terminou = () => {
+      if (concluida) return;
+      concluida = true;
+      clearTimeout(imtTimers[frameId]);
+      try {
+        if (window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.track === 'function') {
+          window.VERIX_TELEMETRY.track('imt_loaded', 'consulta', {queryId, source:sourceName});
+        }
+      } catch (_) {}
+      occultarLoading(frameId, overlayId);
+    };
+
+    frame.onload = terminou;
+
     imtTimers[frameId] = setTimeout(() => {
       if (!concluida) mostrarErroRedeIMT(frameId, overlayId);
     }, IMT_TIMEOUT_MS);
 
+    // Carregamento direto no iframe. O browser faz a ligação ao serviço interno
+    // no contexto da máquina do utilizador/RNSI.
     try {
-      await fetch(url, { method: 'GET', mode: 'no-cors', cache: 'no-store' });
-
-      concluida = true;
-      clearTimeout(imtTimers[frameId]);
-
-      // Mantemos a mesma lógica visual da versão que estava operacional.
-      frame.style.zIndex = '2';
-
-      frame.onload = () => {
-        try {
-          if (
-            window.VERIX_TELEMETRY &&
-            typeof window.VERIX_TELEMETRY.track === 'function'
-          ) {
-            window.VERIX_TELEMETRY.track('imt_loaded', 'consulta', {
-              queryId,
-              source: sourceName
-            });
-          }
-        } catch (_) {}
-
-        occultarLoading(frameId, overlayId);
-      };
-
       frame.src = url;
-    } catch (erro) {
+    } catch (_) {
       concluida = true;
       clearTimeout(imtTimers[frameId]);
       mostrarErroRedeIMT(frameId, overlayId);
-      return;
     }
   }
 
@@ -1331,6 +1320,11 @@ function submitConjunto(event) {
   // Implementação Windows/HTA inspirada no fluxo técnico observado no APK
   // Tem Seguro?. Não utiliza GET alternativo nem mecanismos de evasão.
   const ASF_API_URL = 'https://ext01.asf.com.pt/api/src/?query=';
+  // Parâmetros mantidos alinhados com o Consulta.html funcional.
+  const ASF_TIMEOUT_MS = 10000;
+  const ASF_MAX_RETRIES = 1;
+  const ASF_RETRY_BACKOFF = 1.0;
+  const ASF_RETRY_DELAY_FALLBACK_MS = 10000;
 
   function formatarDataASF(date = new Date()) {
     const dd = String(date.getDate()).padStart(2, '0');
@@ -1632,17 +1626,32 @@ function submitConjunto(event) {
   var ASF_NUMERO_SEQUENCIAL = 0;
   var ASF_ULTIMO_PEDIDO_T = null;
 
-  // Otimização segura: evita repetir exatamente a mesma consulta em sequência.
-  // Não tenta alterar o limite do servidor nem faz pedidos paralelos.
+  // ===== ASF — MOTOR BASEADO NO Consulta.html FUNCIONAL =====
+  // A comunicação com a ASF segue a mesma arquitetura do HTML que já foi
+  // validado em utilização: POST, query codificada com encodeURIComponent,
+  // sequência global, controlo de cadência e fallback nativo WinHTTP/MSXML.
   var ASF_CACHE_SESSAO = Object.create(null);
-  var ASF_CACHE_TTL_MS = 180000; // 3 minutos — reconsultas da mesma matrícula não gastam quota
+  var ASF_CACHE_TTL_MS = 300000; // 5 min, como no Consulta.html
   var ASF_PEDIDOS_EM_CURSO = Object.create(null);
-  /* ASF: só intervalo mínimo entre pedidos; contador visual não bloqueia. */
-  var ASF_LIMITE_JANELA = 6;           // limite real típico ASF (só contador visual; não bloqueia)
+  var ASF_LIMITE_JANELA = 6;     // máximo de 6 pesquisas ASF por janela de 60 segundos
   var ASF_JANELA_SEG = 60;
-  var ASF_MIN_INTERVAL_MS = 8000;      // 8 s desde a última consulta até à próxima
-  var ASF_RETRY_INDISPONIVEL_MS = 0;    // sem retry automático
+  var ASF_MIN_INTERVAL_MS = 7000; // intervalo mínimo de 7 segundos entre pesquisas ASF
+  var ASF_RETRY_INDISPONIVEL_MS = 0;
   var ASF_ULTIMO_PEDIDO_REDE_T = 0;
+
+  // Fila global: nunca existem dois pedidos ASF de rede em paralelo no mesmo
+  // processo/página. Isto corrige a regressão introduzida no VÉRIX atual.
+  var ASF_FILA_REDE = Promise.resolve();
+  var ASF_ULTIMA_UI_SEQUENCIA = 0;
+  var asfRequestTimes = [];
+  var seguroConsultaSequencia = 0;
+  var seguroAbortController = null;
+  var seguroNativeRequest = null;
+  var seguroNativeClient = null;
+  var seguroNativeProgId = null;
+
+  function agoraASF() { return new Date().getTime(); }
+  function esperarASF(ms) { return new Promise(function(resolve){ setTimeout(resolve, ms); }); }
 
   function chaveConsultaASF(matriculaASF, dataASF) {
     return String(matriculaASF || '').toUpperCase() + '|' + String(dataASF || '');
@@ -1650,12 +1659,44 @@ function submitConjunto(event) {
 
   function limparCacheASFExpirado() {
     var agora = agoraASF();
-    Object.keys(ASF_CACHE_SESSAO).forEach(function (k) {
-      if (!ASF_CACHE_SESSAO[k] || (agora - ASF_CACHE_SESSAO[k].t) > ASF_CACHE_TTL_MS) delete ASF_CACHE_SESSAO[k];
+    Object.keys(ASF_CACHE_SESSAO).forEach(function(k){
+      var x = ASF_CACHE_SESSAO[k];
+      if (!x || (agora - x.t) > ASF_CACHE_TTL_MS) delete ASF_CACHE_SESSAO[k];
     });
   }
 
-  function agoraASF() { return new Date().getTime(); }
+  function limparJanelaASF(agora) {
+    var t = (typeof agora === 'number') ? agora : agoraASF();
+    asfRequestTimes = asfRequestTimes.filter(function(x){ return t - x < ASF_JANELA_SEG * 1000; });
+  }
+
+  function calcularAtrasoCadenciaASF() {
+    var agora = agoraASF();
+    limparJanelaASF(agora);
+    var atraso = 0;
+    if (asfRequestTimes.length) {
+      atraso = Math.max(atraso, ASF_MIN_INTERVAL_MS - (agora - asfRequestTimes[asfRequestTimes.length - 1]));
+    }
+    if (asfRequestTimes.length >= ASF_LIMITE_JANELA) {
+      atraso = Math.max(atraso, (ASF_JANELA_SEG * 1000) - (agora - asfRequestTimes[0]) + 250);
+    }
+    return Math.max(0, Math.ceil(atraso));
+  }
+
+  async function aguardarCadenciaFilaASF() {
+    while (true) {
+      var atraso = calcularAtrasoCadenciaASF();
+      if (!atraso) return;
+      await esperarASF(atraso);
+    }
+  }
+
+  function registarInicioConsultaASF() {
+    var agora = agoraASF();
+    limparJanelaASF(agora);
+    asfRequestTimes.push(agora);
+    ASF_ULTIMO_PEDIDO_REDE_T = agora;
+  }
 
   function extrairMensagemGraphQLASF(texto) {
     try {
@@ -1668,9 +1709,7 @@ function submitConjunto(event) {
         if (m && msgs.indexOf(m) === -1) msgs.push(m);
       });
       return msgs.join(' | ');
-    } catch (_) {
-      return '';
-    }
+    } catch (_) { return ''; }
   }
 
   function registarPedidoASF(info) {
@@ -1679,29 +1718,27 @@ function submitConjunto(event) {
     ASF_NUMERO_SEQUENCIAL += 1;
     ASF_ULTIMO_PEDIDO_T = agora;
     var intervalo = anterior == null ? null : (agora - anterior);
-    var graphqlMessage = extrairMensagemGraphQLASF(info.text || '');
     var entrada = {
       t: agora,
       numero: ASF_NUMERO_SEQUENCIAL,
       intervaloMs: intervalo,
-      status: Number(info.status || 0),
-      ms: Number(info.ms || 0),
-      transport: String(info.transport || ''),
-      retryAfter: String(info.retryAfter || ''),
-      server: String(info.server || ''),
-      graphqlMessage: graphqlMessage,
-      texto: String(info.text || '').slice(0, 1000)
+      status: Number(info && info.status || 0),
+      ms: Number(info && info.ms || 0),
+      transport: String(info && info.transport || ''),
+      retryAfter: String(info && info.retryAfter || ''),
+      server: String(info && info.server || ''),
+      graphqlMessage: extrairMensagemGraphQLASF(info && info.text || ''),
+      texto: String(info && info.text || '').slice(0,1000)
     };
     ASF_DIAGNOSTICO.push(entrada);
+    ASF_DIAGNOSTICO = ASF_DIAGNOSTICO.filter(function(x){ return agora - x.t <= 600000; });
     atualizarContadorVisualASF();
-    // Mantém apenas os últimos 10 minutos para não criar crescimento indefinido.
-    ASF_DIAGNOSTICO = ASF_DIAGNOSTICO.filter(function (x) { return agora - x.t <= 600000; });
-    if ([403, 429, 502, 503, 509].indexOf(Number(info.status)) !== -1) ASF_ULTIMO_BLOQUEIO = agora;
+    if ([403,429,502,503,509].indexOf(Number(info && info.status)) !== -1) ASF_ULTIMO_BLOQUEIO = agora;
   }
 
   function contarPedidosASF(segundos) {
-    var limite = agoraASF() - (segundos * 1000);
-    return ASF_DIAGNOSTICO.filter(function (x) { return x.t >= limite; }).length;
+    var limite = agoraASF() - (Number(segundos || 60) * 1000);
+    return ASF_DIAGNOSTICO.filter(function(x){ return x.t >= limite; }).length;
   }
 
   function atualizarContadorVisualASF() {
@@ -1710,55 +1747,41 @@ function submitConjunto(event) {
     var sub = document.getElementById('asfRateSub');
     var cd = document.getElementById('asfRateCountdown');
     if (!widget || !main || !sub) return;
-    var limite = (typeof ASF_LIMITE_JANELA === 'number' && ASF_LIMITE_JANELA > 0) ? ASF_LIMITE_JANELA : 6;
-    var janela = (typeof ASF_JANELA_SEG === 'number' && ASF_JANELA_SEG > 0) ? ASF_JANELA_SEG : 60;
-    var minMs = (typeof ASF_MIN_INTERVAL_MS === 'number' && ASF_MIN_INTERVAL_MS > 0) ? ASF_MIN_INTERVAL_MS : 8000;
-    var total60 = contarPedidosASF(janela);
-    var ultimo = ASF_DIAGNOSTICO.length ? ASF_DIAGNOSTICO[ASF_DIAGNOSTICO.length - 1] : null;
+
+    limparJanelaASF();
+    var total60 = asfRequestTimes.length;
     var agora = agoraASF();
-    var idade = ultimo ? Math.max(0, Math.floor((agora - ultimo.t) / 1000)) : null;
+    var restoMs = ASF_ULTIMO_PEDIDO_REDE_T ? Math.max(0, ASF_MIN_INTERVAL_MS - (agora - ASF_ULTIMO_PEDIDO_REDE_T)) : 0;
+
     widget.classList.remove('warn','high','cooldown');
-    if (total60 >= limite) widget.classList.add('high');
-    else if (total60 >= Math.max(1, limite - 2)) widget.classList.add('warn');
-    main.innerHTML = total60 + ' <strong>/ ' + limite + '</strong>';
-    /* Cronómetro: segundos em falta até ao intervalo mínimo de 7 s */
-    var restoMs = 0;
-    if (typeof ASF_ULTIMO_PEDIDO_REDE_T === 'number' && ASF_ULTIMO_PEDIDO_REDE_T > 0) {
-      restoMs = Math.max(0, minMs - (agora - ASF_ULTIMO_PEDIDO_REDE_T));
-    }
+    if (total60 >= ASF_LIMITE_JANELA) widget.classList.add('high');
+    else if (total60 >= Math.max(1, ASF_LIMITE_JANELA - 2)) widget.classList.add('warn');
+
+    main.innerHTML = total60 + ' <strong>/ ' + ASF_LIMITE_JANELA + '</strong>';
     var restoSeg = Math.ceil(restoMs / 1000);
     if (cd) {
       if (restoSeg > 0) {
         widget.classList.add('cooldown');
         cd.textContent = restoSeg + 's';
-        cd.setAttribute('data-state', 'wait');
+        cd.setAttribute('data-state','wait');
         cd.title = 'Aguardar ' + restoSeg + ' s para nova consulta';
       } else {
         cd.textContent = 'LIVRE';
-        cd.setAttribute('data-state', 'ready');
+        cd.setAttribute('data-state','ready');
         cd.title = 'Pode consultar';
       }
     }
-    /* Janela móvel: quando 6/6 está ocupado, mostra o tempo exato até a
-       pesquisa mais antiga sair dos últimos 60 s e libertar 1 vaga. */
-    var disponiveis = Math.max(0, limite - total60);
-    if (total60 >= limite) {
-      var limiteMs = agora - (janela * 1000);
-      var pedidosJanela = ASF_DIAGNOSTICO.filter(function (x) { return x && x.t >= limiteMs; });
-      var maisAntigo = pedidosJanela.length ? pedidosJanela[0] : null;
-      var esperaMs = maisAntigo ? Math.max(0, (maisAntigo.t + janela * 1000) - agora) : 0;
+
+    var disponiveis = Math.max(0, ASF_LIMITE_JANELA - total60);
+    if (total60 >= ASF_LIMITE_JANELA) {
+      var maisAntigo = asfRequestTimes.length ? asfRequestTimes[0] : null;
+      var esperaMs = maisAntigo ? Math.max(0, maisAntigo + ASF_JANELA_SEG*1000 - agora) : 0;
       var esperaSeg = Math.ceil(esperaMs / 1000);
       sub.textContent = 'Nova pesquisa disponível em ' + esperaSeg + (esperaSeg === 1 ? ' segundo' : ' segundos');
       sub.setAttribute('data-window-state','wait');
-      sub.title = 'A próxima vaga será libertada quando a pesquisa mais antiga sair da janela móvel de ' + janela + ' s.';
-    } else if (disponiveis === 1) {
-      sub.textContent = '1 nova pesquisa disponível agora';
-      sub.setAttribute('data-window-state','ready');
-      sub.title = 'Pode adicionar mais 1 pesquisa ao contador.';
     } else {
-      sub.textContent = disponiveis + ' novas pesquisas disponíveis agora';
+      sub.textContent = disponiveis + (disponiveis === 1 ? ' nova pesquisa disponível' : ' novas pesquisas disponíveis');
       sub.setAttribute('data-window-state','ready');
-      sub.title = 'Pode adicionar mais ' + disponiveis + ' pesquisas ao contador.';
     }
   }
 
@@ -1767,275 +1790,301 @@ function submitConjunto(event) {
   document.addEventListener('DOMContentLoaded', atualizarContadorVisualASF);
 
   function extrairHeaderASF(headers, nome) {
-    var re = new RegExp('^' + nome.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*:\\s*(.+)$', 'im');
+    var re = new RegExp('^' + String(nome).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*:\\s*(.+)$','im');
     var m = re.exec(String(headers || ''));
     return m ? String(m[1]).trim() : '';
   }
 
   function resumoDiagnosticoASF(r) {
     var amostra = '';
-    try { amostra = String(r.text || '').replace(/\s+/g, ' ').trim().slice(0, 500); } catch (_) {}
-    var ultimo = ASF_DIAGNOSTICO.length ? ASF_DIAGNOSTICO[ASF_DIAGNOSTICO.length - 1] : null;
-    var pedidos60 = contarPedidosASF(60);
-    var pedidos10 = contarPedidosASF(10);
+    try { amostra = String(r && r.text || '').replace(/\s+/g,' ').trim().slice(0,500); } catch (_) {}
+    var ultimo = ASF_DIAGNOSTICO.length ? ASF_DIAGNOSTICO[ASF_DIAGNOSTICO.length-1] : null;
     var bloqueio = ASF_ULTIMO_BLOQUEIO ? new Date(ASF_ULTIMO_BLOQUEIO).toLocaleTimeString() : '—';
     var intervalo = ultimo && ultimo.intervaloMs != null ? ultimo.intervaloMs + ' ms' : '—';
     var gql = ultimo && ultimo.graphqlMessage ? ultimo.graphqlMessage : '—';
     var seq = ultimo ? ('#' + ultimo.numero) : '#?';
     return 'CONSULTA ' + seq + ' | intervalo: ' + intervalo +
-      ' | HTTP ' + r.status + ' | ' + (r.transport || '—') + ' | ' + (r.ms || 0) + ' ms' +
-      ' | últimos 10s: ' + pedidos10 + ' | últimos 60s: ' + pedidos60 +
-      ' | GraphQL: ' + gql +
-      ' | Retry-After: ' + (r.retryAfter || '—') +
-      ' | Server: ' + (r.server || '—') +
-      ' | último HTTP limitador: ' + bloqueio +
+      ' | HTTP ' + (r && r.status || 0) + ' | ' + (r && r.transport || '—') + ' | ' + (r && r.ms || 0) + ' ms' +
+      ' | últimos 10s: ' + contarPedidosASF(10) + ' | últimos 60s: ' + contarPedidosASF(60) +
+      ' | GraphQL: ' + gql + ' | Retry-After: ' + (r && r.retryAfter || '—') +
+      ' | Server: ' + (r && r.server || '—') + ' | último HTTP limitador: ' + bloqueio +
       (amostra ? ' | Corpo: ' + amostra : '');
   }
 
-  function consultarASFWinHTTPSingle(url) {
-    if (!isHTAHost()) throw new Error('TRANSPORTE_NATIVO_NAO_DISPONIVEL');
-
-    var req = new ActiveXObject('WinHttp.WinHttpRequest.5.1');
-    // Transporte nativo: POST, URL com a query GraphQL e corpo vazio/null.
-    // Mantém o pedido o mais próximo possível do fluxo confirmado no APK.
-    req.SetTimeouts(10000, 10000, 10000, 10000);
-    req.Open('POST', url, false);
-    var inicio = agoraASF();
-    req.Send();
-    var fim = agoraASF();
-
-    var status = req.Status;
-    var textBody = req.ResponseText || '';
-    var headers = '';
-    try { headers = req.GetAllResponseHeaders() || ''; } catch (_) {}
-    var r = {
-      status: status,
-      text: textBody,
-      headers: headers,
-      transport: 'WinHTTP/POST',
-      ms: fim - inicio,
-      retryAfter: extrairHeaderASF(headers, 'Retry-After'),
-      server: extrairHeaderASF(headers, 'Server'),
-      dateHeader: extrairHeaderASF(headers, 'Date')
-    };
-    registarPedidoASF(r);
-    return r;
+  function cancelarConsultaNativaAnterior() {
+    try { if (seguroNativeRequest && typeof seguroNativeRequest.abort === 'function') seguroNativeRequest.abort(); } catch (_) {}
+    seguroNativeRequest = null;
   }
 
-  async function consultarASFBrowser(url) {
-    const ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-    const timer = ctrl ? setTimeout(function () { try { ctrl.abort(); } catch (_) {} }, 12000) : null;
-    const inicio = agoraASF();
+  function resetarClienteWinHTTP() {
+    try { if (seguroNativeClient && typeof seguroNativeClient.abort === 'function') seguroNativeClient.abort(); } catch (_) {}
+    seguroNativeClient = null;
+    seguroNativeProgId = null;
+    seguroNativeRequest = null;
+  }
+
+  function criarClienteWinHTTP(preferirProgId) {
+    if (seguroNativeClient && (!preferirProgId || seguroNativeProgId === preferirProgId)) {
+      return {xhr:seguroNativeClient, progId:seguroNativeProgId};
+    }
+    if (seguroNativeClient) resetarClienteWinHTTP();
+    var base = ['WinHttp.WinHttpRequest.5.1','MSXML2.ServerXMLHTTP.6.0'];
+    var lista = preferirProgId ? [preferirProgId].concat(base.filter(function(x){return x!==preferirProgId;})) : base;
+    var lastErr = null;
+    for (var i=0;i<lista.length;i++) {
+      try {
+        seguroNativeClient = new ActiveXObject(lista[i]);
+        seguroNativeProgId = lista[i];
+        return {xhr:seguroNativeClient, progId:lista[i]};
+      } catch (e) { lastErr = e; }
+    }
+    throw lastErr || new Error('Nenhum componente HTTP nativo disponível no Windows.');
+  }
+
+  function pedidoNativoHTA(url, sequencia, preferirProgId) {
+    return new Promise(function(resolve,reject){
+      var obj, xhr, terminou=false, timer=null;
+      function doneError(e){ if(terminou)return; terminou=true; clearTimeout(timer); if(seguroNativeRequest===xhr)seguroNativeRequest=null; reject(e); }
+      function doneOK(r){ if(terminou)return; terminou=true; clearTimeout(timer); if(seguroNativeRequest===xhr)seguroNativeRequest=null; resolve(r); }
+      try {
+        cancelarConsultaNativaAnterior();
+        obj=criarClienteWinHTTP(preferirProgId);
+        xhr=obj.xhr;
+        seguroNativeRequest=xhr;
+        xhr.open('POST',url,true);
+        try {
+          if(obj.progId==='WinHttp.WinHttpRequest.5.1') xhr.SetTimeouts(10000,10000,ASF_TIMEOUT_MS,ASF_TIMEOUT_MS);
+          else xhr.setTimeouts(10000,10000,ASF_TIMEOUT_MS,ASF_TIMEOUT_MS);
+        } catch(_){ }
+        try { xhr.setRequestHeader('Accept','application/json, text/plain, */*'); } catch(_){ }
+        try { xhr.setRequestHeader('Connection','keep-alive'); } catch(_){ }
+
+        xhr.onreadystatechange=function(){
+          if(xhr.readyState!==4 || terminou)return;
+          if(sequencia!==seguroConsultaSequencia){ try{xhr.abort();}catch(_){}; doneError(Object.assign(new Error('Consulta ultrapassada por uma nova pesquisa.'),{code:'STALE'})); return; }
+          var status=Number(obj.progId==='WinHttp.WinHttpRequest.5.1' ? xhr.Status : xhr.status) || 0;
+          var text=String(obj.progId==='WinHttp.WinHttpRequest.5.1' ? xhr.ResponseText : xhr.responseText || '');
+          var headers='';
+          try { headers=obj.progId==='WinHttp.WinHttpRequest.5.1' ? (xhr.GetAllResponseHeaders() || '') : (xhr.getAllResponseHeaders() || ''); } catch(_){ }
+          var info={status:status,text:text,headers:headers,transport:obj.progId + '/POST',ms:0,retryAfter:extrairHeaderASF(headers,'Retry-After'),server:extrairHeaderASF(headers,'Server'),dateHeader:extrairHeaderASF(headers,'Date')};
+          if(status>=200 && status<300){
+            if(!text.trim()) return doneError(Object.assign(new Error('A ASF devolveu uma resposta vazia.'),{httpStatus:status,responseText:text}));
+            info.ms=0;
+            registarPedidoASF(info);
+            return doneOK(info);
+          }
+          var e=new Error('ASF HTTP ' + (status || 0) + (text ? ' · ' + text.slice(0,220) : ''));
+          e.httpStatus=status; e.responseText=text; e.headers=headers; e.transport=info.transport; e.retryAfter=info.retryAfter; e.server=info.server;
+          doneError(e);
+        };
+        timer=setTimeout(function(){
+          try{xhr.abort();}catch(_){}
+          resetarClienteWinHTTP();
+          var e=new Error('Timeout de 10 segundos na comunicação com a ASF.');
+          e.code='TIMEOUT';
+          doneError(e);
+        },ASF_TIMEOUT_MS+1200);
+        var inicio=agoraASF();
+        xhr.send(null);
+        // Registamos duração aproximada no callback; a chamada é assíncrona.
+        xhr.__verixInicioASF=inicio;
+      } catch(e) {
+        resetarClienteWinHTTP();
+        doneError(e);
+      }
+    }).then(function(info){
+      try {
+        if (info && info.__verixInicioASF) info.ms = agoraASF() - info.__verixInicioASF;
+      } catch(_){}
+      return info;
+    });
+  }
+
+  async function pedidoBrowserASF(url, sequencia) {
+    if (seguroAbortController) { try{seguroAbortController.abort();}catch(_){} }
+    var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    seguroAbortController = controller;
+    var timer = controller ? setTimeout(function(){ try{controller.abort();}catch(_){} }, ASF_TIMEOUT_MS) : null;
+    var inicio = agoraASF();
     try {
-      const response = await fetch(url, {
-        method: 'POST',
-        cache: 'no-store',
-        credentials: 'omit',
-        mode: 'cors',
-        body: null,
-        signal: ctrl ? ctrl.signal : undefined
+      var response = await fetch(url, {
+        method:'POST',
+        cache:'no-store',
+        credentials:'omit',
+        mode:'cors',
+        redirect:'follow',
+        referrerPolicy:'no-referrer',
+        headers:{'Accept':'application/json, text/plain, */*'},
+        body:null,
+        signal:controller ? controller.signal : undefined
       });
-      const textBody = await response.text();
-      var headers = '';
-      try { response.headers.forEach(function(v,k){ headers += k + ': ' + v + '\n'; }); } catch (_) {}
-      var r = {
-        status: response.status,
-        text: textBody,
-        headers: headers,
-        transport: 'Fetch/POST',
-        ms: agoraASF() - inicio,
-        retryAfter: response.headers.get('Retry-After') || '',
-        server: response.headers.get('Server') || '',
-        dateHeader: response.headers.get('Date') || ''
-      };
-      registarPedidoASF(r);
-      return r;
+      var text=await response.text();
+      if(sequencia!==seguroConsultaSequencia) throw Object.assign(new Error('Consulta ultrapassada por uma nova pesquisa.'),{code:'STALE'});
+      var headers='';
+      try { response.headers.forEach(function(v,k){headers += k + ': ' + v + '\n';}); } catch(_){ }
+      var info={status:response.status,text:text,headers:headers,transport:'Fetch/POST',ms:agoraASF()-inicio,retryAfter:response.headers.get('Retry-After') || '',server:response.headers.get('Server') || '',dateHeader:response.headers.get('Date') || ''};
+      if(!response.ok){
+        var e=new Error('ASF HTTP ' + response.status + (text ? ' · ' + text.slice(0,220) : ''));
+        e.httpStatus=response.status; e.responseText=text; e.headers=headers; e.retryAfter=info.retryAfter; e.server=info.server;
+        throw e;
+      }
+      if(!text.trim()) throw Object.assign(new Error('A ASF devolveu uma resposta vazia.'),{httpStatus:response.status,responseText:text});
+      registarPedidoASF(info);
+      return info;
     } finally {
-      if (timer) clearTimeout(timer);
+      if(timer) clearTimeout(timer);
+      if(seguroAbortController===controller) seguroAbortController=null;
     }
   }
 
-  async function executarPedidoASF(url) {
-    // Replica o comportamento relevante do APK: uma consulta normal e
-    // apenas 1 retry quando existe falha REAL de transporte.
-    // Respostas HTTP (403/429/5xx) nunca são repetidas automaticamente,
-    // porque isso poderia agravar um eventual rate-limit do servidor.
-    if (isHTAHost()) {
+  function erroRepetivelPelaPolicyVolleyASF(err) {
+    var status=Number(err && err.httpStatus || 0);
+    return !status || err && err.code==='TIMEOUT';
+  }
+
+  async function obterRespostaASF(url, matricula) {
+    var lastErr=null;
+    var native=isHTAHost();
+    var maxTentativas=ASF_MAX_RETRIES + 1;
+
+    for(var tentativa=1; tentativa<=maxTentativas; tentativa++){
       try {
-        return consultarASFWinHTTPSingle(url);
-      } catch (e1) {
-        try {
-          var r2 = consultarASFWinHTTPSingle(url);
-          r2.retryNumero = 2;
-          return r2;
-        } catch (e2) {
-          e2.retryNumero = 2;
-          throw e2;
+        var sequencia=++seguroConsultaSequencia;
+        cancelarConsultaNativaAnterior();
+        if(seguroAbortController){try{seguroAbortController.abort();}catch(_){};seguroAbortController=null;}
+
+        if(native){
+          var nativeTransports=['WinHttp.WinHttpRequest.5.1','MSXML2.ServerXMLHTTP.6.0'];
+          for(var i=0;i<nativeTransports.length;i++){
+            try {
+              mostrarSeguroLoading(matricula,tentativa,nativeTransports[i]);
+              var nr=await pedidoNativoHTA(url,sequencia,nativeTransports[i]);
+              return nr;
+            } catch(e){
+              if(e && e.code==='STALE') throw e;
+              lastErr=e;
+              var status=Number(e && e.httpStatus || 0);
+              if([0,502,503,504].indexOf(status)===-1) break;
+              resetarClienteWinHTTP();
+            }
+          }
+        } else {
+          mostrarSeguroLoading(matricula,tentativa,'browser');
+          return await pedidoBrowserASF(url,sequencia);
         }
+
+        if(tentativa<maxTentativas && erroRepetivelPelaPolicyVolleyASF(lastErr)) await esperarASF(ASF_RETRY_DELAY_FALLBACK_MS);
+        else break;
+      } catch(e){
+        if(e && e.code==='STALE') throw e;
+        lastErr=e;
+        if(tentativa<maxTentativas && erroRepetivelPelaPolicyVolleyASF(e)) await esperarASF(ASF_RETRY_DELAY_FALLBACK_MS);
+        else break;
       }
     }
+    throw lastErr || new Error('Falha na comunicação com a ASF.');
+  }
 
-    // Browser: Fetch não deve repetir respostas HTTP limitadoras.
-    return consultarASFBrowser(url);
+  async function enfileirarPedidoASF(url, matricula) {
+    var tarefa = ASF_FILA_REDE.then(async function(){
+      await aguardarCadenciaFilaASF();
+      registarInicioConsultaASF();
+      mostrarSeguroLoading(matricula,1,isHTAHost() ? 'Transporte nativo (WinHTTP / fallback MSXML)' : 'Transporte browser (Fetch)');
+      return await obterRespostaASF(url, matricula);
+    });
+    ASF_FILA_REDE = tarefa.catch(function(){});
+    return tarefa;
+  }
+
+  function registarTelemetriaASF(resultadoTipo, queryId) {
+    try {
+      if(window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.track === 'function'){
+        var evento = resultadoTipo==='sim' ? 'vehicle_insurance_yes' : resultadoTipo==='nao' ? 'vehicle_insurance_no' : 'vehicle_insurance_error';
+        window.VERIX_TELEMETRY.track(evento,'consulta',{queryId:queryId || null,source:'asf'});
+      }
+    } catch (_) {}
   }
 
   async function consultarSeguroASF(matricula) {
-    const mat = (matricula || '').trim().toUpperCase();
-    if (!mat) return;
-    const queryId = window.__VERIX_CURRENT_QUERY_ID || null;
-    function registarTelemetriaASF(resultadoTipo) {
-      try {
-        if(window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.track === 'function'){
-          const evento = resultadoTipo==='sim' ? 'vehicle_insurance_yes' : resultadoTipo==='nao' ? 'vehicle_insurance_no' : 'vehicle_insurance_error';
-          window.VERIX_TELEMETRY.track(evento,'consulta',{queryId,source:'asf'});
-        }
-      } catch (_) {}
-    }
-
-    const matriculaASF = sanitizarMatriculaASF(mat);
-    const dataASF = formatarDataASF();
-    const chave = chaveConsultaASF(matriculaASF, dataASF);
-
+    var mat=String(matricula||'').trim().toUpperCase();
+    if(!mat)return;
+    var uiSeq=++ASF_ULTIMA_UI_SEQUENCIA;
+    var queryId=window.__VERIX_CURRENT_QUERY_ID || null;
+    var matriculaASF=sanitizarMatriculaASF(mat);
+    var dataASF=formatarDataASF();
+    var chave=chaveConsultaASF(matriculaASF,dataASF);
     limparCacheASFExpirado();
 
-    // Se a mesma matrícula/data já está a ser consultada, não criamos outro
-    // pedido concorrente. Todos os chamadores aguardam o mesmo resultado.
-    if (ASF_PEDIDOS_EM_CURSO[chave]) {
-      mostrarSeguroLoading(mat, 'Consulta ASF já em curso — a aguardar a mesma resposta');
-      try {
-        await ASF_PEDIDOS_EM_CURSO[chave];
-        const shared=ASF_CACHE_SESSAO[chave];
-        registarTelemetriaASF(shared?.resultado?.tipo || 'indisponivel');
-      } catch (_) { registarTelemetriaASF('indisponivel'); }
+    // Mesma matrícula/data: partilha a consulta em curso.
+    if(ASF_PEDIDOS_EM_CURSO[chave]){
+      mostrarSeguroLoading(mat,'Consulta ASF já em curso — a aguardar a mesma resposta');
+      try { await ASF_PEDIDOS_EM_CURSO[chave]; } catch(_){}
       return;
     }
 
-    // Repetições imediatas da mesma consulta são servidas localmente durante
-    // uma janela curta. Isto reduz tráfego desnecessário sem tentar contornar
-    // qualquer limitação do serviço.
-    var cached = ASF_CACHE_SESSAO[chave];
-    if (cached && (agoraASF() - cached.t) <= ASF_CACHE_TTL_MS) {
-      mostrarSeguroLoading(mat, 'Resultado recente — sem nova chamada à ASF');
-      await new Promise(function(resolve){ setTimeout(resolve, 80); });
-      registarTelemetriaASF(cached.resultado.tipo);
-      if (cached.resultado.tipo === 'sim') renderSeguroEncontrado(cached.resultado.node, mat);
-      else if (cached.resultado.tipo === 'nao') renderSeguroNaoEncontrado(mat);
-      else mostrarSeguroErro(cached.resultado.motivo, mat, cached.diag || 'Resultado obtido anteriormente nesta sessão.');
-      return;
+    // Cache apenas para resultados válidos. Erros/indisponibilidades nunca ficam
+    // guardados, para que uma falha transitória não contamine novas pesquisas.
+    var cached=ASF_CACHE_SESSAO[chave];
+    if(cached && (agoraASF()-cached.t)<=ASF_CACHE_TTL_MS){
+      if(cached.resultado && (cached.resultado.tipo==='sim' || cached.resultado.tipo==='nao')){
+        registarTelemetriaASF(cached.resultado.tipo,queryId);
+        atualizarSeguroNoHistorico(mat,cached.resultado.tipo);
+        if(uiSeq===ASF_ULTIMA_UI_SEQUENCIA){
+          if(cached.resultado.tipo==='sim') renderSeguroEncontrado(cached.resultado.node,mat);
+          else renderSeguroNaoEncontrado(mat);
+        }
+        return;
+      }
+      delete ASF_CACHE_SESSAO[chave];
     }
 
-    const query = construirQueryASF(matriculaASF, dataASF);
-    const url = ASF_API_URL + encodeURI(query);
+    var query=construirQueryASF(matriculaASF,dataASF);
+    var url=ASF_API_URL + encodeURIComponent(query);
 
-    var tarefa = (async function(){
-      function sleepASF(ms) {
-        return new Promise(function (resolve) { setTimeout(resolve, ms); });
-      }
-      async function aguardarEspacamentoASF() {
-        /* Apenas 4 s desde a última consulta de rede — sem quota/janela client-side. */
-        var minMs = (typeof ASF_MIN_INTERVAL_MS === 'number' && ASF_MIN_INTERVAL_MS > 0) ? ASF_MIN_INTERVAL_MS : 8000;
-        var agora = agoraASF();
-        var decorrido = agora - (ASF_ULTIMO_PEDIDO_REDE_T || 0);
-        if (decorrido < minMs) {
-          var falta = minMs - decorrido;
-          mostrarSeguroLoading(mat, 'Aguardar ' + Math.ceil(falta / 1000) + ' s antes da próxima consulta');
-          await sleepASF(falta);
-        }
-      }
-      async function pedidoComRetry() {
-        await aguardarEspacamentoASF();
-        mostrarSeguroLoading(mat, isHTAHost() ? 'Transporte nativo (WinHTTP) — modo .exe/HTA' : 'Transporte browser (Fetch)');
-        ASF_ULTIMO_PEDIDO_REDE_T = agoraASF();
-        var r = await executarPedidoASF(url);
-        var resultado = classificarRespostaASF(r.status, r.text);
-        var diag = resumoDiagnosticoASF(r);
-        return { r: r, resultado: resultado, diag: diag };
-      }
+    var tarefa=(async function(){
       try {
-        var pack = await pedidoComRetry();
-        var r = pack.r;
-        var resultado = pack.resultado;
-        var diag = pack.diag;
-        ASF_CACHE_SESSAO[chave] = { t: agoraASF(), resultado: resultado, diag: diag };
+        var r=await enfileirarPedidoASF(url,mat);
+        var resultado=classificarRespostaASF(r.status,r.text);
+        var diag=resumoDiagnosticoASF(r);
 
-        if (resultado.tipo === 'sim') {
-          registarTelemetriaASF('sim')
-          renderSeguroEncontrado(resultado.node, mat);
-          return;
-        }
-        if (resultado.tipo === 'nao') {
-          registarTelemetriaASF('nao')
-          renderSeguroNaoEncontrado(mat);
+        if(resultado.tipo==='sim'){
+          ASF_CACHE_SESSAO[chave]={t:agoraASF(),resultado:resultado,diag:diag};
+          registarTelemetriaASF('sim',queryId);
+          atualizarSeguroNoHistorico(mat,'sim');
+          if(uiSeq===ASF_ULTIMA_UI_SEQUENCIA) renderSeguroEncontrado(resultado.node,mat);
           return;
         }
 
-        registarTelemetriaASF('indisponivel')
-        mostrarSeguroErro(resultado.motivo, mat, diag);
-        var ultimoDiag = ASF_DIAGNOSTICO.length ? ASF_DIAGNOSTICO[ASF_DIAGNOSTICO.length - 1] : null;
-        console.warn('ASF diagnóstico:', {
-          consulta: ultimoDiag ? ultimoDiag.numero : null,
-          intervaloAnteriorMs: ultimoDiag ? ultimoDiag.intervaloMs : null,
-          status: r.status,
-          transport: r.transport,
-          ms: r.ms,
-          graphql: ultimoDiag ? ultimoDiag.graphqlMessage : extrairMensagemGraphQLASF(r.text),
-          retryAfter: r.retryAfter,
-          server: r.server,
-          pedidos10s: contarPedidosASF(10),
-          pedidos60s: contarPedidosASF(60),
-          corpo: String(r.text || '').slice(0, 1000)
-        });
-      } catch (err) {
-        const msg = err && err.name === 'AbortError'
-          ? 'A consulta ASF excedeu o tempo de espera.'
-          : 'Não foi possível contactar o serviço ASF neste ambiente.';
-        registarTelemetriaASF('indisponivel')
-        mostrarSeguroErro(msg, mat, (err && err.message) ? err.message : String(err));
-        console.warn('Consulta ASF indisponível:', err);
+        if(resultado.tipo==='nao'){
+          ASF_CACHE_SESSAO[chave]={t:agoraASF(),resultado:resultado,diag:diag};
+          registarTelemetriaASF('nao',queryId);
+          atualizarSeguroNoHistorico(mat,'nao');
+          if(uiSeq===ASF_ULTIMA_UI_SEQUENCIA) renderSeguroNaoEncontrado(mat);
+          return;
+        }
+
+        // Erros não são armazenados em cache.
+        registarTelemetriaASF('indisponivel',queryId);
+        atualizarSeguroNoHistorico(mat,'indisponivel');
+        if(uiSeq===ASF_ULTIMA_UI_SEQUENCIA) mostrarSeguroErro(resultado.motivo,mat,diag);
+        console.warn('ASF diagnóstico:',{status:r.status,transport:r.transport,ms:r.ms,retryAfter:r.retryAfter,server:r.server,diagnostico:diag,corpo:String(r.text||'').slice(0,1000)});
+      } catch(err){
+        if(err && err.code==='STALE') return;
+        registarTelemetriaASF('indisponivel',queryId);
+        atualizarSeguroNoHistorico(mat,'indisponivel');
+        var msg=err && err.name==='AbortError' ? 'A consulta ASF excedeu o tempo de espera.' : (err && err.message ? err.message : 'Não foi possível contactar o serviço ASF neste ambiente.');
+        if(uiSeq===ASF_ULTIMA_UI_SEQUENCIA) mostrarSeguroErro(msg,mat,msg);
+        console.warn('Consulta ASF indisponível:',err);
       } finally {
         delete ASF_PEDIDOS_EM_CURSO[chave];
       }
     })();
 
-    ASF_PEDIDOS_EM_CURSO[chave] = tarefa;
+    ASF_PEDIDOS_EM_CURSO[chave]=tarefa;
     await tarefa;
   }
 
-  function verificarSeguro() {
-    const mat = obterMatriculaOuVazia();
-    if (!mat) {
-      alert('Primeiro introduza e consulte uma matrícula.');
-      return;
-    }
-
-    // Copia a matrícula para facilitar a introdução no formulário oficial ASF.
-    try {
-      const ta = document.createElement('textarea');
-      ta.value = mat;
-      ta.style.position = 'fixed';
-      ta.style.left = '-9999px';
-      document.body.appendChild(ta);
-      ta.focus();
-      ta.select();
-      try { document.execCommand('copy'); } catch (_) {}
-      document.body.removeChild(ta);
-    } catch (_) {}
-
-    const url = 'https://www.consumidor.asf.com.pt/serviços/verificar-seguro-através-da-matrícula';
-    window.open(url, 'SeguroASF', 'width=1100,height=800,top=50,left=50,resizable=yes,scrollbars=yes');
-
-    const box = document.getElementById('seguroResult');
-    box.innerHTML = `
-      <div class="status ok">ASF ABERTA</div>
-      <div class="insurance-details">
-        <div class="insurance-row"><strong>Matrícula</strong><span>${escapeHtml(mat)}</span></div>
-        <div class="insurance-row"><strong>Próximo passo</strong><span>Colar a matrícula no campo da ASF e carregar em “Verificar”.</span></div>
-      </div>
-      <div class="insurance-source">A matrícula foi copiada para a área de transferência. Consulta oficial ASF.</div>
-    `;
-  }
-
-  function consultarIMTERRU() {
+function consultarIMTERRU() {
     const mat = obterMatriculaOuVazia();
     copiarEVisualizar(mat);
     const url = `https://erru.imt-ip.pt/ERRU/`;
@@ -6511,8 +6560,8 @@ html body .asf-retry-wait.ready{border-color:rgba(0,229,160,.28);background:rgba
 </div>
 <button id="consultationBackBtn" class="consultation-back-btn" type="button" onclick="mostrarMenuPrincipal()" aria-label="Voltar">←</button>
 <div class="main">
-  <section class="panel"><div class="head red"><span class="head-title">INSPEÇÃO TÉCNICA</span><span class="head-tag">IMT</span></div><div class="panel-body"><div class="corner tl"></div><div class="corner br"></div><div class="scan"></div><div id="veiculoLoading" class="loading-overlay" style="display:none"><div class="spinner"></div>A CARREGAR CONSULTA<div><small>IMT • ACESSO À REDE RNSI</small></div></div><iframe id="veiculoFrame" loading="lazy" onload="occultarLoading('veiculoFrame','veiculoLoading')"></iframe></div></section>
-  <section class="panel verix-livrete-panel"><div class="head green"><span class="head-title">LIVRETE / VEÍCULO</span><span class="head-tag">IMT</span></div><div class="panel-body"><div class="corner tl"></div><div class="corner br"></div><div class="scan"></div><div id="reboqueLoading" class="loading-overlay" style="display:none"><div class="spinner"></div>A CARREGAR CONSULTA<div><small>IMT • ACESSO À REDE RNSI</small></div></div><iframe id="reboqueFrame" loading="lazy" onload="occultarLoading('reboqueFrame','reboqueLoading')"></iframe></div></section>
+  <section class="panel"><div class="head red"><span class="head-title">INSPEÇÃO TÉCNICA</span><span class="head-tag">IMT</span></div><div class="panel-body"><div class="corner tl"></div><div class="corner br"></div><div class="scan"></div><div id="veiculoLoading" class="loading-overlay" style="display:none"><div class="spinner"></div>A CARREGAR CONSULTA<div><small>IMT • ACESSO À REDE RNSI</small></div></div><iframe id="veiculoFrame" onload="occultarLoading('veiculoFrame','veiculoLoading')"></iframe></div></section>
+  <section class="panel verix-livrete-panel"><div class="head green"><span class="head-title">LIVRETE / VEÍCULO</span><span class="head-tag">IMT</span></div><div class="panel-body"><div class="corner tl"></div><div class="corner br"></div><div class="scan"></div><div id="reboqueLoading" class="loading-overlay" style="display:none"><div class="spinner"></div>A CARREGAR CONSULTA<div><small>IMT • ACESSO À REDE RNSI</small></div></div><iframe id="reboqueFrame" onload="occultarLoading('reboqueFrame','reboqueLoading')"></iframe></div></section>
   <section class="panel insurance"><div class="head red"><span class="head-title">SEGURO AUTO</span><span class="head-tag">ASF</span></div><div id="asfRateWidget" class="asf-rate-widget"><div class="asf-rate-label"><span class="asf-rate-dot"></span>CONSULTAS ASF</div><div class="asf-rate-center"><div id="asfRateMain" class="asf-rate-main">0 <strong>/ 6</strong></div><div id="asfRateSub" class="asf-rate-sub" data-window-state="ready">6 novas pesquisas disponíveis agora</div></div><div id="asfRateCountdown" class="asf-rate-countdown" title="Segundos até poder consultar de novo">LIVRE</div></div><div id="seguroResult" class="insurance-body"><div class="asf-app">
         <div class="asf-status-card wait">
           <div class="asf-status-icon" style="font-size:22px">ASF</div>
