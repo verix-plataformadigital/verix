@@ -16294,8 +16294,9 @@ html body .setting-select.wide{
  try{
  var w=Math.max(document.documentElement.clientWidth||0, window.innerWidth||0);
  var h=Math.max(document.documentElement.clientHeight||0, window.innerHeight||0);
- var z=Math.min(w/1600, h/900); z=Math.max(0.82, Math.min(1.08, z));
- document.body.style.zoom=z.toFixed(3);
+ /* Em telemóvel/tablet não aplicar zoom global: a responsividade CSS assume escala 1:1. */
+ if(w<=900){ document.body.style.zoom='1'; }
+ else { var z=Math.min(w/1600, h/900); z=Math.max(0.82, Math.min(1.08, z)); document.body.style.zoom=z.toFixed(3); }
  }catch(e){ document.body.style.zoom=''; }
  } else if(['80','90','100','110','120'].indexOf(p.scale)>=0){
  document.body.style.zoom = (parseInt(p.scale,10)/100).toFixed(2);
@@ -17743,5 +17744,322 @@ html body .verix-system-message-card .verix-system-developed strong{display:inli
  window.VERIX_UX13={version:VERSION,state:function(){return{consultStarted:!!consultStarted,elapsed_ms:elapsed(),historyQuery:historyQuery};}};
 })();
 </script>
+
+<style id="verix-mobile-command-grade">
+/* ================================================================
+   VÉRIX 1.3 — MOBILE / TABLET HARDENED UI
+   Camada final de responsividade. Não altera lógica operacional.
+   ================================================================ */
+
+/* Evita que a consola transforme o viewport táctil numa miniatura do desktop. */
+@media (max-width:900px){
+  html,body{width:100%!important;max-width:100%!important;}
+  body{overflow:hidden!important;zoom:1!important;}
+
+  /* Rail lateral deixa de existir em touch: ganha-se largura real para a operação. */
+  html body .rail{display:none!important;}
+  html body .bottom{display:none!important;}
+
+  /* COMMAND — cabeçalho dedicado a toque */
+  html body .command{
+    position:fixed!important;
+    top:8px!important;left:8px!important;right:8px!important;
+    height:118px!important;
+    transform:none!important;
+    border-radius:14px!important;
+    z-index:2200!important;
+    overflow:visible!important;
+  }
+  html body .command .brand{display:none!important;}
+  html body .command .time{
+    top:7px!important;right:9px!important;bottom:auto!important;
+    font-size:7px!important;letter-spacing:.7px!important;z-index:4!important;
+  }
+  html body .command .searchbar{
+    left:8px!important;right:8px!important;top:30px!important;
+    width:auto!important;min-width:0!important;max-width:none!important;
+    height:58px!important;padding:7px!important;
+    transform:none!important;border-radius:9px!important;
+    display:block!important;box-sizing:border-box!important;
+  }
+  html body .command .searchbar form{
+    width:100%!important;height:100%!important;
+    display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto!important;
+    align-items:center!important;gap:7px!important;
+  }
+  html body .command .field{min-width:0!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:3px!important;}
+  html body .command .field label{font-size:7px!important;letter-spacing:.7px!important;line-height:1!important;}
+  html body .command .field input{
+    width:100%!important;height:38px!important;min-width:0!important;
+    font-size:15px!important;letter-spacing:1px!important;border-radius:7px!important;
+  }
+  html body .command .consult{
+    height:38px!important;min-width:94px!important;padding:0 12px!important;
+    font-size:10px!important;letter-spacing:.65px!important;border-radius:7px!important;
+  }
+  html body .command .tools{
+    position:absolute!important;left:8px!important;right:8px!important;top:94px!important;
+    height:27px!important;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:5px!important;align-items:stretch!important;overflow:visible!important;
+  }
+  html body .command .tool{
+    width:auto!important;min-width:0!important;height:27px!important;padding:0 5px!important;
+    font-size:7px!important;letter-spacing:.25px!important;border-radius:6px!important;
+    white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+  }
+  html body .command .tool.full{width:auto!important;font-size:15px!important;}
+
+  /* Voltar — alvo táctil claro, sem disputar espaço com os campos. */
+  html body.fixed-workspace-active:not(.cinemometro-page-active) #consultationBackBtn{
+    top:6px!important;left:8px!important;right:auto!important;
+    width:32px!important;min-width:32px!important;height:24px!important;
+    padding:0!important;border-radius:6px!important;font-size:0!important;
+    z-index:2300!important;
+  }
+  html body.fixed-workspace-active:not(.cinemometro-page-active) #consultationBackBtn::after{
+    content:'←'!important;display:block!important;
+    font:900 15px/22px Arial,sans-serif!important;color:#f0cc63!important;
+  }
+
+  /* HUD — apenas informação relevante, não ocupa espaço da operação. */
+  html body #verixOpsHud{
+    left:8px!important;right:8px!important;top:130px!important;height:22px!important;
+    z-index:2190!important;padding:0 7px!important;border-radius:6px!important;
+    font-size:6.5px!important;letter-spacing:.45px!important;
+  }
+  html body #verixOpsHud .hud-meta{display:none!important;}
+  html body #verixOpsHud .hud-main{margin:0 auto!important;max-width:100%!important;text-align:center!important;}
+
+  /* CONSULTA — uma verdadeira aplicação móvel, não um desktop comprimido. */
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active{
+    position:fixed!important;
+    left:8px!important;right:8px!important;top:158px!important;bottom:50px!important;
+    width:auto!important;height:auto!important;
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    grid-template-rows:minmax(300px,1fr) minmax(300px,1fr)!important;
+    grid-template-areas:
+      'imt1 imt2'
+      'insurance insurance'
+      'warning warning'!important;
+    gap:9px!important;padding:0 0 10px!important;
+    overflow-y:auto!important;overflow-x:hidden!important;
+    overscroll-behavior:contain!important;
+    align-content:start!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active > section:nth-child(1){grid-area:imt1!important;}
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active > section:nth-child(2){grid-area:imt2!important;}
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active > section.insurance{grid-area:insurance!important;order:3!important;}
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active > .verix-livrete-warning{grid-area:warning!important;order:4!important;}
+
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active > .panel{
+    width:100%!important;min-width:0!important;height:100%!important;min-height:300px!important;
+    max-height:none!important;margin:0!important;border-radius:11px!important;
+  }
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .head{
+    height:40px!important;min-height:40px!important;
+  }
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .head-title{
+    max-width:78%!important;font-size:10px!important;letter-spacing:1px!important;
+  }
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .head-tag{
+    right:7px!important;font-size:6.5px!important;padding:3px 5px!important;
+  }
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .panel-body{
+    top:40px!important;height:calc(100% - 40px)!important;
+  }
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .insurance-body{
+    top:40px!important;height:calc(100% - 40px)!important;
+    padding:14px!important;padding-bottom:84px!important;
+    overflow-y:auto!important;justify-content:flex-start!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .insurance-body .asf-app{
+    width:100%!important;max-width:520px!important;margin:auto!important;
+  }
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .asf-status-card{
+    margin-top:4px!important;
+  }
+
+  /* ASF — legível em toque e sem a faixa microscópica da versão anterior. */
+  html body .insurance .asf-rate-widget,
+  html body #asfRateWidget.asf-rate-widget{
+    left:0!important;right:0!important;bottom:0!important;top:auto!important;
+    width:100%!important;min-width:100%!important;max-width:100%!important;
+    height:68px!important;min-height:68px!important;max-height:68px!important;
+    padding:7px 8px!important;border-radius:0 0 11px 11px!important;
+    display:grid!important;grid-template-columns:84px minmax(0,1fr) minmax(0,1fr) 58px!important;
+    grid-template-rows:24px 28px!important;gap:4px!important;
+    align-items:center!important;overflow:hidden!important;transform:none!important;
+  }
+  html body .insurance .asf-rate-label{
+    grid-column:1!important;grid-row:1!important;display:flex!important;
+    align-items:center!important;justify-content:flex-start!important;gap:5px!important;
+    height:24px!important;font-size:7px!important;letter-spacing:.7px!important;
+    white-space:nowrap!important;overflow:hidden!important;
+  }
+  html body .insurance .asf-rate-label em{font-size:5.5px!important;}
+  html body .insurance .asf-rate-dashboard{
+    grid-column:2 / 5!important;grid-row:1 / 3!important;
+    height:56px!important;min-height:0!important;display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:4px!important;
+  }
+  html body .insurance .asf-rate-metric{
+    height:56px!important;min-height:56px!important;padding:4px 3px!important;
+    flex-direction:column!important;gap:3px!important;justify-content:center!important;
+    border-radius:6px!important;
+  }
+  html body .insurance .asf-rate-metric span{display:block!important;font-size:5.2px!important;letter-spacing:.45px!important;}
+  html body .insurance .asf-rate-metric strong{font-size:10px!important;line-height:1!important;}
+  html body .insurance .asf-rate-metric strong b{font-size:6px!important;}
+  html body .insurance .asf-rate-sub{grid-column:1!important;grid-row:2!important;height:auto!important;font-size:5.2px!important;text-align:left!important;overflow:hidden!important;}
+
+  /* Histórico — dock dedicado, separado dos resultados. */
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .consulta-history-bottom-wrap{
+    position:fixed!important;left:8px!important;right:8px!important;bottom:6px!important;top:auto!important;
+    width:auto!important;height:38px!important;z-index:2400!important;
+    display:flex!important;align-items:center!important;justify-content:center!important;
+    transform:none!important;margin:0!important;padding:0!important;
+  }
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .consulta-history-bottom{
+    width:100%!important;min-width:0!important;height:38px!important;min-height:38px!important;
+    margin:0!important;border-radius:8px!important;font-size:9px!important;letter-spacing:.8px!important;
+  }
+
+  /* Aviso operacional — nunca esmagado entre cards. */
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .verix-livrete-warning{
+    width:100%!important;min-height:44px!important;height:auto!important;
+    margin:0!important;padding:9px 10px!important;box-sizing:border-box!important;
+    border-radius:8px!important;font-size:7.5px!important;line-height:1.35!important;
+    display:flex!important;align-items:center!important;gap:8px!important;
+  }
+
+  /* Touch: elimina movimentos de hover que degradam rasterização/legibilidade. */
+  html body .panel:hover,
+  html body .mm74-card:hover,
+  html body .rail-item:hover,
+  html body .tool:hover,
+  html body .consult:hover{transform:none!important;}
+  html body .panel,
+  html body .mm74-card,
+  html body button{-webkit-tap-highlight-color:transparent;}
+}
+
+@media (max-width:700px){
+  html body .insurance .asf-app{zoom:1!important;transform:none!important;}
+  html body .command{height:126px!important;}
+  html body .command .searchbar{top:28px!important;height:64px!important;}
+  html body .command .searchbar form{grid-template-columns:1fr 1fr!important;grid-template-rows:38px 38px!important;gap:6px!important;}
+  html body .command .field label{display:none!important;}
+  html body .command .field input{height:38px!important;font-size:15px!important;}
+  html body .command .consult{grid-column:1 / 3!important;height:38px!important;min-width:0!important;font-size:10px!important;}
+  html body .command .tools{top:95px!important;height:27px!important;}
+  html body .command .tool{font-size:6.5px!important;padding:0 4px!important;}
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active{
+    top:156px!important;bottom:50px!important;
+    grid-template-columns:1fr!important;
+    grid-template-rows:330px 330px minmax(360px,auto) auto!important;
+    grid-template-areas:'insurance' 'imt1' 'imt2' 'warning'!important;
+    gap:9px!important;padding-bottom:10px!important;
+  }
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active > section.insurance{order:1!important;}
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active > section:nth-child(1){order:2!important;}
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active > section:nth-child(2){order:3!important;}
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active > .verix-livrete-warning{order:4!important;}
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active > .panel{min-height:0!important;height:auto!important;}
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .insurance-body{padding:12px!important;padding-bottom:82px!important;}
+  html body .insurance .asf-rate-widget,
+  html body #asfRateWidget.asf-rate-widget{height:72px!important;min-height:72px!important;max-height:72px!important;grid-template-columns:88px minmax(0,1fr)!important;grid-template-rows:56px 10px!important;gap:2px 6px!important;}
+  html body .insurance .asf-rate-label{grid-column:1!important;grid-row:1!important;height:56px!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;gap:5px!important;font-size:7px!important;}
+  html body .insurance .asf-rate-dashboard{grid-column:2!important;grid-row:1!important;height:56px!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:4px!important;}
+  html body .insurance .asf-rate-metric{height:56px!important;min-height:56px!important;}
+  html body .insurance .asf-rate-sub{grid-column:1 / 3!important;grid-row:2!important;font-size:5.5px!important;text-align:center!important;}
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .panel-body,
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .insurance-body{top:40px!important;}
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .head{height:40px!important;}
+
+  /* Página menu: grelha confortável e leitura limpa. */
+  html body .main-menu-screen.show .main-menu-v74-shell{
+    min-height:100dvh!important;height:auto!important;padding:16px 12px 28px!important;overflow:visible!important;
+  }
+  html body .main-menu-screen.show .main-menu-v74-title{
+    font-size:17px!important;letter-spacing:1.5px!important;margin-bottom:5px!important;text-align:center!important;
+  }
+  html body .main-menu-screen.show .main-menu-v74-grid-big{
+    width:100%!important;grid-template-columns:1fr!important;gap:10px!important;margin-top:14px!important;
+  }
+  html body .main-menu-screen.show .main-menu-v74-grid-big .mm74-card{
+    height:116px!important;min-height:116px!important;border-radius:14px!important;
+  }
+  html body .main-menu-screen.show .main-menu-v74-grid-big .mm74-icon{font-size:38px!important;margin-bottom:8px!important;}
+  html body .main-menu-screen.show .main-menu-v74-grid-big .mm74-label{font-size:10px!important;}
+  html body .main-menu-screen.show .main-menu-v74-grid-small{
+    width:100%!important;grid-template-columns:1fr 1fr!important;grid-auto-rows:86px!important;gap:8px!important;margin-top:10px!important;
+  }
+  html body .main-menu-screen.show .main-menu-v74-grid-small .mm74-card,
+  html body .main-menu-screen.show .main-menu-v74-grid-small .mm74-card:nth-child(n){
+    width:100%!important;height:86px!important;min-height:86px!important;max-height:none!important;border-radius:11px!important;padding:8px!important;
+  }
+  html body .main-menu-screen.show .main-menu-v74-grid-small .mm74-icon{font-size:24px!important;margin-bottom:7px!important;}
+  html body .main-menu-screen.show .main-menu-v74-grid-small .mm74-label{font-size:7.5px!important;line-height:1.15!important;white-space:normal!important;text-align:center!important;}
+  html body .main-menu-screen.show .verix-system-message-card{
+    width:100%!important;margin-top:12px!important;padding:15px 13px 14px!important;border-radius:11px!important;
+  }
+  html body .main-menu-screen.show .verix-system-heading-rule{font-size:8px!important;}
+  html body .main-menu-screen.show .verix-system-update strong{font-size:8.5px!important;line-height:1.35!important;}
+  html body .main-menu-screen.show .verix-system-update span{font-size:7.4px!important;line-height:1.35!important;}
+  html body .main-menu-screen.show .verix-system-contact-copy span,
+  html body .main-menu-screen.show .verix-system-contact-copy a{font-size:7px!important;}
+  html body .main-menu-screen.show .verix-system-disclaimer{font-size:6.5px!important;line-height:1.35!important;}
+}
+
+@media(max-width:380px){
+  html body .command .tools{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:3px!important;}
+  html body .command .tool{font-size:6px!important;}
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .consulta-history-bottom{font-size:8px!important;}
+}
+</style>
+<script id="verix-mobile-boot-hardening">
+(function(){
+  function sync(){
+    try{
+      var w=Math.max(document.documentElement.clientWidth||0,window.innerWidth||0);
+      if(w<=900) document.body.style.zoom='1';
+    }catch(e){}
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',sync); else sync();
+  window.addEventListener('resize',sync,{passive:true});
+  window.addEventListener('orientationchange',function(){setTimeout(sync,40);},{passive:true});
+})();
+</script>
+<script id="verix-index-boot-cache-hardening">
+(function(){
+  try{
+    var isWeb=/^https?:$/i.test(location.protocol);
+    if(!isWeb)return;
+    var marker='_verix_boot=';
+    var href=window.location.href;
+    if(href.indexOf(marker)===-1){
+      var hash=location.hash||'';
+      var base=href.split('#')[0];
+      var u=new URL(base);
+      u.searchParams.set('_verix_boot',String(Date.now()));
+      u.hash=hash.replace(/^#/,'');
+      window.location.replace(u.toString());
+      return;
+    }
+    if(window.history&&history.replaceState){
+      var clean=new URL(window.location.href);
+      clean.searchParams.delete('_verix_boot');
+      history.replaceState(null,document.title,clean.pathname+(clean.search?'?'+clean.searchParams.toString():'')+clean.hash);
+    }
+  }catch(e){
+    try{if(/^https?:$/i.test(location.protocol)&&window.location.reload)window.location.reload();}catch(_){}
+  }
+})();
+</script>
+
 </body>
 </html>
