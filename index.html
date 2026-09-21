@@ -1,5 +1,31 @@
-<!-- VÉRIX 1.3 — publicação final -->
-<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VÉRIX — Plataforma Digital 1.3</title>
+<!-- VÉRIX 1.3 — publicação final · responsive + force refresh -->
+<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<script id="verix-force-refresh-boot">
+(function(){
+  try{
+    var marker='_verix_boot=';
+    var href=window.location.href;
+    if(href.indexOf(marker)===-1){
+      var hash='';
+      var hi=href.indexOf('#');
+      if(hi>=0){hash=href.slice(hi);href=href.slice(0,hi);}
+      window.location.replace(href+(href.indexOf('?')>=0?'&':'?')+marker+Date.now()+hash);
+      return;
+    }
+    if(window.history && history.replaceState){
+      try{
+        var u=new URL(window.location.href);
+        u.searchParams.delete('_verix_boot');
+        history.replaceState(null,document.title,u.pathname+(u.search?'?'+u.searchParams.toString():'')+u.hash);
+      }catch(_e){}
+    }
+  }catch(_e){}
+})();
+</script>
+<title>VÉRIX — Plataforma Digital 1.3</title>
 <meta name="description" content="VÉRIX — Plataforma Digital de apoio ao serviço operacional.">
 <meta name="theme-color" content="#03080c">
 <meta property="og:type" content="website">
@@ -6541,6 +6567,156 @@ html body .panel {
   transform-style: flat !important;
 }
 </style>
+
+<style id="verix-13-responsive-ultimate">
+/* =========================================================
+   VÉRIX 1.3 — RESPONSIVIDADE FINAL / MOBILE-FIRST
+   Desktop intacto; tablet e telemóvel reorganizam a interface
+   sem alterar a lógica de consulta IMT/ASF.
+   ========================================================= */
+
+/* TABLET / ECRÃ INTERMÉDIO */
+@media (min-width: 761px) and (max-width: 1200px){
+  html body{overflow:hidden!important;}
+  html body .command{height:148px!important;top:10px!important;left:10px!important;right:10px!important;}
+  html body .command .brand{left:12px!important;top:10px!important;width:250px!important;height:58px!important;}
+  html body .command .brand-notice{width:245px!important;height:58px!important;align-items:flex-start!important;text-align:left!important;}
+  html body .command .brand-notice-title{font-size:10.5px!important;max-width:245px!important;line-height:1.05!important;}
+  html body .command .brand-notice-text{font-size:7px!important;max-width:245px!important;line-height:1.25!important;}
+  html body .command .time{right:12px!important;bottom:9px!important;font-size:7px!important;}
+  html body .command .searchbar{left:272px!important;right:164px!important;top:11px!important;transform:none!important;width:auto!important;max-width:none!important;min-width:0!important;height:112px!important;padding:7px!important;}
+  html body .command .searchbar form{width:100%!important;display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 104px!important;align-items:end!important;gap:7px!important;}
+  html body .command .field{min-width:0!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:3px!important;}
+  html body .command .field label{text-align:center!important;font-size:8px!important;}
+  html body .command .field input{width:100%!important;height:41px!important;font-size:14px!important;}
+  html body .command .consult{width:104px!important;height:41px!important;padding:0 7px!important;font-size:10px!important;}
+  html body .command .tools{left:auto!important;right:8px!important;top:11px!important;width:142px!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;}
+  html body .command .tools .tool{width:100%!important;height:39px!important;padding:0 5px!important;font-size:8px!important;}
+  html body .command .tools .tool.full{font-size:16px!important;}
+  html body #verixOpsHud{top:160px!important;left:12px!important;right:12px!important;}
+  html body .main{top:188px!important;left:12px!important;right:12px!important;bottom:67px!important;display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;grid-auto-rows:minmax(330px,1fr)!important;gap:10px!important;overflow-y:auto!important;overflow-x:hidden!important;padding-right:2px!important;}
+  html body .main>.panel{min-height:330px!important;height:auto!important;}
+  html body .main>.insurance{display:block!important;grid-column:1/-1!important;min-height:315px!important;}
+  html body .rail{display:flex!important;left:8px!important;right:8px!important;top:auto!important;bottom:8px!important;width:auto!important;height:50px!important;flex-direction:row!important;justify-content:flex-start!important;overflow-x:auto!important;overflow-y:hidden!important;padding:4px!important;gap:5px!important;border-radius:11px!important;}
+  html body .rail-item{flex:0 0 68px!important;width:68px!important;height:40px!important;border-radius:7px!important;}
+  html body .rail-item .ico{font-size:15px!important;}
+  html body .bottom{display:none!important;}
+}
+
+/* MOBILE */
+@media (max-width: 760px){
+  html,body{width:100%!important;height:100%!important;overflow:hidden!important;}
+  html body{background:radial-gradient(circle at 50% 0%,#17323a 0,#07131a 28%,#02070a 78%)!important;}
+
+  /* Barra de comando: marca compacta + pesquisa + ferramentas. */
+  html body .command{top:8px!important;left:8px!important;right:8px!important;height:198px!important;border-radius:12px!important;}
+  html body .command .brand{left:10px!important;top:9px!important;width:calc(100% - 105px)!important;height:42px!important;}
+  html body .command .brand-notice{width:100%!important;height:42px!important;align-items:flex-start!important;text-align:left!important;justify-content:center!important;}
+  html body .command .brand-notice-title{width:100%!important;max-width:100%!important;font-size:9.5px!important;line-height:1.08!important;letter-spacing:.05px!important;}
+  html body .command .brand-notice-text{width:100%!important;max-width:100%!important;margin-top:3px!important;font-size:6.4px!important;line-height:1.18!important;}
+  html body .command .time{right:9px!important;top:10px!important;bottom:auto!important;text-align:right!important;font-size:6.5px!important;line-height:1.25!important;}
+  html body .command .time .date-label{display:none!important;}
+
+  html body .command .searchbar{left:8px!important;right:8px!important;top:55px!important;width:auto!important;min-width:0!important;max-width:none!important;transform:none!important;height:83px!important;padding:7px!important;border-radius:9px!important;}
+  html body .command .searchbar form{width:100%!important;height:100%!important;display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 92px!important;align-items:end!important;gap:6px!important;}
+  html body .command .field{min-width:0!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:2px!important;}
+  html body .command .field label{font-size:7px!important;letter-spacing:.65px!important;text-align:center!important;}
+  html body .command .field input{width:100%!important;height:39px!important;padding:0 5px!important;font-size:13px!important;letter-spacing:.5px!important;}
+  html body .command .consult{width:92px!important;height:39px!important;padding:0 4px!important;font-size:9px!important;letter-spacing:.45px!important;white-space:nowrap!important;}
+
+  html body .command .tools{left:8px!important;right:8px!important;top:145px!important;width:auto!important;height:44px!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:6px!important;overflow-x:auto!important;overflow-y:hidden!important;padding-bottom:1px!important;scrollbar-width:none!important;}
+  html body .command .tools::-webkit-scrollbar{display:none!important;}
+  html body .command .tools .tool{flex:0 0 auto!important;width:auto!important;min-width:64px!important;height:38px!important;padding:0 9px!important;font-size:8px!important;}
+  html body .command .tools .tool.full{width:40px!important;min-width:40px!important;padding:0!important;font-size:16px!important;}
+
+  /* HUD fica entre a barra de comando e a consulta. */
+  html body #verixOpsHud{left:10px!important;right:10px!important;top:210px!important;height:21px!important;padding:0 7px!important;font-size:6px!important;}
+  html body #verixOpsHud .hud-meta{display:none!important;}
+
+  /* Consulta: uma coluna, scroll interno, cartões suficientemente altos para IMT/ASF. */
+  html body .main{top:238px!important;left:8px!important;right:8px!important;bottom:66px!important;display:flex!important;flex-direction:column!important;gap:9px!important;overflow-x:hidden!important;overflow-y:auto!important;padding:0 1px 4px 0!important;-webkit-overflow-scrolling:touch!important;overscroll-behavior:contain!important;}
+  html body .main>.panel{width:100%!important;flex:0 0 350px!important;min-height:350px!important;height:350px!important;border-radius:11px!important;}
+  html body .main>.insurance{display:block!important;flex-basis:330px!important;min-height:330px!important;height:330px!important;}
+  html body .panel .head{height:48px!important;min-height:48px!important;}
+  html body .head-title{font-size:12px!important;letter-spacing:1px!important;}
+  html body .head-tag{right:9px!important;font-size:7px!important;}
+  html body .head-code{left:9px!important;font-size:6px!important;}
+  html body .panel-body{top:48px!important;}
+  html body .panel-body iframe{min-height:0!important;}
+  html body .insurance-body{top:48px!important;padding:12px 10px!important;}
+  html body .status{font-size:20px!important;}
+  html body .insurance-details{margin-top:12px!important;}
+  html body .insurance-row{padding:7px 0!important;font-size:10px!important;}
+  html body .insurance-source{font-size:7px!important;}
+  html body .asf-rate-widget{top:54px!important;right:7px!important;min-width:116px!important;padding:6px 7px!important;border-radius:7px!important;transform:scale(.9);transform-origin:top right;}
+  html body .asf-rate-label{font-size:6px!important;}
+  html body .asf-rate-main{font-size:15px!important;}
+
+  /* Navegação operacional vira dock inferior horizontal. */
+  html body .rail{display:flex!important;left:8px!important;right:8px!important;top:auto!important;bottom:7px!important;width:auto!important;height:51px!important;flex-direction:row!important;justify-content:flex-start!important;overflow-x:auto!important;overflow-y:hidden!important;padding:4px!important;gap:5px!important;border-radius:11px!important;background:rgba(5,14,19,.97)!important;scroll-snap-type:x proximity!important;scrollbar-width:none!important;}
+  html body .rail::-webkit-scrollbar{display:none!important;}
+  html body .rail-item{flex:0 0 66px!important;width:66px!important;height:41px!important;border-radius:7px!important;scroll-snap-align:start!important;}
+  html body .rail-item .ico{font-size:15px!important;}
+  html body .rail-item{font-size:7px!important;letter-spacing:.25px!important;}
+  html body .bottom{display:none!important;}
+
+  /* Ecrãs modais e histórico ocupam corretamente o viewport móvel. */
+  html body .history-overlay{padding:8px!important;align-items:stretch!important;}
+  html body .history-window{width:100%!important;max-width:none!important;max-height:none!important;height:100%!important;border-radius:12px!important;}
+  html body .history-body{max-height:none!important;height:calc(100% - 64px)!important;padding:10px!important;}
+  html body .history-top{height:58px!important;padding:0 10px!important;}
+  html body .history-title{font-size:14px!important;}
+  html body .history-close{width:34px!important;height:34px!important;}
+}
+
+/* MOBILE MUITO PEQUENO — prioridades: consulta, leitura e navegação. */
+@media (max-width: 420px){
+  html body .command{height:204px!important;}
+  html body .command .brand{width:calc(100% - 95px)!important;}
+  html body .command .brand-notice-title{font-size:8.7px!important;}
+  html body .command .brand-notice-text{font-size:6px!important;}
+  html body .command .searchbar{top:54px!important;height:87px!important;}
+  html body .command .searchbar form{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 88px!important;}
+  html body .command .consult{width:88px!important;font-size:8.4px!important;}
+  html body .command .tools{top:150px!important;}
+  html body #verixOpsHud{top:216px!important;}
+  html body .main{top:244px!important;}
+  html body .main>.panel{flex-basis:345px!important;height:345px!important;min-height:345px!important;}
+  html body .main>.insurance{flex-basis:325px!important;height:325px!important;min-height:325px!important;}
+}
+
+/* MENU PRINCIPAL NO TELEMÓVEL — leitura limpa e toque confortável. */
+@media (max-width: 620px){
+  html body .main-menu-screen.show .main-menu-v74-shell{padding:12px 10px 18px!important;}
+  html body .main-menu-screen.show .main-menu-v74-title{margin-bottom:12px!important;}
+  html body .main-menu-screen.show .main-menu-v74-title .verix-brand{font-size:26px!important;}
+  html body .main-menu-screen.show .main-menu-v74-title .verix-menu-label{font-size:8px!important;letter-spacing:1.7px!important;}
+  html body .main-menu-screen.show .main-menu-v74-grid-big{width:100%!important;grid-template-columns:1fr!important;grid-auto-rows:118px!important;gap:9px!important;}
+  html body .main-menu-screen.show .main-menu-v74-grid-big .mm74-card{width:100%!important;height:118px!important;min-height:118px!important;padding:16px!important;border-radius:11px!important;}
+  html body .main-menu-screen.show .main-menu-v74-grid-big .mm74-icon{font-size:34px!important;margin-bottom:8px!important;}
+  html body .main-menu-screen.show .main-menu-v74-grid-big .mm74-label{font-size:11px!important;letter-spacing:1.15px!important;}
+  html body .main-menu-screen.show .main-menu-v74-grid-small{width:100%!important;grid-template-columns:1fr 1fr!important;grid-template-rows:none!important;gap:8px!important;margin-top:24px!important;}
+  html body .main-menu-screen.show .main-menu-v74-grid-small .mm74-card,
+  html body .main-menu-screen.show .main-menu-v74-grid-small .mm74-card.mm74-extra,
+  html body .main-menu-screen.show .main-menu-v74-grid-small .mm74-leg,
+  html body .main-menu-screen.show .main-menu-v74-grid-small .mm74-tools,
+  html body .main-menu-screen.show .main-menu-v74-grid-small .mm74-info,
+  html body .main-menu-screen.show .main-menu-v74-grid-small .mm74-settings{width:100%!important;height:92px!important;min-height:92px!important;max-height:92px!important;padding:10px 6px!important;border-radius:9px!important;}
+  html body .main-menu-screen.show .main-menu-v74-grid-small .mm74-icon{font-size:22px!important;margin-bottom:6px!important;}
+  html body .main-menu-screen.show .main-menu-v74-grid-small .mm74-label{font-size:7.5px!important;letter-spacing:.7px!important;white-space:normal!important;line-height:1.15!important;}
+  html body .main-menu-screen.show .main-menu-v74-footer{width:100%!important;margin-top:16px!important;padding:14px 4px 62px!important;}
+  html body .main-menu-screen.show .main-menu-v74-footer .mm74-footer-title{font-size:11px!important;}
+  html body .main-menu-screen.show .main-menu-v74-footer .mm74-footer-copy{font-size:7px!important;line-height:1.45!important;}
+  html body .main-menu-screen.show .main-menu-v74-footer .mm74-footer-motto{font-size:8px!important;}
+  html body .main-menu-screen.show .verix-system-message-card{width:100%!important;margin:12px auto 0!important;}
+}
+
+/* Evita zoom cromático/blur do browser durante toque em botões. */
+@media (hover:none) and (pointer:coarse){
+  html body .panel,html body .rail-item,html body .tool,html body .consult,html body .mm74-card,html body .module-card{transition:none!important;}
+}
+</style>
+
 </head><body>
 <div class="cinematic-bg"></div>
 <div class="command"> <div class="brand"><div class="brand-notice"> <div class="brand-notice-title">Ferramenta de apoio ao serviço operacional <span>· Não oficial</span></div> <div class="brand-notice-text">Informação para <strong>apoio e consulta</strong>.<br>Confirme sempre a legislação, procedimentos e demais dados nas fontes oficiais antes da utilização em serviço.</div>
