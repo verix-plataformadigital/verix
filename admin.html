@@ -198,27 +198,6 @@ async function loadSelectedHistoryDay(){
 let statsLoading=false;
 let authLoading=false;
 
-async function adminAuth(){
-  const t=q('token').value.trim();
-  if(!t||authLoading)return false;
-  authLoading=true;
-  q('loginError').textContent='A validar acesso…';
-  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),8000);
-  try{
-    const r=await fetch(API+'?auth=1',{headers:{'X-Admin-Token':t},cache:'no-store',signal:controller.signal});
-    const d=await r.json().catch(()=>({}));
-    if(!r.ok||!d.ok)throw Error(d.error||'HTTP '+r.status);
-    q('loginError').textContent='';
-    q('login').style.display='none';
-    q('app').style.display='block';
-    q('status').textContent='A carregar telemetria…';
-    return true;
-  }catch(e){
-    q('loginError').textContent=e.name==='AbortError'?'Serviço de autenticação demorou demasiado.':'Password inválida ou serviço indisponível.';
-    return false;
-  }finally{clearTimeout(timer);authLoading=false;}
-}
-
 async function loadStats(){
   const t=q('token').value.trim();
   if(!t||statsLoading)return;
@@ -227,7 +206,8 @@ async function loadStats(){
   q('status').textContent='A atualizar telemetria…';
   try{
     const r=await fetch(API,{headers:{'X-Admin-Token':t},cache:'no-store',signal:controller.signal});
-    const d=await r.json();
+    const d=await r.json().catch(()=>({}));
+    if(r.status===401||r.status===403)throw Error('UNAUTHORIZED');
     if(!r.ok||!d.ok)throw Error(d.error||'HTTP '+r.status);
     const o=d.overview||{},v=d.vehicle||{},a24=op(d,'operational_24h'),a7=op(d,'operational_7d'),a30=op(d,'operational_30d'),a90=op(d,'operational_90d'),all=op(d,'operational_all_time');
     setv('online',o.active_users_now);setv('active10',o.active_users_10m);setv('users24',o.unique_users_24h);setv('users30',o.unique_users_30d);
@@ -236,15 +216,29 @@ async function loadStats(){
     [['c24',a24.speed_entries],['c7',a7.speed_entries],['c30',a30.speed_entries],['c90',a90.speed_entries],['legAccess24',a24.legislation_accesses],['legSearch24',a24.legislation_searches],['legCopy24',a24.legislation_copies],['legCopy30',a30.legislation_copies],['allUsers',o.unique_users_all_time],['allVehicles',v.lookups_all_time],['allCompleted',v.completed_all_time],['allUnresolved',v.unresolved_all_time],['allImt',v.imt_results_all_time],['allYes',v.yes_insurance_all_time],['allNo',v.no_insurance_all_time],['allSpeed',all.speed_entries],['allLeg',all.legislation_accesses],['allCopy',all.legislation_copies],['allAlcohol',all.alcohol_lookups]].forEach(x=>setv(x[0],x[1]));
     if(q('vehicleFlowNote')){const searches=Number(v.lookups_24h||0),completed=Number(v.accounted_24h!=null?v.accounted_24h:v.completed_24h||0),yes=Number(v.yes_insurance_24h||0),no=Number(v.no_insurance_24h||0),errors=Number(v.errors_24h||0),unresolved=Number(v.unresolved_24h||0),gap=Number(v.balance_gap_24h||0);q('vehicleFlowNote').innerHTML='<strong>24h · estado das consultas:</strong> '+num(searches)+' consultas iniciadas = '+num(completed)+' com resultado ASF ('+num(yes)+' com seguro + '+num(no)+' sem seguro + '+num(errors)+' erro/indisponibilidade) + '+num(unresolved)+' sem resultado final.'+(gap===0?' <strong>Conferência OK.</strong>':' <strong style="color:#f0b35a">Diferença detetada: '+num(gap)+'</strong>');}
     draw('mods24',a24.module_opens);draw('mods30',a30.module_opens);daily(d.daily_operational_30d);renderTopCopies('legTop24',d.legislation_top_copies_24h);renderTopCopies('legTop30',d.legislation_top_copies_30d);renderComparison(d.comparison_24h);initHourlyHistoryControls();loadSelectedHistoryDay();renderPeak(d.hourly_30d,d.peak_hour_30d);
-    q('first').textContent=d.periods?.first_seen?new Date(d.periods.first_seen).toLocaleString('pt-PT'):'—';q('last').textContent=d.periods?.last_activity?new Date(d.periods.last_activity).toLocaleString('pt-PT'):'—';q('updated').textContent=d.generated_at?new Date(d.generated_at).toLocaleString('pt-PT'):'—';q('status').textContent='Acesso autorizado · atualizado em '+new Date(d.generated_at||Date.now()).toLocaleString('pt-PT');
+    q('first').textContent=d.periods?.first_seen?new Date(d.periods.first_seen).toLocaleString('pt-PT'):'—';q('last').textContent=d.periods?.last_activity?new Date(d.periods.last_activity).toLocaleString('pt-PT'):'—';q('updated').textContent=d.generated_at?new Date(d.generated_at).toLocaleString('pt-PT'):'—';q('status').textContent='Atualizado em '+new Date(d.generated_at||Date.now()).toLocaleString('pt-PT');
   }catch(e){
-    q('status').textContent='Falha na atualização: '+(e.name==='AbortError'?'timeout de 30 s':e.message);
+    if(e && e.message==='UNAUTHORIZED'){
+      q('app').style.display='none';
+      q('login').style.display='flex';
+      q('loginError').textContent='Password inválida.';
+    }else{
+      q('status').textContent='Falha na atualização: '+(e.name==='AbortError'?'timeout de 30 s':e.message);
+    }
   }finally{clearTimeout(timer);statsLoading=false;}
 }
 
 async function login(){
   q('loginError').textContent='';
-  const ok=await adminAuth();
-  if(ok)await loadStats();
+  const t=q('token').value.trim();
+  if(!t){
+    q('loginError').textContent='Introduza a palavra-passe.';
+    return;
+  }
+  /* Entrada imediata: não bloquear o ecrã de login à espera das estatísticas. */
+  q('login').style.display='none';
+  q('app').style.display='block';
+  q('status').textContent='A carregar…';
+  await loadStats();
 }
 async function resetPeriod(period){const names={'24h':'24 horas','7d':'7 dias','30d':'30 dias','90d':'90 dias','all':'vida'};if(!confirm('RESET — '+names[period].toUpperCase()+'\n\nIsto altera o início estatístico desse período sem apagar os eventos físicos.\n\nContinuar?'))return;q('resetStatus').textContent='A aplicar reset…';try{const r=await fetch(RESET_API,{method:'POST',headers:{'X-Admin-Token':q('token').value.trim(),'Content-Type':'application/json'},body:JSON.stringify({period}),cache:'no-store'});const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'HTTP '+r.status);q('resetStatus').textContent='Reset aplicado: '+names[period]+'. Os eventos continuam guardados.';await loadStats()}catch(e){q('resetStatus').textContent='Erro: '+e.message}}async function resetTotal(){if(!confirm('ATENÇÃO — RESET TOTAL\n\nIsto vai APAGAR todos os eventos, sessões, instalações e resets.\n\nEsta operação não pode ser desfeita.\n\nContinuar?'))return;q('resetStatus').textContent='A apagar todos os dados…';try{const r=await fetch(TOTAL_API,{method:'POST',headers:{'X-Admin-Token':q('token').value.trim(),'Content-Type':'application/json'},body:JSON.stringify({confirm:'RESET_VERIX'}),cache:'no-store'});const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'HTTP '+r.status);q('resetStatus').textContent='RESET TOTAL concluído.';await loadStats()}catch(e){q('resetStatus').textContent='Erro no reset total: '+e.message}}function logout(){q('token').value='';q('app').style.display='none';q('login').style.display='flex';q('loginError').textContent=''}q('token').addEventListener('keydown',e=>{if(e.key==='Enter')login()});setInterval(()=>{if(q('app').style.display==='block')loadStats()},30000);
