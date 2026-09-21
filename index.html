@@ -3,28 +3,38 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<script id="verix-force-refresh-boot">
+<script id="verix-force-refresh-boot-safe">
 (function(){
   try{
-    var marker='_verix_boot=';
-    var href=window.location.href;
-    if(href.indexOf(marker)===-1){
-      var hash='';
-      var hi=href.indexOf('#');
-      if(hi>=0){hash=href.slice(hi);href=href.slice(0,hi);}
-      window.location.replace(href+(href.indexOf('?')>=0?'&':'?')+marker+Date.now()+hash);
+    if(!/^https?:$/i.test(location.protocol)) return;
+    var KEY='VERIX_FORCE_REFRESH_13_ONCE';
+    var MARKER='_verix_boot';
+    var u=new URL(location.href);
+    var hasMarker=u.searchParams.has(MARKER);
+    var armed=sessionStorage.getItem(KEY)==='1';
+
+    /* Primeiro carregamento: faz uma única navegação com cache-buster.
+       Segundo carregamento: remove o parâmetro e deixa a aplicação arrancar.
+       O sessionStorage impede que várias cópias deste mecanismo criem loop. */
+    if(!hasMarker){
+      if(armed) return;
+      sessionStorage.setItem(KEY,'1');
+      u.searchParams.set(MARKER,String(Date.now()));
+      location.replace(u.toString());
       return;
     }
-    if(window.history && history.replaceState){
-      try{
-        var u=new URL(window.location.href);
-        u.searchParams.delete('_verix_boot');
-        history.replaceState(null,document.title,u.pathname+(u.search?'?'+u.searchParams.toString():'')+u.hash);
-      }catch(_e){}
+
+    sessionStorage.removeItem(KEY);
+    u.searchParams.delete(MARKER);
+    if(history.replaceState){
+      history.replaceState(null,document.title,u.pathname+(u.search?'?'+u.searchParams.toString():'')+u.hash);
     }
-  }catch(_e){}
+  }catch(e){
+    try{sessionStorage.removeItem('VERIX_FORCE_REFRESH_13_ONCE');}catch(_){}
+  }
 })();
 </script>
+
 <title>VÉRIX — Plataforma Digital 1.3</title>
 <meta name="description" content="VÉRIX — Plataforma Digital de apoio ao serviço operacional.">
 <meta name="theme-color" content="#03080c">
@@ -18199,32 +18209,7 @@ window.VÉRIXFactoryResetModal={open,close,confirm:confirmReset,execute};m.addEv
   window.addEventListener('orientationchange',function(){setTimeout(sync,40);},{passive:true});
 })();
 </script>
-<script id="verix-index-boot-cache-hardening">
-(function(){
-  try{
-    var isWeb=/^https?:$/i.test(location.protocol);
-    if(!isWeb)return;
-    var marker='_verix_boot=';
-    var href=window.location.href;
-    if(href.indexOf(marker)===-1){
-      var hash=location.hash||'';
-      var base=href.split('#')[0];
-      var u=new URL(base);
-      u.searchParams.set('_verix_boot',String(Date.now()));
-      u.hash=hash.replace(/^#/,'');
-      window.location.replace(u.toString());
-      return;
-    }
-    if(window.history&&history.replaceState){
-      var clean=new URL(window.location.href);
-      clean.searchParams.delete('_verix_boot');
-      history.replaceState(null,document.title,clean.pathname+(clean.search?'?'+clean.searchParams.toString():'')+clean.hash);
-    }
-  }catch(e){
-    try{if(/^https?:$/i.test(location.protocol)&&window.location.reload)window.location.reload();}catch(_){}
-  }
-})();
-</script>
+
 
 
 <script id="verix-1-3-layout-migration">
