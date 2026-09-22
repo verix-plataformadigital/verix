@@ -1,30 +1,40 @@
-<!-- VÉRIX 1.3 — publicação final · responsive + force refresh -->
+<!-- VÉRIX 1.3 — publicação final · responsive + cache boot seguro -->
 <!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<script id="verix-cache-boot-v13-safe">
+(function(){
+  'use strict';
+  /* VÉRIX 1.3 — cache boot seguro.
+     Uma única atualização automática quando uma nova release é aberta.
+     F5 normal não faz redirect e não existe loop de reload. */
+  var RELEASE='1.3';
+  var SESSION_KEY='VERIX_BOOT_VERSION_V13';
+  var QUERY='verix_fresh';
+  try{
+    if(!/^https?:$/i.test(window.location.protocol)) return;
+    var seen=sessionStorage.getItem(SESSION_KEY)===RELEASE;
+    var u=new URL(window.location.href);
+    var hasFresh=u.searchParams.has(QUERY);
+
+    if(hasFresh){
+      sessionStorage.setItem(SESSION_KEY,RELEASE);
+      u.searchParams.delete(QUERY);
+      if(window.history&&history.replaceState){
+        history.replaceState(null,document.title,u.pathname+(u.search?'?'+u.searchParams.toString():'')+u.hash);
+      }
+    }else if(!seen){
+      u.searchParams.set(QUERY,String(Date.now()));
+      window.location.replace(u.toString());
+      return;
+    }
+  }catch(e){
+    /* Qualquer falha do mecanismo de cache deve deixar a aplicação abrir normalmente. */
+  }
+})();
+</script>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<script id="verix-force-refresh-boot">
-(function(){
-  try{
-    var marker='_verix_boot=';
-    var href=window.location.href;
-    if(href.indexOf(marker)===-1){
-      var hash='';
-      var hi=href.indexOf('#');
-      if(hi>=0){hash=href.slice(hi);href=href.slice(0,hi);}
-      window.location.replace(href+(href.indexOf('?')>=0?'&':'?')+marker+Date.now()+hash);
-      return;
-    }
-    if(window.history && history.replaceState){
-      try{
-        var u=new URL(window.location.href);
-        u.searchParams.delete('_verix_boot');
-        history.replaceState(null,document.title,u.pathname+(u.search?'?'+u.searchParams.toString():'')+u.hash);
-      }catch(_e){}
-    }
-  }catch(_e){}
-})();
-</script>
+
 <title>VÉRIX — Plataforma Digital 1.3</title>
 <meta name="description" content="VÉRIX — Plataforma Digital de apoio ao serviço operacional.">
 <meta name="theme-color" content="#03080c">
@@ -17537,17 +17547,14 @@ try {
 (function(){
   window.VERIXForceFreshLoad=function(){
     try{
-      var current=window.location.href;
-      var hash=window.location.hash||'';
-      var base=current.split('#')[0];
-      var url=new URL(base);
-      url.searchParams.set('_verix_refresh',String(Date.now()));
-      url.hash=hash.replace(/^#/, '');
-      window.location.replace(url.toString());
+      var u=new URL(window.location.href);
+      u.searchParams.set('verix_fresh',String(Date.now()));
+      window.location.replace(u.toString());
     }catch(e){
-      try{ window.location.reload(); }catch(_){ window.location.href=window.location.href; }
+      /* Nunca entrar em loop de reload em caso de erro. */
+      try{ window.location.reload(); }catch(_e){}
     }
-  };
+  };;
 })();
 </script>
 <script id="v159-factory-reset-modal-script">
@@ -18208,32 +18215,7 @@ window.VÉRIXFactoryResetModal={open,close,confirm:confirmReset,execute};m.addEv
   window.addEventListener('orientationchange',function(){setTimeout(sync,40);},{passive:true});
 })();
 </script>
-<script id="verix-index-boot-cache-hardening">
-(function(){
-  try{
-    var isWeb=/^https?:$/i.test(location.protocol);
-    if(!isWeb)return;
-    var marker='_verix_boot=';
-    var href=window.location.href;
-    if(href.indexOf(marker)===-1){
-      var hash=location.hash||'';
-      var base=href.split('#')[0];
-      var u=new URL(base);
-      u.searchParams.set('_verix_boot',String(Date.now()));
-      u.hash=hash.replace(/^#/,'');
-      window.location.replace(u.toString());
-      return;
-    }
-    if(window.history&&history.replaceState){
-      var clean=new URL(window.location.href);
-      clean.searchParams.delete('_verix_boot');
-      history.replaceState(null,document.title,clean.pathname+(clean.search?'?'+clean.searchParams.toString():'')+clean.hash);
-    }
-  }catch(e){
-    try{if(/^https?:$/i.test(location.protocol)&&window.location.reload)window.location.reload();}catch(_){}
-  }
-})();
-</script>
+
 
 
 <script id="verix-1-3-layout-migration">
