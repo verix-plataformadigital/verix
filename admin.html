@@ -1,168 +1,162 @@
-<!doctype html>
-<html lang="pt-PT">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+<!doctype html><html lang="pt-PT"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>VÉRIX // ADMIN 1.3</title>
-<style>
-:root{--bg:#03090d;--panel:#07161d;--panel2:#091b23;--line:#1a4653;--line2:#153540;--text:#eef6f8;--muted:#78939d;--cyan:#62d8e8;--green:#35f3a0;--red:#ff6879;--amber:#e8bb38;--shadow:0 20px 60px rgba(0,0,0,.36)}
-*{box-sizing:border-box}
-html{scroll-behavior:smooth;background:var(--bg)}
-body{margin:0;min-height:100vh;color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif;background:
-radial-gradient(circle at 50% -10%,rgba(32,104,124,.34),transparent 38%),
-linear-gradient(180deg,#051016 0%,#031016 42%,#02070a 100%);font-size:15px;line-height:1.45}
-body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.13;background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);background-size:44px 44px}
-button,input,select{font:inherit}
-button{cursor:pointer}
-.topbar{position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:16px;height:64px;padding:0 28px;background:rgba(3,10,14,.94);backdrop-filter:blur(18px);border-bottom:1px solid rgba(98,216,232,.18)}
-.brand{display:flex;align-items:center;gap:12px;font:900 14px/1 Consolas,"Courier New",monospace;letter-spacing:2px}.brand .mark{color:var(--cyan)}
-.status-pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid rgba(98,216,232,.25);border-radius:999px;color:#83dcea;background:rgba(12,46,56,.45);font:800 10px/1 Consolas,"Courier New",monospace;letter-spacing:1px}
-.status-pill:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 14px rgba(53,243,160,.75)}
-.spacer{flex:1}
-.topbar button{border-radius:11px;padding:11px 16px;font:900 11px/1 Segoe UI,Arial,sans-serif;letter-spacing:.8px;text-transform:uppercase;color:#e9fbff;border:1px solid rgba(98,216,232,.28);background:linear-gradient(180deg,#12333d,#091f27)}
-.topbar .logout{border-color:rgba(180,200,205,.2);background:linear-gradient(180deg,#1a2830,#10191e);color:#cad9de}
-.shell{width:min(1600px,calc(100% - 40px));margin:0 auto;padding:22px 0 64px}
-.hero{border:1px solid rgba(98,216,232,.23);border-radius:22px;padding:26px 30px 24px;background:linear-gradient(180deg,rgba(8,24,31,.96),rgba(4,13,18,.98));box-shadow:var(--shadow);position:relative;overflow:hidden}
-.hero:before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),#f33d65,var(--cyan),transparent)}
-.kicker{font:900 11px/1 Consolas,"Courier New",monospace;color:var(--cyan);letter-spacing:2px;text-transform:uppercase}.hero h1{margin:14px 0 4px;font-size:34px;line-height:1.05;letter-spacing:.4px;text-transform:uppercase}.hero p{margin:0;color:#83a0a9;font-size:15px}
-.hero-status{display:flex;align-items:center;gap:10px;margin-top:20px;padding:12px 14px;border-left:3px solid var(--cyan);background:rgba(0,41,51,.23);color:#95b0b8;font:700 12px Consolas,"Courier New",monospace;min-height:44px}
-.hero-status-row{display:flex;align-items:center;gap:14px;margin-top:10px;color:#61e2c1;font:800 10px/1 Consolas,"Courier New",monospace;letter-spacing:.8px;text-transform:uppercase}
-.section{margin-top:34px}.section-head{display:flex;align-items:flex-end;gap:16px;border-bottom:1px solid rgba(98,216,232,.15);padding-bottom:12px;margin-bottom:16px}.section-head h2{margin:0;font-size:17px;letter-spacing:1.7px;text-transform:uppercase}.section-head .live{margin-left:auto;color:#61e2c1;font:800 11px Consolas,"Courier New",monospace}
-.overview{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}.card{border:1px solid rgba(98,216,232,.19);border-radius:18px;background:linear-gradient(165deg,rgba(9,25,32,.98),rgba(4,13,18,.98));box-shadow:0 12px 30px rgba(0,0,0,.26);padding:20px 22px}.metric .label{color:#7d99a2;font:900 10px Consolas,"Courier New",monospace;letter-spacing:1.4px;text-transform:uppercase}.metric .value{font:900 32px/1 Consolas,"Courier New",monospace;margin-top:12px}.metric .desc{margin-top:10px;color:#6e8790;font-size:11px}.metric.ok{border-color:rgba(53,243,160,.35)}.metric.warn{border-color:rgba(232,187,56,.45)}
-.table-card{padding:16px}.table-wrap{overflow:auto;border:1px solid rgba(98,216,232,.13);border-radius:14px}.period{width:100%;min-width:920px;border-collapse:collapse}.period th,.period td{padding:15px 14px;border-bottom:1px solid rgba(98,216,232,.09)}.period th{position:sticky;top:0;background:#08171e;color:#63d6e7;text-align:left;font:900 11px Consolas,"Courier New",monospace;letter-spacing:1.2px;text-transform:uppercase}.period td:first-child{font-weight:800;color:#e1ecef}.period td:not(:first-child){text-align:center;font:900 15px Consolas,"Courier New",monospace}.period tr:last-child td{border-bottom:0}
-.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.subcard{padding:20px}.subhead{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:12px}.subhead h3{margin:0;font-size:14px;letter-spacing:1px;text-transform:uppercase}.mini-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.mini{padding:14px;border:1px solid rgba(98,216,232,.14);border-radius:12px;background:rgba(7,20,26,.8)}.mini .label{font:900 9px Consolas,"Courier New",monospace;color:#72909a;letter-spacing:1px;text-transform:uppercase}.mini .value{margin-top:8px;font:900 22px/1 Consolas,"Courier New",monospace}
-.bar{display:grid;grid-template-columns:170px 1fr 60px;gap:12px;align-items:center;margin:12px 0}.bar>div:first-child{color:#a9c1c8;font-weight:700;font-size:13px}.track{height:10px;border-radius:99px;background:rgba(255,255,255,.06);overflow:hidden}.fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#0a91a1,#61d8e8)}.bar strong{font:900 13px Consolas,"Courier New",monospace;text-align:right}
-.note{padding:12px 14px;margin-top:12px;border-left:3px solid rgba(232,187,56,.65);background:rgba(232,187,56,.05);color:#91a5ab;font-size:12px;border-radius:0 10px 10px 0}
-.history-toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 0}.history-toolbar label{font:900 10px Consolas,"Courier New",monospace;letter-spacing:1px;color:#7f9ca6;text-transform:uppercase}.history-toolbar input,.history-toolbar select{min-height:42px;border-radius:10px;border:1px solid rgba(98,216,232,.22);background:#07161d;color:#edf6f8;padding:0 12px}.history-day-strip{display:grid;grid-template-columns:repeat(10,1fr);gap:7px;margin-bottom:14px}.history-day-btn{min-height:60px;border:1px solid rgba(98,216,232,.12);border-radius:10px;background:#07161d;color:#90aab2}.history-day-btn small{display:block;font:800 9px Consolas,"Courier New",monospace;color:#5f7c86}.history-day-btn strong{display:block;margin-top:5px;font:900 12px Consolas,"Courier New",monospace}.history-day-btn.active{border-color:#56cfdf;background:linear-gradient(180deg,#0b2730,#081922);color:#e8fcff;box-shadow:0 0 0 1px rgba(86,207,223,.12) inset}.history-hour-table{width:100%;min-width:980px;border-collapse:collapse}.history-hour-table th,.history-hour-table td{padding:12px 11px;border-bottom:1px solid rgba(98,216,232,.08);text-align:center;font-size:13px}.history-hour-table th{text-align:left;color:#5ed4e5;font:900 10px Consolas,"Courier New",monospace;letter-spacing:1px}.history-hour-table td:first-child{text-align:left;font-weight:800}
-.recon-card{display:flex;align-items:center;justify-content:space-between;gap:20px;cursor:pointer}.recon-card .big{font:900 30px/1 Consolas,"Courier New",monospace}.recon-card .small{margin-top:8px;color:#7f969f;font-size:11px}.recon-card .cta{font:900 10px Consolas,"Courier New",monospace;letter-spacing:1px;color:#64d9e8;text-transform:uppercase}.recon-card.ok{cursor:default;border-color:rgba(53,243,160,.3)}
-.reset-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.reset-btn{min-height:58px;border-radius:12px;border:1px solid rgba(224,47,79,.35);background:linear-gradient(180deg,#61111e,#31070d);color:#ffdce1;font:900 10px Consolas,"Courier New",monospace;letter-spacing:.7px;text-transform:uppercase}.reset-btn.life{border-color:rgba(232,187,56,.45);background:linear-gradient(180deg,#5a4b09,#302604);color:#f5db77}.reset-btn.total{grid-column:1/-1;border-color:rgba(255,73,103,.72);background:linear-gradient(180deg,#ab102e,#5a0715);color:white}.reset-status{min-height:20px;margin-top:12px;color:#7eaab3;font:700 11px Consolas,"Courier New",monospace}
-.footer{margin-top:34px;padding:18px 0 6px;border-top:1px solid rgba(98,216,232,.12);color:#49626b;text-align:center;font:700 10px Consolas,"Courier New",monospace;letter-spacing:1px}
-.recon-modal{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,5,8,.78);backdrop-filter:blur(7px);align-items:center;justify-content:center;padding:20px}.recon-modal.show{display:flex}.recon-window{width:min(760px,100%);max-height:min(82vh,780px);overflow:auto;border:1px solid rgba(98,216,232,.27);border-radius:18px;background:#07161d;box-shadow:0 25px 90px rgba(0,0,0,.65)}.recon-head{display:flex;gap:20px;align-items:flex-start;justify-content:space-between;padding:20px 22px;border-bottom:1px solid rgba(98,216,232,.12);position:sticky;top:0;background:#07161d}.recon-title{font:900 16px Consolas,"Courier New",monospace;letter-spacing:1px;text-transform:uppercase}.recon-sub{margin-top:6px;color:#7a969f;font-size:11px}.recon-close{width:40px;height:40px;border-radius:10px;border:1px solid rgba(120,150,160,.24);background:#11242d;color:#ecf6f8;font-size:22px}.recon-body{padding:20px}.recon-item{padding:16px;border:1px solid rgba(98,216,232,.14);border-radius:12px;background:#091b23;margin-bottom:10px}.recon-item.warn{border-color:rgba(232,187,56,.32)}.recon-item-title{font:900 12px Consolas,"Courier New",monospace;letter-spacing:.8px;color:#def4f7}.recon-item-meta{margin-top:7px;color:#90a6ad;font-size:11px;line-height:1.55}.recon-copy{margin-top:10px;padding:8px 10px;border-radius:8px;border:1px solid rgba(98,216,232,.23);background:#102a33;color:#a9eefa;font:900 9px Consolas,"Courier New",monospace;letter-spacing:.7px}.recon-empty{padding:28px;text-align:center;color:#6f8992;font-size:13px}
-.login{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;background:#02070a}.login-box{width:min(500px,100%);border:1px solid rgba(98,216,232,.24);border-radius:22px;background:linear-gradient(165deg,#0a2029,#061117);box-shadow:0 30px 100px rgba(0,0,0,.55);padding:34px}.login-brand{text-align:center;font:900 18px Consolas,"Courier New",monospace;letter-spacing:2px}.login-brand span{color:var(--cyan)}.login-sub{text-align:center;color:#7f9aa3;margin-top:8px;font-size:13px}.login-box input{width:100%;margin-top:20px;min-height:56px;padding:0 18px;border-radius:13px;border:1px solid rgba(98,216,232,.22);background:#edf4ff;color:#18272e;outline:none;font:800 17px Consolas,"Courier New",monospace}.login-box button{width:100%;margin-top:14px;min-height:54px;border-radius:13px;border:1px solid rgba(98,216,232,.4);background:linear-gradient(180deg,#1b9daf,#0c5662);color:#eaffff;font:900 13px Segoe UI,Arial,sans-serif;letter-spacing:1.3px;text-transform:uppercase}.login-error{text-align:center;color:#ff6879;min-height:20px;margin-top:14px;font:700 11px Consolas,"Courier New",monospace}
-@media (max-width:1100px){.overview{grid-template-columns:repeat(3,minmax(0,1fr))}.history-day-strip{grid-template-columns:repeat(6,1fr)}}
-@media (max-width:760px){body{font-size:14px}.topbar{height:auto;min-height:60px;padding:10px 14px;gap:10px;flex-wrap:wrap}.brand{font-size:12px}.status-pill{order:3;width:100%;justify-content:center}.shell{width:min(100%,calc(100% - 20px));padding-top:12px}.hero{padding:20px;border-radius:18px}.hero h1{font-size:25px}.hero p{font-size:13px}.overview{grid-template-columns:1fr 1fr}.card{padding:17px}.metric .value{font-size:28px}.section{margin-top:26px}.section-head h2{font-size:14px}.grid2{grid-template-columns:1fr}.mini-grid{grid-template-columns:1fr 1fr}.bar{grid-template-columns:125px 1fr 46px}.history-day-strip{grid-template-columns:repeat(5,1fr)}.reset-grid{grid-template-columns:1fr 1fr}.reset-btn.total{grid-column:1/-1}.recon-card{align-items:flex-start;flex-direction:column}.recon-card .cta{align-self:flex-end}}
-@media (max-width:480px){.topbar{align-items:stretch}.topbar .refresh,.topbar .logout{flex:1}.shell{width:100%;padding:10px 10px 40px}.hero{padding:18px}.hero h1{font-size:22px}.overview{grid-template-columns:1fr}.section-head{align-items:flex-start;flex-direction:column}.section-head .live{margin-left:0}.mini-grid{grid-template-columns:1fr}.bar{grid-template-columns:110px 1fr 42px}.bar>div:first-child{font-size:11px}.period{min-width:860px}.history-day-strip{grid-template-columns:repeat(4,1fr)}.login-box{padding:24px 18px}}
-
-.live-panel{display:grid;grid-template-columns:minmax(220px,.65fr) minmax(0,2fr);gap:16px}.live-summary{display:flex;flex-direction:column;justify-content:center;min-height:160px}.live-summary .live-big{font:900 42px/1 Consolas,"Courier New",monospace;color:var(--green)}.live-summary .live-label{margin-top:10px;color:#8ba5ad;font:900 11px Consolas,"Courier New",monospace;letter-spacing:1.2px;text-transform:uppercase}.live-summary .live-note{margin-top:12px;color:#718990;font-size:11px;line-height:1.5}.live-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;max-height:330px;overflow:auto;padding-right:2px}.live-user{border:1px solid rgba(98,216,232,.13);border-radius:12px;background:linear-gradient(165deg,rgba(10,30,38,.95),rgba(5,15,20,.98));padding:13px 14px}.live-user-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.live-user-id{font:900 10px Consolas,"Courier New",monospace;color:#63d7e8;letter-spacing:1.2px}.live-user-age{font:800 10px Consolas,"Courier New",monospace;color:#67e5b9}.live-user-activity{margin-top:8px;font-size:13px;font-weight:800;color:#e7f2f5}.live-user-meta{margin-top:5px;color:#78939c;font:700 10px/1.45 Consolas,"Courier New",monospace}.live-empty{display:flex;align-items:center;justify-content:center;min-height:150px;color:#6e8790;font-size:12px;text-align:center;border:1px dashed rgba(98,216,232,.16);border-radius:12px}.history-consistency{margin-top:12px;padding:11px 13px;border:1px solid rgba(98,216,232,.12);border-radius:10px;background:rgba(8,30,38,.45);color:#78939c;font-size:11px}.history-consistency strong{color:#cfe9ed}.protected-note{border-left-color:rgba(98,216,232,.55);background:rgba(98,216,232,.045)}
-@media(max-width:900px){.live-panel{grid-template-columns:1fr}.live-list{grid-template-columns:1fr 1fr}}
-@media(max-width:560px){.live-list{grid-template-columns:1fr}.live-summary .live-big{font-size:36px}}
-</style>
-</head>
-<body>
-<div id="login" class="login">
-  <div class="login-box">
-    <div class="login-brand">VÉRIX <span>//</span> ADMIN</div>
-    <div class="login-sub">Painel de administração</div>
-    <input id="token" type="password" autocomplete="current-password" aria-label="Palavra-passe">
-    <button type="button" onclick="login()">Entrar</button>
-    <div id="loginError" class="login-error"></div>
-  </div>
-</div>
-
-<div id="app" style="display:none">
-  <div class="topbar">
-    <div class="brand"><span>●</span> VÉRIX <span class="mark">//</span> ADMIN</div>
-    <div id="healthBadge" class="status-pill">● A verificar backend</div>
-    <div class="spacer"></div>
-    <button class="refresh" type="button" onclick="loadStats()">Atualizar</button>
-    <button class="logout" type="button" onclick="logout()">Sair</button>
-  </div>
-
-  <main class="shell">
-    <header class="hero">
-      <div class="kicker">OPS · TELEMETRIA AGREGADA</div>
-      <h1>Painel de Administração</h1>
-      <p>Utilização operacional · sem matrículas, nomes ou conteúdo operacional</p>
-      <div id="status" class="hero-status">A aguardar autenticação…</div>
-      <div class="hero-status-row"><span id="adminHealthText">BACKEND</span><span>·</span><span id="adminHealthLatency">—</span><span>·</span><span id="adminRefreshCountdown">A ATUALIZAR…</span></div>
-    </header>
-
-    <section class="section">
-      <div class="section-head"><h2>Visão geral</h2><div class="live">Atualização automática · 30 s</div></div>
-      <div class="overview">
-        <div id="integrityCard" class="card metric warn" tabindex="0">
-          <div class="label">Conferência 24h</div><div id="integrityValue" class="value cyan">—</div><div id="integritySub" class="desc">Consultas iniciadas vs resultado final</div>
-          <div class="desc">Clique para investigar uma discrepância.</div>
-        </div>
-        <div class="card metric"><div class="label">Online agora</div><div id="online" class="value green">—</div><div class="desc">Sessões com atividade recente</div></div>
-        <div class="card metric"><div class="label">Ativos · 10 min</div><div id="active10" class="value cyan">—</div><div class="desc">Utilizadores distintos</div></div>
-        <div class="card metric"><div class="label">Únicos · 24h</div><div id="users24" class="value">—</div><div class="desc">Instalações com atividade</div></div>
-        <div class="card metric"><div class="label">Únicos · 30d</div><div id="users30" class="value">—</div><div class="desc">Instalações com atividade</div></div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="section-head"><h2>Atividade em tempo real</h2><div class="live">Atualiza com o painel · 5 s</div></div>
-      <div class="card live-panel">
-        <div class="live-summary">
-          <div id="liveCount" class="live-big">—</div>
-          <div class="live-label">Utilizadores online agora</div>
-          <div id="liveStatus" class="live-note">A carregar atividade…</div>
-        </div>
-        <div id="liveList" class="live-list"><div class="live-empty">A carregar atividade em tempo real…</div></div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="section-head"><h2>Atividade operacional</h2></div>
-      <div class="card table-card"><div class="table-wrap"><table class="period"><thead><tr><th>Indicador</th><th>24h</th><th>7 dias</th><th>30 dias</th><th>90 dias</th></tr></thead><tbody>
-        <tr><td>Consultas iniciadas</td><td id="v24">—</td><td id="v7">—</td><td id="v30">—</td><td id="v90">—</td></tr>
-        <tr><td>Consultas concluídas (resultado ASF)</td><td id="co24">—</td><td id="co7">—</td><td id="co30">—</td><td id="co90">—</td></tr>
-        <tr><td>Sem resultado final*</td><td id="un24" class="amber">—</td><td id="un7" class="amber">—</td><td id="un30" class="amber">—</td><td id="un90" class="amber">—</td></tr>
-        <tr><td>IMT carregado</td><td id="im24" class="cyan">—</td><td id="im7" class="cyan">—</td><td id="im30" class="cyan">—</td><td id="im90" class="cyan">—</td></tr>
-        <tr><td>Com seguro</td><td id="ys24" class="green">—</td><td id="ys7" class="green">—</td><td id="ys30" class="green">—</td><td id="ys90" class="green">—</td></tr>
-        <tr><td>Sem seguro</td><td id="ns24" class="red">—</td><td id="ns7" class="red">—</td><td id="ns30" class="red">—</td><td id="ns90" class="red">—</td></tr>
-        <tr><td>Erros / indisponibilidade ASF</td><td id="er24" class="red">—</td><td id="er7" class="red">—</td><td id="er30" class="red">—</td><td id="er90" class="red">—</td></tr>
-        <tr><td>% sem seguro</td><td id="rr24" class="amber">—</td><td id="rr7" class="amber">—</td><td id="rr30" class="amber">—</td><td id="rr90" class="amber">—</td></tr>
-        <tr><td>Velocidades inseridas</td><td id="sp24">—</td><td id="sp7">—</td><td id="sp30">—</td><td id="sp90">—</td></tr>
-        <tr><td>Acessos / consultas de legislação</td><td id="lg24">—</td><td id="lg7">—</td><td id="lg30">—</td><td id="lg90">—</td></tr>
-        <tr><td>Cópias de legislação</td><td id="lc24">—</td><td id="lc7">—</td><td id="lc30">—</td><td id="lc90">—</td></tr>
-        <tr><td>Consultas de álcool</td><td id="al24">—</td><td id="al7">—</td><td id="al30">—</td><td id="al90">—</td></tr>
-      </tbody></table></div><div class="note">* O histórico horário conta utilizadores por qualquer evento de telemetria com <code>installation_id</code>. As pesquisas de veículos são contadas por <code>vehicle_lookup</code>. Assim, o total diário e a soma das 24 horas usam a mesma fonte.</div><div id="vehicleFlowNote" class="note"></div></div>
-    </section>
-
-    <section class="section"><div class="section-head"><h2>Comparação · últimas 24h</h2></div><div class="card table-card"><div class="table-wrap"><table class="period"><thead><tr><th>Indicador</th><th>Atual</th><th>Anterior</th><th>Δ</th><th>Variação</th></tr></thead><tbody id="comparison"></tbody></table></div></div></section>
-
-    <section class="section"><div class="section-head"><h2>Histórico horário · 30 dias</h2></div>
-      <div class="card">
-        <div class="subhead"><h3>Seleciona um dia</h3><div id="historyStatus" class="live">—</div></div>
-        <div class="history-toolbar"><button class="refresh" type="button" id="historyPrevDay">‹</button><div id="historyDayStrip" class="history-day-strip" style="flex:1"></div><button class="refresh" type="button" id="historyNextDay">›</button><input id="historyDate" type="date" style="max-width:180px" aria-label="Data"></div>
-        <div class="mini-grid"><div class="mini"><div class="label">Utilizadores únicos no dia</div><div id="historyUsers" class="value">—</div></div><div class="mini"><div class="label">Hora de maior afluência</div><div id="historyPeakHour" class="value cyan">—</div></div><div class="mini"><div class="label">Utilizadores no pico</div><div id="historyPeakUsers" class="value">—</div></div><div class="mini"><div class="label">Pesquisas de veículos</div><div id="historyVehicles" class="value">—</div></div></div>
-        <div class="table-wrap" style="margin-top:16px"><table class="history-hour-table"><thead><tr><th>Faixa horária</th><th>Utilizadores</th><th>Heartbeats</th><th>App opens</th><th>Pesquisas veículos</th><th>Velocidades</th><th>Legislação</th><th>Cópias</th><th>Álcool</th><th>Ferramentas</th></tr></thead><tbody id="historyHourTable"></tbody></table></div>
-        <div id="historySelectedTitle" style="display:none"></div><div id="hourlyDaySelect" style="display:none"></div><div id="hourlyDayUsers" style="display:none"></div><div id="hourlyDayPeak" style="display:none"></div><div id="hourlyDayPeakUsers" style="display:none"></div><div id="hourlyDayVehicles" style="display:none"></div><div id="hourlyDayStatus" style="display:none"></div><div id="hourlyDayTable" style="display:none"></div><div id="hourlyDayBars" style="display:none"></div><div id="historyHourBars" style="display:none"></div>
-      </div>
-    </section>
-
-    <section class="section"><div class="grid2">
-      <div class="card subcard"><div class="subhead"><h3>Pico habitual · 30 dias</h3></div><div class="mini-grid"><div class="mini"><div class="label">Hora</div><div id="peakHour" class="value cyan">—</div></div><div class="mini"><div class="label">Utilizadores médios</div><div id="peakUsers" class="value">—</div></div><div class="mini"><div class="label">Heartbeats médios</div><div id="peakHeartbeats" class="value">—</div></div></div><div id="hourBars" style="margin-top:16px"></div></div>
-      <div class="card subcard"><div class="subhead"><h3>Menus consultados</h3></div><h4 style="margin:0 0 10px;color:#79d8e5;font-size:11px;text-transform:uppercase;letter-spacing:1px">24 horas</h4><div id="mods24"></div><h4 style="margin:20px 0 10px;color:#79d8e5;font-size:11px;text-transform:uppercase;letter-spacing:1px">30 dias</h4><div id="mods30"></div></div>
-    </div></section>
-
-    <section class="section"><div class="grid2">
-      <div class="card subcard"><div class="subhead"><h3>Legislação copiada · 24h</h3></div><div class="table-wrap"><table class="period"><thead><tr><th>Item</th><th>ID</th><th>Cópias</th></tr></thead><tbody id="legTop24"></tbody></table></div></div>
-      <div class="card subcard"><div class="subhead"><h3>Legislação copiada · 30 dias</h3></div><div class="table-wrap"><table class="period"><thead><tr><th>Item</th><th>ID</th><th>Cópias</th></tr></thead><tbody id="legTop30"></tbody></table></div></div>
-    </div></section>
-
-    <section class="section"><div class="section-head"><h2>Evolução diária · 30 dias</h2></div><div class="card table-card"><div class="table-wrap"><table class="period"><thead><tr><th>Dia</th><th>Utilizadores</th><th>Pico</th><th>Utilizadores no pico</th><th>Consultas veículos</th><th>Velocidades</th><th>Legislação</th><th>Cópias</th></tr></thead><tbody id="daily"></tbody></table></div></div></section>
-
-    <section class="section"><div class="section-head"><h2>Histórico total</h2></div><div class="card table-card"><div class="table-wrap"><table class="period"><tbody>
-      <tr><td>Utilizadores únicos</td><td id="allUsers">—</td></tr><tr><td>Consultas iniciadas</td><td id="allVehicles">—</td></tr><tr><td>Consultas concluídas (resultado ASF)</td><td id="allCompleted">—</td></tr><tr><td>Sem resultado final*</td><td id="allUnresolved" class="amber">—</td></tr><tr><td>IMT carregado</td><td id="allImt" class="cyan">—</td></tr><tr><td>Com seguro</td><td id="allYes" class="green">—</td></tr><tr><td>Sem seguro</td><td id="allNo" class="red">—</td></tr><tr><td>Erros ASF históricos (desde início)</td><td id="allErrors" class="red">—</td></tr><tr><td>Velocidades inseridas</td><td id="allSpeed">—</td></tr><tr><td>Acessos / consultas de legislação</td><td id="allLeg">—</td></tr><tr><td>Cópias de legislação</td><td id="allCopy">—</td></tr><tr><td>Consultas de álcool</td><td id="allAlcohol">—</td></tr>
-    </tbody></table></div></div></section>
-
-    <section class="section"><div class="section-head"><h2>Proteção do histórico</h2></div><div class="card"><div class="note protected-note"><strong>Histórico protegido.</strong> O Admin 1.3 desta versão não permite resetar períodos nem apagar a telemetria. As janelas 24h / 7 dias / 30 dias / 90 dias são sempre calculadas diretamente a partir de <code>public.events</code>. O contador ASF tem um reset independente.</div><div id="resetStatus" class="reset-status">Sem operações destrutivas disponíveis neste painel.</div></div></section>
-
-    <section class="section"><div class="section-head"><h2>Estado</h2></div><div class="card table-card"><div class="table-wrap"><table class="period"><tbody><tr><td>Primeiro registo após reset VIDA</td><td id="first">—</td></tr><tr><td>Última atividade após reset VIDA</td><td id="last">—</td></tr><tr><td>Última atualização</td><td id="updated">—</td></tr></tbody></table></div></div></section>
-
-    <div class="footer">VÉRIX · Telemetria operacional agregada · histórico protegido · sem matrículas, nomes ou conteúdo operacional · versão 1.3</div>
-  </main>
-</div>
-
-<div id="reconModal" class="recon-modal" aria-hidden="true"><div class="recon-window" role="dialog" aria-modal="true" aria-labelledby="reconTitle"><div class="recon-head"><div><div id="reconTitle" class="recon-title">Diagnóstico · Conferência 24h</div><div id="reconSub" class="recon-sub">A carregar detalhe…</div></div><button id="reconClose" class="recon-close" type="button" aria-label="Fechar">×</button></div><div id="reconBody" class="recon-body"><div class="recon-empty">A carregar…</div></div></div></div>
 <script>
+(function(){
+  try{
+    var marker='_verix_boot=';
+    var href=window.location.href;
+    if(href.indexOf(marker)===-1){
+      var hash='';
+      var hi=href.indexOf('#');
+      if(hi>=0){hash=href.slice(hi);href=href.slice(0,hi);}
+      window.location.replace(href+(href.indexOf('?')>=0?'&':'?')+marker+Date.now()+hash);
+      return;
+    }
+    if(window.history && history.replaceState){
+      try{
+        var u=new URL(window.location.href);
+        u.searchParams.delete('_verix_boot');
+        history.replaceState(null,document.title,u.pathname+(u.search?'?'+u.searchParams.toString():'')+u.hash);
+      }catch(_e){}
+    }
+  }catch(_e){}
+})();
+</script>
+<title>VÉRIX — Administração 1.3</title><style>*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:#e8f0f2;font:13px Segoe UI,Arial,sans-serif;background:radial-gradient(ellipse at 50% -20%,#1a3a48 0%,transparent 45%),linear-gradient(180deg,#061018,#03080c 55%,#020608);min-height:100vh}body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.18;background:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:42px 42px;animation:grid 28s linear infinite}@keyframes grid{to{background-position:42px 42px}}button,input{font:inherit}.wrap{max-width:1450px;margin:auto;padding:16px 18px 56px}.top{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;padding:12px 16px;margin:0 -18px 18px;background:rgba(4,12,16,.92);backdrop-filter:blur(14px);border-bottom:1px solid rgba(90,150,160,.28)}.brand{font:900 13px Consolas,"Courier New",monospace;letter-spacing:1.8px}.brand span{color:#4ec8dc}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#00d98a;box-shadow:0 0 12px #00d98a;margin-right:8px}.grow{flex:1}.logout,.refresh,.login-box button,.reset-btn{cursor:pointer}.refresh{background:linear-gradient(180deg,#153a44,#0b222a);color:#dffcff;border:1px solid rgba(78,200,220,.32);border-radius:8px;padding:9px 13px;font:800 10px Segoe UI;letter-spacing:.7px;text-transform:uppercase}.logout{background:linear-gradient(180deg,#1e2c34,#121c22);color:#cfe1e7;border:1px solid rgba(120,150,160,.3);border-radius:8px;padding:9px 14px;font:800 10px Segoe UI;letter-spacing:.8px;text-transform:uppercase}.panel{position:relative;padding:18px;margin-bottom:14px;border:1px solid rgba(90,150,160,.24);border-radius:16px;background:linear-gradient(180deg,rgba(10,24,30,.92),rgba(5,12,16,.97));box-shadow:0 12px 32px rgba(0,0,0,.3)}header.panel{padding:22px 24px;overflow:hidden}header.panel:before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,transparent,#4ec8dc,#ff3d5a,transparent)}.kicker,.section-title h2{font-weight:800;letter-spacing:1.4px;text-transform:uppercase}.kicker{font:800 10px Consolas,"Courier New",monospace;letter-spacing:2px;color:#4ec8dc;margin-bottom:8px}h1{margin:0;font-size:24px;letter-spacing:.5px;text-transform:uppercase}.sub{margin-top:6px;color:#7a929c;font-size:13px}.status{margin-top:14px;padding:10px 12px;border-left:2px solid #4ec8dc;background:rgba(0,40,50,.28);color:#91a9b1;font:600 11px Consolas,"Courier New",monospace}.section-title{display:flex;align-items:center;gap:12px;margin:26px 0 12px;padding-bottom:10px;border-bottom:1px solid rgba(90,140,150,.2)}.section-title h2{margin:0;color:#d4e6ea;font-size:13px}.live{font:800 10px Consolas,"Courier New",monospace;color:#70e6bf}.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.mini{padding:16px;border:1px solid rgba(90,150,160,.25);border-radius:14px;background:linear-gradient(160deg,rgba(12,28,36,.96),rgba(6,14,20,.98));box-shadow:0 10px 28px rgba(0,0,0,.28)}.label{font:800 10px Consolas,"Courier New",monospace;letter-spacing:1.1px;text-transform:uppercase;color:#7a929c}.value{margin-top:8px;font:900 28px/1 Consolas,"Courier New",monospace}.green{color:#3dff9a}.cyan{color:#62d5e7}.red{color:#ff6b7a}.amber{color:#e4b927}.period,.smalltable{width:100%;border-collapse:collapse}.period th,.period td,.smalltable th,.smalltable td{padding:10px 11px;border-bottom:1px solid rgba(90,140,150,.12)}.period th,.smalltable th{text-align:left;font:800 10px Consolas,"Courier New",monospace;letter-spacing:1px;text-transform:uppercase;color:#4ec8dc}.period td:not(:first-child){text-align:center;font:800 14px Consolas,"Courier New",monospace}.period td:first-child,.smalltable td:first-child{font-weight:700;color:#d7e5e9}.cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}.bar{display:grid;grid-template-columns:minmax(120px,170px) 1fr 50px;gap:10px;align-items:center;margin:10px 0}.bar>div:first-child{color:#a8c0c8;font-weight:600;font-size:12px}.track{height:9px;background:rgba(255,255,255,.06);border-radius:12px;overflow:hidden}.fill{height:100%;border-radius:12px;background:linear-gradient(90deg,#0a8a9a,#4ec8dc)}.bar strong{font:800 12px Consolas,"Courier New",monospace;text-align:right}.table-scroll,.period-wrap{overflow:auto}.note{margin-top:12px;padding:10px 12px;border-left:2px solid rgba(228,185,39,.5);background:rgba(228,185,39,.05);border-radius:0 8px 8px 0;color:#8a9ea6;font-size:11px;line-height:1.5}.reset-grid{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:10px}.reset-btn{min-height:48px;border:1px solid rgba(200,16,46,.45);border-radius:9px;background:linear-gradient(180deg,#68101e,#32070d);color:#ffd7dc;font:900 10px Consolas,"Courier New",monospace;letter-spacing:.8px;text-transform:uppercase;box-shadow:0 8px 18px rgba(0,0,0,.25)}.reset-btn:hover{filter:brightness(1.15);transform:translateY(-1px)}.reset-btn small{display:block;margin-top:5px;opacity:.7;font-size:8px;letter-spacing:.4px}.reset-btn.life{border-color:rgba(228,185,39,.5);background:linear-gradient(180deg,#5a4a09,#302705);color:#f0d870}.reset-btn.total{border-color:rgba(255,61,90,.9);background:linear-gradient(180deg,#b20f2e,#5e0717);color:#fff}.reset-status{margin-top:12px;min-height:18px;color:#7eaab2;font:600 10px Consolas,"Courier New",monospace}.login{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:#02070a}.login-box{width:min(420px,92vw);padding:28px 26px 24px;border:1px solid rgba(90,160,175,.35);border-radius:16px;background:linear-gradient(160deg,rgba(10,28,36,.95),rgba(4,12,16,.98));box-shadow:0 24px 60px rgba(0,0,0,.55);display:flex;flex-direction:column;gap:14px}.login-brand{text-align:center;font:900 14px Consolas,"Courier New",monospace;letter-spacing:2px}.login-brand span{color:#4ec8dc}.login-sub{text-align:center;font-size:11px;color:#7a929c}.login-box input{width:100%;padding:14px 16px;border:1px solid rgba(100,160,175,.4);border-radius:10px;background:rgba(0,12,18,.85);color:#fff;font:700 15px Consolas,"Courier New",monospace;outline:none}.login-box button{padding:13px 16px;border-radius:10px;border:1px solid rgba(78,200,220,.45);background:linear-gradient(180deg,#1a9aaa,#0d4a55);color:#eaffff;font:900 12px Segoe UI;letter-spacing:1.3px;text-transform:uppercase}.login-error{text-align:center;color:#ff6b7a;font:600 11px Consolas,"Courier New",monospace;min-height:16px}.footer{text-align:center;color:#4e666f;margin-top:28px;padding-top:16px;border-top:1px solid rgba(80,120,130,.15);font:600 10px Consolas,"Courier New",monospace;letter-spacing:1px}@media(max-width:950px){.grid4{grid-template-columns:repeat(2,1fr)}.cols{grid-template-columns:1fr}.reset-grid{grid-template-columns:repeat(3,minmax(120px,1fr))}}@media(max-width:560px){.grid4{grid-template-columns:1fr}.wrap{padding:12px}.top{margin:0 -12px 14px}h1{font-size:18px}.mini .value{font-size:22px}.reset-grid{grid-template-columns:1fr 1fr}}</style>
+<style id="verix-admin-mobile">
+/* ===== VÉRIX ADMIN — RESPONSIVO ===== */
+@media (max-width: 900px){
+  .wrap{padding:12px 12px 42px;max-width:100%;}
+  .top{margin:0 -12px 14px;padding:11px 12px;position:sticky;}
+  header.panel{padding:18px;}
+  h1{font-size:22px;}
+  .grid4{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .cols{grid-template-columns:1fr;}
+  .reset-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .period-wrap{overflow:visible;}
+  .period{table-layout:fixed;}
+  .period th,.period td{padding:9px 7px;}
+}
 
+@media (max-width: 620px){
+  body{font-size:12px;}
+  .wrap{padding:8px 8px 34px;}
+  .top{margin:0 -8px 10px;padding:10px 9px;}
+  .brand{font-size:11px;letter-spacing:1.4px;}
+  .logout{padding:8px 10px;font-size:9px;}
+  header.panel{padding:15px;border-radius:13px;}
+  .kicker{font-size:9px;letter-spacing:1.5px;}
+  h1{font-size:18px;line-height:1.3;}
+  .sub{font-size:11px;line-height:1.4;}
+  .status{font-size:9px;padding:9px;}
+  .section-title{margin:20px 0 9px;padding-bottom:8px;}
+  .section-title h2{font-size:11px;}
+  .live{font-size:8px;}
+  .grid4{grid-template-columns:1fr 1fr;gap:8px;}
+  .mini{padding:12px 10px;border-radius:11px;}
+  .label{font-size:8px;letter-spacing:.8px;line-height:1.35;}
+  .value{font-size:21px;margin-top:6px;}
+  .panel{padding:11px;border-radius:12px;}
+
+  /* Tabelas de períodos transformam-se em cartões, sem scroll horizontal. */
+  .period-wrap{overflow:visible;}
+  .period,.period tbody,.period tr,.period td{display:block;width:100%;}
+  .period thead{display:none;}
+  .period tr{margin-bottom:8px;padding:9px 10px;border:1px solid rgba(90,140,150,.15);border-radius:9px;background:rgba(8,20,26,.55);}
+  .period td{border:0;padding:3px 0;text-align:right!important;font-size:13px;min-height:24px;}
+  .period td:first-child{font-size:11px;text-align:left!important;margin-bottom:4px;padding-bottom:6px;border-bottom:1px solid rgba(90,140,150,.12);}
+  .period td:not(:first-child)::before{float:left;color:#4ec8dc;font:800 8px Consolas,"Courier New",monospace;letter-spacing:1px;text-transform:uppercase;padding-top:3px;}
+  .period td:nth-child(2)::before{content:"24H";}
+  .period td:nth-child(3)::before{content:"7 DIAS";}
+  .period td:nth-child(4)::before{content:"30 DIAS";}
+  .period td:nth-child(5)::before{content:"90 DIAS";}
+
+  .bar{grid-template-columns:minmax(95px,1fr) 1.4fr 38px;gap:7px;}
+  .bar>div:first-child{font-size:10px;}
+  .track{height:7px;}
+  .bar strong{font-size:10px;}
+  .reset-grid{grid-template-columns:1fr 1fr;gap:7px;}
+  .reset-btn{min-height:54px;padding:8px 5px;font-size:8px;}
+  .reset-btn small{font-size:7px;line-height:1.3;}
+  .note{font-size:9px;line-height:1.45;}
+  .smalltable{font-size:10px;}
+  .smalltable th,.smalltable td{padding:8px 6px;}
+
+  /* A evolução diária tem muitas colunas: mantém scroll apenas nesta tabela. */
+  .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .table-scroll .smalltable{min-width:620px;}
+
+  .login-box{width:calc(100vw - 24px);padding:22px 16px 20px;}
+  .login-brand{font-size:13px;}
+  .login-box input{font-size:14px;padding:14px;}
+  .login-box button{padding:14px;}
+}
+
+@media (max-width: 380px){
+  .grid4{grid-template-columns:1fr;}
+  .reset-grid{grid-template-columns:1fr;}
+  .live{display:none;}
+  h1{font-size:17px;}
+}
+.verix-hourly-select{appearance:auto}
+</style>
+<style id="verix-hour-history-v10">
+.history-day-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-end;flex-wrap:wrap}
+.history-date-controls{display:flex;gap:7px;align-items:center}
+.history-date-controls button{width:42px;height:42px;border:1px solid rgba(78,200,220,.35);border-radius:9px;background:linear-gradient(180deg,#173944,#0b2028);color:#dffcff;font:900 22px Segoe UI;cursor:pointer}
+.history-date-controls button:disabled{opacity:.3;cursor:not-allowed}
+.history-date-controls input{height:42px;padding:0 12px;border:1px solid rgba(100,160,175,.4);border-radius:9px;background:#06131a;color:#fff;font:800 13px Consolas,"Courier New",monospace;outline:none}
+.history-date-controls input:focus{border-color:#4ec8dc;box-shadow:0 0 0 3px rgba(78,200,220,.12)}
+.history-day-strip{display:flex;gap:7px;overflow-x:auto;padding:10px 1px 4px;margin-top:12px;scrollbar-width:thin}
+.history-day-btn{flex:0 0 auto;min-width:72px;padding:9px 9px;border:1px solid rgba(90,150,160,.22);border-radius:9px;background:linear-gradient(180deg,rgba(12,28,36,.96),rgba(5,14,20,.98));color:#a9c0c7;cursor:pointer;text-align:center}
+.history-day-btn small{display:block;font:700 8px Consolas,"Courier New",monospace;letter-spacing:.7px;color:#718b95;margin-bottom:4px}
+.history-day-btn strong{display:block;font:900 12px Consolas,"Courier New",monospace;color:#e4eef1}
+.history-day-btn.active{border-color:#4ec8dc;background:linear-gradient(180deg,rgba(21,71,82,.9),rgba(8,37,45,.98));box-shadow:inset 0 0 0 1px rgba(78,200,220,.18),0 0 14px rgba(78,200,220,.08)}
+.history-hour-table{min-width:980px}
+@media(max-width:620px){.history-day-head{align-items:stretch}.history-date-controls{width:100%}.history-date-controls input{flex:1;min-width:0}.history-day-btn{min-width:68px}.history-hour-table{min-width:980px}}
+.admin-version-pill{font:800 9px Consolas,"Courier New",monospace;letter-spacing:1px;color:#91a9b1;padding:5px 8px;border:1px solid rgba(78,200,220,.18);border-radius:999px;background:rgba(78,200,220,.04)}
+</style>
+<style id="verix-admin-1-3-enhancements">
+.admin-health-detail{display:flex;align-items:center;gap:7px;margin-top:8px;color:#67828a;font:800 8px/1 Consolas,"Courier New",monospace;letter-spacing:.7px;text-transform:uppercase}
+.admin-health-detail .sep{opacity:.35}.admin-health-detail #adminHealthText{color:#70e6bf}.admin-health-detail[data-state="error"] #adminHealthText{color:#ff6b7a}.admin-health-detail #adminRefreshCountdown{color:#4ec8dc}
+.integrity-sub{margin-top:7px;color:#6f858d;font:700 8px/1.35 Arial,sans-serif;line-height:1.35}
+#integrityCard[data-state="ok"]{border-color:rgba(53,217,149,.34);box-shadow:0 10px 28px rgba(0,0,0,.28),0 0 0 1px rgba(53,217,149,.04) inset}
+#integrityCard[data-state="warn"]{border-color:rgba(228,185,39,.36)}
+#integrityCard[data-state="error"]{border-color:rgba(255,107,122,.36)}
+@media(max-width:620px){.admin-health-detail{font-size:7px;gap:5px}.integrity-sub{font-size:7px}}
+@media(min-width:1100px){.admin-overview-grid{grid-template-columns:repeat(5,minmax(0,1fr));}}
+</style></head><body><div id="login" class="login"><div class="login-box"><div class="login-brand">VÉRIX <span>//</span> ADMIN</div><div class="login-sub">Painel de administração</div><input id="token" type="password" autocomplete="off" placeholder="PASSWORD"><button type="button" onclick="login()">Entrar</button><div id="loginError" class="login-error"></div></div></div><div id="app" style="display:none"><div class="wrap"><div class="top"><div class="brand"><span class="dot"></span>VÉRIX <span>//</span> ADMIN</div><div id="healthBadge" class="admin-version-pill" title="Estado do backend">● BACKEND —</div><div class="grow"></div><button class="refresh" type="button" onclick="loadStats()">Atualizar</button><button class="logout" type="button" onclick="logout()">Sair</button></div><header class="panel"><div class="kicker">Ops · Telemetria agregada</div><h1>Painel de Administração</h1><div class="sub">Utilização operacional · sem matrículas, nomes ou conteúdo operacional</div><div id="status" class="status">A carregar…</div><div id="adminHealthDetail" class="admin-health-detail"><span id="adminHealthText">BACKEND —</span><span class="sep">·</span><span id="adminHealthLatency">— ms</span><span class="sep">·</span><span id="adminRefreshCountdown">PRÓXIMA ATUALIZAÇÃO —</span></div></header><div class="section-title"><h2>Visão geral</h2><div class="grow"></div><div class="live">Atualização automática · 30 s</div></div><div class="grid4 admin-overview-grid"><div class="mini" id="integrityCard"><div class="label">Conferência 24h</div><div id="integrityValue" class="value cyan">—</div><div id="integritySub" class="integrity-sub">Consultas iniciadas vs resultado final</div></div><div class="mini"><div class="label">Online agora</div><div id="online" class="value green">—</div></div><div class="mini"><div class="label">Ativos · 10 min</div><div id="active10" class="value cyan">—</div></div><div class="mini"><div class="label">Únicos · 24h</div><div id="users24" class="value">—</div></div><div class="mini"><div class="label">Únicos · 30d</div><div id="users30" class="value">—</div></div></div><div class="section-title"><h2>Atividade operacional</h2></div><section class="panel"><div class="period-wrap"><table class="period"><thead><tr><th>Indicador</th><th>24h</th><th>7 dias</th><th>30 dias</th><th>90 dias</th></tr></thead><tbody><tr><td>Consultas iniciadas</td><td id="v24">—</td><td id="v7">—</td><td id="v30">—</td><td id="v90">—</td></tr><tr><td>Consultas concluídas (resultado ASF)</td><td id="co24">—</td><td id="co7">—</td><td id="co30">—</td><td id="co90">—</td></tr><tr><td>Sem resultado final*</td><td id="un24" class="amber">—</td><td id="un7" class="amber">—</td><td id="un30" class="amber">—</td><td id="un90" class="amber">—</td></tr><tr><td>IMT carregado</td><td id="im24" class="cyan">—</td><td id="im7" class="cyan">—</td><td id="im30" class="cyan">—</td><td id="im90" class="cyan">—</td></tr><tr><td>Com seguro</td><td id="ys24" class="green">—</td><td id="ys7" class="green">—</td><td id="ys30" class="green">—</td><td id="ys90" class="green">—</td></tr><tr><td>Sem seguro</td><td id="ns24" class="red">—</td><td id="ns7" class="red">—</td><td id="ns30" class="red">—</td><td id="ns90" class="red">—</td></tr><tr><td>Erros / indisponibilidade ASF</td><td id="er24" class="red">—</td><td id="er7" class="red">—</td><td id="er30" class="red">—</td><td id="er90" class="red">—</td></tr><tr><td>% sem seguro</td><td id="rr24" class="amber">—</td><td id="rr7" class="amber">—</td><td id="rr30" class="amber">—</td><td id="rr90" class="amber">—</td></tr><tr><td>Velocidades inseridas</td><td id="sp24">—</td><td id="sp7">—</td><td id="sp30">—</td><td id="sp90">—</td></tr><tr><td>Acessos / consultas de legislação</td><td id="lg24">—</td><td id="lg7">—</td><td id="lg30">—</td><td id="lg90">—</td></tr><tr><td>Cópias de legislação</td><td id="lc24">—</td><td id="lc7">—</td><td id="lc30">—</td><td id="lc90">—</td></tr><tr><td>Consultas de álcool</td><td id="al24">—</td><td id="al7">—</td><td id="al30">—</td><td id="al90">—</td></tr></tbody></table></div><div class="note">* “Sem resultado final” só é calculável para as consultas novas com <code>query_id</code>. Os dados históricos antigos continuam sem forma fiável de distinguir uma consulta pendente de uma consulta sem retorno.</div><div id="vehicleFlowNote" class="note" style="margin-top:10px">Estado das consultas · a carregar…</div></section><div class="section-title"><h2>Comparação · últimas 24h</h2><div class="grow"></div><div class="live">24h atuais vs 24h anteriores</div></div><section class="panel"><div class="period-wrap"><table class="period"><thead><tr><th>Indicador</th><th>Atual</th><th>Anterior</th><th>Variação</th><th>%</th></tr></thead><tbody id="comparison"></tbody></table></div><div class="note">Comparação descritiva entre duas janelas consecutivas de 24 horas.</div></section><div class="section-title"><h2>Histórico horário · 30 dias</h2><div class="grow"></div><div class="live">Escolhe um dia → 24 horas ao detalhe</div></div>
+<section class="panel verix-hour-history-panel">
+  <div class="history-day-head">
+    <div>
+      <div class="kicker" style="margin-bottom:4px">ANÁLISE DIÁRIA</div>
+      <h3 id="historySelectedTitle" style="margin:0;font-size:18px">Seleciona um dia</h3>
+      <div id="historyStatus" class="sub" style="margin-top:4px">Últimos 30 dias · hora local de Portugal continental</div>
+    </div>
+    <div class="history-date-controls">
+      <button id="historyPrevDay" type="button" title="Dia anterior">‹</button>
+      <input id="historyDate" type="date" aria-label="Dia a analisar">
+      <button id="historyNextDay" type="button" title="Dia seguinte">›</button>
+    </div>
+  </div>
+  <div id="historyDayStrip" class="history-day-strip" aria-label="Últimos 30 dias"></div>
+  <div class="grid4" style="margin-top:14px">
+    <div class="mini"><div class="label">Utilizadores únicos no dia</div><div id="historyUsers" class="value">—</div></div>
+    <div class="mini"><div class="label">Hora de maior afluência</div><div id="historyPeakHour" class="value cyan">—</div></div>
+    <div class="mini"><div class="label">Utilizadores no pico</div><div id="historyPeakUsers" class="value">—</div></div>
+    <div class="mini"><div class="label">Pesquisas de veículos</div><div id="historyVehicles" class="value">—</div></div>
+  </div>
+  <div class="table-scroll" style="margin-top:16px">
+    <table class="smalltable history-hour-table">
+      <thead><tr><th>Faixa horária</th><th>Utilizadores</th><th>Heartbeats</th><th>App opens</th><th>Pesquisas veículos</th><th>Velocidades</th><th>Legislação</th><th>Cópias</th><th>Álcool</th><th>Ferramentas</th></tr></thead>
+      <tbody id="historyHourTable"><tr><td colspan="10">A carregar…</td></tr></tbody>
+    </table>
+  </div>
+  <div id="historyHourBars" style="margin-top:16px"></div>
+  <div class="note">Cada linha representa exatamente uma hora civil. <strong>10:00–11:00</strong> mostra os utilizadores distintos que tiveram <code>heartbeat</code> ou <code>app_open</code> nessa hora. O mesmo dia pode ser consultado durante os 30 dias seguintes.</div>
+</section>
+<div class="section-title"><h2>Pico habitual · 30 dias</h2></div><section class="panel"><div class="grid4"><div class="mini"><div class="label">Hora de pico</div><div id="peakHour" class="value cyan">—</div></div><div class="mini"><div class="label">Média de utilizadores</div><div id="peakUsers" class="value">—</div></div><div class="mini"><div class="label">Heartbeats médios</div><div id="peakHeartbeats" class="value">—</div></div><div class="mini"><div class="label">Janela</div><div id="peakDefinition" class="value" style="font-size:13px;line-height:1.35">30 dias</div></div></div><div id="hourBars" style="margin-top:16px"></div></section><div class="section-title"><h2>Menus consultados</h2></div><div class="cols"><section class="panel"><h3>24 horas</h3><div id="mods24"></div></section><section class="panel"><h3>30 dias</h3><div id="mods30"></div></section></div><div class="section-title"><h2>Legislação</h2></div><section class="panel"><div class="grid4"><div class="mini"><div class="label">Acessos · 24h</div><div id="legAccess24" class="value">—</div></div><div class="mini"><div class="label">Pesquisas · 24h</div><div id="legSearch24" class="value">—</div></div><div class="mini"><div class="label">Cópias · 24h</div><div id="legCopy24" class="value cyan">—</div></div><div class="mini"><div class="label">Cópias · 30d</div><div id="legCopy30" class="value cyan">—</div></div></div></section><section class="panel" style="margin-top:12px"><div class="cols"><div><h3>Legislação copiada · 24h</h3><div class="table-scroll"><table class="smalltable"><thead><tr><th>Legislação</th><th>Código</th><th>Cópias</th></tr></thead><tbody id="legTop24"></tbody></table></div></div><div><h3>Legislação copiada · 30 dias</h3><div class="table-scroll"><table class="smalltable"><thead><tr><th>Legislação</th><th>Código</th><th>Cópias</th></tr></thead><tbody id="legTop30"></tbody></table></div></div></div><div class="note">Mostra as legislações efetivamente copiadas pelos utilizadores. O nome apresentado vem do título associado ao registo de cópia; o código é o identificador enviado pela plataforma.</div></section><div class="section-title"><h2>Cinemómetro</h2></div><section class="panel"><div class="period-wrap"><table class="period"><thead><tr><th>Indicador</th><th>24h</th><th>7 dias</th><th>30 dias</th><th>90 dias</th></tr></thead><tbody><tr><td>Velocidades inseridas</td><td id="c24">—</td><td id="c7">—</td><td id="c30">—</td><td id="c90">—</td></tr></tbody></table></div></section><div class="section-title"><h2>Evolução diária · 30 dias</h2><div class="grow"></div><div class="live">Inclui hora de maior afluência de cada dia</div></div><section class="panel"><div class="table-scroll"><table class="smalltable"><thead><tr><th>Dia</th><th>Utilizadores</th><th>Hora pico</th><th>Utilizadores na hora pico</th><th>Pesquisas</th><th>Velocidades</th><th>Legislação</th><th>Cópias</th></tr></thead><tbody id="daily"></tbody></table></div><div class="note">A “hora pico” de cada dia é a hora local com mais utilizadores distintos ativos, usando <code>heartbeat</code> e <code>app_open</code>. Para a afluência detalhada das últimas 24h, consulta também a tabela horária acima.</div></section><div class="section-title"><h2>Histórico total</h2></div><section class="panel"><table class="period"><thead><tr><th>Indicador</th><th>Total</th></tr></thead><tbody><tr><td>Utilizadores únicos</td><td id="allUsers">—</td></tr><tr><td>Consultas iniciadas</td><td id="allVehicles">—</td></tr><tr><td>Consultas concluídas (resultado ASF)</td><td id="allCompleted">—</td></tr><tr><td>Sem resultado final*</td><td id="allUnresolved" class="amber">—</td></tr><tr><td>IMT carregado</td><td id="allImt" class="cyan">—</td></tr><tr><td>Com seguro</td><td id="allYes" class="green">—</td></tr><tr><td>Sem seguro</td><td id="allNo" class="red">—</td></tr><tr><td>Velocidades inseridas</td><td id="allSpeed">—</td></tr><tr><td>Acessos / consultas de legislação</td><td id="allLeg">—</td></tr><tr><td>Cópias de legislação</td><td id="allCopy" class="cyan">—</td></tr><tr><td>Consultas de álcool</td><td id="allAlcohol">—</td></tr></tbody></table></section><div class="section-title"><h2>Reposição por período</h2></div><section class="panel"><div class="reset-grid"><button class="reset-btn" onclick="resetPeriod('24h')">RESET 24 HORAS<br><small>ZERA TODOS OS INDICADORES</small></button><button class="reset-btn" onclick="resetPeriod('7d')">RESET 7 DIAS<br><small>ZERA TODOS OS INDICADORES</small></button><button class="reset-btn" onclick="resetPeriod('30d')">RESET 30 DIAS<br><small>ZERA TODOS OS INDICADORES</small></button><button class="reset-btn" onclick="resetPeriod('90d')">RESET 90 DIAS<br><small>ZERA TODOS OS INDICADORES</small></button><button class="reset-btn life" onclick="resetPeriod('all')">RESET VIDA<br><small>ZERA TODO O HISTÓRICO</small></button></div><div class="note">Cada botão aplica o reset a TODAS as linhas desse período de uma só vez. Não existe reset individual por indicador.</div><button class="reset-btn total" style="width:100%;margin-top:10px" onclick="resetTotal()">RESET TOTAL — APAGAR TODOS OS DADOS</button><div id="resetStatus" class="reset-status"></div></section><div class="section-title"><h2>Estado</h2></div><section class="panel"><table class="smalltable"><tbody><tr><td>Primeiro registo após reset VIDA</td><td id="first">—</td></tr><tr><td>Última atividade após reset VIDA</td><td id="last">—</td></tr><tr><td>Última atualização</td><td id="updated">—</td></tr></tbody></table></section><div class="footer">VÉRIX · Telemetria operacional agregada · sem matrículas, nomes ou conteúdo operacional</div></div></div><script>
 const API='https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/stats';const AUTH_API=API;const HISTORY_API='https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/hourly-history';const HEALTH_API='https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/health';const RESET_API=API;const TOTAL_API=API;const q=id=>document.getElementById(id);const num=x=>Number(x||0).toLocaleString('pt-PT');const pct=x=>x===null||x===undefined?'—':Number(x||0).toLocaleString('pt-PT',{minimumFractionDigits:1,maximumFractionDigits:1})+'%';const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));const op=(d,k)=>d[k]||{};function setv(id,v){if(q(id))q(id).textContent=num(v)}function draw(id,rows){const el=q(id),labels={consulta:'Consulta de veículos',cinemometro:'Cinemómetro',legislacao:'Legislação',alcoolExcel:'Álcool',ferramentas:'Ferramentas',contactosExcel:'Contactos',codigosDistrito:'Códigos distrito',informacoes:'Informações',definicoes:'Definições'};rows=rows||[];if(!el)return;if(!rows.length){el.innerHTML='<div class="note">Sem dados.</div>';return}const max=Math.max(...rows.map(x=>+x.n||0),1);el.innerHTML=rows.map(x=>{const n=+x.n||0,name=labels[x.module]||x.module||'—';return '<div class="bar"><div>'+esc(name)+'</div><div class="track"><div class="fill" style="width:'+(n/max*100)+'%"></div></div><strong>'+num(n)+'</strong></div>'}).join('')}function daily(rows){q('daily').innerHTML=(rows||[]).map(x=>'<tr><td>'+esc(x.day)+'</td><td>'+num(x.users)+'</td><td><strong>'+esc(x.peak_hour||'—')+'</strong></td><td>'+num(x.peak_users)+'</td><td>'+num(x.vehicle_searches)+'</td><td>'+num(x.speed_entries)+'</td><td>'+num(x.legislation_accesses)+'</td><td>'+num(x.legislation_copies)+'</td></tr>').join('')||'<tr><td colspan="8">Sem dados.</td></tr>'}const compLabels={unique_users:'Utilizadores únicos',vehicle_searches:'Consultas iniciadas',yes_insurance:'Com seguro',no_insurance:'Sem seguro',errors:'Erros ASF',speed_entries:'Velocidades inseridas',legislation_accesses:'Acessos de legislação',legislation_copies:'Cópias de legislação',alcohol_lookups:'Consultas de álcool'};function renderComparison(c){const el=q('comparison');el.innerHTML=Object.entries(compLabels).map(([k,label])=>{const x=c?.[k]||{current:0,previous:0,delta:0,pct_change:0};const d=Number(x.delta||0);const cls=d>0?'green':d<0?'red':'';return '<tr><td>'+label+'</td><td>'+num(x.current)+'</td><td>'+num(x.previous)+'</td><td class="'+cls+'">'+(d>0?'+':'')+num(d)+'</td><td class="'+cls+'">'+pct(x.pct_change)+'</td></tr>'}).join('')||'<tr><td colspan="5">Sem dados.</td></tr>'}function renderTopCopies(id,rows){const el=q(id);if(!el)return;rows=rows||[];if(!rows.length){el.innerHTML='<tr><td colspan="3" class="note">Sem cópias registadas.</td></tr>';return}el.innerHTML=rows.slice(0,25).map(x=>'<tr><td>'+esc(x.item_label||'Sem identificação')+'</td><td><code>'+esc(x.item_id||'—')+'</code></td><td><strong>'+num(x.n)+'</strong></td></tr>').join('')}function renderPeak(rows,peak){rows=rows||[];if(q('peakHour'))q('peakHour').textContent=peak?.hour||'—';if(q('peakUsers'))q('peakUsers').textContent=peak?.avg_users!=null?Number(peak.avg_users).toLocaleString('pt-PT',{maximumFractionDigits:2}):'—';if(q('peakHeartbeats'))q('peakHeartbeats').textContent=peak?.avg_heartbeats!=null?Number(peak.avg_heartbeats).toLocaleString('pt-PT',{maximumFractionDigits:2}):'—';const el=q('hourBars');if(!el)return;const max=Math.max(...rows.map(x=>Number(x.avg_users||0)),1);el.innerHTML=rows.map(x=>'<div class="bar"><div>'+esc(x.hour)+'</div><div class="track"><div class="fill" style="width:'+(Number(x.avg_users||0)/max*100)+'%"></div></div><strong>'+Number(x.avg_users||0).toLocaleString('pt-PT',{maximumFractionDigits:2})+'</strong></div>').join('')}function renderHourlyHistory(rows,dailyRows){window.__verixHourlyHistory30=Array.isArray(rows)?rows:[];window.__verixDailyRows30=Array.isArray(dailyRows)?dailyRows:[];const days=[...new Set(window.__verixHourlyHistory30.map(x=>x.report_day))];const sel=q('hourlyDaySelect');if(!sel)return;const today=new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Lisbon'});const chosen=days.includes(today)?today:(days[days.length-1]||'');sel.innerHTML=days.map(d=>'<option value="'+esc(d)+'">'+esc(formatDayPT(d))+'</option>').join('');if(chosen)sel.value=chosen;renderSelectedHourlyDay()}function formatDayPT(day){const p=String(day||'').split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:String(day||'—')}function renderSelectedHourlyDay(){const sel=q('hourlyDaySelect');if(!sel)return;const day=sel.value;const rows=(window.__verixHourlyHistory30||[]).filter(x=>x.report_day===day).sort((a,b)=>a.local_hour-b.local_hour);const dailyRow=(window.__verixDailyRows30||[]).find(x=>x.day===day)||{};const table=q('hourlyDayTable'),bars=q('hourlyDayBars');const peak=rows.reduce((a,b)=>Number(b.users||0)>Number(a.users||0)?b:a,rows[0]||{local_hour:0,users:0});const peakUsers=Number(peak?.users||0);if(q('hourlyDayUsers'))q('hourlyDayUsers').textContent=num(dailyRow.users||0);if(q('hourlyDayPeak'))q('hourlyDayPeak').textContent=String(peak?.local_hour??0).padStart(2,'0')+':00';if(q('hourlyDayPeakUsers'))q('hourlyDayPeakUsers').textContent=num(peakUsers);if(q('hourlyDayVehicles'))q('hourlyDayVehicles').textContent=num(dailyRow.vehicle_searches||0);if(q('hourlyDayStatus'))q('hourlyDayStatus').textContent=day?('Dia selecionado: '+formatDayPT(day)+' · cada linha = 1 hora civil em Portugal continental.'):'Sem dia disponível';if(table){table.innerHTML=rows.length?rows.map(x=>{const h=Number(x.local_hour||0),next=(h+1)%24,slot=String(h).padStart(2,'0')+':00–'+String(next).padStart(2,'0')+':00';return '<tr><td><strong>'+slot+'</strong></td><td>'+num(x.users)+'</td><td>'+num(x.heartbeats)+'</td><td>'+num(x.app_opens)+'</td><td>'+num(x.vehicle_searches)+'</td><td>'+num(x.speed_entries)+'</td><td>'+num(x.legislation_accesses)+'</td><td>'+num(x.legislation_copies)+'</td><td>'+num(x.alcohol_lookups)+'</td><td>'+num(x.external_tools)+'</td></tr>'}).join(''):'<tr><td colspan="10">Sem dados.</td></tr>'}if(bars){const max=Math.max(...rows.map(x=>Number(x.users||0)),1);bars.innerHTML=rows.map(x=>{const h=Number(x.local_hour||0),u=Number(x.users||0);return '<div class="bar"><div>'+String(h).padStart(2,'0')+':00</div><div class="track"><div class="fill" style="width:'+(u/max*100)+'%"></div></div><strong>'+num(u)+'</strong></div>'}).join('')}}
 let historyReady=false;
 let historyMinDay='',historyMaxDay='',historyLoading=false;
@@ -196,7 +190,7 @@ async function loadSelectedHistoryDay(){
   const table=q('historyHourTable'); if(table)table.innerHTML='<tr><td colspan="10">A carregar '+esc(ptDayLabel(day))+'…</td></tr>';
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
   try{
-    const r=await fetch(HISTORY_API,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:new URLSearchParams({day,token:q('token').value.trim()}),cache:'no-store',signal:controller.signal});
+    const r=await fetch(HISTORY_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify({day,token:q('token').value.trim()}),cache:'no-store',signal:controller.signal});
     const d=await r.json(); if(!r.ok||!d.ok)throw Error(d.error||'HTTP '+r.status);
     q('historySelectedTitle').textContent='Dia '+ptDayLabel(day);
     q('historyStatus').textContent='30 dias de memória · hora local Europe/Lisbon';
@@ -248,27 +242,6 @@ async function checkHealth(){
   }finally{healthLoading=false;}
 }
 
-function liveAge(ts){
-  if(!ts)return 'agora';
-  const sec=Math.max(0,Math.floor((Date.now()-new Date(ts).getTime())/1000));
-  if(sec<10)return 'agora'; if(sec<60)return sec+' s'; const m=Math.floor(sec/60); return m+' min';
-}
-function renderLiveActivity(rows){
-  const list=q('liveList'),count=q('liveCount'),status=q('liveStatus');
-  rows=Array.isArray(rows)?rows:[];
-  if(count)count.textContent=num(rows.length);
-  if(status)status.textContent=rows.length?'Sessões ativas agora · última atividade significativa por utilizador':'Nenhum utilizador ativo neste momento.';
-  if(!list)return;
-  if(!rows.length){list.innerHTML='<div class="live-empty">Nenhum utilizador online neste momento.</div>';return;}
-  list.innerHTML=rows.map((x,i)=>{
-    const activity=String(x.activity||'Ativo');
-    const module=x.module?String(x.module):'';
-    const age=liveAge(x.activity_at||x.last_seen);
-    const meta=(module?module+' · ':'')+'última atividade '+age+(Number(x.tabs||1)>1?' · '+Number(x.tabs)+' sessões':'');
-    return '<div class="live-user"><div class="live-user-head"><span class="live-user-id">UTILIZADOR '+String(i+1).padStart(2,'0')+'</span><span class="live-user-age">'+esc(age)+'</span></div><div class="live-user-activity">'+esc(activity)+'</div><div class="live-user-meta">'+esc(meta)+'</div></div>';
-  }).join('');
-}
-
 async function loadStats(){
   const t=q('token').value.trim();
   if(!t||statsLoading)return;
@@ -276,7 +249,7 @@ async function loadStats(){
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),30000);
   q('status').textContent='A atualizar telemetria…'; const rb=document.querySelector('.refresh'); if(rb){rb.disabled=true;rb.textContent='A ATUALIZAR…';}
   try{
-    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:new URLSearchParams({action:'stats',token:t}),cache:'no-store',signal:controller.signal});
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify({action:'stats',token:t}),cache:'no-store',signal:controller.signal});
     const d=await r.json().catch(()=>({}));
     if(r.status===401||r.status===403)throw Error('UNAUTHORIZED');
     if(!r.ok||!d.ok)throw Error(d.error||'HTTP '+r.status);
@@ -284,11 +257,11 @@ async function loadStats(){
     setv('online',o.active_users_now);setv('active10',o.active_users_10m);setv('users24',o.unique_users_24h);setv('users30',o.unique_users_30d);
     [['v24',a24.vehicle_searches],['v7',a7.vehicle_searches],['v30',a30.vehicle_searches],['v90',a90.vehicle_searches],['co24',v.completed_24h],['co7',v.completed_7d],['co30',v.completed_30d],['co90',v.completed_90d],['un24',v.unresolved_24h],['un7',v.unresolved_7d],['un30',v.unresolved_30d],['un90',v.unresolved_90d],['im24',v.imt_results_24h],['im7',v.imt_results_7d],['im30',v.imt_results_30d],['im90',v.imt_results_90d],['ys24',v.yes_insurance_24h],['ys7',v.yes_insurance_7d],['ys30',v.yes_insurance_30d],['ys90',v.yes_insurance_90d],['ns24',v.no_insurance_24h],['ns7',v.no_insurance_7d],['ns30',v.no_insurance_30d],['ns90',v.no_insurance_90d],['er24',v.errors_24h],['er7',v.errors_7d],['er30',v.errors_30d],['er90',v.errors_90d],['sp24',a24.speed_entries],['sp7',a7.speed_entries],['sp30',a30.speed_entries],['sp90',a90.speed_entries],['lg24',a24.legislation_accesses],['lg7',a7.legislation_accesses],['lg30',a30.legislation_accesses],['lg90',a90.legislation_accesses],['lc24',a24.legislation_copies],['lc7',a7.legislation_copies],['lc30',a30.legislation_copies],['lc90',a90.legislation_copies],['al24',a24.alcohol_lookups],['al7',a7.alcohol_lookups],['al30',a30.alcohol_lookups],['al90',a90.alcohol_lookups]].forEach(x=>setv(x[0],x[1]));
     [['rr24',v.no_insurance_rate_24h],['rr7',v.no_insurance_rate_7d],['rr30',v.no_insurance_rate_30d],['rr90',v.no_insurance_rate_90d]].forEach(x=>{if(q(x[0]))q(x[0]).textContent=pct(x[1])});
-    [['c24',a24.speed_entries],['c7',a7.speed_entries],['c30',a30.speed_entries],['c90',a90.speed_entries],['legAccess24',a24.legislation_accesses],['legSearch24',a24.legislation_searches],['legCopy24',a24.legislation_copies],['legCopy30',a30.legislation_copies],['allUsers',o.unique_users_all_time],['allVehicles',v.lookups_all_time],['allCompleted',v.completed_all_time],['allErrors',v.errors_all_time_total],['allUnresolved',v.unresolved_all_time],['allImt',v.imt_results_all_time],['allYes',v.yes_insurance_all_time],['allNo',v.no_insurance_all_time],['allSpeed',all.speed_entries],['allLeg',all.legislation_accesses],['allCopy',all.legislation_copies],['allAlcohol',all.alcohol_lookups]].forEach(x=>setv(x[0],x[1]));
+    [['c24',a24.speed_entries],['c7',a7.speed_entries],['c30',a30.speed_entries],['c90',a90.speed_entries],['legAccess24',a24.legislation_accesses],['legSearch24',a24.legislation_searches],['legCopy24',a24.legislation_copies],['legCopy30',a30.legislation_copies],['allUsers',o.unique_users_all_time],['allVehicles',v.lookups_all_time],['allCompleted',v.completed_all_time],['allUnresolved',v.unresolved_all_time],['allImt',v.imt_results_all_time],['allYes',v.yes_insurance_all_time],['allNo',v.no_insurance_all_time],['allSpeed',all.speed_entries],['allLeg',all.legislation_accesses],['allCopy',all.legislation_copies],['allAlcohol',all.alcohol_lookups]].forEach(x=>setv(x[0],x[1]));
     const searches=Number(v.lookups_24h||0),completed=Number(v.accounted_24h!=null?v.accounted_24h:v.completed_24h||0),yes=Number(v.yes_insurance_24h||0),no=Number(v.no_insurance_24h||0),errors=Number(v.errors_24h||0),unresolved=Number(v.unresolved_24h||0),gap=Number(v.balance_gap_24h||0);
     if(q('vehicleFlowNote')){q('vehicleFlowNote').innerHTML='<strong>24h · estado das consultas:</strong> '+num(searches)+' consultas iniciadas = '+num(completed)+' com resultado ASF ('+num(yes)+' com seguro + '+num(no)+' sem seguro + '+num(errors)+' erro/indisponibilidade) + '+num(unresolved)+' sem resultado final.'+(gap===0?' <strong>Conferência OK.</strong>':' <strong style="color:#f0b35a">Diferença detetada: '+num(gap)+'</strong>');}
-    {const rec=d.reconciliation_24h||{gap:Math.max(0,gap),items:[]};window.__verixReconciliation24=rec;const ic=q('integrityCard'),iv=q('integrityValue'),is=q('integritySub');if(ic&&iv){const rg=Number(rec.gap||0);ic.dataset.state=rg===0&&gap===0?'ok':(rg<=1&&gap>=0?'warn':'error');if(gap===0){iv.textContent='OK';if(is)is.textContent='Consultas iniciadas = contabilização final.';}else if(gap>0){iv.textContent=String(gap)+' '+(gap===1?'consulta':'consultas');if(is)is.textContent=gap===1?'1 consulta não reconciliada · clique para investigar.':gap+' consultas não reconciliadas · clique para investigar.';}else{iv.textContent='Resultados +'+Math.abs(gap);if(is)is.textContent=Math.abs(gap)===1?'1 resultado sem consulta correspondente · clique para investigar.':Math.abs(gap)+' resultados sem consulta correspondente · clique para investigar.';}}}
-    renderLiveActivity(d.live_activity||[]);draw('mods24',a24.module_opens);draw('mods30',a30.module_opens);daily(d.daily_operational_30d);renderTopCopies('legTop24',d.legislation_top_copies_24h);renderTopCopies('legTop30',d.legislation_top_copies_30d);renderComparison(d.comparison_24h);initHourlyHistoryControls();loadSelectedHistoryDay();renderPeak(d.hourly_30d,d.peak_hour_30d);
+    {const ic=q('integrityCard'),iv=q('integrityValue'),is=q('integritySub');if(ic&&iv){ic.dataset.state=gap===0?'ok':(Math.abs(gap)<=1?'warn':'error');iv.textContent=gap===0?'OK':('Δ '+(gap>0?'+':'')+num(gap));if(is)is.textContent=gap===0?'Consultas iniciadas = contabilização final.':'Existe diferença entre o início e a contabilização; investigar antes de interpretar a tendência.';}}
+    draw('mods24',a24.module_opens);draw('mods30',a30.module_opens);daily(d.daily_operational_30d);renderTopCopies('legTop24',d.legislation_top_copies_24h);renderTopCopies('legTop30',d.legislation_top_copies_30d);renderComparison(d.comparison_24h);initHourlyHistoryControls();loadSelectedHistoryDay();renderPeak(d.hourly_30d,d.peak_hour_30d);
     q('first').textContent=d.periods?.first_seen?new Date(d.periods.first_seen).toLocaleString('pt-PT'):'—';q('last').textContent=d.periods?.last_activity?new Date(d.periods.last_activity).toLocaleString('pt-PT'):'—';q('updated').textContent=d.generated_at?new Date(d.generated_at).toLocaleString('pt-PT'):'—';q('status').textContent='Atualizado em '+new Date(d.generated_at||Date.now()).toLocaleString('pt-PT');window.__verixAdminLastUpdate=Date.now();window.__verixAdminNextUpdate=Date.now()+30000;
   }catch(e){
     if(e && e.message==='UNAUTHORIZED'){
@@ -304,15 +277,6 @@ async function loadStats(){
   }finally{clearTimeout(timer);statsLoading=false; const rb=document.querySelector('.refresh'); if(rb){rb.disabled=false;rb.textContent='Atualizar';}}
 }
 
-async function refreshLive(){
-  const t=q('token').value.trim(); if(!t||q('app').style.display!=='block')return;
-  try{
-    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:new URLSearchParams({action:'live',token:t}),cache:'no-store'});
-    const d=await r.json().catch(()=>({}));
-    if(r.ok&&d.ok)renderLiveActivity(d.live_activity||[]);
-  }catch(_){ /* o painel principal mantém o último estado conhecido */ }
-}
-
 async function login(){
   q('loginError').textContent='';
   const token=q('token').value.trim();
@@ -326,7 +290,7 @@ async function login(){
   const controller=new AbortController();
   const timer=setTimeout(()=>controller.abort(),6000);
   try{
-    const r=await fetch(AUTH_API,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:new URLSearchParams({action:'auth',token}),cache:'no-store',signal:controller.signal});
+    const r=await fetch(AUTH_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify({action:'auth',token}),cache:'no-store',signal:controller.signal});
     const d=await r.json().catch(()=>({}));
     if(!r.ok||!d.ok)throw Error(r.status===401||r.status===403?'UNAUTHORIZED':(d.error||'HTTP '+r.status));
     q('loginError').textContent='';
@@ -343,25 +307,5 @@ async function login(){
     authLoading=false;
   }
 }
-
-function closeRecon(){const m=q('reconModal');if(m){m.classList.remove('show');m.setAttribute('aria-hidden','true')}}
-function openRecon(){
-  const m=q('reconModal'),b=q('reconBody'),sub=q('reconSub'); if(!m||!b)return;
-  const rec=window.__verixReconciliation24||{gap:0,items:[]};
-  m.classList.add('show');m.setAttribute('aria-hidden','false');
-  const gap=Number(rec.gap||0),items=Array.isArray(rec.items)?rec.items:[];
-  if(sub)sub.textContent=gap===0?'Não existem discrepâncias na janela atual.':'Há '+gap+' '+(gap===1?'consulta':'consultas')+' não reconciliada(s) na janela de 24h.';
-  if(!gap){b.innerHTML='<div class="recon-empty">✓ Tudo reconciliado nas últimas 24 horas.</div>';return}
-  b.innerHTML=items.length?items.map((x,i)=>{
-    if(x.type==='legacy') return '<div class="recon-item warn"><div class="recon-item-title">'+num(x.count||1)+' '+((x.count||1)===1?'evento antigo':'eventos antigos')+' sem QUERY_ID</div><div class="recon-item-meta">Não é possível identificar individualmente a consulta através da telemetria antiga. Este registo explica parte da diferença estatística, mas não permite atribuir a matrícula/pesquisa sem inventar informação.</div></div>';
-    const when=x.occurred_at?new Date(x.occurred_at).toLocaleString('pt-PT'):'—';
-    const qid=esc(x.query_id||'—');
-    return '<div class="recon-item"><div class="recon-item-title">CONSULTA NÃO RECONCILIADA #'+(i+1)+'</div><div class="recon-item-meta">Início: '+esc(when)+'<br>QUERY_ID: '+qid+'<br>IMT: '+(x.imt_loaded?'carregado':'não registado')+'<br>ASF: sem resultado final</div><div class="recon-actions"><button class="recon-copy" type="button" onclick="navigator.clipboard&&navigator.clipboard.writeText('+JSON.stringify(String(x.query_id||''))+').catch(()=>{})">COPIAR QUERY_ID</button></div></div>';
-  }).join(''):'<div class="recon-empty">A diferença existe, mas não foi possível identificar o evento com os dados disponíveis.</div>';
-}
-
-async function resetPeriod(){q('resetStatus').textContent='Resets de período estão desativados para proteger o histórico do VÉRIX.'}async function resetTotal(){q('resetStatus').textContent='Reset total está desativado para proteger o histórico do VÉRIX.'}function logout(){q('token').value='';q('app').style.display='none';q('login').style.display='flex';q('loginError').textContent=''}q('token').addEventListener('keydown',e=>{if(e.key==='Enter')login()});setInterval(()=>{if(q('app').style.display==='block'&&!authLoading){loadStats();checkHealth()}},30000);setInterval(()=>{if(q('app').style.display==='block'&&!authLoading){refreshLive()}},5000);setInterval(()=>{const c=q('adminRefreshCountdown');if(!c)return;const left=Math.max(0,Number(window.__verixAdminNextUpdate||0)-Date.now());c.textContent=left>0?('PRÓXIMA ATUALIZAÇÃO EM '+Math.ceil(left/1000)+' s'):'A ATUALIZAR…';},1000);q('integrityCard')?.addEventListener('click',()=>{if((window.__verixReconciliation24?.gap||0)!==0)openRecon()});q('integrityCard')?.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&(window.__verixReconciliation24?.gap||0)!==0){e.preventDefault();openRecon()}});q('reconClose')?.addEventListener('click',closeRecon);q('reconModal')?.addEventListener('click',e=>{if(e.target===q('reconModal'))closeRecon()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeRecon()});checkHealth();
-
-</script>
-</body>
-</html>
+async function resetPeriod(period){const names={'24h':'24 horas','7d':'7 dias','30d':'30 dias','90d':'90 dias','all':'vida'};if(!confirm('RESET — '+names[period].toUpperCase()+'\n\nIsto altera o início estatístico desse período sem apagar os eventos físicos.\n\nContinuar?'))return;q('resetStatus').textContent='A aplicar reset…';try{const r=await fetch(RESET_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify({action:'period_reset',period,token:q('token').value.trim()}),cache:'no-store'});const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'HTTP '+r.status);q('resetStatus').textContent='Reset aplicado: '+names[period]+'. Os eventos continuam guardados.';await loadStats()}catch(e){q('resetStatus').textContent='Erro: '+e.message}}async function resetTotal(){if(!confirm('ATENÇÃO — RESET TOTAL\n\nIsto vai APAGAR todos os eventos, sessões, instalações e resets.\n\nEsta operação não pode ser desfeita.\n\nContinuar?'))return;q('resetStatus').textContent='A apagar todos os dados…';try{const r=await fetch(TOTAL_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify({confirm:'RESET_VERIX',token:q('token').value.trim()}),cache:'no-store'});const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'HTTP '+r.status);q('resetStatus').textContent='RESET TOTAL concluído.';await loadStats()}catch(e){q('resetStatus').textContent='Erro no reset total: '+e.message}}function logout(){q('token').value='';q('app').style.display='none';q('login').style.display='flex';q('loginError').textContent=''}q('token').addEventListener('keydown',e=>{if(e.key==='Enter')login()});setInterval(()=>{if(q('app').style.display==='block'&&!authLoading){loadStats();checkHealth()}},30000);setInterval(()=>{const c=q('adminRefreshCountdown');if(!c)return;const left=Math.max(0,Number(window.__verixAdminNextUpdate||0)-Date.now());c.textContent=left>0?('PRÓXIMA ATUALIZAÇÃO EM '+Math.ceil(left/1000)+' s'):'A ATUALIZAR…';},1000);checkHealth();
+</script></body></html>
