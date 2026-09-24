@@ -1,5 +1,26 @@
 <!-- VÉRIX 1.3 — publicação limpa -->
-<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VÉRIX — Plataforma Digital 1.2</title>
+<!DOCTYPE html><html lang="pt"><head>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<script id="verix-cache-buster">
+(function(){
+  try {
+    var u = new URL(window.location.href);
+    var key = "_verix_cache";
+    if (!u.searchParams.has(key)) {
+      u.searchParams.set(key, String(Date.now()));
+      window.location.replace(u.href);
+      return;
+    }
+    // Depois de obter a versão fresca, limpa o parâmetro sem recarregar a página.
+    if (window.history && window.history.replaceState) {
+      u.searchParams.delete(key);
+      window.history.replaceState({}, document.title, u.href);
+    }
+  } catch (_) {}
+})();
+</script><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VÉRIX — Plataforma Digital 1.2</title>
 <meta name="description" content="VÉRIX — Plataforma Digital de apoio ao serviço operacional.">
 <meta name="theme-color" content="#03080c">
 <meta property="og:type" content="website">
@@ -462,19 +483,6 @@ let imtQuerySequence = 0;
     clearTimeout(imtTimers[frameId]);
 
     if (requestSequence !== imtQuerySequence) return;
-
-    try {
-      if (
-        window.VERIX_TELEMETRY &&
-        typeof window.VERIX_TELEMETRY.track === 'function'
-      ) {
-        window.VERIX_TELEMETRY.track(
-          'imt_loaded',
-          'consulta',
-          { queryId, source: sourceName }
-        );
-      }
-    } catch (_) {}
 
     occultarLoading(frameId, overlayId);
   };
@@ -941,6 +949,14 @@ function submitConjunto(event) {
  'livrete',
  imtSequence
  );
+
+ // Uma matrícula pesquisada = 1 resultado IMT no Admin,
+ // independentemente de serem carregados os dois endpoints (inspeção + livrete).
+ try {
+   if (window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.track === 'function') {
+     window.VERIX_TELEMETRY.track('imt_loaded', 'consulta', { queryId: window.__VERIX_CURRENT_QUERY_ID });
+   }
+ } catch (_) {}
 
  ultimaMatriculaPesquisada = placaInspecao;
  ultimaMatriculaInspecao = placaInspecao;
@@ -16897,17 +16913,6 @@ html body .leg-card-new .copy-all-new{
       }
     }, true);
 
-    ['veiculoFrame', 'reboqueFrame'].forEach(function (id) {
-      var frame = document.getElementById(id);
-      if (!frame) return;
-
-      frame.addEventListener('load', function () {
-        push('imt_loaded', 'consulta', {
-          queryId: window.__VERIX_CURRENT_QUERY_ID || null,
-          source: id === 'reboqueFrame' ? 'livrete' : 'inspecao'
-        });
-      });
-    });
   }
 
   function start() {
