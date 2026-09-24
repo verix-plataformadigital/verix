@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>VÉRIX // ADMIN V2</title>
 <style>
 :root{
@@ -14,9 +17,9 @@ html,body{margin:0;background:radial-gradient(circle at 50% 20%,#09222b 0,#03101
 body{min-height:100vh}
 button,input{font:inherit}
 button{cursor:pointer}
+button:disabled{opacity:.55;cursor:not-allowed}
 .hidden{display:none!important}
 
-/* LOGIN */
 #loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
 .login-card{
   width:min(520px,94vw);padding:28px;border:1px solid var(--line);border-radius:18px;
@@ -30,26 +33,29 @@ button{cursor:pointer}
   width:100%;padding:14px 16px;border-radius:11px;border:1px solid rgba(101,215,232,.25);
   background:#eaf3ff;color:#0e1920;outline:none;font-weight:800
 }
+.login-card input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(101,215,232,.2)}
 .login-card button{
   width:100%;margin-top:12px;padding:13px;border-radius:11px;border:1px solid rgba(101,215,232,.35);
   background:linear-gradient(180deg,#1aa7b8,#087b8f);color:#fff;font-weight:950;letter-spacing:1.5px
 }
-.error{margin-top:13px;color:#ff6b7c;font-weight:800;text-align:center;font-size:12px}
+.error{margin-top:13px;color:#ff6b7c;font-weight:800;text-align:center;font-size:12px;min-height:1.2em}
 
-/* APP */
 #app{max-width:1830px;margin:0 auto;padding:14px 18px 50px}
 .topbar{
   position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
   gap:14px;padding:10px 4px 12px;border-bottom:1px solid var(--line);background:rgba(2,8,11,.93);backdrop-filter:blur(12px)
 }
-.top-left{display:flex;align-items:center;gap:10px}
-.status-dot{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 12px rgba(34,242,160,.65)}
+.top-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.status-dot{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 12px rgba(34,242,160,.65);flex:0 0 auto}
+.status-dot.warn{background:var(--yellow);box-shadow:0 0 12px rgba(255,211,78,.55)}
+.status-dot.err{background:var(--red);box-shadow:0 0 12px rgba(255,88,112,.55)}
 .admin-brand{font-weight:950;letter-spacing:2px}
 .admin-brand b{color:var(--cyan)}
-.top-actions{display:flex;gap:9px}
+.top-actions{display:flex;gap:9px;flex-wrap:wrap}
 .top-actions button{
   border:1px solid rgba(101,215,232,.25);background:#0a2028;color:#eaf8fa;border-radius:8px;padding:9px 13px;font-weight:900
 }
+.top-actions button.primary{border-color:rgba(34,242,160,.35);background:linear-gradient(180deg,#0a3a32,#0a2028)}
 
 .hero{
   margin-top:16px;padding:20px 24px 18px;border:1px solid var(--line);border-radius:18px;
@@ -63,26 +69,32 @@ button{cursor:pointer}
   margin-top:14px;padding:11px 12px;border-left:2px solid var(--cyan);background:rgba(0,60,72,.16);
   color:#bbced2;font-family:Consolas,monospace;font-size:12px
 }
-.status-meta{display:flex;gap:15px;margin-top:8px;color:#74efc3;font:800 10px/1 Consolas,monospace;text-transform:uppercase}
+.status-line.err{border-left-color:var(--red);background:rgba(80,20,30,.18);color:#ffc0c8}
+.status-meta{display:flex;gap:15px;margin-top:8px;color:#74efc3;font:800 10px/1 Consolas,monospace;text-transform:uppercase;flex-wrap:wrap}
 
 .section{margin-top:24px}
-.section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding-bottom:9px}
+.section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding-bottom:9px;flex-wrap:wrap}
 .section-title{font-size:18px;font-weight:950;letter-spacing:1.5px}
 .section-note{color:#5ef0ca;font:800 11px/1 Consolas,monospace}
 
 .cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-top:14px}
 .card{
   min-height:118px;border:1px solid var(--line);border-radius:16px;padding:15px 17px;
-  background:linear-gradient(145deg,rgba(6,25,31,.9),rgba(3,14,19,.94))
+  background:linear-gradient(145deg,rgba(6,25,31,.9),rgba(3,14,19,.94));
+  transition:border-color .15s, transform .12s
 }
+.card:hover{border-color:rgba(101,215,232,.4)}
 .card-label{color:#88aab3;font:800 10px/1 Consolas,monospace;letter-spacing:1px;text-transform:uppercase}
 .card-value{margin-top:18px;font:950 29px/1 Consolas,monospace;color:#edf8fa}
 .card.green .card-value{color:var(--green)} .card.cyan .card-value{color:var(--cyan)}
 .card.yellow .card-value{color:var(--yellow)} .card.red .card-value{color:var(--red)}
 .card small{display:block;margin-top:7px;color:var(--muted);font-size:10px;line-height:1.35}
 
-/* tables */
-.table-wrap{margin-top:14px;border:1px solid var(--line);border-radius:16px;overflow:auto;background:rgba(4,17,22,.72)}
+.table-wrap{margin-top:14px;border:1px solid var(--line);border-radius:16px;overflow:auto;background:rgba(4,17,22,.72);position:relative}
+.table-wrap.loading::after{
+  content:"A carregar…";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background:rgba(2,10,14,.55);color:var(--cyan);font:900 12px/1 Consolas,monospace;letter-spacing:1px;pointer-events:none
+}
 table{width:100%;border-collapse:collapse;min-width:780px}
 th,td{padding:12px 14px;border-bottom:1px solid rgba(101,215,232,.10);text-align:right}
 th:first-child,td:first-child{text-align:left}
@@ -100,7 +112,6 @@ td{font-weight:850;font-size:13px}
   background:rgba(80,70,10,.12);color:#9fb2b7;font-size:11px
 }
 
-/* day strip + hourly */
 .days{display:flex;gap:8px;overflow-x:auto;padding:11px 0 5px}
 .day{
   flex:0 0 auto;min-width:92px;padding:8px 11px;border:1px solid rgba(101,215,232,.18);
@@ -110,6 +121,11 @@ td{font-weight:850;font-size:13px}
 .day strong{display:block;margin-top:6px;font:950 14px/1 Consolas,monospace;color:#f3fbfc}
 .day.active{border-color:var(--cyan);box-shadow:inset 0 0 0 1px rgba(101,215,232,.12);background:#0a2028}
 .day.active strong{color:var(--cyan)}
+.day-picker{display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap}
+.day-picker label{font:800 10px/1 Consolas,monospace;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.day-picker input[type="date"]{
+  border:1px solid rgba(101,215,232,.25);background:#0a2028;color:#eaf8fa;border-radius:8px;padding:8px 10px;font-weight:800
+}
 
 .hour-top{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:13px}
 .mini{
@@ -118,7 +134,6 @@ td{font-weight:850;font-size:13px}
 .mini-label{color:#86a3ad;font:800 9px/1 Consolas,monospace;letter-spacing:1px;text-transform:uppercase}
 .mini-value{margin-top:13px;font:950 26px/1 Consolas,monospace;color:#eaf8fa}
 
-/* split sections */
 .split{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
 .panel{
   border:1px solid var(--line);border-radius:16px;padding:16px;background:rgba(5,20,26,.80)
@@ -136,7 +151,11 @@ td{font-weight:850;font-size:13px}
 .leg-table td:nth-child(1){width:65%}
 .empty{padding:12px;border-left:2px solid rgba(255,211,78,.55);background:rgba(80,70,10,.12);color:#aab8bc}
 
-/* mobile */
+.section-error{
+  margin-top:10px;padding:10px 12px;border-left:2px solid var(--red);
+  background:rgba(80,20,30,.16);color:#ffc0c8;font-size:12px;font-weight:800
+}
+
 @media(max-width:1100px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.split{grid-template-columns:1fr}.hour-top{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){
   #app{padding:8px 10px 35px}.hero{padding:16px}.hero h1{font-size:24px}.topbar{padding-top:6px}
@@ -148,59 +167,94 @@ td{font-weight:850;font-size:13px}
   .bar-row{grid-template-columns:110px 1fr 42px}.bar-label{font-size:10px}
 }
 
-/* toast */
-.toast{position:fixed;right:18px;bottom:18px;z-index:50;padding:11px 13px;border:1px solid var(--line);border-radius:9px;background:#081b22;color:#eaf8fa;box-shadow:0 12px 35px rgba(0,0,0,.45);font-size:12px}
+.toast{position:fixed;right:18px;bottom:18px;z-index:50;padding:11px 13px;border:1px solid var(--line);border-radius:9px;background:#081b22;color:#eaf8fa;box-shadow:0 12px 35px rgba(0,0,0,.45);font-size:12px;max-width:min(360px,90vw)}
+.toast.err{border-color:rgba(255,88,112,.4);color:#ffc0c8}
 </style>
 </head>
 <body>
 
 <div id="loginScreen">
-  <form class="login-card" id="loginForm">
+  <form class="login-card" id="loginForm" autocomplete="on">
     <div class="brand">VÉRIX <b>//</b> ADMIN V2</div>
-    <div class="login-sub">Painel de administração</div>
-    <input id="password" type="password" autocomplete="current-password" placeholder="Password">
-    <button type="submit">ENTRAR</button>
-    <div id="loginError" class="error"></div>
+    <div class="login-sub">Painel de administração · telemetria agregada</div>
+    <input id="password" type="password" autocomplete="current-password" placeholder="Password" autofocus>
+    <button type="submit" id="loginBtn">ENTRAR</button>
+    <div id="loginError" class="error" role="alert"></div>
   </form>
 </div>
 
 <div id="app" class="hidden">
   <div class="topbar">
     <div class="top-left">
-      <span class="status-dot"></span>
+      <span class="status-dot" id="statusDot" title="Estado da ligação"></span>
       <div class="admin-brand">VÉRIX <b>//</b> ADMIN</div>
-      <div class="section-note" id="backendBadge">BACKEND ONLINE</div>
+      <div class="section-note" id="backendBadge">BACKEND</div>
     </div>
     <div class="top-actions">
-      <button id="refreshBtn">ATUALIZAR</button>
-      <button id="logoutBtn">SAIR</button>
+      <button type="button" id="exportBtn" title="Exportar dia seleccionado (CSV)">EXPORTAR CSV</button>
+      <button type="button" id="refreshBtn" class="primary">ATUALIZAR</button>
+      <button type="button" id="logoutBtn">SAIR</button>
     </div>
   </div>
 
   <section class="hero">
-    <div class="kicker">OPS · TELEMETRIA AGREGADA</div>
+    <div class="kicker">OPS · TELEMETRIA AGREGADA · V2</div>
     <h1>PAINEL DE ADMINISTRAÇÃO</h1>
-    <p>Utilização operacional · sem matrículas, nomes ou conteúdo operacional</p>
+    <p>Utilização operacional · sem matrículas, nomes ou conteúdo operacional sensível</p>
     <div class="status-line" id="statusLine">A iniciar...</div>
-    <div class="status-meta"><span id="backendTime">BACKEND</span><span id="nextRefresh">ATUALIZAÇÃO AUTOMÁTICA · 30 S</span></div>
+    <div class="status-meta">
+      <span id="backendTime">BACKEND</span>
+      <span id="nextRefresh">ATUALIZAÇÃO AUTOMÁTICA · 30 S</span>
+    </div>
   </section>
 
   <section class="section">
-    <div class="section-head"><div class="section-title">VISÃO GERAL</div><div class="section-note">Atualização automática · 30 s</div></div>
+    <div class="section-head">
+      <div class="section-title">VISÃO GERAL</div>
+      <div class="section-note">Atualização automática · 30 s</div>
+    </div>
     <div class="cards">
-      <div class="card yellow" id="cardConference"><div class="card-label">CONFERÊNCIA 24H</div><div class="card-value" id="conferenceValue">—</div><small id="conferenceNote">Consultas iniciadas vs resultado final.</small></div>
-      <div class="card green"><div class="card-label">ONLINE AGORA</div><div class="card-value" id="onlineValue">—</div></div>
-      <div class="card cyan"><div class="card-label">ATIVOS · 10 MIN</div><div class="card-value" id="activeValue">—</div></div>
-      <div class="card"><div class="card-label">ÚNICOS · 24H</div><div class="card-value" id="unique24Value">—</div></div>
-      <div class="card"><div class="card-label">ÚNICOS · 30D</div><div class="card-value" id="unique30Value">—</div></div>
+      <div class="card yellow" id="cardConference">
+        <div class="card-label">CONFERÊNCIA 24H</div>
+        <div class="card-value" id="conferenceValue">—</div>
+        <small id="conferenceNote">Consultas iniciadas vs resultado final.</small>
+      </div>
+      <div class="card green">
+        <div class="card-label">ONLINE AGORA</div>
+        <div class="card-value" id="onlineValue">—</div>
+        <small>Sessões com heartbeat recente.</small>
+      </div>
+      <div class="card cyan">
+        <div class="card-label">ATIVOS · 10 MIN</div>
+        <div class="card-value" id="activeValue">—</div>
+        <small>Actividade nos últimos 10 minutos.</small>
+      </div>
+      <div class="card">
+        <div class="card-label">ÚNICOS · 24H</div>
+        <div class="card-value" id="unique24Value">—</div>
+        <small>Instalações distintas.</small>
+      </div>
+      <div class="card">
+        <div class="card-label">ÚNICOS · 30D</div>
+        <div class="card-value" id="unique30Value">—</div>
+        <small>Instalações distintas.</small>
+      </div>
     </div>
   </section>
 
   <section class="section">
     <div class="section-head"><div class="section-title">ATIVIDADE OPERACIONAL</div></div>
-    <div class="table-wrap">
+    <div class="table-wrap" id="activityWrap">
       <table id="activityTable">
-        <thead><tr><th>INDICADOR</th><th>24H</th><th>7 DIAS</th><th>30 DIAS</th><th>HISTÓRICO DA APLICAÇÃO</th></tr></thead>
+        <thead>
+          <tr>
+            <th>INDICADOR</th>
+            <th>24H</th>
+            <th>7 DIAS</th>
+            <th>30 DIAS</th>
+            <th>HISTÓRICO DA APLICAÇÃO</th>
+          </tr>
+        </thead>
         <tbody></tbody>
       </table>
     </div>
@@ -208,10 +262,21 @@ td{font-weight:850;font-size:13px}
   </section>
 
   <section class="section">
-    <div class="section-head"><div class="section-title">COMPARAÇÃO · ÚLTIMAS 24H</div><div class="section-note">24h atuais vs 24h anteriores</div></div>
-    <div class="table-wrap">
+    <div class="section-head">
+      <div class="section-title">COMPARAÇÃO · ÚLTIMAS 24H</div>
+      <div class="section-note">24h atuais vs 24h anteriores</div>
+    </div>
+    <div class="table-wrap" id="compareWrap">
       <table class="compare" id="compareTable">
-        <thead><tr><th>INDICADOR</th><th>ATUAL</th><th>ANTERIOR</th><th>VARIAÇÃO</th><th>%</th></tr></thead>
+        <thead>
+          <tr>
+            <th>INDICADOR</th>
+            <th>ATUAL</th>
+            <th>ANTERIOR</th>
+            <th>VARIAÇÃO</th>
+            <th>%</th>
+          </tr>
+        </thead>
         <tbody></tbody>
       </table>
     </div>
@@ -219,21 +284,39 @@ td{font-weight:850;font-size:13px}
   </section>
 
   <section class="section">
-    <div class="section-head"><div class="section-title">HISTÓRICO HORÁRIO · 30 DIAS</div><div class="section-note">Escolhe um dia → 24 horas ao detalhe</div></div>
+    <div class="section-head">
+      <div class="section-title">HISTÓRICO HORÁRIO · 30 DIAS</div>
+      <div class="section-note">Escolhe um dia → 24 horas ao detalhe</div>
+    </div>
     <div class="panel">
-      <div id="days" class="days"></div>
+      <div class="day-picker">
+        <label for="dateInput">Data</label>
+        <input type="date" id="dateInput">
+      </div>
+      <div id="days" class="days" role="listbox" aria-label="Últimos 30 dias"></div>
+      <div id="hourlyError" class="section-error hidden" role="alert"></div>
       <div class="hour-top">
         <div class="mini"><div class="mini-label">UTILIZADORES ÚNICOS NO DIA</div><div class="mini-value" id="dayUsers">—</div></div>
         <div class="mini"><div class="mini-label">HORA DE MAIOR AFLUÊNCIA</div><div class="mini-value" id="peakHour">—</div></div>
         <div class="mini"><div class="mini-label">UTILIZADORES NO PICO</div><div class="mini-value" id="peakUsers">—</div></div>
         <div class="mini"><div class="mini-label">PESQUISAS DE VEÍCULOS</div><div class="mini-value" id="daySearches">—</div></div>
       </div>
-      <div class="table-wrap" style="margin-top:12px">
+      <div class="table-wrap" id="hourWrap" style="margin-top:12px">
         <table id="hourTable">
-          <thead><tr>
-            <th>FAIXA HORÁRIA</th><th>UTILIZADORES</th><th>HEARTBEATS</th><th>APP OPENS</th>
-            <th>PESQUISAS VEÍCULOS</th><th>VELOCIDADES</th><th>LEGISLAÇÃO</th><th>CÓPIAS</th><th>ÁLCOOL</th><th>FERRAMENTAS</th>
-          </tr></thead>
+          <thead>
+            <tr>
+              <th>FAIXA HORÁRIA</th>
+              <th>UTILIZADORES</th>
+              <th>HEARTBEATS</th>
+              <th>APP OPENS</th>
+              <th>PESQUISAS VEÍCULOS</th>
+              <th>VELOCIDADES</th>
+              <th>LEGISLAÇÃO</th>
+              <th>CÓPIAS</th>
+              <th>ÁLCOOL</th>
+              <th>FERRAMENTAS</th>
+            </tr>
+          </thead>
           <tbody></tbody>
         </table>
       </div>
@@ -257,262 +340,490 @@ td{font-weight:850;font-size:13px}
   </section>
 </div>
 
-<div id="toast" class="toast hidden"></div>
+<div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
 <script>
-const AUTH_API = 'https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/admin-auth-v2';
-const STATS_API = 'https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/stats-v2';
-const HOURLY_API = 'https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/hourly-history-v2';
-const TOKEN_KEY = 'VERIX_ADMIN_V2_TOKEN';
-const REFRESH_MS = 30000;
+(function () {
+  'use strict';
 
-let selectedDate = localDateISO(new Date());
-let refreshTimer = null;
-let countdownTimer = null;
-let refreshIn = 30;
+  const AUTH_API = 'https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/admin-auth-v2';
+  const STATS_API = 'https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/stats-v2';
+  const HOURLY_API = 'https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/hourly-history-v2';
+  const TOKEN_KEY = 'VERIX_ADMIN_V2_TOKEN';
+  const REFRESH_MS = 30000;
+  const LOGIN_LOCK_MS = 2500;
 
-function $(id){return document.getElementById(id);}
-function localDateISO(d){
-  const x = new Date(d.getTime() - d.getTimezoneOffset()*60000);
-  return x.toISOString().slice(0,10);
-}
-function fmt(n){
-  return Number.isFinite(Number(n)) ? Number(n).toLocaleString('pt-PT') : '—';
-}
-function fmtPct(n){
-  return (n===null || n===undefined || !Number.isFinite(Number(n))) ? '0,0%' : `${Number(n).toFixed(1).replace('.',',')}%`;
-}
-function toast(msg){
-  $('toast').textContent=msg;
-  $('toast').classList.remove('hidden');
-  setTimeout(()=>$('toast').classList.add('hidden'),2200);
-}
-function token(){return sessionStorage.getItem(TOKEN_KEY)||'';}
+  let selectedDate = localDateISO(new Date());
+  let refreshTimer = null;
+  let countdownTimer = null;
+  let refreshIn = 30;
+  let dashboardBusy = false;
+  let hourlyBusy = false;
+  let loginLockedUntil = 0;
+  let lastHourlyRows = [];
+  let autoRefreshHourly = true;
 
-async function request(url, options={}){
-  const h = new Headers(options.headers||{});
-  h.set('Authorization',`Bearer ${token()}`);
-  const r = await fetch(url,{...options,headers:h,cache:'no-store'});
-  const text = await r.text();
-  let data;
-  try{data=JSON.parse(text)}catch(_){data={ok:false,error:text||`HTTP ${r.status}`}}
-  if(r.status===401){
-    logout();
-    throw new Error('Sessão expirada.');
+  function $(id) { return document.getElementById(id); }
+
+  function localDateISO(d) {
+    const x = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+    return x.toISOString().slice(0, 10);
   }
-  if(!r.ok || data?.ok===false) throw new Error(data?.detail||data?.error||`HTTP ${r.status}`);
-  return data;
-}
 
-async function doLogin(password){
-  const r = await fetch(AUTH_API,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({password})
-  });
-  const data = await r.json();
-  if(!r.ok || !data?.ok) throw new Error(data?.error||'Falha de autenticação');
-  sessionStorage.setItem(TOKEN_KEY,data.token);
-  return data;
-}
-
-function logout(){
-  sessionStorage.removeItem(TOKEN_KEY);
-  if(refreshTimer) clearInterval(refreshTimer);
-  if(countdownTimer) clearInterval(countdownTimer);
-  $('app').classList.add('hidden');
-  $('loginScreen').classList.remove('hidden');
-  $('password').value='';
-}
-
-function conference(ov){
-  const unresolved=Number(ov?.unresolved_24h||0);
-  const card=$('cardConference');
-  if(unresolved===0){
-    card.className='card green';
-    $('conferenceValue').textContent='OK';
-    $('conferenceNote').textContent='Consultas iniciadas = contabilização final.';
-  }else{
-    card.className='card yellow';
-    $('conferenceValue').textContent = unresolved===1 ? '1 consulta' : `${fmt(unresolved)} consultas`;
-    $('conferenceNote').textContent='Consultas não reconciliadas · investigar.';
+  function fmt(n) {
+    return Number.isFinite(Number(n)) ? Number(n).toLocaleString('pt-PT') : '—';
   }
-}
 
-function cellClass(label, value){
-  if(label.includes('Com seguro')) return 'green';
-  if(label.includes('Sem seguro')||label.includes('Erros')) return 'red';
-  if(label.includes('Sem resultado')||label.includes('% sem')) return 'yellow';
-  if(label.includes('IMT')) return 'cyan';
-  return '';
-}
+  function fmtPct(n) {
+    if (n === null || n === undefined || !Number.isFinite(Number(n))) return '0,0%';
+    return Number(n).toFixed(1).replace('.', ',') + '%';
+  }
 
-function renderActivity(rows){
-  const body=$('activityTable').querySelector('tbody');
-  body.innerHTML='';
-  (rows||[]).forEach(r=>{
-    const tr=document.createElement('tr');
-    const cls=cellClass(r.indicator||'',r.v24);
-    tr.innerHTML=`
-      <td class="row-label">${r.indicator||''}</td>
-      <td class="${cls}">${r.indicator==='% sem seguro'?fmtPct(r.v24):fmt(r.v24)}</td>
-      <td class="${cls}">${r.indicator==='% sem seguro'?fmtPct(r.v7):fmt(r.v7)}</td>
-      <td class="${cls}">${r.indicator==='% sem seguro'?fmtPct(r.v30):fmt(r.v30)}</td>
-      <td class="${cls}">${r.indicator==='% sem seguro'?fmtPct(r.v_history):fmt(r.v_history)}</td>`;
-    body.appendChild(tr);
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[c];
+    });
+  }
+
+  function toast(msg, isErr) {
+    const el = $('toast');
+    el.textContent = msg;
+    el.classList.toggle('err', !!isErr);
+    el.classList.remove('hidden');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function () { el.classList.add('hidden'); }, 2400);
+  }
+
+  function token() {
+    try { return sessionStorage.getItem(TOKEN_KEY) || ''; } catch (_) { return ''; }
+  }
+
+  function setStatusDot(mode) {
+    const d = $('statusDot');
+    d.classList.remove('warn', 'err');
+    if (mode === 'warn') d.classList.add('warn');
+    if (mode === 'err') d.classList.add('err');
+  }
+
+  async function request(url, options) {
+    options = options || {};
+    const h = new Headers(options.headers || {});
+    const t = token();
+    if (t) h.set('Authorization', 'Bearer ' + t);
+    const r = await fetch(url, Object.assign({}, options, { headers: h, cache: 'no-store' }));
+    const text = await r.text();
+    let data;
+    try { data = JSON.parse(text); } catch (_) {
+      data = { ok: false, error: text || ('HTTP ' + r.status) };
+    }
+    if (r.status === 401) {
+      logout(true);
+      throw new Error('Sessão expirada. Volte a autenticar.');
+    }
+    if (!r.ok || data.ok === false) {
+      throw new Error(data.detail || data.error || ('HTTP ' + r.status));
+    }
+    return data;
+  }
+
+  async function doLogin(password) {
+    const r = await fetch(AUTH_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: password }),
+      cache: 'no-store'
+    });
+    const data = await r.json().catch(function () { return {}; });
+    if (!r.ok || !data.ok) throw new Error(data.error || 'Falha de autenticação');
+    if (!data.token) throw new Error('Resposta de autenticação inválida');
+    try { sessionStorage.setItem(TOKEN_KEY, data.token); } catch (_) {}
+    return data;
+  }
+
+  function logout(silent) {
+    try { sessionStorage.removeItem(TOKEN_KEY); } catch (_) {}
+    if (refreshTimer) clearInterval(refreshTimer);
+    if (countdownTimer) clearInterval(countdownTimer);
+    refreshTimer = null;
+    countdownTimer = null;
+    $('app').classList.add('hidden');
+    $('loginScreen').classList.remove('hidden');
+    $('password').value = '';
+    setTimeout(function () { try { $('password').focus(); } catch (_) {} }, 50);
+    if (!silent) toast('Sessão terminada');
+  }
+
+  function conference(ov) {
+    const unresolved = Number(ov && ov.unresolved_24h || 0);
+    const card = $('cardConference');
+    if (unresolved === 0) {
+      card.className = 'card green';
+      $('conferenceValue').textContent = 'OK';
+      $('conferenceNote').textContent = 'Consultas iniciadas = contabilização final.';
+    } else {
+      card.className = 'card yellow';
+      $('conferenceValue').textContent = unresolved === 1 ? '1 consulta' : (fmt(unresolved) + ' consultas');
+      $('conferenceNote').textContent = 'Consultas sem fecho registado (timeout / abandono).';
+    }
+  }
+
+  function cellClass(label) {
+    const s = String(label || '');
+    if (s.indexOf('Com seguro') >= 0) return 'green';
+    if (s.indexOf('Sem seguro') >= 0 || s.indexOf('Erros') >= 0) return 'red';
+    if (s.indexOf('Sem resultado') >= 0 || s.indexOf('% sem') >= 0) return 'yellow';
+    if (s.indexOf('IMT') >= 0) return 'cyan';
+    return '';
+  }
+
+  function renderActivity(rows) {
+    const body = $('activityTable').querySelector('tbody');
+    body.innerHTML = '';
+    (rows || []).forEach(function (r) {
+      const tr = document.createElement('tr');
+      const ind = String(r.indicator || '');
+      const cls = cellClass(ind);
+      const isPct = ind === '% sem seguro';
+      tr.innerHTML =
+        '<td class="row-label">' + escapeHtml(ind) + '</td>' +
+        '<td class="' + cls + '">' + (isPct ? fmtPct(r.v24) : fmt(r.v24)) + '</td>' +
+        '<td class="' + cls + '">' + (isPct ? fmtPct(r.v7) : fmt(r.v7)) + '</td>' +
+        '<td class="' + cls + '">' + (isPct ? fmtPct(r.v30) : fmt(r.v30)) + '</td>' +
+        '<td class="' + cls + '">' + (isPct ? fmtPct(r.v_history) : fmt(r.v_history)) + '</td>';
+      body.appendChild(tr);
+    });
+  }
+
+  function renderCompare(rows) {
+    const body = $('compareTable').querySelector('tbody');
+    body.innerHTML = '';
+    (rows || []).forEach(function (r) {
+      const positive = Number(r.variation) > 0;
+      const negative = Number(r.variation) < 0;
+      const variationClass = negative ? 'neg' : (positive ? 'pos' : 'muted');
+      const pct = (r.percentage === null || r.percentage === undefined) ? '0,0%' : fmtPct(r.percentage);
+      const tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td class="row-label">' + escapeHtml(r.indicator || '') + '</td>' +
+        '<td>' + fmt(r.current_value) + '</td>' +
+        '<td>' + fmt(r.previous_value) + '</td>' +
+        '<td class="' + variationClass + '">' + (Number(r.variation) > 0 ? '+' : '') + fmt(r.variation) + '</td>' +
+        '<td class="' + variationClass + '">' + pct + '</td>';
+      body.appendChild(tr);
+    });
+  }
+
+  function renderMenus(rows) {
+    const by = {};
+    (rows || []).forEach(function (r) {
+      const p = r.period || '';
+      if (!by[p]) by[p] = [];
+      by[p].push(r);
+    });
+    ['24 horas', '30 dias'].forEach(function (period) {
+      const target = period === '24 horas' ? $('menus24') : $('menus30');
+      target.innerHTML = '';
+      const list = (by[period] || []).slice().sort(function (a, b) {
+        return Number(b.count_value) - Number(a.count_value);
+      });
+      if (!list.length) {
+        target.innerHTML = '<div class="empty">Sem dados neste período.</div>';
+        return;
+      }
+      const max = Math.max(1, ...list.map(function (x) { return Number(x.count_value) || 0; }));
+      list.forEach(function (r) {
+        const row = document.createElement('div');
+        row.className = 'bar-row';
+        const w = Math.max(0, (Number(r.count_value) / max) * 100);
+        row.innerHTML =
+          '<div class="bar-label">' + escapeHtml(r.label) + '</div>' +
+          '<div class="bar"><i style="width:' + w + '%"></i></div>' +
+          '<div class="bar-num">' + fmt(r.count_value) + '</div>';
+        target.appendChild(row);
+      });
+    });
+  }
+
+  function renderLegislation(rows) {
+    const by = {};
+    (rows || []).forEach(function (r) {
+      const p = r.period || '';
+      if (!by[p]) by[p] = [];
+      by[p].push(r);
+    });
+    ['24 horas', '30 dias'].forEach(function (period) {
+      const target = period === '24 horas' ? $('leg24') : $('leg30');
+      const list = by[period] || [];
+      if (!list.length) {
+        target.innerHTML = '<div class="empty">Sem cópias registadas.</div>';
+        return;
+      }
+      target.innerHTML =
+        '<table><thead><tr><th>LEGISLAÇÃO</th><th>CÓDIGO</th><th>CÓPIAS</th></tr></thead><tbody>' +
+        list.map(function (r) {
+          return '<tr><td class="row-label">' + escapeHtml(r.item_label || 'Sem designação') +
+            '</td><td>' + escapeHtml(r.item_id || '—') +
+            '</td><td class="cyan">' + fmt(r.copies) + '</td></tr>';
+        }).join('') +
+        '</tbody></table>';
+    });
+  }
+
+  function renderDays() {
+    const host = $('days');
+    host.innerHTML = '';
+    const base = new Date();
+    for (let i = 0; i < 30; i++) {
+      const d = new Date(base);
+      d.setDate(base.getDate() - i);
+      const iso = localDateISO(d);
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'day' + (iso === selectedDate ? ' active' : '');
+      btn.setAttribute('role', 'option');
+      btn.setAttribute('aria-selected', iso === selectedDate ? 'true' : 'false');
+      btn.innerHTML =
+        '<span>' + escapeHtml(d.toLocaleDateString('pt-PT', { weekday: 'long' })) + '</span>' +
+        '<strong>' + escapeHtml(d.toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit' })) + '</strong>';
+      btn.onclick = function () {
+        selectedDate = iso;
+        autoRefreshHourly = (iso === localDateISO(new Date()));
+        $('dateInput').value = iso;
+        renderDays();
+        loadHourly();
+      };
+      host.appendChild(btn);
+    }
+    const di = $('dateInput');
+    if (di) {
+      di.value = selectedDate;
+      const minD = new Date();
+      minD.setDate(minD.getDate() - 29);
+      di.min = localDateISO(minD);
+      di.max = localDateISO(new Date());
+    }
+  }
+
+  async function loadHourly() {
+    if (hourlyBusy) return;
+    hourlyBusy = true;
+    const wrap = $('hourWrap');
+    const errEl = $('hourlyError');
+    wrap.classList.add('loading');
+    errEl.classList.add('hidden');
+    errEl.textContent = '';
+    try {
+      const data = await request(HOURLY_API + '?date=' + encodeURIComponent(selectedDate));
+      const rows = data.rows || [];
+      lastHourlyRows = rows;
+      const body = $('hourTable').querySelector('tbody');
+      body.innerHTML = '';
+      let dayUsers = Number(rows[0] && rows[0].day_unique_users || 0);
+      let searches = 0;
+      let peakHour = '00:00';
+      let peakUsers = 0;
+      rows.forEach(function (r) {
+        searches += Number(r.vehicle_searches || 0);
+        if (Number(r.users || 0) > peakUsers) {
+          peakUsers = Number(r.users || 0);
+          peakHour = String(r.hour).padStart(2, '0') + ':00';
+        }
+        const tr = document.createElement('tr');
+        const h0 = String(r.hour).padStart(2, '0');
+        const h1 = String((Number(r.hour) + 1) % 24).padStart(2, '0');
+        tr.innerHTML =
+          '<td class="row-label">' + h0 + ':00–' + h1 + ':00</td>' +
+          '<td>' + fmt(r.users) + '</td>' +
+          '<td>' + fmt(r.heartbeats) + '</td>' +
+          '<td>' + fmt(r.app_opens) + '</td>' +
+          '<td>' + fmt(r.vehicle_searches) + '</td>' +
+          '<td>' + fmt(r.speeds) + '</td>' +
+          '<td>' + fmt(r.legislation) + '</td>' +
+          '<td>' + fmt(r.copies) + '</td>' +
+          '<td>' + fmt(r.alcohol) + '</td>' +
+          '<td>' + fmt(r.tools) + '</td>';
+        body.appendChild(tr);
+      });
+      $('dayUsers').textContent = fmt(dayUsers);
+      $('peakHour').textContent = peakUsers ? peakHour : '00:00';
+      $('peakUsers').textContent = fmt(peakUsers);
+      $('daySearches').textContent = fmt(searches);
+    } catch (e) {
+      errEl.textContent = 'Falha no histórico horário: ' + (e && e.message ? e.message : e);
+      errEl.classList.remove('hidden');
+      setStatusDot('warn');
+    } finally {
+      wrap.classList.remove('loading');
+      hourlyBusy = false;
+    }
+  }
+
+  function setDashboardLoading(on) {
+    dashboardBusy = on;
+    $('refreshBtn').disabled = on;
+    $('activityWrap').classList.toggle('loading', on);
+    $('compareWrap').classList.toggle('loading', on);
+    $('refreshBtn').textContent = on ? 'A ATUALIZAR…' : 'ATUALIZAR';
+  }
+
+  async function loadDashboard(opts) {
+    opts = opts || {};
+    if (dashboardBusy) return;
+    setDashboardLoading(true);
+    $('statusLine').classList.remove('err');
+    $('statusLine').textContent = 'A atualizar…';
+    setStatusDot('warn');
+    const t0 = performance.now();
+    try {
+      const data = await request(STATS_API);
+      const o = data.overview || {};
+      $('onlineValue').textContent = fmt(o.online_now);
+      $('activeValue').textContent = fmt(o.active_10m);
+      $('unique24Value').textContent = fmt(o.unique_24h);
+      $('unique30Value').textContent = fmt(o.unique_30d);
+      conference(o);
+      renderActivity(data.activity);
+      renderCompare(data.compare);
+      renderMenus(data.menus);
+      renderLegislation(data.legislation);
+
+      // Hourly is isolated from the overview fetch.
+      // It keeps its own loading/error state and must not block the main dashboard.
+      const today = localDateISO(new Date());
+      if (opts.forceHourly || autoRefreshHourly || selectedDate === today) {
+        loadHourly();
+      }
+
+      const when = new Date(data.generatedAt || Date.now()).toLocaleString('pt-PT');
+      $('statusLine').textContent = 'Atualizado em ' + when;
+      $('backendTime').textContent = 'BACKEND ONLINE · ' + Math.round(performance.now() - t0) + ' ms';
+      $('backendBadge').textContent = 'BACKEND ONLINE';
+      setStatusDot('ok');
+      refreshIn = 30;
+    } catch (e) {
+      const msg = (e && e.message) ? e.message : String(e);
+      $('statusLine').textContent = 'Falha na atualização: ' + msg;
+      $('statusLine').classList.add('err');
+      $('backendTime').textContent = 'BACKEND · erro';
+      $('backendBadge').textContent = 'BACKEND ERRO';
+      setStatusDot('err');
+      if (opts.manual) toast(msg, true);
+    } finally {
+      setDashboardLoading(false);
+    }
+  }
+
+  function startRefresh() {
+    if (refreshTimer) clearInterval(refreshTimer);
+    if (countdownTimer) clearInterval(countdownTimer);
+    refreshIn = 30;
+    refreshTimer = setInterval(function () {
+      loadDashboard({ forceHourly: false });
+    }, REFRESH_MS);
+    countdownTimer = setInterval(function () {
+      refreshIn = Math.max(0, refreshIn - 1);
+      $('nextRefresh').textContent = 'PRÓXIMA ATUALIZAÇÃO EM ' + refreshIn + ' S';
+    }, 1000);
+  }
+
+  function exportCsv() {
+    if (!lastHourlyRows || !lastHourlyRows.length) {
+      toast('Sem dados horários para exportar', true);
+      return;
+    }
+    const headers = [
+      'date', 'hour', 'users', 'heartbeats', 'app_opens', 'vehicle_searches',
+      'speeds', 'legislation', 'copies', 'alcohol', 'tools', 'day_unique_users'
+    ];
+    const lines = [headers.join(',')];
+    lastHourlyRows.forEach(function (r) {
+      lines.push([
+        selectedDate,
+        r.hour,
+        r.users,
+        r.heartbeats,
+        r.app_opens,
+        r.vehicle_searches,
+        r.speeds,
+        r.legislation,
+        r.copies,
+        r.alcohol,
+        r.tools,
+        r.day_unique_users
+      ].map(function (v) { return v == null ? '' : String(v); }).join(','));
+    });
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'verix-hourly-' + selectedDate + '.csv';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () {
+      URL.revokeObjectURL(a.href);
+      a.remove();
+    }, 500);
+    toast('CSV exportado · ' + selectedDate);
+  }
+
+  $('loginForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const now = Date.now();
+    if (now < loginLockedUntil) {
+      $('loginError').textContent = 'Aguarde um momento antes de tentar novamente.';
+      return;
+    }
+    $('loginError').textContent = '';
+    const btn = $('loginBtn');
+    btn.disabled = true;
+    btn.textContent = 'A VALIDAR…';
+    try {
+      await doLogin($('password').value);
+      $('loginScreen').classList.add('hidden');
+      $('app').classList.remove('hidden');
+      autoRefreshHourly = true;
+      selectedDate = localDateISO(new Date());
+      renderDays();
+      await loadDashboard({ forceHourly: true, manual: true });
+      startRefresh();
+    } catch (err) {
+      loginLockedUntil = Date.now() + LOGIN_LOCK_MS;
+      $('loginError').textContent = err.message || 'Falha de autenticação';
+      setTimeout(function () {
+        btn.disabled = false;
+        btn.textContent = 'ENTRAR';
+      }, LOGIN_LOCK_MS);
+      return;
+    }
+    btn.disabled = false;
+    btn.textContent = 'ENTRAR';
   });
-}
 
-function renderCompare(rows){
-  const body=$('compareTable').querySelector('tbody'); body.innerHTML='';
-  (rows||[]).forEach(r=>{
-    const positive=Number(r.variation)>0;
-    const negative=Number(r.variation)<0;
-    const variationClass = negative?'neg':positive?'pos':'muted';
-    const pct = r.percentage===null||r.percentage===undefined?'0,0%':fmtPct(r.percentage);
-    const tr=document.createElement('tr');
-    tr.innerHTML=`
-      <td class="row-label">${r.indicator||''}</td>
-      <td>${fmt(r.current_value)}</td>
-      <td>${fmt(r.previous_value)}</td>
-      <td class="${variationClass}">${Number(r.variation)>0?'+':''}${fmt(r.variation)}</td>
-      <td class="${variationClass}">${pct}</td>`;
-    body.appendChild(tr);
-  });
-}
-
-function renderMenus(rows){
-  const by={};
-  (rows||[]).forEach(r=>{
-    by[r.period] ||= [];
-    by[r.period].push(r);
-  });
-  ['24 horas','30 dias'].forEach(period=>{
-    const target = period==='24 horas' ? $('menus24') : $('menus30');
-    target.innerHTML='';
-    const list=(by[period]||[]).sort((a,b)=>Number(b.count_value)-Number(a.count_value));
-    const max=Math.max(1,...list.map(x=>Number(x.count_value)));
-    list.forEach(r=>{
-      const row=document.createElement('div'); row.className='bar-row';
-      const w=Math.max(0,(Number(r.count_value)/max)*100);
-      row.innerHTML=`<div class="bar-label">${r.label}</div><div class="bar"><i style="width:${w}%"></i></div><div class="bar-num">${fmt(r.count_value)}</div>`;
-      target.appendChild(row);
+  $('refreshBtn').addEventListener('click', function () {
+    loadDashboard({ forceHourly: true, manual: true }).then(function () {
+      if (!$('statusLine').classList.contains('err')) toast('Dados atualizados.');
     });
   });
-}
+  $('logoutBtn').addEventListener('click', function () { logout(false); });
+  $('exportBtn').addEventListener('click', exportCsv);
 
-function renderLegislation(rows){
-  const by={};
-  (rows||[]).forEach(r=>{by[r.period] ||= [];by[r.period].push(r)});
-  ['24 horas','30 dias'].forEach(period=>{
-    const target = period==='24 horas' ? $('leg24') : $('leg30');
-    const list=by[period]||[];
-    if(!list.length){target.innerHTML='<div class="empty">Sem cópias registadas.</div>';return;}
-    target.innerHTML=`<table><thead><tr><th>LEGISLAÇÃO</th><th>CÓDIGO</th><th>CÓPIAS</th></tr></thead><tbody>${
-      list.map(r=>`<tr><td class="row-label">${escapeHtml(r.item_label||'Sem designação')}</td><td>${escapeHtml(r.item_id||'—')}</td><td class="cyan">${fmt(r.copies)}</td></tr>`).join('')
-    }</tbody></table>`;
+  $('dateInput').addEventListener('change', function () {
+    const v = $('dateInput').value;
+    if (!v) return;
+    selectedDate = v;
+    autoRefreshHourly = (v === localDateISO(new Date()));
+    renderDays();
+    loadHourly();
   });
-}
 
-function escapeHtml(s){
-  return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
-}
-
-function renderDays(){
-  const host=$('days'); host.innerHTML='';
-  const base=new Date();
-  for(let i=0;i<30;i++){
-    const d=new Date(base); d.setDate(base.getDate()-i);
-    const iso=localDateISO(d);
-    const btn=document.createElement('button');
-    btn.className='day'+(iso===selectedDate?' active':'');
-    btn.innerHTML=`<span>${d.toLocaleDateString('pt-PT',{weekday:'long'})}</span><strong>${d.toLocaleDateString('pt-PT',{day:'2-digit',month:'2-digit'})}</strong>`;
-    btn.onclick=()=>{selectedDate=iso;renderDays();loadHourly();};
-    host.appendChild(btn);
-  }
-}
-
-async function loadHourly(){
-  const data=await request(`${HOURLY_API}?date=${encodeURIComponent(selectedDate)}`);
-  const rows=data.rows||[];
-  const body=$('hourTable').querySelector('tbody'); body.innerHTML='';
-  let dayUsers=Number(rows[0]?.day_unique_users||0), searches=0, peakHour='00:00', peakUsers=0;
-  rows.forEach(r=>{
-    searches+=Number(r.vehicle_searches||0);
-    if(Number(r.users||0)>peakUsers){peakUsers=Number(r.users||0);peakHour=String(r.hour).padStart(2,'0')+':00';}
-    const tr=document.createElement('tr');
-    tr.innerHTML=`
-      <td class="row-label">${String(r.hour).padStart(2,'0')}:00–${String((Number(r.hour)+1)%24).padStart(2,'0')}:00</td>
-      <td>${fmt(r.users)}</td><td>${fmt(r.heartbeats)}</td><td>${fmt(r.app_opens)}</td>
-      <td>${fmt(r.vehicle_searches)}</td><td>${fmt(r.speeds)}</td><td>${fmt(r.legislation)}</td>
-      <td>${fmt(r.copies)}</td><td>${fmt(r.alcohol)}</td><td>${fmt(r.tools)}</td>`;
-    body.appendChild(tr);
-  });
-  $('dayUsers').textContent=fmt(dayUsers);
-  $('peakHour').textContent=peakUsers?peakHour:'00:00';
-  $('peakUsers').textContent=fmt(peakUsers);
-  $('daySearches').textContent=fmt(searches);
-}
-
-async function loadDashboard(){
-  $('statusLine').textContent='A atualizar...';
-  const t0=performance.now();
-  try{
-    const data=await request(STATS_API);
-    const o=data.overview||{};
-    $('onlineValue').textContent=fmt(o.online_now);
-    $('activeValue').textContent=fmt(o.active_10m);
-    $('unique24Value').textContent=fmt(o.unique_24h);
-    $('unique30Value').textContent=fmt(o.unique_30d);
-    conference(o);
-    renderActivity(data.activity);
-    renderCompare(data.compare);
-    renderMenus(data.menus);
-    renderLegislation(data.legislation);
-    await loadHourly();
-    $('statusLine').textContent=`Atualizado em ${new Date(data.generatedAt||Date.now()).toLocaleString('pt-PT')}`;
-    $('backendTime').textContent=`BACKEND ONLINE · ${Math.round(performance.now()-t0)} ms`;
-  }catch(e){
-    $('statusLine').textContent='Falha na atualização: '+e.message;
-    $('backendTime').textContent='BACKEND ONLINE · erro';
-  }
-  refreshIn=30;
-}
-
-function startRefresh(){
-  if(refreshTimer) clearInterval(refreshTimer);
-  if(countdownTimer) clearInterval(countdownTimer);
-  refreshTimer=setInterval(loadDashboard,REFRESH_MS);
-  countdownTimer=setInterval(()=>{
-    refreshIn=Math.max(0,refreshIn-1);
-    $('nextRefresh').textContent=`PRÓXIMA ATUALIZAÇÃO EM ${refreshIn} S`;
-    if(refreshIn===0) refreshIn=30;
-  },1000);
-}
-
-$('loginForm').addEventListener('submit',async e=>{
-  e.preventDefault();
-  $('loginError').textContent='';
-  try{
-    await doLogin($('password').value);
+  if (token()) {
     $('loginScreen').classList.add('hidden');
     $('app').classList.remove('hidden');
     renderDays();
-    await loadDashboard();
-    startRefresh();
-  }catch(err){$('loginError').textContent=err.message}
-});
-
-$('refreshBtn').addEventListener('click',()=>{loadDashboard();toast('Dados atualizados.')});
-$('logoutBtn').addEventListener('click',logout);
-
-if(token()){
-  $('loginScreen').classList.add('hidden');
-  $('app').classList.remove('hidden');
-  renderDays();
-  loadDashboard();
-  startRefresh();
-}
+    loadDashboard({ forceHourly: true }).then(startRefresh);
+  } else {
+    setTimeout(function () { try { $('password').focus(); } catch (_) {} }, 30);
+  }
+})();
 </script>
 </body>
 </html>
