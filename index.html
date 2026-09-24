@@ -5,27 +5,30 @@
 <meta http-equiv="Expires" content="0">
 <script id="verix-cache-buster">
 (function(){
+  /* Cache-bust real a cada abertura do documento (http/https).
+     Não depende de sessionStorage. Meta Cache-Control no HTML não basta
+     para impedir o browser de servir o documento a partir do disco. */
   try {
     var u = new URL(window.location.href);
-    var key = "_verix_cache";
+    if (u.protocol !== 'http:' && u.protocol !== 'https:') return;
+    var key = '_verix_cache';
     if (!u.searchParams.has(key)) {
       u.searchParams.set(key, String(Date.now()));
       window.location.replace(u.href);
       return;
     }
-    // Depois de obter a versão fresca, limpa o parâmetro sem recarregar a página.
     if (window.history && window.history.replaceState) {
       u.searchParams.delete(key);
       window.history.replaceState({}, document.title, u.href);
     }
   } catch (_) {}
 })();
-</script><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VÉRIX — Plataforma Digital 1.2</title>
+</script><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VÉRIX — Plataforma Digital 1.3</title>
 <meta name="description" content="VÉRIX — Plataforma Digital de apoio ao serviço operacional.">
 <meta name="theme-color" content="#03080c">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="VÉRIX — Plataforma Digital">
-<meta property="og:title" content="VÉRIX — Plataforma Digital 1.2">
+<meta property="og:title" content="VÉRIX — Plataforma Digital 1.3">
 <meta property="og:description" content="Ferramenta de apoio ao serviço operacional.">
 <meta property="og:url" content="https://verix.vxops.workers.dev/">
 <meta property="og:image" content="https://verix.vxops.workers.dev/og-verix.png">
@@ -33,7 +36,7 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="VÉRIX — Plataforma Digital 1.2">
+<meta name="twitter:title" content="VÉRIX — Plataforma Digital 1.3">
 <meta name="twitter:description" content="Ferramenta de apoio ao serviço operacional.">
 <meta name="twitter:image" content="https://verix.vxops.workers.dev/og-verix.png"><hta:application id="VERIX" applicationname="VÉRIX - Plataforma Digital" border="thin" caption="yes" maximizebutton="yes" minimizebutton="yes" sysmenu="yes" scroll="no" singleinstance="yes" /><style>
 :root{--bg:#03080c;--panel:#08131a;--panel2:#0d1b23;--red:#c8102e;--red2:#790719;--green:#008b55;--green2:#005437;--white:#f2f6f7;--muted:#7e949d;--cyan:#65d7e8;--amber:#e4b927;--line:rgba(130,169,180,.24);--glow:rgba(0,139,85,.24)}
@@ -1541,31 +1544,41 @@ function submitConjunto(event) {
     var uiSeq = ++ASF_ULTIMA_UI_SEQUENCIA;
     var queryId = window.__VERIX_CURRENT_QUERY_ID || null;
 
-    // Uma consulta de cada vez (IPO: seguroEmProcessamento)
-    if (ASF_EM_CURSO) {
-      mostrarSeguroLoading(matDisplay, 'Já existe uma consulta ASF em curso');
-      return;
+    // Sempre enfileira. A UI mostra a pesquisa mais recente (uiSeq).
+    // Cadência 5/60s + 8s é aplicada dentro de processarConsultaSeguroComCadencia.
+    if (ASF_EM_CURSO || ASF_FILA_PENDENTES > 0) {
+      mostrarSeguroLoading(matDisplay, 'Na fila ASF — a aguardar a consulta anterior');
+    } else {
+      mostrarSeguroLoading(matDisplay, 'Aguarde a resposta do canal de seguros');
     }
 
+    ASF_FILA_PENDENTES = (ASF_FILA_PENDENTES || 0) + 1;
     ASF_EM_CURSO = true;
-    mostrarSeguroLoading(matDisplay, 'Aguarde a resposta do canal de seguros');
 
-    ASF_FILA = ASF_FILA.then(async function () {
+    var tarefa = ASF_FILA.then(async function () {
       try {
+        // Só processa se ainda for a UI mais recente OU se for a única na fila.
+        // Pedidos enfileirados anteriores que já foram ultrapassados pela UI
+        // ainda correm cadência/pedido se uiSeq coincidir; se o operador
+        // lançou outra pesquisa, uiSeq mais novo cancela o trabalho antigo
+        // dentro de processarConsultaSeguroComCadencia.
         await processarConsultaSeguroComCadencia(matLimpa, matDisplay, uiSeq, queryId);
       } finally {
-        ASF_EM_CURSO = false;
-        atualizarContadorVisualASF();
+        ASF_FILA_PENDENTES = Math.max(0, (ASF_FILA_PENDENTES || 1) - 1);
+        ASF_EM_CURSO = ASF_FILA_PENDENTES > 0;
+        try { atualizarContadorVisualASF(); } catch (_) {}
       }
     }).catch(function (e) {
-      ASF_EM_CURSO = false;
-      console.error('[ASF/IPO] fila:', e);
+      ASF_FILA_PENDENTES = Math.max(0, (ASF_FILA_PENDENTES || 1) - 1);
+      ASF_EM_CURSO = ASF_FILA_PENDENTES > 0;
+      console.error('[ASF] fila:', e);
       if (uiSeq === ASF_ULTIMA_UI_SEQUENCIA) {
         mostrarSeguroErro((e && e.message) || 'Falha na consulta ASF', matDisplay, '', queryId);
       }
     });
 
-    await ASF_FILA;
+    ASF_FILA = tarefa.catch(function () {});
+    return tarefa;
   }
 
 
@@ -16569,6 +16582,7 @@ html body .leg-card-new .copy-all-new{
   var retryStep = 0;
   var lastAction = Object.create(null);
   var legSearchTimer = null;
+  var imtTelemetryQueries = Object.create(null);
 
   function uid(prefix) {
     try {
@@ -16950,6 +16964,15 @@ html body .leg-card-new .copy-all-new{
     installationId: installationId,
     newQueryId: newQueryId,
     track: function (event, module, meta) {
+      // Uma pesquisa operacional = 1 evento IMT por query_id.
+      // Impede duplicações acidentais vindas de diferentes pontos do ciclo IMT.
+      if (String(event) === 'imt_loaded') {
+        var q = meta && meta.queryId ? String(meta.queryId) : '';
+        if (q) {
+          if (imtTelemetryQueries[q]) return;
+          imtTelemetryQueries[q] = true;
+        }
+      }
       push(event, module || null, meta);
       flush();
     },
