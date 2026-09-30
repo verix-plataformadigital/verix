@@ -1,0 +1,4 @@
+# VÉRIX — GitHub Pages
+# Não deixar o plugin jekyll-readme-index transformar README.md na página inicial.
+readme_index:
+  enabled: false
