@@ -23,6 +23,84 @@
     }
   } catch (_) {}
 })();
+</script>
+<script id="verix-access-protection">
+(function(){
+  'use strict';
+  /*
+   * VÉRIX — proteção de publicação.
+   * O browser precisa de receber o código para o executar, por isso não existe
+   * uma proteção 100% contra engenharia reversa. Esta camada bloqueia cópias
+   * publicadas fora dos domínios autorizados e dificulta a cópia casual do código.
+   */
+  var ALLOWED_HOSTS = new Set([
+    'verix.vxops.workers.dev',
+    'verix-plataformadigital.github.io',
+    'localhost',
+    '127.0.0.1',
+    '[::1]'
+  ]);
+
+  function hostAuthorized(){
+    try {
+      var host = String(window.location.hostname || '').toLowerCase();
+      return window.location.protocol === 'http:' || window.location.protocol === 'https:'
+        ? ALLOWED_HOSTS.has(host)
+        : false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function blockUnauthorized(){
+    try {
+      document.open();
+      document.write('<!doctype html><html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VÉRIX — Acesso não autorizado</title><style>html,body{margin:0;min-height:100%;background:#03080c;color:#eef4f5;font-family:Arial,Helvetica,sans-serif}body{display:grid;place-items:center;padding:24px;box-sizing:border-box}.box{max-width:620px;padding:34px 36px;border:1px solid #5b7078;border-radius:18px;background:linear-gradient(180deg,#11212a,#071117);box-shadow:0 24px 70px rgba(0,0,0,.55);text-align:center}.tag{display:inline-block;margin-bottom:14px;padding:6px 10px;border:1px solid #c8102e;border-radius:999px;color:#ff7c91;font-size:11px;font-weight:800;letter-spacing:1.2px}.title{font-size:28px;font-weight:900;margin-bottom:12px}.text{color:#b9c7cc;font-size:15px;line-height:1.6}</style></head><body><div class="box"><div class="tag">VERIX // PROTEÇÃO</div><div class="title">Publicação não autorizada</div><div class="text">Esta versão do VÉRIX não está autorizada a funcionar neste endereço.</div></div></body></html>');
+      document.close();
+    } catch (_) {
+      try { document.documentElement.innerHTML = '<body style="background:#03080c;color:#eef4f5;font-family:Arial;text-align:center;padding:40px">Publicação não autorizada.</body>'; } catch (__) {}
+    }
+  }
+
+  if (!hostAuthorized()) {
+    blockUnauthorized();
+    throw new Error('VÉRIX: publicação não autorizada neste domínio.');
+  }
+
+  /* Evita execução normal dentro de iframes de terceiros. */
+  try {
+    if (window.top !== window.self) {
+      window.top.location = window.location.href;
+    }
+  } catch (_) {
+    try { window.location.replace(window.location.href); } catch (__) {}
+  }
+
+  /* Dificulta cópia casual do código sem bloquear a utilização normal da app. */
+  document.addEventListener('contextmenu', function(e){ e.preventDefault(); }, true);
+  document.addEventListener('dragstart', function(e){ e.preventDefault(); }, true);
+  document.addEventListener('keydown', function(e){
+    var k = String(e.key || '').toLowerCase();
+    var devtools = e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['i','j','c'].indexOf(k) >= 0);
+    var source = e.ctrlKey && k === 'u';
+    var save = e.ctrlKey && k === 's';
+    var macDevtools = e.metaKey && e.altKey && ['i','j','c'].indexOf(k) >= 0;
+    if (devtools || source || save || macDevtools) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    }
+  }, true);
+
+  /* Se a página voltar do BFCache, força novamente uma navegação sem cache. */
+  window.addEventListener('pageshow', function(ev){
+    if (!ev.persisted) return;
+    try {
+      var u = new URL(window.location.href);
+      u.searchParams.set('_verix_cache', String(Date.now()));
+      window.location.replace(u.href);
+    } catch (_) {}
+  }, true);
+})();
 </script><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VÉRIX — Plataforma Digital 1.3</title>
 <meta name="description" content="VÉRIX — Plataforma Digital de apoio ao serviço operacional.">
 <meta name="theme-color" content="#03080c">
@@ -344,27 +422,11 @@ let ultimaMatriculaLivrete = "";
 
 
  function formatarMatriculaVeiculo(valor) {
- const bruto = String(valor || '').toUpperCase();
- const raw = bruto.replace(/[^A-Z0-9]/g, '');
- if (!raw) return '';
-
- // Matrículas com prefixo de letras e bloco numérico.
- // Preserva integralmente todos os algarismos introduzidos, incluindo
- // reboques como VC-45678 e L-121212.
- if (/^[A-Z]{2}[0-9]{1,6}$/.test(raw)) {
-   return raw.substring(0, 2) + '-' + raw.substring(2);
- }
- if (/^[A-Z][0-9]{1,6}$/.test(raw)) {
-   return raw.substring(0, 1) + '-' + raw.substring(1);
- }
-
- // Formatos alfanuméricos de 6 caracteres: XX-XX-XX / XX-XX-11 / 11-XX-11.
- if (/^[A-Z0-9]{6}$/.test(raw)) {
-   return raw.substring(0, 2) + '-' + raw.substring(2, 4) + '-' + raw.substring(4, 6);
- }
-
- // Mantém qualquer outro valor sem inventar ou eliminar caracteres.
- return raw;
+   let value = String(valor || '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+   let formattedValue = value.replace(/(.{2})(.{2})?(.*)/, (_, p1, p2, p3) =>
+     [p1, p2, p3].filter(Boolean).join('-')
+   );
+   return formattedValue.substring(0, 8);
  }
 
  function formatMatricula(input) {
@@ -374,7 +436,7 @@ let ultimaMatriculaLivrete = "";
  function formatMatriculaReboque(input) {
  const siglas = [
  'A', 'AN', 'AV', 'BE', 'BG', 'BR', 'C', 'CB', 'E', 'FA',
- 'GD', 'H', 'L', 'LE', 'M', 'P', 'PT', 'SA', 'SE', 'VC', 'VI', 'VR'
+ 'GD', 'H', 'L', 'LE', 'M', 'P', 'PT', 'SA', 'SE', 'VC', 'VI', 'VR', 'VS'
  ];
 
  let value = input.value.toUpperCase().replace(/[^A-Z0-9\-]/g, '');
@@ -479,19 +541,55 @@ let imtQuerySequence = 0;
   clearTimeout(imtTimers[frameId]);
 
   let concluida = false;
+  let loadCheckTimer = null;
+  let loadStartedAt = Date.now();
 
   const terminou = () => {
     if (concluida) return;
     concluida = true;
     clearTimeout(imtTimers[frameId]);
+    if (loadCheckTimer) clearTimeout(loadCheckTimer);
 
     if (requestSequence !== imtQuerySequence) return;
-
     occultarLoading(frameId, overlayId);
   };
 
+  const verificarCarga = () => {
+    if (concluida) return;
+
+    // Em cross-origin, ler a localização gera SecurityError. Isso é esperado e
+    // significa que a navegação chegou ao documento remoto. Só consideramos
+    // suspeito o caso em que o frame continua em about:blank.
+    let href = '';
+    let sameOrigin = false;
+    try {
+      href = String(frame.contentWindow && frame.contentWindow.location && frame.contentWindow.location.href || '');
+      sameOrigin = true;
+    } catch (_) {
+      // Cross-origin: navegação remota presumida concluída.
+    }
+
+    if (sameOrigin && (!href || /^about:blank$/i.test(href))) {
+      var elapsed = Date.now() - loadStartedAt;
+      if (elapsed < 1500) {
+        loadCheckTimer = setTimeout(verificarCarga, 250);
+        return;
+      }
+      if (requestSequence === imtQuerySequence) mostrarErroRedeIMT(frameId, overlayId);
+      concluida = true;
+      clearTimeout(imtTimers[frameId]);
+      return;
+    }
+
+    terminou();
+  };
+
   // Mesmo comportamento do IPO: URL direta no iframe.
-  frame.onload = terminou;
+  frame.onload = function () {
+    // Aguarda ligeiramente para não confundir o about:blank inicial com o
+    // documento final, sobretudo no Chromium/Windows.
+    loadCheckTimer = setTimeout(verificarCarga, 180);
+  };
 
   // Só falha de navegação do próprio iframe/rede.
   frame.onerror = () => {
@@ -561,7 +659,7 @@ const MODULES = {
  },
  definicoes: {
  title:'DEFINIÇÕES', sub:'VÉRIX // PREFERÊNCIAS LOCAIS',
- html:`<div class="info-strip">Personalize a apresentação da consola. As alterações ficam guardadas neste equipamento e não alteram os dados das consultas externas.</div> <div class="settings-command-hero"> <div class="settings-hero-kicker"><span class="settings-pulse"></span> PERFIL OPERACIONAL // CONTROLO DE INTERFACE</div> <div class="settings-hero-main"><div><h3>CONFIGURAÇÃO DA CONSOLA</h3><p>Ajusta a apresentação da aplicação ao operador e ao ecrã, mantendo o posto de trabalho limpo e legível.</p></div><div class="settings-live-chip"><strong id="settingsLiveMode">ESCUDO</strong><span>PERFIL ATIVO</span></div></div> </div> <div class="settings-section-title futurista">INTERFACE / PERFIL VISUAL</div> <div class="settings-grid"> <div class="setting-card"><div class="setting-card-head"><div class="setting-card-icon">◐</div><div><strong>Tema da interface</strong><span>Altera o aspeto de toda a consola.</span></div></div><select class="setting-select wide" id="settingTheme" onchange="VERIXSettings.setTheme(this.value)"><option value="dark">Modo operacional escuro</option><option value="light">Modo claro</option></select></div> <div class="setting-card"><div class="setting-card-head"><div class="setting-card-icon">▤</div><div><strong>Densidade</strong><span>Mais conteúdo por ecrã ou mais espaço.</span></div></div><select class="setting-select wide" id="settingDensity" onchange="VERIXSettings.setDensity(this.value)"><option value="compact">Compacta</option><option value="normal">Normal</option><option value="comfortable">Conforto</option></select></div> <div class="setting-card"><div class="setting-card-head"><div class="setting-card-icon">⛶</div><div><strong>Ajuste ao ecrã</strong><span>Adapta automaticamente a escala disponível.</span></div></div><select class="setting-select wide" id="settingScale" onchange="VERIXSettings.setScale(this.value)"><option value="auto">Automático</option><option value="80">80%</option><option value="90">90%</option><option value="100">100%</option><option value="110">110%</option><option value="120">120%</option></select></div> </div> <div class="settings-section-title futurista">EFEITOS / COMPORTAMENTO</div> <div class="settings-grid settings-grid-effects"> <div class="setting-card effect-card"><div class="setting-card-head"><div class="setting-card-icon">⌁</div><div><strong>Animações HUD</strong><span>Varrimento, brilho e atividade visual.</span></div></div><div id="settingHud" class="toggle on" onclick="VERIXSettings.toggle('hud',this)"><span>ATIVO</span></div></div> <div class="setting-card effect-card"><div class="setting-card-head"><div class="setting-card-icon">↝</div><div><strong>Transições de janelas</strong><span>Entrada e saída suave dos módulos.</span></div></div><div id="settingTransitions" class="toggle on" onclick="VERIXSettings.toggle('transitions',this)"><span>ATIVO</span></div></div> <div class="setting-card effect-card"><div class="setting-card-head"><div class="setting-card-icon">▣</div><div><strong>Guardar histórico</strong><span>Regista localmente as últimas 100 consultas.</span></div></div><div id="settingHistory" class="toggle on" onclick="VERIXSettings.toggle('history',this)"><span>ATIVO</span></div></div> <div class="setting-card effect-card"><div class="setting-card-head"><div class="setting-card-icon">⌃</div><div><strong>Lista de cinemómetros recolhida</strong><span>Ao abrir o módulo, a lista de aparelhos guardados fica recolhida por defeito.</span></div></div><div id="settingCinRadarCollapsed" class="toggle on" onclick="VERIXSettings.toggle('cinRadarCollapsed',this)"><span>ATIVO</span></div></div> </div> <div class="settings-section-title futurista">ESTADO DO SISTEMA</div> <div class="settings-status-grid"> <div class="settings-status-card"><span class="ss-label">VERSÃO</span><strong>1.2</strong><small>RELEASE ATUAL</small></div> <div class="settings-status-card"><span class="ss-label">ESCALA</span><strong id="settingsScaleStatus">AUTO</strong><small>ADAPTAÇÃO AO ECRÃ</small></div> </div> <div class="settings-section-title futurista">PERFIL OPERACIONAL</div> <div class="settings-profile-grid"> <div class="setting-card profile-card"> <div class="setting-card-head"><div class="setting-card-icon">◈</div><div><strong>Perfil de utilização</strong><span>Aplica de uma vez um conjunto de definições adequado ao modo de trabalho.</span></div></div> <select class="setting-select wide" id="settingProfile" onchange="VERIXSettings.setProfile(this.value)"> <option value="escudo">Escudo — equilíbrio operacional</option> <option value="fiscalizacao">Fiscalização — máximo conteúdo</option> <option value="leitura">Leitura — maior conforto</option> <option value="posto">Posto — ecrã pequeno</option> </select> <div class="profile-hint" id="settingProfileHint">Compacto · Auto · HUD ativo · Transições ativas</div> </div> <div class="setting-card profile-card"> <div class="setting-card-head"><div class="setting-card-icon">⛶</div><div><strong>Área de trabalho</strong><span>Controlos rápidos para adaptar a consola ao posto.</span></div></div> <div class="settings-quick-actions"> <button type="button" onclick="toggleFullscreen()">⛶ ECRÃ INTEIRO</button> <button type="button" onclick="abrirHistorico()">◷ HISTÓRICO</button> <button type="button" onclick="limparHistorico()">⌫ LIMPAR HISTÓRICO</button> </div> </div> <div class="setting-card profile-card"> <div class="setting-card-head"><div class="setting-card-icon">⌁</div><div><strong>Diagnóstico local</strong><span>Informação deste equipamento, sem comunicação externa.</span></div></div> <div class="settings-diagnostic" id="settingsDiagnostic">A verificar estado local…</div> <button type="button" class="settings-diagnostic-btn" onclick="VERIXSettings.refreshDiagnostic()">ATUALIZAR DIAGNÓSTICO</button> </div> </div> <div class="settings-section-title futurista">ESTADO DO SISTEMA</div> <div class="settings-status-grid"> <div class="settings-status-card"><span class="ss-label">VERSÃO</span><strong>1.2</strong><small>RELEASE ATUAL</small></div> <div class="settings-status-card"><span class="ss-label">PERFIL</span><strong id="settingsProfileStatus">ESCUDO</strong><small id="settingsProfileStatusSub">EQUILÍBRIO OPERACIONAL</small></div> </div> <div class="settings-actions settings-actions-main"> <button type="button" class="aux-btn" onclick="VERIXSettings.reset()">REPOR PREFERÊNCIAS</button> </div> <div class="settings-cache-refresh-card"> <div class="settings-cache-refresh-copy"> <div class="settings-cache-refresh-icon">↻</div> <div><strong>ATUALIZAÇÃO FORÇADA DA APLICAÇÃO</strong><span>Ignora a URL em cache do navegador e volta a carregar o ficheiro atual com um identificador novo. Útil depois de publicar uma versão nova do VÉRIX.</span></div> </div> <button type="button" class="settings-cache-refresh-btn" onclick="VERIXForceFreshLoad()">CARREGAR NOVOS DADOS</button> </div> <div class="settings-factory-reset"> <div class="settings-factory-reset-copy"> <div class="settings-factory-reset-icon">⚠</div> <div><strong>REPOSIÇÃO DE FÁBRICA</strong><span>Apaga todos os dados guardados localmente nesta consola: favoritos, histórico, cinemómetros, sessão do operador, preferências e restantes dados locais.</span></div> </div> <button type="button" class="settings-factory-reset-btn" onclick="VERIXSettings.factoryReset()">APAGAR TODOS OS DADOS</button> </div>`
+ html:`<div class="info-strip">Personalize a apresentação da consola. As alterações ficam guardadas neste equipamento e não alteram os dados das consultas externas.</div> <div class="settings-command-hero"> <div class="settings-hero-kicker"><span class="settings-pulse"></span> PERFIL OPERACIONAL // CONTROLO DE INTERFACE</div> <div class="settings-hero-main"><div><h3>CONFIGURAÇÃO DA CONSOLA</h3><p>Ajusta a apresentação da aplicação ao operador e ao ecrã, mantendo o posto de trabalho limpo e legível.</p></div><div class="settings-live-chip"><strong id="settingsLiveMode">ESCUDO</strong><span>PERFIL ATIVO</span></div></div> </div> <div class="settings-section-title futurista">INTERFACE / PERFIL VISUAL</div> <div class="settings-grid"> <div class="setting-card"><div class="setting-card-head"><div class="setting-card-icon">◐</div><div><strong>Tema da interface</strong><span>Altera o aspeto de toda a consola.</span></div></div><select class="setting-select wide" id="settingTheme" onchange="VERIXSettings.setTheme(this.value)"><option value="dark">Modo operacional escuro</option><option value="light">Modo claro</option></select></div> <div class="setting-card"><div class="setting-card-head"><div class="setting-card-icon">▤</div><div><strong>Densidade</strong><span>Mais conteúdo por ecrã ou mais espaço.</span></div></div><select class="setting-select wide" id="settingDensity" onchange="VERIXSettings.setDensity(this.value)"><option value="compact">Compacta</option><option value="normal">Normal</option><option value="comfortable">Conforto</option></select></div> <div class="setting-card"><div class="setting-card-head"><div class="setting-card-icon">⛶</div><div><strong>Ajuste ao ecrã</strong><span>Adapta automaticamente a escala disponível.</span></div></div><select class="setting-select wide" id="settingScale" onchange="VERIXSettings.setScale(this.value)"><option value="auto">Automático</option><option value="80">80%</option><option value="90">90%</option><option value="100">100%</option><option value="110">110%</option><option value="120">120%</option></select></div> </div> <div class="settings-section-title futurista">EFEITOS / COMPORTAMENTO</div> <div class="settings-grid settings-grid-effects"> <div class="setting-card effect-card"><div class="setting-card-head"><div class="setting-card-icon">⌁</div><div><strong>Animações HUD</strong><span>Varrimento, brilho e atividade visual.</span></div></div><div id="settingHud" class="toggle on" onclick="VERIXSettings.toggle('hud',this)"><span>ATIVO</span></div></div> <div class="setting-card effect-card"><div class="setting-card-head"><div class="setting-card-icon">↝</div><div><strong>Transições de janelas</strong><span>Entrada e saída suave dos módulos.</span></div></div><div id="settingTransitions" class="toggle on" onclick="VERIXSettings.toggle('transitions',this)"><span>ATIVO</span></div></div> <div class="setting-card effect-card"><div class="setting-card-head"><div class="setting-card-icon">▣</div><div><strong>Guardar histórico</strong><span>Regista localmente as últimas 100 consultas.</span></div></div><div id="settingHistory" class="toggle on" onclick="VERIXSettings.toggle('history',this)"><span>ATIVO</span></div></div> <div class="setting-card effect-card"><div class="setting-card-head"><div class="setting-card-icon">⌃</div><div><strong>Lista de cinemómetros recolhida</strong><span>Ao abrir o módulo, a lista de aparelhos guardados fica recolhida por defeito.</span></div></div><div id="settingCinRadarCollapsed" class="toggle on" onclick="VERIXSettings.toggle('cinRadarCollapsed',this)"><span>ATIVO</span></div></div> </div> <div class="settings-section-title futurista">ESTADO DO SISTEMA</div> <div class="settings-status-grid"> <div class="settings-status-card"><span class="ss-label">VERSÃO</span><strong>1.3</strong><small>RELEASE ATUAL</small></div> <div class="settings-status-card"><span class="ss-label">ESCALA</span><strong id="settingsScaleStatus">AUTO</strong><small>ADAPTAÇÃO AO ECRÃ</small></div> </div> <div class="settings-section-title futurista">PERFIL OPERACIONAL</div> <div class="settings-profile-grid"> <div class="setting-card profile-card"> <div class="setting-card-head"><div class="setting-card-icon">◈</div><div><strong>Perfil de utilização</strong><span>Aplica de uma vez um conjunto de definições adequado ao modo de trabalho.</span></div></div> <select class="setting-select wide" id="settingProfile" onchange="VERIXSettings.setProfile(this.value)"> <option value="escudo">Escudo — equilíbrio operacional</option> <option value="fiscalizacao">Fiscalização — máximo conteúdo</option> <option value="leitura">Leitura — maior conforto</option> <option value="posto">Posto — ecrã pequeno</option> </select> <div class="profile-hint" id="settingProfileHint">Compacto · Auto · HUD ativo · Transições ativas</div> </div> <div class="setting-card profile-card"> <div class="setting-card-head"><div class="setting-card-icon">⛶</div><div><strong>Área de trabalho</strong><span>Controlos rápidos para adaptar a consola ao posto.</span></div></div> <div class="settings-quick-actions"> <button type="button" onclick="toggleFullscreen()">⛶ ECRÃ INTEIRO</button> <button type="button" onclick="abrirHistorico()">◷ HISTÓRICO</button> <button type="button" onclick="limparHistorico()">⌫ LIMPAR HISTÓRICO</button> </div> </div> <div class="setting-card profile-card"> <div class="setting-card-head"><div class="setting-card-icon">⌁</div><div><strong>Diagnóstico local</strong><span>Informação deste equipamento, sem comunicação externa.</span></div></div> <div class="settings-diagnostic" id="settingsDiagnostic">A verificar estado local…</div> <button type="button" class="settings-diagnostic-btn" onclick="VERIXSettings.refreshDiagnostic()">ATUALIZAR DIAGNÓSTICO</button> </div> </div> <div class="settings-section-title futurista">ESTADO DO SISTEMA</div> <div class="settings-status-grid"> <div class="settings-status-card"><span class="ss-label">VERSÃO</span><strong>1.3</strong><small>RELEASE ATUAL</small></div> <div class="settings-status-card"><span class="ss-label">PERFIL</span><strong id="settingsProfileStatus">ESCUDO</strong><small id="settingsProfileStatusSub">EQUILÍBRIO OPERACIONAL</small></div> </div> <div class="settings-actions settings-actions-main"> <button type="button" class="aux-btn" onclick="VERIXSettings.reset()">REPOR PREFERÊNCIAS</button> </div> <div class="settings-cache-refresh-card"> <div class="settings-cache-refresh-copy"> <div class="settings-cache-refresh-icon">↻</div> <div><strong>ATUALIZAÇÃO FORÇADA DA APLICAÇÃO</strong><span>Ignora a URL em cache do navegador e volta a carregar o ficheiro atual com um identificador novo. Útil depois de publicar uma versão nova do VÉRIX.</span></div> </div> <button type="button" class="settings-cache-refresh-btn" onclick="VERIXForceFreshLoad()">CARREGAR NOVOS DADOS</button> </div> <div class="settings-factory-reset"> <div class="settings-factory-reset-copy"> <div class="settings-factory-reset-icon">⚠</div> <div><strong>REPOSIÇÃO DE FÁBRICA</strong><span>Apaga todos os dados guardados localmente nesta consola: favoritos, histórico, cinemómetros, sessão do operador, preferências e restantes dados locais.</span></div> </div> <button type="button" class="settings-factory-reset-btn" onclick="VERIXSettings.factoryReset()">APAGAR TODOS OS DADOS</button> </div>`
  },
  ajuda: {
  title:'AJUDA', sub:'MANUAL OPERACIONAL // ATALHOS // SUPORTE',
@@ -908,10 +1006,8 @@ function submitConjunto(event) {
  const inputVeiculo = document.getElementById('MatriculaVeiculo');
  const inputReboque = document.getElementById('MatriculaReboque');
 
- const valVeiculo = normalizarMatriculaExata(inputVeiculo.value);
- const valReboque = normalizarMatriculaExata(inputReboque.value);
- inputVeiculo.value = valVeiculo;
- inputReboque.value = valReboque;
+ const valVeiculo = inputVeiculo.value.trim();
+ const valReboque = inputReboque.value.trim();
 
  if (!valVeiculo && !valReboque) {
  mostrarToast("Introduza pelo menos uma matrícula.");
@@ -1114,8 +1210,8 @@ function submitConjunto(event) {
   const ASF_MIN_INTERVAL_MS = 8000;
   const ASF_JANELA_SEG = 60;
   const ASF_LIMITE_JANELA = 5;
-  const ASF_MAX_RETRIES = 3;
-  const ASF_BACKOFF_BASE_MS = 1000;
+  const ASF_RATE_STORAGE_KEY = 'VERIX_ASF_RATE_STATE_V1';
+  /* SEM retries automáticos. SEM cache de resultados. 1 tentativa = 1 pedido físico. */
 
 
   var asfRequestTimes = [];
@@ -1130,6 +1226,40 @@ function submitConjunto(event) {
 
   function agoraASF() { return Date.now(); }
   function esperarASF(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+  // Mantém o limite VÉRIX após refresh/reabertura da página no mesmo posto.
+  // Isto impede que o cache-busting, por si só, seja usado para zerar a quota local.
+  function carregarEstadoRateASF() {
+    try {
+      var raw = localStorage.getItem(ASF_RATE_STORAGE_KEY);
+      if (!raw) return;
+      var obj = JSON.parse(raw);
+      var agora = agoraASF();
+      if (obj && Array.isArray(obj.times)) {
+        asfRequestTimes = obj.times.map(Number).filter(function (t) {
+          return Number.isFinite(t) && (agora - t) < ASF_JANELA_SEG * 1000;
+        }).slice(-ASF_LIMITE_JANELA);
+      }
+      if (obj && Number(obj.cooldownUntil) > agora) {
+        ASF_SERVER_COOLDOWN_UNTIL = Number(obj.cooldownUntil);
+      }
+    } catch (_) {}
+  }
+
+  function guardarEstadoRateASF() {
+    try {
+      var agora = agoraASF();
+      var times = (asfRequestTimes || []).filter(function (t) {
+        return Number.isFinite(t) && (agora - t) < ASF_JANELA_SEG * 1000;
+      }).slice(-ASF_LIMITE_JANELA);
+      localStorage.setItem(ASF_RATE_STORAGE_KEY, JSON.stringify({
+        times: times,
+        cooldownUntil: Number(ASF_SERVER_COOLDOWN_UNTIL || 0)
+      }));
+    } catch (_) {}
+  }
+
+  carregarEstadoRateASF();
 
   function formatarDataASF(date) {
     date = date || new Date();
@@ -1154,7 +1284,9 @@ function submitConjunto(event) {
   }
 
   function formatarMatriculaDisplay(mat) {
-    return normalizarMatriculaExata(mat);
+    // O ecrã ASF deve mostrar a matrícula exatamente no formato já
+    // apresentado no campo de consulta; não voltar a aplicar a regra 2-2-2.
+    return String(mat || '').trim().toUpperCase();
   }
 
   function sanitizarMatriculaASF(matricula) {
@@ -1186,8 +1318,11 @@ function submitConjunto(event) {
   }
 
   function limparJanelaASF() {
+    carregarEstadoRateASF();
     var t = agoraASF();
+    var antes = asfRequestTimes.length;
     asfRequestTimes = asfRequestTimes.filter(function (x) { return (t - x) < ASF_JANELA_SEG * 1000; });
+    if (asfRequestTimes.length !== antes) guardarEstadoRateASF();
   }
 
   function calcularAtrasoCadenciaASF() {
@@ -1200,6 +1335,9 @@ function submitConjunto(event) {
     }
     if (asfRequestTimes.length >= ASF_LIMITE_JANELA) {
       atraso = Math.max(atraso, (asfRequestTimes[0] + ASF_JANELA_SEG * 1000) - agora + 200);
+    }
+    if (ASF_SERVER_COOLDOWN_UNTIL > agora) {
+      atraso = Math.max(atraso, ASF_SERVER_COOLDOWN_UNTIL - agora);
     }
     return Math.max(0, Math.ceil(atraso));
   }
@@ -1242,9 +1380,27 @@ function submitConjunto(event) {
   }
   setInterval(atualizarContadorVisualASF, 500);
 
-  // ---- HTTP EXACTO DO IPO_2.2 (+ MSXML fallback + timeout absoluto) ----
+  // ---- HTTP ASF: POST primeiro, GET como fallback de transporte/método ----
+  // Cada tentativa HTTP física reserva um slot VÉRIX (8 s / 5 por 60 s).
+  async function reservarSlotFisicoASF(matDisplay, metodo) {
+    var atraso = calcularAtrasoCadenciaASF();
+    while (atraso > 0) {
+      if (matDisplay) {
+        mostrarSeguroLoading(matDisplay, 'A AGUARDAR (' + Math.ceil(atraso / 1000) + 's)');
+      }
+      await esperarASF(Math.min(atraso, 1000));
+      atraso = calcularAtrasoCadenciaASF();
+    }
+
+    var agora = agoraASF();
+    ASF_ULTIMO_PEDIDO_T = agora;
+    asfRequestTimes.push(agora);
+    guardarEstadoRateASF();
+    atualizarContadorVisualASF();
+    return agora;
+  }
+
   function efetuarPedidoHttpASF_SyncNative(url) {
-    // Transporte igual ao IPO_2.2.
     var xhr = new ActiveXObject("WinHttp.WinHttpRequest.5.1");
     xhr.open("POST", url, false);
     xhr.setTimeouts(10000, 10000, ASF_TIMEOUT_MS, ASF_TIMEOUT_MS);
@@ -1253,14 +1409,8 @@ function submitConjunto(event) {
     return { status: xhr.Status, text: xhr.ResponseText };
   }
 
-  async function efetuarPedidoHttpASF(url) {
-    if (typeof ActiveXObject !== 'undefined') {
-      try {
-        return efetuarPedidoHttpASF_SyncNative(url);
-      } catch (e) {
-        console.warn('[ASF/IPO] WinHttp falhou:', e && e.message);
-      }
-    }
+  async function fetchASF(metodo, url, matDisplay) {
+    await reservarSlotFisicoASF(matDisplay, metodo);
 
     var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
     var timeoutId = setTimeout(function () {
@@ -1268,21 +1418,202 @@ function submitConjunto(event) {
     }, ASF_TIMEOUT_MS);
 
     try {
-      var res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Accept': 'application/json, text/plain, */*' },
-        signal: controller ? controller.signal : undefined
-      });
-      var text = await res.text();
-      return { status: res.status, text: text };
+      var options = {
+        method: metodo,
+        cache: 'no-store',
+        credentials: 'omit',
+        mode: 'cors',
+        headers: { 'Accept': 'application/json, text/plain, */*' }
+      };
+      if (controller) options.signal = controller.signal;
+      if (metodo === 'POST') options.body = null;
+
+      var res = await fetch(url, options);
+      var body = await res.text();
+      return { status: res.status, text: body };
     } finally {
       clearTimeout(timeoutId);
     }
   }
 
-  // CONSULTA ASF = mesmo caminho do IPO_2.2.
-  // Diferenças deliberadas: tempos configurados no VÉRIX e SEM CACHE.
-  async function realizarConsultaASF_IPO(matLimpa) {
+  function deveTentarGETASF(status) {
+    var s = Number(status);
+    // 403/405 podem significar que o endpoint recusou o método POST;
+    // nestes casos repetimos a consulta pelo GET, como no Consulta Veiculo.
+    // 429 fica expressamente fora: é rate-limit do servidor e deve ser respeitado.
+    return s === 403 || s === 405;
+  }
+
+  async function efetuarPedidoHttpASF(url, matDisplay) {
+    // Em HTA/ambientes Windows onde ActiveX está disponível, manter o transporte
+    // nativo que já provou ser estável no Consulta/IPO.
+    if (typeof ActiveXObject !== 'undefined') {
+      try {
+        await reservarSlotFisicoASF(matDisplay, 'POST');
+        var nativePost = efetuarPedidoHttpASF_SyncNative(url);
+        if (deveTentarGETASF(nativePost && nativePost.status)) {
+          console.warn('[ASF] WinHTTP POST devolveu HTTP ' + nativePost.status + '; a tentar GET de fallback após nova cadência.');
+          // O GET é uma segunda tentativa física interna e recebe novo slot VÉRIX.
+          return await fetchASF('GET', url, matDisplay);
+        }
+        return nativePost;
+      } catch (e) {
+        console.warn('[ASF] WinHTTP POST falhou; a tentar GET de fallback:', e && e.message);
+        // Falha de transporte: GET continua a ser o fallback, com novo slot VÉRIX.
+        return await fetchASF('GET', url, matDisplay);
+      }
+    }
+
+    try {
+      var post = await fetchASF('POST', url, matDisplay);
+      if (deveTentarGETASF(post && post.status)) {
+        console.warn('[ASF] POST devolveu HTTP ' + post.status + '; a tentar GET de fallback após nova cadência.');
+        // 403/405: fallback interno. 429 não entra neste caminho.
+        return await fetchASF('GET', url, matDisplay);
+      }
+      return post;
+    } catch (e) {
+      console.warn('[ASF] POST falhou; a tentar GET de fallback após nova cadência:', e && e.message);
+      return await fetchASF('GET', url, matDisplay);
+    }
+  }
+
+  // Parser robusto inspirado no Consulta Veiculo(2): aceita os envelopes ASF
+  // conhecidos e uma estrutura alternativa onde o resultado aparece dentro de
+  // outro objecto nodes. Nunca transforma erro de esquema em "sem seguro".
+  function extrairNodesASF(data) {
+    var candidatos = [
+      data && data.data && data.data.mobishoutEntry && data.data.mobishoutEntry.noone && data.data.mobishoutEntry.noone.entry && data.data.mobishoutEntry.noone.entry.licenseNumber && data.data.mobishoutEntry.noone.entry.licenseNumber.nodes,
+      data && data.mobishoutEntry && data.mobishoutEntry.noone && data.mobishoutEntry.noone.entry && data.mobishoutEntry.noone.entry.licenseNumber && data.mobishoutEntry.noone.entry.licenseNumber.nodes,
+      data && data.data && data.data.licenseNumber && data.data.licenseNumber.nodes,
+      data && data.licenseNumber && data.licenseNumber.nodes
+    ];
+
+    for (var i = 0; i < candidatos.length; i++) {
+      if (Array.isArray(candidatos[i])) {
+        return { found: true, nodes: candidatos[i] };
+      }
+    }
+
+    var encontrado = null;
+    function arrayTemCamposSeguro(arr) {
+      if (!Array.isArray(arr) || !arr.length) return false;
+      var campos = ['entity','insurer','insuranceCompany','policy','policyNumber','startDate','validFrom','endDate','validTo','license','licenseNumber','code'];
+      return arr.some(function (item) {
+        if (!item || typeof item !== 'object') return false;
+        return campos.some(function (k) { return Object.prototype.hasOwnProperty.call(item, k); });
+      });
+    }
+
+    function walk(v, profundidade, caminho) {
+      if (encontrado || !v || profundidade > 12) return;
+      if (Array.isArray(v) || typeof v !== 'object') return;
+
+      if (Array.isArray(v.nodes)) {
+        var caminhoTexto = (caminho || []).join('.').toLowerCase();
+        var contextoASF = /license|insurance|mobishout|entry|noone|asf/.test(caminhoTexto)
+          || Object.prototype.hasOwnProperty.call(v, 'licenseNumber')
+          || Object.prototype.hasOwnProperty.call(v, 'policy');
+        // Arrays vazios só podem ser considerados um "sem seguro" conclusivo
+        // quando estão num contexto ASF conhecido. Arrays não vazios podem
+        // ser aceites quando trazem campos de seguro reconhecíveis.
+        if ((v.nodes.length === 0 && contextoASF) || arrayTemCamposSeguro(v.nodes)) {
+          encontrado = v.nodes;
+          return;
+        }
+      }
+
+      var vals = Object.keys(v);
+      for (var j = 0; j < vals.length; j++) {
+        var k = vals[j];
+        walk(v[k], profundidade + 1, (caminho || []).concat(k));
+        if (encontrado) return;
+      }
+    }
+    walk(data, 0, []);
+
+    return encontrado ? { found: true, nodes: encontrado } : { found: false, nodes: [] };
+  }
+
+  function asfValorUtilizavel(obj, key) {
+    if (!obj || typeof obj !== 'object') return false;
+    var v = obj[key];
+    if (v === undefined || v === null) return false;
+    if (typeof v === 'object') {
+      v = v.name || v.label || v.value || v.description || '';
+    }
+    return String(v).trim() !== '';
+  }
+
+  function asfNodeTemDados(node) {
+    var campos = ['entity','insurer','insuranceCompany','policy','policyNumber','startDate','validFrom','endDate','validTo','license','licenseNumber','code'];
+    for (var i = 0; i < campos.length; i++) {
+      if (asfValorUtilizavel(node, campos[i])) return true;
+    }
+    return false;
+  }
+
+  function interpretarRespostaASF(json) {
+    if (!json || typeof json !== 'object') {
+      throw new Error('Resposta ASF inválida');
+    }
+
+    if (Array.isArray(json.errors) && json.errors.length) {
+      var msgs = json.errors.map(function (e) {
+        return e && e.message ? String(e.message) : '';
+      }).filter(Boolean);
+      throw new Error(msgs.length ? msgs.join(' | ') : 'A ASF devolveu um erro GraphQL');
+    }
+
+    var extraido = extrairNodesASF(json);
+    if (!extraido.found) {
+      throw new Error('Resposta ASF sem estrutura de resultados reconhecida');
+    }
+
+    var nodes = Array.isArray(extraido.nodes) ? extraido.nodes : null;
+    if (!nodes) {
+      throw new Error('Resposta ASF com campo nodes inválido');
+    }
+
+    if (nodes.length === 0) {
+      return { estado: 'nao', node: null };
+    }
+
+    var nodeValido = null;
+    for (var i = 0; i < nodes.length; i++) {
+      if (asfNodeTemDados(nodes[i])) {
+        nodeValido = nodes[i];
+        break;
+      }
+    }
+
+    if (nodeValido) {
+      return { estado: 'sim', node: nodeValido };
+    }
+
+    // A ASF pode devolver um node "placeholder" com os campos operacionais
+    // pedidos na query todos a null/vazios quando não existe seguro.
+    // Isto é diferente de uma resposta estruturalmente inválida: o envelope
+    // ASF foi reconhecido e o próprio resultado veio como um registo sem dados.
+    var placeholderASF = nodes.some(function (node) {
+      if (!node || typeof node !== 'object') return false;
+      var campos = [node.entity, node.startDate, node.endDate, node.policy, node.license, node.code];
+      return campos.every(function (v) {
+        return v === undefined || v === null || String(v).trim() === '';
+      });
+    });
+
+    if (placeholderASF) {
+      return { estado: 'nao', node: null };
+    }
+
+    // Existem nodes, mas não têm dados suficientes para concluir com segurança.
+    throw new Error('ASF devolveu resultados sem dados de seguro utilizáveis');
+  }
+
+  // CONSULTA ASF = mesmo endpoint/mutation do IPO_2.2, com parser robusto e
+  // controlo VÉRIX de 8 s + 5 pedidos/60 s, persistido entre refreshes, sem cache de resultados.
+  async function realizarConsultaASF_IPO(matLimpa, matDisplay) {
     var hoje = new Date();
     var yyyy = hoje.getFullYear();
     var mm = String(hoje.getMonth() + 1).padStart(2, '0');
@@ -1290,13 +1621,15 @@ function submitConjunto(event) {
     var dataHoje = yyyy + '/' + mm + '/' + dd;
 
     var queryGQL = 'mutation license { mobishoutEntry { noone { entry { licenseNumber(license: "' + matLimpa + '", date: "' + dataHoje + '") { nodes { id entity startDate endDate policy license code logo } } } } } }';
-    var url = 'https://ext01.asf.com.pt/api/src/?query=' + encodeURIComponent(queryGQL);
+    var url = ASF_API_URL + encodeURIComponent(queryGQL);
 
-    var resposta = await efetuarPedidoHttpASF(url);
+    var resposta = await efetuarPedidoHttpASF(url, matDisplay);
     var httpStatus = resposta.status;
     var responseText = resposta.text;
 
     if (httpStatus === 429) {
+      ASF_SERVER_COOLDOWN_UNTIL = agoraASF() + 15000;
+      guardarEstadoRateASF();
       throw new Error('Servidor ASF bloqueado por rate limit (HTTP 429)');
     }
     if (httpStatus === 403) {
@@ -1313,25 +1646,7 @@ function submitConjunto(event) {
       throw new Error('Resposta ASF não é JSON válido');
     }
 
-    var mobishoutEntry = json && json.data && json.data.mobishoutEntry;
-    if (mobishoutEntry) {
-      var licenseNode = mobishoutEntry.noone && mobishoutEntry.noone.entry && mobishoutEntry.noone.entry.licenseNumber;
-      var temSeguro = false;
-      var node = null;
-      if (licenseNode && Array.isArray(licenseNode.nodes) && licenseNode.nodes.length > 0) {
-        for (var i = 0; i < licenseNode.nodes.length; i++) {
-          var n = licenseNode.nodes[i];
-          if (n && n.license != null) {
-            temSeguro = true;
-            node = n;
-            break;
-          }
-        }
-      }
-      return { temSeguro: temSeguro, node: node };
-    }
-
-    throw new Error('Resposta inválida ou vazia do servidor ASF');
+    return interpretarRespostaASF(json);
   }
 
   function limparPendenteASF() {
@@ -1376,7 +1691,7 @@ function submitConjunto(event) {
     var box = document.getElementById('seguroResult');
     if (!box) return;
     n = n || {};
-    var matShow = formatarMatriculaDisplay(valorCampo(n, ['license', 'licenseNumber'], matricula));
+    var matShow = formatarMatriculaDisplay(matricula);
     var entity = valorCampo(n, ['entity', 'insurer', 'insuranceCompany'], '—');
     var policy = valorCampo(n, ['policy', 'policyNumber'], '—');
     var ini = formatarDataPT(valorCampo(n, ['startDate', 'validFrom'], ''));
@@ -1465,83 +1780,58 @@ function submitConjunto(event) {
       + '</div>';
   }
 
-  // ---- Orquestração = IPO_2.2 (tempos VÉRIX + SEM CACHE) ----
+  // ---- Orquestração ASF ----
+  // O controlo de cadência pertence agora ao nível do pedido físico, para que
+  // POST e eventual GET de fallback contem e respeitem os mesmos limites.
   async function processarConsultaSeguroComCadencia(matLimpa, matDisplay, queryId) {
-    var tentativa = 0;
-    var ultimoErro = null;
+    mostrarSeguroLoading(matDisplay, 'A VERIFICAR...');
 
-    while (tentativa <= ASF_MAX_RETRIES) {
-      var atraso = calcularAtrasoCadenciaASF();
-      while (atraso > 0) {
-        mostrarSeguroLoading(matDisplay, 'A AGUARDAR (' + Math.ceil(atraso / 1000) + 's)');
-        await esperarASF(Math.min(atraso, 1000));
-        atraso = calcularAtrasoCadenciaASF();
-      }
-
-      if (tentativa === 0) {
-        mostrarSeguroLoading(matDisplay, 'A VERIFICAR...');
+    try {
+      var resultado = await realizarConsultaASF_IPO(matLimpa, matDisplay);
+      if (resultado.estado === 'sim') {
+        renderSeguroEncontrado(resultado.node || {}, matDisplay, queryId);
+      } else if (resultado.estado === 'nao') {
+        renderSeguroNaoEncontrado(matDisplay, queryId);
       } else {
-        mostrarSeguroLoading(matDisplay, 'RETRY ' + tentativa + '/' + ASF_MAX_RETRIES);
-        console.log('[ASF/IPO] Tentativa ' + tentativa + '/' + ASF_MAX_RETRIES + ' para a matrícula ' + matLimpa);
+        throw new Error('Resposta ASF sem estado conclusivo');
       }
-
-      var agora = agoraASF();
-      ASF_ULTIMO_PEDIDO_T = agora;
-      asfRequestTimes.push(agora);
-      atualizarContadorVisualASF();
-
-      try {
-        var resultado = await realizarConsultaASF_IPO(matLimpa);
-        if (resultado.temSeguro) {
-          renderSeguroEncontrado(resultado.node || { license: matDisplay }, matDisplay, queryId);
-        } else {
-          renderSeguroNaoEncontrado(matDisplay, queryId);
-        }
-        return;
-      } catch (err) {
-        ultimoErro = err;
-        console.warn('[ASF/IPO] Falha na tentativa ' + tentativa + ' (' + matLimpa + '):', err && err.message);
-        tentativa++;
-        if (tentativa <= ASF_MAX_RETRIES) {
-          var atrasoBackoff = ASF_BACKOFF_BASE_MS * Math.pow(2, tentativa - 1);
-          await esperarASF(atrasoBackoff);
-        }
-      }
+    } catch (err) {
+      var diagnostico = (err && err.message) ? String(err.message) : 'Falha de comunicação com a ASF';
+      console.warn('[ASF] Falha (' + matLimpa + '):', diagnostico);
+      mostrarSeguroErro(diagnostico, matDisplay, 'Sem retry automático. Fallback apenas de transporte.', queryId);
     }
-
-    var diagnostico = (ultimoErro && ultimoErro.message) ? String(ultimoErro.message) : 'Falha de comunicação com a ASF';
-    mostrarSeguroErro(diagnostico, matDisplay, 'Todas as tentativas do motor ASF foram esgotadas.', queryId);
   }
 
   async function consultarSeguroASF(matricula) {
     var matDisplay = String(matricula || '').trim().toUpperCase();
     if (!matDisplay) return;
 
-    // IGUAL AO IPO_2.2: remove o hífen antes do pedido.
+    // Pedido ASF: matrícula sem hífens/separadores. Display mantém o formato.
     var matLimpa = sanitizarMatriculaASF(matDisplay);
     if (!matLimpa) return;
 
     var queryId = window.__VERIX_CURRENT_QUERY_ID || null;
 
-    // Igual ao IPO_2.2: não inicia uma segunda consulta física enquanto a primeira decorre.
-    if (ASF_EM_CURSO) {
-      console.log('[ASF/IPO] Consulta para ' + matLimpa + ' ignorada: já existe uma consulta em processamento.');
-      return;
-    }
-
+    ASF_FILA_PENDENTES = (ASF_FILA_PENDENTES || 0) + 1;
     ASF_EM_CURSO = true;
-    mostrarSeguroLoading(matDisplay, 'A VERIFICAR...');
+    if (ASF_FILA_PENDENTES > 1) {
+      mostrarSeguroLoading(matDisplay, 'Na fila ASF…');
+    } else {
+      mostrarSeguroLoading(matDisplay, 'A VERIFICAR...');
+    }
 
     ASF_FILA = ASF_FILA.then(async function () {
       try {
         await processarConsultaSeguroComCadencia(matLimpa, matDisplay, queryId);
       } finally {
-        ASF_EM_CURSO = false;
+        ASF_FILA_PENDENTES = Math.max(0, (ASF_FILA_PENDENTES || 1) - 1);
+        ASF_EM_CURSO = ASF_FILA_PENDENTES > 0;
         try { atualizarContadorVisualASF(); } catch (_) {}
       }
     }).catch(function (e) {
-      ASF_EM_CURSO = false;
-      console.error('[ASF/IPO] fila:', e);
+      ASF_FILA_PENDENTES = Math.max(0, (ASF_FILA_PENDENTES || 1) - 1);
+      ASF_EM_CURSO = ASF_FILA_PENDENTES > 0;
+      console.error('[ASF] fila:', e);
       mostrarSeguroErro((e && e.message) || 'Falha na consulta ASF', matDisplay, '', queryId);
     });
 
@@ -1788,23 +2078,7 @@ async function cinCopiarCodigo() {
  catch(e){ mostrarToast('Não foi possível copiar o código.'); }
 }
 
-/* VÉRIX 1.3 — limpeza única para publicação: remove apenas dados locais antigos do VÉRIX. */
-(function(){
- const FLAG='VÉRIX_DEPLOY_CLEAN_20260916';
- try{
- if(localStorage.getItem(FLAG)!=='1'){
- [
- 'VÉRIX_CINEMETROS_V2',
- 'VÉRIX_CINEMOMETROS_V2',
- 'VÉRIX_CIN_RADAR_COLLAPSED_PREF',
- 'VÉRIX_CINEMOMETRO_OPERADOR_V2',
- 'VÉRIX_CONSULTAS_HISTORICO_V1'
- ].forEach(k=>{try{localStorage.removeItem(k);}catch(_){}});
- try{sessionStorage.clear();}catch(_){}
- localStorage.setItem(FLAG,'1');
- }
- }catch(_){}
-})();
+
 
 const CIN_CONFIG_KEY='VÉRIX_CINEMOMETROS_V2';
 const CIN_SESSION_OPERATOR_KEY='VÉRIX_CINEMOMETRO_OPERADOR_V2';
@@ -6554,7 +6828,178 @@ html body .asf-operational-result .asf-note{
   html body .asf-operational-result .asf-op-validity{padding-left:0 !important;border-left:0 !important;border-top:1px solid #d7e6df !important;padding-top:8px !important;}
 }
 </style>
+
+<style id="verix-asf-popup-style">
+/* ===== AVISO ASF — apresentação inicial ===== */
+.verix-asf-notice-overlay{
+  position:fixed;
+  inset:0;
+  z-index:100000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  background:radial-gradient(circle at center, rgba(19,54,65,.18), rgba(0,0,0,.78) 70%);
+  backdrop-filter:blur(9px);
+  -webkit-backdrop-filter:blur(9px);
+}
+.verix-asf-notice-overlay[aria-hidden="true"]{display:none;}
+.verix-asf-notice-window{
+  position:relative;
+  width:min(700px,92vw);
+  max-height:min(680px,88vh);
+  overflow:auto;
+  box-sizing:border-box;
+  border:1px solid rgba(101,215,232,.28);
+  border-radius:18px;
+  background:linear-gradient(155deg,rgba(10,24,32,.99),rgba(4,11,16,.99));
+  box-shadow:0 32px 100px rgba(0,0,0,.62),0 0 0 1px rgba(255,255,255,.025) inset,0 0 42px rgba(47,171,191,.08);
+  color:#e8eef0;
+  text-align:center;
+}
+.verix-asf-notice-window:before{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  top:0;
+  height:4px;
+  border-radius:18px 18px 0 0;
+  background:linear-gradient(90deg,#b21d38,#5fd5e6,#00b57c);
+  opacity:.95;
+}
+.verix-asf-notice-top{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  padding:26px 26px 20px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.verix-asf-notice-title{
+  font:950 21px/1 Arial,sans-serif;
+  letter-spacing:2.2px;
+  color:#ffffff;
+  text-shadow:0 2px 12px rgba(0,0,0,.35);
+}
+.verix-asf-notice-sub{
+  margin-top:0;
+  font:800 8px/1.2 Arial,sans-serif;
+  letter-spacing:1.5px;
+  color:#8fa2aa;
+}
+.verix-asf-notice-badge{
+  flex:0 0 auto;
+  padding:7px 13px;
+  border:1px solid rgba(101,215,232,.30);
+  border-radius:999px;
+  background:rgba(101,215,232,.07);
+  color:#8de3ef;
+  font:900 8px/1 Arial,sans-serif;
+  letter-spacing:1.4px;
+}
+.verix-asf-notice-body{
+  padding:24px 34px 10px;
+  max-width:620px;
+  margin:0 auto;
+}
+.verix-asf-notice-lead{
+  margin:0 0 18px;
+  font:900 15px/1.55 Arial,sans-serif;
+  color:#f5f8f9;
+}
+.verix-asf-notice-body p{
+  margin:0 auto 14px;
+  font:500 12px/1.65 Arial,sans-serif;
+  color:#c7d3d8;
+  max-width:585px;
+}
+.verix-asf-notice-body p strong{color:#f3f7f8;font-weight:850;}
+.verix-asf-notice-highlight{
+  margin:20px auto 8px;
+  padding:17px 18px;
+  border:1px solid rgba(101,215,232,.13);
+  border-radius:12px;
+  background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(101,215,232,.025));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+}
+.verix-asf-notice-highlight strong{
+  display:block;
+  margin-bottom:5px;
+  font:950 12px/1.3 Arial,sans-serif;
+  letter-spacing:1.2px;
+  color:#ffffff;
+}
+.verix-asf-notice-highlight span{
+  font:500 12px/1.55 Arial,sans-serif;
+  color:#b8c5ca;
+}
+.verix-asf-notice-thanks{
+  margin-top:14px!important;
+  text-align:center;
+  font-weight:800!important;
+  color:#e2eaed!important;
+}
+.verix-asf-notice-footer{
+  display:flex;
+  justify-content:center;
+  padding:16px 24px 24px;
+}
+.verix-asf-notice-continue{
+  min-width:190px;
+  height:44px;
+  padding:0 22px;
+  border:1px solid rgba(101,215,232,.34);
+  border-radius:10px;
+  background:linear-gradient(135deg,#164450,#0d2831);
+  color:#edf8fa;
+  font:950 9px/1 Arial,sans-serif;
+  letter-spacing:1.3px;
+  cursor:pointer;
+  transition:transform .12s ease,filter .12s ease,border-color .12s ease,box-shadow .12s ease;
+  box-shadow:0 8px 22px rgba(0,0,0,.24);
+}
+.verix-asf-notice-continue:hover{filter:brightness(1.13);border-color:#6fe0ee;box-shadow:0 10px 28px rgba(0,0,0,.32),0 0 20px rgba(101,215,232,.08);}
+.verix-asf-notice-continue:active{transform:translateY(1px);}
+@media(max-width:640px){
+  .verix-asf-notice-overlay{padding:14px;}
+  .verix-asf-notice-top{padding:24px 18px 18px;}
+  .verix-asf-notice-title{font-size:18px;}
+  .verix-asf-notice-body{padding:20px 18px 8px;}
+  .verix-asf-notice-lead{font-size:14px;}
+  .verix-asf-notice-body p{font-size:12px;}
+  .verix-asf-notice-footer{padding:12px 18px 18px;}
+  .verix-asf-notice-continue{width:100%;}
+}
+</style>
+
 </head><body>
+
+<div id="verixAsfNoticeOverlay" class="verix-asf-notice-overlay" aria-hidden="true">
+  <div class="verix-asf-notice-window" role="dialog" aria-modal="true" aria-labelledby="verixAsfNoticeTitle">
+    <div class="verix-asf-notice-top">
+      <div>
+        <div id="verixAsfNoticeTitle" class="verix-asf-notice-title">ATENÇÃO!</div>
+        <div class="verix-asf-notice-sub">VÉRIX // COMUNICADO AOS UTILIZADORES</div>
+      </div>
+      <div class="verix-asf-notice-badge">VÉRIX</div>
+    </div>
+    <div class="verix-asf-notice-body">
+      <p class="verix-asf-notice-lead">Foram detetadas algumas <strong>falhas nas consultas automáticas ASF</strong>, relacionadas, em alguns casos, com a <strong>rede RNSI</strong>. A equipa do <strong>VERIX está a trabalhar na sua correção</strong>.</p>
+
+      <p>Foram também detetadas <strong>tentativas de sobrecarga (Brute Force)</strong> e a <strong>cópia do código de consulta de seguros para outros ficheiros HTML.</strong></p>
+
+      <p><strong>Pedimos que não sobrecarreguem a plataforma, de forma deliberada e maldosa, nem reproduzam o código do VERIX sem o consentimento dos desenvolvedores.</strong></p>
+
+      <div class="verix-asf-notice-highlight"><strong>OBRIGADO!</strong><br>Já foram realizadas <strong>mais de 150.000 consultas em apenas duas semanas</strong>.<br><strong>Obrigado a todos pela utilização e confiança no VERIX.</strong></div>
+    </div>
+    <div class="verix-asf-notice-footer">
+      <button type="button" class="verix-asf-notice-continue" onclick="fecharAvisoASFInicial()">COMPREENDIDO &nbsp;→</button>
+    </div>
+  </div>
+</div>
+
 <div class="cinematic-bg"></div>
 <div class="command"> <div class="brand"><div class="brand-notice"> <div class="brand-notice-title">Ferramenta de apoio ao serviço operacional <span>· Não oficial</span></div> <div class="brand-notice-text">Informação para <strong>apoio e consulta</strong>.<br>Confirme sempre a legislação, procedimentos e demais dados nas fontes oficiais antes da utilização em serviço.</div>
 </div></div> <div class="time" id="dataSistema"><span class="version-label">Versão 1.3</span><span class="date-label">-- --- ----</span></div> <div class="searchbar"><form onsubmit="submitConjunto(event)" autocomplete="off" style="display:flex;align-items:center;gap:13px"><div class="field"><label for="MatriculaVeiculo">VEÍCULO</label><input id="MatriculaVeiculo" name="verix_plate_v" maxlength="8" placeholder="11-AA-11" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" data-lpignore="true" data-form-type="other" oninput="formatMatricula(this)" onblur="formatMatricula(this)"></div><div class="field"><label for="MatriculaReboque">REBOQUE</label><input id="MatriculaReboque" name="verix_plate_r" placeholder="L-121212" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" data-lpignore="true" data-form-type="other" oninput="formatMatriculaReboque(this)"></div><button class="consult" type="submit">⌕ &nbsp; CONSULTAR</button></form></div> <div class="tools"><button class="tool green full" onclick="toggleFullscreen()" title="Ecrã inteiro">⛶</button><button class="tool" onclick="consultarIMTERRU()">IMT-ERRU</button><button class="tool" onclick="consultarINEM()">INEM</button><button class="tool" onclick="consultarWAZE()">WAZE</button></div>
@@ -6574,7 +7019,7 @@ html body .asf-operational-result .asf-note{
 </div>
 <div id="moduleOverlay" class="module-overlay" onclick="fecharModuloFora(event)"> <div class="module-window"> <div class="module-top"><div><div id="moduleTitle" class="module-title">MÓDULO OPERACIONAL</div><div id="moduleSub" class="module-sub">VÉRIX // OPERAÇÕES</div></div><button class="module-close" onclick="fecharModulo()">×</button></div> <div id="moduleBody" class="module-body"></div> </div>
 </div>
-<div id="legalNoticeOverlay" class="legal-notice-overlay" onclick="fecharAvisoLegalFora(event)" aria-hidden="true"> <div class="legal-notice-window" role="dialog" aria-modal="true" aria-labelledby="legalNoticeTitle"> <div class="legal-notice-top"> <div><div id="legalNoticeTitle" class="legal-notice-title">AVISO LEGAL</div><div class="legal-notice-sub">VÉRIX // CONDIÇÕES DE UTILIZAÇÃO</div></div> <button class="legal-notice-close" type="button" onclick="fecharAvisoLegal()" aria-label="Fechar aviso legal">×</button> </div> <div class="legal-notice-body"> <p>Esta aplicação não está afiliada a entidades governamentais ou outras entidades oficiais.</p> <p>A utilização desta aplicação não dispensa a consulta dos documentos originais no <a href="https://diariodarepublica.pt/" target="_blank" rel="noopener noreferrer">Diário da República</a>.</p> <p>A aplicação é fornecida &quot;como está&quot;, sem garantias de exatidão, atualidade ou completude. Pode conter erros ou estar desatualizada.</p> <p>Esta aplicação destina-se apenas a apoio e consulta informativa.</p> <p>A utilização da informação fornecida, sem observar os pressupostos mencionados, é de inteira responsabilidade do utilizador.</p> <div class="legal-notice-version"><span>Versão</span><strong>1.2</strong></div> </div> </div>
+<div id="legalNoticeOverlay" class="legal-notice-overlay" onclick="fecharAvisoLegalFora(event)" aria-hidden="true"> <div class="legal-notice-window" role="dialog" aria-modal="true" aria-labelledby="legalNoticeTitle"> <div class="legal-notice-top"> <div><div id="legalNoticeTitle" class="legal-notice-title">AVISO LEGAL</div><div class="legal-notice-sub">VÉRIX // CONDIÇÕES DE UTILIZAÇÃO</div></div> <button class="legal-notice-close" type="button" onclick="fecharAvisoLegal()" aria-label="Fechar aviso legal">×</button> </div> <div class="legal-notice-body"> <p>Esta aplicação não está afiliada a entidades governamentais ou outras entidades oficiais.</p> <p>A utilização desta aplicação não dispensa a consulta dos documentos originais no <a href="https://diariodarepublica.pt/" target="_blank" rel="noopener noreferrer">Diário da República</a>.</p> <p>A aplicação é fornecida &quot;como está&quot;, sem garantias de exatidão, atualidade ou completude. Pode conter erros ou estar desatualizada.</p> <p>Esta aplicação destina-se apenas a apoio e consulta informativa.</p> <p>A utilização da informação fornecida, sem observar os pressupostos mencionados, é de inteira responsabilidade do utilizador.</p> <div class="legal-notice-version"><span>Versão</span><strong>1.3</strong></div> </div> </div>
 </div>
 <div id="historyOverlay" class="history-overlay" onclick="fecharHistoricoFora(event)"> <div class="history-window"> <div class="history-top"> <div><div class="history-title">HISTÓRICO DE CONSULTAS</div><div class="history-sub">ÚLTIMAS 100 PESQUISAS // ARMAZENAMENTO LOCAL</div></div> <button class="history-close" onclick="fecharHistorico()" title="Voltar à consulta">← &nbsp; CONSULTA</button> </div> <div class="history-body"> <div id="historyList" class="history-list-scroll"></div> <div class="history-footer"><button type="button" class="history-return" onclick="fecharHistorico()">← &nbsp; RETOMAR CONSULTA</button><span id="historyCount" class="history-count">0 / 100 REGISTOS</span><button class="history-clear" onclick="limparHistorico()">LIMPAR HISTÓRICO</button></div> </div> </div>
 </div>
@@ -13084,7 +13529,7 @@ body.theme-light .system-factory-modal{background:rgba(12,25,29,.48)}body.theme-
 function open(){m.classList.add('open');m.setAttribute('aria-hidden','false');setTimeout(()=>m.querySelector('.system-factory-btn')?.focus(),20)}
 function close(){m.classList.remove('open','final');m.setAttribute('aria-hidden','true');m.querySelector('.system-factory-body').innerHTML=originalBody;m.querySelector('.system-factory-foot').innerHTML=originalFoot}
 function confirmReset(){m.classList.add('final');m.querySelector('.system-factory-body').innerHTML='<div class="system-factory-warning"><strong>CONFIRMAÇÃO FINAL</strong><br><br>Todos os dados locais serão eliminados definitivamente e a consola será reiniciada.</div><div class="system-factory-question">Confirmar a reposição de fábrica?</div>';m.querySelector('.system-factory-foot').innerHTML='<button type="button" class="system-factory-btn" onclick="VÉRIXFactoryResetModal.close()">CANCELAR</button><button type="button" class="system-factory-btn danger" onclick="VÉRIXFactoryResetModal.execute()">CONFIRMAR REPOSIÇÃO</button>'}
-function execute(){try{['VÉRIX_CINEMETROS_LISTA_RECOLHIDA_V1','VÉRIX_CINEMETROS_V2','VÉRIX_CINEMETRO_OPERADOR_V2','VÉRIX_PREFS_V1','VÉRIX_CONSULTAS_HISTORICO_V1','APP_TELEMETRY_QUEUE_V1','APP_TELEMETRY_INSTALL_V1'].forEach(function(k){try{localStorage.removeItem(k);}catch(e){}});['APP_TELEMETRY_TAB_V1','APP_TELEMETRY_SESSION_START_V1'].forEach(function(k){try{sessionStorage.removeItem(k);}catch(e){}});localStorage.setItem('VÉRIX_FACTORY_RESET_PENDING','1');localStorage.setItem('VÉRIX_CINEMOMETROS_V2','[]')}catch(e){}window.location.reload()}
+function execute(){try{['VÉRIX_CINEMETROS_LISTA_RECOLHIDA_V1','VÉRIX_CINEMETROS_V2','VÉRIX_CINEMETRO_OPERADOR_V2','VÉRIX_PREFS_V1','VÉRIX_CONSULTAS_HISTORICO_V1','APP_TELEMETRY_QUEUE_V1','APP_TELEMETRY_INSTALL_V1','VERIX_T2_QUEUE','VERIX_T2_INSTALL_ID','VERIX_ASF_RATE_STATE_V1'].forEach(function(k){try{localStorage.removeItem(k);}catch(e){}});['APP_TELEMETRY_TAB_V1','APP_TELEMETRY_SESSION_START_V1','VERIX_T2_SESSION_ID','VERIX_T2_TAB_ID'].forEach(function(k){try{sessionStorage.removeItem(k);}catch(e){}});localStorage.setItem('VÉRIX_FACTORY_RESET_PENDING','1');localStorage.setItem('VÉRIX_CINEMOMETROS_V2','[]')}catch(e){}window.location.reload()}
 window.VÉRIXFactoryResetModal={open,close,confirm:confirmReset,execute};m.addEventListener('click',e=>{if(e.target===m)close()});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&m.classList.contains('open'))close()});})();
 </script> <style id="verix-contact-v168-mainmenu">
 
@@ -18347,6 +18792,30 @@ html body .toast-notification {
   html body .asf-row-split { grid-template-columns: 1fr !important; }
 }
 </style>
+
+
+<script id="verix-asf-popup-script">
+(function(){
+  function abrirAvisoASFInicial(){
+    var o=document.getElementById('verixAsfNoticeOverlay');
+    if(!o) return;
+    o.setAttribute('aria-hidden','false');
+  }
+  window.fecharAvisoASFInicial=function(){
+    var o=document.getElementById('verixAsfNoticeOverlay');
+    if(!o) return;
+    o.setAttribute('aria-hidden','true');
+  };
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape') window.fecharAvisoASFInicial();
+  });
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',abrirAvisoASFInicial);
+  }else{
+    abrirAvisoASFInicial();
+  }
+})();
+</script>
 
 </body>
 </html>
