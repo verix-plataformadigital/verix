@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-store,no-cache,must-revalidate,proxy-revalidate,max-age=0">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>VÉRIX — Plataforma Digital</title>
+  <style>
+    html,body{margin:0;width:100%;height:100%;background:#03080c;color:#eaf2f4;font-family:Arial,Helvetica,sans-serif}
+    body{display:grid;place-items:center}
+    .box{text-align:center;padding:24px}
+    .spin{width:34px;height:34px;margin:0 auto 14px;border:3px solid #20343d;border-top-color:#00e5a0;border-right-color:#65d7e8;border-radius:50%;animation:s .8s linear infinite}
+    @keyframes s{to{transform:rotate(360deg)}}
+    .t{font:900 12px Arial;letter-spacing:1.2px}
+    .e{max-width:520px;margin-top:14px;color:#8fa5ad;font:600 11px/1.5 Arial}
+  </style>
+</head>
+<body>
+<div class="box" id="loader">
+  <div class="spin"></div>
+  <div class="t">A CARREGAR VÉRIX…</div>
+</div>
+<script>
+(function(){
+  'use strict';
+
+  /*
+   * O endereço público NÃO muda:
+   * https://verix-plataformadigital.github.io/verix/
+   *
+   * O index.html passa a ser apenas um carregador permanente.
+   * A aplicação real fica em verix-app.html e é pedida sempre com
+   * um parâmetro único para impedir que uma cópia antiga seja reutilizada.
+   */
+  var APP_FILE = './verix-app.html';
+  var stamp = String(Date.now());
+
+  async function arrancar(){
+    try{
+      var url = new URL(APP_FILE, window.location.href);
+      url.searchParams.set('_verix_app', stamp);
+
+      var response = await fetch(url.toString(), {
+        method: 'GET',
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      });
+
+      if(!response.ok) throw new Error('HTTP ' + response.status);
+
+      var html = await response.text();
+      if(!html || html.length < 1000) throw new Error('Aplicação inválida ou incompleta.');
+
+      /*
+       * Mantemos o URL público /verix/.
+       * Antes de inserir a aplicação, marcamos a URL para que o mecanismo
+       * anti-cache existente no próprio VÉRIX não faça uma navegação extra.
+       */
+      try{
+        var page = new URL(window.location.href);
+        page.searchParams.set('_verix_cache','1');
+        history.replaceState(null, document.title, page.pathname + '?' + page.searchParams.toString() + page.hash);
+      }catch(_){ }
+
+      document.open();
+      document.write(html);
+      document.close();
+
+    }catch(err){
+      var box=document.getElementById('loader');
+      if(box){
+        box.innerHTML =
+          '<div class="t">NÃO FOI POSSÍVEL CARREGAR O VÉRIX</div>'+
+          '<div class="e">A aplicação atual não respondeu. Aguarde alguns segundos e volte a abrir o endereço normal.</div>';
+      }
+      console.error('VÉRIX loader:',err);
+    }
+  }
+
+  arrancar();
+})();
+</script>
+</body>
+</html>
