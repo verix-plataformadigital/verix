@@ -484,7 +484,6 @@ let ultimaMatriculaLivrete = "";
   const IMT_TIMEOUT_MS = 12000;
  const imtTimers = {};
 let imtQuerySequence = 0;
-let imtResultRecordedByQuery = Object.create(null);
 
  function mostrarLoading(frameId, overlayId) {
  const overlay = document.getElementById(overlayId);
@@ -552,28 +551,6 @@ let imtResultRecordedByQuery = Object.create(null);
     if (loadCheckTimer) clearTimeout(loadCheckTimer);
 
     if (requestSequence !== imtQuerySequence) return;
-
-    // Só contabiliza o IMT quando a navegação ao documento remoto
-    // terminou com sucesso. A submissão da matrícula, por si só,
-    // nunca gera imt_loaded. Uma pesquisa integrada vale apenas 1.
-    const resultKey = queryId || ('imt-seq-' + requestSequence);
-    if (!imtResultRecordedByQuery[resultKey]) {
-      imtResultRecordedByQuery[resultKey] = true;
-      try {
-        if (window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.track === 'function') {
-          window.VERIX_TELEMETRY.track(
-            'imt_loaded',
-            'consulta',
-            {
-              queryId: queryId,
-              source: sourceName,
-              resultConfirmed: true
-            }
-          );
-        }
-      } catch (_) {}
-    }
-
     occultarLoading(frameId, overlayId);
   };
 
@@ -1072,8 +1049,13 @@ function submitConjunto(event) {
  imtSequence
  );
 
- // O evento imt_loaded só é emitido pelo carregador do IMT depois
- // de a navegação ao documento remoto terminar com sucesso.
+ // Uma matrícula pesquisada = 1 resultado IMT no Admin,
+ // independentemente de serem carregados os dois endpoints (inspeção + livrete).
+ try {
+   if (window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.track === 'function') {
+     window.VERIX_TELEMETRY.track('imt_loaded', 'consulta', { queryId: window.__VERIX_CURRENT_QUERY_ID });
+   }
+ } catch (_) {}
 
  ultimaMatriculaPesquisada = placaInspecao;
  ultimaMatriculaInspecao = placaInspecao;
@@ -1593,25 +1575,69 @@ function submitConjunto(event) {
       throw new Error('Resposta ASF com campo nodes inválido');
     }
 
+    /*
+     * LÓGICA ASF ALINHADA COM A VERSÃO Consulta Veiculo(3):
+     *
+     * - nodes vazio = SEM SEGURO
+     * - nodes com dados de seguro utilizáveis = TEM SEGURO
+     * - nodes existentes mas sem dados de seguro utilizáveis = SEM SEGURO
+     *
+     * Não se deve exigir que `license` esteja preenchido. A ASF pode devolver
+     * outros campos contratuais válidos.
+     */
     if (nodes.length === 0) {
       return { estado: 'nao', node: null };
     }
 
+    var camposSeguro = [
+      'entity',
+      'insurer',
+      'insuranceCompany',
+      'policy',
+      'policyNumber',
+      'startDate',
+      'validFrom',
+      'endDate',
+      'validTo',
+      'license',
+      'licenseNumber',
+      'code'
+    ];
+
     var nodeValido = null;
+
     for (var i = 0; i < nodes.length; i++) {
-      if (asfNodeTemDados(nodes[i])) {
-        nodeValido = nodes[i];
-        break;
+      var node = nodes[i];
+      if (!node || typeof node !== 'object') continue;
+
+      for (var j = 0; j < camposSeguro.length; j++) {
+        var chave = camposSeguro[j];
+        var valor = node[chave];
+
+        if (valor !== undefined && valor !== null) {
+          if (typeof valor === 'object') {
+            valor = valor.name || valor.label || valor.value || valor.description || '';
+          }
+
+          if (String(valor).trim() !== '') {
+            nodeValido = node;
+            break;
+          }
+        }
       }
+
+      if (nodeValido) break;
     }
 
     if (nodeValido) {
       return { estado: 'sim', node: nodeValido };
     }
 
-    // Nós existentes mas sem qualquer dado operacional são ambíguos: não
-    // afirmar "sem seguro" porque a resposta não é suficientemente conclusiva.
-    throw new Error('ASF devolveu resultados sem dados de seguro utilizáveis');
+    /*
+     * Resposta ASF conhecida, mas sem dados úteis no(s) node(s).
+     * Segue a lógica da Consulta Veiculo(3): tratar como ausência de seguro.
+     */
+    return { estado: 'nao', node: null };
   }
 
   // CONSULTA ASF = mesmo endpoint/mutation do IPO_2.2, com parser robusto e
