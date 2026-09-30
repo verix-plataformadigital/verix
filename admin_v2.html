@@ -260,13 +260,13 @@ td{font-weight:850;font-size:13px}
   </section>
 
   <section class="section reset-panel">
-    <div class="section-head"><div class="section-title">REPOSIÇÃO ESPECÍFICA</div><div class="section-note">Sem apagar eventos</div></div>
+    <div class="section-head"><div class="section-title">REPOSIÇÃO 24H</div><div class="section-note">Sem apagar eventos</div></div>
     <div class="reset-box">
-      <div class="reset-title">RESET · SEM SEGURO</div>
-      <div class="reset-desc">Reinicia apenas o indicador «Sem seguro» a partir deste momento. Os eventos históricos permanecem guardados e os restantes indicadores não são alterados.</div>
+      <div class="reset-title">RESET · ÚLTIMAS 24 HORAS</div>
+      <div class="reset-desc">Reinicia todos os indicadores do período 24H a partir deste momento. Os eventos históricos permanecem guardados. Os períodos de 7, 30 dias e histórico não são alterados.</div>
       <div class="reset-actions">
-        <div id="metricResetStatus" class="reset-status">Último reset: —</div>
-        <button id="resetNoInsuranceBtn" type="button" class="reset-btn">RESET SEM SEGURO</button>
+        <div id="reset24hStatus" class="reset-status">Último reset 24H: —</div>
+        <button id="reset24hBtn" type="button" class="reset-btn">RESET 24H</button>
       </div>
     </div>
   </section>
@@ -347,23 +347,23 @@ async function doLogin(password){
   return data;
 }
 
-async function resetNoInsurance(){
-  if(!confirm('RESET — SEM SEGURO\n\nO indicador «Sem seguro» passará a contar apenas resultados ocorridos a partir deste momento.\n\nOs eventos NÃO serão apagados. Os restantes indicadores permanecem intactos.\n\nContinuar?')) return;
-  const btn=$('resetNoInsuranceBtn');
-  const status=$('metricResetStatus');
+async function reset24h(){
+  if(!confirm('RESET — ÚLTIMAS 24 HORAS\n\nTodos os indicadores do período 24H passarão a contar apenas eventos ocorridos a partir deste momento.\n\nOs eventos NÃO serão apagados. Os períodos de 7 dias, 30 dias e histórico permanecem intactos.\n\nContinuar?')) return;
+  const btn=$('reset24hBtn');
+  const status=$('reset24hStatus');
   if(btn) btn.disabled=true;
-  if(status){status.className='reset-status';status.textContent='A aplicar reset Sem seguro…';}
+  if(status){status.className='reset-status';status.textContent='A aplicar reset 24H…';}
   try{
     const data=await request(STATS_API,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:'metric_reset',metric:'no_insurance'})
+      body:JSON.stringify({action:'reset_24h'})
     });
-    if(status){status.className='reset-status ok';status.textContent='Reset Sem seguro aplicado em '+new Date(data.reset_at||Date.now()).toLocaleString('pt-PT')+'.';}
-    toast('RESET SEM SEGURO aplicado.');
+    if(status){status.className='reset-status ok';status.textContent='Último reset 24H: '+new Date(data.reset_at||Date.now()).toLocaleString('pt-PT')+'.';}
+    toast('RESET 24H aplicado.');
     await loadDashboard();
   }catch(e){
-    if(status){status.className='reset-status err';status.textContent='Erro no reset: '+(e.message||'serviço indisponível');}
+    if(status){status.className='reset-status err';status.textContent='Erro no reset 24H: '+(e.message||'serviço indisponível');}
   }finally{if(btn)btn.disabled=false;}
 }
 
@@ -520,6 +520,11 @@ async function loadDashboard(){
     renderCompare(data.compare);
     renderMenus(data.menus);
     renderLegislation(data.legislation);
+    const resetAt = data.reset24hAt ? new Date(data.reset24hAt).toLocaleString('pt-PT') : '—';
+    const resetStatus = $('reset24hStatus');
+    if(resetStatus && !resetStatus.classList.contains('ok') && !resetStatus.classList.contains('err')){
+      resetStatus.textContent='Último reset 24H: '+resetAt;
+    }
     await loadHourly();
     $('statusLine').textContent=`Atualizado em ${new Date(data.generatedAt||Date.now()).toLocaleString('pt-PT')}`;
     $('backendTime').textContent=`BACKEND ONLINE · ${Math.round(performance.now()-t0)} ms`;
@@ -555,7 +560,7 @@ $('loginForm').addEventListener('submit',async e=>{
 });
 
 $('refreshBtn').addEventListener('click',()=>{loadDashboard();toast('Dados atualizados.')});
-$('resetNoInsuranceBtn').addEventListener('click',resetNoInsurance);
+$('reset24hBtn').addEventListener('click',reset24h);
 $('logoutBtn').addEventListener('click',logout);
 
 if(token()){
