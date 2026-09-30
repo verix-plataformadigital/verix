@@ -484,6 +484,7 @@ let ultimaMatriculaLivrete = "";
   const IMT_TIMEOUT_MS = 12000;
  const imtTimers = {};
 let imtQuerySequence = 0;
+let imtResultRecordedByQuery = Object.create(null);
 
  function mostrarLoading(frameId, overlayId) {
  const overlay = document.getElementById(overlayId);
@@ -551,6 +552,28 @@ let imtQuerySequence = 0;
     if (loadCheckTimer) clearTimeout(loadCheckTimer);
 
     if (requestSequence !== imtQuerySequence) return;
+
+    // Só contabiliza o IMT quando a navegação ao documento remoto
+    // terminou com sucesso. A submissão da matrícula, por si só,
+    // nunca gera imt_loaded. Uma pesquisa integrada vale apenas 1.
+    const resultKey = queryId || ('imt-seq-' + requestSequence);
+    if (!imtResultRecordedByQuery[resultKey]) {
+      imtResultRecordedByQuery[resultKey] = true;
+      try {
+        if (window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.track === 'function') {
+          window.VERIX_TELEMETRY.track(
+            'imt_loaded',
+            'consulta',
+            {
+              queryId: queryId,
+              source: sourceName,
+              resultConfirmed: true
+            }
+          );
+        }
+      } catch (_) {}
+    }
+
     occultarLoading(frameId, overlayId);
   };
 
@@ -1049,13 +1072,8 @@ function submitConjunto(event) {
  imtSequence
  );
 
- // Uma matrícula pesquisada = 1 resultado IMT no Admin,
- // independentemente de serem carregados os dois endpoints (inspeção + livrete).
- try {
-   if (window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.track === 'function') {
-     window.VERIX_TELEMETRY.track('imt_loaded', 'consulta', { queryId: window.__VERIX_CURRENT_QUERY_ID });
-   }
- } catch (_) {}
+ // O evento imt_loaded só é emitido pelo carregador do IMT depois
+ // de a navegação ao documento remoto terminar com sucesso.
 
  ultimaMatriculaPesquisada = placaInspecao;
  ultimaMatriculaInspecao = placaInspecao;
@@ -1591,23 +1609,8 @@ function submitConjunto(event) {
       return { estado: 'sim', node: nodeValido };
     }
 
-    // A ASF pode devolver um node "placeholder" com os campos operacionais
-    // pedidos na query todos a null/vazios quando não existe seguro.
-    // Isto é diferente de uma resposta estruturalmente inválida: o envelope
-    // ASF foi reconhecido e o próprio resultado veio como um registo sem dados.
-    var placeholderASF = nodes.some(function (node) {
-      if (!node || typeof node !== 'object') return false;
-      var campos = [node.entity, node.startDate, node.endDate, node.policy, node.license, node.code];
-      return campos.every(function (v) {
-        return v === undefined || v === null || String(v).trim() === '';
-      });
-    });
-
-    if (placeholderASF) {
-      return { estado: 'nao', node: null };
-    }
-
-    // Existem nodes, mas não têm dados suficientes para concluir com segurança.
+    // Nós existentes mas sem qualquer dado operacional são ambíguos: não
+    // afirmar "sem seguro" porque a resposta não é suficientemente conclusiva.
     throw new Error('ASF devolveu resultados sem dados de seguro utilizáveis');
   }
 
