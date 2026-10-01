@@ -1566,12 +1566,9 @@ function submitConjunto(event) {
           responseBytes: null
         };
         finalizarTentativaDiagASF(diag, tentativaNativeErro);
-        console.warn('[ASF] WinHTTP POST falhou; a tentar GET de fallback:', e && e.message);
-        try {
-          return await fetchASF('GET', url, matDisplay, diag);
-        } catch (e2) {
-          throw erroComDiagASF((e2 && e2.message) || tentativaNativeErro.message || 'Falha ASF', diag);
-        }
+        // Falha de transporte não é motivo para repetir automaticamente por GET.
+        // GET só é permitido quando o POST devolve HTTP 403/405.
+        throw erroComDiagASF(tentativaNativeErro.message || 'Falha ASF', diag);
       }
     }
 
@@ -1583,12 +1580,9 @@ function submitConjunto(event) {
       }
       return post;
     } catch (e) {
-      console.warn('[ASF] POST falhou; a tentar GET de fallback após nova cadência:', e && e.message);
-      try {
-        return await fetchASF('GET', url, matDisplay, diag);
-      } catch (e2) {
-        throw erroComDiagASF((e2 && e2.message) || (e && e.message) || 'Falha ASF', diag);
-      }
+      // Falha de transporte (timeout/rede/CORS) não deve gerar um segundo
+      // pedido físico. GET só ocorre acima quando o POST devolve 403/405.
+      throw erroComDiagASF((e && e.message) || 'Falha ASF', (e && e.asfDiagnostic) || diag);
     }
   }
 
@@ -17455,11 +17449,11 @@ html body .leg-card-new .copy-all-new{
       }
     });
 
-    wrap('renderSeguroEncontrado', function (_n, _mat, queryId) {
+    wrap('renderSeguroEncontrado', function (_n, _mat, queryId, asfDiagnostic) {
       push('vehicle_insurance_yes', 'consulta', { queryId: queryId || window.__VERIX_CURRENT_QUERY_ID || null, asfDiagnostic: asfDiagnostic || null });
     });
 
-    wrap('renderSeguroNaoEncontrado', function (_mat, queryId) {
+    wrap('renderSeguroNaoEncontrado', function (_mat, queryId, asfDiagnostic) {
       push('vehicle_insurance_no', 'consulta', { queryId: queryId || window.__VERIX_CURRENT_QUERY_ID || null, asfDiagnostic: asfDiagnostic || null });
     });
 
