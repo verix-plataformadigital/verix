@@ -1484,7 +1484,7 @@ function submitConjunto(event) {
   // A query GraphQL segue no parâmetro ?query= da URL; o POST não envia corpo.
   // Não fazemos GET alternativo nem acrescentamos pedidos físicos à consulta.
   function efetuarPedidoHttpASF_SyncNative(url) {
-    var xhr = new ActiveXObject("WinHttp.WinHttpRequest.5.0");
+    var xhr = new ActiveXObject("WinHttp.WinHttpRequest.5.1");
     xhr.open("POST", url, false);
     xhr.setTimeouts(10000, 10000, ASF_TIMEOUT_MS, ASF_TIMEOUT_MS);
     xhr.setRequestHeader("Accept", "application/json, text/plain, */*");
