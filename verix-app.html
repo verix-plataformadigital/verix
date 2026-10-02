@@ -1937,6 +1937,18 @@ function submitConjunto(event) {
       + '</div>';
   }
 
+  function registarEventoSeguroV2(eventName, queryId, asfDiagnostic, userMessage) {
+    try {
+      if (window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.track === 'function') {
+        window.VERIX_TELEMETRY.track(eventName, 'consulta', {
+          queryId: queryId || null,
+          asfDiagnostic: asfDiagnostic || null,
+          asfUserMessage: userMessage || null
+        });
+      }
+    } catch (_) {}
+  }
+
   // ---- Orquestração ASF ----
   // O controlo de cadência pertence agora ao nível do pedido físico, para que
   // POST e eventual GET de fallback contem e respeitem os mesmos limites.
@@ -1948,8 +1960,10 @@ function submitConjunto(event) {
       var resultado = consulta.resultado;
       var asfDiagnostic = consulta.asfDiagnostic || null;
       if (resultado.estado === 'sim') {
+        registarEventoSeguroV2('vehicle_insurance_yes', queryId, asfDiagnostic);
         renderSeguroEncontrado(resultado.node || {}, matDisplay, queryId, asfDiagnostic);
       } else if (resultado.estado === 'nao') {
+        registarEventoSeguroV2('vehicle_insurance_no', queryId, asfDiagnostic);
         renderSeguroNaoEncontrado(matDisplay, queryId, asfDiagnostic);
       } else {
         throw erroComDiagASF('Resposta ASF sem estado conclusivo', asfDiagnostic);
@@ -1958,6 +1972,7 @@ function submitConjunto(event) {
       var diagnostico = (err && err.message) ? String(err.message) : 'Falha de comunicação com a ASF';
       var asfDiagnostic = (err && err.asfDiagnostic) ? err.asfDiagnostic : null;
       console.warn('[ASF] Falha (' + matLimpa + '):', diagnostico, asfDiagnostic || '');
+      registarEventoSeguroV2('vehicle_insurance_error', queryId, asfDiagnostic, diagnostico);
       mostrarSeguroErro(diagnostico, matDisplay, 'Diagnóstico ASF registado automaticamente.', queryId, asfDiagnostic);
     }
   }
@@ -1971,6 +1986,7 @@ function submitConjunto(event) {
     if (!matLimpa) return;
 
     var queryId = window.__VERIX_CURRENT_QUERY_ID || null;
+    registarEventoSeguroV2('vehicle_insurance_pending', queryId, null);
 
     ASF_FILA_PENDENTES = (ASF_FILA_PENDENTES || 0) + 1;
     ASF_EM_CURSO = true;
@@ -1992,7 +2008,10 @@ function submitConjunto(event) {
       ASF_FILA_PENDENTES = Math.max(0, (ASF_FILA_PENDENTES || 1) - 1);
       ASF_EM_CURSO = ASF_FILA_PENDENTES > 0;
       console.error('[ASF] fila:', e);
-      mostrarSeguroErro((e && e.message) || 'Falha na consulta ASF', matDisplay, '', queryId, (e && e.asfDiagnostic) || null);
+      var filaMensagem = (e && e.message) || 'Falha na consulta ASF';
+      var filaDiag = (e && e.asfDiagnostic) || null;
+      registarEventoSeguroV2('vehicle_insurance_error', queryId, filaDiag, filaMensagem);
+      mostrarSeguroErro(filaMensagem, matDisplay, '', queryId, filaDiag);
     });
 
     return ASF_FILA;
@@ -17564,23 +17583,6 @@ html body .leg-card-new .copy-all-new{
       }
     });
 
-    wrap('renderSeguroEncontrado', function (_n, _mat, queryId, asfDiagnostic) {
-      push('vehicle_insurance_yes', 'consulta', { queryId: queryId || window.__VERIX_CURRENT_QUERY_ID || null, asfDiagnostic: asfDiagnostic || null });
-    });
-
-    wrap('renderSeguroNaoEncontrado', function (_mat, queryId, asfDiagnostic) {
-      push('vehicle_insurance_no', 'consulta', { queryId: queryId || window.__VERIX_CURRENT_QUERY_ID || null, asfDiagnostic: asfDiagnostic || null });
-    });
-
-    wrap('mostrarSeguroErro', function (_msg, _mat, _diag, queryId, asfDiagnostic) {
-      push('vehicle_insurance_error', 'consulta', { queryId: queryId || window.__VERIX_CURRENT_QUERY_ID || null, asfDiagnostic: asfDiagnostic || null, asfUserMessage: _msg || null });
-    });
-
-    wrap('consultarSeguroASF', function (matricula) {
-      push('vehicle_insurance_pending', 'consulta', {
-        queryId: window.__VERIX_CURRENT_QUERY_ID || null
-      });
-    });
   }
 
   function bindDom() {
