@@ -17334,6 +17334,9 @@ html body .leg-card-new .copy-all-new{
 
   var ENDPOINT = 'https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/telemetry-v2';
   var APP_VERSION = '1.4';
+  // Identificador técnico interno do build. A versão do produto mantém-se 1.4.
+  // Permite distinguir builds diferentes sem expor uma nova versão ao utilizador.
+  var BUILD_ID = '2026-10-02-r1';
   var INSTALL_KEY = 'VERIX_T2_INSTALL_ID';
   var SESSION_KEY = 'VERIX_T2_SESSION_ID';
   var TAB_KEY = 'VERIX_T2_TAB_ID';
@@ -17637,7 +17640,7 @@ html body .leg-card-new .copy-all-new{
       event: String(event),
       module: module ? String(module).slice(0, 50) : null,
       occurredAt: new Date().toISOString(),
-      metadata: cleanMetadata(meta)
+      metadata: cleanMetadata(Object.assign({}, meta || {}, { build_id: BUILD_ID }))
     });
 
     saveQueue();
