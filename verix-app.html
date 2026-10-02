@@ -1830,6 +1830,13 @@ function submitConjunto(event) {
           return e && e.message ? String(e.message).trim().slice(0, 240) : null;
         }).filter(Boolean).slice(0, 3);
 
+        // Alguns ambientes/proxies podem devolver GraphQL errors sem message/codes.
+        // Mantemos a classificação objetiva para o diagnóstico mesmo nesse caso.
+        diag.asfResponseClass = diag.asfResponseClass || 'graphql_error';
+        diag.asfParsePath = diag.asfParsePath || 'graphql_error';
+        diag.asfGraphqlErrorCount = Number(diag.asfGraphqlErrorCount || json.errors.length || 1);
+        diag.asfMessage = diag.asfMessage || diag.asfGraphqlMessages[0] || 'Erro GraphQL ASF (HTTP 200).';
+
         var gqlText = diag.asfGraphqlMessages.join(' | ').toLowerCase();
         if (gqlText.indexOf('serviço indisponível') >= 0 || gqlText.indexOf('servico indisponivel') >= 0) {
           diag.asfErrorType = 'graphql_service_unavailable';
