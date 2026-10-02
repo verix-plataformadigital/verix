@@ -1965,7 +1965,7 @@ function submitConjunto(event) {
       ASF_FILA_PENDENTES = Math.max(0, (ASF_FILA_PENDENTES || 1) - 1);
       ASF_EM_CURSO = ASF_FILA_PENDENTES > 0;
       console.error('[ASF] fila:', e);
-      mostrarSeguroErro((e && e.message) || 'Falha na consulta ASF', matDisplay, '', queryId);
+      mostrarSeguroErro((e && e.message) || 'Falha na consulta ASF', matDisplay, '', queryId, (e && e.asfDiagnostic) || null);
     });
 
     return ASF_FILA;
