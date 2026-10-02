@@ -7323,6 +7323,99 @@ html body .verix-asf-notice-continue{min-width:190px!important;height:40px!impor
   },true);
 })();
 </script>
+<style id="verix-notice-complete-polish-v2-2026-10-02">
+/* Aviso final — informação completa sem excesso de texto */
+html body .verix-asf-notice-body{
+  grid-template-columns:minmax(0,1.55fr) minmax(270px,.78fr)!important;
+  gap:18px!important;
+  padding:24px 28px 12px!important;
+}
+html body .verix-notice-section{
+  padding:18px 19px!important;
+}
+html body .verix-asf-notice-body p{
+  font-size:11.5px!important;
+  line-height:1.55!important;
+  margin:0 0 11px!important;
+}
+html body .verix-asf-notice-lead{
+  font-size:13px!important;
+  line-height:1.48!important;
+  margin-bottom:11px!important;
+}
+html body .verix-notice-section-label{
+  margin-bottom:12px!important;
+}
+html body .verix-asf-notice-request{
+  margin-top:12px!important;
+  padding:11px 12px!important;
+  border-radius:8px!important;
+}
+html body .verix-asf-notice-request span{
+  font-size:10.5px!important;
+  line-height:1.48!important;
+}
+html body .verix-asf-notice-request strong{
+  font-size:8.5px!important;
+  letter-spacing:.95px!important;
+}
+html body .verix-notice-copy-line{
+  margin-top:12px!important;
+  padding:9px 11px!important;
+  border-left:3px solid #5a9aa6!important;
+  background:rgba(101,215,232,.035)!important;
+  color:#c5d3d8!important;
+  font-size:10.5px!important;
+  line-height:1.48!important;
+}
+html body .verix-notice-request-simple{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:5px!important;
+  margin-top:10px!important;
+  padding:10px 12px!important;
+  border:1px solid rgba(101,215,232,.13)!important;
+  border-left:4px solid #3b9cad!important;
+  border-radius:8px!important;
+  background:rgba(101,215,232,.035)!important;
+}
+html body .verix-notice-request-simple strong{
+  color:#a9e5ed!important;
+  font:950 8.5px/1.2 Arial,sans-serif!important;
+  letter-spacing:.95px!important;
+  text-transform:uppercase!important;
+}
+html body .verix-notice-request-simple span{
+  color:#cad7db!important;
+  font-size:10.5px!important;
+  line-height:1.45!important;
+}
+html body .verix-notice-thanks{
+  justify-content:center!important;
+  padding:20px 18px!important;
+}
+html body .verix-thanks-number{
+  margin-top:15px!important;
+  font-size:35px!important;
+}
+html body .verix-thanks-label{
+  font-size:8.5px!important;
+}
+html body .verix-notice-thanks p{
+  margin-top:14px!important;
+  font-size:10.5px!important;
+  line-height:1.55!important;
+}
+html body .verix-asf-notice-footer{
+  padding:16px 28px 23px!important;
+}
+@media(max-width:760px){
+  html body .verix-asf-notice-body{
+    grid-template-columns:1fr!important;
+    padding:18px!important;
+  }
+}
+</style>
 </head><body>
 
 <div id="verixAsfNoticeOverlay" class="verix-asf-notice-overlay" aria-hidden="true">
@@ -7334,25 +7427,57 @@ html body .verix-asf-notice-continue{min-width:190px!important;height:40px!impor
       </div>
       <div class="verix-asf-notice-badge">VÉRIX</div>
     </header>
+
     <main class="verix-asf-notice-body">
       <section class="verix-notice-section verix-notice-warning">
         <div class="verix-notice-section-label">AVISO</div>
-        <p class="verix-asf-notice-lead">Foram identificadas falhas nas consultas automáticas de seguros através do canal ASF.</p>
-        <p>Em alguns casos, as ocorrências poderão estar relacionadas com a comunicação através da rede RNSI. A equipa do VÉRIX está a acompanhar a situação e a trabalhar na sua correção.</p>
+
+        <p class="verix-asf-notice-lead">
+          Foram identificadas falhas nas consultas automáticas de seguros através do canal ASF.
+        </p>
+
+        <p>
+          Em alguns casos, estas ocorrências poderão estar relacionadas com a comunicação através da rede RNSI.
+          A equipa do VÉRIX está a acompanhar a situação e a trabalhar na correção das falhas identificadas.
+        </p>
+
         <div class="verix-asf-notice-request verix-notice-force">
           <strong>Tentativas de sobrecarga</strong>
-          <span>Foram também identificados comportamentos compatíveis com tentativas automatizadas de sobrecarga <strong>(Brute Force)</strong>, através de volumes anormais de pedidos, suscetíveis de afetar a disponibilidade do serviço.</span>
+          <span>
+            Foram identificados comportamentos compatíveis com <b>tentativas automatizadas de sobrecarga (Brute Force)</b>,
+            através de um volume anormal de pedidos, suscetível de afetar a disponibilidade do serviço e a utilização normal do VÉRIX.
+          </span>
         </div>
-        <p class="verix-notice-request-final"><strong>Solicitamos uma utilização responsável</strong> da plataforma e que não sejam efetuadas novas cópias, integrações ou tentativas de sobrecarga.</p>
+
+        <p class="verix-notice-copy-line">
+          Foi igualmente identificada a reprodução do mecanismo de consulta ASF desenvolvido para o VÉRIX em outros ficheiros HTML.
+        </p>
+
+        <div class="verix-notice-request-simple">
+          <strong>Pedimos uma utilização responsável</strong>
+          <span>
+            Não sobrecarregue deliberadamente a plataforma e não reproduza nem integre o mecanismo de consulta fora do VÉRIX.
+          </span>
+        </div>
       </section>
+
       <section class="verix-notice-section verix-notice-thanks">
         <div class="verix-notice-section-label">AGRADECIMENTO</div>
+
         <div class="verix-thanks-number">+150.000</div>
-        <div class="verix-thanks-label">consultas realizadas em duas semanas</div>
-        <p>Agradecemos a todos os utilizadores pela confiança e pela utilização responsável do VÉRIX.</p>
-        <p>O trabalho de manutenção e melhoria da plataforma continuará.</p>
+        <div class="verix-thanks-label">consultas realizadas em apenas duas semanas</div>
+
+        <p>
+          O VÉRIX foi criado para facilitar o acesso à informação e apoiar o serviço operacional.
+          Agradecemos a todos os utilizadores pela confiança e pela utilização responsável da plataforma.
+        </p>
+
+        <p>
+          O trabalho de manutenção, correção e melhoria do VÉRIX continuará a ser desenvolvido de forma contínua.
+        </p>
       </section>
     </main>
+
     <footer class="verix-asf-notice-footer">
       <button type="button" class="verix-asf-notice-continue" onclick="fecharAvisoASFInicial()">COMPREENDIDO&nbsp;&nbsp;→</button>
     </footer>
