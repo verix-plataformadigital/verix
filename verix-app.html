@@ -55,7 +55,59 @@
   function blockUnauthorized(){
     try {
       document.open();
-      document.write('<!doctype html><html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VÉRIX — Acesso não autorizado</title><style>html,body{margin:0;min-height:100%;background:#03080c;color:#eef4f5;font-family:Arial,Helvetica,sans-serif}body{display:grid;place-items:center;padding:24px;box-sizing:border-box}.box{max-width:620px;padding:34px 36px;border:1px solid #5b7078;border-radius:18px;background:linear-gradient(180deg,#11212a,#071117);box-shadow:0 24px 70px rgba(0,0,0,.55);text-align:center}.tag{display:inline-block;margin-bottom:14px;padding:6px 10px;border:1px solid #c8102e;border-radius:999px;color:#ff7c91;font-size:11px;font-weight:800;letter-spacing:1.2px}.title{font-size:28px;font-weight:900;margin-bottom:12px}.text{color:#b9c7cc;font-size:15px;line-height:1.6}</style></head><body><div class="box"><div class="tag">VERIX // PROTEÇÃO</div><div class="title">Publicação não autorizada</div><div class="text">Esta versão do VÉRIX não está autorizada a funcionar neste endereço.</div></div></body></html>');
+      document.write('<!doctype html><html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VÉRIX — Acesso não autorizado</title><style>html,body{margin:0;min-height:100%;background:#03080c;color:#eef4f5;font-family:Arial,Helvetica,sans-serif}body{display:grid;place-items:center;padding:24px;box-sizing:border-box}.box{max-width:620px;padding:34px 36px;border:1px solid #5b7078;border-radius:18px;background:linear-gradient(180deg,#11212a,#071117);box-shadow:0 24px 70px rgba(0,0,0,.55);text-align:center}.tag{display:inline-block;margin-bottom:14px;padding:6px 10px;border:1px solid #c8102e;border-radius:999px;color:#ff7c91;font-size:11px;font-weight:800;letter-spacing:1.2px}.title{font-size:28px;font-weight:900;margin-bottom:12px}.text{color:#b9c7cc;font-size:15px;line-height:1.6}</style><style id="verix-layout-hardening-2026-10-02">
+/* VÉRIX layout hardening: one authoritative search layout. */
+.command > .searchbar{
+  width:460px !important;
+  min-width:460px !important;
+  max-width:460px !important;
+  height:62px !important;
+  min-height:62px !important;
+  box-sizing:border-box !important;
+  padding:8px 10px !important;
+}
+.command > .searchbar > form{
+  width:100% !important;
+  height:100% !important;
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr) 128px !important;
+  gap:8px !important;
+  align-items:center !important;
+}
+.command > .searchbar .field{
+  min-width:0 !important;
+  width:auto !important;
+}
+.command > .searchbar .field input{
+  width:100% !important;
+  min-width:0 !important;
+  box-sizing:border-box !important;
+}
+.command > .searchbar .consult{
+  width:128px !important;
+  min-width:128px !important;
+  max-width:128px !important;
+  height:42px !important;
+  box-sizing:border-box !important;
+  white-space:nowrap !important;
+}
+@media (max-width:900px){
+  .command > .searchbar{
+    width:min(460px,calc(100vw - 120px)) !important;
+    min-width:0 !important;
+    max-width:460px !important;
+  }
+  .command > .searchbar > form{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr) 118px !important;
+  }
+  .command > .searchbar .consult{width:118px !important;min-width:118px !important;max-width:118px !important}
+}
+@media (max-width:620px){
+  .command > .searchbar{width:calc(100vw - 32px) !important;max-width:none !important}
+  .command > .searchbar > form{grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important}
+  .command > .searchbar .consult{grid-column:1/-1;width:100% !important;max-width:none !important}
+}
+</style></head><body><div class="box"><div class="tag">VERIX // PROTEÇÃO</div><div class="title">Publicação não autorizada</div><div class="text">Esta versão do VÉRIX não está autorizada a funcionar neste endereço.</div></div></body></html>');
       document.close();
     } catch (_) {
       try { document.documentElement.innerHTML = '<body style="background:#03080c;color:#eef4f5;font-family:Arial;text-align:center;padding:40px">Publicação não autorizada.</body>'; } catch (__) {}
@@ -9364,7 +9416,7 @@ body.theme-light .settings-diagnostic{background:#f5f8f9;color:#5b6e76;border-co
 (function(){
  'use strict';
  const KEY='VÉRIX_PREFS_V1';
- const defaults={theme:'dark',density:'compact',scale:'auto',hud:true,transitions:true,history:true,cinRadarCollapsed:true};
+ const defaults={theme:'dark',density:'compact',scale:'100',hud:true,transitions:true,history:true,cinRadarCollapsed:true};
  const safeLoad=()=>{try{return Object.assign({},defaults,JSON.parse(localStorage.getItem(KEY)||'{}'));}catch(_){return {...defaults};}};
  const safeSave=p=>{try{localStorage.setItem(KEY,JSON.stringify(p));}catch(_){} };
  const prefs=safeLoad();
@@ -9385,7 +9437,7 @@ body.theme-light .settings-diagnostic{background:#f5f8f9;color:#5b6e76;border-co
  document.body.classList.toggle('ui-comfortable',prefs.density==='comfortable');
  ['80','90','100','110','120'].forEach(function(v){document.body.classList.toggle('ui-scale-'+v,prefs.scale===v);});
  document.body.classList.toggle('ui-scale-auto',prefs.scale==='auto');
- applyAutoScale();
+ if(prefs.scale==='auto') document.body.style.zoom='';
  document.body.classList.toggle('no-hud',!prefs.hud);
  document.body.classList.toggle('no-transitions',!prefs.transitions);
  document.body.classList.toggle('history-disabled',!prefs.history);
@@ -9411,7 +9463,7 @@ body.theme-light .settings-diagnostic{background:#f5f8f9;color:#5b6e76;border-co
  }
  };
  apply();
- window.addEventListener('resize',function(){ if(prefs.scale==='auto') applyAutoScale(); });
+ window.addEventListener('resize',function(){ if(prefs.scale==='auto') { document.body.style.zoom=''; } });
  document.addEventListener('click',function(e){
  const card=e.target.closest?.('.module-card');
  if(card&&document.body.classList.contains('ui-transitions')) card.classList.add('module-card-pulse');
@@ -17069,7 +17121,7 @@ html body .leg-card-new .copy-all-new{
   var APP_VERSION = '1.4';
   // Identificador técnico interno do build. A versão do produto mantém-se 1.4.
   // Permite distinguir builds diferentes sem expor uma nova versão ao utilizador.
-  var BUILD_ID = '2026-10-02-r1';
+  var BUILD_ID = '2026-10-02-r2';
   var INSTALL_KEY = 'VERIX_T2_INSTALL_ID';
   var SESSION_KEY = 'VERIX_T2_SESSION_ID';
   var TAB_KEY = 'VERIX_T2_TAB_ID';
@@ -17373,7 +17425,8 @@ html body .leg-card-new .copy-all-new{
       event: String(event),
       module: module ? String(module).slice(0, 50) : null,
       occurredAt: new Date().toISOString(),
-      metadata: cleanMetadata(Object.assign({}, meta || {}, { build_id: BUILD_ID }))
+      metadata: cleanMetadata(Object.assign({}, meta || {}, { build_id: BUILD_ID })),
+      buildId: BUILD_ID
     });
 
     saveQueue();
