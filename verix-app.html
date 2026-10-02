@@ -1224,17 +1224,15 @@ function submitConjunto(event) {
   const ASF_JANELA_SEG = 60;
   const ASF_LIMITE_JANELA = 5;
   const ASF_RATE_STORAGE_KEY = 'VERIX_ASF_RATE_STATE_V1';
-  /* SEM retries automáticos. SEM cache de resultados. 1 tentativa = 1 pedido físico. */
 
+  /* CAMINHO ASF DELIBERADAMENTE SIMPLES:
+     1 consulta = 1 pedido físico GET.
+     Sem POST→GET, sem fila de pedidos e sem retries automáticos.
+     A telemetria observa o pedido; não cria pedidos adicionais. */
 
   var asfRequestTimes = [];
-  var ASF_ULTIMO_PEDIDO_T = 0;
-  var ASF_FILA = Promise.resolve();
   var ASF_EM_CURSO = false;
-  var ASF_ULTIMA_UI_SEQUENCIA = 0;
   var ASF_SERVER_COOLDOWN_UNTIL = 0;
-  var ASF_FILA_PENDENTES = 0;
-  var ASF_DIAGNOSTICO = [];
   var ASF_PENDING_TIMER = null;
 
   function agoraASF() { return Date.now(); }
@@ -1395,7 +1393,7 @@ function submitConjunto(event) {
 
   // ---- HTTP ASF: POST primeiro, GET como fallback de transporte/método ----
   // Cada tentativa HTTP física reserva um slot VÉRIX (8 s / 5 por 60 s).
-  async function reservarSlotFisicoASF(matDisplay, metodo) {
+  async function reservarSlotFisicoASF(matDisplay) {
     var atraso = calcularAtrasoCadenciaASF();
     while (atraso > 0) {
       if (matDisplay) {
@@ -1406,7 +1404,6 @@ function submitConjunto(event) {
     }
 
     var agora = agoraASF();
-    ASF_ULTIMO_PEDIDO_T = agora;
     asfRequestTimes.push(agora);
     guardarEstadoRateASF();
     atualizarContadorVisualASF();
@@ -1497,26 +1494,28 @@ function submitConjunto(event) {
     }
   }
 
+  // ---- HTTP ASF: um único GET por consulta ----
+  // A query GraphQL já está no parâmetro ?query= da URL. Mantemos o transporte
+  // o mais simples possível e nunca repetimos automaticamente o pedido físico.
   function efetuarPedidoHttpASF_SyncNative(url) {
     var xhr = new ActiveXObject("WinHttp.WinHttpRequest.5.1");
-    xhr.open("POST", url, false);
+    xhr.open("GET", url, false);
     xhr.setTimeouts(10000, 10000, ASF_TIMEOUT_MS, ASF_TIMEOUT_MS);
     xhr.setRequestHeader("Accept", "application/json, text/plain, */*");
     xhr.send(null);
-    return { status: xhr.Status, text: xhr.ResponseText };
+    return { status: xhr.Status, text: xhr.ResponseText, statusText: xhr.StatusText || null };
   }
 
-  async function fetchASF(metodo, url, matDisplay, diag) {
-    var queueWaitStartedAt = agoraMsASFDiag();
-    await reservarSlotFisicoASF(matDisplay, metodo);
-    var queueWaitMs = Math.max(0, agoraMsASFDiag() - queueWaitStartedAt);
+  async function efetuarPedidoHttpASF(url, matDisplay, queryId, queryStartedAtMs, queuePosition) {
+    var diag = criarDiagASF(queryId, matDisplay, queryStartedAtMs, queuePosition);
+    var queueStartedAt = agoraMsASFDiag();
 
-    var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-    var timeoutId = null;
-    var timeoutForcado = false;
+    await reservarSlotFisicoASF(matDisplay);
+    diag.asfQueueWaitMs = Math.max(0, agoraMsASFDiag() - queueStartedAt);
+
     var tentativa = {
-      method: metodo,
-      transport: 'Fetch',
+      method: 'GET',
+      transport: (typeof ActiveXObject !== 'undefined') ? 'WinHTTP' : 'Fetch',
       startedAt: agoraMsASFDiag(),
       status: null,
       durationMs: null,
@@ -1528,115 +1527,71 @@ function submitConjunto(event) {
       statusText: null
     };
 
-    timeoutId = setTimeout(function () {
-      timeoutForcado = true;
-      try { if (controller) controller.abort(); } catch (_) {}
-    }, ASF_TIMEOUT_MS);
-
     try {
-      diag.asfQueueWaitMs = (Number(diag.asfQueueWaitMs) || 0) + queueWaitMs;
-      var options = {
-        method: metodo,
-        cache: 'no-store',
-        credentials: 'omit',
-        mode: 'cors',
-        headers: { 'Accept': 'application/json, text/plain, */*' }
-      };
-      if (controller) options.signal = controller.signal;
-      if (metodo === 'POST') options.body = null;
+      var status = null;
+      var body = '';
+      var contentType = null;
+      var statusText = null;
 
-      var res = await fetch(url, options);
-      var body = await res.text();
-      tentativa.status = res.status;
-      tentativa.statusText = res.statusText || null;
-      tentativa.responseContentType = (res.headers && res.headers.get) ? (res.headers.get('content-type') || null) : null;
-      tentativa.responseBytes = body ? String(body).length : 0;
-      tentativa.responseHash = fingerprintASF(body);
-      diag.asfResponseHash = tentativa.responseHash;
-      if (res.status >= 400) tentativa.errorType = 'http_' + res.status;
-      finalizarTentativaDiagASF(diag, tentativa);
-      return { status: res.status, text: body, __asfDiagnostic: diag };
-    } catch (e) {
-      tentativa.errorType = classificarErroASF(e, timeoutForcado);
-      tentativa.message = textoErroASF(e);
-      finalizarTentativaDiagASF(diag, tentativa);
-      throw erroComDiagASF(tentativa.message || 'Falha de transporte ASF', diag);
-    } finally {
-      clearTimeout(timeoutId);
-    }
-  }
+      if (typeof ActiveXObject !== 'undefined') {
+        var native = efetuarPedidoHttpASF_SyncNative(url);
+        status = native && native.status;
+        body = native && native.text || '';
+        statusText = native && native.statusText || null;
+      } else {
+        var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+        var timeoutId = null;
+        var timeoutForcado = false;
 
-  function deveTentarGETASF(status) {
-    var s = Number(status);
-    // 403/405 podem significar que o endpoint recusou o método POST;
-    // nestes casos repetimos a consulta pelo GET, como no Consulta Veiculo.
-    // 429 fica expressamente fora: é rate-limit do servidor e deve ser respeitado.
-    return s === 403 || s === 405;
-  }
+        try {
+          timeoutId = setTimeout(function () {
+            timeoutForcado = true;
+            try { if (controller) controller.abort(); } catch (_) {}
+          }, ASF_TIMEOUT_MS);
 
-  async function efetuarPedidoHttpASF(url, matDisplay, queryId, queryStartedAtMs, queuePosition) {
-    var diag = criarDiagASF(queryId, matDisplay, queryStartedAtMs, queuePosition);
+          var options = {
+            method: 'GET',
+            cache: 'no-store',
+            credentials: 'omit',
+            mode: 'cors',
+            headers: { 'Accept': 'application/json, text/plain, */*' }
+          };
+          if (controller) options.signal = controller.signal;
 
-    // Em HTA/ambientes Windows onde ActiveX está disponível, manter exatamente
-    // o transporte nativo já existente. A única alteração é a recolha de diagnóstico.
-    if (typeof ActiveXObject !== 'undefined') {
-      try {
-        var nativeQueueWaitStartedAt = agoraMsASFDiag();
-        await reservarSlotFisicoASF(matDisplay, 'POST');
-        diag.asfQueueWaitMs = (Number(diag.asfQueueWaitMs) || 0) + Math.max(0, agoraMsASFDiag() - nativeQueueWaitStartedAt);
-        var inicioNativePOST = agoraMsASFDiag();
-        var tentativaNative = {
-          method: 'POST',
-          transport: 'WinHTTP',
-          startedAt: inicioNativePOST,
-          status: null,
-          durationMs: null,
-          errorType: null,
-          message: null,
-          responseBytes: null
-        };
-        var nativePost = efetuarPedidoHttpASF_SyncNative(url);
-        tentativaNative.status = nativePost && nativePost.status;
-        tentativaNative.responseBytes = nativePost && nativePost.text ? String(nativePost.text).length : 0;
-        tentativaNative.responseHash = nativePost && nativePost.text ? fingerprintASF(nativePost.text) : null;
-        if (deveTentarGETASF(nativePost && nativePost.status)) tentativaNative.errorType = 'http_' + nativePost.status;
-        finalizarTentativaDiagASF(diag, tentativaNative);
-
-        if (deveTentarGETASF(nativePost && nativePost.status)) {
-          console.warn('[ASF] WinHTTP POST devolveu HTTP ' + nativePost.status + '; a tentar GET de fallback após nova cadência.');
-          return await fetchASF('GET', url, matDisplay, diag);
+          var res = await fetch(url, options);
+          status = res.status;
+          statusText = res.statusText || null;
+          contentType = (res.headers && res.headers.get) ? (res.headers.get('content-type') || null) : null;
+          body = await res.text();
+        } catch (e) {
+          tentativa.errorType = classificarErroASF(e, timeoutForcado);
+          tentativa.message = textoErroASF(e);
+          throw e;
+        } finally {
+          if (timeoutId) clearTimeout(timeoutId);
         }
-        nativePost.__asfDiagnostic = diag;
-        return nativePost;
-      } catch (e) {
-        var tentativaNativeErro = {
-          method: 'POST',
-          transport: 'WinHTTP',
-          startedAt: (typeof inicioNativePOST !== 'undefined' ? inicioNativePOST : agoraMsASFDiag()),
-          status: null,
-          durationMs: null,
-          errorType: classificarErroASF(e, false),
-          message: textoErroASF(e),
-          responseBytes: null
-        };
-        finalizarTentativaDiagASF(diag, tentativaNativeErro);
-        // Erros de rede/timeout não devem gerar uma segunda consulta.
-        // O GET só é permitido quando recebemos explicitamente 403/405.
-        throw erroComDiagASF(tentativaNativeErro.message || 'Falha ASF por transporte', diag);
       }
-    }
 
-    try {
-      var post = await fetchASF('POST', url, matDisplay, diag);
-      if (deveTentarGETASF(post && post.status)) {
-        console.warn('[ASF] POST devolveu HTTP ' + post.status + '; a tentar GET de fallback após nova cadência.');
-        return await fetchASF('GET', url, matDisplay, diag);
-      }
-      return post;
+      tentativa.status = status == null ? null : Number(status);
+      tentativa.statusText = statusText || null;
+      tentativa.responseContentType = contentType || null;
+      tentativa.responseBytes = body ? String(body).length : 0;
+      tentativa.responseHash = body ? fingerprintASF(body) : null;
+      if (status >= 400) tentativa.errorType = 'http_' + status;
+
+      finalizarTentativaDiagASF(diag, tentativa);
+      return {
+        status: status,
+        statusText: statusText,
+        text: body || '',
+        __asfDiagnostic: diag
+      };
     } catch (e) {
-      // O fetchASF já registou no diagnóstico a falha física.
-      // Não repetir por GET em timeout/rede: isso criaria carga extra e
-      // poderia agravar um eventual rate-limit da ASF.
+      if (!tentativa.durationMs) {
+        tentativa.message = tentativa.message || textoErroASF(e);
+        if (!tentativa.errorType) tentativa.errorType = classificarErroASF(e, false);
+        finalizarTentativaDiagASF(diag, tentativa);
+      }
       throw erroComDiagASF((e && e.message) || 'Falha ASF por transporte', diag);
     }
   }
@@ -2065,8 +2020,8 @@ function submitConjunto(event) {
   }
 
   // ---- Orquestração ASF ----
-  // O controlo de cadência pertence agora ao nível do pedido físico, para que
-  // POST e eventual GET de fallback contem e respeitem os mesmos limites.
+  // Uma consulta = uma tentativa HTTP física. A cadência é aplicada antes
+  // dessa única tentativa e a telemetria é apenas observacional.
   async function processarConsultaSeguroComCadencia(matLimpa, matDisplay, queryId, queryStartedAtMs, queuePosition) {
     mostrarSeguroLoading(matDisplay, 'A VERIFICAR...');
 
@@ -2102,48 +2057,32 @@ function submitConjunto(event) {
     var matDisplay = String(matricula || '').trim().toUpperCase();
     if (!matDisplay) return;
 
-    // Pedido ASF: matrícula sem hífens/separadores. Display mantém o formato.
     var matLimpa = sanitizarMatriculaASF(matDisplay);
     if (!matLimpa) return;
 
-    var queryId = window.__VERIX_CURRENT_QUERY_ID || null;
-    var queryStartedAtMs = agoraMsASFDiag();
-    var queuePosition = (ASF_FILA_PENDENTES || 0) + 1;
-    registarEventoSeguroV2('vehicle_insurance_pending', queryId, null, null, {
-      matricula: matDisplay,
-      matriculaNormalizada: matLimpa
-    });
-
-    ASF_FILA_PENDENTES = (ASF_FILA_PENDENTES || 0) + 1;
-    ASF_EM_CURSO = true;
-    if (ASF_FILA_PENDENTES > 1) {
-      mostrarSeguroLoading(matDisplay, 'Na fila ASF…');
-    } else {
-      mostrarSeguroLoading(matDisplay, 'A VERIFICAR...');
+    /* Nunca acumular pedidos ASF. Se já existe um pedido físico em curso,
+       o segundo disparo não entra numa fila nem gera outra tentativa. */
+    if (ASF_EM_CURSO) {
+      try { mostrarToast('Já existe uma consulta ASF em curso.'); } catch (_) {}
+      return;
     }
 
-    ASF_FILA = ASF_FILA.then(async function () {
-      try {
-        await processarConsultaSeguroComCadencia(matLimpa, matDisplay, queryId, queryStartedAtMs, queuePosition);
-      } finally {
-        ASF_FILA_PENDENTES = Math.max(0, (ASF_FILA_PENDENTES || 1) - 1);
-        ASF_EM_CURSO = ASF_FILA_PENDENTES > 0;
-        try { atualizarContadorVisualASF(); } catch (_) {}
-      }
-    }).catch(function (e) {
-      ASF_FILA_PENDENTES = Math.max(0, (ASF_FILA_PENDENTES || 1) - 1);
-      ASF_EM_CURSO = ASF_FILA_PENDENTES > 0;
-      console.error('[ASF] fila:', e);
-      var filaMensagem = (e && e.message) || 'Falha na consulta ASF';
-      var filaDiag = (e && e.asfDiagnostic) || criarDiagASF(queryId, matDisplay);
-      if (filaDiag && !filaDiag.matricula) filaDiag.matricula = matDisplay;
-      var filaMensagemUtilizador = mensagemErroASFParaUtilizador(filaDiag, filaMensagem);
-      window.__VERIX_LAST_FAILED_QUERY_ID = queryId || null;
-      registarEventoSeguroV2('vehicle_insurance_error', queryId, filaDiag, filaMensagemUtilizador);
-      mostrarSeguroErro(filaMensagemUtilizador, matDisplay, 'Diagnóstico técnico registado automaticamente.', queryId, filaDiag);
+    var queryId = window.__VERIX_CURRENT_QUERY_ID || null;
+    var queryStartedAtMs = agoraMsASFDiag();
+
+    ASF_EM_CURSO = true;
+    registarEventoSeguroV2('vehicle_insurance_pending', queryId, null, null, {
+      matricula: matDisplay,
+      matriculaNormalizada: matLimpa,
+      requestCount: 1
     });
 
-    return ASF_FILA;
+    try {
+      await processarConsultaSeguroComCadencia(matLimpa, matDisplay, queryId, queryStartedAtMs, 1);
+    } finally {
+      ASF_EM_CURSO = false;
+      try { atualizarContadorVisualASF(); } catch (_) {}
+    }
   }
 
 
