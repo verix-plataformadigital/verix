@@ -218,7 +218,7 @@ td{font-weight:850;font-size:13px}
   <section class="hero">
     <div class="kicker">OPS · TELEMETRIA AGREGADA</div>
     <h1>PAINEL DE ADMINISTRAÇÃO</h1>
-    <p>Utilização operacional · sem matrículas, nomes ou conteúdo operacional</p>
+    <p>Utilização operacional · matrícula apenas no diagnóstico ASF de resultados finais</p>
     <div class="status-line" id="statusLine">A iniciar...</div>
     <div class="status-meta"><span id="backendTime">BACKEND</span><span id="nextRefresh">ATUALIZAÇÃO AUTOMÁTICA · 30 S</span></div>
   </section>
@@ -296,6 +296,10 @@ td{font-weight:850;font-size:13px}
       <h3>ÚLTIMAS FALHAS ASF</h3>
       <div id="asfRecentErrors" class="diag-scroll"></div>
     </div>
+    <div class="diag-panel" style="margin-top:14px">
+      <h3>ÚLTIMOS “SEM SEGURO”</h3>
+      <div id="asfRecentUninsured" class="diag-scroll"></div>
+    </div>
   </section>
 
   <section class="section reset-panel">
@@ -331,7 +335,7 @@ td{font-weight:850;font-size:13px}
 
 <script>
 const API_ORIGIN = 'https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/';
-const API_CACHE_BUSTER = '18.1';
+const API_CACHE_BUSTER = '18.2';
 const AUTH_API = API_ORIGIN + 'admin-auth-v2?v=' + API_CACHE_BUSTER;
 const STATS_API = API_ORIGIN + 'stats-v2?v=' + API_CACHE_BUSTER;
 const HOURLY_API = API_ORIGIN + 'hourly-history-v2';
@@ -624,6 +628,7 @@ function renderDiagnostics(d){
   const types=Array.isArray(d?.error_types_24h)?d.error_types_24h:[];
   const clients=Array.isArray(d?.client_health_24h)?d.client_health_24h:[];
   const recent=Array.isArray(d?.recent_errors_24h)?d.recent_errors_24h:[];
+  const uninsured=Array.isArray(d?.recent_uninsured_24h)?d.recent_uninsured_24h:[];
   const typeEl=$('asfErrorTypes');
   const clientEl=$('asfClientHealth');
   const recentEl=$('asfRecentErrors');
@@ -641,9 +646,33 @@ function renderDiagnostics(d){
   }
   if(recentEl){
     if(!recent.length) recentEl.innerHTML='<div class="empty">Sem falhas ASF nas últimas 24h.</div>';
-    else recentEl.innerHTML='<table class="diag-table"><thead><tr><th>HORA</th><th>ERRO</th><th>HTTP</th><th>DURAÇÃO</th><th>GQL</th><th>HASH</th><th>BROWSER</th><th>SISTEMA</th><th>REDE</th><th>MENSAGEM</th></tr></thead><tbody>'+recent.map(r=>
-      '<tr><td class="diag-muted">'+(r.occurred_at?new Date(r.occurred_at).toLocaleString('pt-PT'):'—')+'</td><td><span class="diag-pill">'+escapeHtml(r.error_type||'unknown')+'</span></td><td>'+escapeHtml(r.http_status||'—')+'</td><td>'+fmt(r.duration_ms)+' ms</td><td>'+escapeHtml(Array.isArray(r.graphql_codes)&&r.graphql_codes.length?r.graphql_codes.join(', '):(r.graphql_error_count!=null?r.graphql_error_count:'—'))+'</td><td class="diag-muted">'+escapeHtml(r.response_hash||'—')+'</td><td>'+escapeHtml(r.browser||'Unknown')+' '+escapeHtml(r.browser_version||'')+'</td><td>'+escapeHtml(r.os_platform||'Unknown')+' '+escapeHtml(r.os_version||'')+'</td><td>'+escapeHtml(r.effective_type||'Unknown')+(r.rtt_ms!=null?' / '+fmt(r.rtt_ms)+'ms':'')+'</td><td>'+escapeHtml(r.message||'—')+'</td></tr>'
-    ).join('')+'</tbody></table>';
+    else recentEl.innerHTML='<table class="diag-table"><thead><tr><th>HORA</th><th>MATRÍCULA</th><th>ERRO</th><th>HTTP</th><th>DURAÇÃO ASF</th><th>FILA</th><th>GQL</th><th>HASH</th><th>BROWSER</th><th>SISTEMA</th><th>REDE</th><th>MENSAGEM</th></tr></thead><tbody>'+recent.map(function(r){
+      return '<tr><td class="diag-muted">'+(r.occurred_at?new Date(r.occurred_at).toLocaleString('pt-PT'):'—')+
+      '</td><td class="'+(r.matricula?'bad':'diag-muted')+'">'+escapeHtml(r.matricula||'—')+
+      '</td><td><span class="diag-pill">'+escapeHtml(r.error_type||'unknown')+
+      '</span></td><td>'+escapeHtml(r.http_status||'—')+
+      '</td><td>'+fmt(r.duration_ms)+' ms</td><td>'+fmt(r.queue_wait_ms)+' ms</td><td>'+
+      escapeHtml(Array.isArray(r.graphql_codes)&&r.graphql_codes.length?r.graphql_codes.join(', '):(r.graphql_error_count!=null?r.graphql_error_count:'—'))+
+      '</td><td class="diag-muted">'+escapeHtml(r.response_hash||'—')+
+      '</td><td>'+escapeHtml(r.browser||'Unknown')+' '+escapeHtml(r.browser_version||'')+
+      '</td><td>'+escapeHtml(r.os_platform||'Unknown')+' '+escapeHtml(r.os_version||'')+
+      '</td><td>'+escapeHtml(r.effective_type||'Unknown')+(r.rtt_ms!=null?' / '+fmt(r.rtt_ms)+'ms':'')+
+      '</td><td>'+escapeHtml(r.message||'—')+'</td></tr>';
+    }).join('')+'</tbody></table>';
+  }
+  const uninsuredEl=$('asfRecentUninsured');
+  if(uninsuredEl){
+    if(!uninsured.length) uninsuredEl.innerHTML='<div class="empty">Sem resultados “sem seguro” nas últimas 24h.</div>';
+    else uninsuredEl.innerHTML='<table class="diag-table"><thead><tr><th>HORA</th><th>MATRÍCULA</th><th>HTTP</th><th>DURAÇÃO ASF</th><th>FILA</th><th>HASH</th><th>BROWSER</th><th>SISTEMA</th><th>REDE</th></tr></thead><tbody>'+uninsured.map(function(r){
+      return '<tr><td class="diag-muted">'+(r.occurred_at?new Date(r.occurred_at).toLocaleString('pt-PT'):'—')+
+      '</td><td class="'+(r.matricula?'red':'diag-muted')+'">'+escapeHtml(r.matricula||'—')+
+      '</td><td>'+escapeHtml(r.http_status||'—')+'</td><td>'+fmt(r.duration_ms)+' ms</td><td>'+
+      fmt(r.queue_wait_ms)+' ms</td><td class="diag-muted">'+escapeHtml(r.response_hash||'—')+
+      '</td><td>'+escapeHtml(r.browser||'Unknown')+' '+escapeHtml(r.browser_version||'')+
+      '</td><td>'+escapeHtml(r.os_platform||'Unknown')+' '+escapeHtml(r.os_version||'')+
+      '</td><td>'+escapeHtml(r.effective_type||'Unknown')+(r.rtt_ms!=null?' / '+fmt(r.rtt_ms)+'ms':'')+
+      '</td></tr>';
+    }).join('')+'</tbody></table>';
   }
 }
 
