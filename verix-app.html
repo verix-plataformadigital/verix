@@ -1039,7 +1039,11 @@ function submitConjunto(event) {
    window.__VERIX_CURRENT_QUERY_ID = 'q_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
  }
  if (window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.track === 'function') {
- window.VERIX_TELEMETRY.track('vehicle_lookup','consulta',{queryId:window.__VERIX_CURRENT_QUERY_ID});
+ window.VERIX_TELEMETRY.track('vehicle_lookup','consulta',{
+   queryId:window.__VERIX_CURRENT_QUERY_ID,
+   matricula:(valVeiculo || valReboque).trim().toUpperCase(),
+   matriculaNormalizada:sanitizarMatriculaASF((valVeiculo || valReboque).trim().toUpperCase())
+ });
  }
  } catch (_) {}
 
@@ -1440,13 +1444,15 @@ function submitConjunto(event) {
     return 'unknown';
   }
 
-  function criarDiagASF(queryId, matDisplay) {
+  function criarDiagASF(queryId, matDisplay, queryStartedAtMs, queuePosition) {
     return {
       queryId: queryId || null,
       matricula: String(matDisplay || '').slice(0, 30),
       asfHttpStatus: null,
       asfDurationMs: null,
+      asfTotalMs: null,
       asfQueueWaitMs: null,
+      asfQueuePosition: queuePosition == null ? null : Number(queuePosition),
       asfMethod: null,
       asfTransport: null,
       asfErrorType: null,
@@ -1454,8 +1460,12 @@ function submitConjunto(event) {
       asfAttempts: [],
       asfResponseBytes: null,
       asfResponseHash: null,
+      asfResponseContentType: null,
+      asfStatusText: null,
+      asfParsePath: null,
       asfGraphqlErrorCount: 0,
-      asfGraphqlCodes: []
+      asfGraphqlCodes: [],
+      _queryStartedAtMs: Number(queryStartedAtMs) || null
     };
   }
 
@@ -1478,6 +1488,11 @@ function submitConjunto(event) {
     diag.asfErrorType = tentativa.errorType || null;
     diag.asfMessage = tentativa.message ? String(tentativa.message).slice(0, 500) : null;
     diag.asfResponseHash = tentativa.responseHash || diag.asfResponseHash || null;
+    diag.asfResponseContentType = tentativa.responseContentType || diag.asfResponseContentType || null;
+    diag.asfStatusText = tentativa.statusText || diag.asfStatusText || null;
+    if (diag._queryStartedAtMs) {
+      diag.asfTotalMs = Math.max(0, agoraMsASFDiag() - diag._queryStartedAtMs);
+    }
   }
 
   function efetuarPedidoHttpASF_SyncNative(url) {
@@ -1506,7 +1521,9 @@ function submitConjunto(event) {
       errorType: null,
       message: null,
       responseBytes: null,
-      responseHash: null
+      responseHash: null,
+      responseContentType: null,
+      statusText: null
     };
 
     timeoutId = setTimeout(function () {
@@ -1529,6 +1546,8 @@ function submitConjunto(event) {
       var res = await fetch(url, options);
       var body = await res.text();
       tentativa.status = res.status;
+      tentativa.statusText = res.statusText || null;
+      tentativa.responseContentType = (res.headers && res.headers.get) ? (res.headers.get('content-type') || null) : null;
       tentativa.responseBytes = body ? String(body).length : 0;
       tentativa.responseHash = fingerprintASF(body);
       diag.asfResponseHash = tentativa.responseHash;
@@ -1553,8 +1572,8 @@ function submitConjunto(event) {
     return s === 403 || s === 405;
   }
 
-  async function efetuarPedidoHttpASF(url, matDisplay, queryId) {
-    var diag = criarDiagASF(queryId, matDisplay);
+  async function efetuarPedidoHttpASF(url, matDisplay, queryId, queryStartedAtMs, queuePosition) {
+    var diag = criarDiagASF(queryId, matDisplay, queryStartedAtMs, queuePosition);
 
     // Em HTA/ambientes Windows onde ActiveX está disponível, manter exatamente
     // o transporte nativo já existente. A única alteração é a recolha de diagnóstico.
@@ -1625,19 +1644,20 @@ function submitConjunto(event) {
   // outro objecto nodes. Nunca transforma erro de esquema em "sem seguro".
   function extrairNodesASF(data) {
     var candidatos = [
-      data && data.data && data.data.mobishoutEntry && data.data.mobishoutEntry.noone && data.data.mobishoutEntry.noone.entry && data.data.mobishoutEntry.noone.entry.licenseNumber && data.data.mobishoutEntry.noone.entry.licenseNumber.nodes,
-      data && data.mobishoutEntry && data.mobishoutEntry.noone && data.mobishoutEntry.noone.entry && data.mobishoutEntry.noone.entry.licenseNumber && data.mobishoutEntry.noone.entry.licenseNumber.nodes,
-      data && data.data && data.data.licenseNumber && data.data.licenseNumber.nodes,
-      data && data.licenseNumber && data.licenseNumber.nodes
+      { nodes: data && data.data && data.data.mobishoutEntry && data.data.mobishoutEntry.noone && data.data.mobishoutEntry.noone.entry && data.data.mobishoutEntry.noone.entry.licenseNumber && data.data.mobishoutEntry.noone.entry.licenseNumber.nodes, path: 'canonical.data.mobishoutEntry.noone.entry.licenseNumber.nodes' },
+      { nodes: data && data.mobishoutEntry && data.mobishoutEntry.noone && data.mobishoutEntry.noone.entry && data.mobishoutEntry.noone.entry.licenseNumber && data.mobishoutEntry.noone.entry.licenseNumber.nodes, path: 'legacy.mobishoutEntry.noone.entry.licenseNumber.nodes' },
+      { nodes: data && data.data && data.data.licenseNumber && data.data.licenseNumber.nodes, path: 'legacy.data.licenseNumber.nodes' },
+      { nodes: data && data.licenseNumber && data.licenseNumber.nodes, path: 'legacy.licenseNumber.nodes' }
     ];
 
     for (var i = 0; i < candidatos.length; i++) {
-      if (Array.isArray(candidatos[i])) {
-        return { found: true, nodes: candidatos[i] };
+      if (Array.isArray(candidatos[i].nodes)) {
+        return { found: true, nodes: candidatos[i].nodes, path: candidatos[i].path };
       }
     }
 
     var encontrado = null;
+    var encontradoPath = null;
     function arrayTemCamposSeguro(arr) {
       if (!Array.isArray(arr) || !arr.length) return false;
       var campos = ['entity','insurer','insuranceCompany','policy','policyNumber','startDate','validFrom','endDate','validTo','license','licenseNumber','code'];
@@ -1661,6 +1681,7 @@ function submitConjunto(event) {
         // ser aceites quando trazem campos de seguro reconhecíveis.
         if ((v.nodes.length === 0 && contextoASF) || arrayTemCamposSeguro(v.nodes)) {
           encontrado = v.nodes;
+          encontradoPath = (caminho || []).concat('nodes').join('.');
           return;
         }
       }
@@ -1674,7 +1695,7 @@ function submitConjunto(event) {
     }
     walk(data, 0, []);
 
-    return encontrado ? { found: true, nodes: encontrado } : { found: false, nodes: [] };
+    return encontrado ? { found: true, nodes: encontrado, path: 'fallback.' + String(encontradoPath || 'unknown') } : { found: false, nodes: [] };
   }
 
   function asfValorUtilizavel(obj, key) {
@@ -1727,7 +1748,7 @@ function submitConjunto(event) {
      * suficientes para classificar a existência do seguro.
      */
     if (nodes.length === 0) {
-      return { estado: 'nao', node: null };
+      return { estado: 'nao', node: null, parsePath: extraido.path || null };
     }
 
     for (var i = 0; i < nodes.length; i++) {
@@ -1735,16 +1756,16 @@ function submitConjunto(event) {
       if (!node || typeof node !== 'object') continue;
 
       if (node.license !== undefined && node.license !== null) {
-        return { estado: 'sim', node: node };
+        return { estado: 'sim', node: node, parsePath: extraido.path || null };
       }
     }
 
-    return { estado: 'nao', node: null };
+    return { estado: 'nao', node: null, parsePath: extraido.path || null };
   }
 
   // CONSULTA ASF = mesmo endpoint/mutation do IPO_2.2, com parser robusto e
   // controlo VÉRIX de 8 s + 5 pedidos/60 s, persistido entre refreshes, sem cache de resultados.
-  async function realizarConsultaASF_IPO(matLimpa, matDisplay, queryId) {
+  async function realizarConsultaASF_IPO(matLimpa, matDisplay, queryId, queryStartedAtMs, queuePosition) {
     var hoje = new Date();
     var yyyy = hoje.getFullYear();
     var mm = String(hoje.getMonth() + 1).padStart(2, '0');
@@ -1756,7 +1777,7 @@ function submitConjunto(event) {
 
     var resposta;
     try {
-      resposta = await efetuarPedidoHttpASF(url, matDisplay, queryId);
+      resposta = await efetuarPedidoHttpASF(url, matDisplay, queryId, queryStartedAtMs, queuePosition);
     } catch (e) {
       throw e;
     }
@@ -1803,6 +1824,8 @@ function submitConjunto(event) {
         }).filter(Boolean).slice(0, 6);
       }
       var resultado = interpretarRespostaASF(json);
+      diag.asfParsePath = resultado && resultado.parsePath ? String(resultado.parsePath).slice(0, 180) : null;
+      if (diag._queryStartedAtMs) diag.asfTotalMs = Math.max(0, agoraMsASFDiag() - diag._queryStartedAtMs);
       return { resultado: resultado, asfDiagnostic: diag };
     } catch (e) {
       if (!diag.asfErrorType) {
@@ -1944,14 +1967,18 @@ function submitConjunto(event) {
       + '</div>';
   }
 
-  function registarEventoSeguroV2(eventName, queryId, asfDiagnostic, userMessage) {
+  function registarEventoSeguroV2(eventName, queryId, asfDiagnostic, userMessage, extraMeta) {
     try {
       if (window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.track === 'function') {
-        window.VERIX_TELEMETRY.track(eventName, 'consulta', {
+        var payload = {
           queryId: queryId || null,
           asfDiagnostic: asfDiagnostic || null,
           asfUserMessage: userMessage || null
-        });
+        };
+        if (extraMeta && typeof extraMeta === 'object') {
+          Object.keys(extraMeta).forEach(function (k) { payload[k] = extraMeta[k]; });
+        }
+        window.VERIX_TELEMETRY.track(eventName, 'consulta', payload);
       }
     } catch (_) {}
   }
@@ -1959,11 +1986,11 @@ function submitConjunto(event) {
   // ---- Orquestração ASF ----
   // O controlo de cadência pertence agora ao nível do pedido físico, para que
   // POST e eventual GET de fallback contem e respeitem os mesmos limites.
-  async function processarConsultaSeguroComCadencia(matLimpa, matDisplay, queryId) {
+  async function processarConsultaSeguroComCadencia(matLimpa, matDisplay, queryId, queryStartedAtMs, queuePosition) {
     mostrarSeguroLoading(matDisplay, 'A VERIFICAR...');
 
     try {
-      var consulta = await realizarConsultaASF_IPO(matLimpa, matDisplay, queryId);
+      var consulta = await realizarConsultaASF_IPO(matLimpa, matDisplay, queryId, queryStartedAtMs, queuePosition);
       var resultado = consulta.resultado;
       var asfDiagnostic = consulta.asfDiagnostic || null;
       if (resultado.estado === 'sim') {
@@ -1977,8 +2004,11 @@ function submitConjunto(event) {
       }
     } catch (err) {
       var diagnostico = (err && err.message) ? String(err.message) : 'Falha de comunicação com a ASF';
-      var asfDiagnostic = (err && err.asfDiagnostic) ? err.asfDiagnostic : criarDiagASF(queryId, matDisplay);
+      var asfDiagnostic = (err && err.asfDiagnostic) ? err.asfDiagnostic : criarDiagASF(queryId, matDisplay, queryStartedAtMs, queuePosition);
       if (asfDiagnostic && !asfDiagnostic.matricula) asfDiagnostic.matricula = matDisplay;
+      if (asfDiagnostic && asfDiagnostic._queryStartedAtMs) {
+        asfDiagnostic.asfTotalMs = Math.max(0, agoraMsASFDiag() - asfDiagnostic._queryStartedAtMs);
+      }
       console.warn('[ASF] Falha (' + matLimpa + '):', diagnostico, asfDiagnostic || '');
       registarEventoSeguroV2('vehicle_insurance_error', queryId, asfDiagnostic, diagnostico);
       mostrarSeguroErro(diagnostico, matDisplay, 'Diagnóstico ASF registado automaticamente.', queryId, asfDiagnostic);
@@ -1994,7 +2024,12 @@ function submitConjunto(event) {
     if (!matLimpa) return;
 
     var queryId = window.__VERIX_CURRENT_QUERY_ID || null;
-    registarEventoSeguroV2('vehicle_insurance_pending', queryId, null);
+    var queryStartedAtMs = agoraMsASFDiag();
+    var queuePosition = (ASF_FILA_PENDENTES || 0) + 1;
+    registarEventoSeguroV2('vehicle_insurance_pending', queryId, null, null, {
+      matricula: matDisplay,
+      matriculaNormalizada: matLimpa
+    });
 
     ASF_FILA_PENDENTES = (ASF_FILA_PENDENTES || 0) + 1;
     ASF_EM_CURSO = true;
@@ -2006,7 +2041,7 @@ function submitConjunto(event) {
 
     ASF_FILA = ASF_FILA.then(async function () {
       try {
-        await processarConsultaSeguroComCadencia(matLimpa, matDisplay, queryId);
+        await processarConsultaSeguroComCadencia(matLimpa, matDisplay, queryId, queryStartedAtMs, queuePosition);
       } finally {
         ASF_FILA_PENDENTES = Math.max(0, (ASF_FILA_PENDENTES || 1) - 1);
         ASF_EM_CURSO = ASF_FILA_PENDENTES > 0;
@@ -17355,6 +17390,8 @@ html body .leg-card-new .copy-all-new{
     if (m.itemLabel) out.itemLabel = String(m.itemLabel).slice(0, 180);
     if (m.copyType) out.copyType = String(m.copyType).slice(0, 40);
     if (m.resultConfirmed === true) out.resultConfirmed = true;
+    if (m.matricula) out.matricula = String(m.matricula).slice(0, 30);
+    if (m.matriculaNormalizada) out.matriculaNormalizada = String(m.matriculaNormalizada).slice(0, 30);
     if (m.asfUserMessage) out.asfUserMessage = String(m.asfUserMessage).slice(0, 500);
     // Contexto técnico do cliente para diagnosticar diferenças entre browser/OS/rede.
     out.client = {
@@ -17384,13 +17421,18 @@ html body .leg-card-new .copy-all-new{
         matricula: a.matricula ? String(a.matricula).slice(0, 30) : null,
         asfHttpStatus: a.asfHttpStatus == null ? null : Number(a.asfHttpStatus),
         asfDurationMs: a.asfDurationMs == null ? null : Number(a.asfDurationMs),
+        asfTotalMs: a.asfTotalMs == null ? null : Number(a.asfTotalMs),
         asfQueueWaitMs: a.asfQueueWaitMs == null ? null : Number(a.asfQueueWaitMs),
+        asfQueuePosition: a.asfQueuePosition == null ? null : Number(a.asfQueuePosition),
         asfMethod: a.asfMethod ? String(a.asfMethod).slice(0, 20) : null,
         asfTransport: a.asfTransport ? String(a.asfTransport).slice(0, 30) : null,
         asfErrorType: a.asfErrorType ? String(a.asfErrorType).slice(0, 60) : null,
         asfMessage: a.asfMessage ? String(a.asfMessage).slice(0, 500) : null,
         asfResponseBytes: a.asfResponseBytes == null ? null : Number(a.asfResponseBytes),
         asfResponseHash: a.asfResponseHash ? String(a.asfResponseHash).slice(0, 20) : null,
+        asfResponseContentType: a.asfResponseContentType ? String(a.asfResponseContentType).slice(0, 120) : null,
+        asfStatusText: a.asfStatusText ? String(a.asfStatusText).slice(0, 120) : null,
+        asfParsePath: a.asfParsePath ? String(a.asfParsePath).slice(0, 180) : null,
         asfGraphqlErrorCount: a.asfGraphqlErrorCount == null ? null : Number(a.asfGraphqlErrorCount),
         asfGraphqlCodes: Array.isArray(a.asfGraphqlCodes) ? a.asfGraphqlCodes.slice(0, 6).map(function (x) {
           return String(x || '').slice(0, 80);
