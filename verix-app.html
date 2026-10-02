@@ -1412,6 +1412,16 @@ function submitConjunto(event) {
   // ---- Diagnóstico ASF V2 ----
   // Instrumentação exclusivamente observacional. Não altera POST/GET, timeouts,
   // rate-limit, parser ou regras de classificação. Regista cada tentativa física.
+  function fingerprintASF(value) {
+    var text = String(value || '');
+    var h = 2166136261;
+    for (var i = 0; i < text.length; i++) {
+      h ^= text.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return ('00000000' + (h >>> 0).toString(16)).slice(-8);
+  }
+
   function agoraMsASFDiag() { return Date.now(); }
 
   function textoErroASF(e) {
@@ -1441,7 +1451,10 @@ function submitConjunto(event) {
       asfErrorType: null,
       asfMessage: null,
       asfAttempts: [],
-      asfResponseBytes: null
+      asfResponseBytes: null,
+      asfResponseHash: null,
+      asfGraphqlErrorCount: 0,
+      asfGraphqlCodes: []
     };
   }
 
@@ -1463,6 +1476,7 @@ function submitConjunto(event) {
     diag.asfTransport = tentativa.transport || null;
     diag.asfErrorType = tentativa.errorType || null;
     diag.asfMessage = tentativa.message ? String(tentativa.message).slice(0, 500) : null;
+    diag.asfResponseHash = tentativa.responseHash || diag.asfResponseHash || null;
   }
 
   function efetuarPedidoHttpASF_SyncNative(url) {
@@ -1488,7 +1502,8 @@ function submitConjunto(event) {
       durationMs: null,
       errorType: null,
       message: null,
-      responseBytes: null
+      responseBytes: null,
+      responseHash: null
     };
 
     timeoutId = setTimeout(function () {
@@ -1511,6 +1526,8 @@ function submitConjunto(event) {
       var body = await res.text();
       tentativa.status = res.status;
       tentativa.responseBytes = body ? String(body).length : 0;
+      tentativa.responseHash = fingerprintASF(body);
+      diag.asfResponseHash = tentativa.responseHash;
       if (res.status >= 400) tentativa.errorType = 'http_' + res.status;
       finalizarTentativaDiagASF(diag, tentativa);
       return { status: res.status, text: body, __asfDiagnostic: diag };
@@ -1771,7 +1788,13 @@ function submitConjunto(event) {
     }
 
     try {
-      if (Array.isArray(json.errors) && json.errors.length) diag.asfErrorType = 'graphql';
+      if (Array.isArray(json.errors) && json.errors.length) {
+        diag.asfErrorType = 'graphql';
+        diag.asfGraphqlErrorCount = json.errors.length;
+        diag.asfGraphqlCodes = json.errors.map(function (e) {
+          return e && e.extensions && e.extensions.code ? String(e.extensions.code).slice(0, 80) : null;
+        }).filter(Boolean).slice(0, 6);
+      }
       var resultado = interpretarRespostaASF(json);
       return { resultado: resultado, asfDiagnostic: diag };
     } catch (e) {
