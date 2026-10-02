@@ -301,7 +301,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
 
 <script>
 const API_ORIGIN='https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/';
-const ADMIN_CACHE='admin-simple-2026-10-02-r2';
+const ADMIN_CACHE='admin-simple-2026-10-02-r3';
 const AUTH_API=API_ORIGIN+'admin-auth-v2?v='+encodeURIComponent(ADMIN_CACHE);
 const STATS_API=API_ORIGIN+'stats-v2?v='+encodeURIComponent(ADMIN_CACHE);
 const TOKEN_KEY='VERIX_ADMIN_V2_TOKEN';
@@ -320,7 +320,7 @@ function card(label,value,note='',tone=''){return '<div class="card '+tone+'"><d
 function table(headers,rows){if(!rows.length)return '<div class="empty">Não há dados suficientes para este período.</div>';return '<table class="table"><thead><tr>'+headers.map(h=>'<th>'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table>'}
 function td(v){return '<td>'+v+'</td>'}
 function metric(label,value){return '<div class="mini"><b>'+esc(label)+'</b><span>'+value+'</span></div>'}
-function period(){return latestData?.analytics?.[currentPeriod]||{}}
+function period(){return latestData?.analytics?.insurance?.[currentPeriod]||{}}
 function barList(id,rows,tone=''){const host=$(id);if(!host)return;if(!rows?.length){host.innerHTML='<div class="empty">Sem dados suficientes.</div>';return}const max=Math.max(1,...rows.map(x=>Number(x.value)||0));host.innerHTML=rows.slice(0,12).map(x=>'<div class="bar-row"><div class="bar-label" title="'+esc(x.label)+'">'+esc(x.label)+'</div><div class="track"><div class="fill '+tone+'" style="width:'+Math.max(2,(Number(x.value)||0)/max*100)+'%"></div></div><div class="num">'+fmt(x.value)+'</div></div>').join('')}
 function monthlyChart(id,rows,key){const host=$(id);if(!host)return;if(!rows?.length){host.innerHTML='<div class="empty" style="width:100%">Sem dados suficientes.</div>';return}const vals=rows.map(x=>Number(x[key]||0));const max=Math.max(1,...vals);host.innerHTML=rows.map(x=>'<div class="chart-col" title="'+esc(x.day_key||'')+' · '+fmt(x[key]||0)+'"><div class="chart-bar" style="height:'+Math.max(3,(Number(x[key]||0)/max)*100)+'%"></div><div class="chart-label">'+esc(String(x.day_key||'').slice(5))+'</div></div>').join('')}
 function hourGrid(id,rows){const host=$(id);if(!host)return;if(!rows?.length){host.innerHTML='<div class="empty">Sem dados.</div>';return}const max=Math.max(1,...rows.map(x=>Number(x.actions||0)));host.innerHTML=rows.map(x=>'<div class="hour" style="opacity:'+Math.max(.35,(Number(x.actions||0)/max))+'"><b>'+String(x.hour_num??'').padStart(2,'0')+'h</b><span>'+fmt(x.actions||0)+'</span></div>').join('')}
@@ -395,7 +395,7 @@ function renderInsurance(d){
   metric('Tempo das respostas mais lentas',q.latency_p95_ms==null?'—':fmt(q.latency_p95_ms)+' ms')+
   metric('Espera em fila',diag.queue_p95_ms==null?'—':fmt(diag.queue_p95_ms)+' ms')+
   metric('Consultas com diagnóstico',pct(a.telemetry?.asf_diagnostic_coverage_30d));
- $('insuranceCompare').innerHTML=table(['PERÍODO','CONSULTAS','RESULTADOS','COM SEGURO','SEM REGISTO','ERROS'],['24h','7d','30d'].map(k=>{const x=a[k]||{};return '<tr>'+td('<strong>'+k.toUpperCase()+'</strong>')+td(fmt(x.started))+td(fmt(x.finals))+td(fmt(x.insured))+td(fmt(x.uninsured))+td(fmt(x.errors))+'</tr>'}));
+ $('insuranceCompare').innerHTML=table(['PERÍODO','CONSULTAS','RESULTADOS','COM SEGURO','SEM REGISTO','ERROS'],['24h','7d','30d'].map(k=>{const x=a.insurance?.[k]||{};return '<tr>'+td('<strong>'+k.toUpperCase()+'</strong>')+td(fmt(x.started))+td(fmt(x.finals))+td(fmt(x.insured))+td(fmt(x.uninsured))+td(fmt(x.errors))+'</tr>'}));
  const types=a.errors?.types||[];barList('insuranceErrors',types.map(x=>({label:x.kind,value:x.qty})),'red');
  const plates=a.errors?.plates||[];$('insurancePlates').innerHTML=table(['MATRÍCULA','ERROS','ÚLTIMO','TIPOS'],plates.slice(0,20).map(x=>'<tr>'+td('<strong>'+esc(x.plate||x.plate_key||'—')+'</strong>')+td(fmt(x.qty))+td(datePT(x.last_at))+td(esc((x.kinds||[]).join(', ')||'—'))+'</tr>'));
  const sig=a.errors?.signatures||[];$('insuranceTechnical').innerHTML=
