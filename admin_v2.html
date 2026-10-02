@@ -331,10 +331,10 @@ td{font-weight:850;font-size:13px}
 
 <script>
 const API_ORIGIN = 'https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/';
-const API_CACHE_BUSTER = '16.0';
+const API_CACHE_BUSTER = '17.0';
 const AUTH_API = API_ORIGIN + 'admin-auth-v2?v=' + API_CACHE_BUSTER;
 const STATS_API = API_ORIGIN + 'stats-v2?v=' + API_CACHE_BUSTER;
-const HOURLY_API = API_ORIGIN + 'hourly-history-v2?v=' + API_CACHE_BUSTER;
+const HOURLY_API = API_ORIGIN + 'hourly-history-v2';
 const TOKEN_KEY = 'VERIX_ADMIN_V2_TOKEN';
 const REFRESH_MS = 30000;
 
@@ -565,7 +565,7 @@ function renderDays(){
 async function loadHourly(){
   const sequence=++hourlyLoadSequence;
   const dateRequested=selectedDate;
-  const data=await request(`${HOURLY_API}?date=${encodeURIComponent(dateRequested)}`);
+  const data=await request(`${HOURLY_API}?date=${encodeURIComponent(dateRequested)}&v=${API_CACHE_BUSTER}`);
   if(sequence!==hourlyLoadSequence || dateRequested!==selectedDate) return;
   const rows=Array.isArray(data.rows)?data.rows:[];
   const body=$('hourTable').querySelector('tbody'); body.innerHTML='';
