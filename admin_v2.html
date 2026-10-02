@@ -297,6 +297,14 @@ td{font-weight:850;font-size:13px}
       <div id="asfRecentErrors" class="diag-scroll"></div>
     </div>
     <div class="diag-panel" style="margin-top:14px">
+      <h3>ASSINATURAS DOS ERROS · 24H</h3>
+      <div id="asfErrorSignatures" class="diag-scroll"></div>
+    </div>
+    <div class="diag-panel" style="margin-top:14px">
+      <h3>ERROS POR MATRÍCULA · 24H</h3>
+      <div id="asfPlateErrors" class="diag-scroll"></div>
+    </div>
+    <div class="diag-panel" style="margin-top:14px">
       <h3>ÚLTIMOS “SEM SEGURO”</h3>
       <div id="asfRecentUninsured" class="diag-scroll"></div>
     </div>
@@ -339,7 +347,7 @@ td{font-weight:850;font-size:13px}
 
 <script>
 const API_ORIGIN = 'https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/';
-const API_CACHE_BUSTER = '18.3';
+const API_CACHE_BUSTER = '18.4';
 const AUTH_API = API_ORIGIN + 'admin-auth-v2?v=' + API_CACHE_BUSTER;
 const STATS_API = API_ORIGIN + 'stats-v2?v=' + API_CACHE_BUSTER;
 const HOURLY_API = API_ORIGIN + 'hourly-history-v2';
@@ -633,6 +641,8 @@ function renderDiagnostics(d){
   const clients=Array.isArray(d?.client_health_24h)?d.client_health_24h:[];
   const recent=Array.isArray(d?.recent_errors_24h)?d.recent_errors_24h:[];
   const uninsured=Array.isArray(d?.recent_uninsured_24h)?d.recent_uninsured_24h:[];
+  const signatures=Array.isArray(d?.error_signatures_24h)?d.error_signatures_24h:[];
+  const plateErrors=Array.isArray(d?.plate_errors_24h)?d.plate_errors_24h:[];
   const typeEl=$('asfErrorTypes');
   const clientEl=$('asfClientHealth');
   const recentEl=$('asfRecentErrors');
@@ -656,7 +666,9 @@ function renderDiagnostics(d){
       '</td><td><span class="diag-pill">'+escapeHtml(r.error_type||'unknown')+
       '</span></td><td>'+escapeHtml(r.http_status||'—')+
       '</td><td>'+fmt(r.duration_ms)+' ms</td><td>'+fmt(r.queue_wait_ms)+' ms</td><td>'+
-      escapeHtml(Array.isArray(r.graphql_codes)&&r.graphql_codes.length?r.graphql_codes.join(', '):(r.graphql_error_count!=null?r.graphql_error_count:'—'))+
+      escapeHtml((Array.isArray(r.graphql_messages)&&r.graphql_messages.length?r.graphql_messages.join(' | '):
+        (Array.isArray(r.graphql_codes)&&r.graphql_codes.length?r.graphql_codes.join(', '):
+        (r.graphql_error_count!=null?r.graphql_error_count:'—')))+(r.response_class?' ['+r.response_class+']':''))+
       '</td><td class="diag-muted">'+escapeHtml(r.response_hash||'—')+
       '</td><td>'+escapeHtml(r.browser||'Unknown')+' '+escapeHtml(r.browser_version||'')+
       '</td><td>'+escapeHtml(r.os_platform||'Unknown')+' '+escapeHtml(r.os_version||'')+
@@ -664,6 +676,22 @@ function renderDiagnostics(d){
       '</td><td>'+escapeHtml(r.message||'—')+'</td></tr>';
     }).join('')+'</tbody></table>';
   }
+  const signaturesEl=$('asfErrorSignatures');
+  if(signaturesEl){
+    if(!signatures.length) signaturesEl.innerHTML='<div class="empty">Ainda não existem assinaturas de erro enriquecidas.</div>';
+    else signaturesEl.innerHTML='<table class="diag-table"><thead><tr><th>TIPO</th><th>QTD.</th><th>CONSULTAS</th><th>MATRÍCULAS</th><th>INSTALAÇÕES</th><th>HASH</th><th>GQL</th></tr></thead><tbody>'+signatures.map(function(r){
+      return '<tr><td><span class="diag-pill">'+escapeHtml(r.error_type||'unknown')+'</span></td><td class="bad">'+fmt(r.count)+'</td><td>'+fmt(r.distinct_queries)+'</td><td>'+fmt(r.distinct_plates)+'</td><td>'+fmt(r.distinct_installations)+'</td><td class="diag-muted">'+escapeHtml(r.response_hash||'—')+'</td><td>'+escapeHtml((r.graphql_messages||[]).join(' | ') || (r.graphql_codes||[]).join(', ') || '—')+'</td></tr>';
+    }).join('')+'</tbody></table>';
+  }
+
+  const plateErrorsEl=$('asfPlateErrors');
+  if(plateErrorsEl){
+    if(!plateErrors.length) plateErrorsEl.innerHTML='<div class="empty">Ainda não existem erros associados a matrículas com diagnóstico.</div>';
+    else plateErrorsEl.innerHTML='<table class="diag-table"><thead><tr><th>MATRÍCULA</th><th>NORMALIZADA</th><th>ERROS</th><th>ÚLTIMO ERRO</th><th>TIPOS</th></tr></thead><tbody>'+plateErrors.map(function(r){
+      return '<tr><td class="bad">'+escapeHtml(r.matricula||'—')+'</td><td class="diag-muted">'+escapeHtml(r.matricula_normalizada||'—')+'</td><td class="bad">'+fmt(r.errors)+'</td><td>'+ (r.last_error?new Date(r.last_error).toLocaleString('pt-PT'):'—') +'</td><td>'+escapeHtml((r.error_types||[]).join(', ')||'—')+'</td></tr>';
+    }).join('')+'</tbody></table>';
+  }
+
   const qualityEl=$('asfQuality');
   if(qualityEl){
     const q=d?.quality_24h||{};
