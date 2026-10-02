@@ -261,20 +261,28 @@ td{font-weight:850;font-size:13px}
     <div class="note">* “Sem resultado final” é calculado apenas para consultas com <b>query_id</b>.</div>
   </section>
 
-  <section class="section">
-    <div class="section-head"><div class="section-title">COMPARAÇÃO · ÚLTIMAS 24H</div><div class="section-note">24h atuais vs 24h anteriores</div></div>
-    <div class="table-wrap">
+  <section class="section compact-section">
+    <details class="admin-expander">
+      <summary><span>COMPARAÇÃO · ÚLTIMAS 24H</span><span style="color:#8fa3aa;font-size:9px;letter-spacing:1px">24h atuais vs 24h anteriores</span></summary>
+      <div class="admin-expander-body">
+<section class="section">
+        <div class="table-wrap">
       <table class="compare" id="compareTable">
         <thead><tr><th>INDICADOR</th><th>ATUAL</th><th>ANTERIOR</th><th>VARIAÇÃO</th><th>%</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
     <div class="note">Comparação descritiva entre duas janelas consecutivas de 24 horas.</div>
+      </div>
+    </details>
   </section>
 
-  <section class="section">
-    <div class="section-head"><div class="section-title">HISTÓRICO HORÁRIO · 30 DIAS</div><div class="section-note">Escolhe um dia → 24 horas ao detalhe</div></div>
-    <div class="panel">
+  <section class="section compact-section">
+    <details class="admin-expander">
+      <summary><span>HISTÓRICO HORÁRIO · 30 DIAS</span><span style="color:#8fa3aa;font-size:9px;letter-spacing:1px">Escolhe um dia → 24 horas ao detalhe</span></summary>
+      <div class="admin-expander-body">
+<section class="section">
+        <div class="panel">
       <div id="days" class="days"></div>
       <div class="hour-top">
         <div class="mini"><div class="mini-label">UTILIZADORES ÚNICOS NO DIA</div><div class="mini-value" id="dayUsers">—</div></div>
@@ -292,6 +300,8 @@ td{font-weight:850;font-size:13px}
         </table>
       </div>
     </div>
+      </div>
+    </details>
   </section>
 
 
@@ -351,20 +361,30 @@ td{font-weight:850;font-size:13px}
     </div>
   </section>
 
-  <section class="section">
-    <div class="section-head"><div class="section-title">MENUS CONSULTADOS</div></div>
-    <div class="split">
+  <section class="section compact-section">
+    <details class="admin-expander">
+      <summary><span>MENUS CONSULTADOS</span><span style="color:#8fa3aa;font-size:9px;letter-spacing:1px">24h / 30 dias</span></summary>
+      <div class="admin-expander-body">
+<section class="section">
+        <div class="split">
       <div class="panel"><h3>24 horas</h3><div id="menus24" class="list"></div></div>
       <div class="panel"><h3>30 dias</h3><div id="menus30" class="list"></div></div>
     </div>
+      </div>
+    </details>
   </section>
 
-  <section class="section">
-    <div class="section-head"><div class="section-title">LEGISLAÇÃO</div></div>
-    <div class="split">
+  <section class="section compact-section">
+    <details class="admin-expander">
+      <summary><span>LEGISLAÇÃO</span><span style="color:#8fa3aa;font-size:9px;letter-spacing:1px">Itens e cópias mais consultados</span></summary>
+      <div class="admin-expander-body">
+<section class="section">
+        <div class="split">
       <div class="panel leg-table"><h3>Legislação copiada · 24h</h3><div id="leg24"></div></div>
       <div class="panel leg-table"><h3>Legislação copiada · 30 dias</h3><div id="leg30"></div></div>
     </div>
+      </div>
+    </details>
   </section>
 </div>
 
