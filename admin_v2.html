@@ -501,7 +501,7 @@ function renderActivity(rows){
     const tr=document.createElement('tr');
     const cls=cellClass(r.indicator||'',r.v24);
     tr.innerHTML=`
-      <td class="row-label">${r.indicator||''}</td>
+      <td class="row-label">${escapeHtml(r.indicator||'')}</td>
       <td class="${cls}">${r.indicator==='% sem seguro'?fmtPct(r.v24):fmt(r.v24)}</td>
       <td class="${cls}">${r.indicator==='% sem seguro'?fmtPct(r.v7):fmt(r.v7)}</td>
       <td class="${cls}">${r.indicator==='% sem seguro'?fmtPct(r.v30):fmt(r.v30)}</td>
@@ -519,7 +519,7 @@ function renderCompare(rows){
     const pct = r.percentage===null||r.percentage===undefined?'0,0%':fmtPct(r.percentage);
     const tr=document.createElement('tr');
     tr.innerHTML=`
-      <td class="row-label">${r.indicator||''}</td>
+      <td class="row-label">${escapeHtml(r.indicator||'')}</td>
       <td>${fmt(r.current_value)}</td>
       <td>${fmt(r.previous_value)}</td>
       <td class="${variationClass}">${Number(r.variation)>0?'+':''}${fmt(r.variation)}</td>
@@ -542,7 +542,7 @@ function renderMenus(rows){
     list.forEach(r=>{
       const row=document.createElement('div'); row.className='bar-row';
       const w=Math.max(0,(Number(r.count_value)/max)*100);
-      row.innerHTML=`<div class="bar-label">${r.label}</div><div class="bar"><i style="width:${w}%"></i></div><div class="bar-num">${fmt(r.count_value)}</div>`;
+      row.innerHTML=`<div class="bar-label">${escapeHtml(r.label||'')}</div><div class="bar"><i style="width:${w}%"></i></div><div class="bar-num">${fmt(r.count_value)}</div>`;
       target.appendChild(row);
     });
   });
