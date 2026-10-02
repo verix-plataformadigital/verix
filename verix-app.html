@@ -1640,16 +1640,6 @@ function submitConjunto(event) {
     return encontrado ? { found: true, nodes: encontrado, path: 'fallback.' + String(encontradoPath || 'unknown') } : { found: false, nodes: [] };
   }
 
-  function asfValorUtilizavel(obj, key) {
-    if (!obj || typeof obj !== 'object') return false;
-    var v = obj[key];
-    if (v === undefined || v === null) return false;
-    if (typeof v === 'object') {
-      v = v.name || v.label || v.value || v.description || '';
-    }
-    return String(v).trim() !== '';
-  }
-
   
   function interpretarRespostaASF(json) {
     if (!json || typeof json !== 'object') {
@@ -3579,63 +3569,27 @@ body.history-page-active .history-footer{position:sticky!important;bottom:0!impo
 @media(max-width:600px){.leg-category-grid-expanded{grid-template-columns:1fr!important}}
 </style> <style id="ajuste-mensagem-marca-v163">@media(max-width:1200px){}
 </style> <style id="v171-header-final-separation">
-
-html body.fixed-workspace-active:not(.cinemometro-page-active) .command .searchbar{
- left:50%!important;
- right:auto!important;
- transform:translateX(-50%)!important;
- width:560px!important;
- max-width:560px!important;
- min-width:560px!important;
- box-sizing:border-box!important;
-}
-html body.fixed-workspace-active:not(.cinemometro-page-active) .command .searchbar form{
- gap:7px!important;
-}
 html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand{
- left:4px!important;
- width:395px!important;
+ left:4px!important;width:395px!important;
 }
 html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-notice{
- width:395px!important;
- align-items:flex-start!important;
- text-align:left!important;
- padding:0!important;
+ width:395px!important;align-items:flex-start!important;text-align:left!important;padding:0!important;
 }
 html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-notice-title{
- width:395px!important;
- max-width:395px!important;
- font-size:11.5px!important;
- line-height:1.05!important;
- text-align:left!important;
+ width:395px!important;max-width:395px!important;font-size:11.5px!important;line-height:1.05!important;text-align:left!important;
 }
 html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-notice-text{
- width:395px!important;
- max-width:395px!important;
- font-size:7.2px!important;
- line-height:1.2!important;
- text-align:left!important;
-}@media(max-width:1200px){
- html body.fixed-workspace-active:not(.cinemometro-page-active) .command .searchbar{
- width:520px!important;
- max-width:520px!important;
- min-width:520px!important;
- }
- html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand{
- width:330px!important;
- }
+ width:395px!important;max-width:395px!important;font-size:7.2px!important;line-height:1.2!important;text-align:left!important;
+}
+@media(max-width:1200px){
+ html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand{width:330px!important;}
  html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-notice,
  html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-notice-title,
  html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-notice-text{
- width:330px!important;
- max-width:330px!important;
+   width:330px!important;max-width:330px!important;
  }
- html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-notice-title{
- font-size:10.5px!important;
- }
- html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-notice-text{
- font-size:6.8px!important;
- }
+ html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-notice-title{font-size:10.5px!important;}
+ html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-notice-text{font-size:6.8px!important;}
 }
 </style>
 
@@ -9306,34 +9260,11 @@ html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-n
 </style> 
 <style id="v167-header-small-screen-fix">
 /* Ecrã compacto: separar claramente a mensagem institucional da caixa de consulta */
-html body.fixed-workspace-active:not(.cinemometro-page-active) .command .searchbar{
- left:50%!important;
- right:auto!important;
- transform:translateX(-50%)!important;
- width:620px!important;
- max-width:calc(100vw - 680px)!important;
- min-width:540px!important;
-}
 html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-notice-title{
- font-size:15px!important;
- line-height:1.05!important;
+ font-size:15px!important;line-height:1.05!important;
 }
 html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-notice-text{
- font-size:8px!important;
- line-height:1.25!important;
-}@media(max-width:1200px){
- html body.fixed-workspace-active:not(.cinemometro-page-active) .command .searchbar{
- width:570px!important;
- max-width:calc(100vw - 430px)!important;
- min-width:500px!important;
- }
-}
-@media(max-width:1050px){
- html body.fixed-workspace-active:not(.cinemometro-page-active) .command .searchbar{
- width:540px!important;
- max-width:calc(100vw - 360px)!important;
- min-width:470px!important;
- }
+ font-size:8px!important;line-height:1.25!important;
 }
 </style> <style id="ajuste-aviso-esquerda-10-29-v168">
 
@@ -19850,5 +19781,42 @@ html body [contenteditable="true"]{
   -webkit-user-select:text!important;
 }
 </style>
+<script id="verix-final-protection-cleanup-2026-10-02">
+(function(){
+  'use strict';
+  function allowTextEditing(target){
+    if(!target) return false;
+    var el=target.closest ? target.closest('input,textarea,[contenteditable="true"]') : null;
+    return !!el;
+  }
+  document.addEventListener('copy',function(e){
+    if(!allowTextEditing(e.target)) e.preventDefault();
+  },true);
+  document.addEventListener('cut',function(e){
+    if(!allowTextEditing(e.target)) e.preventDefault();
+  },true);
+  document.addEventListener('selectstart',function(e){
+    if(!allowTextEditing(e.target)) e.preventDefault();
+  },true);
+
+  function removeStrayLiteralNewlines(){
+    try{
+      if(!document.body) return;
+      var nodes=document.body.childNodes;
+      for(var i=nodes.length-1;i>=0;i--){
+        var n=nodes[i];
+        if(n.nodeType!==3) continue;
+        var s=String(n.nodeValue||'').trim();
+        if(s && /^\\n+$/.test(s)) n.remove();
+      }
+    }catch(_){}
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',removeStrayLiteralNewlines);
+  }else{
+    removeStrayLiteralNewlines();
+  }
+})();
+</script>
 </body>
 </html>
