@@ -2328,6 +2328,61 @@ function cinMontarLocal() {
 let CIN_COPIA_CODIGO=false;
 let CIN_COPIA_TEXTO=false;
 
+function cinTelemetriaSnapshot(){
+ const get=id=>{try{return String(document.getElementById(id)?.value||'').trim();}catch(_){return '';}};
+ const registada=Number(get('cinRegistada'));
+ const limite=Number(get('cinLimite'));
+ let deduzida=null, excesso=null, gravidade='';
+ try{deduzida=cinCalcularDeducida(registada); if(Number.isFinite(deduzida)&&Number.isFinite(limite)){excesso=deduzida-limite; gravidade=excesso<=0?'Sem infração':(cinClassificarExcesso(Math.max(0,excesso))?.gravidade||'');}}catch(_){}
+ const snap={
+   velocidade_registada:Number.isFinite(registada)&&registada>0?registada:null,
+   velocidade_deduzida:Number.isFinite(deduzida)?deduzida:null,
+   limite:Number.isFinite(limite)?limite:null,
+   excesso:Number.isFinite(excesso)?excesso:null,
+   gravidade:gravidade||null,
+   codigo:get('cinCodigo')||null,
+   modo:get('cinSessaoModo')||'fixo',
+   veiculo:get('cinVeiculo')||null,
+   enquadramento:get('cinRegime')||null,
+   verificacao:get('cinVerificacao')||'primeira',
+   operador_posto:get('cinSessaoOperadorPosto')||null,
+   operador_numero:get('cinSessaoOperadorNo')||null,
+   operador_nome:get('cinSessaoOperadorNome')||null,
+   operador_identificado:!!(get('cinSessaoOperadorNo')||get('cinSessaoOperadorNome')),
+   aparelho_marca:get('cinMarca')||null,
+   aparelho_modelo:get('cinModelo')||null,
+   aparelho_serie:get('cinSerie')||null,
+   aparelho_configurado:!!(get('cinMarca')||get('cinModelo')||get('cinSerie')),
+   perfil_id:(typeof CIN_ACTIVE_PROFILE_ID!=='undefined'?CIN_ACTIVE_PROFILE_ID:null),
+   local:get('cinLocalidade')||null,
+   distrito:get('cinDistrito')||null,
+   via:get('cinVia')||null,
+   sentido:get('cinSentido')||null,
+   km:get('cinKm')||null
+ };
+ return snap;
+}
+function cinTelemetriaAgendarCalculo(){
+ try{
+   clearTimeout(window.__VERIX_CIN_TELEM_TIMER);
+   window.__VERIX_CIN_TELEM_TIMER=setTimeout(function(){
+     const snap=cinTelemetriaSnapshot();
+     if(!snap.velocidade_registada || !window.VERIX_TELEMETRY || typeof window.VERIX_TELEMETRY.track!=='function') return;
+     window.VERIX_TELEMETRY.track('cinemometer_calculation','cinemometro',{cin:snap});
+   },700);
+ }catch(_){}
+}
+function cinTelemetriaRegistarVelocidade(){
+ try{
+   clearTimeout(window.__VERIX_CIN_SPEED_TELEM_TIMER);
+   window.__VERIX_CIN_SPEED_TELEM_TIMER=setTimeout(function(){
+     const snap=cinTelemetriaSnapshot();
+     if(!snap.velocidade_registada || !window.VERIX_TELEMETRY || typeof window.VERIX_TELEMETRY.track!=='function') return;
+     window.VERIX_TELEMETRY.track('cinemometer_speed_entry','cinemometro',{cin:snap});
+   },600);
+ }catch(_){}
+}
+
 function cinVelocidadeDigitada(el){
  if(!el) return;
  // Apenas algarismos introduzidos pelo utilizador; sem spinner/alteração por setas do teclado.
@@ -17683,19 +17738,19 @@ html body .leg-card-new .copy-all-new{
     });
 
     wrap('cinCopiarCodigo', function () {
-      push('cinemometer_copy_code', 'cinemometro');
+      push('cinemometer_copy_code', 'cinemometro', {cin: cinTelemetriaSnapshot(), copy_result: true});
     });
 
     wrap('cinCopiarTexto', function () {
-      push('cinemometer_copy_text', 'cinemometro');
+      push('cinemometer_copy_text', 'cinemometro', {cin: cinTelemetriaSnapshot(), copy_result: true});
     });
 
     wrap('cinCopiarLocal', function () {
-      push('cinemometer_copy_location', 'cinemometro');
+      push('cinemometer_copy_location', 'cinemometro', {cin: cinTelemetriaSnapshot(), copy_result: true});
     });
 
-    wrap('cinSelecionarPerfil', function () {
-      push('cinemometer_profile_select', 'cinemometro');
+    wrap('cinSelecionarPerfil', function (id) {
+      push('cinemometer_profile_select', 'cinemometro', {profile_id: id || null});
     });
 
     wrap('cinNovoPerfil', function () {
@@ -17715,9 +17770,7 @@ html body .leg-card-new .copy-all-new{
     });
 
     wrap('cinRecalcular', function () {
-      if (rateLimited('cin_recalculate', 3000)) {
-        push('cinemometer_calculation', 'cinemometro');
-      }
+      cinTelemetriaAgendarCalculo();
     });
 
   }
@@ -17778,10 +17831,7 @@ html body .leg-card-new .copy-all-new{
       }
 
       if (ev.target && ev.target.id === 'cinRegistada') {
-        var value = String(ev.target.value || '').trim();
-        if (value && rateLimited('cin_speed_entry', 2000)) {
-          push('cinemometer_speed_entry', 'cinemometro');
-        }
+        cinTelemetriaRegistarVelocidade();
       }
     }, true);
 
