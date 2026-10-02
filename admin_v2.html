@@ -50,6 +50,9 @@ button{cursor:pointer}
 }
 .top-left{display:flex;align-items:center;gap:10px}
 .status-dot{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 12px rgba(34,242,160,.65)}
+.status-dot.loading{background:var(--yellow);box-shadow:0 0 12px rgba(255,211,78,.55)}
+.status-dot.offline{background:var(--red);box-shadow:0 0 12px rgba(255,88,112,.55)}
+.status-dot.partial{background:var(--yellow);box-shadow:0 0 12px rgba(255,211,78,.55)}
 .admin-brand{font-weight:950;letter-spacing:2px}
 .admin-brand b{color:var(--cyan)}
 .top-actions{display:flex;gap:9px}
@@ -339,6 +342,8 @@ let selectedDate = localDateISO(new Date());
 let refreshTimer = null;
 let countdownTimer = null;
 let refreshIn = 30;
+let dashboardInFlight = false;
+let hourlyLoadSequence = 0;
 
 function $(id){return document.getElementById(id);}
 function localDateISO(d){
@@ -357,6 +362,24 @@ function toast(msg){
   setTimeout(()=>$('toast').classList.add('hidden'),2200);
 }
 function token(){return sessionStorage.getItem(TOKEN_KEY)||'';}
+function setBackendState(state){
+  const badge=$('backendBadge');
+  const dot=document.querySelector('.status-dot');
+  if(!badge||!dot) return;
+  dot.classList.remove('loading','offline','partial');
+  if(state==='loading'){
+    dot.classList.add('loading');
+    badge.textContent='A ATUALIZAR';
+  }else if(state==='partial'){
+    dot.classList.add('partial');
+    badge.textContent='BACKEND ONLINE · PARCIAL';
+  }else if(state==='offline'){
+    dot.classList.add('offline');
+    badge.textContent='BACKEND OFFLINE · ERRO';
+  }else{
+    badge.textContent='BACKEND ONLINE';
+  }
+}
 
 async function request(url, options={}){
   const h = new Headers(options.headers||{});
@@ -540,9 +563,20 @@ function renderDays(){
 }
 
 async function loadHourly(){
-  const data=await request(`${HOURLY_API}?date=${encodeURIComponent(selectedDate)}`);
-  const rows=data.rows||[];
+  const sequence=++hourlyLoadSequence;
+  const dateRequested=selectedDate;
+  const data=await request(`${HOURLY_API}?date=${encodeURIComponent(dateRequested)}`);
+  if(sequence!==hourlyLoadSequence || dateRequested!==selectedDate) return;
+  const rows=Array.isArray(data.rows)?data.rows:[];
   const body=$('hourTable').querySelector('tbody'); body.innerHTML='';
+  if(!rows.length){
+    body.innerHTML='<tr><td colspan="10" class="muted" style="text-align:center">Sem dados para o dia selecionado.</td></tr>';
+    $('dayUsers').textContent='0';
+    $('peakHour').textContent='00:00';
+    $('peakUsers').textContent='0';
+    $('daySearches').textContent='0';
+    return;
+  }
   let dayUsers=Number(rows[0]?.day_unique_users||0), searches=0, peakHour='00:00', peakUsers=0;
   rows.forEach(r=>{
     searches+=Number(r.vehicle_searches||0);
@@ -590,10 +624,14 @@ function renderDiagnostics(d){
 }
 
 async function loadDashboard(){
+  if(dashboardInFlight) return null;
+  dashboardInFlight=true;
+  setBackendState('loading');
   $('statusLine').textContent='A atualizar...';
   const t0=performance.now();
   try{
     const data=await request(STATS_API);
+    const backendErrors=(data.errors && typeof data.errors==='object') ? Object.keys(data.errors).filter(k=>data.errors[k]) : [];
     const o=data.overview||{};
     $('onlineValue').textContent=fmt(o.online_now);
     $('activeValue').textContent=fmt(o.active_10m);
@@ -610,14 +648,37 @@ async function loadDashboard(){
     if(resetStatus && !resetStatus.classList.contains('ok') && !resetStatus.classList.contains('err')){
       resetStatus.textContent='Último reset 24H: '+resetAt;
     }
-    await loadHourly();
-    $('statusLine').textContent=`Atualizado em ${new Date(data.generatedAt||Date.now()).toLocaleString('pt-PT')}`;
-    $('backendTime').textContent=`BACKEND ONLINE · ${Math.round(performance.now()-t0)} ms`;
+
+    let hourlyOk=true;
+    try{
+      await loadHourly();
+    }catch(hourlyError){
+      hourlyOk=false;
+      const body=$('hourTable')?.querySelector('tbody');
+      if(body) body.innerHTML='<tr><td colspan="10" class="muted" style="text-align:center">Falha ao carregar o histórico horário.</td></tr>';
+    }
+
+    const partial=backendErrors.length>0 || !hourlyOk;
+    if(partial){
+      setBackendState('partial');
+      const details=backendErrors.length ? ' · '+backendErrors.join(', ') : '';
+      $('statusLine').textContent='Atualizado com avisos'+details+'.';
+      $('backendTime').textContent=`BACKEND ONLINE · parcial · ${Math.round(performance.now()-t0)} ms`;
+    }else{
+      setBackendState('online');
+      $('statusLine').textContent=`Atualizado em ${new Date(data.generatedAt||Date.now()).toLocaleString('pt-PT')}`;
+      $('backendTime').textContent=`BACKEND ONLINE · ${Math.round(performance.now()-t0)} ms`;
+    }
+    return !partial;
   }catch(e){
+    setBackendState('offline');
     $('statusLine').textContent='Falha na atualização: '+e.message;
     $('backendTime').textContent='BACKEND OFFLINE/ERRO · '+Math.round(performance.now()-t0)+' ms';
+    return false;
+  }finally{
+    dashboardInFlight=false;
+    refreshIn=30;
   }
-  refreshIn=30;
 }
 
 function startRefresh(){
@@ -644,7 +705,11 @@ $('loginForm').addEventListener('submit',async e=>{
   }catch(err){$('loginError').textContent=err.message}
 });
 
-$('refreshBtn').addEventListener('click',()=>{loadDashboard();toast('Dados atualizados.')});
+$('refreshBtn').addEventListener('click',async()=>{
+  const ok=await loadDashboard();
+  if(ok===null) return;
+  toast(ok?'Dados atualizados.':'A atualização terminou com erros.');
+});
 $('reset24hBtn').addEventListener('click',reset24h);
 $('logoutBtn').addEventListener('click',logout);
 
