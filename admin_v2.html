@@ -372,7 +372,7 @@ td{font-weight:850;font-size:13px}
 
 <script>
 const API_ORIGIN = 'https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/';
-const API_CACHE_BUSTER = '18.5';
+const API_CACHE_BUSTER = '18.6';
 const AUTH_API = API_ORIGIN + 'admin-auth-v2?v=' + API_CACHE_BUSTER;
 const STATS_API = API_ORIGIN + 'stats-v2?v=' + API_CACHE_BUSTER;
 const HOURLY_API = API_ORIGIN + 'hourly-history-v2';
@@ -682,9 +682,28 @@ function renderCinemometer(d){
   html+='</div>';
   html+='<div class="cin-admin-note">Estes indicadores descrevem comportamento de utilização do software. Não permitem, por si só, provar que uma velocidade foi real, que uma operação ocorreu no terreno ou que uma determinada pessoa foi o operador. A identificação abaixo é a que foi declarada na sessão.</div>';
   html+='<details class="admin-expander" style="margin-top:10px"><summary><span>SESSÕES RECENTES</span><span style="color:#8fa3aa;font-size:9px">'+num(sessions.length)+' analisadas</span></summary><div class="admin-expander-body">';
-  if(sessions.length){html+='<div style="overflow:auto"><table class="diag-table"><thead><tr><th>HORA</th><th>OPERADOR DECLARADO</th><th>POSTO</th><th>APARELHO</th><th>CÁLCULOS</th><th>VEL.</th><th>REP.</th><th>PADRÃO</th></tr></thead><tbody>';
-    sessions.forEach(function(x){const op=x.operator||{},ap=x.aparelho||{};const opText=[op.nome,op.numero].filter(Boolean).join(' · ')||'—';const apText=[ap.marca,ap.modelo,ap.serie].filter(Boolean).join(' · ')||'—';html+='<tr><td class="diag-muted">'+(x.first_seen?new Date(x.first_seen).toLocaleString('pt-PT'):'—')+'</td><td>'+escapeHtml(opText)+'</td><td>'+escapeHtml(op.posto||'—')+'</td><td>'+escapeHtml(apText)+'</td><td>'+num(x.calculations)+'</td><td>'+num(x.min_speed)+'–'+num(x.max_speed)+'</td><td>'+pct(x.repeated_speed_pct)+'</td><td>'+escapeHtml(x.pattern||'—')+(x.flags?.length?' · '+escapeHtml(x.flags.join(', ')):'')+'</td></tr>';});
-    html+='</tbody></table></div>';} else html+='<div class="empty">Sem sessões com velocidades registadas.</div>';
+  if(sessions.length){
+    sessions.slice(0,30).forEach(function(x,idx){
+      const op=x.operator||{}, ap=x.aparelho||{}, cfg=x.configuracao||{};
+      const opText=[op.nome,op.numero].filter(Boolean).join(' · ')||'Operador não identificado';
+      const apText=[ap.marca,ap.modelo,ap.serie].filter(Boolean).join(' · ')||'Aparelho não configurado';
+      const flagsText=(x.flags||[]).join(' · ');
+      const summary=(x.first_seen?new Date(x.first_seen).toLocaleString('pt-PT'):'—')+' · '+opText+' · '+num(x.calculations)+' cálculos · '+(x.min_speed==null?'—':num(x.min_speed)+'–'+num(x.max_speed)+' km/h');
+      html+='<details class="admin-expander" style="margin-top:8px"><summary><span>'+escapeHtml(summary)+'</span><span style="color:#8fa3aa;font-size:9px">'+escapeHtml(x.pattern||'—')+'</span></summary><div class="admin-expander-body">';
+      html+='<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:9px">';
+      html+='<div class="cin-admin-card"><span>OPERAÇÃO</span><strong style="font-size:12px">'+escapeHtml(x.operation_id||'ID legado')+'</strong><small>Browser: '+escapeHtml(x.browser||'—')+'</small></div>';
+      html+='<div class="cin-admin-card"><span>OPERADOR DECLARADO</span><strong style="font-size:13px">'+escapeHtml(opText)+'</strong><small>Posto: '+escapeHtml(op.posto||'—')+'</small></div>';
+      html+='<div class="cin-admin-card"><span>APARELHO</span><strong style="font-size:12px">'+escapeHtml(apText)+'</strong><small>Configurado: '+(ap.configurado?'sim':'não')+'</small></div>';
+      html+='<div class="cin-admin-card"><span>CONFIGURAÇÃO</span><strong style="font-size:12px">'+escapeHtml(cfg.modo||'—')+'</strong><small>'+escapeHtml(cfg.enquadramento||'—')+' · limite '+(cfg.limite==null?'—':num(cfg.limite)+' km/h')+'</small></div>';
+      html+='</div>';
+      html+='<div class="cin-admin-note"><strong>Sequência observada:</strong> '+escapeHtml((x.speed_sequence||[]).join(' → ')||'ainda não disponível')+' km/h';
+      html+=' · intervalo mediano '+(x.median_interval_s==null?'—':num(Number(x.median_interval_s).toFixed(1))+' s');
+      html+=' · repetição '+pct(x.repeated_speed_pct);
+      html+=' · múltiplos de 5 '+pct(x.round5_pct);
+      html+=' · '+escapeHtml(flagsText||'sem sinalizadores')+'</div>';
+      html+='</div></details>';
+    });
+  } else html+='<div class="empty">Sem sessões com velocidades registadas.</div>';
   html+='</div></details>';
   html+='<details class="admin-expander" style="margin-top:10px"><summary><span>OPERADORES DECLARADOS</span><span style="color:#8fa3aa;font-size:9px">'+num(operators.length)+' identificações distintas</span></summary><div class="admin-expander-body">';
   if(operators.length){html+='<div style="overflow:auto"><table class="diag-table"><thead><tr><th>N.º</th><th>NOME</th><th>POSTO</th><th>SESSÕES</th><th>CÁLCULOS</th><th>ÚLTIMA ATIVIDADE</th></tr></thead><tbody>';
