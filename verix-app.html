@@ -2020,8 +2020,8 @@ function submitConjunto(event) {
   }
 
   // ---- Orquestração ASF ----
-  // O controlo de cadência pertence agora ao nível do pedido físico, para que
-  // POST e eventual GET de fallback contem e respeitem os mesmos limites.
+  // Uma consulta = uma tentativa HTTP física. A cadência é aplicada antes
+  // dessa única tentativa e a telemetria é apenas observacional.
   async function processarConsultaSeguroComCadencia(matLimpa, matDisplay, queryId, queryStartedAtMs, queuePosition) {
     mostrarSeguroLoading(matDisplay, 'A VERIFICAR...');
 
@@ -2063,7 +2063,7 @@ function submitConjunto(event) {
     /* Nunca acumular pedidos ASF. Se já existe um pedido físico em curso,
        o segundo disparo não entra numa fila nem gera outra tentativa. */
     if (ASF_EM_CURSO) {
-      mostrarSeguroLoading(matDisplay, 'JÁ EXISTE UMA CONSULTA ASF EM CURSO');
+      try { mostrarToast('Já existe uma consulta ASF em curso.'); } catch (_) {}
       return;
     }
 
