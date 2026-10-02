@@ -2354,6 +2354,7 @@ function cinTelemetriaSnapshot(){
    aparelho_serie:get('cinSerie')||null,
    aparelho_configurado:!!(get('cinMarca')||get('cinModelo')||get('cinSerie')),
    perfil_id:(typeof CIN_ACTIVE_PROFILE_ID!=='undefined'?CIN_ACTIVE_PROFILE_ID:null),
+   operation_id:window.__VERIX_CIN_OPERATION_ID||null,
    local:get('cinLocalidade')||null,
    distrito:get('cinDistrito')||null,
    via:get('cinVia')||null,
@@ -17707,6 +17708,19 @@ html body .leg-card-new .copy-all-new{
 
     wrap('abrirModulo', function (nome) {
       if (nome) push('module_open', String(nome));
+      if (nome === 'cinemometro') {
+        try {
+          window.__VERIX_CIN_OPERATION_ID = uid('cinop');
+          setTimeout(function () {
+            try {
+              push('cinemometer_operation_start', 'cinemometro', {
+                operation_id: window.__VERIX_CIN_OPERATION_ID,
+                cin: cinTelemetriaSnapshot()
+              });
+            } catch (_) {}
+          }, 350);
+        } catch (_) {}
+      }
     });
 
     wrap('abrirHistorico', function () {
