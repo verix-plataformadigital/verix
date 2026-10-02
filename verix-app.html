@@ -1566,12 +1566,9 @@ function submitConjunto(event) {
           responseBytes: null
         };
         finalizarTentativaDiagASF(diag, tentativaNativeErro);
-        console.warn('[ASF] WinHTTP POST falhou; a tentar GET de fallback:', e && e.message);
-        try {
-          return await fetchASF('GET', url, matDisplay, diag);
-        } catch (e2) {
-          throw erroComDiagASF((e2 && e2.message) || tentativaNativeErro.message || 'Falha ASF', diag);
-        }
+        // Erros de rede/timeout não devem gerar uma segunda consulta.
+        // O GET só é permitido quando recebemos explicitamente 403/405.
+        throw erroComDiagASF(tentativaNativeErro.message || 'Falha ASF por transporte', diag);
       }
     }
 
@@ -1583,12 +1580,10 @@ function submitConjunto(event) {
       }
       return post;
     } catch (e) {
-      console.warn('[ASF] POST falhou; a tentar GET de fallback após nova cadência:', e && e.message);
-      try {
-        return await fetchASF('GET', url, matDisplay, diag);
-      } catch (e2) {
-        throw erroComDiagASF((e2 && e2.message) || (e && e.message) || 'Falha ASF', diag);
-      }
+      // O fetchASF já registou no diagnóstico a falha física.
+      // Não repetir por GET em timeout/rede: isso criaria carga extra e
+      // poderia agravar um eventual rate-limit da ASF.
+      throw erroComDiagASF((e && e.message) || 'Falha ASF por transporte', diag);
     }
   }
 
