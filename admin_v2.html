@@ -7,237 +7,83 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <script>
-(function(){
-  try{
-    const k='_verix_admin_v2_boot';
-    const u=new URL(location.href);
-    if(!u.searchParams.has(k)){
-      u.searchParams.set(k,Date.now());
-      location.replace(u.toString());
-      return;
-    }
-    u.searchParams.delete(k);
-    history.replaceState(null,document.title,u.pathname+(u.search?'?'+u.searchParams.toString():'')+u.hash);
-  }catch(_){}
-})();
+(function(){try{
+  const k='_verix_admin_boot';
+  const u=new URL(location.href);
+  if(!u.searchParams.has(k)){u.searchParams.set(k,Date.now());location.replace(u.toString());return;}
+  u.searchParams.delete(k);history.replaceState(null,document.title,u.pathname+(u.search?'?'+u.searchParams.toString():'')+u.hash);
+}catch(e){}})();
 </script>
 <title>VÉRIX // ADMIN · APP 1.4</title>
 <style>
 :root{
-  --bg:#05090c;
-  --panel:#0a1419;
-  --panel2:#0d1b21;
-  --panel3:#11242c;
-  --line:rgba(130,202,215,.15);
-  --line2:rgba(130,202,215,.08);
-  --cyan:#66d9e8;
-  --green:#2fe8a5;
-  --red:#ff6478;
-  --yellow:#ffd65a;
-  --text:#edf5f6;
-  --muted:#8da5ad;
-  --soft:#b9cbd0;
-  --shadow:0 18px 55px rgba(0,0,0,.28);
+  --bg:#03080b;--panel:#07141a;--panel2:#0a1b22;--line:rgba(112,210,225,.16);
+  --line2:rgba(255,255,255,.055);--text:#eaf4f6;--muted:#829aa2;
+  --cyan:#67dbe9;--green:#38e2a5;--yellow:#ffd45b;--red:#ff647a;--blue:#82b8ff;
+  --shadow:0 18px 55px rgba(0,0,0,.30);
 }
 *{box-sizing:border-box}
-html,body{margin:0;min-height:100%;background:linear-gradient(180deg,#071116 0,#04080b 60%,#030609 100%);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+html,body{margin:0;background:radial-gradient(circle at 50% 0,#0b2731 0,#051217 35%,#02070a 80%);color:var(--text);font-family:Arial,Helvetica,sans-serif}
 body{min-height:100vh}
 button,input{font:inherit}
 button{cursor:pointer}
 .hidden{display:none!important}
-.muted{color:var(--muted)}
-.green{color:var(--green)}
-.red{color:var(--red)}
-.yellow{color:var(--yellow)}
-.cyan{color:var(--cyan)}
-
-#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
-.login-card{width:min(460px,94vw);padding:28px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(145deg,rgba(12,28,34,.98),rgba(4,11,15,.98));box-shadow:var(--shadow)}
-.brand{text-align:center;font-weight:950;letter-spacing:3px;font-size:22px}
-.brand b{color:var(--cyan)}
-.login-sub{text-align:center;margin:10px 0 22px;color:var(--muted);font-size:13px}
-.login-card input{width:100%;padding:14px 15px;border-radius:11px;border:1px solid rgba(130,202,215,.22);background:#eef6f8;color:#091216;outline:none;font-weight:800}
-.login-card button{width:100%;margin-top:12px;padding:13px;border-radius:11px;border:1px solid rgba(102,217,232,.35);background:#0d7f91;color:#fff;font-weight:950;letter-spacing:1.4px}
-.login-error{min-height:17px;margin-top:12px;color:var(--red);text-align:center;font-size:11px;font-weight:800}
-
-#app{max-width:1900px;margin:0 auto;padding:10px 16px 44px}
-.topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 4px 12px;border-bottom:1px solid var(--line);background:rgba(4,9,12,.94);backdrop-filter:blur(16px)}
-.top-left{display:flex;align-items:center;gap:10px;min-width:0}
-.status-dot{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 14px rgba(47,232,165,.65);flex:0 0 auto}
-.status-dot.loading{background:var(--yellow);box-shadow:0 0 14px rgba(255,214,90,.55)}
-.status-dot.offline{background:var(--red);box-shadow:0 0 14px rgba(255,100,120,.55)}
-.status-dot.partial{background:var(--yellow)}
-.admin-brand{font-weight:950;letter-spacing:2px;white-space:nowrap}
-.admin-brand b{color:var(--cyan)}
-.backend-badge{font:800 10px Consolas,monospace;color:var(--green);letter-spacing:1px;white-space:nowrap}
-.top-actions{display:flex;gap:8px}
-.top-actions button{border:1px solid var(--line);background:#0b2028;color:#e8f6f8;border-radius:9px;padding:9px 12px;font-weight:900;font-size:11px}
-.top-actions button:hover{border-color:rgba(102,217,232,.34);background:#0e2730}
-
-.hero{margin-top:16px;padding:20px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,rgba(9,24,30,.92),rgba(5,12,16,.95));box-shadow:var(--shadow)}
-.hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
-.kicker{font:900 10px/1 Consolas,monospace;letter-spacing:2.4px;color:var(--cyan)}
-.hero h1{margin:7px 0 5px;font-size:28px;letter-spacing:.3px}
-.hero p{margin:0;color:var(--muted);font-size:12px}
-.hero-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
-.period-switch{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
-.period-switch button{border:1px solid var(--line);background:#07171e;color:var(--muted);border-radius:8px;padding:7px 10px;font:900 9px/1 Consolas,monospace;letter-spacing:1px}
-.period-switch button.active{background:#12313a;border-color:rgba(102,217,232,.4);color:var(--cyan)}
-.status-line{margin-top:15px;padding:10px 12px;border-left:2px solid var(--cyan);background:rgba(40,120,135,.08);color:#bdd0d5;font:700 11px/1.4 Consolas,monospace}
-.status-meta{display:flex;gap:15px;margin-top:8px;color:#76929b;font:800 9px/1 Consolas,monospace}
-
-.layout{display:grid;grid-template-columns:235px minmax(0,1fr);gap:14px;margin-top:14px;align-items:start}
-.sidebar{position:sticky;top:76px;border:1px solid var(--line);border-radius:16px;background:rgba(8,18,23,.9);overflow:hidden}
-.side-title{padding:13px 14px 10px;color:#6f8992;font:900 9px/1 Consolas,monospace;letter-spacing:2px}
-.theme-nav{display:flex;flex-direction:column;padding:7px}
-.theme-nav button{display:flex;align-items:center;gap:10px;border:1px solid transparent;background:transparent;color:#b7c9cd;border-radius:10px;padding:11px 10px;text-align:left;font-size:11px;font-weight:900;letter-spacing:.8px}
-.theme-nav button .nav-dot{width:7px;height:7px;border-radius:50%;background:#48616a;flex:0 0 auto}
-.theme-nav button small{margin-left:auto;color:#607880;font:800 8px Consolas,monospace}
-.theme-nav button:hover{background:rgba(102,217,232,.05)}
-.theme-nav button.active{background:#0e252d;border-color:rgba(102,217,232,.2);color:#eef8fa}
-.theme-nav button.active .nav-dot{background:var(--cyan);box-shadow:0 0 10px rgba(102,217,232,.55)}
-.theme-page{display:none}
-.theme-page.active{display:block}
-.theme-head{display:flex;justify-content:space-between;align-items:end;gap:12px;margin-bottom:10px}
-.theme-kicker{font:900 9px/1 Consolas,monospace;color:var(--cyan);letter-spacing:2px}
-.theme-head h2{margin:5px 0 0;font-size:22px}
-.theme-head p{margin:4px 0 0;color:var(--muted);font-size:11px}
-.theme-note{color:#7f989f;font:800 9px Consolas,monospace;white-space:nowrap}
-.subnav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;padding:6px;border:1px solid var(--line);border-radius:12px;background:rgba(5,13,17,.75)}
-.subnav button{border:1px solid transparent;border-radius:8px;background:transparent;color:#7e969e;padding:8px 10px;font:900 9px Consolas,monospace;letter-spacing:1px}
-.subnav button:hover{background:rgba(102,217,232,.04)}
-.subnav button.active{background:#102830;border-color:rgba(102,217,232,.2);color:var(--cyan)}
-.subpage{display:none}
-.subpage.active{display:block}
-
-.grid6{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px}
-.grid5{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
-.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.card{border:1px solid var(--line);border-radius:13px;padding:13px 14px;background:linear-gradient(145deg,rgba(10,26,33,.9),rgba(5,14,18,.95));min-height:92px}
-.card-label{color:#7f99a1;font:800 8px/1.2 Consolas,monospace;letter-spacing:1.3px}
-.card-value{margin-top:13px;color:#edf7f8;font:950 25px/1 Consolas,monospace}
-.card-value.small{font-size:17px}
-.card-note{margin-top:6px;color:#8299a1;font-size:9px;line-height:1.3}
-.card.green .card-value{color:var(--green)}
-.card.red .card-value{color:var(--red)}
-.card.yellow .card-value{color:var(--yellow)}
-.card.cyan .card-value{color:var(--cyan)}
-
-.panel{border:1px solid var(--line);border-radius:14px;background:rgba(7,17,22,.86);overflow:hidden}
-.panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line2)}
-.panel-head h3{margin:0;font-size:13px}
-.panel-head span{color:#708890;font:800 8px Consolas,monospace}
-.panel-body{padding:13px}
-.note{margin-top:10px;padding:10px 12px;border-left:2px solid rgba(255,214,90,.6);background:rgba(80,70,10,.11);color:#8fa5ab;font-size:10px;line-height:1.45}
-.info-note{margin-top:10px;padding:10px 12px;border-left:2px solid rgba(102,217,232,.45);background:rgba(20,90,105,.08);color:#8fa5ab;font-size:10px;line-height:1.45}
-.empty{padding:14px;border:1px dashed rgba(130,202,215,.13);border-radius:10px;color:#789099;font-size:10px;line-height:1.45;text-align:center;background:rgba(255,255,255,.015)}
-.big-number{font:950 31px/1 Consolas,monospace}
-.metric-line{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line2);font-size:10px}
-.metric-line:last-child{border-bottom:0}
-.metric-line strong{font:950 11px Consolas,monospace;color:#ecf6f7}
-
-.bar-list{display:flex;flex-direction:column;gap:10px}
-.bar-row{display:grid;grid-template-columns:minmax(120px,210px) 1fr 60px;gap:9px;align-items:center}
-.bar-label{font-size:10px;color:#c0d0d4;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bar-track{height:9px;border-radius:99px;background:#102028;overflow:hidden}
-.bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#118b9a,#5fd9e7)}
-.bar-fill.red{background:linear-gradient(90deg,#9f2a40,#ff6478)}
-.bar-fill.green{background:linear-gradient(90deg,#0c9771,#2fe8a5)}
-.bar-num{text-align:right;font:900 10px Consolas,monospace;color:#eef8f9}
-
-.table-wrap{overflow:auto;border-top:1px solid var(--line2)}
-table{width:100%;border-collapse:collapse;min-width:640px}
-th,td{padding:9px 10px;border-bottom:1px solid var(--line2);font-size:10px;text-align:right;vertical-align:top}
-th:first-child,td:first-child{text-align:left}
-th{color:var(--cyan);font:900 8px/1.2 Consolas,monospace;letter-spacing:.8px;text-transform:uppercase}
-td{color:#c6d5d9;font-weight:800}
-td.label{color:#edf6f8;font-weight:900}
-.table-tight table{min-width:0}
-.table-tight th,.table-tight td{padding:8px 7px;font-size:9px}
-.pill{display:inline-block;padding:4px 7px;border-radius:99px;border:1px solid rgba(102,217,232,.18);background:rgba(102,217,232,.05);color:var(--cyan);font:900 8px Consolas,monospace}
-.pill.red{border-color:rgba(255,100,120,.2);background:rgba(255,100,120,.06);color:var(--red)}
-
-.funnel{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
-.funnel-step{padding:11px;border-radius:10px;border:1px solid var(--line);background:#08171d}
-.funnel-step span{display:block;color:#789099;font:800 8px Consolas,monospace;letter-spacing:1px}
-.funnel-step strong{display:block;margin-top:8px;font:950 22px Consolas,monospace}
-.funnel-arrow{display:flex;align-items:center;justify-content:center;color:#5f7a83;font-size:16px}
-.progress{height:9px;border-radius:99px;background:#102028;overflow:hidden}
-.progress > i{display:block;height:100%;border-radius:99px}
-
-.chart{display:flex;align-items:flex-end;gap:4px;height:150px;padding:10px 8px 8px;border-top:1px solid var(--line2)}
-.chart-col{flex:1;min-width:3px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;gap:4px}
-.chart-bar{width:100%;max-width:20px;border-radius:5px 5px 2px 2px;background:linear-gradient(180deg,#60d8e6,#0a5360);min-height:2px}
-.chart-label{font:800 7px Consolas,monospace;color:#69828a;writing-mode:vertical-rl;transform:rotate(180deg);height:28px}
-.hour-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:5px}
-.hour-cell{padding:7px 5px;border-radius:8px;background:#09181e;border:1px solid var(--line2);text-align:center}
-.hour-cell strong{display:block;font:900 10px Consolas,monospace;color:#eaf5f7}
-.hour-cell span{display:block;margin-top:3px;color:#6f888f;font:800 7px Consolas,monospace}
-
-.device-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.status-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.system-box{border:1px solid var(--line);border-radius:14px;padding:14px;background:#09171d}
-.system-label{color:#718990;font:800 8px Consolas,monospace;letter-spacing:1px}
-.system-value{margin-top:9px;font:900 15px Consolas,monospace;color:#edf7f8;overflow-wrap:anywhere}
-.reset-box{border:1px solid rgba(255,100,120,.22);border-radius:13px;padding:14px;background:linear-gradient(145deg,rgba(52,9,18,.24),rgba(7,15,19,.84))}
-.reset-title{font-size:13px;font-weight:950;color:#ffe1e6}
-.reset-desc{margin-top:6px;color:#8ba2a9;font-size:10px;line-height:1.45}
-.reset-actions{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;margin-top:12px}
-.reset-status{min-height:18px;color:#8fa6ad;font:800 9px Consolas,monospace}
-.reset-status.ok{color:var(--green)}
-.reset-status.err{color:var(--red)}
-.reset-btn{border:1px solid rgba(255,100,120,.4);background:#4a101b;color:#ffe7eb;border-radius:9px;padding:10px 13px;font:950 9px Consolas,monospace;letter-spacing:1px}
-
-.footer-note{margin-top:12px;color:#5f777f;font:800 8px/1.5 Consolas,monospace}
-
-@media(max-width:1280px){
-  .grid6{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .grid5{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .device-grid{grid-template-columns:1fr}
-}
-@media(max-width:1050px){
-  .layout{grid-template-columns:1fr}
-  .sidebar{position:sticky;top:58px;z-index:30}
-  .theme-nav{display:flex;flex-direction:row;overflow:auto}
-  .theme-nav button{flex:0 0 auto}
-  .theme-nav button small{display:none}
-  .grid4{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .grid3{grid-template-columns:repeat(2,minmax(0,1fr))}
-}
-@media(max-width:700px){
-  #app{padding:7px 9px 30px}
-  .topbar{padding:8px 2px}
-  .admin-brand{font-size:11px}
-  .backend-badge{display:none}
-  .top-actions button{padding:8px 9px;font-size:10px}
-  .hero{padding:15px}
-  .hero-top{flex-direction:column}
-  .hero-right{width:100%;align-items:flex-start}
-  .period-switch{justify-content:flex-start}
-  .hero h1{font-size:23px}
-  .grid6,.grid5,.grid4,.grid3,.grid2,.status-grid{grid-template-columns:1fr 1fr}
-  .funnel{grid-template-columns:1fr 1fr}
-  .hour-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
-  .bar-row{grid-template-columns:115px 1fr 45px}
-  .theme-head{align-items:flex-start;flex-direction:column}
-  .theme-note{white-space:normal}
-  .reset-actions{grid-template-columns:1fr}
-}
-@media(max-width:440px){
-  .grid6,.grid5,.grid4,.grid3,.grid2,.status-grid{grid-template-columns:1fr}
-  .funnel{grid-template-columns:1fr}
-  .hour-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
-}
+#loginScreen{min-height:100vh;display:grid;place-items:center;padding:24px}
+.login-card{width:min(470px,94vw);padding:30px;border:1px solid var(--line);border-radius:18px;background:rgba(5,17,22,.95);box-shadow:var(--shadow)}
+.brand{text-align:center;font-weight:950;letter-spacing:3px;font-size:21px}.brand b{color:var(--cyan)}
+.login-sub{text-align:center;margin:8px 0 22px;color:var(--muted);font-size:12px}
+.login-card input{width:100%;padding:13px 15px;border-radius:10px;border:1px solid var(--line);background:#eef6ff;color:#102028;font-weight:800;outline:none}
+.login-card button{width:100%;margin-top:11px;padding:12px;border:1px solid rgba(103,219,233,.35);border-radius:10px;background:linear-gradient(180deg,#1aa8b8,#087f91);color:white;font-weight:950;letter-spacing:1.2px}
+.login-error{min-height:18px;margin-top:12px;text-align:center;color:var(--red);font-size:11px;font-weight:800}
+#app{max-width:1660px;margin:0 auto;padding:10px 16px 42px}
+.topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 3px 10px;background:rgba(3,8,11,.94);backdrop-filter:blur(13px);border-bottom:1px solid var(--line)}
+.top-left{display:flex;align-items:center;gap:9px;min-width:0}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 13px rgba(56,226,165,.6);flex:0 0 auto}
+.dot.loading{background:var(--yellow);box-shadow:0 0 13px rgba(255,212,91,.5)}.dot.partial{background:var(--yellow)}.dot.offline{background:var(--red);box-shadow:0 0 13px rgba(255,100,122,.5)}
+.brand-mini{font-weight:950;letter-spacing:2px;white-space:nowrap}.brand-mini b{color:var(--cyan)}
+.status-badge{color:#7c989f;font:900 8px Consolas,monospace;letter-spacing:1px;white-space:nowrap}
+.top-actions{display:flex;gap:7px}.top-actions button{border:1px solid var(--line);border-radius:8px;background:#0b2027;color:#e8f5f7;padding:8px 11px;font-size:9px;font-weight:900;letter-spacing:1px}
+.hero{margin-top:13px;padding:17px 20px 15px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(145deg,rgba(7,24,30,.95),rgba(4,12,16,.95));box-shadow:var(--shadow)}
+.hero-row{display:flex;align-items:end;justify-content:space-between;gap:15px}.kicker{color:var(--cyan);font:900 8px Consolas,monospace;letter-spacing:2px}
+.hero h1{margin:6px 0 4px;font-size:26px;letter-spacing:.4px}.hero p{margin:0;color:var(--muted);font-size:11px}
+.periods{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}.periods button{border:1px solid var(--line);border-radius:8px;background:#07161c;color:#738c94;padding:7px 9px;font:900 8px Consolas,monospace;letter-spacing:1px}.periods button.active{background:#102b34;color:var(--cyan);border-color:rgba(103,219,233,.30)}
+.status-line{margin-top:12px;padding:9px 11px;border-left:2px solid var(--cyan);background:rgba(103,219,233,.045);color:#bdd1d5;font:700 10px/1.4 Consolas,monospace}
+.status-meta{display:flex;gap:13px;margin-top:7px;color:#66828a;font:800 8px Consolas,monospace}
+.alert{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px;padding:10px 12px;border:1px solid rgba(255,100,122,.22);border-radius:11px;background:rgba(78,12,24,.18);font-size:10px}.alert strong{color:#ffd8de}.alert button{border:1px solid rgba(255,100,122,.28);border-radius:8px;background:transparent;color:#ff9aaa;padding:6px 8px;font-size:8px;font-weight:900}
+.theme-nav{position:sticky;top:52px;z-index:25;display:flex;gap:6px;margin-top:10px;padding:6px;border:1px solid var(--line);border-radius:12px;background:rgba(4,12,16,.95);overflow-x:auto;box-shadow:0 8px 25px rgba(0,0,0,.16)}
+.theme-nav button{flex:1 0 112px;display:flex;align-items:center;gap:8px;border:1px solid transparent;border-radius:8px;background:transparent;color:#78929a;padding:9px 10px;text-align:left;font-size:9px;font-weight:950;letter-spacing:.8px}
+.theme-nav button i{width:6px;height:6px;border-radius:50%;background:#405761;flex:0 0 auto}.theme-nav button small{margin-left:auto;color:#536b72;font:800 7px Consolas,monospace}.theme-nav button:hover{background:rgba(103,219,233,.04)}.theme-nav button.active{background:#0e252d;color:#eef7f8;border-color:rgba(103,219,233,.19)}.theme-nav button.active i{background:var(--cyan);box-shadow:0 0 10px rgba(103,219,233,.5)}
+.page{display:none;margin-top:12px}.page.active{display:block}
+.theme-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:2px 0 9px}.theme-head h2{margin:4px 0 2px;font-size:21px}.theme-head p{margin:0;color:var(--muted);font-size:10px}.theme-code{color:#6f8b93;font:800 8px Consolas,monospace;letter-spacing:1px}
+.subnav{display:flex;gap:5px;overflow-x:auto;margin-bottom:9px;padding:5px;border:1px solid var(--line);border-radius:10px;background:rgba(5,13,17,.75)}
+.subnav button{flex:0 0 auto;border:1px solid transparent;border-radius:7px;background:transparent;color:#718b92;padding:7px 9px;font:900 8px Consolas,monospace;letter-spacing:.8px}.subnav button.active{background:#102730;color:var(--cyan);border-color:rgba(103,219,233,.2)}
+.subpage{display:none}.subpage.active{display:block}
+.grid6{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}.grid5{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.card{min-width:0;padding:11px 12px;border:1px solid var(--line);border-radius:11px;background:linear-gradient(145deg,rgba(9,27,34,.92),rgba(4,14,18,.96));min-height:82px}
+.card-label{color:#728e96;font:800 7px Consolas,monospace;letter-spacing:1px}.card-value{margin-top:12px;color:#edf8f9;font:950 23px/1 Consolas,monospace}.card-value.small{font-size:15px}.card-note{margin-top:5px;color:#7e969d;font-size:8px;line-height:1.3}
+.cyan .card-value{color:var(--cyan)}.green .card-value{color:var(--green)}.yellow .card-value{color:var(--yellow)}.red .card-value{color:var(--red)}.blue .card-value{color:var(--blue)}
+.panel{border:1px solid var(--line);border-radius:12px;background:rgba(6,17,22,.88);overflow:hidden}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line2)}.panel-head h3{margin:0;font-size:11px}.panel-head span{color:#607a82;font:800 7px Consolas,monospace;letter-spacing:.6px}.panel-body{padding:11px}
+.metric{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--line2);font-size:9px}.metric:last-child{border-bottom:0}.metric strong{font:950 10px Consolas,monospace;color:#edf8f9}
+.info{margin-top:8px;padding:9px 10px;border-left:2px solid rgba(103,219,233,.45);background:rgba(20,91,105,.06);color:#8ba2a9;font-size:8px;line-height:1.45}
+.note{margin-top:8px;padding:9px 10px;border-left:2px solid rgba(255,212,91,.5);background:rgba(75,64,9,.09);color:#90a1a6;font-size:8px;line-height:1.45}
+.table-wrap{overflow:auto}.table-wrap table{width:100%;border-collapse:collapse;min-width:580px}.table-wrap table.tight{min-width:0}.table-wrap th,.table-wrap td{padding:8px 9px;border-bottom:1px solid var(--line2);font-size:8px;text-align:right;vertical-align:top}.table-wrap th:first-child,.table-wrap td:first-child{text-align:left}.table-wrap th{color:var(--cyan);font:900 7px Consolas,monospace;letter-spacing:.7px;text-transform:uppercase}.table-wrap td{color:#c3d2d6;font-weight:800}.table-wrap td.label{color:#edf7f8;font-weight:900}.danger{color:var(--red)!important}.ok{color:var(--green)!important}.warn{color:var(--yellow)!important}.muted{color:#779097!important}
+.bar-list{display:flex;flex-direction:column;gap:7px}.bar-row{display:grid;grid-template-columns:minmax(105px,190px) 1fr 52px;gap:8px;align-items:center}.bar-label{color:#bdcdd1;font-size:8px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bar-track{height:8px;border-radius:99px;background:#10222a;overflow:hidden}.bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#128d9c,#5ed7e5)}.bar-fill.red{background:linear-gradient(90deg,#a82c43,#ff697c)}.bar-fill.green{background:linear-gradient(90deg,#0e9774,#36e2a4)}.bar-num{text-align:right;color:#eff8f9;font:900 8px Consolas,monospace}
+.funnel{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}.funnel-step{padding:10px;border:1px solid var(--line);border-radius:9px;background:#08171d}.funnel-step span{display:block;color:#718a92;font:800 7px Consolas,monospace;letter-spacing:.8px}.funnel-step strong{display:block;margin-top:7px;font:950 18px Consolas,monospace}.progress{margin-top:7px;height:7px;border-radius:99px;background:#10232a;overflow:hidden}.progress i{display:block;height:100%}
+.chart{height:145px;display:flex;align-items:flex-end;gap:3px;padding:8px;border-top:1px solid var(--line2)}.chart-col{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:3px;min-width:2px}.chart-bar{width:100%;max-width:18px;border-radius:4px 4px 1px 1px;background:linear-gradient(180deg,#62d7e4,#0b4f5c);min-height:2px}.chart-label{font:800 6px Consolas,monospace;color:#678087;writing-mode:vertical-rl;transform:rotate(180deg);height:28px}
+.hour-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:4px}.hour-cell{padding:7px 4px;border:1px solid var(--line2);border-radius:7px;background:#09181e;text-align:center}.hour-cell strong{display:block;font:900 9px Consolas,monospace}.hour-cell span{display:block;margin-top:3px;color:#6f8991;font:800 6px Consolas,monospace}
+.tag{display:inline-block;padding:3px 6px;border:1px solid rgba(103,219,233,.18);border-radius:999px;background:rgba(103,219,233,.04);color:var(--cyan);font:900 7px Consolas,monospace}.tag.red{border-color:rgba(255,100,122,.2);background:rgba(255,100,122,.05);color:var(--red)}.tag.yellow{border-color:rgba(255,212,91,.2);background:rgba(255,212,91,.05);color:var(--yellow)}
+.alert-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.incident-card{padding:10px;border:1px solid rgba(255,100,122,.16);border-radius:10px;background:rgba(68,10,22,.10)}.incident-card span{display:block;color:#8e8b91;font:800 7px Consolas,monospace}.incident-card strong{display:block;margin-top:5px;font:950 20px Consolas,monospace;color:#ffd9de}.incident-card small{display:block;margin-top:5px;color:#9f8d91;font-size:8px}
+.reset-box{padding:13px;border:1px solid rgba(255,100,122,.22);border-radius:11px;background:rgba(72,10,22,.12)}.reset-title{font-weight:950;letter-spacing:1px}.reset-desc{margin-top:5px;color:#93a2a7;font-size:8px;line-height:1.45}.reset-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:11px}.reset-btn{border:1px solid rgba(255,100,122,.35);border-radius:8px;background:#4b0d19;color:#ffe9ed;padding:8px 10px;font-size:8px;font-weight:950;letter-spacing:.8px}.reset-status{color:#83979d;font:800 8px Consolas,monospace}
+@media(max-width:1200px){.grid6{grid-template-columns:repeat(3,minmax(0,1fr))}.grid5{grid-template-columns:repeat(3,minmax(0,1fr))}.grid4{grid-template-columns:repeat(2,minmax(0,1fr))}.device-grid{grid-template-columns:1fr!important}.alert-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:800px){#app{padding:7px 9px 32px}.hero-row{align-items:start;flex-direction:column}.hero h1{font-size:22px}.periods{justify-content:flex-start}.theme-nav{top:45px}.theme-nav button{flex-basis:105px}.grid6,.grid5,.grid4,.grid3,.grid2{grid-template-columns:1fr}.alert-grid{grid-template-columns:1fr 1fr}.top-actions button{padding:7px 8px}}
+@media(max-width:520px){.topbar{align-items:flex-start}.status-badge{display:none}.brand-mini{font-size:11px}.alert{align-items:flex-start}.alert button{white-space:nowrap}.bar-row{grid-template-columns:92px 1fr 40px}.funnel{grid-template-columns:1fr 1fr}.alert-grid{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
-
 <div id="loginScreen">
   <form class="login-card" id="loginForm">
     <div class="brand">VÉRIX <b>//</b> ADMIN 1.4</div>
-    <div class="login-sub">Painel de administração</div>
+    <div class="login-sub">Centro de controlo · análise operacional</div>
     <input id="password" type="password" autocomplete="current-password" placeholder="Password">
     <button type="submit">ENTRAR</button>
     <div id="loginError" class="login-error"></div>
@@ -247,9 +93,9 @@ td.label{color:#edf6f8;font-weight:900}
 <div id="app" class="hidden">
   <div class="topbar">
     <div class="top-left">
-      <span class="status-dot" id="statusDot"></span>
-      <div class="admin-brand">VÉRIX <b>//</b> ADMIN 1.4</div>
-      <div class="backend-badge" id="backendBadge">BACKEND ONLINE</div>
+      <i class="dot" id="statusDot"></i>
+      <div class="brand-mini">VÉRIX <b>//</b> ADMIN 1.4</div>
+      <div class="status-badge" id="backendBadge">BACKEND ONLINE</div>
     </div>
     <div class="top-actions">
       <button id="refreshBtn" type="button">ATUALIZAR</button>
@@ -258,791 +104,562 @@ td.label{color:#edf6f8;font-weight:900}
   </div>
 
   <section class="hero">
-    <div class="hero-top">
+    <div class="hero-row">
       <div>
-        <div class="kicker">OPS · TELEMETRIA · ANÁLISE</div>
-        <h1>CENTRO DE ADMINISTRAÇÃO</h1>
-        <p>Temas separados, subtemas compactos e leitura por contexto. Os dados históricos permanecem intactos.</p>
+        <div class="kicker">OPS · TELEMETRIA · ANALYTICS</div>
+        <h1>CENTRO DE CONTROLO</h1>
+        <p>Um tema de cada vez. Métricas separadas por contexto. Histórico preservado.</p>
       </div>
-      <div class="hero-right">
-        <div class="period-switch" id="periodSwitch">
-          <button data-period="24h" class="active">24 H</button>
-          <button data-period="7d">7 DIAS</button>
-          <button data-period="30d">30 DIAS</button>
-        </div>
+      <div class="periods" id="periodSwitch">
+        <button class="active" data-period="24h">24 H</button>
+        <button data-period="7d">7 DIAS</button>
+        <button data-period="30d">30 DIAS</button>
       </div>
     </div>
     <div class="status-line" id="statusLine">A iniciar...</div>
-    <div class="status-meta">
-      <span id="backendTime">BACKEND</span>
-      <span id="refreshMeta">ATUALIZAÇÃO AUTOMÁTICA · 30 S</span>
-    </div>
+    <div class="status-meta"><span id="backendTime">BACKEND</span><span id="refreshMeta">ATUALIZAÇÃO · 30 S</span></div>
   </section>
 
-  <div class="layout">
-    <aside class="sidebar">
-      <div class="side-title">TEMAS</div>
-      <nav class="theme-nav" id="themeNav">
-        <button data-theme="overview" class="active"><i class="nav-dot"></i><span>VISÃO GERAL</span><small>01</small></button>
-        <button data-theme="insurance"><i class="nav-dot"></i><span>SEGURO</span><small>02</small></button>
-        <button data-theme="speed"><i class="nav-dot"></i><span>VELOCIDADE</span><small>03</small></button>
-        <button data-theme="legislation"><i class="nav-dot"></i><span>LEGISLAÇÃO</span><small>04</small></button>
-        <button data-theme="usage"><i class="nav-dot"></i><span>UTILIZAÇÃO</span><small>05</small></button>
-        <button data-theme="devices"><i class="nav-dot"></i><span>DISPOSITIVOS</span><small>06</small></button>
-        <button data-theme="errors"><i class="nav-dot"></i><span>ERROS &amp; SAÚDE</span><small>07</small></button>
-        <button data-theme="system"><i class="nav-dot"></i><span>SISTEMA</span><small>08</small></button>
-      </nav>
-    </aside>
-
-    <main>
-      <section class="theme-page active" data-page="overview">
-        <div class="theme-head">
-          <div><div class="theme-kicker">01 · CONTEXTO</div><h2>VISÃO GERAL</h2><p>O que está a acontecer, sem misturar diagnóstico técnico com utilização.</p></div>
-          <div class="theme-note">PAINEL PRINCIPAL · ABERTO</div>
-        </div>
-        <div class="subnav">
-          <button data-sub-theme="overview" data-sub="summary" class="active">RESUMO</button>
-          <button data-sub-theme="overview" data-sub="pace">RITMO</button>
-          <button data-sub-theme="overview" data-sub="trend">TENDÊNCIA</button>
-        </div>
-
-        <div class="subpage active" data-subpage="overview:summary">
-          <div class="grid6" id="overviewCards"></div>
-          <div class="grid2" style="margin-top:10px">
-            <div class="panel"><div class="panel-head"><h3>RETENÇÃO / REGRESSO</h3><span>INSTALAÇÕES ÚNICAS</span></div><div class="panel-body" id="retentionPanel"></div></div>
-            <div class="panel"><div class="panel-head"><h3>EVENTOS MAIS FREQUENTES</h3><span>30 DIAS</span></div><div class="panel-body"><div id="topEvents" class="bar-list"></div></div></div>
-          </div>
-        </div>
-
-        <div class="subpage" data-subpage="overview:pace">
-          <div class="grid4" id="paceCards"></div>
-          <div class="grid2" style="margin-top:10px">
-            <div class="panel"><div class="panel-head"><h3>HORAS DE MAIOR MOVIMENTO</h3><span>JANELA 24H · HORA LOCAL</span></div><div class="panel-body"><div id="hourlyChart" class="hour-grid"></div></div></div>
-            <div class="panel"><div class="panel-head"><h3>SESSÕES</h3><span>COMPORTAMENTO GLOBAL</span></div><div class="panel-body" id="sessionSummary"></div></div>
-          </div>
-        </div>
-
-        <div class="subpage" data-subpage="overview:trend">
-          <div class="panel"><div class="panel-head"><h3>ATIVIDADE DIÁRIA</h3><span>ÚLTIMOS 30 DIAS</span></div><div id="dailyChart" class="chart"></div></div>
-          <div class="grid3" style="margin-top:10px" id="trendCards"></div>
-        </div>
-      </section>
-
-      <section class="theme-page" data-page="insurance">
-        <div class="theme-head">
-          <div><div class="theme-kicker">02 · CONSULTAS</div><h2>SEGURO</h2><p>Resultados ASF, qualidade da resposta e comportamento das consultas.</p></div>
-          <div class="theme-note">MATRÍCULA APENAS ONDE HÁ DIAGNÓSTICO</div>
-        </div>
-        <div class="subnav">
-          <button data-sub-theme="insurance" data-sub="results" class="active">RESULTADOS</button>
-          <button data-sub-theme="insurance" data-sub="performance">PERFORMANCE</button>
-          <button data-sub-theme="insurance" data-sub="diagnostic">DIAGNÓSTICO</button>
-        </div>
-
-        <div class="subpage active" data-subpage="insurance:results">
-          <div id="insuranceCards" class="grid6"></div>
-          <div class="panel" style="margin-top:10px"><div class="panel-head"><h3>FUNIL DAS CONSULTAS</h3><span>INÍCIO → RESULTADO</span></div><div class="panel-body"><div id="insuranceFunnel" class="funnel"></div></div></div>
-          <div class="panel" style="margin-top:10px"><div class="panel-head"><h3>COMPARAÇÃO ENTRE PERÍODOS</h3><span>24H · 7D · 30D</span></div><div id="insuranceTable" class="table-wrap"></div></div>
-        </div>
-
-        <div class="subpage" data-subpage="insurance:performance">
-          <div class="grid4" id="insurancePerfCards"></div>
-          <div class="grid2" style="margin-top:10px">
-            <div class="panel"><div class="panel-head"><h3>RETRIES</h3><span>TENTATIVAS MANUAIS REGISTADAS</span></div><div class="panel-body" id="retryPanel"></div></div>
-            <div class="panel"><div class="panel-head"><h3>QUALIDADE DE DADOS</h3><span>RESULTADOS CONHECIDOS</span></div><div class="panel-body" id="insuranceDataQuality"></div></div>
-          </div>
-        </div>
-
-        <div class="subpage" data-subpage="insurance:diagnostic">
-          <div class="grid3" id="insuranceDiagCards"></div>
-          <div class="grid2" style="margin-top:10px">
-            <div class="panel"><div class="panel-head"><h3>MATRÍCULAS COM ERRO</h3><span>APENAS DIAGNÓSTICO DISPONÍVEL</span></div><div id="insurancePlateErrors" class="table-wrap"></div></div>
-            <div class="panel"><div class="panel-head"><h3>ASSINATURAS TÉCNICAS</h3><span>TIPO + HASH + MENSAGEM</span></div><div id="insuranceSignatures" class="table-wrap"></div></div>
-          </div>
-        </div>
-      </section>
-
-      <section class="theme-page" data-page="speed">
-        <div class="theme-head">
-          <div><div class="theme-kicker">03 · CINEMÓMETRO</div><h2>VELOCIDADE</h2><p>Atividade do módulo, dados detalhados e configuração observada.</p></div>
-          <div class="theme-note">DETALHE DEPENDE DA TELEMETRIA 1.4+ JÁ CAPTURADA</div>
-        </div>
-        <div class="subnav">
-          <button data-sub-theme="speed" data-sub="activity" class="active">ATIVIDADE</button>
-          <button data-sub-theme="speed" data-sub="patterns">PADRÕES</button>
-          <button data-sub-theme="speed" data-sub="config">CONFIGURAÇÃO</button>
-        </div>
-
-        <div class="subpage active" data-subpage="speed:activity">
-          <div class="grid6" id="speedCards"></div>
-          <div class="grid2" style="margin-top:10px">
-            <div class="panel"><div class="panel-head"><h3>DISTRIBUIÇÃO DAS VELOCIDADES</h3><span>DETALHE DISPONÍVEL · 24H</span></div><div id="speedDistribution" class="panel-body"></div></div>
-            <div class="panel"><div class="panel-head"><h3>COBERTURA DA NOVA TELEMETRIA</h3><span>30 DIAS</span></div><div id="speedCoverage" class="panel-body"></div></div>
-          </div>
-        </div>
-
-        <div class="subpage" data-subpage="speed:patterns">
-          <div class="grid3" id="speedPatternCards"></div>
-          <div class="grid3" style="margin-top:10px">
-            <div class="panel"><div class="panel-head"><h3>MODO</h3><span>30 DIAS</span></div><div class="panel-body"><div id="speedModeBars" class="bar-list"></div></div></div>
-            <div class="panel"><div class="panel-head"><h3>TIPO DE VEÍCULO</h3><span>30 DIAS</span></div><div class="panel-body"><div id="speedVehicleBars" class="bar-list"></div></div></div>
-            <div class="panel"><div class="panel-head"><h3>ENQUADRAMENTO</h3><span>30 DIAS</span></div><div class="panel-body"><div id="speedFrameBars" class="bar-list"></div></div></div>
-          </div>
-        </div>
-
-        <div class="subpage" data-subpage="speed:config">
-          <div class="grid2">
-            <div class="panel"><div class="panel-head"><h3>OPERADORES DECLARADOS</h3><span>NÃO É AUTENTICAÇÃO</span></div><div id="speedOperators" class="table-wrap"></div></div>
-            <div class="panel"><div class="panel-head"><h3>APARELHOS / PERFIS</h3><span>DADOS DECLARADOS NA SESSÃO</span></div><div id="speedApparatus" class="table-wrap"></div></div>
-          </div>
-          <div class="grid3" style="margin-top:10px">
-            <div class="panel"><div class="panel-head"><h3>LIMITE</h3><span>30 DIAS</span></div><div class="panel-body"><div id="speedLimitBars" class="bar-list"></div></div></div>
-            <div class="panel"><div class="panel-head"><h3>GRAVIDADE</h3><span>30 DIAS</span></div><div class="panel-body"><div id="speedGravityBars" class="bar-list"></div></div></div>
-            <div class="panel"><div class="panel-head"><h3>CÓDIGOS</h3><span>30 DIAS</span></div><div class="panel-body"><div id="speedCodeBars" class="bar-list"></div></div></div>
-          </div>
-        </div>
-      </section>
-
-      <section class="theme-page" data-page="legislation">
-        <div class="theme-head">
-          <div><div class="theme-kicker">04 · CONHECIMENTO</div><h2>LEGISLAÇÃO</h2><p>Consulta, pesquisa, cópia, favoritos e assuntos procurados.</p></div>
-          <div class="theme-note">SEM EXPOR TEXTO DESNECESSÁRIO</div>
-        </div>
-        <div class="subnav">
-          <button data-sub-theme="legislation" data-sub="usage" class="active">USO</button>
-          <button data-sub-theme="legislation" data-sub="items">ITENS</button>
-          <button data-sub-theme="legislation" data-sub="actions">AÇÕES</button>
-        </div>
-
-        <div class="subpage active" data-subpage="legislation:usage">
-          <div class="grid4" id="legCards"></div>
-          <div class="grid2" style="margin-top:10px">
-            <div class="panel"><div class="panel-head"><h3>CONVERSÃO CONSULTA → CÓPIA</h3><span>INDICADOR DESCRITIVO</span></div><div class="panel-body" id="legConversion"></div></div>
-            <div class="panel"><div class="panel-head"><h3>PERÍODOS</h3><span>24H · 7D · 30D</span></div><div id="legPeriodTable" class="table-wrap"></div></div>
-          </div>
-        </div>
-
-        <div class="subpage" data-subpage="legislation:items">
-          <div class="panel"><div class="panel-head"><h3>ITENS MAIS COPIADOS</h3><span>30 DIAS</span></div><div id="legItems" class="table-wrap"></div></div>
-        </div>
-
-        <div class="subpage" data-subpage="legislation:actions">
-          <div class="grid2">
-            <div class="panel"><div class="panel-head"><h3>TIPO DE CÓPIA</h3><span>30 DIAS</span></div><div class="panel-body"><div id="legCopyTypes" class="bar-list"></div></div></div>
-            <div class="panel"><div class="panel-head"><h3>AÇÕES DA PESQUISA</h3><span>EVENTOS REGISTADOS</span></div><div class="panel-body" id="legActions"></div></div>
-          </div>
-          <div class="info-note">Os eventos atuais de pesquisa não guardam o texto pesquisado; por isso o painel mede quantas pesquisas aconteceram, mas não inventa “termos mais pesquisados”.</div>
-        </div>
-      </section>
-
-      <section class="theme-page" data-page="usage">
-        <div class="theme-head">
-          <div><div class="theme-kicker">05 · COMPORTAMENTO</div><h2>UTILIZAÇÃO</h2><p>Quem usa, quanto tempo permanece e como navega entre módulos.</p></div>
-          <div class="theme-note">MÉTRICAS AGREGADAS</div>
-        </div>
-        <div class="subnav">
-          <button data-sub-theme="usage" data-sub="users" class="active">UTILIZADORES</button>
-          <button data-sub-theme="usage" data-sub="sessions">SESSÕES</button>
-          <button data-sub-theme="usage" data-sub="paths">PERCURSOS</button>
-        </div>
-
-        <div class="subpage active" data-subpage="usage:users">
-          <div class="grid6" id="usageUserCards"></div>
-          <div class="grid2" style="margin-top:10px">
-            <div class="panel"><div class="panel-head"><h3>MÓDULOS ABERTOS</h3><span>30 DIAS</span></div><div class="panel-body"><div id="moduleBars" class="bar-list"></div></div></div>
-            <div class="panel"><div class="panel-head"><h3>ATIVIDADE POR MÓDULO</h3><span>30 DIAS · TODOS OS EVENTOS</span></div><div class="panel-body"><div id="moduleActivityBars" class="bar-list"></div></div></div>
-          </div>
-        </div>
-
-        <div class="subpage" data-subpage="usage:sessions">
-          <div class="grid4" id="usageSessionCards"></div>
-          <div class="note">“Sessão” é a sessão técnica do navegador registada pela aplicação. Não deve ser interpretada automaticamente como uma operação no terreno.</div>
-        </div>
-
-        <div class="subpage" data-subpage="usage:paths">
-          <div class="grid2">
-            <div class="panel"><div class="panel-head"><h3>TRANSIÇÕES ENTRE MÓDULOS</h3><span>EVENTOS MODULE_OPEN · 30 DIAS</span></div><div id="moduleTransitions" class="table-wrap"></div></div>
-            <div class="panel"><div class="panel-head"><h3>EVENTOS DIÁRIOS</h3><span>30 DIAS</span></div><div id="dailyMiniTable" class="table-wrap"></div></div>
-          </div>
-        </div>
-      </section>
-
-      <section class="theme-page" data-page="devices">
-        <div class="theme-head">
-          <div><div class="theme-kicker">06 · AMBIENTE TÉCNICO</div><h2>DISPOSITIVOS</h2><p>Em que equipamentos, navegadores e versões a aplicação é executada.</p></div>
-          <div class="theme-note">DADOS DE INSTALAÇÃO · 30 DIAS</div>
-        </div>
-        <div class="subnav">
-          <button data-sub-theme="devices" data-sub="hardware" class="active">EQUIPAMENTOS</button>
-          <button data-sub-theme="devices" data-sub="network" >REDE</button>
-          <button data-sub-theme="devices" data-sub="telemetry">TELEMETRIA</button>
-        </div>
-
-        <div class="subpage active" data-subpage="devices:hardware">
-          <div class="device-grid">
-            <div class="panel"><div class="panel-head"><h3>NAVEGADORES</h3><span>INSTALAÇÕES</span></div><div class="panel-body"><div id="browserBars" class="bar-list"></div></div></div>
-            <div class="panel"><div class="panel-head"><h3>TIPO DE DISPOSITIVO</h3><span>INSTALAÇÕES</span></div><div class="panel-body"><div id="deviceTypeBars" class="bar-list"></div></div></div>
-            <div class="panel"><div class="panel-head"><h3>SISTEMA OPERATIVO</h3><span>INSTALAÇÕES</span></div><div class="panel-body"><div id="osBars" class="bar-list"></div></div></div>
-          </div>
-          <div class="panel" style="margin-top:10px"><div class="panel-head"><h3>VERSÕES REPORTADAS</h3><span>DADO TÉCNICO · NÃO ALTERA A APP VISÍVEL</span></div><div id="versionTable" class="table-wrap"></div></div>
-        </div>
-
-        <div class="subpage" data-subpage="devices:network">
-          <div class="grid3" id="networkCards"></div>
-          <div class="info-note">A informação de rede disponível atualmente vem sobretudo dos eventos que já transportam metadados de cliente. Valores “desconhecido” são mostrados como tal, não são estimados.</div>
-        </div>
-
-        <div class="subpage" data-subpage="devices:telemetry">
-          <div class="grid3" id="telemetryCards"></div>
-          <div class="panel" style="margin-top:10px"><div class="panel-head"><h3>O QUE JÁ PODE SER ANALISADO</h3><span>COBERTURA DA RECOLHA</span></div><div id="telemetryDetail" class="table-wrap"></div></div>
-        </div>
-      </section>
-
-      <section class="theme-page" data-page="errors">
-        <div class="theme-head">
-          <div><div class="theme-kicker">07 · SAÚDE</div><h2>ERROS &amp; SAÚDE</h2><p>Incidentes, padrões de falha e concentração técnica — sem misturar com resultados “sem seguro”.</p></div>
-          <div class="theme-note">DIAGNÓSTICO OBJETIVO</div>
-        </div>
-        <div class="subnav">
-          <button data-sub-theme="errors" data-sub="incidents" class="active">INCIDENTES</button>
-          <button data-sub-theme="errors" data-sub="signatures">ASSINATURAS</button>
-          <button data-sub-theme="errors" data-sub="clients">CLIENTES</button>
-        </div>
-
-        <div class="subpage active" data-subpage="errors:incidents">
-          <div class="grid4" id="errorCards"></div>
-          <div class="grid2" style="margin-top:10px">
-            <div class="panel"><div class="panel-head"><h3>TIPOS DE ERRO</h3><span>24H</span></div><div id="errorTypes" class="table-wrap"></div></div>
-            <div class="panel"><div class="panel-head"><h3>CONCENTRAÇÃO POR HORA</h3><span>24H · HORA LOCAL</span></div><div class="panel-body"><div id="errorHourBars" class="bar-list"></div></div></div>
-          </div>
-          <div class="panel" style="margin-top:10px"><div class="panel-head"><h3>PIQUES DE ERROS</h3><span>MINUTOS COM MAIOR CONCENTRAÇÃO</span></div><div id="errorBursts" class="table-wrap"></div></div>
-        </div>
-
-        <div class="subpage" data-subpage="errors:signatures">
-          <div class="panel"><div class="panel-head"><h3>ASSINATURAS</h3><span>TIPO · HASH · MENSAGEM</span></div><div id="errorSignatureTable" class="table-wrap"></div></div>
-          <div class="grid2" style="margin-top:10px">
-            <div class="panel"><div class="panel-head"><h3>INSTALAÇÕES COM INCIDENTES</h3><span>24H</span></div><div id="errorInstallTable" class="table-wrap"></div></div>
-            <div class="panel"><div class="panel-head"><h3>MATRÍCULAS COM INCIDENTES</h3><span>APENAS QUANDO CONHECIDAS</span></div><div id="errorPlateTable" class="table-wrap"></div></div>
-          </div>
-        </div>
-
-        <div class="subpage" data-subpage="errors:clients">
-          <div class="panel"><div class="panel-head"><h3>COMPORTAMENTO POR CLIENTE</h3><span>BROWSER · SISTEMA · REDE · 24H</span></div><div id="clientHealthTable" class="table-wrap"></div></div>
-          <div class="note">Uma taxa de erro por cliente descreve o conjunto observado naquele ambiente; não prova, por si só, a causa do problema.</div>
-        </div>
-      </section>
-
-      <section class="theme-page" data-page="system">
-        <div class="theme-head">
-          <div><div class="theme-kicker">08 · CONTROLO</div><h2>SISTEMA</h2><p>Estado do backend, qualidade da recolha e ferramentas administrativas.</p></div>
-          <div class="theme-note">SEM APAGAR HISTÓRICO</div>
-        </div>
-        <div class="subnav">
-          <button data-sub-theme="system" data-sub="state" class="active">ESTADO</button>
-          <button data-sub-theme="system" data-sub="data">DADOS</button>
-          <button data-sub-theme="system" data-sub="reset">24H</button>
-        </div>
-
-        <div class="subpage active" data-subpage="system:state">
-          <div class="status-grid" id="systemStateCards"></div>
-          <div class="panel" style="margin-top:10px"><div class="panel-head"><h3>LEITURA DO BACKEND</h3><span>ÚLTIMA ATUALIZAÇÃO</span></div><div class="panel-body" id="systemStateText"></div></div>
-        </div>
-
-        <div class="subpage" data-subpage="system:data">
-          <div class="panel"><div class="panel-head"><h3>VOLUME DE DADOS</h3><span>EVENTOS RECOLHIDOS</span></div><div id="eventVolumeTable" class="table-wrap"></div></div>
-          <div class="panel" style="margin-top:10px"><div class="panel-head"><h3>COBERTURA DA TELEMETRIA</h3><span>O QUE EXISTE VS O QUE AINDA NÃO EXISTE</span></div><div id="systemTelemetryTable" class="table-wrap"></div></div>
-        </div>
-
-        <div class="subpage" data-subpage="system:reset">
-          <div class="reset-box">
-            <div class="reset-title">RESET · JANELA 24H</div>
-            <div class="reset-desc">Move o ponto de início da janela administrativa de 24 horas. <b>NÃO APAGA EVENTOS</b>; os dados históricos, 7 dias, 30 dias e histórico completo continuam armazenados.</div>
-            <div class="reset-actions">
-              <div id="reset24hStatus" class="reset-status">Último reset 24H: —</div>
-              <button id="reset24hBtn" type="button" class="reset-btn">RESET 24H</button>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
+  <div id="alertRibbon" class="alert hidden">
+    <div><strong id="alertTitle"></strong><span id="alertText"></span></div>
+    <button type="button" id="alertGo">VER INCIDENTES</button>
   </div>
-</div>
 
-<div id="toast" class="hidden" style="position:fixed;right:16px;bottom:16px;z-index:80;padding:11px 13px;border:1px solid var(--line);border-radius:9px;background:#0b2028;color:#eef8fa;font-size:11px;box-shadow:var(--shadow)"></div>
+  <nav class="theme-nav" id="themeNav">
+    <button data-theme="overview" class="active"><i></i><span>VISÃO GERAL</span><small>01</small></button>
+    <button data-theme="insurance"><i></i><span>SEGURO</span><small>02</small></button>
+    <button data-theme="speed"><i></i><span>VELOCIDADE</span><small>03</small></button>
+    <button data-theme="legislation"><i></i><span>LEGISLAÇÃO</span><small>04</small></button>
+    <button data-theme="usage"><i></i><span>UTILIZAÇÃO</span><small>05</small></button>
+    <button data-theme="environment"><i></i><span>AMBIENTE</span><small>06</small></button>
+    <button data-theme="errors"><i></i><span>ERROS</span><small>07</small></button>
+    <button data-theme="insights"><i></i><span>INSIGHTS</span><small>08</small></button>
+    <button data-theme="system"><i></i><span>SISTEMA</span><small>09</small></button>
+  </nav>
+
+  <main>
+    <section class="page active" data-page="overview">
+      <div class="theme-head"><div><div class="kicker">01 · CONTEXTO</div><h2>VISÃO GERAL</h2><p>O pulso da plataforma sem misturar diagnóstico com utilização.</p></div><div class="theme-code">PAINEL PRINCIPAL</div></div>
+      <div class="subnav">
+        <button data-sub-theme="overview" data-sub="pulse" class="active">PULSO</button>
+        <button data-sub-theme="overview" data-sub="rhythm">RITMO</button>
+        <button data-sub-theme="overview" data-sub="trend">TENDÊNCIA</button>
+      </div>
+      <div class="subpage active" data-subpage="overview:pulse">
+        <div class="grid6" id="overviewCards"></div>
+        <div class="grid3" style="margin-top:8px">
+          <div class="panel"><div class="panel-head"><h3>REGRESSO</h3><span>INSTALAÇÕES</span></div><div class="panel-body" id="overviewRetention"></div></div>
+          <div class="panel"><div class="panel-head"><h3>MÓDULOS MAIS ABERTOS</h3><span>30 DIAS</span></div><div class="panel-body"><div id="overviewModules" class="bar-list"></div></div></div>
+          <div class="panel"><div class="panel-head"><h3>EVENTO MAIS FREQUENTE</h3><span>30 DIAS</span></div><div class="panel-body" id="overviewTopEvent"></div></div>
+        </div>
+      </div>
+      <div class="subpage" data-subpage="overview:rhythm">
+        <div class="grid4" id="overviewRhythmCards"></div>
+        <div class="grid2" style="margin-top:8px">
+          <div class="panel"><div class="panel-head"><h3>HORAS MAIS ATIVAS</h3><span>24 H · HORA LOCAL</span></div><div class="panel-body"><div id="overviewHours" class="hour-grid"></div></div></div>
+          <div class="panel"><div class="panel-head"><h3>SESSÕES</h3><span>UTILIZAÇÃO</span></div><div class="panel-body" id="overviewSession"></div></div>
+        </div>
+      </div>
+      <div class="subpage" data-subpage="overview:trend">
+        <div class="panel"><div class="panel-head"><h3>ATIVIDADE DIÁRIA</h3><span>ÚLTIMOS 30 DIAS</span></div><div class="chart" id="dailyChart"></div></div>
+        <div class="grid4" style="margin-top:8px" id="overviewTrendCards"></div>
+      </div>
+    </section>
+
+    <section class="page" data-page="insurance">
+      <div class="theme-head"><div><div class="kicker">02 · SEGURO</div><h2>SEGURO</h2><p>Resultados, performance e diagnóstico da cadeia ASF.</p></div><div class="theme-code">ASF / CONSULTAS</div></div>
+      <div class="subnav">
+        <button data-sub-theme="insurance" data-sub="results" class="active">RESULTADOS</button>
+        <button data-sub-theme="insurance" data-sub="performance">PERFORMANCE</button>
+        <button data-sub-theme="insurance" data-sub="diagnostic">DIAGNÓSTICO</button>
+      </div>
+      <div class="subpage active" data-subpage="insurance:results">
+        <div class="grid6" id="insuranceCards"></div>
+        <div class="panel" style="margin-top:8px"><div class="panel-head"><h3>FUNIL DA CONSULTA</h3><span>INÍCIO → FINAL</span></div><div class="panel-body"><div class="funnel" id="insuranceFunnel"></div></div></div>
+        <div class="panel" style="margin-top:8px"><div class="panel-head"><h3>COMPARAÇÃO DE PERÍODOS</h3><span>24H · 7D · 30D</span></div><div id="insurancePeriod" class="table-wrap"></div></div>
+      </div>
+      <div class="subpage" data-subpage="insurance:performance">
+        <div class="grid4" id="insurancePerfCards"></div>
+        <div class="grid2" style="margin-top:8px">
+          <div class="panel"><div class="panel-head"><h3>TENTATIVAS / RETRIES</h3><span>CONSULTAS ASF</span></div><div class="panel-body" id="insuranceRetry"></div></div>
+          <div class="panel"><div class="panel-head"><h3>QUALIDADE DA CADEIA</h3><span>CONSISTÊNCIA</span></div><div class="panel-body" id="insuranceQuality"></div></div>
+        </div>
+      </div>
+      <div class="subpage" data-subpage="insurance:diagnostic">
+        <div class="grid4" id="insuranceDiagCards"></div>
+        <div class="grid2" style="margin-top:8px">
+          <div class="panel"><div class="panel-head"><h3>INCIDENTES POR MATRÍCULA</h3><span>QUANDO DISPONÍVEL</span></div><div id="insurancePlateErrors" class="table-wrap"></div></div>
+          <div class="panel"><div class="panel-head"><h3>ASSINATURAS</h3><span>TIPO · HASH · MENSAGEM</span></div><div id="insuranceSignatures" class="table-wrap"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" data-page="speed">
+      <div class="theme-head"><div><div class="kicker">03 · CINEMÓMETRO</div><h2>VELOCIDADE</h2><p>O que é calculado, como é utilizado e como está configurado.</p></div><div class="theme-code">DETALHE 1.4+</div></div>
+      <div class="subnav">
+        <button data-sub-theme="speed" data-sub="activity" class="active">ATIVIDADE</button>
+        <button data-sub-theme="speed" data-sub="patterns">PADRÕES</button>
+        <button data-sub-theme="speed" data-sub="config">CONFIGURAÇÃO</button>
+        <button data-sub-theme="speed" data-sub="sessions">SESSÕES</button>
+      </div>
+      <div class="subpage active" data-subpage="speed:activity">
+        <div class="grid6" id="speedCards"></div>
+        <div class="grid2" style="margin-top:8px">
+          <div class="panel"><div class="panel-head"><h3>DISTRIBUIÇÃO DE VELOCIDADES</h3><span>24 H</span></div><div class="panel-body" id="speedDistribution"></div></div>
+          <div class="panel"><div class="panel-head"><h3>COBERTURA DO DETALHE</h3><span>30 DIAS</span></div><div class="panel-body" id="speedCoverage"></div></div>
+        </div>
+      </div>
+      <div class="subpage" data-subpage="speed:patterns">
+        <div class="grid4" id="speedPatternCards"></div>
+        <div class="grid3" style="margin-top:8px">
+          <div class="panel"><div class="panel-head"><h3>MODO</h3><span>30 DIAS</span></div><div class="panel-body"><div id="speedModeBars" class="bar-list"></div></div></div>
+          <div class="panel"><div class="panel-head"><h3>VEÍCULO</h3><span>30 DIAS</span></div><div class="panel-body"><div id="speedVehicleBars" class="bar-list"></div></div></div>
+          <div class="panel"><div class="panel-head"><h3>ENQUADRAMENTO</h3><span>30 DIAS</span></div><div class="panel-body"><div id="speedFrameBars" class="bar-list"></div></div></div>
+        </div>
+      </div>
+      <div class="subpage" data-subpage="speed:config">
+        <div class="grid2">
+          <div class="panel"><div class="panel-head"><h3>OPERADORES DECLARADOS</h3><span>NÃO É AUTENTICAÇÃO</span></div><div id="speedOperators" class="table-wrap"></div></div>
+          <div class="panel"><div class="panel-head"><h3>APARELHOS / PERFIS</h3><span>DADOS DECLARADOS</span></div><div id="speedApparatus" class="table-wrap"></div></div>
+        </div>
+        <div class="grid3" style="margin-top:8px">
+          <div class="panel"><div class="panel-head"><h3>LIMITE</h3><span>30 DIAS</span></div><div class="panel-body"><div id="speedLimitBars" class="bar-list"></div></div></div>
+          <div class="panel"><div class="panel-head"><h3>GRAVIDADE</h3><span>30 DIAS</span></div><div class="panel-body"><div id="speedGravityBars" class="bar-list"></div></div></div>
+          <div class="panel"><div class="panel-head"><h3>CÓDIGOS</h3><span>30 DIAS</span></div><div class="panel-body"><div id="speedCodeBars" class="bar-list"></div></div></div>
+        </div>
+      </div>
+      <div class="subpage" data-subpage="speed:sessions">
+        <div class="grid3" id="speedSessionCards"></div>
+        <div class="panel" style="margin-top:8px"><div class="panel-head"><h3>SESSÕES RECENTES</h3><span>HEURÍSTICAS OBJETIVAS</span></div><div id="speedSessions" class="table-wrap"></div></div>
+        <div class="note">Os padrões são sinais para revisão e não prova de irregularidade. “Operador” significa identificação declarada; “operação” só é uma correlação de telemetria, não uma prova de ação no terreno.</div>
+      </div>
+    </section>
+
+    <section class="page" data-page="legislation">
+      <div class="theme-head"><div><div class="kicker">04 · CONHECIMENTO</div><h2>LEGISLAÇÃO</h2><p>O que é aberto, pesquisado, copiado e reutilizado.</p></div><div class="theme-code">CONSULTA LEGAL</div></div>
+      <div class="subnav">
+        <button data-sub-theme="legislation" data-sub="usage" class="active">UTILIZAÇÃO</button>
+        <button data-sub-theme="legislation" data-sub="items">ITENS</button>
+        <button data-sub-theme="legislation" data-sub="actions">AÇÕES</button>
+      </div>
+      <div class="subpage active" data-subpage="legislation:usage">
+        <div class="grid4" id="legCards"></div>
+        <div class="grid2" style="margin-top:8px">
+          <div class="panel"><div class="panel-head"><h3>CONSULTA → CÓPIA</h3><span>INDICADOR</span></div><div class="panel-body" id="legConversion"></div></div>
+          <div class="panel"><div class="panel-head"><h3>PERÍODOS</h3><span>24H · 7D · 30D</span></div><div id="legPeriod" class="table-wrap"></div></div>
+        </div>
+      </div>
+      <div class="subpage" data-subpage="legislation:items">
+        <div class="panel"><div class="panel-head"><h3>ITENS MAIS COPIADOS</h3><span>30 DIAS</span></div><div id="legItems" class="table-wrap"></div></div>
+      </div>
+      <div class="subpage" data-subpage="legislation:actions">
+        <div class="grid2">
+          <div class="panel"><div class="panel-head"><h3>TIPO DE CÓPIA</h3><span>30 DIAS</span></div><div class="panel-body"><div id="legCopyTypes" class="bar-list"></div></div></div>
+          <div class="panel"><div class="panel-head"><h3>AÇÕES</h3><span>EVENTOS</span></div><div class="panel-body" id="legActions"></div></div>
+        </div>
+        <div class="info">Não existe atualmente telemetria que guarde o termo de pesquisa textual. O painel mede as ações reais registadas e não inventa “pesquisas mais procuradas”.</div>
+      </div>
+    </section>
+
+    <section class="page" data-page="usage">
+      <div class="theme-head"><div><div class="kicker">05 · UTILIZAÇÃO</div><h2>UTILIZAÇÃO</h2><p>Quem regressa, quanto tempo permanece e como circula pelos módulos.</p></div><div class="theme-code">COMPORTAMENTO AGREGADO</div></div>
+      <div class="subnav">
+        <button data-sub-theme="usage" data-sub="users" class="active">UTILIZADORES</button>
+        <button data-sub-theme="usage" data-sub="sessions">SESSÕES</button>
+        <button data-sub-theme="usage" data-sub="paths">PERCURSOS</button>
+      </div>
+      <div class="subpage active" data-subpage="usage:users">
+        <div class="grid6" id="usageUserCards"></div>
+        <div class="grid2" style="margin-top:8px">
+          <div class="panel"><div class="panel-head"><h3>MÓDULOS ABERTOS</h3><span>30 DIAS</span></div><div class="panel-body"><div id="usageModules" class="bar-list"></div></div></div>
+          <div class="panel"><div class="panel-head"><h3>ATIVIDADE POR MÓDULO</h3><span>30 DIAS</span></div><div class="panel-body"><div id="usageModuleActivity" class="bar-list"></div></div></div>
+        </div>
+      </div>
+      <div class="subpage" data-subpage="usage:sessions">
+        <div class="grid4" id="usageSessionCards"></div>
+        <div class="info">“Sessão” é o identificador técnico do navegador. Não deve ser lido como uma sessão operacional no terreno.</div>
+      </div>
+      <div class="subpage" data-subpage="usage:paths">
+        <div class="grid2">
+          <div class="panel"><div class="panel-head"><h3>TRANSIÇÕES MAIS COMUNS</h3><span>30 DIAS</span></div><div id="usageTransitions" class="table-wrap"></div></div>
+          <div class="panel"><div class="panel-head"><h3>ATIVIDADE DIÁRIA</h3><span>30 DIAS</span></div><div id="usageDaily" class="table-wrap"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" data-page="environment">
+      <div class="theme-head"><div><div class="kicker">06 · AMBIENTE</div><h2>AMBIENTE</h2><p>Em que browsers, equipamentos e condições técnicas o VÉRIX corre.</p></div><div class="theme-code">CLIENTE / REDE</div></div>
+      <div class="subnav">
+        <button data-sub-theme="environment" data-sub="hardware" class="active">EQUIPAMENTOS</button>
+        <button data-sub-theme="environment" data-sub="network">REDE</button>
+        <button data-sub-theme="environment" data-sub="telemetry">TELEMETRIA</button>
+      </div>
+      <div class="subpage active" data-subpage="environment:hardware">
+        <div class="grid3">
+          <div class="panel"><div class="panel-head"><h3>BROWSERS</h3><span>30 DIAS</span></div><div class="panel-body"><div id="envBrowsers" class="bar-list"></div></div></div>
+          <div class="panel"><div class="panel-head"><h3>DISPOSITIVOS</h3><span>30 DIAS</span></div><div class="panel-body"><div id="envDevices" class="bar-list"></div></div></div>
+          <div class="panel"><div class="panel-head"><h3>SISTEMAS</h3><span>30 DIAS</span></div><div class="panel-body"><div id="envOS" class="bar-list"></div></div></div>
+        </div>
+        <div class="panel" style="margin-top:8px"><div class="panel-head"><h3>VERSÕES DE APLICAÇÃO</h3><span>INSTALAÇÕES OBSERVADAS</span></div><div id="envVersions" class="table-wrap"></div></div>
+      </div>
+      <div class="subpage" data-subpage="environment:network">
+        <div class="grid4" id="envNetworkCards"></div>
+        <div class="info">São apresentados apenas valores efetivamente reportados pelos clientes. “Desconhecido” permanece desconhecido.</div>
+      </div>
+      <div class="subpage" data-subpage="environment:telemetry">
+        <div class="grid4" id="envTelemetryCards"></div>
+        <div class="panel" style="margin-top:8px"><div class="panel-head"><h3>COBERTURA DA RECOLHA</h3><span>30 DIAS</span></div><div id="envTelemetryTable" class="table-wrap"></div></div>
+      </div>
+    </section>
+
+    <section class="page" data-page="errors">
+      <div class="theme-head"><div><div class="kicker">07 · SAÚDE</div><h2>ERROS</h2><p>Incidentes, assinaturas técnicas, ambientes afetados e qualidade da recolha.</p></div><div class="theme-code">CENTRO DE INCIDENTES</div></div>
+      <div class="subnav">
+        <button data-sub-theme="errors" data-sub="live" class="active">INCIDENTES</button>
+        <button data-sub-theme="errors" data-sub="signatures">ASSINATURAS</button>
+        <button data-sub-theme="errors" data-sub="clients">AMBIENTES</button>
+        <button data-sub-theme="errors" data-sub="quality">QUALIDADE</button>
+      </div>
+      <div class="subpage active" data-subpage="errors:live">
+        <div class="alert-grid" id="errorIncidentCards"></div>
+        <div class="grid2" style="margin-top:8px">
+          <div class="panel"><div class="panel-head"><h3>ERROS POR TIPO</h3><span>24 H</span></div><div id="errorTypes" class="table-wrap"></div></div>
+          <div class="panel"><div class="panel-head"><h3>PIQUES</h3><span>JANELAS DE 5 MIN</span></div><div id="errorBursts" class="table-wrap"></div></div>
+        </div>
+        <div class="panel" style="margin-top:8px"><div class="panel-head"><h3>INVESTIGAÇÃO DA VERSÃO 1.4</h3><span>ÚLTIMAS FALHAS OBSERVADAS</span></div><div id="errorRecent14" class="table-wrap"></div></div>
+        <div class="info">O incidente recente de 1.4 é mostrado como evidência técnica: número de falhas, instalações, hashes e sequência temporal. O painel não transforma isso em conclusão sobre a causa sem evidência suficiente.</div>
+      </div>
+      <div class="subpage" data-subpage="errors:signatures">
+        <div class="panel"><div class="panel-head"><h3>ASSINATURAS TÉCNICAS</h3><span>24 H</span></div><div id="errorSignatures" class="table-wrap"></div></div>
+        <div class="grid2" style="margin-top:8px">
+          <div class="panel"><div class="panel-head"><h3>INSTALAÇÕES</h3><span>24 H</span></div><div id="errorInstallations" class="table-wrap"></div></div>
+          <div class="panel"><div class="panel-head"><h3>MATRÍCULAS</h3><span>QUANDO DISPONÍVEIS</span></div><div id="errorPlates" class="table-wrap"></div></div>
+        </div>
+      </div>
+      <div class="subpage" data-subpage="errors:clients">
+        <div class="panel"><div class="panel-head"><h3>AMBIENTES COM MAIS ERROS</h3><span>BROWSER · OS · REDE</span></div><div id="errorClients" class="table-wrap"></div></div>
+        <div class="note">A concentração por ambiente é uma correlação observada. Não prova, isoladamente, a causa do incidente.</div>
+      </div>
+      <div class="subpage" data-subpage="errors:quality">
+        <div class="grid4" id="errorQualityCards"></div>
+        <div class="panel" style="margin-top:8px"><div class="panel-head"><h3>SAÚDE DA CADEIA</h3><span>PENDENTES · MULTI-FINAL · COBERTURA</span></div><div id="errorQualityTable" class="table-wrap"></div></div>
+      </div>
+    </section>
+
+    <section class="page" data-page="insights">
+      <div class="theme-head"><div><div class="kicker">08 · DESCOBERTAS</div><h2>INSIGHTS</h2><p>Curiosidades e padrões quantitativos que valem a pena observar ao longo do tempo.</p></div><div class="theme-code">SEM EXTRAPOLAÇÃO</div></div>
+      <div class="subnav">
+        <button data-sub-theme="insights" data-sub="curiosities" class="active">CURIOSIDADES</button>
+        <button data-sub-theme="insights" data-sub="scale">ESCALA</button>
+        <button data-sub-theme="insights" data-sub="behavior">HÁBITOS</button>
+      </div>
+      <div class="subpage active" data-subpage="insights:curiosities">
+        <div class="grid6" id="insightCards"></div>
+        <div class="grid2" style="margin-top:8px">
+          <div class="panel"><div class="panel-head"><h3>O DIA / HORA MAIS FORTE</h3><span>30 DIAS</span></div><div class="panel-body" id="insightPeak"></div></div>
+          <div class="panel"><div class="panel-head"><h3>AS COISAS QUE MAIS ACONTECEM</h3><span>30 DIAS</span></div><div class="panel-body" id="insightMost"></div></div>
+        </div>
+      </div>
+      <div class="subpage" data-subpage="insights:scale">
+        <div class="grid5" id="insightScaleCards"></div>
+        <div class="panel" style="margin-top:8px"><div class="panel-head"><h3>ABRANGÊNCIA OBSERVADA</h3><span>FACTUAL</span></div><div class="panel-body" id="insightScaleText"></div></div>
+      </div>
+      <div class="subpage" data-subpage="insights:behavior">
+        <div class="grid4" id="insightBehaviorCards"></div>
+        <div class="grid2" style="margin-top:8px">
+          <div class="panel"><div class="panel-head"><h3>VELOCIDADE</h3><span>DETALHE CAPTURADO</span></div><div class="panel-body" id="insightSpeed"></div></div>
+          <div class="panel"><div class="panel-head"><h3>LEGISLAÇÃO</h3><span>DETALHE CAPTURADO</span></div><div class="panel-body" id="insightLeg"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" data-page="system">
+      <div class="theme-head"><div><div class="kicker">09 · CONTROLO</div><h2>SISTEMA</h2><p>Estado, volume, qualidade técnica e ferramentas administrativas.</p></div><div class="theme-code">SEM APAGAR HISTÓRICO</div></div>
+      <div class="subnav">
+        <button data-sub-theme="system" data-sub="state" class="active">ESTADO</button>
+        <button data-sub-theme="system" data-sub="data">DADOS</button>
+        <button data-sub-theme="system" data-sub="reset">24 H</button>
+      </div>
+      <div class="subpage active" data-subpage="system:state">
+        <div class="grid4" id="systemState"></div>
+        <div class="panel" style="margin-top:8px"><div class="panel-head"><h3>LEITURA</h3><span>ÚLTIMO CICLO</span></div><div class="panel-body" id="systemStateText"></div></div>
+      </div>
+      <div class="subpage" data-subpage="system:data">
+        <div class="panel"><div class="panel-head"><h3>VOLUME</h3><span>TOTAL OBSERVADO</span></div><div id="systemVolume" class="table-wrap"></div></div>
+        <div class="panel" style="margin-top:8px"><div class="panel-head"><h3>COBERTURA</h3><span>TELEMETRIA</span></div><div id="systemCoverage" class="table-wrap"></div></div>
+      </div>
+      <div class="subpage" data-subpage="system:reset">
+        <div class="reset-box">
+          <div class="reset-title">RESET · JANELA 24 H</div>
+          <div class="reset-desc">Move apenas o ponto de início da janela administrativa de 24 horas. <b>NÃO APAGA EVENTOS</b>. O histórico continua armazenado.</div>
+          <div class="reset-actions"><div id="reset24hStatus" class="reset-status">Último reset: —</div><button id="reset24hBtn" class="reset-btn" type="button">RESET 24 H</button></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+<div id="toast" class="hidden"></div>
 
 <script>
 const API_ORIGIN='https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/';
-const ADMIN_CACHE='admin-rebuild-2026-10-02';
+const ADMIN_CACHE='admin-control-center-2026-10-02-r2';
 const AUTH_API=API_ORIGIN+'admin-auth-v2?v='+encodeURIComponent(ADMIN_CACHE);
 const STATS_API=API_ORIGIN+'stats-v2?v='+encodeURIComponent(ADMIN_CACHE);
 const TOKEN_KEY='VERIX_ADMIN_V2_TOKEN';
 const REFRESH_MS=30000;
 
-let currentPeriod='24h';
-let refreshTimer=null;
-let countdownTimer=null;
-let refreshIn=30;
-let dashboardInFlight=false;
-let latestData=null;
-let activeTheme='overview';
+let currentPeriod='24h',activeTheme='overview',refreshTimer=null,countdownTimer=null,refreshIn=30,dashboardBusy=false,latestData=null;
 
 const $=id=>document.getElementById(id);
 const fmt=n=>Number.isFinite(Number(n))?Number(n).toLocaleString('pt-PT'):'—';
-const num=n=>n===null||n===undefined?'—':fmt(n);
-const pct=n=>n===null||n===undefined||!Number.isFinite(Number(n))?'—':Number(n).toFixed(1).replace('.',',')+'%';
+const num=n=>n==null?'—':fmt(n);
+const pct=n=>n==null||!Number.isFinite(Number(n))?'—':Number(n).toFixed(1).replace('.',',')+'%';
 const datePT=v=>v?new Date(v).toLocaleString('pt-PT'):'—';
-const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
-function toast(msg){$('toast').textContent=msg;$('toast').classList.remove('hidden');setTimeout(()=>$('toast').classList.add('hidden'),2200)}
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+function card(label,value,note='',tone='',small=false){return '<div class="card '+tone+'"><div class="card-label">'+esc(label)+'</div><div class="card-value'+(small?' small':'')+'">'+value+'</div>'+(note?'<div class="card-note">'+note+'</div>':'')+'</div>'}
+function metric(label,value){return '<div class="metric"><span>'+esc(label)+'</span><strong>'+value+'</strong></div>'}
+function table(headers,rows,tight=false){if(!rows.length)return '<div class="empty" style="padding:12px;color:#789099;font-size:9px;text-align:center">Sem dados.</div>';return '<table'+(tight?' class="tight"':'')+'><thead><tr>'+headers.map(h=>'<th>'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table>'}
+function td(v,cls=''){return '<td class="'+cls+'">'+v+'</td>'}
+function barList(hostId,rows,tone=''){
+ const host=$(hostId); if(!host)return;
+ if(!rows.length){host.innerHTML='<div style="color:#738b92;font-size:9px">Sem dados.</div>';return}
+ const max=Math.max(1,...rows.map(r=>Number(r.value)||0));
+ host.innerHTML=rows.slice(0,15).map(r=>'<div class="bar-row"><div class="bar-label" title="'+esc(r.label)+'">'+esc(r.label)+'</div><div class="bar-track"><div class="bar-fill '+tone+'" style="width:'+Math.max(2,(Number(r.value)||0)/max*100)+'%"></div></div><div class="bar-num">'+fmt(r.value)+'</div></div>').join('');
+}
 function token(){return sessionStorage.getItem(TOKEN_KEY)||''}
-function setBackendState(state){
-  const dot=$('statusDot'),badge=$('backendBadge');
-  dot.classList.remove('loading','offline','partial');
-  if(state==='loading'){dot.classList.add('loading');badge.textContent='A ATUALIZAR'}
-  else if(state==='partial'){dot.classList.add('partial');badge.textContent='BACKEND ONLINE · PARCIAL'}
-  else if(state==='offline'){dot.classList.add('offline');badge.textContent='BACKEND OFFLINE · ERRO'}
-  else badge.textContent='BACKEND ONLINE';
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.remove('hidden');clearTimeout(window.__toastTimer);window.__toastTimer=setTimeout(()=>t.classList.add('hidden'),2200)}
+function logout(){sessionStorage.removeItem(TOKEN_KEY);if(refreshTimer)clearInterval(refreshTimer);if(countdownTimer)clearInterval(countdownTimer);$('app').classList.add('hidden');$('loginScreen').classList.remove('hidden');$('password').value=''}
+function backendState(state){
+ const d=$('statusDot'),b=$('backendBadge');d.classList.remove('loading','partial','offline');
+ if(state==='loading'){d.classList.add('loading');b.textContent='A ATUALIZAR'}
+ else if(state==='partial'){d.classList.add('partial');b.textContent='BACKEND ONLINE · PARCIAL'}
+ else if(state==='offline'){d.classList.add('offline');b.textContent='BACKEND OFFLINE · ERRO'}
+ else b.textContent='BACKEND ONLINE';
 }
 async function request(url,options={}){
-  const h=new Headers(options.headers||{});
-  h.set('Authorization','Bearer '+token());
-  h.set('Accept','application/json');
-  const controller=new AbortController();
-  const timeout=setTimeout(()=>controller.abort(),15000);
-  try{
-    const r=await fetch(url,{...options,mode:'cors',credentials:'omit',headers:h,cache:'no-store',signal:controller.signal});
-    const text=await r.text();
-    let data;
-    try{data=JSON.parse(text)}catch(_){data={ok:false,error:text||('HTTP '+r.status)}}
-    if(r.status===401){logout();throw new Error('Sessão expirada.')}
-    if(!r.ok||data?.ok===false)throw new Error(data?.detail||data?.error||('HTTP '+r.status));
-    return data;
-  }catch(e){
-    if(e?.name==='AbortError')throw new Error('Tempo excedido ao contactar o backend (15 s).');
-    if(e instanceof TypeError)throw new Error('Falha de rede/CORS ao contactar o backend.');
-    throw e;
-  }finally{clearTimeout(timeout)}
+ const h=new Headers(options.headers||{});h.set('Authorization','Bearer '+token());h.set('Accept','application/json');
+ const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),15000);
+ try{
+  const r=await fetch(url,{...options,headers:h,mode:'cors',credentials:'omit',cache:'no-store',signal:ac.signal});
+  const raw=await r.text();let data;try{data=JSON.parse(raw)}catch(_){data={ok:false,error:raw||('HTTP '+r.status)}}
+  if(r.status===401){logout();throw new Error('Sessão expirada.')}
+  if(!r.ok||data?.ok===false)throw new Error(data?.detail||data?.error||('HTTP '+r.status));
+  return data;
+ }catch(e){
+  if(e?.name==='AbortError')throw new Error('Tempo excedido ao contactar o backend (15 s).');
+  if(e instanceof TypeError)throw new Error('Falha de rede/CORS ao contactar o backend.');
+  throw e;
+ }finally{clearTimeout(tm)}
 }
 async function doLogin(password){
-  const controller=new AbortController();
-  const timeout=setTimeout(()=>controller.abort(),12000);
-  try{
-    const r=await fetch(AUTH_API,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({password:String(password||'').slice(0,256)}),mode:'cors',credentials:'omit',cache:'no-store',signal:controller.signal});
-    const text=await r.text();
-    let data={};try{data=JSON.parse(text)}catch(_){data={ok:false,error:text||('HTTP '+r.status)}}
-    if(!r.ok||!data?.ok)throw new Error(data?.error||('HTTP '+r.status));
-    if(!data.token)throw new Error('Backend de autenticação não devolveu um token válido.');
-    sessionStorage.setItem(TOKEN_KEY,data.token);
-    return data;
-  }catch(e){
-    if(e?.name==='AbortError')throw new Error('Tempo excedido ao autenticar.');
-    if(e instanceof TypeError)throw new Error('Falha de rede/CORS ao autenticar.');
-    throw e;
-  }finally{clearTimeout(timeout)}
+ const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),12000);
+ try{
+  const r=await fetch(AUTH_API,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({password:String(password||'').slice(0,256)}),mode:'cors',credentials:'omit',cache:'no-store',signal:ac.signal});
+  const raw=await r.text();let data={};try{data=JSON.parse(raw)}catch(_){data={ok:false,error:raw||('HTTP '+r.status)}}
+  if(!r.ok||!data?.ok)throw new Error(data?.error||('HTTP '+r.status));
+  if(!data.token)throw new Error('Backend de autenticação não devolveu um token.');
+  sessionStorage.setItem(TOKEN_KEY,data.token);return data;
+ }catch(e){
+  if(e?.name==='AbortError')throw new Error('Tempo excedido ao autenticar.');
+  if(e instanceof TypeError)throw new Error('Falha de rede/CORS ao autenticar.');
+  throw e;
+ }finally{clearTimeout(tm)}
 }
-function logout(){
-  sessionStorage.removeItem(TOKEN_KEY);
-  if(refreshTimer)clearInterval(refreshTimer);
-  if(countdownTimer)clearInterval(countdownTimer);
-  $('app').classList.add('hidden');$('loginScreen').classList.remove('hidden');$('password').value='';
-}
-function activityValue(label){
-  const rows=latestData?.activity||[];
-  const r=rows.find(x=>String(x.indicator)===label);
-  return r||{};
-}
-function periodData(group){
-  return latestData?.analytics?.[group]?.[currentPeriod]||{};
-}
-function switchTheme(theme){
-  activeTheme=theme;
-  document.querySelectorAll('.theme-nav button').forEach(b=>b.classList.toggle('active',b.dataset.theme===theme));
-  document.querySelectorAll('.theme-page').forEach(p=>p.classList.toggle('active',p.dataset.page===theme));
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-function switchSub(theme,sub){
-  document.querySelectorAll('[data-sub-theme="'+theme+'"]').forEach(b=>b.classList.toggle('active',b.dataset.sub===sub));
-  document.querySelectorAll('[data-subpage]').forEach(p=>p.classList.toggle('active',p.dataset.subpage===theme+':'+sub));
-}
-function initNavigation(){
-  document.querySelectorAll('.theme-nav button').forEach(b=>b.addEventListener('click',()=>switchTheme(b.dataset.theme)));
-  document.querySelectorAll('.subnav button').forEach(b=>b.addEventListener('click',()=>switchSub(b.dataset.subTheme,b.dataset.sub)));
-  document.querySelectorAll('#periodSwitch button').forEach(b=>b.addEventListener('click',()=>{currentPeriod=b.dataset.period;document.querySelectorAll('#periodSwitch button').forEach(x=>x.classList.toggle('active',x===b));if(latestData)renderAll(latestData)}));
-}
-function card(label,value,note='',tone='',small=false){
-  return '<div class="card '+tone+'"><div class="card-label">'+escapeHtml(label)+'</div><div class="card-value'+(small?' small':'')+'">'+value+'</div>'+(note?'<div class="card-note">'+note+'</div>':'')+'</div>';
-}
+function switchTheme(theme){activeTheme=theme;document.querySelectorAll('.theme-nav button').forEach(b=>b.classList.toggle('active',b.dataset.theme===theme));document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.dataset.page===theme));window.scrollTo({top:0,behavior:'smooth'})}
+function switchSub(theme,sub){document.querySelectorAll('[data-sub-theme="'+theme+'"]').forEach(b=>b.classList.toggle('active',b.dataset.sub===sub));document.querySelectorAll('[data-subpage]').forEach(p=>p.classList.toggle('active',p.dataset.subpage===theme+':'+sub))}
+function period(){return latestData?.analytics?.[currentPeriod]||{}}
 function renderOverview(d){
-  const o=d.analytics?.overview||{}, ins=periodData('insurance'), ret=d.analytics?.retention||{}, s=d.analytics?.usage?.sessions?.[currentPeriod]||{};
-  const finals=Number(ins.finals||0), err=Number(ins.errors||0), no=Number(ins.uninsured||0), insured=Number(ins.insured||0);
-  const errorRate=finals?100*err/finals:null, uninsuredRate=(insured+no)?100*no/(insured+no):null;
-  $('overviewCards').innerHTML=
-    card('UTILIZADORES ÚNICOS',num(o['unique_'+currentPeriod]),'Instalações com atividade.', 'cyan')+
-    card('CONSULTAS DE SEGURO',num(ins.started),'Inícios de consulta no período.')+
-    card('RESULTADOS FINAIS',num(ins.finals),'Seguro + sem seguro + erro.')+
-    card('COM SEGURO',num(insured),pct(insured+no?100*insured/(insured+no):null)+' dos resultados seguros.','green')+
-    card('SEM SEGURO',num(no),uninsuredRate===null?'Sem base suficiente.':pct(uninsuredRate)+' dos resultados com decisão.','red')+
-    card('ERROS ASF',num(err),errorRate===null?'Sem base suficiente.':pct(errorRate)+' dos resultados finais.','yellow');
-  const rr24=ret['24h']||{},rr7=ret['7d']||{},rr30=ret['30d']||{};
-  $('retentionPanel').innerHTML=
-    '<div class="grid3">'+
-      '<div><div class="card-label">24H · NOVOS</div><div class="big-number cyan">'+num(rr24.new)+'</div><div class="card-note">Retornantes: '+num(rr24.returning)+'</div></div>'+
-      '<div><div class="card-label">7D · NOVOS</div><div class="big-number">'+num(rr7.new)+'</div><div class="card-note">Retornantes: '+num(rr7.returning)+'</div></div>'+
-      '<div><div class="card-label">30D · NOVOS</div><div class="big-number">'+num(rr30.new)+'</div><div class="card-note">Retornantes: '+num(rr30.returning)+'</div></div>'+
-    '</div>'+
-    '<div class="info-note">“Novo” significa que a instalação apareceu pela primeira vez no período observado. Não é uma conta de pessoas reais.</div>';
-  const top=d.analytics?.events||[];
-  renderBars('topEvents',top.slice(0,8).map(x=>({label:x.event,value:x.qty})));
-}
-function renderOverviewPace(d){
-  const o=d.analytics?.overview||{}, s=(d.analytics?.usage?.sessions||{})[currentPeriod]||{};
-  const active=Number(o.active_10m||0), online=Number(o.online_now||0);
-  $('paceCards').innerHTML=
-    card('ONLINE · 5 MIN',num(online),'Atividade recente detectada.','green')+
-    card('ATIVOS · 10 MIN',num(active),'Instalações com heartbeat/app_open.','cyan')+
-    card('SESSÕES',num(s.sessions),'Sessões técnicas do navegador.')+
-    card('AÇÕES / SESSÃO',num(s.avg_actions),'Sem contar heartbeats como ação.','yellow');
-  $('sessionSummary').innerHTML=
-    '<div class="metric-line"><span>Mediana da sessão</span><strong>'+num(s.median_minutes)+' min</strong></div>'+
-    '<div class="metric-line"><span>P95 da sessão</span><strong>'+num(s.p95_minutes)+' min</strong></div>'+
-    '<div class="metric-line"><span>Multi-módulo</span><strong>'+pct(s.multi_module_pct)+'</strong></div>'+
-    '<div class="metric-line"><span>Sessões fortes · ≥10 ações</span><strong>'+num(s.power_sessions)+'</strong></div>'+
-    '<div class="info-note">A mediana e o P95 são mostrados em conjunto para evitar que sessões muito longas escondam o comportamento típico.</div>';
-  const hours=d.analytics?.usage?.hourly||[];
-  const max=Math.max(1,...hours.map(x=>Number(x.actions||0)));
-  $('hourlyChart').innerHTML=hours.map(x=>'<div class="hour-cell" style="opacity:'+Math.max(.25,Number(x.actions||0)/max)+'"><strong>'+String(x.hour_num).padStart(2,'0')+'h</strong><span>'+fmt(x.actions||0)+' ações</span></div>').join('')||'<div class="empty">Sem dados horários.</div>';
-}
-function renderOverviewTrend(d){
-  const rows=d.analytics?.usage?.daily||[];
-  const vals=rows.map(x=>Number(x.lookups||0));const max=Math.max(1,...vals);
-  $('dailyChart').innerHTML=rows.map(x=>{
-    const h=Math.max(3,(Number(x.lookups||0)/max)*100);
-    return '<div class="chart-col" title="'+escapeHtml(x.day_key)+' · '+fmt(x.lookups)+' consultas"><div class="chart-bar" style="height:'+h+'%"></div><div class="chart-label">'+escapeHtml(String(x.day_key).slice(5))+'</div></div>';
-  }).join('')||'<div class="empty" style="width:100%">Sem dados diários.</div>';
-  const last=rows.slice(-7),sumLook=last.reduce((a,x)=>a+Number(x.lookups||0),0),sumErr=last.reduce((a,x)=>a+Number(x.asf_errors||0),0),sumSpeed=last.reduce((a,x)=>a+Number(x.speed_calcs||0),0);
-  $('trendCards').innerHTML=
-    card('CONSULTAS · 7 ÚLTIMOS DIAS',fmt(sumLook),'Soma dos dias disponíveis.','cyan')+
-    card('ERROS ASF · 7 ÚLTIMOS DIAS',fmt(sumErr),'Eventos de erro registados.','yellow')+
-    card('CÁLCULOS · 7 ÚLTIMOS DIAS',fmt(sumSpeed),'Módulo de cinemómetro.','green');
+ const a=d.analytics||{},o=a.overview||{},ins=period(),ret=a.retention||{},u=a.usage?.sessions?.[currentPeriod]||{};
+ const f=Number(ins.finals||0),e=Number(ins.errors||0),yes=Number(ins.insured||0),no=Number(ins.uninsured||0),dec=yes+no;
+ const errRate=f?100*e/f:null,noRate=dec?100*no/dec:null;
+ $('overviewCards').innerHTML=
+  card('INSTALAÇÕES ÚNICAS',num(o['unique_'+currentPeriod]),'Atividade observada.','cyan')+
+  card('CONSULTAS SEGURO',num(ins.started),'Inícios de consulta.')+
+  card('RESULTADOS FINAIS',num(f),'Seguro + sem seguro + erro.')+
+  card('COM SEGURO',num(yes),pct(dec?100*yes/dec:null),'green')+
+  card('SEM SEGURO',num(no),pct(noRate),'red')+
+  card('ERROS ASF',num(e),pct(errRate)+' dos finais.','yellow');
+ const r24=ret['24h']||{},r7=ret['7d']||{},r30=ret['30d']||{};
+ $('overviewRetention').innerHTML=metric('24 H · novos',num(r24.new)) + metric('24 H · retornantes',num(r24.returning)) + metric('7 D · novos',num(r7.new)) + metric('30 D · novos',num(r30.new));
+ const mods=a.usage?.modules||[];barList('overviewModules',mods.map(x=>({label:x.module,value:x.qty})));
+ const te=(a.events||[])[0];$('overviewTopEvent').innerHTML=te?metric('Evento',esc(te.event))+metric('Ocorrências',fmt(te.qty))+metric('Nota','Top 1 no conjunto de 30 dias.'):'<div style="color:#738b92;font-size:9px">Sem dados.</div>';
+ $('overviewRhythmCards').innerHTML=
+  card('ONLINE · 5 MIN',num(o.online_now),'Instalações com atividade.','green')+
+  card('ATIVOS · 10 MIN',num(o.active_10m),'Heartbeats / app_open.','cyan')+
+  card('SESSÕES',num(u.sessions),'Sessões técnicas.')+
+  card('AÇÕES / SESSÃO',num(u.avg_actions),'Sem heartbeats.','yellow');
+ $('overviewSession').innerHTML=metric('Mediana',num(u.median_minutes)+' min')+metric('P95',num(u.p95_minutes)+' min')+metric('Multi-módulo',pct(u.multi_module_pct))+metric('Power sessions',num(u.power_sessions));
+ const hours=a.usage?.hourly||[],mx=Math.max(1,...hours.map(x=>Number(x.actions)||0));
+ $('overviewHours').innerHTML=hours.length?hours.map(x=>'<div class="hour-cell" style="opacity:'+Math.max(.25,(Number(x.actions)||0)/mx)+'"><strong>'+String(x.hour_num).padStart(2,'0')+'h</strong><span>'+fmt(x.actions||0)+'</span></div>').join(''):'<div style="color:#738b92;font-size:9px">Sem dados.</div>';
+ const days=a.usage?.daily||[],max=Math.max(1,...days.map(x=>Number(x.lookups)||0));
+ $('dailyChart').innerHTML=days.length?days.map(x=>'<div class="chart-col" title="'+esc(x.day_key)+' · '+fmt(x.lookups)+' consultas"><div class="chart-bar" style="height:'+Math.max(3,(Number(x.lookups)||0)/max*100)+'%"></div><div class="chart-label">'+esc(String(x.day_key).slice(5))+'</div></div>').join(''):'<div style="width:100%;color:#738b92;font-size:9px">Sem dados.</div>';
+ const last=days.slice(-7);$('overviewTrendCards').innerHTML=
+  card('CONSULTAS · 7D',fmt(last.reduce((s,x)=>s+Number(x.lookups||0),0)),'Soma dos dias disponíveis.','cyan')+
+  card('ERROS ASF · 7D',fmt(last.reduce((s,x)=>s+Number(x.asf_errors||0),0)),'Eventos de erro.','yellow')+
+  card('CÁLCULOS · 7D',fmt(last.reduce((s,x)=>s+Number(x.speed_calcs||0),0)),'Cinemómetro.','green')+
+  card('CÓPIAS LEGAIS · 7D',fmt(last.reduce((s,x)=>s+Number(x.leg_copies||0),0)),'Legislação.');
 }
 function renderInsurance(d){
-  const ins=periodData('insurance');const insured=Number(ins.insured||0),no=Number(ins.uninsured||0),err=Number(ins.errors||0),finals=Number(ins.finals||0);
-  const errorRate=finals?100*err/finals:null,decided=insured+no,uninsRate=decided?100*no/decided:null;
-  $('insuranceCards').innerHTML=
-    card('CONSULTAS INICIADAS',num(ins.started),'Janela '+currentPeriod.toUpperCase()+'.','cyan')+
-    card('RESULTADOS',num(ins.finals),'Eventos finais consolidados.')+
-    card('COM SEGURO',num(insured),pct(decided?100*insured/decided:null),'green')+
-    card('SEM SEGURO',num(no),pct(uninsRate),'red')+
-    card('ERROS',num(err),pct(errorRate)+' dos finais.','yellow')+
-    card('PENDENTES',num(ins.pending),'Sem resultado final conhecido.','yellow');
-  const stages=[
-    ['CONSULTAS',Number(ins.started||0)],
-    ['FINAIS',Number(ins.finals||0)],
-    ['DECISÕES',decided],
-    ['ERROS',err]
-  ];
-  const max=Math.max(1,...stages.map(x=>x[1]));
-  $('insuranceFunnel').innerHTML=stages.map((x,i)=>'<div class="funnel-step"><span>'+x[0]+'</span><strong>'+fmt(x[1])+'</strong><div class="progress" style="margin-top:8px"><i style="width:'+((x[1]/max)*100)+'%;background:'+(x[0]==='ERROS'?'var(--red)':'var(--cyan)')+'"></i></div></div>').join('');
-  const all=['24h','7d','30d'];const labels=['24H','7 DIAS','30 DIAS'];
-  $('insuranceTable').innerHTML='<table><thead><tr><th>PERÍODO</th><th>INICIADAS</th><th>FINAIS</th><th>COM SEGURO</th><th>SEM SEGURO</th><th>ERROS</th><th>PENDENTES</th></tr></thead><tbody>'+
-    all.map((p,i)=>{const x=d.analytics?.insurance?.[p]||{};return '<tr><td class="label">'+labels[i]+'</td><td>'+num(x.started)+'</td><td>'+num(x.finals)+'</td><td class="green">'+num(x.insured)+'</td><td class="red">'+num(x.uninsured)+'</td><td class="yellow">'+num(x.errors)+'</td><td>'+num(x.pending)+'</td></tr>'}).join('')+'</tbody></table>';
-}
-function renderInsurancePerf(d){
-  const q=d.analytics?.insurance_quality||{},r=d.analytics?.retry||{},ins=periodData('insurance');
-  $('insurancePerfCards').innerHTML=
-    card('ASF P50',num(q.latency_p50_ms)+' ms','Mediana das respostas com diagnóstico.')+
-    card('ASF P95',num(q.latency_p95_ms)+' ms','Cauda de latência.')+
-    card('MATRÍCULAS CONHECIDAS',num(q.known_plates_24h),'24H com diagnóstico disponível.','cyan')+
-    card('DUPLICAÇÕES FINAIS',num(ins.multi_final),'Mesmo query_id com mais de um final.','yellow');
-  $('retryPanel').innerHTML=
-    '<div class="metric-line"><span>Tentativas marcadas como retry · 24H</span><strong>'+num(r.attempts_24h)+'</strong></div>'+
-    '<div class="metric-line"><span>Tentativas marcadas como retry · 30D</span><strong>'+num(r.attempts_30d)+'</strong></div>'+
-    '<div class="metric-line"><span>Finais ligados a retry · 24H</span><strong>'+num(r.retry_finals_24h)+'</strong></div>'+
-    '<div class="info-note">A telemetria de retry só conta o que foi explicitamente marcado pela aplicação.</div>';
-  const cov=d.analytics?.telemetry||{};
-  $('insuranceDataQuality').innerHTML=
-    '<div class="metric-line"><span>Cobertura de diagnóstico ASF</span><strong>'+pct(cov.asf_diagnostic_coverage_30d)+'</strong></div>'+
-    '<div class="metric-line"><span>Eventos totais · 30D</span><strong>'+num(cov.events_30d)+'</strong></div>'+
-    '<div class="metric-line"><span>Heartbeats · 30D</span><strong>'+num(cov.heartbeats_30d)+'</strong></div>'+
-    '<div class="info-note">A cobertura é histórica: eventos antigos de 1.3 não contêm todos os campos que a versão 1.4 passou a recolher.</div>';
-}
-function renderInsuranceDiag(d){
-  const e=d.analytics?.errors||{};
-  const plates=e.plates||[],sigs=e.signatures||[];
-  $('insuranceDiagCards').innerHTML=
-    card('ASSINATURAS DE ERRO',fmt(sigs.length),'Agrupamentos técnicos observados.')+
-    card('MATRÍCULAS COM ERRO',fmt(plates.length),'Só quando a matrícula foi preservada.')+
-    card('TIPOS DE ERRO',fmt((e.types||[]).length),'Classificações disponíveis.','cyan');
-  $('insurancePlateErrors').innerHTML=plates.length?
-    '<table><thead><tr><th>MATRÍCULA</th><th>ERROS</th><th>ÚLTIMO</th><th>TIPO</th></tr></thead><tbody>'+plates.slice(0,20).map(x=>'<tr><td class="label red">'+escapeHtml(x.plate||'—')+'</td><td>'+num(x.qty)+'</td><td>'+datePT(x.last_at)+'</td><td>'+escapeHtml((x.kinds||[]).join(', ')||'—')+'</td></tr>').join('')+'</tbody></table>'
-    :'<div class="empty">Ainda não existem erros associados a matrículas com diagnóstico disponível.</div>';
-  $('insuranceSignatures').innerHTML=sigs.length?
-    '<table><thead><tr><th>TIPO</th><th>QTD.</th><th>QUERIES</th><th>INSTALAÇÕES</th><th>HASH</th><th>MENSAGEM</th></tr></thead><tbody>'+sigs.map(x=>'<tr><td><span class="pill red">'+escapeHtml(x.kind||'unknown')+'</span></td><td>'+num(x.qty)+'</td><td>'+num(x.queries)+'</td><td>'+num(x.installs)+'</td><td>'+escapeHtml(x.response_hash||'—')+'</td><td style="text-align:left">'+escapeHtml(x.message_text||'—')+'</td></tr>').join('')+'</tbody></table>'
-    :'<div class="empty">Sem assinaturas no período.</div>';
+ const a=d.analytics||{},ins=period(),yes=Number(ins.insured||0),no=Number(ins.uninsured||0),err=Number(ins.errors||0),fin=Number(ins.finals||0),dec=yes+no;
+ $('insuranceCards').innerHTML=
+  card('INICIADAS',num(ins.started),'Período '+currentPeriod.toUpperCase()+'.','cyan')+
+  card('FINAIS',num(fin),'Resultado conhecido.')+
+  card('COM SEGURO',num(yes),pct(dec?100*yes/dec:null),'green')+
+  card('SEM SEGURO',num(no),pct(dec?100*no/dec:null),'red')+
+  card('ERROS',num(err),pct(fin?100*err/fin:null),'yellow')+
+  card('PENDENTES',num(ins.pending),'Sem final conhecido.','yellow');
+ const stages=[['INÍCIO',Number(ins.started||0)],['FINAIS',fin],['DECISÕES',dec],['ERROS',err],['PENDENTES',Number(ins.pending||0)]],m=Math.max(1,...stages.map(x=>x[1]));
+ $('insuranceFunnel').innerHTML=stages.map((x,i)=>'<div class="funnel-step"><span>'+x[0]+'</span><strong>'+fmt(x[1])+'</strong><div class="progress"><i style="width:'+(x[1]/m*100)+'%;background:'+(x[0]==='ERROS'?'var(--red)':x[0]==='PENDENTES'?'var(--yellow)':'var(--cyan)')+'"></i></div></div>').join('');
+ $('insurancePeriod').innerHTML=table(['PERÍODO','INÍCIO','FINAIS','COM SEGURO','SEM SEGURO','ERROS','PENDENTES'],['24h','7d','30d'].map(p=>{const x=a.insurance?.[p]||{};return '<tr>'+td(p.toUpperCase(),'label')+td(fmt(x.started))+td(fmt(x.finals))+td(fmt(x.insured),'ok')+td(fmt(x.uninsured),'danger')+td(fmt(x.errors),'warn')+td(fmt(x.pending))+'</tr>'}));
+ const q=a.insurance_quality||{},rr=a.retry||{};
+ $('insurancePerfCards').innerHTML=card('ASF P50',num(q.latency_p50_ms)+' ms','Mediana.')+card('ASF P95',num(q.latency_p95_ms)+' ms','Cauda.')+card('MATRÍCULAS 24H',num(q.known_plates_24h),'Com diagnóstico.','cyan')+card('MULTI-FINAL',num(ins.multi_final),'Mesmo query_id com >1 final.','yellow');
+ $('insuranceRetry').innerHTML=metric('Retries · 24 H',num(rr.attempts_24h))+metric('Retries · 30 D',num(rr.attempts_30d))+metric('Retry finals · 24 H',num(rr.retry_finals_24h))+metric('Interpretação','Retries manuais registados.');
+ $('insuranceQuality').innerHTML=metric('Consultas iniciadas',num(ins.started))+metric('Finais',num(ins.finals))+metric('Pendentes',num(ins.pending))+metric('Multi-final',num(ins.multi_final))+metric('Cobertura diagnóstica',pct(d.analytics?.telemetry?.asf_diagnostic_coverage_30d));
+ const pe=(a.errors?.plates||[]);$('insurancePlateErrors').innerHTML=table(['MATRÍCULA','ERROS','ÚLTIMO','TIPOS'],pe.map(x=>'<tr>'+td('<span class="tag red">'+esc(x.plate||x.plate_key||'—')+'</span>')+td(fmt(x.qty),'danger')+td(datePT(x.last_at),'muted')+td(esc((x.kinds||[]).join(', ')||'—'))+'</tr>'),true);
+ const sg=(a.errors?.signatures||[]);$('insuranceSignatures').innerHTML=table(['TIPO','QTD.','QUERIES','INSTALAÇÕES','HASH'],sg.map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'unknown')+'</span>')+td(fmt(x.qty),'danger')+td(fmt(x.queries))+td(fmt(x.installs))+td(esc(x.response_hash||'—'),'muted')+'</tr>'),true);
+ const diag=d.diagnostics||{};const dq=diag.quality_24h||{};
+ $('insuranceDiagCards').innerHTML=card('CONSULTAS',num(dq.lookups))+card('CONCLUÍDAS',num(dq.completed),pct(dq.completion_rate),'green')+card('ERROS',num(dq.error_queries),pct(dq.error_rate),'red')+card('FILA P95',num(dq.queue_p95_ms)+' ms','Latência de fila.','yellow');
 }
 function renderSpeed(d){
-  const s=d.analytics?.speed?.summary||{},activity=Number(activityValue('Velocidades inseridas').v24||0);
-  $('speedCards').innerHTML=
-    card('CÁLCULOS · MÓDULO',fmt(activity),'Atividade registada no Cinemómetro.','cyan')+
-    card('DADOS DETALHADOS',fmt(s.detail_events_24h),'Velocidades com snapshot 1.4.')+
-    card('COBERTURA DETALHADA',pct(d.analytics?.telemetry?.cin_detail_coverage_30d),'Do conjunto que já contém eventos de cinemómetro.','yellow')+
-    card('P50 VELOCIDADE',num(s.p50_24h),'Só quando há snapshot detalhado.')+
-    card('MÍNIMO / MÁXIMO',(s.min_24h==null?'—':num(s.min_24h)+' / '+num(s.max_24h)),'km/h.')+
-    card('MÉDIA',s.avg_24h==null?'—':Number(s.avg_24h).toFixed(1).replace('.',',')+' km/h','Só com detalhe disponível.');
-  const dist=d.analytics?.speed?.distribution_24h||[];
-  $('speedDistribution').innerHTML=dist.length?'<div class="bar-list">'+dist.map(x=>'<div class="bar-row"><div class="bar-label">'+x.bucket_start+'–'+(Number(x.bucket_start)+9)+' km/h</div><div class="bar-track"><div class="bar-fill" style="width:'+Math.min(100,Number(x.qty||0)/Math.max(1,...dist.map(y=>Number(y.qty||0)))*100)+'%"></div></div><div class="bar-num">'+fmt(x.qty)+'</div></div>').join('')+'</div>':'<div class="empty">Ainda não há snapshots detalhados de velocidade armazenados. A atividade do módulo existe, mas o detalhe de velocidade ainda não aparece na base atual.</div>';
-  const cov=Number(d.analytics?.telemetry?.cin_detail_coverage_30d||0);
-  $('speedCoverage').innerHTML=
-    '<div class="big-number '+(cov>0?'cyan':'yellow')+'">'+pct(cov)+'</div>'+
-    '<div class="card-note" style="margin-top:8px">Cobertura dos eventos de cinemómetro com objeto <code>cin</code>.</div>'+
-    '<div class="metric-line" style="margin-top:10px"><span>Eventos do módulo · 30D</span><strong>'+num(activityValue('Velocidades inseridas').v30)+'</strong></div>'+
-    '<div class="metric-line"><span>Eventos detalhados · 30D</span><strong>'+num(s.detail_events_24h)+'</strong></div>';
-}
-function renderSpeedPatterns(d){
-  const s=d.analytics?.speed?.summary||{},dist=d.analytics?.speed?.distribution_24h||[];
-  const detailed=d.analytics?.speed?.dimensions||{};
-  $('speedPatternCards').innerHTML=
-    card('VELOCIDADES DISTINTAS',num(s.distinct_24h),'24H, com detalhe disponível.')+
-    card('MÚLTIPLOS DE 5',detailed.multiples5_pct?pct(detailed.multiples5_pct):'—','Métrica passa a existir com snapshots.')+
-    card('MÚLTIPLOS DE 10',detailed.multiples10_pct?pct(detailed.multiples10_pct):'—','Métrica passa a existir com snapshots.');
-  renderBars('speedModeBars',detailed.modo||[]);
-  renderBars('speedVehicleBars',detailed.veiculo||[]);
-  renderBars('speedFrameBars',detailed.enquadramento||[]);
-  if(!dist.length){
-    ['speedModeBars','speedVehicleBars','speedFrameBars'].forEach(id=>{if(!$(id).innerHTML)$(id).innerHTML='<div class="empty">Sem detalhe disponível.</div>'});
-  }
-}
-function renderSpeedConfig(d){
-  const sp=d.analytics?.speed||{}, dims=sp.dimensions||{};
-  renderTable('speedOperators',sp.operators||[],[
-    ['numero','N.º'],['nome','NOME'],['posto','POSTO'],['qty','EVENTOS'],['operations','OPERAÇÕES']
-  ],false,'Sem operadores declarados no período.');
-  renderTable('speedApparatus',sp.apparatus||[],[
-    ['marca','MARCA'],['modelo','MODELO'],['serie','SÉRIE'],['qty','EVENTOS'],['operations','OPERAÇÕES']
-  ],false,'Sem aparelho/perfil declarado no período.');
-  renderBars('speedLimitBars',dims.limite||[]);
-  renderBars('speedGravityBars',dims.gravidade||[]);
-  renderBars('speedCodeBars',dims.codigo||[]);
+ const a=d.analytics||{},s=a.speed?.summary||{},tel=a.telemetry||{},cin=d.cinemometer||{};
+ const detail=Number(s.detail_events_24h||0);
+ $('speedCards').innerHTML=card('CÁLCULOS · 24H',num(s.calculations_24h),'Eventos com detalhe.')+card('VELOCIDADE P50',num(s.p50_24h)+' km/h','Percentil central.','cyan')+card('MÉDIA',num(s.avg_24h)+' km/h')+card('MÍN / MÁX',num(s.min_24h)+' / '+num(s.max_24h)+' km/h')+card('DISTINTAS',num(s.distinct_24h),'Valores distintos.')+card('COBERTURA',pct(s.detail_coverage_30d),'Detalhe novo em 30 dias.','green');
+ const dist=a.speed?.distribution_24h||[];const mx=Math.max(1,...dist.map(x=>Number(x.qty)||0));
+ $('speedDistribution').innerHTML=dist.length?dist.map(x=>'<div style="display:flex;align-items:center;gap:7px;margin-bottom:6px"><span style="width:55px;color:#8ca2a8;font:800 8px Consolas,monospace">'+x.bucket_start+'–'+(Number(x.bucket_start)+9)+' km/h</span><div class="bar-track" style="flex:1"><div class="bar-fill" style="width:'+(Number(x.qty)/mx*100)+'%"></div></div><strong style="width:36px;text-align:right;font:900 8px Consolas,monospace">'+fmt(x.qty)+'</strong></div>').join(''):'<div style="color:#738b92;font-size:9px">Sem detalhe suficiente.</div>';
+ $('speedCoverage').innerHTML=metric('Detalhe 30D',pct(s.detail_coverage_30d))+metric('Cálculos 24H',num(s.calculations_24h))+metric('Entradas 24H',num(s.speed_entries_24h))+metric('Nota','O detalhe depende do build atual já capturado.');
+ const dims=a.speed?.dimensions||{};barList('speedModeBars',(dims.modo||[]).map(x=>({label:x.value||'—',value:x.qty})));barList('speedVehicleBars',(dims.veiculo||[]).map(x=>({label:x.value||'—',value:x.qty})));barList('speedFrameBars',(dims.enquadramento||[]).map(x=>({label:x.value||'—',value:x.qty})));
+ $('speedPatternCards').innerHTML=card('MÚLTIPLOS DE 5',pct(s.round5_pct),'Concentração em valores redondos.','cyan')+card('MÚLTIPLOS DE 10',pct(s.round10_pct),'Concentração ainda mais forte.')+card('CÁLCULOS',num(s.calculations_24h),'24H.')+card('EVENTOS DETALHADOS',num(detail),'24H.');
+ const ops=a.speed?.operators||[],aps=a.speed?.apparatus||[];
+ $('speedOperators').innerHTML=table(['N.º','NOME','POSTO','QTD.','OPERAÇÕES'],ops.map(x=>'<tr>'+td(esc(x.numero||'—'))+td(esc(x.nome||'—'))+td(esc(x.posto||'—'))+td(fmt(x.qty))+td(fmt(x.operations))+'</tr>'),true);
+ $('speedApparatus').innerHTML=table(['MARCA','MODELO','SÉRIE','QTD.','OPERAÇÕES'],aps.map(x=>'<tr>'+td(esc(x.marca||'—'))+td(esc(x.modelo||'—'))+td(esc(x.serie||'—'))+td(fmt(x.qty))+td(fmt(x.operations))+'</tr>'),true);
+ barList('speedLimitBars',(dims.limite||[]).map(x=>({label:x.value||'—',value:x.qty})));barList('speedGravityBars',(dims.gravidade||[]).map(x=>({label:x.value||'—',value:x.qty})));barList('speedCodeBars',(dims.codigo||[]).map(x=>({label:x.value||'—',value:x.qty})));
+ $('speedSessionCards').innerHTML=card('SESSÕES',num(cin.sessions),'Agrupamento técnico.')+card('COMPATÍVEIS',num(cin.sessions_compatible),'Heurística.','green')+card('ATÍPICAS',num(cin.sessions_atypical),'Para revisão.','yellow');
+ const ss=Array.isArray(cin.recent_sessions)?cin.recent_sessions:[];$('speedSessions').innerHTML=table(['INÍCIO','OPERAÇÃO','CÁLCULOS','VELOCIDADES','PADRÃO'],ss.slice(0,30).map(x=>'<tr>'+td(datePT(x.first_seen),'muted')+td(esc(x.operation_id||'ID legado'))+td(fmt(x.calculations))+td((x.min_speed==null?'—':fmt(x.min_speed)+'–'+fmt(x.max_speed)+' km/h'))+td('<span class="tag '+(x.pattern==='padrao_atipico_a_rever'?'red':'')+'">'+esc(x.pattern||'—')+'</span>')+'</tr>'),true);
 }
 function renderLegislation(d){
-  const l=d.analytics?.legislation||{},c=l.counts?.[currentPeriod]||{};
-  const interactions=Number(c.opens||0)+Number(c.searches||0);
-  $('legCards').innerHTML=
-    card('CATEGORIAS ABERTAS',num(c.opens),'No período selecionado.')+
-    card('PESQUISAS',num(c.searches),'Pesquisas registadas.')+
-    card('CÓPIAS',num(c.copies),'Conteúdo copiado.')+
-    card('FAVORITOS',num(c.favorites),'Alterações de favorito.','yellow');
-  $('legConversion').innerHTML=
-    '<div class="big-number '+(interactions?'cyan':'muted')+'">'+(interactions?pct(100*Number(c.copies||0)/interactions):'—')+'</div>'+
-    '<div class="card-note" style="margin-top:8px">Cópias por 100 interações de categoria/pesquisa. É um indicador de uso, não de eficácia.</div>';
-  const periods=['24h','7d','30d'];
-  $('legPeriodTable').innerHTML='<table><thead><tr><th>PERÍODO</th><th>ABERTURAS</th><th>PESQUISAS</th><th>CÓPIAS</th><th>FAVORITOS</th></tr></thead><tbody>'+
-    periods.map(p=>{const x=l.counts?.[p]||{};return '<tr><td class="label">'+p.toUpperCase()+'</td><td>'+num(x.opens)+'</td><td>'+num(x.searches)+'</td><td class="cyan">'+num(x.copies)+'</td><td>'+num(x.favorites)+'</td></tr>'}).join('')+'</tbody></table>';
-  renderTable('legItems',l.items||[],[
-    ['item_label','LEGISLAÇÃO'],['item_id','CÓDIGO'],['qty','CÓPIAS'],['code_qty','CÓDIGO'],['desc_qty','DESCRIÇÃO'],['all_qty','TUDO']
-  ],false,'Ainda não existem cópias registadas.');
-  renderBars('legCopyTypes',(l.copy_types||[]).map(x=>({label:x.kind,value:x.qty})));
-  $('legActions').innerHTML=
-    '<div class="metric-line"><span>Aberturas</span><strong>'+num(c.opens)+'</strong></div>'+
-    '<div class="metric-line"><span>Pesquisas</span><strong>'+num(c.searches)+'</strong></div>'+
-    '<div class="metric-line"><span>Cópias</span><strong>'+num(c.copies)+'</strong></div>'+
-    '<div class="metric-line"><span>Favoritos</span><strong>'+num(c.favorites)+'</strong></div>';
+ const l=d.analytics?.legislation||{},c=l.counts||{},x=period(),cur=c[currentPeriod]||{};const copies=Number(cur.copies||0),searches=Number(cur.searches||0);
+ $('legCards').innerHTML=card('ABERTURAS',num(cur.opens),'Período.')+card('PESQUISAS',num(searches),'Período.','cyan')+card('CÓPIAS',num(copies),'Período.','green')+card('FAVORITOS',num(cur.favorites),'Período.');
+ $('legConversion').innerHTML=metric('Pesquisas',fmt(searches))+metric('Cópias',fmt(copies))+metric('Taxa pesquisa → cópia',pct(searches?100*copies/searches:null))+metric('Leitura','Indicador de utilização, não de qualidade.');
+ $('legPeriod').innerHTML=table(['PERÍODO','ABERTURAS','PESQUISAS','CÓPIAS','FAVORITOS'],['24h','7d','30d'].map(p=>{const z=c[p]||{};return '<tr>'+td(p.toUpperCase(),'label')+td(fmt(z.opens))+td(fmt(z.searches))+td(fmt(z.copies),'ok')+td(fmt(z.favorites))+'</tr>'}));
+ $('legItems').innerHTML=table(['ITEM','CÓPIAS','CÓDIGO','DESCRIÇÃO','TUDO'],(l.items||[]).map(z=>'<tr>'+td(esc(z.item_label||z.item_id||'Sem designação'),'label')+td(fmt(z.qty),'cyan')+td(fmt(z.code_qty))+td(fmt(z.desc_qty))+td(fmt(z.all_qty))+'</tr>'),true);
+ barList('legCopyTypes',(l.copy_types||[]).map(z=>({label:z.kind,value:z.qty})));
+ const actions=[['aberturas',cur.opens],['pesquisas',cur.searches],['cópias',cur.copies],['favoritos',cur.favorites]];$('legActions').innerHTML=actions.map(x=>metric(x[0],fmt(x[1]||0))).join('');
 }
 function renderUsage(d){
-  const o=d.analytics?.overview||{},ret=d.analytics?.retention?.[currentPeriod]||{},s=d.analytics?.usage?.sessions?.[currentPeriod]||{};
-  $('usageUserCards').innerHTML=
-    card('ÚNICOS',num(o['unique_'+currentPeriod]),'Instalações ativas no período.','cyan')+
-    card('NOVOS',num(ret.new),'Primeira aparição no período.')+
-    card('REGRESSO',num(ret.returning),'Instalações com atividade anterior.','green')+
-    card('ATIVOS · 10 MIN',num(o.active_10m),'No momento da leitura.','green')+
-    card('EVENTOS',num(o['events_'+currentPeriod]),'Total de telemetria no período.')+
-    card('SESSÕES FORTES',num(s.power_sessions),'Sessões com ≥10 ações.','yellow');
-  renderBars('moduleBars',(d.analytics?.usage?.modules||[]).map(x=>({label:x.module,value:x.qty})));
-  renderBars('moduleActivityBars',(d.analytics?.usage?.module_activity||[]).filter(x=>x.module!=='(sem módulo)').slice(0,8).map(x=>({label:x.module,value:x.qty})));
-  $('usageSessionCards').innerHTML=
-    card('SESSÕES',num(s.sessions),'Sessões técnicas.')+
-    card('MEDIANA',num(s.median_minutes)+' min','Duração típica.')+
-    card('P95',num(s.p95_minutes)+' min','Sessões longas.')+
-    card('AÇÕES / SESSÃO',num(s.avg_actions),'Sem heartbeats.');
-  renderTable('moduleTransitions',d.analytics?.usage?.transitions||[],[
-    ['from_module','DE'],['to_module','PARA'],['qty','TRANSIÇÕES']
-  ],false,'Ainda não existem transições suficientes.');
-  const days=(d.analytics?.usage?.daily||[]).slice(-15).reverse();
-  $('dailyMiniTable').innerHTML='<table><thead><tr><th>DIA</th><th>UTILIZADORES</th><th>CONSULTAS</th><th>CINEMÓMETRO</th><th>ERROS ASF</th><th>CÓPIAS</th></tr></thead><tbody>'+
-    days.map(x=>'<tr><td class="label">'+escapeHtml(x.day_key)+'</td><td>'+num(x.users)+'</td><td>'+num(x.lookups)+'</td><td>'+num(x.speed_calcs)+'</td><td class="yellow">'+num(x.asf_errors)+'</td><td>'+num(x.leg_copies)+'</td></tr>').join('')+'</tbody></table>';
+ const u=d.analytics?.usage||{},o=d.analytics?.overview||{},r=d.analytics?.retention||{},s=u.sessions?.[currentPeriod]||{};
+ $('usageUserCards').innerHTML=card('ÚNICOS',num(o['unique_'+currentPeriod]),'Instalações com atividade.','cyan')+card('NOVOS',num(r[currentPeriod]?.new),'Primeira aparição.')+card('RETORNANTES',num(r[currentPeriod]?.returning),'Já vistos antes.','green')+card('EVENTOS',num(o['events_'+currentPeriod]),'Atividade registada.')+card('MULTI-MÓDULO',pct(s.multi_module_pct),'Sessões com ≥2 módulos.')+card('POWER',num(s.power_sessions),'≥10 ações.');
+ $('usageSessionCards').innerHTML=card('SESSÕES',num(s.sessions))+card('MEDIANA',num(s.median_minutes)+' min')+card('P95',num(s.p95_minutes)+' min','Cauda.')+card('AÇÕES / SESSÃO',num(s.avg_actions));
+ barList('usageModules',(u.modules||[]).map(x=>({label:x.module,value:x.qty})));barList('usageModuleActivity',(u.module_activity||[]).map(x=>({label:x.module,value:x.qty})));
+ $('usageTransitions').innerHTML=table(['DE','PARA','QTD.'],(u.transitions||[]).slice(0,20).map(x=>'<tr>'+td(esc(x.from_module||'—'),'label')+td(esc(x.to_module||'—'))+td(fmt(x.qty),'cyan')+'</tr>'),true);
+ $('usageDaily').innerHTML=table(['DIA','UTILIZADORES','ABERTURAS','SEGURO','ERROS','VELOCIDADE','CÓPIAS'],(u.daily||[]).slice(-30).reverse().map(x=>'<tr>'+td(esc(x.day_key),'label')+td(fmt(x.users))+td(fmt(x.opens))+td(fmt(x.lookups))+td(fmt(x.asf_errors),'warn')+td(fmt(x.speed_calcs))+td(fmt(x.leg_copies))+'</tr>'),true);
 }
-function renderDevices(d){
-  const dist=d.analytics?.devices?.distribution||{},versions=d.analytics?.devices?.versions||[];
-  renderBars('browserBars',dist.browsers||[]);
-  renderBars('deviceTypeBars',dist.device_types||[]);
-  renderBars('osBars',dist.os||[]);
-  renderTable('versionTable',versions,[['value','VERSÃO'],['qty','INSTALAÇÕES']],false,'Sem versões reportadas.');
-  const clients=d.analytics?.errors?.clients||[];
-  const networkKnown=clients.filter(x=>x.network_type&&x.network_type!=='Unknown').length;
-  $('networkCards').innerHTML=
-    card('AMBIENTES COM REDE IDENTIFICADA',fmt(networkKnown),'Dentro do subconjunto de clientes com diagnóstico ASF.')+
-    card('NAVEGADORES OBSERVADOS',fmt((dist.browsers||[]).length),'Famílias distintas.')+
-    card('SISTEMAS OBSERVADOS',fmt((dist.os||[]).length),'Valores distintos guardados.');
-}
-function renderTelemetry(d){
-  const t=d.analytics?.telemetry||{};
-  $('telemetryCards').innerHTML=
-    card('EVENTOS · 30D',num(t.events_30d),'Volume total.','cyan')+
-    card('HEARTBEATS · 30D',num(t.heartbeats_30d),'Sinais de atividade.')+
-    card('CLIENTE',pct(t.client_coverage_30d),'Cobertura de metadados de cliente.')+
-    card('ASF DIAGNÓSTICO',pct(t.asf_diagnostic_coverage_30d),'Campos técnicos ASF.')+
-    card('CINEMÓMETRO DETALHE',pct(t.cin_detail_coverage_30d),'Snapshots de velocidade.','yellow');
-  const rows=[
-    ['Metadados de cliente',pct(t.client_coverage_30d),'Começa a ficar completo nos eventos novos.'],
-    ['Diagnóstico ASF',pct(t.asf_diagnostic_coverage_30d),'Muito do histórico 1.3 não tem o novo detalhe.'],
-    ['Detalhe Cinemómetro',pct(t.cin_detail_coverage_30d),'Ainda não aparece nos 30 dias atuais.'],
-    ['Eventos históricos',num(t.events_30d),'Continuam armazenados.']
-  ];
-  $('telemetryDetail').innerHTML='<table><thead><tr><th>CAMPO</th><th>COBERTURA / VALOR</th><th>LEITURA</th></tr></thead><tbody>'+
-    rows.map(x=>'<tr><td class="label">'+x[0]+'</td><td>'+x[1]+'</td><td style="text-align:left">'+x[2]+'</td></tr>').join('')+'</tbody></table>';
+function renderEnvironment(d){
+ const dist=d.analytics?.devices?.distribution||{},ver=d.analytics?.devices?.versions||[],tel=d.analytics?.telemetry||{};
+ barList('envBrowsers',(dist.browsers||[]).map(x=>({label:x.value,value:x.qty})));barList('envDevices',(dist.device_types||[]).map(x=>({label:x.value,value:x.qty})));barList('envOS',(dist.os||[]).map(x=>({label:x.value,value:x.qty})));
+ $('envVersions').innerHTML=table(['VERSÃO','INSTALAÇÕES'],ver.map(x=>'<tr>'+td(esc(x.value),'label')+td(fmt(x.qty))+'</tr>'),true);
+ $('envNetworkCards').innerHTML=card('CLIENTE',pct(tel.client_coverage_30d),'Cobertura de metadados.')+card('ASF DIAGNÓSTICO',pct(tel.asf_diagnostic_coverage_30d),'Resultados ASF.')+card('CIN DETALHADO',pct(tel.cin_detail_coverage_30d),'Cinemómetro.','cyan')+card('BUILD ID','Ativo na nova recolha','Interno · não altera a versão.','green',true);
+ $('envTelemetryCards').innerHTML=card('EVENTOS · 30D',num(tel.events_30d))+card('HEARTBEATS · 30D',num(tel.heartbeats_30d))+card('CLIENTE',pct(tel.client_coverage_30d))+card('ASF',pct(tel.asf_diagnostic_coverage_30d),'Diagnóstico detalhado.')+card('CIN',pct(tel.cin_detail_coverage_30d),'Detalhe de velocidade.')+card('VERSÃO PRODUTO','1.4','Mantida.','cyan',true);
+ $('envTelemetryTable').innerHTML=table(['MÉTRICA','VALOR','LEITURA'],[
+  '<tr>'+td('Eventos 30D','label')+td(fmt(tel.events_30d))+td('volume total observado')+'</tr>',
+  '<tr>'+td('Client coverage','label')+td(pct(tel.client_coverage_30d))+td('eventos com ambiente técnico')+'</tr>',
+  '<tr>'+td('ASF diagnostic coverage','label')+td(pct(tel.asf_diagnostic_coverage_30d))+td('resultados ASF com diagnóstico')+'</tr>',
+  '<tr>'+td('Cinemómetro detail coverage','label')+td(pct(tel.cin_detail_coverage_30d))+td('eventos de velocidade com detalhe')+'</tr>'
+ ],true);
 }
 function renderErrors(d){
-  const e=d.analytics?.errors||{},types=e.types||[],bursts=e.bursts||[];
-  const qty=types.reduce((a,x)=>a+Number(x.qty||0),0);
-  $('errorCards').innerHTML=
-    card('ERROS · 24H',num(qty),'Erros com diagnóstico nesta análise.','red')+
-    card('TIPOS',num(types.length),'Classificações de erro.')+
-    card('PIQUES',num(bursts.length),'Minutos com concentração.')+
-    card('INSTALAÇÕES',num((e.installations||[]).length),'Com incidentes registados.');
-  $('errorTypes').innerHTML=types.length?
-    '<table><thead><tr><th>TIPO</th><th>QTD.</th><th>MÉDIA</th><th>HASHES</th><th>ÚLTIMO</th></tr></thead><tbody>'+types.map(x=>'<tr><td><span class="pill red">'+escapeHtml(x.kind||'unknown')+'</span></td><td class="red">'+num(x.qty)+'</td><td>'+num(x.avg_ms)+' ms</td><td>'+num(x.hash_qty)+'</td><td>'+datePT(x.last_at)+'</td></tr>').join('')+'</tbody></table>'
-    :'<div class="empty">Sem erros no período.</div>';
-  const hourMap={};bursts.forEach(x=>{const h=new Date(x.minute_key).toLocaleString('pt-PT',{hour:'2-digit',minute:'2-digit'});hourMap[h]=(hourMap[h]||0)+Number(x.qty||0)});
-  const hb=Object.entries(hourMap).map(([label,value])=>({label,value}));
-  renderBars('errorHourBars',hb.slice(0,12),true);
-  renderTable('errorBursts',bursts,[['minute_key','MOMENTO'],['qty','ERROS'],['installs','INSTALAÇÕES']],false,'Sem picos de erro.');
-  renderTable('errorSignatureTable',e.signatures||[],[
-    ['kind','TIPO'],['qty','QTD.'],['queries','QUERIES'],['installs','INSTALAÇÕES'],['response_hash','HASH'],['message_text','MENSAGEM']
-  ],false,'Sem assinaturas.');
-  renderTable('errorInstallTable',e.installations||[],[
-    ['installation_id','ID INSTALAÇÃO'],['qty','ERROS'],['queries','QUERIES'],['last_at','ÚLTIMO']
-  ],false,'Sem instalações com erros.');
-  renderTable('errorPlateTable',e.plates||[],[
-    ['plate','MATRÍCULA'],['qty','ERROS'],['last_at','ÚLTIMO'],['kinds','TIPOS']
-  ],false,'Sem matrículas associadas a erros.');
+ const a=d.analytics||{},e=a.errors||{},q=a.insurance||{}[currentPeriod]||{},inv=d.investigation||{};
+ $('errorIncidentCards').innerHTML=
+  '<div class="incident-card"><span>ERROS ASF · 24H</span><strong>'+num((e.types||[]).reduce((s,x)=>s+Number(x.qty||0),0))+'</strong><small>Todos os tipos observados.</small></div>'+
+  '<div class="incident-card"><span>ERROS 1.4 · 24H</span><strong>'+num(inv.app14_errors)+'</strong><small>'+num(inv.app14_installations)+' instalações · '+num(inv.app14_hashes)+' hashes.</small></div>'+
+  '<div class="incident-card"><span>INSTALAÇÕES AFETADAS · 1.4</span><strong>'+num(inv.app14_installations)+'</strong><small>Concentração da falha recente.</small></div>'+
+  '<div class="incident-card"><span>MATRÍCULAS · 1.4</span><strong>'+num(inv.app14_plates)+'</strong><small>Quando capturadas no diagnóstico.</small></div>';
+ $('errorTypes').innerHTML=table(['TIPO','QTD.','HASHES','ÚLTIMO'],(e.types||[]).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'unknown')+'</span>')+td(fmt(x.qty),'danger')+td(fmt(x.hash_qty))+td(datePT(x.last_at),'muted')+'</tr>'),true);
+ $('errorBursts').innerHTML=table(['INÍCIO','ERROS'],(inv.app14_bursts_5m||[]).slice(0,12).map(x=>'<tr>'+td(datePT(x.start),'label')+td(fmt(x.count),'danger')+'</tr>'),true);
+ $('errorRecent14').innerHTML=table(['HORA','INSTALAÇÃO','BROWSER','TIPO','HTTP','ASF MS','HASH','BUILD','GQL'],(inv.latest_app14||[]).map(x=>'<tr>'+td(datePT(x.occurred_at),'muted')+td(esc(x.installation_id||'—'))+td(esc(x.browser||'Unknown'))+td('<span class="tag red">'+esc(x.error_type||'unknown')+'</span>')+td(x.http_status==null?'—':fmt(x.http_status))+td(x.duration_ms==null?'—':fmt(x.duration_ms)+' ms')+td(esc(x.response_hash||'—'),'muted')+td(esc(x.build_id||'legacy/sem build'))+td(x.graphql_error_count==null?'—':fmt(x.graphql_error_count))+'</tr>'),true);
+ $('errorSignatures').innerHTML=table(['TIPO','QTD.','QUERIES','INSTALAÇÕES','HASH'],(e.signatures||[]).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'unknown')+'</span>')+td(fmt(x.qty),'danger')+td(fmt(x.queries))+td(fmt(x.installs))+td(esc(x.response_hash||'—'),'muted')+'</tr>'),true);
+ $('errorInstallations').innerHTML=table(['INSTALAÇÃO','ERROS','QUERIES','ÚLTIMO'],(e.installations||[]).map(x=>'<tr>'+td(esc(x.installation_id||'—'),'label')+td(fmt(x.qty),'danger')+td(fmt(x.queries))+td(datePT(x.last_at),'muted')+'</tr>'),true);
+ $('errorPlates').innerHTML=table(['MATRÍCULA','ERROS','ÚLTIMO','TIPOS'],(e.plates||[]).map(x=>'<tr>'+td(esc(x.plate||x.plate_key||'—'),'label')+td(fmt(x.qty),'danger')+td(datePT(x.last_at))+td(esc((x.kinds||[]).join(', ')||'—'))+'</tr>'),true);
+ $('errorClients').innerHTML=table(['BROWSER','OS','REDE','FINAIS','ERROS','TAXA'],(e.clients||[]).map(x=>{const rate=x.finals_qty?100*x.error_qty/x.finals_qty:null;return '<tr>'+td(esc(x.browser_name||'Unknown'),'label')+td(esc((x.os_platform||'Unknown')+' '+(x.os_version||'')))+td(esc(x.network_type||'Unknown'))+td(fmt(x.finals_qty))+td(fmt(x.error_qty),'danger')+td(pct(rate),rate? 'danger':'ok')+'</tr>'}),true);
+ const dq=d.diagnostics?.quality_24h||{},te=a.telemetry||{};
+ $('errorQualityCards').innerHTML=card('PENDENTES',num(dq.unresolved_items?.length||q.pending),'Sem final conhecido.','yellow')+card('MULTI-FINAL',num(q.multi_final),'Duplicações de final.','yellow')+card('ASF DIAGNÓSTICO',pct(te.asf_diagnostic_coverage_30d),'Cobertura 30D.','cyan')+card('CLIENTE',pct(te.client_coverage_30d),'Ambiente técnico 30D.');
+ $('errorQualityTable').innerHTML=table(['MÉTRICA','VALOR','JANELA','NOTA'],[
+  '<tr>'+td('Pendentes','label')+td(num(q.pending),'warn')+td(currentPeriod.toUpperCase())+td('Consulta iniciada sem final conhecido.')+'</tr>',
+  '<tr>'+td('Multi-final','label')+td(num(q.multi_final),'warn')+td(currentPeriod.toUpperCase())+td('Mais de um resultado final para query_id.')+'</tr>',
+  '<tr>'+td('Erros ASF','label')+td(num(q.errors),'danger')+td(currentPeriod.toUpperCase())+td('Eventos finais classificados como erro.')+'</tr>',
+  '<tr>'+td('Diagnóstico ASF','label')+td(pct(te.asf_diagnostic_coverage_30d)) +td('30D')+td('Cobertura da telemetria detalhada.')+'</tr>'
+ ],true);
 }
-function renderClients(d){
-  const rows=d.analytics?.errors?.clients||[];
-  $('clientHealthTable').innerHTML=rows.length?
-    '<table><thead><tr><th>BROWSER</th><th>VERSÃO</th><th>SISTEMA</th><th>OS</th><th>REDE</th><th>FINAIS</th><th>ERROS</th><th>TAXA</th></tr></thead><tbody>'+
-    rows.map(x=>'<tr><td class="label">'+escapeHtml(x.browser_name||'Unknown')+'</td><td>'+escapeHtml(x.browser_version||'Unknown')+'</td><td>'+escapeHtml(x.os_platform||'Unknown')+'</td><td>'+escapeHtml(x.os_version||'Unknown')+'</td><td>'+escapeHtml(x.network_type||'Unknown')+'</td><td>'+num(x.finals_qty)+'</td><td class="'+(Number(x.error_qty)>0?'red':'green')+'">'+num(x.error_qty)+'</td><td class="'+(Number(x.error_qty)>0?'yellow':'green')+'">'+pct(x.finals_qty?100*Number(x.error_qty)/Number(x.finals_qty):null)+'</td></tr>').join('')+'</tbody></table>'
-    :'<div class="empty">Ainda não existem grupos de cliente suficientes.</div>';
+function renderInsights(d){
+ const a=d.analytics||{},u=a.usage||{},s=a.speed?.summary||{},ins=period(),l=a.legislation||{},e=a.errors||{},inv=d.investigation||{},life=d.lifetime||{};
+ const days=u.daily||[],hours=u.hourly||[],mods=u.modules||[],trans=u.transitions||[],events=a.events||[];
+ const peakDay=days.slice().sort((x,y)=>Number(y.lookups||0)-Number(x.lookups||0))[0],peakHour=hours.slice().sort((x,y)=>Number(y.actions||0)-Number(x.actions||0))[0],topModule=mods[0],topTransition=trans[0],topEvent=events[0],topLeg=(l.items||[])[0],dist=(a.speed?.distribution_24h||[]).slice().sort((x,y)=>Number(y.qty||0)-Number(x.qty||0))[0];
+ const dec=Number(ins.insured||0)+Number(ins.uninsured||0);
+ $('insightCards').innerHTML=
+  card('PICO DE CONSULTAS',peakDay?esc(peakDay.day_key):'—',peakDay?fmt(peakDay.lookups)+' consultas':'','cyan',true)+
+  card('HORA MAIS ATIVA',peakHour?String(peakHour.hour_num).padStart(2,'0')+'h':'—',peakHour?fmt(peakHour.actions)+' ações':'')+
+  card('MÓDULO #1',topModule?esc(topModule.module):'—',topModule?fmt(topModule.qty)+' aberturas':'','green',true)+
+  card('TRANSIÇÃO #1',topTransition?esc((topTransition.from_module||'—')+' → '+(topTransition.to_module||'—')):'—',topTransition?fmt(topTransition.qty)+' ocorrências':'','blue',true)+
+  card('ITEM LEGAL #1',topLeg?esc(topLeg.item_label||topLeg.item_id||'—'):'—',topLeg?fmt(topLeg.qty)+' cópias':'','yellow',true)+
+  card('FAIXA SPEED #1',dist?esc(dist.bucket_start+'–'+(Number(dist.bucket_start)+9)+' km/h'):'—',dist?fmt(dist.qty)+' eventos':'','cyan',true);
+ $('insightPeak').innerHTML=metric('Dia mais forte',peakDay?esc(peakDay.day_key):'—')+metric('Consultas nesse dia',peakDay?fmt(peakDay.lookups):'—')+metric('Hora mais ativa',peakHour?String(peakHour.hour_num).padStart(2,'0')+'h':'—')+metric('Ações nessa hora',peakHour?fmt(peakHour.actions):'—');
+ $('insightMost').innerHTML=metric('Módulo #1',topModule?esc(topModule.module):'—')+metric('Evento #1',topEvent?esc(topEvent.event):'—')+metric('Legislação #1',topLeg?esc(topLeg.item_label||topLeg.item_id):'—')+metric('Transição #1',topTransition?esc((topTransition.from_module||'—')+' → '+(topTransition.to_module||'—')):'—');
+ $('insightScaleCards').innerHTML=card('EVENTOS · TOTAL',num(life.events_total),'Histórico observado.')+card('INSTALAÇÕES · TOTAL',num(life.installations_total),'Instalações registadas.','cyan')+card('SESSÕES · TOTAL',num(life.sessions_total),'Sessões técnicas.')+card('1.º EVENTO',datePT(life.first_event_at),'Início observado.','blue',true)+card('ÚLTIMO EVENTO',datePT(life.last_event_at),'Último observado.','green',true);
+ $('insightScaleText').innerHTML=metric('Abrangência','Conjunto de instalações que comunicaram com a plataforma.')+metric('O que não se pode inferir','Uso por todo o país sem medir toda a população de utilizadores.')+metric('Curiosidade útil','O crescimento da base é visível em novos vs retornantes.')+metric('Nota de privacidade','O painel usa métricas agregadas e diagnóstico técnico apenas onde já existe esse dado.');
+ const us=u.sessions?.['30d']||{},sp=a.speed?.summary||{};$('insightBehaviorCards').innerHTML=card('MULTI-MÓDULO · 30D',pct(us.multi_module_pct),'Sessões com ≥2 módulos.')+card('POWER SESSIONS · 30D',num(us.power_sessions),'≥10 ações.')+card('MULTÍPLOS DE 5',pct(sp.round5_pct),'Velocidades redondas.','cyan')+card('MULTÍPLOS DE 10',pct(sp.round10_pct),'Velocidades ainda mais redondas.')+
+  card('SEM SEGURO',pct(dec?100*Number(ins.uninsured||0)/dec:null),'Resultados com decisão.','red')+card('ERROS 1.4',num(inv.app14_errors),'Últimas 24H.','yellow');
+ $('insightSpeed').innerHTML=metric('P50',num(sp.p50_24h)+' km/h')+metric('Média',num(sp.avg_24h)+' km/h')+metric('Faixa dominante',dist?dist.bucket_start+'–'+(Number(dist.bucket_start)+9)+' km/h':'—')+metric('Detalhe 30D',pct(sp.detail_coverage_30d));
+ $('insightLeg').innerHTML=metric('Item mais copiado',topLeg?esc(topLeg.item_label||topLeg.item_id):'—')+metric('Cópias',topLeg?fmt(topLeg.qty):'—')+metric('Pesquisas',fmt((l.counts?.['30d']||{}).searches||0))+metric('Cópias',fmt((l.counts?.['30d']||{}).copies||0));
 }
 function renderSystem(d){
-  const o=d.analytics?.overview||{},t=d.analytics?.telemetry||{},b=d.analytics?.bounds||{};
-  const last=o.last_event_at?new Date(o.last_event_at):null;
-  const age=last?Math.max(0,Math.round((Date.now()-last.getTime())/60000)):null;
-  $('systemStateCards').innerHTML=
-    card('BACKEND','ONLINE','Autenticação e leitura administrativa.','green',true)+
-    card('ÚLTIMO EVENTO',age===null?'—':age+' min','Idade do último evento recebido.','cyan',true)+
-    card('EVENTOS · 30D',num(o.events_30d),'Base de análise.','',true);
-  $('systemStateText').innerHTML=
-    '<div class="grid3">'+
-      '<div class="system-box"><div class="system-label">JANELA 24H</div><div class="system-value">'+escapeHtml(datePT(b.s24))+'</div></div>'+
-      '<div class="system-box"><div class="system-label">JANELA 7 DIAS</div><div class="system-value">'+escapeHtml(datePT(b.s7))+'</div></div>'+
-      '<div class="system-box"><div class="system-label">JANELA 30 DIAS</div><div class="system-value">'+escapeHtml(datePT(b.s30))+'</div></div>'+
-    '</div>'+
-    '<div class="info-note">A aplicação visível continua na versão <b>1.4</b>. O número técnico de deploy do backend não é mostrado aqui para não o confundir com a versão do produto.</div>';
-  const ev=d.analytics?.events||[];
-  $('eventVolumeTable').innerHTML='<table><thead><tr><th>EVENTO</th><th>30 DIAS</th></tr></thead><tbody>'+ev.slice(0,20).map(x=>'<tr><td class="label">'+escapeHtml(x.event)+'</td><td>'+num(x.qty)+'</td></tr>').join('')+'</tbody></table>';
-  $('systemTelemetryTable').innerHTML='<table><thead><tr><th>INDICADOR</th><th>VALOR</th><th>JANELA</th></tr></thead><tbody>'+
-    '<tr><td class="label">Eventos totais</td><td>'+num(t.events_30d)+'</td><td>30 dias</td></tr>'+
-    '<tr><td class="label">Heartbeats</td><td>'+num(t.heartbeats_30d)+'</td><td>30 dias</td></tr>'+
-    '<tr><td class="label">Cliente</td><td>'+pct(t.client_coverage_30d)+'</td><td>30 dias</td></tr>'+
-    '<tr><td class="label">Diagnóstico ASF</td><td>'+pct(t.asf_diagnostic_coverage_30d)+'</td><td>30 dias</td></tr>'+
-    '<tr><td class="label">Detalhe Cinemómetro</td><td>'+pct(t.cin_detail_coverage_30d)+'</td><td>30 dias</td></tr>'+
-    '</tbody></table>';
-  $('reset24hStatus').textContent='Último reset 24H: '+(d.reset24hAt?datePT(d.reset24hAt):'—');
+ const life=d.lifetime||{},tel=d.analytics?.telemetry||{},o=d.analytics?.overview||{};
+ $('systemState').innerHTML=card('BACKEND','ONLINE','Último ciclo.','green',true)+card('EVENTOS · 24H',num(o.events_24h),'Atividade registada.')+card('EVENTOS · 30D',num(o.events_30d),'Base analítica.')+card('ÚLTIMO EVENTO',datePT(life.last_event_at),'Observado.','cyan',true);
+ $('systemStateText').innerHTML=metric('API','stats-v2')+metric('Atualização','30 s')+metric('Versão produto','1.4')+metric('Histórico','Preservado')+metric('Dados destruídos neste painel','0');
+ $('systemVolume').innerHTML=table(['MÉTRICA','VALOR','NOTA'],[
+  '<tr>'+td('Eventos totais','label')+td(num(life.events_total))+td('Histórico completo observado.')+'</tr>',
+  '<tr>'+td('Instalações totais','label')+td(num(life.installations_total))+td('Instalações conhecidas pela telemetria.')+'</tr>',
+  '<tr>'+td('Sessões técnicas totais','label')+td(num(life.sessions_total))+td('IDs técnicos de browser.')+'</tr>',
+  '<tr>'+td('Eventos 30D','label')+td(num(o.events_30d))+td('Base analítica do período.')+'</tr>'
+ ],true);
+ $('systemCoverage').innerHTML=table(['MÉTRICA','VALOR','JANELA','LEITURA'],[
+  '<tr>'+td('Client coverage','label')+td(pct(tel.client_coverage_30d))+td('30D')+td('Metadados de ambiente.')+'</tr>',
+  '<tr>'+td('ASF diagnostic coverage','label')+td(pct(tel.asf_diagnostic_coverage_30d))+td('30D')+td('Diagnóstico técnico.')+'</tr>',
+  '<tr>'+td('Cinemómetro detail coverage','label')+td(pct(tel.cin_detail_coverage_30d))+td('30D')+td('Detalhe das velocidades.')+'</tr>'
+ ],true);
+ const rs=d.reset24hAt; if($('reset24hStatus')&&!$('reset24hStatus').classList.contains('ok')&&!$('reset24hStatus').classList.contains('err'))$('reset24hStatus').textContent='Último reset: '+datePT(rs);
 }
-function renderAll(d){
-  latestData=d;
-  renderOverview(d);renderOverviewPace(d);renderOverviewTrend(d);
-  renderInsurance(d);renderInsurancePerf(d);renderInsuranceDiag(d);
-  renderSpeed(d);renderSpeedPatterns(d);renderSpeedConfig(d);
-  renderLegislation(d);renderUsage(d);renderDevices(d);renderTelemetry(d);
-  renderErrors(d);renderClients(d);renderSystem(d);
+function renderAlert(d){
+ const inv=d.investigation||{},n=Number(inv.app14_errors||0),r=$('alertRibbon');
+ if(n>0){r.classList.remove('hidden');$('alertTitle').textContent='INCIDENTE ASF 1.4 · '+fmt(n)+' falhas nas últimas 24H · ';$('alertText').textContent=fmt(inv.app14_installations||0)+' instalação(ões), '+fmt(inv.app14_hashes||0)+' assinatura(s) de resposta.'}
+ else r.classList.add('hidden');
 }
-function renderBars(id,rows,red=false){
-  const el=$(id);if(!el)return;
-  const a=(rows||[]).filter(x=>Number(x.value??x.qty??0)>0);
-  if(!a.length){el.innerHTML='<div class="empty">Sem dados disponíveis.</div>';return}
-  const max=Math.max(1,...a.map(x=>Number(x.value??x.qty??0)));
-  el.innerHTML=a.map(x=>{
-    const val=Number(x.value??x.qty??0);
-    return '<div class="bar-row"><div class="bar-label">'+escapeHtml(x.label??x.value??'—')+'</div><div class="bar-track"><div class="bar-fill '+(red?'red':'')+'" style="width:'+Math.max(2,(val/max)*100)+'%"></div></div><div class="bar-num">'+fmt(val)+'</div></div>';
-  }).join('');
-}
-function renderTable(id,rows,cols,htmlValues=false,emptyText='Sem dados disponíveis.'){
-  const el=$(id);if(!el)return;
-  if(!rows?.length){el.innerHTML='<div class="empty">'+escapeHtml(emptyText)+'</div>';return}
-  el.innerHTML='<table><thead><tr>'+cols.map(x=>'<th>'+escapeHtml(x[1])+'</th>').join('')+'</tr></thead><tbody>'+
-    rows.map(r=>'<tr>'+cols.map(x=>{
-      let v=r[x[0]];
-      if(Array.isArray(v))v=v.join(', ');
-      if(v===null||v===undefined||v==='')v='—';
-      if(x[0].includes('at'))v=datePT(v);
-      return '<td class="'+(x[0]==='qty'&&Number(v)>0?'cyan':'')+'">'+(htmlValues?String(v):escapeHtml(v))+'</td>';
-    }).join('')+'</tr>').join('')+'</tbody></table>';
+function renderAll(d){latestData=d;renderOverview(d);renderInsurance(d);renderSpeed(d);renderLegislation(d);renderUsage(d);renderEnvironment(d);renderErrors(d);renderInsights(d);renderSystem(d);renderAlert(d)}
+async function reset24h(){
+ const b=$('reset24hBtn'),s=$('reset24hStatus');b.disabled=true;s.textContent='A executar...';s.className='reset-status';
+ try{const r=await request(STATS_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'reset_24h'})});s.textContent='Reset aplicado: '+datePT(r.reset_at);s.className='reset-status ok';await loadDashboard();toast('Janela 24H atualizada.')}
+ catch(e){s.textContent='Falha: '+e.message;s.className='reset-status err'}finally{b.disabled=false}
 }
 async function loadDashboard(){
-  if(dashboardInFlight)return;
-  dashboardInFlight=true;setBackendState('loading');$('statusLine').textContent='A atualizar o painel...';
-  const t0=performance.now();
-  try{
-    const data=await request(STATS_API);
-    const issues=Object.entries(data.errors||{}).filter(x=>x[1]).map(x=>x[0]);
-    renderAll(data);
-    setBackendState(issues.length?'partial':'online');
-    $('statusLine').textContent='Leitura concluída · '+new Date().toLocaleString('pt-PT');
-    $('backendTime').textContent='BACKEND · '+Math.round(performance.now()-t0)+' MS';
-    refreshIn=30;
-    if(issues.length)$('statusLine').textContent+=' · alguns módulos antigos devolveram avisos';
-  }catch(e){
-    setBackendState('offline');$('statusLine').textContent=e?.message||'Falha ao atualizar.';
-  }finally{dashboardInFlight=false}
+ if(dashboardBusy)return null;dashboardBusy=true;backendState('loading');$('statusLine').textContent='A atualizar...';const t=performance.now();
+ try{
+  const d=await request(STATS_API);const errs=d.errors&&typeof d.errors==='object'?Object.keys(d.errors).filter(k=>d.errors[k]):[];
+  renderAll(d);
+  const partial=errs.length>0;
+  backendState(partial?'partial':'online');
+  $('statusLine').textContent=partial?'Atualizado com avisos: '+errs.join(', ')+'.':'Atualizado em '+datePT(d.generatedAt||Date.now());
+  $('backendTime').textContent='BACKEND · '+Math.round(performance.now()-t)+' ms';
+  return !partial;
+ }catch(e){backendState('offline');$('statusLine').textContent='Falha na atualização: '+e.message;$('backendTime').textContent='BACKEND · ERRO';return false}
+ finally{dashboardBusy=false;refreshIn=30}
 }
-function startRefresh(){
-  if(refreshTimer)clearInterval(refreshTimer);
-  if(countdownTimer)clearInterval(countdownTimer);
-  refreshTimer=setInterval(()=>loadDashboard(),REFRESH_MS);
-  refreshIn=30;
-  countdownTimer=setInterval(()=>{refreshIn=Math.max(0,refreshIn-1);$('refreshMeta').textContent='PRÓXIMA ATUALIZAÇÃO · '+refreshIn+' S'},1000);
-}
-async function reset24h(){
-  if(!confirm('RESET — JANELA 24H\\n\\nA janela 24H passa a contar a partir deste momento.\\n\\nNenhum evento será apagado.\\nOs dados de 7 dias, 30 dias e histórico permanecem intactos.\\n\\nContinuar?'))return;
-  const btn=$('reset24hBtn'),status=$('reset24hStatus');btn.disabled=true;status.className='reset-status';status.textContent='A aplicar reset...';
-  try{
-    const data=await request(STATS_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'reset_24h'})});
-    status.className='reset-status ok';status.textContent='Último reset 24H: '+datePT(data.reset_at)+'.';
-    toast('RESET 24H aplicado.');
-    await loadDashboard();
-  }catch(e){
-    status.className='reset-status err';status.textContent='Erro no reset: '+(e?.message||'serviço indisponível');
-  }finally{btn.disabled=false}
-}
-
-$('loginForm').addEventListener('submit',async e=>{
-  e.preventDefault();
-  const err=$('loginError');err.textContent='A autenticar...';
-  try{
-    await doLogin($('password').value);
-    $('loginScreen').classList.add('hidden');$('app').classList.remove('hidden');$('loginError').textContent='';
-    await loadDashboard();startRefresh();
-  }catch(ex){err.textContent=ex?.message||'Falha ao autenticar.'}
-});
-$('logoutBtn').addEventListener('click',logout);
-$('refreshBtn').addEventListener('click',loadDashboard);
-$('reset24hBtn').addEventListener('click',reset24h);
-initNavigation();
-
-if(token()){
-  $('loginScreen').classList.add('hidden');$('app').classList.remove('hidden');
-  loadDashboard();startRefresh();
-}
+function startRefresh(){if(refreshTimer)clearInterval(refreshTimer);if(countdownTimer)clearInterval(countdownTimer);refreshTimer=setInterval(loadDashboard,REFRESH_MS);countdownTimer=setInterval(()=>{refreshIn=Math.max(0,refreshIn-1);$('refreshMeta').textContent='PRÓXIMA ATUALIZAÇÃO · '+refreshIn+' S';if(refreshIn===0)refreshIn=30},1000)}
+document.querySelectorAll('.theme-nav button').forEach(b=>b.addEventListener('click',()=>switchTheme(b.dataset.theme)));
+document.querySelectorAll('.subnav button').forEach(b=>b.addEventListener('click',()=>switchSub(b.dataset.subTheme,b.dataset.sub)));
+document.querySelectorAll('#periodSwitch button').forEach(b=>b.addEventListener('click',()=>{currentPeriod=b.dataset.period;document.querySelectorAll('#periodSwitch button').forEach(x=>x.classList.toggle('active',x===b));if(latestData)renderAll(latestData)}));
+$('alertGo').addEventListener('click',()=>switchTheme('errors'));
+$('refreshBtn').addEventListener('click',async()=>{const ok=await loadDashboard();if(ok!==null)toast(ok?'Dados atualizados.':'Atualização com avisos.')});
+$('logoutBtn').addEventListener('click',logout);$('reset24hBtn').addEventListener('click',reset24h);
+$('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginError').textContent='';try{await doLogin($('password').value);$('loginScreen').classList.add('hidden');$('app').classList.remove('hidden');await loadDashboard();startRefresh()}catch(err){$('loginError').textContent=err.message}});
+if(token()){$('loginScreen').classList.add('hidden');$('app').classList.remove('hidden');loadDashboard();startRefresh()}
 </script>
 </body>
 </html>
