@@ -17303,6 +17303,7 @@ html body .leg-card-new .copy-all-new{
     if (m.itemId) out.itemId = String(m.itemId).slice(0, 120);
     if (m.itemLabel) out.itemLabel = String(m.itemLabel).slice(0, 180);
     if (m.copyType) out.copyType = String(m.copyType).slice(0, 40);
+    if (m.resultConfirmed === true) out.resultConfirmed = true;
     if (m.asfUserMessage) out.asfUserMessage = String(m.asfUserMessage).slice(0, 500);
     // Contexto técnico do cliente para diagnosticar diferenças entre browser/OS/rede.
     out.client = {
