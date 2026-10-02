@@ -189,6 +189,22 @@ td{font-weight:850;font-size:13px}
 /* toast */
 .toast{position:fixed;right:18px;bottom:18px;z-index:50;padding:11px 13px;border:1px solid var(--line);border-radius:9px;background:#081b22;color:#eaf8fa;box-shadow:0 12px 35px rgba(0,0,0,.45);font-size:12px}
 </style>
+<style id="admin-compact-v185">
+.admin-expander{border:1px solid rgba(255,255,255,.08);border-radius:14px;background:rgba(0,0,0,.10);overflow:hidden}
+.admin-expander>summary{list-style:none;cursor:pointer;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:900;letter-spacing:1.5px;font-size:12px;color:#f2f7f8}
+.admin-expander>summary::-webkit-details-marker{display:none}
+.admin-expander>summary:after{content:'＋';opacity:.55;font-size:16px}
+.admin-expander[open]>summary:after{content:'−'}
+.admin-expander .admin-expander-body{padding:0 14px 14px}
+.cin-admin-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.cin-admin-card{padding:12px 13px;border:1px solid rgba(255,255,255,.08);border-radius:10px;background:rgba(255,255,255,.025);min-width:0}
+.cin-admin-card span{display:block;font-size:9px;letter-spacing:1.1px;color:#8fa3aa;font-weight:800}
+.cin-admin-card strong{display:block;margin-top:4px;font-size:21px;line-height:1.05;color:#f5f8f9}
+.cin-admin-card small{display:block;margin-top:6px;color:#89a0a8;font-size:9px;line-height:1.35}
+.cin-admin-note{margin-top:10px;padding:9px 11px;border-left:2px solid rgba(101,215,232,.45);color:#8fa3aa;font-size:10px;line-height:1.45}
+@media(max-width:1200px){.cin-admin-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
+@media(max-width:720px){.cin-admin-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+</style>
 </head>
 <body>
 
@@ -281,7 +297,14 @@ td{font-weight:850;font-size:13px}
 
 
   <section class="section">
-    <div class="section-head"><div class="section-title">DIAGNÓSTICO ASF · 24H</div><div class="section-note">Erros reais · cliente · rede · HASH = impressão da resposta</div></div>
+    <div class="section-head"><div class="section-title">CINEMÓMETRO · 24H</div><div class="section-note">Padrões objetivos de utilização · identificação declarada</div></div>
+    <div id="cinAnalytics"></div>
+  </section>
+
+  <section class="section">
+    <details class="admin-expander">
+      <summary><span>DIAGNÓSTICO ASF · 24H</span><span style="color:#8fa3aa;font-size:9px;letter-spacing:1px">ERROS · CLIENTE · REDE · ASSINATURAS</span></summary>
+      <div class="admin-expander-body">
     <div class="diag-grid">
       <div class="diag-panel">
         <h3>TIPOS DE ERRO</h3>
@@ -312,6 +335,8 @@ td{font-weight:850;font-size:13px}
       <h3>QUALIDADE ASF · 24H</h3>
       <div id="asfQuality" class="diag-scroll"></div>
     </div>
+      </div>
+    </details>
   </section>
 
   <section class="section reset-panel">
@@ -347,7 +372,7 @@ td{font-weight:850;font-size:13px}
 
 <script>
 const API_ORIGIN = 'https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/';
-const API_CACHE_BUSTER = '18.4';
+const API_CACHE_BUSTER = '18.5';
 const AUTH_API = API_ORIGIN + 'admin-auth-v2?v=' + API_CACHE_BUSTER;
 const STATS_API = API_ORIGIN + 'stats-v2?v=' + API_CACHE_BUSTER;
 const HOURLY_API = API_ORIGIN + 'hourly-history-v2';
@@ -636,6 +661,41 @@ async function loadHourly(){
 }
 
 
+function renderCinemometer(d){
+  const host=$('cinAnalytics'); if(!host)return;
+  const c=d?.cinemometer;
+  if(!c || c.error){host.innerHTML='<div class="empty">Sem dados do Cinemómetro no período selecionado.</div>';return;}
+  const pct=v=>v==null?'—':Number(v).toFixed(1).replace('.',',')+'%';
+  const num=v=>v==null?'—':fmt(v);
+  const sessions=Array.isArray(c.recent_sessions)?c.recent_sessions:[];
+  const operators=Array.isArray(c.operators)?c.operators:[];
+  const flags=c.flag_counts||{};
+  const flagLabels={poucos_dados:'Poucos dados',todas_velocidades_iguais:'Todas as velocidades iguais',alternancia_de_2_valores:'Alternância de 2 valores',sequencia_monotona:'Sequência monotónica',forte_concentracao_em_multiplos_de_5:'Concentração em múltiplos de 5',intervalos_muito_curto:'Intervalos < 2 s'};
+  let html='';
+  html+='<div class="cin-admin-grid">';
+  html+='<div class="cin-admin-card"><span>SESSÕES</span><strong>'+num(c.sessions)+'</strong><small>'+num(c.sessions_compatible)+' compatíveis com uso operacional</small></div>';
+  html+='<div class="cin-admin-card"><span>CÁLCULOS</span><strong>'+num(c.calculations)+'</strong><small>'+num(c.speed_entries)+' entradas de velocidade</small></div>';
+  html+='<div class="cin-admin-card"><span>VELOCIDADES</span><strong>'+num(c.speed_min)+'–'+num(c.speed_max)+'</strong><small>P50 '+num(c.speed_p50)+' · média '+num(c.speed_avg)+'</small></div>';
+  html+='<div class="cin-admin-card"><span>MÚLTIPLOS DE 5</span><strong>'+pct(c.round5_pct)+'</strong><small>Múltiplos de 10: '+pct(c.round10_pct)+'</small></div>';
+  html+='<div class="cin-admin-card"><span>IDENTIFICAÇÃO</span><strong>'+num(c.sessions_with_operator)+'</strong><small>sessões com operador declarado</small></div>';
+  html+='<div class="cin-admin-card"><span>PADRÕES A REVER</span><strong>'+num(c.sessions_atypical)+'</strong><small>não são prova de irregularidade</small></div>';
+  html+='</div>';
+  html+='<div class="cin-admin-note">Estes indicadores descrevem comportamento de utilização do software. Não permitem, por si só, provar que uma velocidade foi real, que uma operação ocorreu no terreno ou que uma determinada pessoa foi o operador. A identificação abaixo é a que foi declarada na sessão.</div>';
+  html+='<details class="admin-expander" style="margin-top:10px"><summary><span>SESSÕES RECENTES</span><span style="color:#8fa3aa;font-size:9px">'+num(sessions.length)+' analisadas</span></summary><div class="admin-expander-body">';
+  if(sessions.length){html+='<div style="overflow:auto"><table class="diag-table"><thead><tr><th>HORA</th><th>OPERADOR DECLARADO</th><th>POSTO</th><th>APARELHO</th><th>CÁLCULOS</th><th>VEL.</th><th>REP.</th><th>PADRÃO</th></tr></thead><tbody>';
+    sessions.forEach(function(x){const op=x.operator||{},ap=x.aparelho||{};const opText=[op.nome,op.numero].filter(Boolean).join(' · ')||'—';const apText=[ap.marca,ap.modelo,ap.serie].filter(Boolean).join(' · ')||'—';html+='<tr><td class="diag-muted">'+(x.first_seen?new Date(x.first_seen).toLocaleString('pt-PT'):'—')+'</td><td>'+escapeHtml(opText)+'</td><td>'+escapeHtml(op.posto||'—')+'</td><td>'+escapeHtml(apText)+'</td><td>'+num(x.calculations)+'</td><td>'+num(x.min_speed)+'–'+num(x.max_speed)+'</td><td>'+pct(x.repeated_speed_pct)+'</td><td>'+escapeHtml(x.pattern||'—')+(x.flags?.length?' · '+escapeHtml(x.flags.join(', ')):'')+'</td></tr>';});
+    html+='</tbody></table></div>';} else html+='<div class="empty">Sem sessões com velocidades registadas.</div>';
+  html+='</div></details>';
+  html+='<details class="admin-expander" style="margin-top:10px"><summary><span>OPERADORES DECLARADOS</span><span style="color:#8fa3aa;font-size:9px">'+num(operators.length)+' identificações distintas</span></summary><div class="admin-expander-body">';
+  if(operators.length){html+='<div style="overflow:auto"><table class="diag-table"><thead><tr><th>N.º</th><th>NOME</th><th>POSTO</th><th>SESSÕES</th><th>CÁLCULOS</th><th>ÚLTIMA ATIVIDADE</th></tr></thead><tbody>';
+    operators.forEach(function(o){html+='<tr><td>'+escapeHtml(o.numero||'—')+'</td><td>'+escapeHtml(o.nome||'—')+'</td><td>'+escapeHtml(o.posto||'—')+'</td><td>'+num(o.sessions)+'</td><td>'+num(o.calculations)+'</td><td class="diag-muted">'+(o.last_seen?new Date(o.last_seen).toLocaleString('pt-PT'):'—')+'</td></tr>';});
+    html+='</tbody></table></div>';} else html+='<div class="empty">Nenhuma identificação de operador foi declarada nas sessões analisadas.</div>';
+  html+='</div></details>';
+  html+='<details class="admin-expander" style="margin-top:10px"><summary><span>PADRÕES / ALERTAS DE TELEMETRIA</span><span style="color:#8fa3aa;font-size:9px">'+num(Object.keys(flags).length)+' tipos</span></summary><div class="admin-expander-body">';
+  if(Object.keys(flags).length){Object.keys(flags).forEach(function(k){html+='<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:10px"><span>'+escapeHtml(flagLabels[k]||k)+'</span><strong>'+num(flags[k])+'</strong></div>';});} else html+='<div class="empty">Nenhum padrão de atenção detetado.</div>';
+  html+='</div></details>';
+  host.innerHTML=html;
+}
 function renderDiagnostics(d){
   const types=Array.isArray(d?.error_types_24h)?d.error_types_24h:[];
   const clients=Array.isArray(d?.client_health_24h)?d.client_health_24h:[];
@@ -749,6 +809,7 @@ async function loadDashboard(){
     renderMenus(data.menus);
     renderLegislation(data.legislation);
     renderDiagnostics(data.diagnostics || {});
+    renderCinemometer(data);
     const resetAt = data.reset24hAt ? new Date(data.reset24hAt).toLocaleString('pt-PT') : '—';
     const resetStatus = $('reset24hStatus');
     if(resetStatus && !resetStatus.classList.contains('ok') && !resetStatus.classList.contains('err')){
