@@ -1463,8 +1463,10 @@ function submitConjunto(event) {
       asfResponseContentType: null,
       asfStatusText: null,
       asfParsePath: null,
+      asfResponseClass: null,
       asfGraphqlErrorCount: 0,
       asfGraphqlCodes: [],
+      asfGraphqlMessages: [],
       _queryStartedAtMs: Number(queryStartedAtMs) || null
     };
   }
@@ -1818,13 +1820,25 @@ function submitConjunto(event) {
     try {
       if (Array.isArray(json.errors) && json.errors.length) {
         diag.asfErrorType = 'graphql';
+        diag.asfResponseClass = 'graphql_error';
+        diag.asfParsePath = 'graphql_error';
         diag.asfGraphqlErrorCount = json.errors.length;
         diag.asfGraphqlCodes = json.errors.map(function (e) {
           return e && e.extensions && e.extensions.code ? String(e.extensions.code).slice(0, 80) : null;
         }).filter(Boolean).slice(0, 6);
+        diag.asfGraphqlMessages = json.errors.map(function (e) {
+          return e && e.message ? String(e.message).trim().slice(0, 240) : null;
+        }).filter(Boolean).slice(0, 3);
+
+        var gqlText = diag.asfGraphqlMessages.join(' | ').toLowerCase();
+        if (gqlText.indexOf('serviço indisponível') >= 0 || gqlText.indexOf('servico indisponivel') >= 0) {
+          diag.asfErrorType = 'graphql_service_unavailable';
+        }
+        diag.asfMessage = diag.asfGraphqlMessages[0] || 'Erro GraphQL ASF';
       }
       var resultado = interpretarRespostaASF(json);
-      diag.asfParsePath = resultado && resultado.parsePath ? String(resultado.parsePath).slice(0, 180) : null;
+      diag.asfResponseClass = diag.asfResponseClass || 'graphql_data';
+      diag.asfParsePath = resultado && resultado.parsePath ? String(resultado.parsePath).slice(0, 180) : diag.asfParsePath;
       if (diag._queryStartedAtMs) diag.asfTotalMs = Math.max(0, agoraMsASFDiag() - diag._queryStartedAtMs);
       return { resultado: resultado, asfDiagnostic: diag };
     } catch (e) {
@@ -1940,6 +1954,63 @@ function submitConjunto(event) {
       + '</div>';
   }
 
+  function mensagemErroASFParaUtilizador(asfDiagnostic, mensagemTecnica) {
+    var d = asfDiagnostic || {};
+    var tipo = String(d.asfErrorType || '').toLowerCase();
+    var http = Number(d.asfHttpStatus);
+
+    if (tipo === 'graphql_service_unavailable') {
+      return 'O serviço ASF respondeu, mas está temporariamente indisponível.';
+    }
+    if (tipo === 'graphql') {
+      return 'O serviço ASF respondeu com um erro ao processar a consulta.';
+    }
+    if (tipo === 'timeout') {
+      return 'A ASF demorou demasiado tempo a responder à consulta.';
+    }
+    if (tipo === 'network') {
+      return 'Não foi possível comunicar com o serviço ASF a partir deste computador ou rede.';
+    }
+    if (tipo === 'http_429' || http === 429) {
+      return 'O serviço ASF limitou temporariamente o número de consultas. Aguarde alguns segundos e tente novamente.';
+    }
+    if (tipo === 'http_403' || http === 403) {
+      return 'O acesso ao serviço ASF foi recusado neste momento.';
+    }
+    if (tipo === 'invalid_json') {
+      return 'A ASF respondeu num formato inesperado e não foi possível concluir a consulta.';
+    }
+    if (tipo === 'invalid_response') {
+      return 'A ASF respondeu, mas os dados recebidos não permitem concluir o estado do seguro.';
+    }
+    if (http >= 400 && http < 600) {
+      return 'O serviço ASF devolveu um erro técnico (HTTP ' + http + ').';
+    }
+    return 'Não foi possível concluir a consulta ao serviço ASF.';
+  }
+
+  function repetirConsultaSeguro(matricula) {
+    var mat = String(matricula || '').trim().toUpperCase();
+    if (!mat) return;
+    try {
+      window.__VERIX_CURRENT_QUERY_ID = (window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.newQueryId === 'function')
+        ? window.VERIX_TELEMETRY.newQueryId() : null;
+      if (!window.__VERIX_CURRENT_QUERY_ID) {
+        window.__VERIX_CURRENT_QUERY_ID = 'q_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+      }
+      if (window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.track === 'function') {
+        window.VERIX_TELEMETRY.track('vehicle_lookup', 'consulta', {
+          queryId: window.__VERIX_CURRENT_QUERY_ID,
+          matricula: mat,
+          matriculaNormalizada: sanitizarMatriculaASF(mat),
+          retry: true,
+          retryOf: window.__VERIX_LAST_FAILED_QUERY_ID || null
+        });
+      }
+    } catch (_) {}
+    consultarSeguroASF(mat);
+  }
+
   function mostrarSeguroErro(mensagem, matricula, diagnostico, queryId, asfDiagnostic) {
     limparPendenteASF();
     try { atualizarSeguroNoHistorico(queryId, matricula, 'indisponivel'); } catch (_) {}
@@ -1962,8 +2033,11 @@ function submitConjunto(event) {
       +     '<div class="asf-row"><span class="k">Motivo</span><span class="v">' + escapeHtml(mensagem || '—') + '</span></div>'
       +   '</div>'
       +   (diagnostico ? '<div class="asf-diag">' + escapeHtml(diagnostico) + '</div>' : '')
-      +   '<div class="asf-note">Uma falha de serviço nunca é apresentada como “sem seguro”</div>'
-      +   '<div class="asf-actions"><button type="button" class="aux-btn" onclick="verificarSeguro()">Abrir consulta oficial ASF</button></div>'
+      +   '<div class="asf-note">A falha foi registada automaticamente para diagnóstico. Uma falha de serviço nunca é apresentada como “sem seguro”.</div>'
+      +   '<div class="asf-actions">'
+      +     '<button type="button" class="aux-btn secondary" onclick="repetirConsultaSeguro(\'' + escapeHtml(matShow) + '\')">↻ TENTAR NOVAMENTE</button>'
+      +     '<button type="button" class="aux-btn" onclick="verificarSeguro()">ABRIR CONSULTA OFICIAL ASF</button>'
+      +   '</div>'
       + '</div>';
   }
 
@@ -2005,13 +2079,15 @@ function submitConjunto(event) {
     } catch (err) {
       var diagnostico = (err && err.message) ? String(err.message) : 'Falha de comunicação com a ASF';
       var asfDiagnostic = (err && err.asfDiagnostic) ? err.asfDiagnostic : criarDiagASF(queryId, matDisplay, queryStartedAtMs, queuePosition);
+      var mensagemUtilizador = mensagemErroASFParaUtilizador(asfDiagnostic, diagnostico);
       if (asfDiagnostic && !asfDiagnostic.matricula) asfDiagnostic.matricula = matDisplay;
       if (asfDiagnostic && asfDiagnostic._queryStartedAtMs) {
         asfDiagnostic.asfTotalMs = Math.max(0, agoraMsASFDiag() - asfDiagnostic._queryStartedAtMs);
       }
       console.warn('[ASF] Falha (' + matLimpa + '):', diagnostico, asfDiagnostic || '');
-      registarEventoSeguroV2('vehicle_insurance_error', queryId, asfDiagnostic, diagnostico);
-      mostrarSeguroErro(diagnostico, matDisplay, 'Diagnóstico ASF registado automaticamente.', queryId, asfDiagnostic);
+      window.__VERIX_LAST_FAILED_QUERY_ID = queryId || null;
+      registarEventoSeguroV2('vehicle_insurance_error', queryId, asfDiagnostic, mensagemUtilizador);
+      mostrarSeguroErro(mensagemUtilizador, matDisplay, 'Diagnóstico técnico registado automaticamente.', queryId, asfDiagnostic);
     }
   }
 
@@ -2054,8 +2130,10 @@ function submitConjunto(event) {
       var filaMensagem = (e && e.message) || 'Falha na consulta ASF';
       var filaDiag = (e && e.asfDiagnostic) || criarDiagASF(queryId, matDisplay);
       if (filaDiag && !filaDiag.matricula) filaDiag.matricula = matDisplay;
-      registarEventoSeguroV2('vehicle_insurance_error', queryId, filaDiag, filaMensagem);
-      mostrarSeguroErro(filaMensagem, matDisplay, '', queryId, filaDiag);
+      var filaMensagemUtilizador = mensagemErroASFParaUtilizador(filaDiag, filaMensagem);
+      window.__VERIX_LAST_FAILED_QUERY_ID = queryId || null;
+      registarEventoSeguroV2('vehicle_insurance_error', queryId, filaDiag, filaMensagemUtilizador);
+      mostrarSeguroErro(filaMensagemUtilizador, matDisplay, 'Diagnóstico técnico registado automaticamente.', queryId, filaDiag);
     });
 
     return ASF_FILA;
