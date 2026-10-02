@@ -154,6 +154,22 @@ td{font-weight:850;font-size:13px}
   .bar-row{grid-template-columns:110px 1fr 42px}.bar-label{font-size:10px}
 }
 
+
+/* DIAGNÓSTICO ASF */
+.diag-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.diag-panel{border:1px solid var(--line);border-radius:16px;padding:16px;background:rgba(5,20,26,.80);overflow:auto}
+.diag-panel h3{margin:0 0 12px;font-size:18px}
+.diag-table{width:100%;border-collapse:collapse;min-width:0}
+.diag-table th,.diag-table td{padding:8px 7px;border-bottom:1px solid rgba(101,215,232,.10);font-size:10px;text-align:left;vertical-align:top}
+.diag-table th{color:var(--cyan);font:900 9px/1.1 Consolas,monospace;letter-spacing:.7px;text-transform:uppercase}
+.diag-table td{font-weight:800;color:#c9d6da}
+.diag-table .bad{color:var(--red)}
+.diag-table .ok{color:var(--green)}
+.diag-muted{color:var(--muted)!important;font-weight:700!important}
+.diag-scroll{overflow:auto;max-height:420px}
+.diag-pill{display:inline-block;padding:3px 6px;border:1px solid rgba(255,88,112,.25);border-radius:999px;color:var(--red);font:900 9px/1 Consolas,monospace}
+@media(max-width:900px){.diag-grid{grid-template-columns:1fr}}
+
 /* RESET ESPECÍFICO */
 .reset-panel{margin-top:24px}
 .reset-box{border:1px solid rgba(255,88,112,.25);border-radius:16px;padding:16px;background:linear-gradient(145deg,rgba(35,8,14,.38),rgba(8,13,17,.7))}
@@ -256,6 +272,26 @@ td{font-weight:850;font-size:13px}
           <tbody></tbody>
         </table>
       </div>
+    </div>
+  </section>
+
+
+
+  <section class="section">
+    <div class="section-head"><div class="section-title">DIAGNÓSTICO ASF · 24H</div><div class="section-note">Erros reais · cliente · rede</div></div>
+    <div class="diag-grid">
+      <div class="diag-panel">
+        <h3>TIPOS DE ERRO</h3>
+        <div id="asfErrorTypes" class="diag-scroll"></div>
+      </div>
+      <div class="diag-panel">
+        <h3>COMPORTAMENTO POR CLIENTE</h3>
+        <div id="asfClientHealth" class="diag-scroll"></div>
+      </div>
+    </div>
+    <div class="diag-panel" style="margin-top:14px">
+      <h3>ÚLTIMAS FALHAS ASF</h3>
+      <div id="asfRecentErrors" class="diag-scroll"></div>
     </div>
   </section>
 
@@ -505,6 +541,34 @@ async function loadHourly(){
   $('daySearches').textContent=fmt(searches);
 }
 
+
+function renderDiagnostics(d){
+  const types=Array.isArray(d?.error_types_24h)?d.error_types_24h:[];
+  const clients=Array.isArray(d?.client_health_24h)?d.client_health_24h:[];
+  const recent=Array.isArray(d?.recent_errors_24h)?d.recent_errors_24h:[];
+  const typeEl=$('asfErrorTypes');
+  const clientEl=$('asfClientHealth');
+  const recentEl=$('asfRecentErrors');
+  if(typeEl){
+    if(!types.length) typeEl.innerHTML='<div class="empty">Sem erros ASF registados nas últimas 24h.</div>';
+    else typeEl.innerHTML='<table class="diag-table"><thead><tr><th>ERRO</th><th>QTD.</th><th>MÉDIA</th><th>ÚLTIMO</th></tr></thead><tbody>'+types.map(r=>
+      '<tr><td><span class="diag-pill">'+escapeHtml(r.error_type||'unknown')+'</span></td><td class="bad">'+fmt(r.errors)+'</td><td>'+fmt(r.avg_ms)+' ms</td><td class="diag-muted">'+(r.last_at?new Date(r.last_at).toLocaleString('pt-PT'):'—')+'</td></tr>'
+    ).join('')+'</tbody></table>';
+  }
+  if(clientEl){
+    if(!clients.length) clientEl.innerHTML='<div class="empty">Ainda não existem resultados suficientes com diagnóstico de cliente.</div>';
+    else clientEl.innerHTML='<table class="diag-table"><thead><tr><th>BROWSER / VERSÃO</th><th>SISTEMA</th><th>REDE</th><th>TOTAL</th><th>ERROS</th><th>%</th></tr></thead><tbody>'+clients.slice(0,40).map(r=>
+      '<tr><td>'+escapeHtml(r.browser||'Unknown')+' '+escapeHtml(r.browser_version||'')+'</td><td>'+escapeHtml(r.os_platform||'Unknown')+' '+escapeHtml(r.os_version||'')+'</td><td>'+escapeHtml(r.effective_type||'Unknown')+'</td><td>'+fmt(r.completed)+'</td><td class="'+(Number(r.errors)>0?'bad':'ok')+'">'+fmt(r.errors)+'</td><td class="'+(Number(r.errors)>0?'bad':'ok')+'">'+fmtPct(r.error_rate)+'</td></tr>'
+    ).join('')+'</tbody></table>';
+  }
+  if(recentEl){
+    if(!recent.length) recentEl.innerHTML='<div class="empty">Sem falhas ASF nas últimas 24h.</div>';
+    else recentEl.innerHTML='<table class="diag-table"><thead><tr><th>HORA</th><th>ERRO</th><th>HTTP</th><th>DURAÇÃO</th><th>BROWSER</th><th>SISTEMA</th><th>REDE</th><th>MENSAGEM</th></tr></thead><tbody>'+recent.map(r=>
+      '<tr><td class="diag-muted">'+(r.occurred_at?new Date(r.occurred_at).toLocaleString('pt-PT'):'—')+'</td><td><span class="diag-pill">'+escapeHtml(r.error_type||'unknown')+'</span></td><td>'+escapeHtml(r.http_status||'—')+'</td><td>'+fmt(r.duration_ms)+' ms</td><td>'+escapeHtml(r.browser||'Unknown')+' '+escapeHtml(r.browser_version||'')+'</td><td>'+escapeHtml(r.os_platform||'Unknown')+' '+escapeHtml(r.os_version||'')+'</td><td>'+escapeHtml(r.effective_type||'Unknown')+(r.rtt_ms!=null?' / '+fmt(r.rtt_ms)+'ms':'')+'</td><td>'+escapeHtml(r.message||'—')+'</td></tr>'
+    ).join('')+'</tbody></table>';
+  }
+}
+
 async function loadDashboard(){
   $('statusLine').textContent='A atualizar...';
   const t0=performance.now();
@@ -520,6 +584,7 @@ async function loadDashboard(){
     renderCompare(data.compare);
     renderMenus(data.menus);
     renderLegislation(data.legislation);
+    renderDiagnostics(data.diagnostics || {});
     const resetAt = data.reset24hAt ? new Date(data.reset24hAt).toLocaleString('pt-PT') : '—';
     const resetStatus = $('reset24hStatus');
     if(resetStatus && !resetStatus.classList.contains('ok') && !resetStatus.classList.contains('err')){
