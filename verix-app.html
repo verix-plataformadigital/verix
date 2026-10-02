@@ -1220,19 +1220,46 @@ function submitConjunto(event) {
   const ASF_JANELA_SEG = 60;
   const ASF_LIMITE_JANELA = 6;
   const ASF_RATE_STORAGE_KEY = 'VERIX_ASF_RATE_STATE_V1';
+  const ASF_CACHE_TTL_MS = 600000; // 10 minutos — igual à aplicação base IPO_2.2
 
   /* CAMINHO ASF DELIBERADAMENTE SIMPLES:
      1 consulta = 1 pedido físico POST, alinhado com a app base/Android.
-     Sem GET alternativo, sem fila de pedidos e sem retries automáticos.
-     A telemetria observa o pedido; não cria pedidos adicionais. */
+     Sem GET alternativo. Resultados iguais à aplicação base são reutilizados por 10 minutos;
+     a telemetria observa o pedido físico e não cria pedidos adicionais. */
 
   var asfRequestTimes = [];
+  var ASF_CACHE = new Map();
   var ASF_EM_CURSO = false;
   var ASF_SERVER_COOLDOWN_UNTIL = 0;
   var ASF_PENDING_TIMER = null;
 
   function agoraASF() { return Date.now(); }
   function esperarASF(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+  function chaveCacheASF(matLimpa) {
+    var d = new Date();
+    var data = d.getFullYear() + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0');
+    return String(matLimpa || '') + '|' + data;
+  }
+
+  function obterCacheASF(matLimpa) {
+    var key = chaveCacheASF(matLimpa);
+    var item = ASF_CACHE.get(key);
+    if (!item) return null;
+    if ((agoraASF() - item.timestamp) >= ASF_CACHE_TTL_MS) {
+      ASF_CACHE.delete(key);
+      return null;
+    }
+    return item;
+  }
+
+  function guardarCacheASF(matLimpa, resultado) {
+    if (!resultado || !resultado.estado) return;
+    ASF_CACHE.set(chaveCacheASF(matLimpa), {
+      timestamp: agoraASF(),
+      resultado: resultado
+    });
+  }
 
   // Mantém o limite VÉRIX após refresh/reabertura da página no mesmo posto.
   // Isto impede que o cache-busting, por si só, seja usado para zerar a quota local.
@@ -1999,6 +2026,7 @@ function submitConjunto(event) {
       var consulta = await realizarConsultaASF_IPO(matLimpa, matDisplay, queryId, queryStartedAtMs, queuePosition);
       var resultado = consulta.resultado;
       var asfDiagnostic = consulta.asfDiagnostic || null;
+      guardarCacheASF(matLimpa, resultado);
       if (resultado.estado === 'sim') {
         registarEventoSeguroV2('vehicle_insurance_yes', queryId, asfDiagnostic);
         renderSeguroEncontrado(resultado.node || {}, matDisplay, queryId, asfDiagnostic);
@@ -2029,6 +2057,27 @@ function submitConjunto(event) {
 
     var matLimpa = sanitizarMatriculaASF(matDisplay);
     if (!matLimpa) return;
+
+    /* Igual à aplicação base: uma matrícula consultada novamente dentro de 10 minutos
+       não gera novo pedido físico à ASF. Isto reduz carga, evita consultas duplicadas
+       e elimina um dos principais motivos para receber novamente o mesmo erro transitório. */
+    var cacheASF = obterCacheASF(matLimpa);
+    if (cacheASF && cacheASF.resultado) {
+      var cacheQueryId = window.__VERIX_CURRENT_QUERY_ID || null;
+      var cacheDiag = criarDiagASF(cacheQueryId, matDisplay, agoraMsASFDiag(), 0);
+      cacheDiag.asfErrorType = null;
+      cacheDiag.asfResponseClass = 'cache';
+      cacheDiag.asfParsePath = 'local_cache_10m';
+      cacheDiag.asfMessage = 'Resultado local reutilizado; nenhum pedido enviado à ASF.';
+      if (cacheASF.resultado.estado === 'sim') {
+        registarEventoSeguroV2('vehicle_insurance_yes', cacheQueryId, cacheDiag);
+        renderSeguroEncontrado(cacheASF.resultado.node || {}, matDisplay, cacheQueryId, cacheDiag);
+      } else {
+        registarEventoSeguroV2('vehicle_insurance_no', cacheQueryId, cacheDiag);
+        renderSeguroNaoEncontrado(matDisplay, cacheQueryId, cacheDiag);
+      }
+      return;
+    }
 
     /* Nunca acumular pedidos ASF. Se já existe um pedido físico em curso,
        o segundo disparo não entra numa fila nem gera outra tentativa. */
