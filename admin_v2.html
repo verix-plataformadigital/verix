@@ -567,7 +567,7 @@ function renderEnvironment(d){
  ],true);
 }
 function renderErrors(d){
- const a=d.analytics||{},e=a.errors||{},q=a.insurance||{}[currentPeriod]||{},inv=d.investigation||{};
+ const a=d.analytics||{},e=a.errors||{},q=(a.insurance?.[currentPeriod]||{}),inv=d.investigation||{};
  $('errorIncidentCards').innerHTML=
   '<div class="incident-card"><span>ERROS ASF · 24H</span><strong>'+num((e.types||[]).reduce((s,x)=>s+Number(x.qty||0),0))+'</strong><small>Todos os tipos observados.</small></div>'+
   '<div class="incident-card"><span>ERROS 1.4 · 24H</span><strong>'+num(inv.app14_errors)+'</strong><small>'+num(inv.app14_installations)+' instalações · '+num(inv.app14_hashes)+' hashes.</small></div>'+
