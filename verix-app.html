@@ -1211,8 +1211,8 @@ function submitConjunto(event) {
 
 
  // ========================= ASF / TEM SEGURO =========================
-  // MOTOR = CÓPIA FUNCIONAL DO IPO_2.2 (único caminho que funciona no posto).
-  // UI do VÉRIX mantida; transporte e cadência = IPO exacto.
+  // MOTOR = CÓPIA FUNCIONAL DO IPO_2.2 / base Android (caminho POST).
+  // UI do VÉRIX mantida; transporte ASF alinhado com a aplicação base.
 
   const ASF_API_URL = 'https://ext01.asf.com.pt/api/src/?query=';
   const ASF_TIMEOUT_MS = 12000;
@@ -1480,12 +1480,12 @@ function submitConjunto(event) {
     }
   }
 
-  // ---- HTTP ASF: um único GET por consulta ----
-  // A query GraphQL já está no parâmetro ?query= da URL. Mantemos o transporte
-  // o mais simples possível e nunca repetimos automaticamente o pedido físico.
+  // ---- HTTP ASF: POST como na aplicação base/Android ----
+  // A query GraphQL segue no parâmetro ?query= da URL; o POST não envia corpo.
+  // Não fazemos GET alternativo nem acrescentamos pedidos físicos à consulta.
   function efetuarPedidoHttpASF_SyncNative(url) {
-    var xhr = new ActiveXObject("WinHttp.WinHttpRequest.5.1");
-    xhr.open("GET", url, false);
+    var xhr = new ActiveXObject("WinHttp.WinHttpRequest.5.0");
+    xhr.open("POST", url, false);
     xhr.setTimeouts(10000, 10000, ASF_TIMEOUT_MS, ASF_TIMEOUT_MS);
     xhr.setRequestHeader("Accept", "application/json, text/plain, */*");
     xhr.send(null);
@@ -1500,7 +1500,7 @@ function submitConjunto(event) {
     diag.asfQueueWaitMs = Math.max(0, agoraMsASFDiag() - queueStartedAt);
 
     var tentativa = {
-      method: 'GET',
+      method: 'POST',
       transport: (typeof ActiveXObject !== 'undefined') ? 'WinHTTP' : 'Fetch',
       startedAt: agoraMsASFDiag(),
       status: null,
@@ -1536,11 +1536,12 @@ function submitConjunto(event) {
           }, ASF_TIMEOUT_MS);
 
           var options = {
-            method: 'GET',
+            method: 'POST',
             cache: 'no-store',
             credentials: 'omit',
             mode: 'cors',
-            headers: { 'Accept': 'application/json, text/plain, */*' }
+            headers: { 'Accept': 'application/json, text/plain, */*' },
+            body: null
           };
           if (controller) options.signal = controller.signal;
 
@@ -17135,7 +17136,7 @@ html body .leg-card-new .copy-all-new{
   var APP_VERSION = '1.4';
   // Identificador técnico interno do build. A versão do produto mantém-se 1.4.
   // Permite distinguir builds diferentes sem expor uma nova versão ao utilizador.
-  var BUILD_ID='2026-10-02-r3';
+  var BUILD_ID='2026-10-02-r4';
   var INSTALL_KEY = 'VERIX_T2_INSTALL_ID';
   var SESSION_KEY = 'VERIX_T2_SESSION_ID';
   var TAB_KEY = 'VERIX_T2_TAB_ID';
