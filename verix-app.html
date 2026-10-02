@@ -17159,8 +17159,11 @@ html body .leg-card-new .copy-all-new{
   var tabId = persistentId(sessionStorage, TAB_KEY, 't');
 
   function deviceType() {
+    var ua = navigator.userAgent || '';
     var w = Math.min(window.innerWidth || 0, window.innerHeight || 0);
-    if (/Mobi|Android/i.test(navigator.userAgent || '')) return 'mobile';
+    if (/iPad|Tablet/i.test(ua)) return 'tablet';
+    if (/Android/i.test(ua) && !/Mobi/i.test(ua)) return 'tablet';
+    if (/Mobi|Android.*Mobile/i.test(ua)) return 'mobile';
     if (w && w <= 900) return 'tablet';
     return 'desktop';
   }
