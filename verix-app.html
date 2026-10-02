@@ -1805,7 +1805,7 @@ function submitConjunto(event) {
         if (diag._queryStartedAtMs) diag.asfTotalMs = Math.max(0, agoraMsASFDiag() - diag._queryStartedAtMs);
         return { resultado: resultado, asfDiagnostic: diag };
       } catch (e) {
-        if (!diag.asfErrorType || diag.asfErrorType === 'graphql_service_unavailable') {
+        if (!diag.asfErrorType) {
           diag.asfErrorType = isGraphqlError ? 'graphql' : 'invalid_response';
         }
         diag.asfMessage = String(e && e.message || diag.asfMessage || 'Resposta ASF inválida').slice(0, 500);
