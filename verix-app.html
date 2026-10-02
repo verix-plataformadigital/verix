@@ -1977,7 +1977,8 @@ function submitConjunto(event) {
       }
     } catch (err) {
       var diagnostico = (err && err.message) ? String(err.message) : 'Falha de comunicação com a ASF';
-      var asfDiagnostic = (err && err.asfDiagnostic) ? err.asfDiagnostic : null;
+      var asfDiagnostic = (err && err.asfDiagnostic) ? err.asfDiagnostic : criarDiagASF(queryId, matDisplay);
+      if (asfDiagnostic && !asfDiagnostic.matricula) asfDiagnostic.matricula = matDisplay;
       console.warn('[ASF] Falha (' + matLimpa + '):', diagnostico, asfDiagnostic || '');
       registarEventoSeguroV2('vehicle_insurance_error', queryId, asfDiagnostic, diagnostico);
       mostrarSeguroErro(diagnostico, matDisplay, 'Diagnóstico ASF registado automaticamente.', queryId, asfDiagnostic);
@@ -2016,7 +2017,8 @@ function submitConjunto(event) {
       ASF_EM_CURSO = ASF_FILA_PENDENTES > 0;
       console.error('[ASF] fila:', e);
       var filaMensagem = (e && e.message) || 'Falha na consulta ASF';
-      var filaDiag = (e && e.asfDiagnostic) || null;
+      var filaDiag = (e && e.asfDiagnostic) || criarDiagASF(queryId, matDisplay);
+      if (filaDiag && !filaDiag.matricula) filaDiag.matricula = matDisplay;
       registarEventoSeguroV2('vehicle_insurance_error', queryId, filaDiag, filaMensagem);
       mostrarSeguroErro(filaMensagem, matDisplay, '', queryId, filaDiag);
     });
@@ -17155,7 +17157,7 @@ html body .leg-card-new .copy-all-new{
  - Sessão por abertura de separador.
  - Fila offline local separada da telemetria antiga.
  - Sem limpeza automática de localStorage.
- - Sem matrículas, nomes ou conteúdo operacional.
+ - Matrícula apenas nos resultados finais ASF (`yes/no/error`) para diagnóstico.
  - API pública compatível: window.VERIX_TELEMETRY.track/newQueryId/flush.
 */
 (function () {
