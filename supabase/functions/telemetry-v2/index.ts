@@ -265,6 +265,17 @@ Deno.serve(async (req: Request) => {
       const buildId = cleanText(x?.buildId || metadata.build_id, 60) || appVersion;
       if (!metadata.build_id) metadata.build_id = buildId;
 
+      // Data minimization: the plate is only needed for technical ASF error investigation.
+      // Correlation is done with query_id for all other outcomes.
+      if (event !== "vehicle_insurance_error") {
+        delete metadata.matricula;
+        delete metadata.matriculaNormalizada;
+        if (metadata.asfDiagnostic && typeof metadata.asfDiagnostic === "object") {
+          const diag = metadata.asfDiagnostic as Record<string, unknown>;
+          delete diag.matricula;
+        }
+      }
+
       if (event === "vehicle_lookup") {
         // V2 only: a real query always has all these identifiers.
         if (!installationId || !sessionId || !tabId || !queryId || !appVersion) continue;
