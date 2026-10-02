@@ -1446,6 +1446,7 @@ function submitConjunto(event) {
       matricula: String(matDisplay || '').slice(0, 30),
       asfHttpStatus: null,
       asfDurationMs: null,
+      asfQueueWaitMs: null,
       asfMethod: null,
       asfTransport: null,
       asfErrorType: null,
@@ -1489,7 +1490,9 @@ function submitConjunto(event) {
   }
 
   async function fetchASF(metodo, url, matDisplay, diag) {
+    var queueWaitStartedAt = agoraMsASFDiag();
     await reservarSlotFisicoASF(matDisplay, metodo);
+    var queueWaitMs = Math.max(0, agoraMsASFDiag() - queueWaitStartedAt);
 
     var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
     var timeoutId = null;
@@ -1512,6 +1515,7 @@ function submitConjunto(event) {
     }, ASF_TIMEOUT_MS);
 
     try {
+      diag.asfQueueWaitMs = (Number(diag.asfQueueWaitMs) || 0) + queueWaitMs;
       var options = {
         method: metodo,
         cache: 'no-store',
@@ -1556,7 +1560,9 @@ function submitConjunto(event) {
     // o transporte nativo já existente. A única alteração é a recolha de diagnóstico.
     if (typeof ActiveXObject !== 'undefined') {
       try {
+        var nativeQueueWaitStartedAt = agoraMsASFDiag();
         await reservarSlotFisicoASF(matDisplay, 'POST');
+        diag.asfQueueWaitMs = (Number(diag.asfQueueWaitMs) || 0) + Math.max(0, agoraMsASFDiag() - nativeQueueWaitStartedAt);
         var inicioNativePOST = agoraMsASFDiag();
         var tentativaNative = {
           method: 'POST',
@@ -1571,6 +1577,7 @@ function submitConjunto(event) {
         var nativePost = efetuarPedidoHttpASF_SyncNative(url);
         tentativaNative.status = nativePost && nativePost.status;
         tentativaNative.responseBytes = nativePost && nativePost.text ? String(nativePost.text).length : 0;
+        tentativaNative.responseHash = nativePost && nativePost.text ? fingerprintASF(nativePost.text) : null;
         if (deveTentarGETASF(nativePost && nativePost.status)) tentativaNative.errorType = 'http_' + nativePost.status;
         finalizarTentativaDiagASF(diag, tentativaNative);
 
@@ -17372,13 +17379,20 @@ html body .leg-card-new .copy-all-new{
       var a = m.asfDiagnostic;
       out.asfDiagnostic = {
         queryId: a.queryId ? String(a.queryId).slice(0, 120) : null,
+        matricula: a.matricula ? String(a.matricula).slice(0, 30) : null,
         asfHttpStatus: a.asfHttpStatus == null ? null : Number(a.asfHttpStatus),
         asfDurationMs: a.asfDurationMs == null ? null : Number(a.asfDurationMs),
+        asfQueueWaitMs: a.asfQueueWaitMs == null ? null : Number(a.asfQueueWaitMs),
         asfMethod: a.asfMethod ? String(a.asfMethod).slice(0, 20) : null,
         asfTransport: a.asfTransport ? String(a.asfTransport).slice(0, 30) : null,
         asfErrorType: a.asfErrorType ? String(a.asfErrorType).slice(0, 60) : null,
         asfMessage: a.asfMessage ? String(a.asfMessage).slice(0, 500) : null,
         asfResponseBytes: a.asfResponseBytes == null ? null : Number(a.asfResponseBytes),
+        asfResponseHash: a.asfResponseHash ? String(a.asfResponseHash).slice(0, 20) : null,
+        asfGraphqlErrorCount: a.asfGraphqlErrorCount == null ? null : Number(a.asfGraphqlErrorCount),
+        asfGraphqlCodes: Array.isArray(a.asfGraphqlCodes) ? a.asfGraphqlCodes.slice(0, 6).map(function (x) {
+          return String(x || '').slice(0, 80);
+        }).filter(Boolean) : [],
         asfAttempts: Array.isArray(a.asfAttempts) ? a.asfAttempts.slice(-4).map(function (t) {
           return {
             method: t.method ? String(t.method).slice(0, 20) : null,
@@ -17387,7 +17401,8 @@ html body .leg-card-new .copy-all-new{
             durationMs: t.durationMs == null ? null : Number(t.durationMs),
             errorType: t.errorType ? String(t.errorType).slice(0, 60) : null,
             message: t.message ? String(t.message).slice(0, 500) : null,
-            responseBytes: t.responseBytes == null ? null : Number(t.responseBytes)
+            responseBytes: t.responseBytes == null ? null : Number(t.responseBytes),
+            responseHash: t.responseHash ? String(t.responseHash).slice(0, 20) : null
           };
         }) : []
       };
