@@ -331,7 +331,7 @@ td{font-weight:850;font-size:13px}
 
 <script>
 const API_ORIGIN = 'https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/';
-const API_CACHE_BUSTER = '18.0';
+const API_CACHE_BUSTER = '18.1';
 const AUTH_API = API_ORIGIN + 'admin-auth-v2?v=' + API_CACHE_BUSTER;
 const STATS_API = API_ORIGIN + 'stats-v2?v=' + API_CACHE_BUSTER;
 const HOURLY_API = API_ORIGIN + 'hourly-history-v2';
@@ -415,15 +415,32 @@ async function request(url, options={}){
 }
 
 async function doLogin(password){
-  const r = await fetch(AUTH_API,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({password})
-  });
-  const data = await r.json();
-  if(!r.ok || !data?.ok) throw new Error(data?.error||'Falha de autenticação');
-  sessionStorage.setItem(TOKEN_KEY,data.token);
-  return data;
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),12000);
+  try{
+    const r = await fetch(AUTH_API,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify({password:String(password||'').slice(0,256)}),
+      mode:'cors',
+      credentials:'omit',
+      cache:'no-store',
+      signal:controller.signal
+    });
+    const text=await r.text();
+    let data={};
+    try{data=JSON.parse(text)}catch(_){data={ok:false,error:text||('HTTP '+r.status)}}
+    if(!r.ok || !data?.ok) throw new Error(data?.error||('HTTP '+r.status));
+    if(!data.token) throw new Error('Backend de autenticação não devolveu um token válido.');
+    sessionStorage.setItem(TOKEN_KEY,data.token);
+    return data;
+  }catch(e){
+    if(e?.name==='AbortError') throw new Error('Tempo excedido ao autenticar.');
+    if(e instanceof TypeError) throw new Error('Falha de rede/CORS ao autenticar.');
+    throw e;
+  }finally{
+    clearTimeout(timeout);
+  }
 }
 
 async function reset24h(){
@@ -557,7 +574,14 @@ function renderDays(){
     const btn=document.createElement('button');
     btn.className='day'+(iso===selectedDate?' active':'');
     btn.innerHTML=`<span>${d.toLocaleDateString('pt-PT',{weekday:'long'})}</span><strong>${d.toLocaleDateString('pt-PT',{day:'2-digit',month:'2-digit'})}</strong>`;
-    btn.onclick=()=>{selectedDate=iso;renderDays();loadHourly();};
+    btn.onclick=()=>{
+      selectedDate=iso;
+      renderDays();
+      loadHourly().catch(function(error){
+        const body=$('hourTable')?.querySelector('tbody');
+        if(body) body.innerHTML='<tr><td colspan="10" class="muted" style="text-align:center">'+escapeHtml(error?.message||'Falha ao carregar o histórico horário.')+'</td></tr>';
+      });
+    };
     host.appendChild(btn);
   }
 }
