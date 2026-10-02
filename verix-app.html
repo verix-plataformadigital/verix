@@ -17527,6 +17527,40 @@ html body .leg-card-new .copy-all-new{
     if (m.matricula) out.matricula = String(m.matricula).slice(0, 30);
     if (m.matriculaNormalizada) out.matriculaNormalizada = String(m.matriculaNormalizada).slice(0, 30);
     if (m.asfUserMessage) out.asfUserMessage = String(m.asfUserMessage).slice(0, 500);
+    if (m.profile_id) out.profile_id = String(m.profile_id).slice(0, 120);
+    if (m.operation_id) out.operation_id = String(m.operation_id).slice(0, 120);
+    if (m.copy_result === true) out.copy_result = true;
+
+    if (m.cin && typeof m.cin === 'object' && !Array.isArray(m.cin)) {
+      var c = m.cin;
+      out.cin = {
+        velocidade_registada: c.velocidade_registada == null ? null : Number(c.velocidade_registada),
+        velocidade_deduzida: c.velocidade_deduzida == null ? null : Number(c.velocidade_deduzida),
+        limite: c.limite == null ? null : Number(c.limite),
+        excesso: c.excesso == null ? null : Number(c.excesso),
+        gravidade: c.gravidade ? String(c.gravidade).slice(0,40) : null,
+        codigo: c.codigo ? String(c.codigo).slice(0,30) : null,
+        modo: c.modo ? String(c.modo).slice(0,30) : null,
+        veiculo: c.veiculo ? String(c.veiculo).slice(0,80) : null,
+        enquadramento: c.enquadramento ? String(c.enquadramento).slice(0,60) : null,
+        verificacao: c.verificacao ? String(c.verificacao).slice(0,30) : null,
+        operador_posto: c.operador_posto ? String(c.operador_posto).slice(0,120) : null,
+        operador_numero: c.operador_numero ? String(c.operador_numero).slice(0,40) : null,
+        operador_nome: c.operador_nome ? String(c.operador_nome).slice(0,100) : null,
+        operador_identificado: c.operador_identificado === true,
+        aparelho_marca: c.aparelho_marca ? String(c.aparelho_marca).slice(0,100) : null,
+        aparelho_modelo: c.aparelho_modelo ? String(c.aparelho_modelo).slice(0,100) : null,
+        aparelho_serie: c.aparelho_serie ? String(c.aparelho_serie).slice(0,80) : null,
+        aparelho_configurado: c.aparelho_configurado === true,
+        perfil_id: c.perfil_id ? String(c.perfil_id).slice(0,120) : null,
+        operation_id: c.operation_id ? String(c.operation_id).slice(0,120) : null,
+        local: c.local ? String(c.local).slice(0,120) : null,
+        distrito: c.distrito ? String(c.distrito).slice(0,80) : null,
+        via: c.via ? String(c.via).slice(0,160) : null,
+        sentido: c.sentido ? String(c.sentido).slice(0,80) : null,
+        km: c.km ? String(c.km).slice(0,40) : null
+      };
+    }
     // Contexto técnico do cliente para diagnosticar diferenças entre browser/OS/rede.
     out.client = {
       browser: browserName(),
