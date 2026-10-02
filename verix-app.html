@@ -20156,5 +20156,161 @@ html body .panel.insurance #asfRateWidget{
 }
 </style>
 
+
+<style id="verix-asf-fit-space-2026-10-02">
+/* ASF — adapta-se ao espaço real disponível, sem tamanho fixo */
+html body .panel.insurance .insurance-body{
+  overflow:hidden!important;
+  padding:10px 10px 58px!important;
+  box-sizing:border-box!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+html body .panel.insurance .asf-app{
+  width:100%!important;
+  max-width:560px!important;
+  margin:0 auto!important;
+  gap:10px!important;
+  zoom:var(--asf-fit,1)!important;
+  transform:none!important;
+  transform-origin:center top!important;
+}
+
+/* Base visual compacta, mas sem "miniaturizar" o conteúdo. */
+html body .panel.insurance .asf-status-card{
+  padding:15px 13px 13px!important;
+  border-radius:10px!important;
+}
+html body .panel.insurance .asf-status-icon{
+  width:50px!important;height:50px!important;margin-bottom:7px!important;font-size:25px!important;
+}
+html body .panel.insurance .asf-status-title{
+  font-size:19px!important;line-height:1.02!important;
+}
+html body .panel.insurance .asf-status-sub{
+  margin-top:5px!important;font-size:9px!important;line-height:1.25!important;
+}
+html body .panel.insurance .asf-detail-card{border-radius:9px!important;}
+html body .panel.insurance .asf-detail-head{padding:8px 10px!important;font-size:9px!important;}
+html body .panel.insurance .asf-logo{width:34px!important;height:34px!important;}
+html body .panel.insurance .asf-row{padding:8px 10px!important;font-size:10.5px!important;}
+html body .panel.insurance .asf-row .k{font-size:7.5px!important;}
+html body .panel.insurance .asf-row .v{font-size:10.5px!important;line-height:1.18!important;}
+html body .panel.insurance .asf-row-split{gap:6px!important;padding:8px 10px!important;}
+html body .panel.insurance .asf-row-split .asf-cell{padding:7px 8px!important;border-radius:7px!important;}
+html body .panel.insurance .asf-row-split .k{font-size:7px!important;}
+html body .panel.insurance .asf-row-split .v{font-size:10.5px!important;}
+html body .panel.insurance .asf-note{font-size:7.8px!important;line-height:1.25!important;}
+html body .panel.insurance .asf-warn-box{padding:7px 9px!important;font-size:8px!important;line-height:1.25!important;}
+html body .panel.insurance .asf-actions{gap:5px!important;}
+html body .panel.insurance .asf-actions .aux-btn,
+html body .panel.insurance .asf-actions button{
+  height:30px!important;padding:0 11px!important;border-radius:6px!important;font-size:8px!important;
+}
+
+/* Estado ativo: mais largo e horizontal, aproveitando a largura do painel. */
+html body .panel.insurance .asf-app.asf-app-ok .asf-success-hero{
+  min-height:64px!important;
+  padding:10px 11px!important;
+  grid-template-columns:40px minmax(0,1fr) auto!important;
+  gap:9px!important;
+  border-radius:9px!important;
+}
+html body .panel.insurance .asf-app.asf-app-ok .asf-success-badge{
+  width:38px!important;height:38px!important;font-size:22px!important;
+}
+html body .panel.insurance .asf-app.asf-app-ok .asf-success-title{
+  font-size:17px!important;line-height:1!important;
+}
+html body .panel.insurance .asf-app.asf-app-ok .asf-success-sub{
+  margin-top:4px!important;font-size:6.8px!important;line-height:1.15!important;
+}
+html body .panel.insurance .asf-app.asf-app-ok .asf-success-plate{
+  padding:7px 9px!important;
+}
+html body .panel.insurance .asf-app.asf-app-ok .asf-success-plate span{
+  font-size:12px!important;letter-spacing:1.6px!important;
+}
+
+/* Contador baixo e discreto. */
+html body .panel.insurance #asfRateWidget{
+  height:52px!important;min-height:52px!important;max-height:52px!important;padding:4px 8px!important;
+}
+
+/* Em ecrãs muito baixos, o algoritmo continua a reduzir apenas o necessário. */
+@media(max-height:760px) and (min-width:901px){
+  html body .panel.insurance .insurance-body{padding:7px 7px 56px!important;}
+  html body .panel.insurance .asf-app{gap:8px!important;}
+}
+</style>
+
+<script id="verix-asf-fit-space-script">
+(function(){
+  'use strict';
+
+  function fitAsfToPanel(){
+    var body=document.querySelector('.panel.insurance .insurance-body');
+    if(!body) return;
+
+    var apps=body.querySelectorAll('.asf-app');
+    if(!apps.length) return;
+
+    for(var i=0;i<apps.length;i++){
+      var app=apps[i];
+
+      /* Mede a versão natural. O zoom anterior fica temporariamente neutro. */
+      app.style.setProperty('--asf-fit','1');
+      app.style.zoom='1';
+
+      var available=Math.max(1, body.clientHeight - 12);
+      var natural=Math.max(1, app.scrollHeight);
+
+      /*
+       * Usa no máximo 100%. Só reduz quando o conteúdo realmente
+       * não cabe na altura disponível.
+       */
+      var scale=Math.min(1, available/natural);
+
+      /* Pequena folga para evitar tocar nas extremidades do painel. */
+      scale=Math.max(.55, scale*.98);
+
+      app.style.zoom=String(scale);
+      app.style.setProperty('--asf-fit',String(scale));
+    }
+  }
+
+  function scheduleFit(){
+    window.requestAnimationFrame(function(){
+      window.requestAnimationFrame(fitAsfToPanel);
+    });
+  }
+
+  function init(){
+    scheduleFit();
+
+    var body=document.querySelector('.panel.insurance .insurance-body');
+    if(body){
+      if(window.ResizeObserver){
+        var ro=new ResizeObserver(scheduleFit);
+        ro.observe(body);
+      }
+      if(window.MutationObserver){
+        var mo=new MutationObserver(scheduleFit);
+        mo.observe(body,{childList:true,subtree:true});
+      }
+    }
+
+    window.addEventListener('resize',scheduleFit);
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',init);
+  }else{
+    init();
+  }
+})();
+</script>
+
 </body>
 </html>
