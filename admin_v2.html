@@ -162,7 +162,7 @@ td{font-weight:850;font-size:13px}
 .diag-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
 .diag-panel{border:1px solid var(--line);border-radius:16px;padding:16px;background:rgba(5,20,26,.80);overflow:auto}
 .diag-panel h3{margin:0 0 12px;font-size:18px}
-.diag-table{width:100%;border-collapse:collapse;min-width:0}
+.diag-quality-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.diag-quality-card{padding:11px 10px;border:1px solid rgba(126,148,157,.22);border-radius:8px;background:linear-gradient(180deg,rgba(15,28,36,.85),rgba(7,15,20,.92));display:flex;flex-direction:column;gap:3px}.diag-quality-card span{font-size:8px;color:#7f949b;letter-spacing:1px;font-weight:800}.diag-quality-card strong{font-size:16px;line-height:1.1;color:#e9f0f2}.diag-quality-card small{font-size:8px;color:#80949b}.diag-quality-card .bad{color:#ff7386}.diag-quality-card .ok{color:#55d89e}@media(max-width:900px){.diag-quality-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}.diag-table{width:100%;border-collapse:collapse;min-width:0}
 .diag-table th,.diag-table td{padding:8px 7px;border-bottom:1px solid rgba(101,215,232,.10);font-size:10px;text-align:left;vertical-align:top}
 .diag-table th{color:var(--cyan);font:900 9px/1.1 Consolas,monospace;letter-spacing:.7px;text-transform:uppercase}
 .diag-table td{font-weight:800;color:#c9d6da}
@@ -300,6 +300,10 @@ td{font-weight:850;font-size:13px}
       <h3>ÚLTIMOS “SEM SEGURO”</h3>
       <div id="asfRecentUninsured" class="diag-scroll"></div>
     </div>
+    <div class="diag-panel" style="margin-top:14px">
+      <h3>QUALIDADE ASF · 24H</h3>
+      <div id="asfQuality" class="diag-scroll"></div>
+    </div>
   </section>
 
   <section class="section reset-panel">
@@ -335,7 +339,7 @@ td{font-weight:850;font-size:13px}
 
 <script>
 const API_ORIGIN = 'https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/';
-const API_CACHE_BUSTER = '18.2';
+const API_CACHE_BUSTER = '18.3';
 const AUTH_API = API_ORIGIN + 'admin-auth-v2?v=' + API_CACHE_BUSTER;
 const STATS_API = API_ORIGIN + 'stats-v2?v=' + API_CACHE_BUSTER;
 const HOURLY_API = API_ORIGIN + 'hourly-history-v2';
@@ -660,6 +664,27 @@ function renderDiagnostics(d){
       '</td><td>'+escapeHtml(r.message||'—')+'</td></tr>';
     }).join('')+'</tbody></table>';
   }
+  const qualityEl=$('asfQuality');
+  if(qualityEl){
+    const q=d?.quality_24h||{};
+    const pending=Array.isArray(q.unresolved_items)?q.unresolved_items:[];
+    qualityEl.innerHTML=`
+      <div class="diag-quality-grid">
+        <div class="diag-quality-card"><span>CONSULTAS</span><strong>${fmt(q.lookups)}</strong></div>
+        <div class="diag-quality-card"><span>CONCLUÍDAS</span><strong>${fmt(q.completed)}</strong><small>${q.completion_rate==null?'—':fmtPct(q.completion_rate)}</small></div>
+        <div class="diag-quality-card"><span>ERROS</span><strong class="bad">${fmt(q.error_queries)}</strong><small>${q.error_rate==null?'—':fmtPct(q.error_rate)}</small></div>
+        <div class="diag-quality-card"><span>COM SEGURO</span><strong>${fmt(q.insured_queries)}</strong><small>${q.insured_rate==null?'—':fmtPct(q.insured_rate)}</small></div>
+        <div class="diag-quality-card"><span>SEM SEGURO</span><strong>${fmt(q.uninsured_queries)}</strong><small>${q.uninsured_rate==null?'—':fmtPct(q.uninsured_rate)}</small></div>
+        <div class="diag-quality-card"><span>ASF P50</span><strong>${fmt(q.asf_p50_ms)} ms</strong><small>P95 ${fmt(q.asf_p95_ms)} ms</small></div>
+        <div class="diag-quality-card"><span>TOTAL P50</span><strong>${fmt(q.total_p50_ms)} ms</strong><small>P95 ${fmt(q.total_p95_ms)} ms</small></div>
+        <div class="diag-quality-card"><span>FILA P95</span><strong>${fmt(q.queue_p95_ms)} ms</strong><small>pendentes: ${fmt(pending.length)}</small></div>
+      </div>
+      ${pending.length ? '<div style="margin-top:12px"><table class="diag-table"><thead><tr><th>PENDENTE</th><th>MATRÍCULA</th><th>IDADE</th><th>BROWSER</th><th>VERSÃO</th></tr></thead><tbody>'+pending.map(function(p){
+        return '<tr><td class="diag-muted">'+(p.occurred_at?new Date(p.occurred_at).toLocaleString('pt-PT'):'—')+'</td><td class="'+(p.matricula?'bad':'diag-muted')+'">'+escapeHtml(p.matricula||'—')+'</td><td>'+fmt(Math.round(Number(p.age_seconds||0)/60))+' min</td><td>'+escapeHtml(p.browser||'Unknown')+'</td><td>'+escapeHtml(p.app_version||'—')+'</td></tr>';
+      }).join('')+'</tbody></table></div>' : '<div class="empty" style="margin-top:12px">Não existem consultas pendentes sem resultado final.</div>'}
+    `;
+  }
+
   const uninsuredEl=$('asfRecentUninsured');
   if(uninsuredEl){
     if(!uninsured.length) uninsuredEl.innerHTML='<div class="empty">Sem resultados “sem seguro” nas últimas 24h.</div>';
