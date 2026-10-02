@@ -1566,9 +1566,12 @@ function submitConjunto(event) {
           responseBytes: null
         };
         finalizarTentativaDiagASF(diag, tentativaNativeErro);
-        // Falha de transporte não é motivo para repetir automaticamente por GET.
-        // GET só é permitido quando o POST devolve HTTP 403/405.
-        throw erroComDiagASF(tentativaNativeErro.message || 'Falha ASF', diag);
+        console.warn('[ASF] WinHTTP POST falhou; a tentar GET de fallback:', e && e.message);
+        try {
+          return await fetchASF('GET', url, matDisplay, diag);
+        } catch (e2) {
+          throw erroComDiagASF((e2 && e2.message) || tentativaNativeErro.message || 'Falha ASF', diag);
+        }
       }
     }
 
@@ -1580,9 +1583,12 @@ function submitConjunto(event) {
       }
       return post;
     } catch (e) {
-      // Falha de transporte (timeout/rede/CORS) não deve gerar um segundo
-      // pedido físico. GET só ocorre acima quando o POST devolve 403/405.
-      throw erroComDiagASF((e && e.message) || 'Falha ASF', (e && e.asfDiagnostic) || diag);
+      console.warn('[ASF] POST falhou; a tentar GET de fallback após nova cadência:', e && e.message);
+      try {
+        return await fetchASF('GET', url, matDisplay, diag);
+      } catch (e2) {
+        throw erroComDiagASF((e2 && e2.message) || (e && e.message) || 'Falha ASF', diag);
+      }
     }
   }
 
@@ -17143,7 +17149,7 @@ html body .leg-card-new .copy-all-new{
   'use strict';
 
   var ENDPOINT = 'https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/telemetry-v2';
-  var APP_VERSION = '1.3';
+  var APP_VERSION = '1.4';
   var INSTALL_KEY = 'VERIX_T2_INSTALL_ID';
   var SESSION_KEY = 'VERIX_T2_SESSION_ID';
   var TAB_KEY = 'VERIX_T2_TAB_ID';
@@ -17208,6 +17214,102 @@ html body .leg-card-new .copy-all-new{
     return 'Other';
   }
 
+  // Diagnóstico de cliente — apenas metadados técnicos para correlacionar erros.
+  // Não envia matrícula, nome, conteúdo operacional ou dados de localização.
+  var clientInfo = {
+    browserVersion: null,
+    osPlatform: null,
+    osVersion: null,
+    navigatorPlatform: null,
+    uaMobile: null,
+    online: null,
+    connectionType: null,
+    effectiveType: null,
+    downlinkMbps: null,
+    rttMs: null,
+    saveData: null,
+    hardwareConcurrency: null,
+    deviceMemoryGb: null,
+    viewport: null,
+    devicePixelRatio: null,
+    uaDataAvailable: false
+  };
+
+  function firstMatch(re, value) {
+    var m = re.exec(value || '');
+    return m ? m[1] : null;
+  }
+
+  function browserVersionFromUA(ua) {
+    return firstMatch(/(?:Edg|Chrome|Firefox|Version|CriOS|FxiOS)\/([0-9.]+)/i, ua);
+  }
+
+  function osFromUA(ua) {
+    if (/Android/i.test(ua)) {
+      return { platform: 'Android', version: firstMatch(/Android\s+([0-9._]+)/i, ua) };
+    }
+    if (/Windows NT/i.test(ua)) {
+      var w = firstMatch(/Windows NT\s+([0-9.]+)/i, ua);
+      var map = { '10.0': '10', '6.4': '10', '6.3': '8.1', '6.2': '8', '6.1': '7' };
+      return { platform: 'Windows', version: map[w] || w };
+    }
+    if (/iPhone|iPad|iPod/i.test(ua)) {
+      return { platform: 'iOS', version: firstMatch(/(?:iPhone OS|CPU OS)\s+([0-9_]+)/i, ua) };
+    }
+    if (/Mac OS X/i.test(ua)) {
+      return { platform: 'macOS', version: firstMatch(/Mac OS X\s*([0-9_\.]+)/i, ua) };
+    }
+    if (/Linux/i.test(ua)) return { platform: 'Linux', version: null };
+    return { platform: null, version: null };
+  }
+
+  function refreshClientInfo() {
+    try {
+      var ua = navigator.userAgent || '';
+      var os = osFromUA(ua);
+      var c = navigator.connection || navigator.mozConnection || navigator.webkitConnection || null;
+      clientInfo.browserVersion = browserVersionFromUA(ua);
+      clientInfo.osPlatform = os.platform;
+      clientInfo.osVersion = os.version;
+      clientInfo.navigatorPlatform = navigator.platform || null;
+      clientInfo.uaMobile = /Mobi|Android/i.test(ua);
+      clientInfo.online = navigator.onLine == null ? null : !!navigator.onLine;
+      clientInfo.connectionType = c && c.type ? String(c.type).slice(0, 30) : null;
+      clientInfo.effectiveType = c && c.effectiveType ? String(c.effectiveType).slice(0, 20) : null;
+      clientInfo.downlinkMbps = c && typeof c.downlink === 'number' ? c.downlink : null;
+      clientInfo.rttMs = c && typeof c.rtt === 'number' ? c.rtt : null;
+      clientInfo.saveData = c && typeof c.saveData === 'boolean' ? c.saveData : null;
+      clientInfo.hardwareConcurrency = typeof navigator.hardwareConcurrency === 'number' ? navigator.hardwareConcurrency : null;
+      clientInfo.deviceMemoryGb = typeof navigator.deviceMemory === 'number' ? navigator.deviceMemory : null;
+      clientInfo.viewport = (window.innerWidth || 0) + 'x' + (window.innerHeight || 0);
+      clientInfo.devicePixelRatio = typeof window.devicePixelRatio === 'number' ? window.devicePixelRatio : null;
+      clientInfo.uaDataAvailable = !!navigator.userAgentData;
+    } catch (_) {}
+  }
+
+  refreshClientInfo();
+
+  // User-Agent Client Hints permite obter a versão completa do browser e a
+  // versão real da plataforma em browsers que suportem a API.
+  try {
+    if (navigator.userAgentData && typeof navigator.userAgentData.getHighEntropyValues === 'function') {
+      navigator.userAgentData.getHighEntropyValues(['platformVersion', 'fullVersionList']).then(function (ua) {
+        try {
+          if (ua && Array.isArray(ua.fullVersionList)) {
+            var brands = ua.fullVersionList;
+            var preferred = brands.find(function (b) {
+              return /Microsoft Edge|Google Chrome|Chromium/i.test(b.brand || '');
+            }) || brands.find(function (b) { return /Chrome|Chromium|Edge/i.test(b.brand || ''); });
+            if (preferred && preferred.version) clientInfo.browserVersion = String(preferred.version).slice(0, 40);
+          }
+          if (ua && ua.platform) clientInfo.osPlatform = String(ua.platform).slice(0, 30);
+          if (ua && ua.platformVersion) clientInfo.osVersion = String(ua.platformVersion).slice(0, 40);
+          if (ua && typeof ua.mobile === 'boolean') clientInfo.uaMobile = ua.mobile;
+        } catch (_) {}
+      }).catch(function () {});
+    }
+  } catch (_) {}
+
   function readQueue() {
     try {
       var value = JSON.parse(storageGet(localStorage, QUEUE_KEY) || '[]');
@@ -17234,6 +17336,27 @@ html body .leg-card-new .copy-all-new{
     if (m.itemLabel) out.itemLabel = String(m.itemLabel).slice(0, 180);
     if (m.copyType) out.copyType = String(m.copyType).slice(0, 40);
     if (m.asfUserMessage) out.asfUserMessage = String(m.asfUserMessage).slice(0, 500);
+    // Contexto técnico do cliente para diagnosticar diferenças entre browser/OS/rede.
+    out.client = {
+      browser: browserName(),
+      browserVersion: clientInfo.browserVersion,
+      osPlatform: clientInfo.osPlatform,
+      osVersion: clientInfo.osVersion,
+      navigatorPlatform: clientInfo.navigatorPlatform,
+      uaMobile: clientInfo.uaMobile,
+      online: clientInfo.online,
+      connectionType: clientInfo.connectionType,
+      effectiveType: clientInfo.effectiveType,
+      downlinkMbps: clientInfo.downlinkMbps,
+      rttMs: clientInfo.rttMs,
+      saveData: clientInfo.saveData,
+      hardwareConcurrency: clientInfo.hardwareConcurrency,
+      deviceMemoryGb: clientInfo.deviceMemoryGb,
+      viewport: clientInfo.viewport,
+      devicePixelRatio: clientInfo.devicePixelRatio,
+      uaDataAvailable: clientInfo.uaDataAvailable
+    };
+
     if (m.asfDiagnostic && typeof m.asfDiagnostic === 'object') {
       var a = m.asfDiagnostic;
       out.asfDiagnostic = {
@@ -17264,6 +17387,7 @@ html body .leg-card-new .copy-all-new{
 
   function push(event, module, meta) {
     if (!event) return;
+    refreshClientInfo();
 
     queue.push({
       eventId: uid('e'),
@@ -17449,11 +17573,11 @@ html body .leg-card-new .copy-all-new{
       }
     });
 
-    wrap('renderSeguroEncontrado', function (_n, _mat, queryId, asfDiagnostic) {
+    wrap('renderSeguroEncontrado', function (_n, _mat, queryId) {
       push('vehicle_insurance_yes', 'consulta', { queryId: queryId || window.__VERIX_CURRENT_QUERY_ID || null, asfDiagnostic: asfDiagnostic || null });
     });
 
-    wrap('renderSeguroNaoEncontrado', function (_mat, queryId, asfDiagnostic) {
+    wrap('renderSeguroNaoEncontrado', function (_mat, queryId) {
       push('vehicle_insurance_no', 'consulta', { queryId: queryId || window.__VERIX_CURRENT_QUERY_ID || null, asfDiagnostic: asfDiagnostic || null });
     });
 
