@@ -55,7 +55,18 @@
   function blockUnauthorized(){
     try {
       document.open();
-      document.write('<!doctype html><html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VÉRIX — Acesso não autorizado</title><style>html,body{margin:0;min-height:100%;background:#03080c;color:#eef4f5;font-family:Arial,Helvetica,sans-serif}body{display:grid;place-items:center;padding:24px;box-sizing:border-box}.box{max-width:620px;padding:34px 36px;border:1px solid #5b7078;border-radius:18px;background:linear-gradient(180deg,#11212a,#071117);box-shadow:0 24px 70px rgba(0,0,0,.55);text-align:center}.tag{display:inline-block;margin-bottom:14px;padding:6px 10px;border:1px solid #c8102e;border-radius:999px;color:#ff7c91;font-size:11px;font-weight:800;letter-spacing:1.2px}.title{font-size:28px;font-weight:900;margin-bottom:12px}.text{color:#b9c7cc;font-size:15px;line-height:1.6}</style></head><body><div class="box"><div class="tag">VERIX // PROTEÇÃO</div><div class="title">Publicação não autorizada</div><div class="text">Esta versão do VÉRIX não está autorizada a funcionar neste endereço.</div></div></body></html>');
+      document.write('<!doctype html><html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VÉRIX — Acesso não autorizado</title><style>html,body{margin:0;min-height:100%;background:#03080c;color:#eef4f5;font-family:Arial,Helvetica,sans-serif}body{display:grid;place-items:center;padding:24px;box-sizing:border-box}.box{max-width:620px;padding:34px 36px;border:1px solid #5b7078;border-radius:18px;background:linear-gradient(180deg,#11212a,#071117);box-shadow:0 24px 70px rgba(0,0,0,.55);text-align:center}.tag{display:inline-block;margin-bottom:14px;padding:6px 10px;border:1px solid #c8102e;border-radius:999px;color:#ff7c91;font-size:11px;font-weight:800;letter-spacing:1.2px}.title{font-size:28px;font-weight:900;margin-bottom:12px}.text{color:#b9c7cc;font-size:15px;line-height:1.6}</style><style id="verix-notice-force-polish-2026-10-02">
+html body .verix-notice-force{
+  margin-top:12px!important;
+  border-color:rgba(200,16,46,.28)!important;
+  border-left-color:#e02043!important;
+  background:rgba(96,8,25,.22)!important;
+}
+html body .verix-notice-force strong{color:#ffd3da!important;}
+html body .verix-notice-force span{color:#d4dee1!important;}
+html body .verix-notice-thanks p + p{margin-top:12px!important;}
+</style>
+</head><body><div class="box"><div class="tag">VERIX // PROTEÇÃO</div><div class="title">Publicação não autorizada</div><div class="text">Esta versão do VÉRIX não está autorizada a funcionar neste endereço.</div></div></body></html>');
       document.close();
     } catch (_) {
       try { document.documentElement.innerHTML = '<body style="background:#03080c;color:#eef4f5;font-family:Arial;text-align:center;padding:40px">Publicação não autorizada.</body>'; } catch (__) {}
@@ -7437,12 +7448,37 @@ html body .verix-asf-notice-continue{min-width:205px!important;height:46px!impor
     <main class="verix-asf-notice-body">
       <section class="verix-notice-section verix-notice-warning">
         <div class="verix-notice-section-label">AVISO</div>
-        <p class="verix-asf-notice-lead">Foram identificadas algumas falhas nas consultas automáticas de seguros através do canal ASF.</p>
-        <p>Em determinados casos, estas ocorrências poderão estar relacionadas com a comunicação através da rede RNSI. A equipa do VÉRIX encontra-se a analisar a situação e a trabalhar na correção destas ocorrências.</p>
-        <p>Foram também identificados comportamentos incompatíveis com a utilização normal da plataforma, nomeadamente um número anormalmente elevado de consultas e a reprodução do mecanismo de consulta de seguros em ficheiros HTML externos.</p>
+
+        <p class="verix-asf-notice-lead">
+          Foram identificadas ocorrências anómalas no serviço de consulta de seguros através do canal ASF.
+        </p>
+
+        <p>
+          Em determinados casos, foram registadas falhas associadas à comunicação com a rede RNSI.
+          A equipa do VÉRIX está a acompanhar a situação e a trabalhar na correção das ocorrências identificadas.
+        </p>
+
+        <p>
+          Foi igualmente detetada a <strong>reprodução não autorizada do mecanismo de consulta ASF desenvolvido para o VÉRIX</strong>,
+          incluindo a utilização e cópia da lógica e do código necessários para efetuar esta consulta em outros ficheiros HTML.
+        </p>
+
         <div class="verix-asf-notice-request">
-          <strong>Solicitação</strong>
-          <span>Pedimos a todos os utilizadores que utilizem o VÉRIX de forma responsável e que não sobrecarreguem deliberadamente a plataforma nem reproduzam ou distribuam o seu código sem autorização dos respetivos desenvolvedores.</span>
+          <strong>Comunicado aos responsáveis</strong>
+          <span>
+            O mecanismo de consulta ASF integra trabalho técnico desenvolvido especificamente para o VÉRIX.
+            A sua reprodução, adaptação ou distribuição para utilização fora da plataforma não foi autorizada.
+            Solicitamos que esta utilização seja interrompida e que não sejam realizadas novas cópias ou integrações do código.
+          </span>
+        </div>
+
+        <div class="verix-asf-notice-request verix-notice-force">
+          <strong>Proteção da disponibilidade</strong>
+          <span>
+            Foram também identificados comportamentos compatíveis com <strong>tentativas automatizadas de sobrecarga (Brute Force)</strong>,
+            através de um volume anormal de pedidos. Este tipo de comportamento pode degradar a disponibilidade do serviço
+            e prejudicar a utilização normal da plataforma pelos restantes utilizadores.
+          </span>
         </div>
       </section>
 
@@ -7450,7 +7486,14 @@ html body .verix-asf-notice-continue{min-width:205px!important;height:46px!impor
         <div class="verix-notice-section-label">AGRADECIMENTO</div>
         <div class="verix-thanks-number">+150.000</div>
         <div class="verix-thanks-label">consultas realizadas em apenas duas semanas</div>
-        <p>Agradecemos a todos os utilizadores pela confiança, pela utilização da plataforma e pelo contributo para o crescimento do VÉRIX.</p>
+        <p>
+          O VÉRIX foi criado para facilitar a consulta e o apoio ao serviço operacional.
+          Agradecemos a todos os utilizadores que têm contribuído para a sua utilização responsável,
+          pela confiança demonstrada e pelo crescimento da plataforma.
+        </p>
+        <p>
+          O trabalho de manutenção e melhoria do VÉRIX continuará a ser desenvolvido de forma contínua.
+        </p>
       </section>
     </main>
 
