@@ -1690,67 +1690,27 @@ function submitConjunto(event) {
     }
 
     /*
-     * LÓGICA ASF ALINHADA COM A VERSÃO Consulta Veiculo(3):
-     *
+     * REGRA ASF ALINHADA COM A APK BASE:
      * - nodes vazio = SEM SEGURO
-     * - nodes com dados de seguro utilizáveis = TEM SEGURO
-     * - nodes existentes mas sem dados de seguro utilizáveis = SEM SEGURO
+     * - node.license != null = TEM SEGURO
+     * - nodes existentes sem `license` = SEM SEGURO
      *
-     * Não se deve exigir que `license` esteja preenchido. A ASF pode devolver
-     * outros campos contratuais válidos.
+     * Campos como entity/policy/startDate/endDate não são, por si só,
+     * suficientes para classificar a existência do seguro.
      */
     if (nodes.length === 0) {
       return { estado: 'nao', node: null };
     }
 
-    var camposSeguro = [
-      'entity',
-      'insurer',
-      'insuranceCompany',
-      'policy',
-      'policyNumber',
-      'startDate',
-      'validFrom',
-      'endDate',
-      'validTo',
-      'license',
-      'licenseNumber',
-      'code'
-    ];
-
-    var nodeValido = null;
-
     for (var i = 0; i < nodes.length; i++) {
       var node = nodes[i];
       if (!node || typeof node !== 'object') continue;
 
-      for (var j = 0; j < camposSeguro.length; j++) {
-        var chave = camposSeguro[j];
-        var valor = node[chave];
-
-        if (valor !== undefined && valor !== null) {
-          if (typeof valor === 'object') {
-            valor = valor.name || valor.label || valor.value || valor.description || '';
-          }
-
-          if (String(valor).trim() !== '') {
-            nodeValido = node;
-            break;
-          }
-        }
+      if (node.license !== undefined && node.license !== null) {
+        return { estado: 'sim', node: node };
       }
-
-      if (nodeValido) break;
     }
 
-    if (nodeValido) {
-      return { estado: 'sim', node: nodeValido };
-    }
-
-    /*
-     * Resposta ASF conhecida, mas sem dados úteis no(s) node(s).
-     * Segue a lógica da Consulta Veiculo(3): tratar como ausência de seguro.
-     */
     return { estado: 'nao', node: null };
   }
 
@@ -17207,10 +17167,11 @@ html body .leg-card-new .copy-all-new{
 
   function browserName() {
     var ua = navigator.userAgent || '';
-    if (/Edg\//.test(ua)) return 'Edge';
-    if (/Chrome\//.test(ua)) return 'Chrome';
-    if (/Firefox\//.test(ua)) return 'Firefox';
-    if (/Safari\//.test(ua) && !/Chrome\//.test(ua)) return 'Safari';
+    if (/EdgA\//.test(ua) || /EdgiOS\//.test(ua) || /Edg\//.test(ua)) return 'Edge';
+    if (/OPR\//.test(ua)) return 'Opera';
+    if (/CriOS\//.test(ua) || /Chrome\//.test(ua)) return 'Chrome';
+    if (/FxiOS\//.test(ua) || /Firefox\//.test(ua)) return 'Firefox';
+    if (/Version\//.test(ua) && /Safari\//.test(ua)) return 'Safari';
     return 'Other';
   }
 
@@ -17241,7 +17202,7 @@ html body .leg-card-new .copy-all-new{
   }
 
   function browserVersionFromUA(ua) {
-    return firstMatch(/(?:Edg|Chrome|Firefox|Version|CriOS|FxiOS)\/([0-9.]+)/i, ua);
+    return firstMatch(/(?:EdgA|EdgiOS|Edg|CriOS|Chrome|FxiOS|Firefox|OPR|Version)\/([0-9.]+)/i, ua);
   }
 
   function osFromUA(ua) {
@@ -17573,11 +17534,11 @@ html body .leg-card-new .copy-all-new{
       }
     });
 
-    wrap('renderSeguroEncontrado', function (_n, _mat, queryId) {
+    wrap('renderSeguroEncontrado', function (_n, _mat, queryId, asfDiagnostic) {
       push('vehicle_insurance_yes', 'consulta', { queryId: queryId || window.__VERIX_CURRENT_QUERY_ID || null, asfDiagnostic: asfDiagnostic || null });
     });
 
-    wrap('renderSeguroNaoEncontrado', function (_mat, queryId) {
+    wrap('renderSeguroNaoEncontrado', function (_mat, queryId, asfDiagnostic) {
       push('vehicle_insurance_no', 'consulta', { queryId: queryId || window.__VERIX_CURRENT_QUERY_ID || null, asfDiagnostic: asfDiagnostic || null });
     });
 
