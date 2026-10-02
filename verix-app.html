@@ -19311,5 +19311,383 @@ html body .toast-notification {
 })();
 </script>
 
+
+<style id="verix-visual-refresh-2026-10-02">
+/* VÉRIX 1.4 — refrescamento visual: mais limpo, maior legibilidade, mesma identidade */
+
+html, body {
+  background: #02070b !important;
+  color: #eef4f5 !important;
+}
+
+body::before,
+body::after {
+  opacity: .14 !important;
+}
+
+.cinematic-bg {
+  opacity: .38 !important;
+  filter: none !important;
+}
+.cinematic-bg::before,
+.cinematic-bg::after {
+  opacity: .16 !important;
+}
+
+/* Cabeçalho: menos "HUD", mais espaço para a consulta */
+.command {
+  border: 1px solid rgba(91,116,126,.72) !important;
+  border-radius: 12px !important;
+  background: linear-gradient(180deg,#0a171e 0%,#051016 100%) !important;
+  box-shadow: 0 14px 34px rgba(0,0,0,.48), inset 0 1px 0 rgba(255,255,255,.06) !important;
+}
+.command::before {
+  opacity: .22 !important;
+}
+.command::after {
+  height: 2px !important;
+  opacity: .72 !important;
+  box-shadow: none !important;
+}
+
+.command .brand {
+  left: 20px !important;
+  top: 9px !important;
+  width: 410px !important;
+  height: 84px !important;
+}
+.command .brand-notice-title {
+  font-size: 13px !important;
+  line-height: 1.15 !important;
+  letter-spacing: .7px !important;
+}
+.command .brand-notice-text {
+  margin-top: 7px !important;
+  max-width: 370px !important;
+  font-size: 8.5px !important;
+  line-height: 1.35 !important;
+  color: #aebec4 !important;
+}
+
+.command .searchbar {
+  top: 12px !important;
+  height: 80px !important;
+  width: 760px !important;
+  max-width: calc(100vw - 560px) !important;
+  min-width: 650px !important;
+  border: 1px solid rgba(113,139,148,.42) !important;
+  border-radius: 10px !important;
+  background: rgba(2,9,13,.72) !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.045) !important;
+}
+.command .searchbar form {
+  gap: 11px !important;
+}
+.command .field {
+  gap: 5px !important;
+}
+.command .field label {
+  font-size: 9px !important;
+  letter-spacing: .9px !important;
+  color: #dbe5e8 !important;
+}
+.command .field input {
+  width: 152px !important;
+  height: 45px !important;
+  border-radius: 7px !important;
+  font-size: 17px !important;
+  box-shadow: inset 0 2px 3px rgba(0,0,0,.13) !important;
+}
+.command .field input:focus {
+  border-color: var(--green) !important;
+  box-shadow: 0 0 0 3px rgba(0,139,85,.16) !important;
+}
+.command .consult {
+  height: 45px !important;
+  min-width: 198px !important;
+  width: 198px !important;
+  border-radius: 7px !important;
+  padding: 0 20px !important;
+  font-size: 12px !important;
+  letter-spacing: .65px !important;
+  box-shadow: 0 5px 14px rgba(200,16,46,.22) !important;
+}
+.command .tools {
+  right: 15px !important;
+  top: 20px !important;
+  gap: 5px !important;
+}
+.command .tool {
+  height: 38px !important;
+  min-width: 56px !important;
+  padding: 0 8px !important;
+  border-radius: 6px !important;
+  font-size: 8.5px !important;
+  box-shadow: 0 4px 10px rgba(0,0,0,.24) !important;
+}
+.command .tool.full {
+  width: 38px !important;
+  min-width: 38px !important;
+  font-size: 16px !important;
+}
+.command .time {
+  right: 18px !important;
+  bottom: 7px !important;
+  font-size: 7px !important;
+}
+
+/* Barra lateral: mais simples e legível */
+html body .rail {
+  width: 68px !important;
+  padding: 8px 5px !important;
+  gap: 5px !important;
+  border-radius: 10px !important;
+  border-color: rgba(75,101,111,.72) !important;
+  background: linear-gradient(180deg,#09171e,#030b10) !important;
+  box-shadow: 0 12px 30px rgba(0,0,0,.42) !important;
+}
+html body .rail-item {
+  width: 56px !important;
+  min-height: 56px !important;
+  height: 56px !important;
+  border-radius: 7px !important;
+  gap: 5px !important;
+  font-size: 8.5px !important;
+  letter-spacing: .4px !important;
+}
+html body .rail-item .rail-modern-ico {
+  font-size: 20px !important;
+}
+html body .rail-item.active {
+  background: rgba(200,16,46,.16) !important;
+  border-color: rgba(200,16,46,.55) !important;
+  box-shadow: inset 3px 0 var(--red) !important;
+}
+html body .rail-item.selected {
+  background: rgba(0,139,85,.15) !important;
+  border-color: rgba(0,139,85,.55) !important;
+  box-shadow: inset 3px 0 var(--green) !important;
+}
+html body .rail-spacer {
+  min-height: 7px !important;
+  height: 7px !important;
+}
+
+/* Área principal */
+@media (min-width: 901px) {
+  html body .main {
+    gap: 10px !important;
+  }
+  html body .main.consultation-fixed-active:not(.cinemometro-page-active) {
+    grid-template-columns: 3fr 4.5fr 2.5fr !important;
+  }
+}
+
+html body .panel {
+  border-radius: 10px !important;
+  border-color: rgba(76,102,112,.72) !important;
+  background: linear-gradient(180deg,#07141b,#040d12) !important;
+  box-shadow: 0 12px 30px rgba(0,0,0,.48), inset 0 1px 0 rgba(255,255,255,.045) !important;
+}
+html body .panel::before {
+  opacity: .35 !important;
+}
+html body .panel .head {
+  height: 48px !important;
+  min-height: 48px !important;
+  background: linear-gradient(90deg,rgba(14,28,35,.98),rgba(7,16,21,.98)) !important;
+  border-bottom: 1px solid rgba(94,122,132,.42) !important;
+  box-shadow: none !important;
+}
+html body .panel .head.red {
+  border-left: 3px solid var(--red) !important;
+}
+html body .panel .head.green {
+  border-left: 3px solid var(--green) !important;
+}
+html body .panel .head-title {
+  font-size: 13px !important;
+  letter-spacing: 1px !important;
+}
+html body .panel .head-tag {
+  font-size: 7px !important;
+  padding: 3px 6px !important;
+}
+html body .panel .corner,
+html body .panel .scan {
+  opacity: .22 !important;
+}
+
+/* Seguro: resultado visualmente dominante e muito mais legível */
+html body .panel.insurance {
+  border-color: rgba(188,205,210,.58) !important;
+  background: #e9eef0 !important;
+}
+html body .panel.insurance .head {
+  background: linear-gradient(90deg,rgba(108,10,28,.96),rgba(49,10,18,.98)) !important;
+  border-bottom-color: rgba(200,16,46,.52) !important;
+}
+html body .panel.insurance .insurance-body {
+  top: 48px !important;
+  overflow: auto !important;
+  padding: 16px 14px 70px !important;
+  background: linear-gradient(180deg,#f4f7f8 0%,#e4eaec 100%) !important;
+  color: #18262d !important;
+}
+html body .panel.insurance .asf-app {
+  width: 100% !important;
+  max-width: 560px !important;
+  gap: 13px !important;
+  margin: 0 auto !important;
+  zoom: 1 !important;
+}
+html body .panel.insurance .asf-status-card {
+  border-radius: 12px !important;
+  padding: 20px 16px 18px !important;
+  box-shadow: 0 7px 18px rgba(26,42,49,.12) !important;
+}
+html body .panel.insurance .asf-status-icon {
+  width: 62px !important;
+  height: 62px !important;
+  margin-bottom: 10px !important;
+  font-size: 30px !important;
+}
+html body .panel.insurance .asf-status-title {
+  font-size: 22px !important;
+  line-height: 1.12 !important;
+  letter-spacing: .4px !important;
+}
+html body .panel.insurance .asf-status-sub {
+  margin-top: 7px !important;
+  font-size: 11.5px !important;
+  line-height: 1.45 !important;
+}
+html body .panel.insurance .asf-detail-card {
+  border-radius: 10px !important;
+  border-color: #c8d3d7 !important;
+  box-shadow: 0 5px 14px rgba(26,42,49,.08) !important;
+}
+html body .panel.insurance .asf-detail-head {
+  padding: 11px 12px !important;
+  font-size: 10px !important;
+}
+html body .panel.insurance .asf-row {
+  padding: 10px 12px !important;
+  font-size: 12px !important;
+}
+html body .panel.insurance .asf-row .k {
+  font-size: 9px !important;
+}
+html body .panel.insurance .asf-row .v {
+  font-size: 12.5px !important;
+}
+html body .panel.insurance .asf-note {
+  font-size: 9px !important;
+}
+html body .panel.insurance .asf-actions .aux-btn,
+html body .panel.insurance .asf-actions button {
+  height: 38px !important;
+  border-radius: 7px !important;
+  font-size: 9.5px !important;
+  padding: 0 15px !important;
+}
+
+/* O contador ASF fica útil, mas discreto */
+html body .panel.insurance .insurance-body {
+  padding-bottom: 66px !important;
+}
+html body .panel.insurance #asfRateWidget {
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  top: auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 56px !important;
+  min-height: 56px !important;
+  padding: 5px 9px !important;
+  box-sizing: border-box !important;
+  display: grid !important;
+  grid-template-columns: 92px minmax(0,1fr) 58px !important;
+  align-items: center !important;
+  gap: 7px !important;
+  border: 0 !important;
+  border-top: 1px solid #bcc9cd !important;
+  border-radius: 0 !important;
+  background: #17252c !important;
+  box-shadow: 0 -5px 14px rgba(24,38,45,.12) !important;
+}
+html body .panel.insurance #asfRateWidget .asf-rate-label {
+  font-size: 7px !important;
+  letter-spacing: .8px !important;
+  color: #c8d7dc !important;
+}
+html body .panel.insurance #asfRateWidget .asf-rate-main {
+  font-size: 13px !important;
+}
+html body .panel.insurance #asfRateWidget .asf-rate-sub {
+  font-size: 7px !important;
+  color: #a6b9c0 !important;
+}
+html body .panel.insurance #asfRateWidget .asf-rate-countdown {
+  min-width: 52px !important;
+  font-size: 9px !important;
+}
+
+/* Histórico e aviso continuam claros, mas sem competir com a consulta */
+html body .consulta-history-bottom {
+  min-width: 300px !important;
+  width: 300px !important;
+  height: 40px !important;
+  padding: 0 20px !important;
+  border-radius: 7px !important;
+  font-size: 10px !important;
+  box-shadow: 0 6px 16px rgba(200,16,46,.18) !important;
+}
+html body .consulta-history-bottom-icon {
+  font-size: 14px !important;
+}
+
+/* Janelas modais seguem a mesma linguagem visual */
+html body .module-window {
+  border-radius: 12px !important;
+  box-shadow: 0 24px 70px rgba(0,0,0,.68), 0 0 0 1px rgba(0,139,85,.08) !important;
+}
+html body .module-top {
+  height: 68px !important;
+  padding: 0 20px !important;
+}
+html body .module-title {
+  font-size: 16px !important;
+}
+html body .module-card h3 {
+  font-size: 12px !important;
+}
+html body .module-card p {
+  font-size: 10px !important;
+}
+
+/* Ecrãs baixos: manter o ganho de legibilidade sem rebentar a grelha existente */
+@media (max-height: 760px) and (min-width: 901px) {
+  html body .command .searchbar {
+    height: 70px !important;
+    top: 10px !important;
+  }
+  html body .command .field input {
+    height: 41px !important;
+  }
+  html body .command .consult {
+    height: 41px !important;
+  }
+  html body .panel .head {
+    height: 44px !important;
+    min-height: 44px !important;
+  }
+  html body .panel.insurance .insurance-body {
+    top: 44px !important;
+  }
+}
+</style>
+
 </body>
 </html>
