@@ -205,6 +205,19 @@ td{font-weight:850;font-size:13px}
 @media(max-width:1200px){.cin-admin-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
 @media(max-width:720px){.cin-admin-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
 </style>
+<style id="admin-nav-v14">
+.admin-nav-section{margin-top:8px}
+.admin-nav-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.admin-nav-grid button{appearance:none;border:1px solid rgba(255,255,255,.08);border-radius:10px;background:rgba(255,255,255,.025);padding:11px 12px;text-align:left;color:var(--text);transition:.15s ease}
+.admin-nav-grid button:hover{border-color:rgba(101,215,232,.3);background:rgba(101,215,232,.05);transform:translateY(-1px)}
+.admin-nav-grid strong{display:block;font-size:10px;letter-spacing:1.1px}
+.admin-nav-grid span{display:block;margin-top:4px;color:var(--muted);font-size:9px;line-height:1.25}
+.admin-summary-note{margin-left:auto;color:#8fa3aa;font-size:9px;letter-spacing:1px;font-weight:700}
+.compact-section{margin-top:10px}
+.compact-section .admin-expander{margin-top:0}
+@media(max-width:900px){.admin-nav-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:520px){.admin-nav-grid{grid-template-columns:1fr;}}
+</style>
 </head>
 <body>
 
@@ -250,7 +263,24 @@ td{font-weight:850;font-size:13px}
     </div>
   </section>
 
-  <section class="section">
+  <section class="section admin-nav-section">
+    <div class="section-head"><div class="section-title">ÁREAS DO PAINEL</div><div class="section-note">Acesso direto aos módulos · o painel principal permanece aberto</div></div>
+    <div class="admin-nav-grid">
+      <button type="button" onclick="openAdminSection('adminActivitySection')"><strong>OPERAÇÃO</strong><span>Atividade geral</span></button>
+      <button type="button" onclick="openAdminSection('adminCompareSection')"><strong>COMPARAÇÃO</strong><span>24h atual / anterior</span></button>
+      <button type="button" onclick="openAdminSection('adminHourlySection')"><strong>HISTÓRICO</strong><span>30 dias por hora</span></button>
+      <button type="button" onclick="openAdminSection('adminCinemometerSection')"><strong>CINEMÓMETRO</strong><span>Sessões e padrões</span></button>
+      <button type="button" onclick="openAdminSection('adminAsfSection')"><strong>ASF / SEGURO</strong><span>Erros e qualidade</span></button>
+      <button type="button" onclick="openAdminSection('adminMenusSection')"><strong>MENUS</strong><span>Utilização por módulo</span></button>
+      <button type="button" onclick="openAdminSection('adminLegislationSection')"><strong>LEGISLAÇÃO</strong><span>Consultas e cópias</span></button>
+      <button type="button" onclick="openAdminSection('adminSystemSection')"><strong>SISTEMA</strong><span>Reposição 24h</span></button>
+    </div>
+  </section>
+
+  <section class="section compact-section" id="adminActivitySection">
+    <details class="admin-expander">
+      <summary><span>OPERAÇÃO</span><span class="admin-summary-note">ATIVIDADE OPERACIONAL</span></summary>
+      <div class="admin-expander-body">
     <div class="section-head"><div class="section-title">ATIVIDADE OPERACIONAL</div></div>
     <div class="table-wrap">
       <table id="activityTable">
@@ -259,9 +289,11 @@ td{font-weight:850;font-size:13px}
       </table>
     </div>
     <div class="note">* “Sem resultado final” é calculado apenas para consultas com <b>query_id</b>.</div>
+      </div>
+    </details>
   </section>
 
-  <section class="section compact-section">
+  <section class="section compact-section" id="adminCompareSection">
     <details class="admin-expander">
       <summary><span>COMPARAÇÃO · ÚLTIMAS 24H</span><span style="color:#8fa3aa;font-size:9px;letter-spacing:1px">24h atuais vs 24h anteriores</span></summary>
       <div class="admin-expander-body">
@@ -277,7 +309,7 @@ td{font-weight:850;font-size:13px}
     </details>
   </section>
 
-  <section class="section compact-section">
+  <section class="section compact-section" id="adminHourlySection">
     <details class="admin-expander">
       <summary><span>HISTÓRICO HORÁRIO · 30 DIAS</span><span style="color:#8fa3aa;font-size:9px;letter-spacing:1px">Escolhe um dia → 24 horas ao detalhe</span></summary>
       <div class="admin-expander-body">
@@ -306,15 +338,19 @@ td{font-weight:850;font-size:13px}
 
 
 
-  <section class="section">
-    <div class="section-head"><div class="section-title">CINEMÓMETRO · 24H</div><div class="section-note">Padrões objetivos de utilização · identificação declarada</div></div>
-    <div id="cinAnalytics"></div>
+  <section class="section compact-section" id="adminCinemometerSection">
+    <details class="admin-expander">
+      <summary><span>CINEMÓMETRO</span><span class="admin-summary-note">ANÁLISE OPERACIONAL · 24H</span></summary>
+      <div class="admin-expander-body">
+        <div id="cinAnalytics"></div>
+      </div>
+    </details>
   </section>
 
-  <section class="section">
+  <section class="section compact-section" id="adminAsfSection">
     <details class="admin-expander">
-      <summary><span>DIAGNÓSTICO ASF · 24H</span><span style="color:#8fa3aa;font-size:9px;letter-spacing:1px">ERROS · CLIENTE · REDE · ASSINATURAS</span></summary>
-      <div class="admin-expander-body">
+      <summary><span>ASF / SEGURO</span><span class="admin-summary-note">DIAGNÓSTICO · 24H</span></summary>
+      <div class="admin-expander-body"><span style="color:#8fa3aa;font-size:9px;letter-spacing:1px">ERROS · CLIENTE · REDE · ASSINATURAS</span></summary>
     <div class="diag-grid">
       <div class="diag-panel">
         <h3>TIPOS DE ERRO</h3>
@@ -349,8 +385,10 @@ td{font-weight:850;font-size:13px}
     </details>
   </section>
 
-  <section class="section reset-panel">
-    <div class="section-head"><div class="section-title">REPOSIÇÃO 24H</div><div class="section-note">Sem apagar eventos</div></div>
+  <section class="section compact-section reset-panel" id="adminSystemSection">
+    <details class="admin-expander">
+      <summary><span>SISTEMA</span><span class="admin-summary-note">REPOSIÇÃO 24H · SEM APAGAR DADOS</span></summary>
+      <div class="admin-expander-body">
     <div class="reset-box">
       <div class="reset-title">RESET · ÚLTIMAS 24 HORAS</div>
       <div class="reset-desc">Reinicia todos os indicadores do período 24H a partir deste momento. Os eventos históricos permanecem guardados. Os períodos de 7, 30 dias e histórico não são alterados.</div>
@@ -359,9 +397,11 @@ td{font-weight:850;font-size:13px}
         <button id="reset24hBtn" type="button" class="reset-btn">RESET 24H</button>
       </div>
     </div>
+      </div>
+    </details>
   </section>
 
-  <section class="section compact-section">
+  <section class="section compact-section" id="adminMenusSection">
     <details class="admin-expander">
       <summary><span>MENUS CONSULTADOS</span><span style="color:#8fa3aa;font-size:9px;letter-spacing:1px">24h / 30 dias</span></summary>
       <div class="admin-expander-body">
@@ -374,7 +414,7 @@ td{font-weight:850;font-size:13px}
     </details>
   </section>
 
-  <section class="section compact-section">
+  <section class="section compact-section" id="adminLegislationSection">
     <details class="admin-expander">
       <summary><span>LEGISLAÇÃO</span><span style="color:#8fa3aa;font-size:9px;letter-spacing:1px">Itens e cópias mais consultados</span></summary>
       <div class="admin-expander-body">
@@ -406,6 +446,13 @@ let refreshIn = 30;
 let dashboardInFlight = false;
 let hourlyLoadSequence = 0;
 
+function openAdminSection(id){
+  const target=document.getElementById(id);
+  if(!target)return;
+  const details=target.querySelector('details');
+  if(details) details.open=true;
+  target.scrollIntoView({behavior:'smooth',block:'start'});
+}
 function $(id){return document.getElementById(id);}
 function localDateISO(d){
   const x = new Date(d.getTime() - d.getTimezoneOffset()*60000);
