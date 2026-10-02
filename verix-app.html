@@ -1222,8 +1222,8 @@ function submitConjunto(event) {
   const ASF_RATE_STORAGE_KEY = 'VERIX_ASF_RATE_STATE_V1';
 
   /* CAMINHO ASF DELIBERADAMENTE SIMPLES:
-     1 consulta = 1 pedido físico GET.
-     Sem POST→GET, sem fila de pedidos e sem retries automáticos.
+     1 consulta = 1 pedido físico POST, alinhado com a app base/Android.
+     Sem GET alternativo, sem fila de pedidos e sem retries automáticos.
      A telemetria observa o pedido; não cria pedidos adicionais. */
 
   var asfRequestTimes = [];
@@ -1377,8 +1377,8 @@ function submitConjunto(event) {
   }
   setInterval(atualizarContadorVisualASF, 500);
 
-  // ---- HTTP ASF: POST primeiro, GET como fallback de transporte/método ----
-  // Cada tentativa HTTP física reserva um slot VÉRIX (8 s / 5 por 60 s).
+  // ---- HTTP ASF: POST exatamente como o fluxo base/Android ----
+  // Cada tentativa HTTP física reserva um slot VÉRIX (8 s / 6 por 60 s).
   async function reservarSlotFisicoASF(matDisplay) {
     var atraso = calcularAtrasoCadenciaASF();
     while (atraso > 0) {
@@ -1397,7 +1397,7 @@ function submitConjunto(event) {
   }
 
   // ---- Diagnóstico ASF V2 ----
-  // Instrumentação exclusivamente observacional. Não altera POST/GET, timeouts,
+  // Instrumentação exclusivamente observacional. Não altera método POST, timeout,
   // rate-limit, parser ou regras de classificação. Regista cada tentativa física.
   function fingerprintASF(value) {
     var text = String(value || '');
@@ -1690,8 +1690,8 @@ function submitConjunto(event) {
     return { estado: 'nao', node: null, parsePath: extraido.path || null };
   }
 
-  // CONSULTA ASF = mesmo endpoint/mutation do IPO_2.2, com parser robusto e
-  // controlo VÉRIX de 8 s + 5 pedidos/60 s, persistido entre refreshes, sem cache de resultados.
+  // CONSULTA ASF = mesmo endpoint/mutation da app base/Android, com parser robusto e
+  // controlo VÉRIX de 8 s + 6 pedidos/60 s, persistido entre refreshes, sem cache de resultados.
   async function realizarConsultaASF_IPO(matLimpa, matDisplay, queryId, queryStartedAtMs, queuePosition) {
     var hoje = new Date();
     var yyyy = hoje.getFullYear();
@@ -17136,7 +17136,7 @@ html body .leg-card-new .copy-all-new{
   var APP_VERSION = '1.4';
   // Identificador técnico interno do build. A versão do produto mantém-se 1.4.
   // Permite distinguir builds diferentes sem expor uma nova versão ao utilizador.
-  var BUILD_ID='2026-10-02-r4';
+  var BUILD_ID='2026-10-02-r5';
   var INSTALL_KEY = 'VERIX_T2_INSTALL_ID';
   var SESSION_KEY = 'VERIX_T2_SESSION_ID';
   var TAB_KEY = 'VERIX_T2_TAB_ID';
