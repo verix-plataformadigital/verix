@@ -327,9 +327,11 @@ td{font-weight:850;font-size:13px}
 <div id="toast" class="toast hidden"></div>
 
 <script>
-const AUTH_API = 'https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/admin-auth-v2';
-const STATS_API = 'https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/stats-v2';
-const HOURLY_API = 'https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/hourly-history-v2';
+const API_ORIGIN = 'https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/';
+const API_CACHE_BUSTER = '14.1';
+const AUTH_API = API_ORIGIN + 'admin-auth-v2?v=' + API_CACHE_BUSTER;
+const STATS_API = API_ORIGIN + 'stats-v2?v=' + API_CACHE_BUSTER;
+const HOURLY_API = API_ORIGIN + 'hourly-history-v2?v=' + API_CACHE_BUSTER;
 const TOKEN_KEY = 'VERIX_ADMIN_V2_TOKEN';
 const REFRESH_MS = 30000;
 
@@ -359,16 +361,34 @@ function token(){return sessionStorage.getItem(TOKEN_KEY)||'';}
 async function request(url, options={}){
   const h = new Headers(options.headers||{});
   h.set('Authorization',`Bearer ${token()}`);
-  const r = await fetch(url,{...options,headers:h,cache:'no-store'});
-  const text = await r.text();
-  let data;
-  try{data=JSON.parse(text)}catch(_){data={ok:false,error:text||`HTTP ${r.status}`}}
-  if(r.status===401){
-    logout();
-    throw new Error('Sessão expirada.');
+  h.set('Accept','application/json');
+  const controller = new AbortController();
+  const timeout = setTimeout(()=>controller.abort(),15000);
+  try{
+    const r = await fetch(url,{
+      ...options,
+      mode:'cors',
+      credentials:'omit',
+      headers:h,
+      cache:'no-store',
+      signal:controller.signal
+    });
+    const text = await r.text();
+    let data;
+    try{data=JSON.parse(text)}catch(_){data={ok:false,error:text||`HTTP ${r.status}`}}
+    if(r.status===401){
+      logout();
+      throw new Error('Sessão expirada.');
+    }
+    if(!r.ok || data?.ok===false) throw new Error(data?.detail||data?.error||`HTTP ${r.status}`);
+    return data;
+  }catch(e){
+    if(e?.name==='AbortError') throw new Error('Tempo excedido ao contactar o backend (15 s).');
+    if(e instanceof TypeError) throw new Error('Falha de rede/CORS ao contactar o backend.');
+    throw e;
+  }finally{
+    clearTimeout(timeout);
   }
-  if(!r.ok || data?.ok===false) throw new Error(data?.detail||data?.error||`HTTP ${r.status}`);
-  return data;
 }
 
 async function doLogin(password){
@@ -595,7 +615,7 @@ async function loadDashboard(){
     $('backendTime').textContent=`BACKEND ONLINE · ${Math.round(performance.now()-t0)} ms`;
   }catch(e){
     $('statusLine').textContent='Falha na atualização: '+e.message;
-    $('backendTime').textContent='BACKEND ONLINE · erro';
+    $('backendTime').textContent='BACKEND OFFLINE/ERRO · '+Math.round(performance.now()-t0)+' ms';
   }
   refreshIn=30;
 }
