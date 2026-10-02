@@ -537,6 +537,22 @@ let imtQuerySequence = 0;
   const sourceName = source || (frameId === 'reboqueFrame' ? 'livrete' : 'inspecao');
   const requestSequence = Number(sequence || imtQuerySequence || 0);
 
+  const registarIMTConfirmado = function () {
+    if (!queryId || requestSequence !== imtQuerySequence) return;
+    window.__VERIX_IMT_TELEMETRY_DONE = window.__VERIX_IMT_TELEMETRY_DONE || {};
+    if (window.__VERIX_IMT_TELEMETRY_DONE[queryId]) return;
+    window.__VERIX_IMT_TELEMETRY_DONE[queryId] = true;
+    try {
+      if (window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.track === 'function') {
+        window.VERIX_TELEMETRY.track('imt_loaded', 'consulta', {
+          queryId: queryId,
+          resultConfirmed: true,
+          source: sourceName
+        });
+      }
+    } catch (_) {}
+  };
+
   mostrarLoading(frameId, overlayId);
   clearTimeout(imtTimers[frameId]);
 
@@ -552,6 +568,7 @@ let imtQuerySequence = 0;
 
     if (requestSequence !== imtQuerySequence) return;
     occultarLoading(frameId, overlayId);
+    registarIMTConfirmado();
   };
 
   const verificarCarga = () => {
@@ -1048,14 +1065,6 @@ function submitConjunto(event) {
  'livrete',
  imtSequence
  );
-
- // Uma matrícula pesquisada = 1 resultado IMT no Admin,
- // independentemente de serem carregados os dois endpoints (inspeção + livrete).
- try {
-   if (window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.track === 'function') {
-     window.VERIX_TELEMETRY.track('imt_loaded', 'consulta', { queryId: window.__VERIX_CURRENT_QUERY_ID });
-   }
- } catch (_) {}
 
  ultimaMatriculaPesquisada = placaInspecao;
  ultimaMatriculaInspecao = placaInspecao;
