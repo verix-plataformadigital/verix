@@ -7,216 +7,229 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <script>
-(function(){try{const k='_verix_admin_v2_boot';const u=new URL(location.href);if(!u.searchParams.has(k)){u.searchParams.set(k,Date.now());location.replace(u.toString());return;}u.searchParams.delete(k);history.replaceState(null,document.title,u.pathname+(u.search?'?'+u.searchParams.toString():'')+u.hash);}catch(e){}})();
+(function(){
+  try{
+    const k='_verix_admin_v2_boot';
+    const u=new URL(location.href);
+    if(!u.searchParams.has(k)){
+      u.searchParams.set(k,Date.now());
+      location.replace(u.toString());
+      return;
+    }
+    u.searchParams.delete(k);
+    history.replaceState(null,document.title,u.pathname+(u.search?'?'+u.searchParams.toString():'')+u.hash);
+  }catch(_){}
+})();
 </script>
 <title>VÉRIX // ADMIN · APP 1.4</title>
 <style>
 :root{
-  --bg:#02080b;--panel:#06151b;--panel2:#071b22;--line:rgba(101,215,232,.22);
-  --cyan:#65d7e8;--green:#22f2a0;--red:#ff5870;--yellow:#ffd34e;--text:#e9f2f4;--muted:#86a3ad;
+  --bg:#05090c;
+  --panel:#0a1419;
+  --panel2:#0d1b21;
+  --panel3:#11242c;
+  --line:rgba(130,202,215,.15);
+  --line2:rgba(130,202,215,.08);
+  --cyan:#66d9e8;
+  --green:#2fe8a5;
+  --red:#ff6478;
+  --yellow:#ffd65a;
+  --text:#edf5f6;
+  --muted:#8da5ad;
+  --soft:#b9cbd0;
+  --shadow:0 18px 55px rgba(0,0,0,.28);
 }
 *{box-sizing:border-box}
-html,body{margin:0;background:radial-gradient(circle at 50% 20%,#09222b 0,#031016 38%,#02070a 80%);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+html,body{margin:0;min-height:100%;background:linear-gradient(180deg,#071116 0,#04080b 60%,#030609 100%);color:var(--text);font-family:Arial,Helvetica,sans-serif}
 body{min-height:100vh}
 button,input{font:inherit}
 button{cursor:pointer}
 .hidden{display:none!important}
-
-/* LOGIN */
-#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
-.login-card{
-  width:min(520px,94vw);padding:28px;border:1px solid var(--line);border-radius:18px;
-  background:linear-gradient(145deg,rgba(7,25,31,.96),rgba(3,12,16,.97));
-  box-shadow:0 25px 80px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.05)
-}
-.brand{font-weight:950;letter-spacing:3px;color:#f3fbfc;text-align:center;font-size:22px}
-.brand b{color:var(--cyan)}
-.login-sub{text-align:center;color:var(--muted);margin:10px 0 22px;font-size:13px}
-.login-card input{
-  width:100%;padding:14px 16px;border-radius:11px;border:1px solid rgba(101,215,232,.25);
-  background:#eaf3ff;color:#0e1920;outline:none;font-weight:800
-}
-.login-card button{
-  width:100%;margin-top:12px;padding:13px;border-radius:11px;border:1px solid rgba(101,215,232,.35);
-  background:linear-gradient(180deg,#1aa7b8,#087b8f);color:#fff;font-weight:950;letter-spacing:1.5px
-}
-.error{margin-top:13px;color:#ff6b7c;font-weight:800;text-align:center;font-size:12px}
-
-/* APP */
-#app{max-width:1830px;margin:0 auto;padding:14px 18px 50px}
-.topbar{
-  position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
-  gap:14px;padding:10px 4px 12px;border-bottom:1px solid var(--line);background:rgba(2,8,11,.93);backdrop-filter:blur(12px)
-}
-.top-left{display:flex;align-items:center;gap:10px}
-.status-dot{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 12px rgba(34,242,160,.65)}
-.status-dot.loading{background:var(--yellow);box-shadow:0 0 12px rgba(255,211,78,.55)}
-.status-dot.offline{background:var(--red);box-shadow:0 0 12px rgba(255,88,112,.55)}
-.status-dot.partial{background:var(--yellow);box-shadow:0 0 12px rgba(255,211,78,.55)}
-.admin-brand{font-weight:950;letter-spacing:2px}
-.admin-brand b{color:var(--cyan)}
-.top-actions{display:flex;gap:9px}
-.top-actions button{
-  border:1px solid rgba(101,215,232,.25);background:#0a2028;color:#eaf8fa;border-radius:8px;padding:9px 13px;font-weight:900
-}
-
-.hero{
-  margin-top:16px;padding:20px 24px 18px;border:1px solid var(--line);border-radius:18px;
-  background:linear-gradient(145deg,rgba(6,24,30,.92),rgba(3,12,16,.92));
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.04)
-}
-.kicker{color:var(--cyan);font-size:10px;font-weight:900;letter-spacing:2.5px}
-.hero h1{margin:8px 0 5px;font-size:30px;letter-spacing:.5px}
-.hero p{margin:0;color:var(--muted);font-size:13px}
-.status-line{
-  margin-top:14px;padding:11px 12px;border-left:2px solid var(--cyan);background:rgba(0,60,72,.16);
-  color:#bbced2;font-family:Consolas,monospace;font-size:12px
-}
-.status-meta{display:flex;gap:15px;margin-top:8px;color:#74efc3;font:800 10px/1 Consolas,monospace;text-transform:uppercase}
-
-.section{margin-top:24px}
-.section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding-bottom:9px}
-.section-title{font-size:18px;font-weight:950;letter-spacing:1.5px}
-.section-note{color:#5ef0ca;font:800 11px/1 Consolas,monospace}
-
-.cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-top:14px}
-.card{
-  min-height:118px;border:1px solid var(--line);border-radius:16px;padding:15px 17px;
-  background:linear-gradient(145deg,rgba(6,25,31,.9),rgba(3,14,19,.94))
-}
-.card-label{color:#88aab3;font:800 10px/1 Consolas,monospace;letter-spacing:1px;text-transform:uppercase}
-.card-value{margin-top:18px;font:950 29px/1 Consolas,monospace;color:#edf8fa}
-.card.green .card-value{color:var(--green)} .card.cyan .card-value{color:var(--cyan)}
-.card.yellow .card-value{color:var(--yellow)} .card.red .card-value{color:var(--red)}
-.card small{display:block;margin-top:7px;color:var(--muted);font-size:10px;line-height:1.35}
-
-/* tables */
-.table-wrap{margin-top:14px;border:1px solid var(--line);border-radius:16px;overflow:auto;background:rgba(4,17,22,.72)}
-table{width:100%;border-collapse:collapse;min-width:780px}
-th,td{padding:12px 14px;border-bottom:1px solid rgba(101,215,232,.10);text-align:right}
-th:first-child,td:first-child{text-align:left}
-th{color:var(--cyan);font:900 10px/1.1 Consolas,monospace;letter-spacing:1px}
-td{font-weight:850;font-size:13px}
-.row-label{font-weight:900}
-.cyan{color:var(--cyan)} .green{color:var(--green)} .red{color:var(--red)} .yellow{color:var(--yellow)}
 .muted{color:var(--muted)}
+.green{color:var(--green)}
+.red{color:var(--red)}
+.yellow{color:var(--yellow)}
+.cyan{color:var(--cyan)}
 
-.compare td:nth-child(4),.compare td:nth-child(5){font-weight:950}
-.compare .pos{color:var(--green)} .compare .neg{color:var(--red)}
+#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.login-card{width:min(460px,94vw);padding:28px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(145deg,rgba(12,28,34,.98),rgba(4,11,15,.98));box-shadow:var(--shadow)}
+.brand{text-align:center;font-weight:950;letter-spacing:3px;font-size:22px}
+.brand b{color:var(--cyan)}
+.login-sub{text-align:center;margin:10px 0 22px;color:var(--muted);font-size:13px}
+.login-card input{width:100%;padding:14px 15px;border-radius:11px;border:1px solid rgba(130,202,215,.22);background:#eef6f8;color:#091216;outline:none;font-weight:800}
+.login-card button{width:100%;margin-top:12px;padding:13px;border-radius:11px;border:1px solid rgba(102,217,232,.35);background:#0d7f91;color:#fff;font-weight:950;letter-spacing:1.4px}
+.login-error{min-height:17px;margin-top:12px;color:var(--red);text-align:center;font-size:11px;font-weight:800}
 
-.note{
-  margin-top:10px;padding:10px 12px;border-left:2px solid rgba(255,211,78,.6);
-  background:rgba(80,70,10,.12);color:#9fb2b7;font-size:11px
-}
+#app{max-width:1900px;margin:0 auto;padding:10px 16px 44px}
+.topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 4px 12px;border-bottom:1px solid var(--line);background:rgba(4,9,12,.94);backdrop-filter:blur(16px)}
+.top-left{display:flex;align-items:center;gap:10px;min-width:0}
+.status-dot{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 14px rgba(47,232,165,.65);flex:0 0 auto}
+.status-dot.loading{background:var(--yellow);box-shadow:0 0 14px rgba(255,214,90,.55)}
+.status-dot.offline{background:var(--red);box-shadow:0 0 14px rgba(255,100,120,.55)}
+.status-dot.partial{background:var(--yellow)}
+.admin-brand{font-weight:950;letter-spacing:2px;white-space:nowrap}
+.admin-brand b{color:var(--cyan)}
+.backend-badge{font:800 10px Consolas,monospace;color:var(--green);letter-spacing:1px;white-space:nowrap}
+.top-actions{display:flex;gap:8px}
+.top-actions button{border:1px solid var(--line);background:#0b2028;color:#e8f6f8;border-radius:9px;padding:9px 12px;font-weight:900;font-size:11px}
+.top-actions button:hover{border-color:rgba(102,217,232,.34);background:#0e2730}
 
-/* day strip + hourly */
-.days{display:flex;gap:8px;overflow-x:auto;padding:11px 0 5px}
-.day{
-  flex:0 0 auto;min-width:92px;padding:8px 11px;border:1px solid rgba(101,215,232,.18);
-  border-radius:10px;background:#06161d;color:#97abb1;text-align:center
-}
-.day span{display:block;font:700 9px/1 Consolas,monospace;text-transform:lowercase}
-.day strong{display:block;margin-top:6px;font:950 14px/1 Consolas,monospace;color:#f3fbfc}
-.day.active{border-color:var(--cyan);box-shadow:inset 0 0 0 1px rgba(101,215,232,.12);background:#0a2028}
-.day.active strong{color:var(--cyan)}
+.hero{margin-top:16px;padding:20px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,rgba(9,24,30,.92),rgba(5,12,16,.95));box-shadow:var(--shadow)}
+.hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+.kicker{font:900 10px/1 Consolas,monospace;letter-spacing:2.4px;color:var(--cyan)}
+.hero h1{margin:7px 0 5px;font-size:28px;letter-spacing:.3px}
+.hero p{margin:0;color:var(--muted);font-size:12px}
+.hero-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.period-switch{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.period-switch button{border:1px solid var(--line);background:#07171e;color:var(--muted);border-radius:8px;padding:7px 10px;font:900 9px/1 Consolas,monospace;letter-spacing:1px}
+.period-switch button.active{background:#12313a;border-color:rgba(102,217,232,.4);color:var(--cyan)}
+.status-line{margin-top:15px;padding:10px 12px;border-left:2px solid var(--cyan);background:rgba(40,120,135,.08);color:#bdd0d5;font:700 11px/1.4 Consolas,monospace}
+.status-meta{display:flex;gap:15px;margin-top:8px;color:#76929b;font:800 9px/1 Consolas,monospace}
 
-.hour-top{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:13px}
-.mini{
-  border:1px solid var(--line);border-radius:15px;padding:14px 16px;background:rgba(5,20,26,.82)
-}
-.mini-label{color:#86a3ad;font:800 9px/1 Consolas,monospace;letter-spacing:1px;text-transform:uppercase}
-.mini-value{margin-top:13px;font:950 26px/1 Consolas,monospace;color:#eaf8fa}
+.layout{display:grid;grid-template-columns:235px minmax(0,1fr);gap:14px;margin-top:14px;align-items:start}
+.sidebar{position:sticky;top:76px;border:1px solid var(--line);border-radius:16px;background:rgba(8,18,23,.9);overflow:hidden}
+.side-title{padding:13px 14px 10px;color:#6f8992;font:900 9px/1 Consolas,monospace;letter-spacing:2px}
+.theme-nav{display:flex;flex-direction:column;padding:7px}
+.theme-nav button{display:flex;align-items:center;gap:10px;border:1px solid transparent;background:transparent;color:#b7c9cd;border-radius:10px;padding:11px 10px;text-align:left;font-size:11px;font-weight:900;letter-spacing:.8px}
+.theme-nav button .nav-dot{width:7px;height:7px;border-radius:50%;background:#48616a;flex:0 0 auto}
+.theme-nav button small{margin-left:auto;color:#607880;font:800 8px Consolas,monospace}
+.theme-nav button:hover{background:rgba(102,217,232,.05)}
+.theme-nav button.active{background:#0e252d;border-color:rgba(102,217,232,.2);color:#eef8fa}
+.theme-nav button.active .nav-dot{background:var(--cyan);box-shadow:0 0 10px rgba(102,217,232,.55)}
+.theme-page{display:none}
+.theme-page.active{display:block}
+.theme-head{display:flex;justify-content:space-between;align-items:end;gap:12px;margin-bottom:10px}
+.theme-kicker{font:900 9px/1 Consolas,monospace;color:var(--cyan);letter-spacing:2px}
+.theme-head h2{margin:5px 0 0;font-size:22px}
+.theme-head p{margin:4px 0 0;color:var(--muted);font-size:11px}
+.theme-note{color:#7f989f;font:800 9px Consolas,monospace;white-space:nowrap}
+.subnav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;padding:6px;border:1px solid var(--line);border-radius:12px;background:rgba(5,13,17,.75)}
+.subnav button{border:1px solid transparent;border-radius:8px;background:transparent;color:#7e969e;padding:8px 10px;font:900 9px Consolas,monospace;letter-spacing:1px}
+.subnav button:hover{background:rgba(102,217,232,.04)}
+.subnav button.active{background:#102830;border-color:rgba(102,217,232,.2);color:var(--cyan)}
+.subpage{display:none}
+.subpage.active{display:block}
 
-/* split sections */
-.split{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
-.panel{
-  border:1px solid var(--line);border-radius:16px;padding:16px;background:rgba(5,20,26,.80)
-}
-.panel h3{margin:0 0 12px;font-size:18px}
-.list{display:flex;flex-direction:column;gap:10px}
-.bar-row{display:grid;grid-template-columns:210px 1fr 60px;gap:10px;align-items:center}
-.bar-label{font-size:12px;font-weight:800;color:#c6d4d8}
-.bar{height:10px;border-radius:99px;background:#10242b;overflow:hidden}
-.bar > i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#0a8f9d,#56d8e9)}
-.bar-num{text-align:right;font:900 12px/1 Consolas,monospace;color:#f3fbfc}
+.grid6{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px}
+.grid5{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.card{border:1px solid var(--line);border-radius:13px;padding:13px 14px;background:linear-gradient(145deg,rgba(10,26,33,.9),rgba(5,14,18,.95));min-height:92px}
+.card-label{color:#7f99a1;font:800 8px/1.2 Consolas,monospace;letter-spacing:1.3px}
+.card-value{margin-top:13px;color:#edf7f8;font:950 25px/1 Consolas,monospace}
+.card-value.small{font-size:17px}
+.card-note{margin-top:6px;color:#8299a1;font-size:9px;line-height:1.3}
+.card.green .card-value{color:var(--green)}
+.card.red .card-value{color:var(--red)}
+.card.yellow .card-value{color:var(--yellow)}
+.card.cyan .card-value{color:var(--cyan)}
 
-.leg-table table{min-width:0}
-.leg-table th,.leg-table td{padding:10px 9px}
-.leg-table td:nth-child(1){width:65%}
-.empty{padding:12px;border-left:2px solid rgba(255,211,78,.55);background:rgba(80,70,10,.12);color:#aab8bc}
+.panel{border:1px solid var(--line);border-radius:14px;background:rgba(7,17,22,.86);overflow:hidden}
+.panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line2)}
+.panel-head h3{margin:0;font-size:13px}
+.panel-head span{color:#708890;font:800 8px Consolas,monospace}
+.panel-body{padding:13px}
+.note{margin-top:10px;padding:10px 12px;border-left:2px solid rgba(255,214,90,.6);background:rgba(80,70,10,.11);color:#8fa5ab;font-size:10px;line-height:1.45}
+.info-note{margin-top:10px;padding:10px 12px;border-left:2px solid rgba(102,217,232,.45);background:rgba(20,90,105,.08);color:#8fa5ab;font-size:10px;line-height:1.45}
+.empty{padding:14px;border:1px dashed rgba(130,202,215,.13);border-radius:10px;color:#789099;font-size:10px;line-height:1.45;text-align:center;background:rgba(255,255,255,.015)}
+.big-number{font:950 31px/1 Consolas,monospace}
+.metric-line{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line2);font-size:10px}
+.metric-line:last-child{border-bottom:0}
+.metric-line strong{font:950 11px Consolas,monospace;color:#ecf6f7}
 
-/* mobile */
-@media(max-width:1100px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.split{grid-template-columns:1fr}.hour-top{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:700px){
-  #app{padding:8px 10px 35px}.hero{padding:16px}.hero h1{font-size:24px}.topbar{padding-top:6px}
-  .cards{grid-template-columns:1fr 1fr;gap:8px}.card{min-height:100px;padding:12px}.card-value{font-size:22px;margin-top:15px}
-  .hour-top{grid-template-columns:1fr 1fr;gap:8px}.bar-row{grid-template-columns:130px 1fr 45px}.section-title{font-size:15px}
-}
-@media(max-width:460px){
-  .cards{grid-template-columns:1fr}.hour-top{grid-template-columns:1fr 1fr}.top-actions button{padding:8px 10px;font-size:11px}
-  .bar-row{grid-template-columns:110px 1fr 42px}.bar-label{font-size:10px}
-}
+.bar-list{display:flex;flex-direction:column;gap:10px}
+.bar-row{display:grid;grid-template-columns:minmax(120px,210px) 1fr 60px;gap:9px;align-items:center}
+.bar-label{font-size:10px;color:#c0d0d4;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{height:9px;border-radius:99px;background:#102028;overflow:hidden}
+.bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#118b9a,#5fd9e7)}
+.bar-fill.red{background:linear-gradient(90deg,#9f2a40,#ff6478)}
+.bar-fill.green{background:linear-gradient(90deg,#0c9771,#2fe8a5)}
+.bar-num{text-align:right;font:900 10px Consolas,monospace;color:#eef8f9}
 
+.table-wrap{overflow:auto;border-top:1px solid var(--line2)}
+table{width:100%;border-collapse:collapse;min-width:640px}
+th,td{padding:9px 10px;border-bottom:1px solid var(--line2);font-size:10px;text-align:right;vertical-align:top}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--cyan);font:900 8px/1.2 Consolas,monospace;letter-spacing:.8px;text-transform:uppercase}
+td{color:#c6d5d9;font-weight:800}
+td.label{color:#edf6f8;font-weight:900}
+.table-tight table{min-width:0}
+.table-tight th,.table-tight td{padding:8px 7px;font-size:9px}
+.pill{display:inline-block;padding:4px 7px;border-radius:99px;border:1px solid rgba(102,217,232,.18);background:rgba(102,217,232,.05);color:var(--cyan);font:900 8px Consolas,monospace}
+.pill.red{border-color:rgba(255,100,120,.2);background:rgba(255,100,120,.06);color:var(--red)}
 
-/* DIAGNÓSTICO ASF */
-.diag-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
-.diag-panel{border:1px solid var(--line);border-radius:16px;padding:16px;background:rgba(5,20,26,.80);overflow:auto}
-.diag-panel h3{margin:0 0 12px;font-size:18px}
-.diag-quality-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.diag-quality-card{padding:11px 10px;border:1px solid rgba(126,148,157,.22);border-radius:8px;background:linear-gradient(180deg,rgba(15,28,36,.85),rgba(7,15,20,.92));display:flex;flex-direction:column;gap:3px}.diag-quality-card span{font-size:8px;color:#7f949b;letter-spacing:1px;font-weight:800}.diag-quality-card strong{font-size:16px;line-height:1.1;color:#e9f0f2}.diag-quality-card small{font-size:8px;color:#80949b}.diag-quality-card .bad{color:#ff7386}.diag-quality-card .ok{color:#55d89e}@media(max-width:900px){.diag-quality-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}.diag-table{width:100%;border-collapse:collapse;min-width:0}
-.diag-table th,.diag-table td{padding:8px 7px;border-bottom:1px solid rgba(101,215,232,.10);font-size:10px;text-align:left;vertical-align:top}
-.diag-table th{color:var(--cyan);font:900 9px/1.1 Consolas,monospace;letter-spacing:.7px;text-transform:uppercase}
-.diag-table td{font-weight:800;color:#c9d6da}
-.diag-table .bad{color:var(--red)}
-.diag-table .ok{color:var(--green)}
-.diag-muted{color:var(--muted)!important;font-weight:700!important}
-.diag-scroll{overflow:auto;max-height:420px}
-.diag-pill{display:inline-block;padding:3px 6px;border:1px solid rgba(255,88,112,.25);border-radius:999px;color:var(--red);font:900 9px/1 Consolas,monospace}
-@media(max-width:900px){.diag-grid{grid-template-columns:1fr}}
+.funnel{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.funnel-step{padding:11px;border-radius:10px;border:1px solid var(--line);background:#08171d}
+.funnel-step span{display:block;color:#789099;font:800 8px Consolas,monospace;letter-spacing:1px}
+.funnel-step strong{display:block;margin-top:8px;font:950 22px Consolas,monospace}
+.funnel-arrow{display:flex;align-items:center;justify-content:center;color:#5f7a83;font-size:16px}
+.progress{height:9px;border-radius:99px;background:#102028;overflow:hidden}
+.progress > i{display:block;height:100%;border-radius:99px}
 
-/* RESET ESPECÍFICO */
-.reset-panel{margin-top:24px}
-.reset-box{border:1px solid rgba(255,88,112,.25);border-radius:16px;padding:16px;background:linear-gradient(145deg,rgba(35,8,14,.38),rgba(8,13,17,.7))}
-.reset-title{font-weight:950;letter-spacing:1.2px;color:#ffdce1}
-.reset-desc{margin-top:7px;color:#8ea8b0;font-size:11px;line-height:1.5}
-.reset-actions{display:grid;grid-template-columns:minmax(220px,1fr) auto;gap:12px;align-items:center;margin-top:13px}
-.reset-btn{border:1px solid rgba(255,88,112,.48);border-radius:10px;padding:12px 15px;background:linear-gradient(180deg,#721426,#430b16);color:#ffe9ed;font-weight:950;letter-spacing:.8px;text-transform:uppercase}
-.reset-btn:hover{filter:brightness(1.12)}
-.reset-status{min-height:18px;color:#8ea8b0;font:800 10px Consolas,monospace}
+.chart{display:flex;align-items:flex-end;gap:4px;height:150px;padding:10px 8px 8px;border-top:1px solid var(--line2)}
+.chart-col{flex:1;min-width:3px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;gap:4px}
+.chart-bar{width:100%;max-width:20px;border-radius:5px 5px 2px 2px;background:linear-gradient(180deg,#60d8e6,#0a5360);min-height:2px}
+.chart-label{font:800 7px Consolas,monospace;color:#69828a;writing-mode:vertical-rl;transform:rotate(180deg);height:28px}
+.hour-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:5px}
+.hour-cell{padding:7px 5px;border-radius:8px;background:#09181e;border:1px solid var(--line2);text-align:center}
+.hour-cell strong{display:block;font:900 10px Consolas,monospace;color:#eaf5f7}
+.hour-cell span{display:block;margin-top:3px;color:#6f888f;font:800 7px Consolas,monospace}
+
+.device-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.status-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.system-box{border:1px solid var(--line);border-radius:14px;padding:14px;background:#09171d}
+.system-label{color:#718990;font:800 8px Consolas,monospace;letter-spacing:1px}
+.system-value{margin-top:9px;font:900 15px Consolas,monospace;color:#edf7f8;overflow-wrap:anywhere}
+.reset-box{border:1px solid rgba(255,100,120,.22);border-radius:13px;padding:14px;background:linear-gradient(145deg,rgba(52,9,18,.24),rgba(7,15,19,.84))}
+.reset-title{font-size:13px;font-weight:950;color:#ffe1e6}
+.reset-desc{margin-top:6px;color:#8ba2a9;font-size:10px;line-height:1.45}
+.reset-actions{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;margin-top:12px}
+.reset-status{min-height:18px;color:#8fa6ad;font:800 9px Consolas,monospace}
 .reset-status.ok{color:var(--green)}
 .reset-status.err{color:var(--red)}
-@media(max-width:700px){.reset-actions{grid-template-columns:1fr}.reset-btn{width:100%}}
+.reset-btn{border:1px solid rgba(255,100,120,.4);background:#4a101b;color:#ffe7eb;border-radius:9px;padding:10px 13px;font:950 9px Consolas,monospace;letter-spacing:1px}
 
-/* toast */
-.toast{position:fixed;right:18px;bottom:18px;z-index:50;padding:11px 13px;border:1px solid var(--line);border-radius:9px;background:#081b22;color:#eaf8fa;box-shadow:0 12px 35px rgba(0,0,0,.45);font-size:12px}
-</style>
-<style id="admin-compact-v185">
-.admin-expander{border:1px solid rgba(255,255,255,.08);border-radius:14px;background:rgba(0,0,0,.10);overflow:hidden}
-.admin-expander>summary{list-style:none;cursor:pointer;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:900;letter-spacing:1.5px;font-size:12px;color:#f2f7f8}
-.admin-expander>summary::-webkit-details-marker{display:none}
-.admin-expander>summary:after{content:'＋';opacity:.55;font-size:16px}
-.admin-expander[open]>summary:after{content:'−'}
-.admin-expander .admin-expander-body{padding:0 14px 14px}
-.cin-admin-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
-.cin-admin-card{padding:12px 13px;border:1px solid rgba(255,255,255,.08);border-radius:10px;background:rgba(255,255,255,.025);min-width:0}
-.cin-admin-card span{display:block;font-size:9px;letter-spacing:1.1px;color:#8fa3aa;font-weight:800}
-.cin-admin-card strong{display:block;margin-top:4px;font-size:21px;line-height:1.05;color:#f5f8f9}
-.cin-admin-card small{display:block;margin-top:6px;color:#89a0a8;font-size:9px;line-height:1.35}
-.cin-admin-note{margin-top:10px;padding:9px 11px;border-left:2px solid rgba(101,215,232,.45);color:#8fa3aa;font-size:10px;line-height:1.45}
-@media(max-width:1200px){.cin-admin-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
-@media(max-width:720px){.cin-admin-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
-</style>
-<style id="admin-nav-v14">
-.admin-nav-section{margin-top:8px}
-.admin-nav-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
-.admin-nav-grid button{appearance:none;border:1px solid rgba(255,255,255,.08);border-radius:10px;background:rgba(255,255,255,.025);padding:11px 12px;text-align:left;color:var(--text);transition:.15s ease}
-.admin-nav-grid button:hover{border-color:rgba(101,215,232,.3);background:rgba(101,215,232,.05);transform:translateY(-1px)}
-.admin-nav-grid strong{display:block;font-size:10px;letter-spacing:1.1px}
-.admin-nav-grid span{display:block;margin-top:4px;color:var(--muted);font-size:9px;line-height:1.25}
-.admin-summary-note{margin-left:auto;color:#8fa3aa;font-size:9px;letter-spacing:1px;font-weight:700}
-.compact-section{margin-top:10px}
-.compact-section .admin-expander{margin-top:0}
-@media(max-width:900px){.admin-nav-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
-@media(max-width:520px){.admin-nav-grid{grid-template-columns:1fr;}}
+.footer-note{margin-top:12px;color:#5f777f;font:800 8px/1.5 Consolas,monospace}
+
+@media(max-width:1280px){
+  .grid6{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .grid5{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .device-grid{grid-template-columns:1fr}
+}
+@media(max-width:1050px){
+  .layout{grid-template-columns:1fr}
+  .sidebar{position:sticky;top:58px;z-index:30}
+  .theme-nav{display:flex;flex-direction:row;overflow:auto}
+  .theme-nav button{flex:0 0 auto}
+  .theme-nav button small{display:none}
+  .grid4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grid3{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:700px){
+  #app{padding:7px 9px 30px}
+  .topbar{padding:8px 2px}
+  .admin-brand{font-size:11px}
+  .backend-badge{display:none}
+  .top-actions button{padding:8px 9px;font-size:10px}
+  .hero{padding:15px}
+  .hero-top{flex-direction:column}
+  .hero-right{width:100%;align-items:flex-start}
+  .period-switch{justify-content:flex-start}
+  .hero h1{font-size:23px}
+  .grid6,.grid5,.grid4,.grid3,.grid2,.status-grid{grid-template-columns:1fr 1fr}
+  .funnel{grid-template-columns:1fr 1fr}
+  .hour-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
+  .bar-row{grid-template-columns:115px 1fr 45px}
+  .theme-head{align-items:flex-start;flex-direction:column}
+  .theme-note{white-space:normal}
+  .reset-actions{grid-template-columns:1fr}
+}
+@media(max-width:440px){
+  .grid6,.grid5,.grid4,.grid3,.grid2,.status-grid{grid-template-columns:1fr}
+  .funnel{grid-template-columns:1fr}
+  .hour-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
 </style>
 </head>
 <body>
@@ -227,751 +240,808 @@ td{font-weight:850;font-size:13px}
     <div class="login-sub">Painel de administração</div>
     <input id="password" type="password" autocomplete="current-password" placeholder="Password">
     <button type="submit">ENTRAR</button>
-    <div id="loginError" class="error"></div>
+    <div id="loginError" class="login-error"></div>
   </form>
 </div>
 
 <div id="app" class="hidden">
   <div class="topbar">
     <div class="top-left">
-      <span class="status-dot"></span>
+      <span class="status-dot" id="statusDot"></span>
       <div class="admin-brand">VÉRIX <b>//</b> ADMIN 1.4</div>
-      <div class="section-note" id="backendBadge">BACKEND ONLINE</div>
+      <div class="backend-badge" id="backendBadge">BACKEND ONLINE</div>
     </div>
     <div class="top-actions">
-      <button id="refreshBtn">ATUALIZAR</button>
-      <button id="logoutBtn">SAIR</button>
+      <button id="refreshBtn" type="button">ATUALIZAR</button>
+      <button id="logoutBtn" type="button">SAIR</button>
     </div>
   </div>
 
   <section class="hero">
-    <div class="kicker">OPS · TELEMETRIA AGREGADA</div>
-    <h1>PAINEL DE ADMINISTRAÇÃO</h1>
-    <p>Utilização operacional · matrícula apenas no diagnóstico ASF de resultados finais</p>
+    <div class="hero-top">
+      <div>
+        <div class="kicker">OPS · TELEMETRIA · ANÁLISE</div>
+        <h1>CENTRO DE ADMINISTRAÇÃO</h1>
+        <p>Temas separados, subtemas compactos e leitura por contexto. Os dados históricos permanecem intactos.</p>
+      </div>
+      <div class="hero-right">
+        <div class="period-switch" id="periodSwitch">
+          <button data-period="24h" class="active">24 H</button>
+          <button data-period="7d">7 DIAS</button>
+          <button data-period="30d">30 DIAS</button>
+        </div>
+      </div>
+    </div>
     <div class="status-line" id="statusLine">A iniciar...</div>
-    <div class="status-meta"><span id="backendTime">BACKEND</span><span id="nextRefresh">ATUALIZAÇÃO AUTOMÁTICA · 30 S</span></div>
-  </section>
-
-  <section class="section">
-    <div class="section-head"><div class="section-title">VISÃO GERAL</div><div class="section-note">Atualização automática · 30 s</div></div>
-    <div class="cards">
-      <div class="card yellow" id="cardConference"><div class="card-label">CONFERÊNCIA 24H</div><div class="card-value" id="conferenceValue">—</div><small id="conferenceNote">Consultas iniciadas vs resultado final.</small></div>
-      <div class="card green"><div class="card-label">ONLINE AGORA</div><div class="card-value" id="onlineValue">—</div></div>
-      <div class="card cyan"><div class="card-label">ATIVOS · 10 MIN</div><div class="card-value" id="activeValue">—</div></div>
-      <div class="card"><div class="card-label">ÚNICOS · 24H</div><div class="card-value" id="unique24Value">—</div></div>
-      <div class="card"><div class="card-label">ÚNICOS · 30D</div><div class="card-value" id="unique30Value">—</div></div>
+    <div class="status-meta">
+      <span id="backendTime">BACKEND</span>
+      <span id="refreshMeta">ATUALIZAÇÃO AUTOMÁTICA · 30 S</span>
     </div>
   </section>
 
-  <section class="section admin-nav-section">
-    <div class="section-head"><div class="section-title">ÁREAS DO PAINEL</div><div class="section-note">Acesso direto aos módulos · o painel principal permanece aberto</div></div>
-    <div class="admin-nav-grid">
-      <button type="button" onclick="openAdminSection('adminActivitySection')"><strong>OPERAÇÃO</strong><span>Atividade geral</span></button>
-      <button type="button" onclick="openAdminSection('adminCompareSection')"><strong>COMPARAÇÃO</strong><span>24h atual / anterior</span></button>
-      <button type="button" onclick="openAdminSection('adminHourlySection')"><strong>HISTÓRICO</strong><span>30 dias por hora</span></button>
-      <button type="button" onclick="openAdminSection('adminCinemometerSection')"><strong>CINEMÓMETRO</strong><span>Sessões e padrões</span></button>
-      <button type="button" onclick="openAdminSection('adminAsfSection')"><strong>ASF / SEGURO</strong><span>Erros e qualidade</span></button>
-      <button type="button" onclick="openAdminSection('adminMenusSection')"><strong>MENUS</strong><span>Utilização por módulo</span></button>
-      <button type="button" onclick="openAdminSection('adminLegislationSection')"><strong>LEGISLAÇÃO</strong><span>Consultas e cópias</span></button>
-      <button type="button" onclick="openAdminSection('adminSystemSection')"><strong>SISTEMA</strong><span>Reposição 24h</span></button>
-    </div>
-  </section>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="side-title">TEMAS</div>
+      <nav class="theme-nav" id="themeNav">
+        <button data-theme="overview" class="active"><i class="nav-dot"></i><span>VISÃO GERAL</span><small>01</small></button>
+        <button data-theme="insurance"><i class="nav-dot"></i><span>SEGURO</span><small>02</small></button>
+        <button data-theme="speed"><i class="nav-dot"></i><span>VELOCIDADE</span><small>03</small></button>
+        <button data-theme="legislation"><i class="nav-dot"></i><span>LEGISLAÇÃO</span><small>04</small></button>
+        <button data-theme="usage"><i class="nav-dot"></i><span>UTILIZAÇÃO</span><small>05</small></button>
+        <button data-theme="devices"><i class="nav-dot"></i><span>DISPOSITIVOS</span><small>06</small></button>
+        <button data-theme="errors"><i class="nav-dot"></i><span>ERROS &amp; SAÚDE</span><small>07</small></button>
+        <button data-theme="system"><i class="nav-dot"></i><span>SISTEMA</span><small>08</small></button>
+      </nav>
+    </aside>
 
-  <section class="section compact-section" id="adminActivitySection">
-    <details class="admin-expander">
-      <summary><span>OPERAÇÃO</span><span class="admin-summary-note">ATIVIDADE OPERACIONAL</span></summary>
-      <div class="admin-expander-body">
-    <div class="section-head"><div class="section-title">ATIVIDADE OPERACIONAL</div></div>
-    <div class="table-wrap">
-      <table id="activityTable">
-        <thead><tr><th>INDICADOR</th><th>24H</th><th>7 DIAS</th><th>30 DIAS</th><th>HISTÓRICO DA APLICAÇÃO</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-    <div class="note">* “Sem resultado final” é calculado apenas para consultas com <b>query_id</b>.</div>
-      </div>
-    </details>
-  </section>
+    <main>
+      <section class="theme-page active" data-page="overview">
+        <div class="theme-head">
+          <div><div class="theme-kicker">01 · CONTEXTO</div><h2>VISÃO GERAL</h2><p>O que está a acontecer, sem misturar diagnóstico técnico com utilização.</p></div>
+          <div class="theme-note">PAINEL PRINCIPAL · ABERTO</div>
+        </div>
+        <div class="subnav">
+          <button data-sub-theme="overview" data-sub="summary" class="active">RESUMO</button>
+          <button data-sub-theme="overview" data-sub="pace">RITMO</button>
+          <button data-sub-theme="overview" data-sub="trend">TENDÊNCIA</button>
+        </div>
 
-  <section class="section compact-section" id="adminCompareSection">
-    <details class="admin-expander">
-      <summary><span>COMPARAÇÃO · ÚLTIMAS 24H</span><span style="color:#8fa3aa;font-size:9px;letter-spacing:1px">24h atuais vs 24h anteriores</span></summary>
-      <div class="admin-expander-body">
-<section class="section">
-        <div class="table-wrap">
-      <table class="compare" id="compareTable">
-        <thead><tr><th>INDICADOR</th><th>ATUAL</th><th>ANTERIOR</th><th>VARIAÇÃO</th><th>%</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-    <div class="note">Comparação descritiva entre duas janelas consecutivas de 24 horas.</div>
-      </div>
-    </details>
-  </section>
+        <div class="subpage active" data-subpage="overview:summary">
+          <div class="grid6" id="overviewCards"></div>
+          <div class="grid2" style="margin-top:10px">
+            <div class="panel"><div class="panel-head"><h3>RETENÇÃO / REGRESSO</h3><span>INSTALAÇÕES ÚNICAS</span></div><div class="panel-body" id="retentionPanel"></div></div>
+            <div class="panel"><div class="panel-head"><h3>EVENTOS MAIS FREQUENTES</h3><span>30 DIAS</span></div><div class="panel-body"><div id="topEvents" class="bar-list"></div></div></div>
+          </div>
+        </div>
 
-  <section class="section compact-section" id="adminHourlySection">
-    <details class="admin-expander">
-      <summary><span>HISTÓRICO HORÁRIO · 30 DIAS</span><span style="color:#8fa3aa;font-size:9px;letter-spacing:1px">Escolhe um dia → 24 horas ao detalhe</span></summary>
-      <div class="admin-expander-body">
-<section class="section">
-        <div class="panel">
-      <div id="days" class="days"></div>
-      <div class="hour-top">
-        <div class="mini"><div class="mini-label">UTILIZADORES ÚNICOS NO DIA</div><div class="mini-value" id="dayUsers">—</div></div>
-        <div class="mini"><div class="mini-label">HORA DE MAIOR AFLUÊNCIA</div><div class="mini-value" id="peakHour">—</div></div>
-        <div class="mini"><div class="mini-label">UTILIZADORES NO PICO</div><div class="mini-value" id="peakUsers">—</div></div>
-        <div class="mini"><div class="mini-label">PESQUISAS DE VEÍCULOS</div><div class="mini-value" id="daySearches">—</div></div>
-      </div>
-      <div class="table-wrap" style="margin-top:12px">
-        <table id="hourTable">
-          <thead><tr>
-            <th>FAIXA HORÁRIA</th><th>UTILIZADORES</th><th>HEARTBEATS</th><th>APP OPENS</th>
-            <th>PESQUISAS VEÍCULOS</th><th>VELOCIDADES</th><th>LEGISLAÇÃO</th><th>CÓPIAS</th><th>ÁLCOOL</th><th>FERRAMENTAS</th>
-          </tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-      </div>
-    </details>
-  </section>
+        <div class="subpage" data-subpage="overview:pace">
+          <div class="grid4" id="paceCards"></div>
+          <div class="grid2" style="margin-top:10px">
+            <div class="panel"><div class="panel-head"><h3>HORAS DE MAIOR MOVIMENTO</h3><span>JANELA 24H · HORA LOCAL</span></div><div class="panel-body"><div id="hourlyChart" class="hour-grid"></div></div></div>
+            <div class="panel"><div class="panel-head"><h3>SESSÕES</h3><span>COMPORTAMENTO GLOBAL</span></div><div class="panel-body" id="sessionSummary"></div></div>
+          </div>
+        </div>
 
+        <div class="subpage" data-subpage="overview:trend">
+          <div class="panel"><div class="panel-head"><h3>ATIVIDADE DIÁRIA</h3><span>ÚLTIMOS 30 DIAS</span></div><div id="dailyChart" class="chart"></div></div>
+          <div class="grid3" style="margin-top:10px" id="trendCards"></div>
+        </div>
+      </section>
 
+      <section class="theme-page" data-page="insurance">
+        <div class="theme-head">
+          <div><div class="theme-kicker">02 · CONSULTAS</div><h2>SEGURO</h2><p>Resultados ASF, qualidade da resposta e comportamento das consultas.</p></div>
+          <div class="theme-note">MATRÍCULA APENAS ONDE HÁ DIAGNÓSTICO</div>
+        </div>
+        <div class="subnav">
+          <button data-sub-theme="insurance" data-sub="results" class="active">RESULTADOS</button>
+          <button data-sub-theme="insurance" data-sub="performance">PERFORMANCE</button>
+          <button data-sub-theme="insurance" data-sub="diagnostic">DIAGNÓSTICO</button>
+        </div>
 
-  <section class="section compact-section" id="adminCinemometerSection">
-    <details class="admin-expander">
-      <summary><span>CINEMÓMETRO</span><span class="admin-summary-note">ANÁLISE OPERACIONAL · 24H</span></summary>
-      <div class="admin-expander-body">
-        <div id="cinAnalytics"></div>
-      </div>
-    </details>
-  </section>
+        <div class="subpage active" data-subpage="insurance:results">
+          <div id="insuranceCards" class="grid6"></div>
+          <div class="panel" style="margin-top:10px"><div class="panel-head"><h3>FUNIL DAS CONSULTAS</h3><span>INÍCIO → RESULTADO</span></div><div class="panel-body"><div id="insuranceFunnel" class="funnel"></div></div></div>
+          <div class="panel" style="margin-top:10px"><div class="panel-head"><h3>COMPARAÇÃO ENTRE PERÍODOS</h3><span>24H · 7D · 30D</span></div><div id="insuranceTable" class="table-wrap"></div></div>
+        </div>
 
-  <section class="section compact-section" id="adminAsfSection">
-    <details class="admin-expander">
-      <summary><span>ASF / SEGURO</span><span class="admin-summary-note">DIAGNÓSTICO · 24H</span></summary>
-      <div class="admin-expander-body"><span style="color:#8fa3aa;font-size:9px;letter-spacing:1px">ERROS · CLIENTE · REDE · ASSINATURAS</span></summary>
-    <div class="diag-grid">
-      <div class="diag-panel">
-        <h3>TIPOS DE ERRO</h3>
-        <div id="asfErrorTypes" class="diag-scroll"></div>
-      </div>
-      <div class="diag-panel">
-        <h3>COMPORTAMENTO POR CLIENTE</h3>
-        <div id="asfClientHealth" class="diag-scroll"></div>
-      </div>
-    </div>
-    <div class="diag-panel" style="margin-top:14px">
-      <h3>ÚLTIMAS FALHAS ASF</h3>
-      <div id="asfRecentErrors" class="diag-scroll"></div>
-    </div>
-    <div class="diag-panel" style="margin-top:14px">
-      <h3>ASSINATURAS DOS ERROS · 24H</h3>
-      <div id="asfErrorSignatures" class="diag-scroll"></div>
-    </div>
-    <div class="diag-panel" style="margin-top:14px">
-      <h3>ERROS POR MATRÍCULA · 24H</h3>
-      <div id="asfPlateErrors" class="diag-scroll"></div>
-    </div>
-    <div class="diag-panel" style="margin-top:14px">
-      <h3>ÚLTIMOS “SEM SEGURO”</h3>
-      <div id="asfRecentUninsured" class="diag-scroll"></div>
-    </div>
-    <div class="diag-panel" style="margin-top:14px">
-      <h3>QUALIDADE ASF · 24H</h3>
-      <div id="asfQuality" class="diag-scroll"></div>
-    </div>
-      </div>
-    </details>
-  </section>
+        <div class="subpage" data-subpage="insurance:performance">
+          <div class="grid4" id="insurancePerfCards"></div>
+          <div class="grid2" style="margin-top:10px">
+            <div class="panel"><div class="panel-head"><h3>RETRIES</h3><span>TENTATIVAS MANUAIS REGISTADAS</span></div><div class="panel-body" id="retryPanel"></div></div>
+            <div class="panel"><div class="panel-head"><h3>QUALIDADE DE DADOS</h3><span>RESULTADOS CONHECIDOS</span></div><div class="panel-body" id="insuranceDataQuality"></div></div>
+          </div>
+        </div>
 
-  <section class="section compact-section reset-panel" id="adminSystemSection">
-    <details class="admin-expander">
-      <summary><span>SISTEMA</span><span class="admin-summary-note">REPOSIÇÃO 24H · SEM APAGAR DADOS</span></summary>
-      <div class="admin-expander-body">
-    <div class="reset-box">
-      <div class="reset-title">RESET · ÚLTIMAS 24 HORAS</div>
-      <div class="reset-desc">Reinicia todos os indicadores do período 24H a partir deste momento. Os eventos históricos permanecem guardados. Os períodos de 7, 30 dias e histórico não são alterados.</div>
-      <div class="reset-actions">
-        <div id="reset24hStatus" class="reset-status">Último reset 24H: —</div>
-        <button id="reset24hBtn" type="button" class="reset-btn">RESET 24H</button>
-      </div>
-    </div>
-      </div>
-    </details>
-  </section>
+        <div class="subpage" data-subpage="insurance:diagnostic">
+          <div class="grid3" id="insuranceDiagCards"></div>
+          <div class="grid2" style="margin-top:10px">
+            <div class="panel"><div class="panel-head"><h3>MATRÍCULAS COM ERRO</h3><span>APENAS DIAGNÓSTICO DISPONÍVEL</span></div><div id="insurancePlateErrors" class="table-wrap"></div></div>
+            <div class="panel"><div class="panel-head"><h3>ASSINATURAS TÉCNICAS</h3><span>TIPO + HASH + MENSAGEM</span></div><div id="insuranceSignatures" class="table-wrap"></div></div>
+          </div>
+        </div>
+      </section>
 
-  <section class="section compact-section" id="adminMenusSection">
-    <details class="admin-expander">
-      <summary><span>MENUS CONSULTADOS</span><span style="color:#8fa3aa;font-size:9px;letter-spacing:1px">24h / 30 dias</span></summary>
-      <div class="admin-expander-body">
-<section class="section">
-        <div class="split">
-      <div class="panel"><h3>24 horas</h3><div id="menus24" class="list"></div></div>
-      <div class="panel"><h3>30 dias</h3><div id="menus30" class="list"></div></div>
-    </div>
-      </div>
-    </details>
-  </section>
+      <section class="theme-page" data-page="speed">
+        <div class="theme-head">
+          <div><div class="theme-kicker">03 · CINEMÓMETRO</div><h2>VELOCIDADE</h2><p>Atividade do módulo, dados detalhados e configuração observada.</p></div>
+          <div class="theme-note">DETALHE DEPENDE DA TELEMETRIA 1.4+ JÁ CAPTURADA</div>
+        </div>
+        <div class="subnav">
+          <button data-sub-theme="speed" data-sub="activity" class="active">ATIVIDADE</button>
+          <button data-sub-theme="speed" data-sub="patterns">PADRÕES</button>
+          <button data-sub-theme="speed" data-sub="config">CONFIGURAÇÃO</button>
+        </div>
 
-  <section class="section compact-section" id="adminLegislationSection">
-    <details class="admin-expander">
-      <summary><span>LEGISLAÇÃO</span><span style="color:#8fa3aa;font-size:9px;letter-spacing:1px">Itens e cópias mais consultados</span></summary>
-      <div class="admin-expander-body">
-<section class="section">
-        <div class="split">
-      <div class="panel leg-table"><h3>Legislação copiada · 24h</h3><div id="leg24"></div></div>
-      <div class="panel leg-table"><h3>Legislação copiada · 30 dias</h3><div id="leg30"></div></div>
-    </div>
-      </div>
-    </details>
-  </section>
+        <div class="subpage active" data-subpage="speed:activity">
+          <div class="grid6" id="speedCards"></div>
+          <div class="grid2" style="margin-top:10px">
+            <div class="panel"><div class="panel-head"><h3>DISTRIBUIÇÃO DAS VELOCIDADES</h3><span>DETALHE DISPONÍVEL · 24H</span></div><div id="speedDistribution" class="panel-body"></div></div>
+            <div class="panel"><div class="panel-head"><h3>COBERTURA DA NOVA TELEMETRIA</h3><span>30 DIAS</span></div><div id="speedCoverage" class="panel-body"></div></div>
+          </div>
+        </div>
+
+        <div class="subpage" data-subpage="speed:patterns">
+          <div class="grid3" id="speedPatternCards"></div>
+          <div class="grid3" style="margin-top:10px">
+            <div class="panel"><div class="panel-head"><h3>MODO</h3><span>30 DIAS</span></div><div class="panel-body"><div id="speedModeBars" class="bar-list"></div></div></div>
+            <div class="panel"><div class="panel-head"><h3>TIPO DE VEÍCULO</h3><span>30 DIAS</span></div><div class="panel-body"><div id="speedVehicleBars" class="bar-list"></div></div></div>
+            <div class="panel"><div class="panel-head"><h3>ENQUADRAMENTO</h3><span>30 DIAS</span></div><div class="panel-body"><div id="speedFrameBars" class="bar-list"></div></div></div>
+          </div>
+        </div>
+
+        <div class="subpage" data-subpage="speed:config">
+          <div class="grid2">
+            <div class="panel"><div class="panel-head"><h3>OPERADORES DECLARADOS</h3><span>NÃO É AUTENTICAÇÃO</span></div><div id="speedOperators" class="table-wrap"></div></div>
+            <div class="panel"><div class="panel-head"><h3>APARELHOS / PERFIS</h3><span>DADOS DECLARADOS NA SESSÃO</span></div><div id="speedApparatus" class="table-wrap"></div></div>
+          </div>
+          <div class="grid3" style="margin-top:10px">
+            <div class="panel"><div class="panel-head"><h3>LIMITE</h3><span>30 DIAS</span></div><div class="panel-body"><div id="speedLimitBars" class="bar-list"></div></div></div>
+            <div class="panel"><div class="panel-head"><h3>GRAVIDADE</h3><span>30 DIAS</span></div><div class="panel-body"><div id="speedGravityBars" class="bar-list"></div></div></div>
+            <div class="panel"><div class="panel-head"><h3>CÓDIGOS</h3><span>30 DIAS</span></div><div class="panel-body"><div id="speedCodeBars" class="bar-list"></div></div></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="theme-page" data-page="legislation">
+        <div class="theme-head">
+          <div><div class="theme-kicker">04 · CONHECIMENTO</div><h2>LEGISLAÇÃO</h2><p>Consulta, pesquisa, cópia, favoritos e assuntos procurados.</p></div>
+          <div class="theme-note">SEM EXPOR TEXTO DESNECESSÁRIO</div>
+        </div>
+        <div class="subnav">
+          <button data-sub-theme="legislation" data-sub="usage" class="active">USO</button>
+          <button data-sub-theme="legislation" data-sub="items">ITENS</button>
+          <button data-sub-theme="legislation" data-sub="actions">AÇÕES</button>
+        </div>
+
+        <div class="subpage active" data-subpage="legislation:usage">
+          <div class="grid4" id="legCards"></div>
+          <div class="grid2" style="margin-top:10px">
+            <div class="panel"><div class="panel-head"><h3>CONVERSÃO CONSULTA → CÓPIA</h3><span>INDICADOR DESCRITIVO</span></div><div class="panel-body" id="legConversion"></div></div>
+            <div class="panel"><div class="panel-head"><h3>PERÍODOS</h3><span>24H · 7D · 30D</span></div><div id="legPeriodTable" class="table-wrap"></div></div>
+          </div>
+        </div>
+
+        <div class="subpage" data-subpage="legislation:items">
+          <div class="panel"><div class="panel-head"><h3>ITENS MAIS COPIADOS</h3><span>30 DIAS</span></div><div id="legItems" class="table-wrap"></div></div>
+        </div>
+
+        <div class="subpage" data-subpage="legislation:actions">
+          <div class="grid2">
+            <div class="panel"><div class="panel-head"><h3>TIPO DE CÓPIA</h3><span>30 DIAS</span></div><div class="panel-body"><div id="legCopyTypes" class="bar-list"></div></div></div>
+            <div class="panel"><div class="panel-head"><h3>AÇÕES DA PESQUISA</h3><span>EVENTOS REGISTADOS</span></div><div class="panel-body" id="legActions"></div></div>
+          </div>
+          <div class="info-note">Os eventos atuais de pesquisa não guardam o texto pesquisado; por isso o painel mede quantas pesquisas aconteceram, mas não inventa “termos mais pesquisados”.</div>
+        </div>
+      </section>
+
+      <section class="theme-page" data-page="usage">
+        <div class="theme-head">
+          <div><div class="theme-kicker">05 · COMPORTAMENTO</div><h2>UTILIZAÇÃO</h2><p>Quem usa, quanto tempo permanece e como navega entre módulos.</p></div>
+          <div class="theme-note">MÉTRICAS AGREGADAS</div>
+        </div>
+        <div class="subnav">
+          <button data-sub-theme="usage" data-sub="users" class="active">UTILIZADORES</button>
+          <button data-sub-theme="usage" data-sub="sessions">SESSÕES</button>
+          <button data-sub-theme="usage" data-sub="paths">PERCURSOS</button>
+        </div>
+
+        <div class="subpage active" data-subpage="usage:users">
+          <div class="grid6" id="usageUserCards"></div>
+          <div class="grid2" style="margin-top:10px">
+            <div class="panel"><div class="panel-head"><h3>MÓDULOS ABERTOS</h3><span>30 DIAS</span></div><div class="panel-body"><div id="moduleBars" class="bar-list"></div></div></div>
+            <div class="panel"><div class="panel-head"><h3>ATIVIDADE POR MÓDULO</h3><span>30 DIAS · TODOS OS EVENTOS</span></div><div class="panel-body"><div id="moduleActivityBars" class="bar-list"></div></div></div>
+          </div>
+        </div>
+
+        <div class="subpage" data-subpage="usage:sessions">
+          <div class="grid4" id="usageSessionCards"></div>
+          <div class="note">“Sessão” é a sessão técnica do navegador registada pela aplicação. Não deve ser interpretada automaticamente como uma operação no terreno.</div>
+        </div>
+
+        <div class="subpage" data-subpage="usage:paths">
+          <div class="grid2">
+            <div class="panel"><div class="panel-head"><h3>TRANSIÇÕES ENTRE MÓDULOS</h3><span>EVENTOS MODULE_OPEN · 30 DIAS</span></div><div id="moduleTransitions" class="table-wrap"></div></div>
+            <div class="panel"><div class="panel-head"><h3>EVENTOS DIÁRIOS</h3><span>30 DIAS</span></div><div id="dailyMiniTable" class="table-wrap"></div></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="theme-page" data-page="devices">
+        <div class="theme-head">
+          <div><div class="theme-kicker">06 · AMBIENTE TÉCNICO</div><h2>DISPOSITIVOS</h2><p>Em que equipamentos, navegadores e versões a aplicação é executada.</p></div>
+          <div class="theme-note">DADOS DE INSTALAÇÃO · 30 DIAS</div>
+        </div>
+        <div class="subnav">
+          <button data-sub-theme="devices" data-sub="hardware" class="active">EQUIPAMENTOS</button>
+          <button data-sub-theme="devices" data-sub="network" >REDE</button>
+          <button data-sub-theme="devices" data-sub="telemetry">TELEMETRIA</button>
+        </div>
+
+        <div class="subpage active" data-subpage="devices:hardware">
+          <div class="device-grid">
+            <div class="panel"><div class="panel-head"><h3>NAVEGADORES</h3><span>INSTALAÇÕES</span></div><div class="panel-body"><div id="browserBars" class="bar-list"></div></div></div>
+            <div class="panel"><div class="panel-head"><h3>TIPO DE DISPOSITIVO</h3><span>INSTALAÇÕES</span></div><div class="panel-body"><div id="deviceTypeBars" class="bar-list"></div></div></div>
+            <div class="panel"><div class="panel-head"><h3>SISTEMA OPERATIVO</h3><span>INSTALAÇÕES</span></div><div class="panel-body"><div id="osBars" class="bar-list"></div></div></div>
+          </div>
+          <div class="panel" style="margin-top:10px"><div class="panel-head"><h3>VERSÕES REPORTADAS</h3><span>DADO TÉCNICO · NÃO ALTERA A APP VISÍVEL</span></div><div id="versionTable" class="table-wrap"></div></div>
+        </div>
+
+        <div class="subpage" data-subpage="devices:network">
+          <div class="grid3" id="networkCards"></div>
+          <div class="info-note">A informação de rede disponível atualmente vem sobretudo dos eventos que já transportam metadados de cliente. Valores “desconhecido” são mostrados como tal, não são estimados.</div>
+        </div>
+
+        <div class="subpage" data-subpage="devices:telemetry">
+          <div class="grid3" id="telemetryCards"></div>
+          <div class="panel" style="margin-top:10px"><div class="panel-head"><h3>O QUE JÁ PODE SER ANALISADO</h3><span>COBERTURA DA RECOLHA</span></div><div id="telemetryDetail" class="table-wrap"></div></div>
+        </div>
+      </section>
+
+      <section class="theme-page" data-page="errors">
+        <div class="theme-head">
+          <div><div class="theme-kicker">07 · SAÚDE</div><h2>ERROS &amp; SAÚDE</h2><p>Incidentes, padrões de falha e concentração técnica — sem misturar com resultados “sem seguro”.</p></div>
+          <div class="theme-note">DIAGNÓSTICO OBJETIVO</div>
+        </div>
+        <div class="subnav">
+          <button data-sub-theme="errors" data-sub="incidents" class="active">INCIDENTES</button>
+          <button data-sub-theme="errors" data-sub="signatures">ASSINATURAS</button>
+          <button data-sub-theme="errors" data-sub="clients">CLIENTES</button>
+        </div>
+
+        <div class="subpage active" data-subpage="errors:incidents">
+          <div class="grid4" id="errorCards"></div>
+          <div class="grid2" style="margin-top:10px">
+            <div class="panel"><div class="panel-head"><h3>TIPOS DE ERRO</h3><span>24H</span></div><div id="errorTypes" class="table-wrap"></div></div>
+            <div class="panel"><div class="panel-head"><h3>CONCENTRAÇÃO POR HORA</h3><span>24H · HORA LOCAL</span></div><div class="panel-body"><div id="errorHourBars" class="bar-list"></div></div></div>
+          </div>
+          <div class="panel" style="margin-top:10px"><div class="panel-head"><h3>PIQUES DE ERROS</h3><span>MINUTOS COM MAIOR CONCENTRAÇÃO</span></div><div id="errorBursts" class="table-wrap"></div></div>
+        </div>
+
+        <div class="subpage" data-subpage="errors:signatures">
+          <div class="panel"><div class="panel-head"><h3>ASSINATURAS</h3><span>TIPO · HASH · MENSAGEM</span></div><div id="errorSignatureTable" class="table-wrap"></div></div>
+          <div class="grid2" style="margin-top:10px">
+            <div class="panel"><div class="panel-head"><h3>INSTALAÇÕES COM INCIDENTES</h3><span>24H</span></div><div id="errorInstallTable" class="table-wrap"></div></div>
+            <div class="panel"><div class="panel-head"><h3>MATRÍCULAS COM INCIDENTES</h3><span>APENAS QUANDO CONHECIDAS</span></div><div id="errorPlateTable" class="table-wrap"></div></div>
+          </div>
+        </div>
+
+        <div class="subpage" data-subpage="errors:clients">
+          <div class="panel"><div class="panel-head"><h3>COMPORTAMENTO POR CLIENTE</h3><span>BROWSER · SISTEMA · REDE · 24H</span></div><div id="clientHealthTable" class="table-wrap"></div></div>
+          <div class="note">Uma taxa de erro por cliente descreve o conjunto observado naquele ambiente; não prova, por si só, a causa do problema.</div>
+        </div>
+      </section>
+
+      <section class="theme-page" data-page="system">
+        <div class="theme-head">
+          <div><div class="theme-kicker">08 · CONTROLO</div><h2>SISTEMA</h2><p>Estado do backend, qualidade da recolha e ferramentas administrativas.</p></div>
+          <div class="theme-note">SEM APAGAR HISTÓRICO</div>
+        </div>
+        <div class="subnav">
+          <button data-sub-theme="system" data-sub="state" class="active">ESTADO</button>
+          <button data-sub-theme="system" data-sub="data">DADOS</button>
+          <button data-sub-theme="system" data-sub="reset">24H</button>
+        </div>
+
+        <div class="subpage active" data-subpage="system:state">
+          <div class="status-grid" id="systemStateCards"></div>
+          <div class="panel" style="margin-top:10px"><div class="panel-head"><h3>LEITURA DO BACKEND</h3><span>ÚLTIMA ATUALIZAÇÃO</span></div><div class="panel-body" id="systemStateText"></div></div>
+        </div>
+
+        <div class="subpage" data-subpage="system:data">
+          <div class="panel"><div class="panel-head"><h3>VOLUME DE DADOS</h3><span>EVENTOS RECOLHIDOS</span></div><div id="eventVolumeTable" class="table-wrap"></div></div>
+          <div class="panel" style="margin-top:10px"><div class="panel-head"><h3>COBERTURA DA TELEMETRIA</h3><span>O QUE EXISTE VS O QUE AINDA NÃO EXISTE</span></div><div id="systemTelemetryTable" class="table-wrap"></div></div>
+        </div>
+
+        <div class="subpage" data-subpage="system:reset">
+          <div class="reset-box">
+            <div class="reset-title">RESET · JANELA 24H</div>
+            <div class="reset-desc">Move o ponto de início da janela administrativa de 24 horas. <b>NÃO APAGA EVENTOS</b>; os dados históricos, 7 dias, 30 dias e histórico completo continuam armazenados.</div>
+            <div class="reset-actions">
+              <div id="reset24hStatus" class="reset-status">Último reset 24H: —</div>
+              <button id="reset24hBtn" type="button" class="reset-btn">RESET 24H</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
 </div>
 
-<div id="toast" class="toast hidden"></div>
+<div id="toast" class="hidden" style="position:fixed;right:16px;bottom:16px;z-index:80;padding:11px 13px;border:1px solid var(--line);border-radius:9px;background:#0b2028;color:#eef8fa;font-size:11px;box-shadow:var(--shadow)"></div>
 
 <script>
-const API_ORIGIN = 'https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/';
-const API_CACHE_BUSTER = '18.6';
-const AUTH_API = API_ORIGIN + 'admin-auth-v2?v=' + API_CACHE_BUSTER;
-const STATS_API = API_ORIGIN + 'stats-v2?v=' + API_CACHE_BUSTER;
-const HOURLY_API = API_ORIGIN + 'hourly-history-v2';
-const TOKEN_KEY = 'VERIX_ADMIN_V2_TOKEN';
-const REFRESH_MS = 30000;
+const API_ORIGIN='https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/';
+const ADMIN_CACHE='admin-rebuild-2026-10-02';
+const AUTH_API=API_ORIGIN+'admin-auth-v2?v='+encodeURIComponent(ADMIN_CACHE);
+const STATS_API=API_ORIGIN+'stats-v2?v='+encodeURIComponent(ADMIN_CACHE);
+const TOKEN_KEY='VERIX_ADMIN_V2_TOKEN';
+const REFRESH_MS=30000;
 
-let selectedDate = localDateISO(new Date());
-let refreshTimer = null;
-let countdownTimer = null;
-let refreshIn = 30;
-let dashboardInFlight = false;
-let hourlyLoadSequence = 0;
+let currentPeriod='24h';
+let refreshTimer=null;
+let countdownTimer=null;
+let refreshIn=30;
+let dashboardInFlight=false;
+let latestData=null;
+let activeTheme='overview';
 
-function openAdminSection(id){
-  const target=document.getElementById(id);
-  if(!target)return;
-  const details=target.querySelector('details');
-  if(details) details.open=true;
-  target.scrollIntoView({behavior:'smooth',block:'start'});
-}
-function $(id){return document.getElementById(id);}
-function localDateISO(d){
-  const x = new Date(d.getTime() - d.getTimezoneOffset()*60000);
-  return x.toISOString().slice(0,10);
-}
-function fmt(n){
-  return Number.isFinite(Number(n)) ? Number(n).toLocaleString('pt-PT') : '—';
-}
-function fmtPct(n){
-  return (n===null || n===undefined || !Number.isFinite(Number(n))) ? '0,0%' : `${Number(n).toFixed(1).replace('.',',')}%`;
-}
-function toast(msg){
-  $('toast').textContent=msg;
-  $('toast').classList.remove('hidden');
-  setTimeout(()=>$('toast').classList.add('hidden'),2200);
-}
-function token(){return sessionStorage.getItem(TOKEN_KEY)||'';}
+const $=id=>document.getElementById(id);
+const fmt=n=>Number.isFinite(Number(n))?Number(n).toLocaleString('pt-PT'):'—';
+const num=n=>n===null||n===undefined?'—':fmt(n);
+const pct=n=>n===null||n===undefined||!Number.isFinite(Number(n))?'—':Number(n).toFixed(1).replace('.',',')+'%';
+const datePT=v=>v?new Date(v).toLocaleString('pt-PT'):'—';
+const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+function toast(msg){$('toast').textContent=msg;$('toast').classList.remove('hidden');setTimeout(()=>$('toast').classList.add('hidden'),2200)}
+function token(){return sessionStorage.getItem(TOKEN_KEY)||''}
 function setBackendState(state){
-  const badge=$('backendBadge');
-  const dot=document.querySelector('.status-dot');
-  if(!badge||!dot) return;
+  const dot=$('statusDot'),badge=$('backendBadge');
   dot.classList.remove('loading','offline','partial');
-  if(state==='loading'){
-    dot.classList.add('loading');
-    badge.textContent='A ATUALIZAR';
-  }else if(state==='partial'){
-    dot.classList.add('partial');
-    badge.textContent='BACKEND ONLINE · PARCIAL';
-  }else if(state==='offline'){
-    dot.classList.add('offline');
-    badge.textContent='BACKEND OFFLINE · ERRO';
-  }else{
-    badge.textContent='BACKEND ONLINE';
-  }
+  if(state==='loading'){dot.classList.add('loading');badge.textContent='A ATUALIZAR'}
+  else if(state==='partial'){dot.classList.add('partial');badge.textContent='BACKEND ONLINE · PARCIAL'}
+  else if(state==='offline'){dot.classList.add('offline');badge.textContent='BACKEND OFFLINE · ERRO'}
+  else badge.textContent='BACKEND ONLINE';
 }
-
-async function request(url, options={}){
-  const h = new Headers(options.headers||{});
-  h.set('Authorization',`Bearer ${token()}`);
+async function request(url,options={}){
+  const h=new Headers(options.headers||{});
+  h.set('Authorization','Bearer '+token());
   h.set('Accept','application/json');
-  const controller = new AbortController();
-  const timeout = setTimeout(()=>controller.abort(),15000);
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),15000);
   try{
-    const r = await fetch(url,{
-      ...options,
-      mode:'cors',
-      credentials:'omit',
-      headers:h,
-      cache:'no-store',
-      signal:controller.signal
-    });
-    const text = await r.text();
+    const r=await fetch(url,{...options,mode:'cors',credentials:'omit',headers:h,cache:'no-store',signal:controller.signal});
+    const text=await r.text();
     let data;
-    try{data=JSON.parse(text)}catch(_){data={ok:false,error:text||`HTTP ${r.status}`}}
-    if(r.status===401){
-      logout();
-      throw new Error('Sessão expirada.');
-    }
-    if(!r.ok || data?.ok===false) throw new Error(data?.detail||data?.error||`HTTP ${r.status}`);
+    try{data=JSON.parse(text)}catch(_){data={ok:false,error:text||('HTTP '+r.status)}}
+    if(r.status===401){logout();throw new Error('Sessão expirada.')}
+    if(!r.ok||data?.ok===false)throw new Error(data?.detail||data?.error||('HTTP '+r.status));
     return data;
   }catch(e){
-    if(e?.name==='AbortError') throw new Error('Tempo excedido ao contactar o backend (15 s).');
-    if(e instanceof TypeError) throw new Error('Falha de rede/CORS ao contactar o backend.');
+    if(e?.name==='AbortError')throw new Error('Tempo excedido ao contactar o backend (15 s).');
+    if(e instanceof TypeError)throw new Error('Falha de rede/CORS ao contactar o backend.');
     throw e;
-  }finally{
-    clearTimeout(timeout);
-  }
+  }finally{clearTimeout(timeout)}
 }
-
 async function doLogin(password){
   const controller=new AbortController();
   const timeout=setTimeout(()=>controller.abort(),12000);
   try{
-    const r = await fetch(AUTH_API,{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Accept':'application/json'},
-      body:JSON.stringify({password:String(password||'').slice(0,256)}),
-      mode:'cors',
-      credentials:'omit',
-      cache:'no-store',
-      signal:controller.signal
-    });
+    const r=await fetch(AUTH_API,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({password:String(password||'').slice(0,256)}),mode:'cors',credentials:'omit',cache:'no-store',signal:controller.signal});
     const text=await r.text();
-    let data={};
-    try{data=JSON.parse(text)}catch(_){data={ok:false,error:text||('HTTP '+r.status)}}
-    if(!r.ok || !data?.ok) throw new Error(data?.error||('HTTP '+r.status));
-    if(!data.token) throw new Error('Backend de autenticação não devolveu um token válido.');
+    let data={};try{data=JSON.parse(text)}catch(_){data={ok:false,error:text||('HTTP '+r.status)}}
+    if(!r.ok||!data?.ok)throw new Error(data?.error||('HTTP '+r.status));
+    if(!data.token)throw new Error('Backend de autenticação não devolveu um token válido.');
     sessionStorage.setItem(TOKEN_KEY,data.token);
     return data;
   }catch(e){
-    if(e?.name==='AbortError') throw new Error('Tempo excedido ao autenticar.');
-    if(e instanceof TypeError) throw new Error('Falha de rede/CORS ao autenticar.');
+    if(e?.name==='AbortError')throw new Error('Tempo excedido ao autenticar.');
+    if(e instanceof TypeError)throw new Error('Falha de rede/CORS ao autenticar.');
     throw e;
-  }finally{
-    clearTimeout(timeout);
-  }
+  }finally{clearTimeout(timeout)}
 }
-
-async function reset24h(){
-  if(!confirm('RESET — ÚLTIMAS 24 HORAS\n\nTodos os indicadores do período 24H passarão a contar apenas eventos ocorridos a partir deste momento.\n\nOs eventos NÃO serão apagados. Os períodos de 7 dias, 30 dias e histórico permanecem intactos.\n\nContinuar?')) return;
-  const btn=$('reset24hBtn');
-  const status=$('reset24hStatus');
-  if(btn) btn.disabled=true;
-  if(status){status.className='reset-status';status.textContent='A aplicar reset 24H…';}
-  try{
-    const data=await request(STATS_API,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:'reset_24h'})
-    });
-    if(status){status.className='reset-status ok';status.textContent='Último reset 24H: '+new Date(data.reset_at||Date.now()).toLocaleString('pt-PT')+'.';}
-    toast('RESET 24H aplicado.');
-    await loadDashboard();
-  }catch(e){
-    if(status){status.className='reset-status err';status.textContent='Erro no reset 24H: '+(e.message||'serviço indisponível');}
-  }finally{if(btn)btn.disabled=false;}
-}
-
 function logout(){
   sessionStorage.removeItem(TOKEN_KEY);
-  if(refreshTimer) clearInterval(refreshTimer);
-  if(countdownTimer) clearInterval(countdownTimer);
-  $('app').classList.add('hidden');
-  $('loginScreen').classList.remove('hidden');
-  $('password').value='';
+  if(refreshTimer)clearInterval(refreshTimer);
+  if(countdownTimer)clearInterval(countdownTimer);
+  $('app').classList.add('hidden');$('loginScreen').classList.remove('hidden');$('password').value='';
 }
-
-function conference(ov){
-  const unresolved=Number(ov?.unresolved_24h||0);
-  const card=$('cardConference');
-  if(unresolved===0){
-    card.className='card green';
-    $('conferenceValue').textContent='OK';
-    $('conferenceNote').textContent='Consultas iniciadas = contabilização final.';
-  }else{
-    card.className='card yellow';
-    $('conferenceValue').textContent = unresolved===1 ? '1 consulta' : `${fmt(unresolved)} consultas`;
-    $('conferenceNote').textContent='Consultas não reconciliadas · investigar.';
+function activityValue(label){
+  const rows=latestData?.activity||[];
+  const r=rows.find(x=>String(x.indicator)===label);
+  return r||{};
+}
+function periodData(group){
+  return latestData?.analytics?.[group]?.[currentPeriod]||{};
+}
+function switchTheme(theme){
+  activeTheme=theme;
+  document.querySelectorAll('.theme-nav button').forEach(b=>b.classList.toggle('active',b.dataset.theme===theme));
+  document.querySelectorAll('.theme-page').forEach(p=>p.classList.toggle('active',p.dataset.page===theme));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function switchSub(theme,sub){
+  document.querySelectorAll('[data-sub-theme="'+theme+'"]').forEach(b=>b.classList.toggle('active',b.dataset.sub===sub));
+  document.querySelectorAll('[data-subpage]').forEach(p=>p.classList.toggle('active',p.dataset.subpage===theme+':'+sub));
+}
+function initNavigation(){
+  document.querySelectorAll('.theme-nav button').forEach(b=>b.addEventListener('click',()=>switchTheme(b.dataset.theme)));
+  document.querySelectorAll('.subnav button').forEach(b=>b.addEventListener('click',()=>switchSub(b.dataset.subTheme,b.dataset.sub)));
+  document.querySelectorAll('#periodSwitch button').forEach(b=>b.addEventListener('click',()=>{currentPeriod=b.dataset.period;document.querySelectorAll('#periodSwitch button').forEach(x=>x.classList.toggle('active',x===b));if(latestData)renderAll(latestData)}));
+}
+function card(label,value,note='',tone='',small=false){
+  return '<div class="card '+tone+'"><div class="card-label">'+escapeHtml(label)+'</div><div class="card-value'+(small?' small':'')+'">'+value+'</div>'+(note?'<div class="card-note">'+note+'</div>':'')+'</div>';
+}
+function renderOverview(d){
+  const o=d.analytics?.overview||{}, ins=periodData('insurance'), ret=d.analytics?.retention||{}, s=d.analytics?.usage?.sessions?.[currentPeriod]||{};
+  const finals=Number(ins.finals||0), err=Number(ins.errors||0), no=Number(ins.uninsured||0), insured=Number(ins.insured||0);
+  const errorRate=finals?100*err/finals:null, uninsuredRate=(insured+no)?100*no/(insured+no):null;
+  $('overviewCards').innerHTML=
+    card('UTILIZADORES ÚNICOS',num(o['unique_'+currentPeriod]),'Instalações com atividade.', 'cyan')+
+    card('CONSULTAS DE SEGURO',num(ins.started),'Inícios de consulta no período.')+
+    card('RESULTADOS FINAIS',num(ins.finals),'Seguro + sem seguro + erro.')+
+    card('COM SEGURO',num(insured),pct(insured+no?100*insured/(insured+no):null)+' dos resultados seguros.','green')+
+    card('SEM SEGURO',num(no),uninsuredRate===null?'Sem base suficiente.':pct(uninsuredRate)+' dos resultados com decisão.','red')+
+    card('ERROS ASF',num(err),errorRate===null?'Sem base suficiente.':pct(errorRate)+' dos resultados finais.','yellow');
+  const rr24=ret['24h']||{},rr7=ret['7d']||{},rr30=ret['30d']||{};
+  $('retentionPanel').innerHTML=
+    '<div class="grid3">'+
+      '<div><div class="card-label">24H · NOVOS</div><div class="big-number cyan">'+num(rr24.new)+'</div><div class="card-note">Retornantes: '+num(rr24.returning)+'</div></div>'+
+      '<div><div class="card-label">7D · NOVOS</div><div class="big-number">'+num(rr7.new)+'</div><div class="card-note">Retornantes: '+num(rr7.returning)+'</div></div>'+
+      '<div><div class="card-label">30D · NOVOS</div><div class="big-number">'+num(rr30.new)+'</div><div class="card-note">Retornantes: '+num(rr30.returning)+'</div></div>'+
+    '</div>'+
+    '<div class="info-note">“Novo” significa que a instalação apareceu pela primeira vez no período observado. Não é uma conta de pessoas reais.</div>';
+  const top=d.analytics?.events||[];
+  renderBars('topEvents',top.slice(0,8).map(x=>({label:x.event,value:x.qty})));
+}
+function renderOverviewPace(d){
+  const o=d.analytics?.overview||{}, s=(d.analytics?.usage?.sessions||{})[currentPeriod]||{};
+  const active=Number(o.active_10m||0), online=Number(o.online_now||0);
+  $('paceCards').innerHTML=
+    card('ONLINE · 5 MIN',num(online),'Atividade recente detectada.','green')+
+    card('ATIVOS · 10 MIN',num(active),'Instalações com heartbeat/app_open.','cyan')+
+    card('SESSÕES',num(s.sessions),'Sessões técnicas do navegador.')+
+    card('AÇÕES / SESSÃO',num(s.avg_actions),'Sem contar heartbeats como ação.','yellow');
+  $('sessionSummary').innerHTML=
+    '<div class="metric-line"><span>Mediana da sessão</span><strong>'+num(s.median_minutes)+' min</strong></div>'+
+    '<div class="metric-line"><span>P95 da sessão</span><strong>'+num(s.p95_minutes)+' min</strong></div>'+
+    '<div class="metric-line"><span>Multi-módulo</span><strong>'+pct(s.multi_module_pct)+'</strong></div>'+
+    '<div class="metric-line"><span>Sessões fortes · ≥10 ações</span><strong>'+num(s.power_sessions)+'</strong></div>'+
+    '<div class="info-note">A mediana e o P95 são mostrados em conjunto para evitar que sessões muito longas escondam o comportamento típico.</div>';
+  const hours=d.analytics?.usage?.hourly||[];
+  const max=Math.max(1,...hours.map(x=>Number(x.actions||0)));
+  $('hourlyChart').innerHTML=hours.map(x=>'<div class="hour-cell" style="opacity:'+Math.max(.25,Number(x.actions||0)/max)+'"><strong>'+String(x.hour_num).padStart(2,'0')+'h</strong><span>'+fmt(x.actions||0)+' ações</span></div>').join('')||'<div class="empty">Sem dados horários.</div>';
+}
+function renderOverviewTrend(d){
+  const rows=d.analytics?.usage?.daily||[];
+  const vals=rows.map(x=>Number(x.lookups||0));const max=Math.max(1,...vals);
+  $('dailyChart').innerHTML=rows.map(x=>{
+    const h=Math.max(3,(Number(x.lookups||0)/max)*100);
+    return '<div class="chart-col" title="'+escapeHtml(x.day_key)+' · '+fmt(x.lookups)+' consultas"><div class="chart-bar" style="height:'+h+'%"></div><div class="chart-label">'+escapeHtml(String(x.day_key).slice(5))+'</div></div>';
+  }).join('')||'<div class="empty" style="width:100%">Sem dados diários.</div>';
+  const last=rows.slice(-7),sumLook=last.reduce((a,x)=>a+Number(x.lookups||0),0),sumErr=last.reduce((a,x)=>a+Number(x.asf_errors||0),0),sumSpeed=last.reduce((a,x)=>a+Number(x.speed_calcs||0),0);
+  $('trendCards').innerHTML=
+    card('CONSULTAS · 7 ÚLTIMOS DIAS',fmt(sumLook),'Soma dos dias disponíveis.','cyan')+
+    card('ERROS ASF · 7 ÚLTIMOS DIAS',fmt(sumErr),'Eventos de erro registados.','yellow')+
+    card('CÁLCULOS · 7 ÚLTIMOS DIAS',fmt(sumSpeed),'Módulo de cinemómetro.','green');
+}
+function renderInsurance(d){
+  const ins=periodData('insurance');const insured=Number(ins.insured||0),no=Number(ins.uninsured||0),err=Number(ins.errors||0),finals=Number(ins.finals||0);
+  const errorRate=finals?100*err/finals:null,decided=insured+no,uninsRate=decided?100*no/decided:null;
+  $('insuranceCards').innerHTML=
+    card('CONSULTAS INICIADAS',num(ins.started),'Janela '+currentPeriod.toUpperCase()+'.','cyan')+
+    card('RESULTADOS',num(ins.finals),'Eventos finais consolidados.')+
+    card('COM SEGURO',num(insured),pct(decided?100*insured/decided:null),'green')+
+    card('SEM SEGURO',num(no),pct(uninsRate),'red')+
+    card('ERROS',num(err),pct(errorRate)+' dos finais.','yellow')+
+    card('PENDENTES',num(ins.pending),'Sem resultado final conhecido.','yellow');
+  const stages=[
+    ['CONSULTAS',Number(ins.started||0)],
+    ['FINAIS',Number(ins.finals||0)],
+    ['DECISÕES',decided],
+    ['ERROS',err]
+  ];
+  const max=Math.max(1,...stages.map(x=>x[1]));
+  $('insuranceFunnel').innerHTML=stages.map((x,i)=>'<div class="funnel-step"><span>'+x[0]+'</span><strong>'+fmt(x[1])+'</strong><div class="progress" style="margin-top:8px"><i style="width:'+((x[1]/max)*100)+'%;background:'+(x[0]==='ERROS'?'var(--red)':'var(--cyan)')+'"></i></div></div>').join('');
+  const all=['24h','7d','30d'];const labels=['24H','7 DIAS','30 DIAS'];
+  $('insuranceTable').innerHTML='<table><thead><tr><th>PERÍODO</th><th>INICIADAS</th><th>FINAIS</th><th>COM SEGURO</th><th>SEM SEGURO</th><th>ERROS</th><th>PENDENTES</th></tr></thead><tbody>'+
+    all.map((p,i)=>{const x=d.analytics?.insurance?.[p]||{};return '<tr><td class="label">'+labels[i]+'</td><td>'+num(x.started)+'</td><td>'+num(x.finals)+'</td><td class="green">'+num(x.insured)+'</td><td class="red">'+num(x.uninsured)+'</td><td class="yellow">'+num(x.errors)+'</td><td>'+num(x.pending)+'</td></tr>'}).join('')+'</tbody></table>';
+}
+function renderInsurancePerf(d){
+  const q=d.analytics?.insurance_quality||{},r=d.analytics?.retry||{},ins=periodData('insurance');
+  $('insurancePerfCards').innerHTML=
+    card('ASF P50',num(q.latency_p50_ms)+' ms','Mediana das respostas com diagnóstico.')+
+    card('ASF P95',num(q.latency_p95_ms)+' ms','Cauda de latência.')+
+    card('MATRÍCULAS CONHECIDAS',num(q.known_plates_24h),'24H com diagnóstico disponível.','cyan')+
+    card('DUPLICAÇÕES FINAIS',num(ins.multi_final),'Mesmo query_id com mais de um final.','yellow');
+  $('retryPanel').innerHTML=
+    '<div class="metric-line"><span>Tentativas marcadas como retry · 24H</span><strong>'+num(r.attempts_24h)+'</strong></div>'+
+    '<div class="metric-line"><span>Tentativas marcadas como retry · 30D</span><strong>'+num(r.attempts_30d)+'</strong></div>'+
+    '<div class="metric-line"><span>Finais ligados a retry · 24H</span><strong>'+num(r.retry_finals_24h)+'</strong></div>'+
+    '<div class="info-note">A telemetria de retry só conta o que foi explicitamente marcado pela aplicação.</div>';
+  const cov=d.analytics?.telemetry||{};
+  $('insuranceDataQuality').innerHTML=
+    '<div class="metric-line"><span>Cobertura de diagnóstico ASF</span><strong>'+pct(cov.asf_diagnostic_coverage_30d)+'</strong></div>'+
+    '<div class="metric-line"><span>Eventos totais · 30D</span><strong>'+num(cov.events_30d)+'</strong></div>'+
+    '<div class="metric-line"><span>Heartbeats · 30D</span><strong>'+num(cov.heartbeats_30d)+'</strong></div>'+
+    '<div class="info-note">A cobertura é histórica: eventos antigos de 1.3 não contêm todos os campos que a versão 1.4 passou a recolher.</div>';
+}
+function renderInsuranceDiag(d){
+  const e=d.analytics?.errors||{};
+  const plates=e.plates||[],sigs=e.signatures||[];
+  $('insuranceDiagCards').innerHTML=
+    card('ASSINATURAS DE ERRO',fmt(sigs.length),'Agrupamentos técnicos observados.')+
+    card('MATRÍCULAS COM ERRO',fmt(plates.length),'Só quando a matrícula foi preservada.')+
+    card('TIPOS DE ERRO',fmt((e.types||[]).length),'Classificações disponíveis.','cyan');
+  $('insurancePlateErrors').innerHTML=plates.length?
+    '<table><thead><tr><th>MATRÍCULA</th><th>ERROS</th><th>ÚLTIMO</th><th>TIPO</th></tr></thead><tbody>'+plates.slice(0,20).map(x=>'<tr><td class="label red">'+escapeHtml(x.plate||'—')+'</td><td>'+num(x.qty)+'</td><td>'+datePT(x.last_at)+'</td><td>'+escapeHtml((x.kinds||[]).join(', ')||'—')+'</td></tr>').join('')+'</tbody></table>'
+    :'<div class="empty">Ainda não existem erros associados a matrículas com diagnóstico disponível.</div>';
+  $('insuranceSignatures').innerHTML=sigs.length?
+    '<table><thead><tr><th>TIPO</th><th>QTD.</th><th>QUERIES</th><th>INSTALAÇÕES</th><th>HASH</th><th>MENSAGEM</th></tr></thead><tbody>'+sigs.map(x=>'<tr><td><span class="pill red">'+escapeHtml(x.kind||'unknown')+'</span></td><td>'+num(x.qty)+'</td><td>'+num(x.queries)+'</td><td>'+num(x.installs)+'</td><td>'+escapeHtml(x.response_hash||'—')+'</td><td style="text-align:left">'+escapeHtml(x.message_text||'—')+'</td></tr>').join('')+'</tbody></table>'
+    :'<div class="empty">Sem assinaturas no período.</div>';
+}
+function renderSpeed(d){
+  const s=d.analytics?.speed?.summary||{},activity=Number(activityValue('Velocidades inseridas').v24||0);
+  $('speedCards').innerHTML=
+    card('CÁLCULOS · MÓDULO',fmt(activity),'Atividade registada no Cinemómetro.','cyan')+
+    card('DADOS DETALHADOS',fmt(s.detail_events_24h),'Velocidades com snapshot 1.4.')+
+    card('COBERTURA DETALHADA',pct(d.analytics?.telemetry?.cin_detail_coverage_30d),'Do conjunto que já contém eventos de cinemómetro.','yellow')+
+    card('P50 VELOCIDADE',num(s.p50_24h),'Só quando há snapshot detalhado.')+
+    card('MÍNIMO / MÁXIMO',(s.min_24h==null?'—':num(s.min_24h)+' / '+num(s.max_24h)),'km/h.')+
+    card('MÉDIA',s.avg_24h==null?'—':Number(s.avg_24h).toFixed(1).replace('.',',')+' km/h','Só com detalhe disponível.');
+  const dist=d.analytics?.speed?.distribution_24h||[];
+  $('speedDistribution').innerHTML=dist.length?'<div class="bar-list">'+dist.map(x=>'<div class="bar-row"><div class="bar-label">'+x.bucket_start+'–'+(Number(x.bucket_start)+9)+' km/h</div><div class="bar-track"><div class="bar-fill" style="width:'+Math.min(100,Number(x.qty||0)/Math.max(1,...dist.map(y=>Number(y.qty||0)))*100)+'%"></div></div><div class="bar-num">'+fmt(x.qty)+'</div></div>').join('')+'</div>':'<div class="empty">Ainda não há snapshots detalhados de velocidade armazenados. A atividade do módulo existe, mas o detalhe de velocidade ainda não aparece na base atual.</div>';
+  const cov=Number(d.analytics?.telemetry?.cin_detail_coverage_30d||0);
+  $('speedCoverage').innerHTML=
+    '<div class="big-number '+(cov>0?'cyan':'yellow')+'">'+pct(cov)+'</div>'+
+    '<div class="card-note" style="margin-top:8px">Cobertura dos eventos de cinemómetro com objeto <code>cin</code>.</div>'+
+    '<div class="metric-line" style="margin-top:10px"><span>Eventos do módulo · 30D</span><strong>'+num(activityValue('Velocidades inseridas').v30)+'</strong></div>'+
+    '<div class="metric-line"><span>Eventos detalhados · 30D</span><strong>'+num(s.detail_events_24h)+'</strong></div>';
+}
+function renderSpeedPatterns(d){
+  const s=d.analytics?.speed?.summary||{},dist=d.analytics?.speed?.distribution_24h||[];
+  const detailed=d.analytics?.speed?.dimensions||{};
+  $('speedPatternCards').innerHTML=
+    card('VELOCIDADES DISTINTAS',num(s.distinct_24h),'24H, com detalhe disponível.')+
+    card('MÚLTIPLOS DE 5',detailed.multiples5_pct?pct(detailed.multiples5_pct):'—','Métrica passa a existir com snapshots.')+
+    card('MÚLTIPLOS DE 10',detailed.multiples10_pct?pct(detailed.multiples10_pct):'—','Métrica passa a existir com snapshots.');
+  renderBars('speedModeBars',detailed.modo||[]);
+  renderBars('speedVehicleBars',detailed.veiculo||[]);
+  renderBars('speedFrameBars',detailed.enquadramento||[]);
+  if(!dist.length){
+    ['speedModeBars','speedVehicleBars','speedFrameBars'].forEach(id=>{if(!$(id).innerHTML)$(id).innerHTML='<div class="empty">Sem detalhe disponível.</div>'});
   }
 }
-
-function cellClass(label, value){
-  if(label.includes('Com seguro')) return 'green';
-  if(label.includes('Sem seguro')||label.includes('Erros')) return 'red';
-  if(label.includes('Sem resultado')||label.includes('% sem')) return 'yellow';
-  if(label.includes('IMT')) return 'cyan';
-  return '';
+function renderSpeedConfig(d){
+  const sp=d.analytics?.speed||{}, dims=sp.dimensions||{};
+  renderTable('speedOperators',sp.operators||[],[
+    ['numero','N.º'],['nome','NOME'],['posto','POSTO'],['qty','EVENTOS'],['operations','OPERAÇÕES']
+  ],false,'Sem operadores declarados no período.');
+  renderTable('speedApparatus',sp.apparatus||[],[
+    ['marca','MARCA'],['modelo','MODELO'],['serie','SÉRIE'],['qty','EVENTOS'],['operations','OPERAÇÕES']
+  ],false,'Sem aparelho/perfil declarado no período.');
+  renderBars('speedLimitBars',dims.limite||[]);
+  renderBars('speedGravityBars',dims.gravidade||[]);
+  renderBars('speedCodeBars',dims.codigo||[]);
 }
-
-function renderActivity(rows){
-  const body=$('activityTable').querySelector('tbody');
-  body.innerHTML='';
-  (rows||[]).forEach(r=>{
-    const tr=document.createElement('tr');
-    const cls=cellClass(r.indicator||'',r.v24);
-    tr.innerHTML=`
-      <td class="row-label">${escapeHtml(r.indicator||'')}</td>
-      <td class="${cls}">${r.indicator==='% sem seguro'?fmtPct(r.v24):fmt(r.v24)}</td>
-      <td class="${cls}">${r.indicator==='% sem seguro'?fmtPct(r.v7):fmt(r.v7)}</td>
-      <td class="${cls}">${r.indicator==='% sem seguro'?fmtPct(r.v30):fmt(r.v30)}</td>
-      <td class="${cls}">${r.indicator==='% sem seguro'?fmtPct(r.v_history):fmt(r.v_history)}</td>`;
-    body.appendChild(tr);
-  });
+function renderLegislation(d){
+  const l=d.analytics?.legislation||{},c=l.counts?.[currentPeriod]||{};
+  const interactions=Number(c.opens||0)+Number(c.searches||0);
+  $('legCards').innerHTML=
+    card('CATEGORIAS ABERTAS',num(c.opens),'No período selecionado.')+
+    card('PESQUISAS',num(c.searches),'Pesquisas registadas.')+
+    card('CÓPIAS',num(c.copies),'Conteúdo copiado.')+
+    card('FAVORITOS',num(c.favorites),'Alterações de favorito.','yellow');
+  $('legConversion').innerHTML=
+    '<div class="big-number '+(interactions?'cyan':'muted')+'">'+(interactions?pct(100*Number(c.copies||0)/interactions):'—')+'</div>'+
+    '<div class="card-note" style="margin-top:8px">Cópias por 100 interações de categoria/pesquisa. É um indicador de uso, não de eficácia.</div>';
+  const periods=['24h','7d','30d'];
+  $('legPeriodTable').innerHTML='<table><thead><tr><th>PERÍODO</th><th>ABERTURAS</th><th>PESQUISAS</th><th>CÓPIAS</th><th>FAVORITOS</th></tr></thead><tbody>'+
+    periods.map(p=>{const x=l.counts?.[p]||{};return '<tr><td class="label">'+p.toUpperCase()+'</td><td>'+num(x.opens)+'</td><td>'+num(x.searches)+'</td><td class="cyan">'+num(x.copies)+'</td><td>'+num(x.favorites)+'</td></tr>'}).join('')+'</tbody></table>';
+  renderTable('legItems',l.items||[],[
+    ['item_label','LEGISLAÇÃO'],['item_id','CÓDIGO'],['qty','CÓPIAS'],['code_qty','CÓDIGO'],['desc_qty','DESCRIÇÃO'],['all_qty','TUDO']
+  ],false,'Ainda não existem cópias registadas.');
+  renderBars('legCopyTypes',(l.copy_types||[]).map(x=>({label:x.kind,value:x.qty})));
+  $('legActions').innerHTML=
+    '<div class="metric-line"><span>Aberturas</span><strong>'+num(c.opens)+'</strong></div>'+
+    '<div class="metric-line"><span>Pesquisas</span><strong>'+num(c.searches)+'</strong></div>'+
+    '<div class="metric-line"><span>Cópias</span><strong>'+num(c.copies)+'</strong></div>'+
+    '<div class="metric-line"><span>Favoritos</span><strong>'+num(c.favorites)+'</strong></div>';
 }
-
-function renderCompare(rows){
-  const body=$('compareTable').querySelector('tbody'); body.innerHTML='';
-  (rows||[]).forEach(r=>{
-    const positive=Number(r.variation)>0;
-    const negative=Number(r.variation)<0;
-    const variationClass = negative?'neg':positive?'pos':'muted';
-    const pct = r.percentage===null||r.percentage===undefined?'0,0%':fmtPct(r.percentage);
-    const tr=document.createElement('tr');
-    tr.innerHTML=`
-      <td class="row-label">${escapeHtml(r.indicator||'')}</td>
-      <td>${fmt(r.current_value)}</td>
-      <td>${fmt(r.previous_value)}</td>
-      <td class="${variationClass}">${Number(r.variation)>0?'+':''}${fmt(r.variation)}</td>
-      <td class="${variationClass}">${pct}</td>`;
-    body.appendChild(tr);
-  });
+function renderUsage(d){
+  const o=d.analytics?.overview||{},ret=d.analytics?.retention?.[currentPeriod]||{},s=d.analytics?.usage?.sessions?.[currentPeriod]||{};
+  $('usageUserCards').innerHTML=
+    card('ÚNICOS',num(o['unique_'+currentPeriod]),'Instalações ativas no período.','cyan')+
+    card('NOVOS',num(ret.new),'Primeira aparição no período.')+
+    card('REGRESSO',num(ret.returning),'Instalações com atividade anterior.','green')+
+    card('ATIVOS · 10 MIN',num(o.active_10m),'No momento da leitura.','green')+
+    card('EVENTOS',num(o['events_'+currentPeriod]),'Total de telemetria no período.')+
+    card('SESSÕES FORTES',num(s.power_sessions),'Sessões com ≥10 ações.','yellow');
+  renderBars('moduleBars',(d.analytics?.usage?.modules||[]).map(x=>({label:x.module,value:x.qty})));
+  renderBars('moduleActivityBars',(d.analytics?.usage?.module_activity||[]).filter(x=>x.module!=='(sem módulo)').slice(0,8).map(x=>({label:x.module,value:x.qty})));
+  $('usageSessionCards').innerHTML=
+    card('SESSÕES',num(s.sessions),'Sessões técnicas.')+
+    card('MEDIANA',num(s.median_minutes)+' min','Duração típica.')+
+    card('P95',num(s.p95_minutes)+' min','Sessões longas.')+
+    card('AÇÕES / SESSÃO',num(s.avg_actions),'Sem heartbeats.');
+  renderTable('moduleTransitions',d.analytics?.usage?.transitions||[],[
+    ['from_module','DE'],['to_module','PARA'],['qty','TRANSIÇÕES']
+  ],false,'Ainda não existem transições suficientes.');
+  const days=(d.analytics?.usage?.daily||[]).slice(-15).reverse();
+  $('dailyMiniTable').innerHTML='<table><thead><tr><th>DIA</th><th>UTILIZADORES</th><th>CONSULTAS</th><th>CINEMÓMETRO</th><th>ERROS ASF</th><th>CÓPIAS</th></tr></thead><tbody>'+
+    days.map(x=>'<tr><td class="label">'+escapeHtml(x.day_key)+'</td><td>'+num(x.users)+'</td><td>'+num(x.lookups)+'</td><td>'+num(x.speed_calcs)+'</td><td class="yellow">'+num(x.asf_errors)+'</td><td>'+num(x.leg_copies)+'</td></tr>').join('')+'</tbody></table>';
 }
-
-function renderMenus(rows){
-  const by={};
-  (rows||[]).forEach(r=>{
-    by[r.period] ||= [];
-    by[r.period].push(r);
-  });
-  ['24 horas','30 dias'].forEach(period=>{
-    const target = period==='24 horas' ? $('menus24') : $('menus30');
-    target.innerHTML='';
-    const list=(by[period]||[]).sort((a,b)=>Number(b.count_value)-Number(a.count_value));
-    const max=Math.max(1,...list.map(x=>Number(x.count_value)));
-    list.forEach(r=>{
-      const row=document.createElement('div'); row.className='bar-row';
-      const w=Math.max(0,(Number(r.count_value)/max)*100);
-      row.innerHTML=`<div class="bar-label">${escapeHtml(r.label||'')}</div><div class="bar"><i style="width:${w}%"></i></div><div class="bar-num">${fmt(r.count_value)}</div>`;
-      target.appendChild(row);
-    });
-  });
+function renderDevices(d){
+  const dist=d.analytics?.devices?.distribution||{},versions=d.analytics?.devices?.versions||[];
+  renderBars('browserBars',dist.browsers||[]);
+  renderBars('deviceTypeBars',dist.device_types||[]);
+  renderBars('osBars',dist.os||[]);
+  renderTable('versionTable',versions,[['value','VERSÃO'],['qty','INSTALAÇÕES']],false,'Sem versões reportadas.');
+  const clients=d.analytics?.errors?.clients||[];
+  const networkKnown=clients.filter(x=>x.network_type&&x.network_type!=='Unknown').length;
+  $('networkCards').innerHTML=
+    card('AMBIENTES COM REDE IDENTIFICADA',fmt(networkKnown),'Dentro do subconjunto de clientes com diagnóstico ASF.')+
+    card('NAVEGADORES OBSERVADOS',fmt((dist.browsers||[]).length),'Famílias distintas.')+
+    card('SISTEMAS OBSERVADOS',fmt((dist.os||[]).length),'Valores distintos guardados.');
 }
-
-function renderLegislation(rows){
-  const by={};
-  (rows||[]).forEach(r=>{by[r.period] ||= [];by[r.period].push(r)});
-  ['24 horas','30 dias'].forEach(period=>{
-    const target = period==='24 horas' ? $('leg24') : $('leg30');
-    const list=by[period]||[];
-    if(!list.length){target.innerHTML='<div class="empty">Sem cópias registadas.</div>';return;}
-    target.innerHTML=`<table><thead><tr><th>LEGISLAÇÃO</th><th>CÓDIGO</th><th>CÓPIAS</th></tr></thead><tbody>${
-      list.map(r=>`<tr><td class="row-label">${escapeHtml(r.item_label||'Sem designação')}</td><td>${escapeHtml(r.item_id||'—')}</td><td class="cyan">${fmt(r.copies)}</td></tr>`).join('')
-    }</tbody></table>`;
-  });
+function renderTelemetry(d){
+  const t=d.analytics?.telemetry||{};
+  $('telemetryCards').innerHTML=
+    card('EVENTOS · 30D',num(t.events_30d),'Volume total.','cyan')+
+    card('HEARTBEATS · 30D',num(t.heartbeats_30d),'Sinais de atividade.')+
+    card('CLIENTE',pct(t.client_coverage_30d),'Cobertura de metadados de cliente.')+
+    card('ASF DIAGNÓSTICO',pct(t.asf_diagnostic_coverage_30d),'Campos técnicos ASF.')+
+    card('CINEMÓMETRO DETALHE',pct(t.cin_detail_coverage_30d),'Snapshots de velocidade.','yellow');
+  const rows=[
+    ['Metadados de cliente',pct(t.client_coverage_30d),'Começa a ficar completo nos eventos novos.'],
+    ['Diagnóstico ASF',pct(t.asf_diagnostic_coverage_30d),'Muito do histórico 1.3 não tem o novo detalhe.'],
+    ['Detalhe Cinemómetro',pct(t.cin_detail_coverage_30d),'Ainda não aparece nos 30 dias atuais.'],
+    ['Eventos históricos',num(t.events_30d),'Continuam armazenados.']
+  ];
+  $('telemetryDetail').innerHTML='<table><thead><tr><th>CAMPO</th><th>COBERTURA / VALOR</th><th>LEITURA</th></tr></thead><tbody>'+
+    rows.map(x=>'<tr><td class="label">'+x[0]+'</td><td>'+x[1]+'</td><td style="text-align:left">'+x[2]+'</td></tr>').join('')+'</tbody></table>';
 }
-
-function escapeHtml(s){
-  return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+function renderErrors(d){
+  const e=d.analytics?.errors||{},types=e.types||[],bursts=e.bursts||[];
+  const qty=types.reduce((a,x)=>a+Number(x.qty||0),0);
+  $('errorCards').innerHTML=
+    card('ERROS · 24H',num(qty),'Erros com diagnóstico nesta análise.','red')+
+    card('TIPOS',num(types.length),'Classificações de erro.')+
+    card('PIQUES',num(bursts.length),'Minutos com concentração.')+
+    card('INSTALAÇÕES',num((e.installations||[]).length),'Com incidentes registados.');
+  $('errorTypes').innerHTML=types.length?
+    '<table><thead><tr><th>TIPO</th><th>QTD.</th><th>MÉDIA</th><th>HASHES</th><th>ÚLTIMO</th></tr></thead><tbody>'+types.map(x=>'<tr><td><span class="pill red">'+escapeHtml(x.kind||'unknown')+'</span></td><td class="red">'+num(x.qty)+'</td><td>'+num(x.avg_ms)+' ms</td><td>'+num(x.hash_qty)+'</td><td>'+datePT(x.last_at)+'</td></tr>').join('')+'</tbody></table>'
+    :'<div class="empty">Sem erros no período.</div>';
+  const hourMap={};bursts.forEach(x=>{const h=new Date(x.minute_key).toLocaleString('pt-PT',{hour:'2-digit',minute:'2-digit'});hourMap[h]=(hourMap[h]||0)+Number(x.qty||0)});
+  const hb=Object.entries(hourMap).map(([label,value])=>({label,value}));
+  renderBars('errorHourBars',hb.slice(0,12),true);
+  renderTable('errorBursts',bursts,[['minute_key','MOMENTO'],['qty','ERROS'],['installs','INSTALAÇÕES']],false,'Sem picos de erro.');
+  renderTable('errorSignatureTable',e.signatures||[],[
+    ['kind','TIPO'],['qty','QTD.'],['queries','QUERIES'],['installs','INSTALAÇÕES'],['response_hash','HASH'],['message_text','MENSAGEM']
+  ],false,'Sem assinaturas.');
+  renderTable('errorInstallTable',e.installations||[],[
+    ['installation_id','ID INSTALAÇÃO'],['qty','ERROS'],['queries','QUERIES'],['last_at','ÚLTIMO']
+  ],false,'Sem instalações com erros.');
+  renderTable('errorPlateTable',e.plates||[],[
+    ['plate','MATRÍCULA'],['qty','ERROS'],['last_at','ÚLTIMO'],['kinds','TIPOS']
+  ],false,'Sem matrículas associadas a erros.');
 }
-
-function renderDays(){
-  const host=$('days'); host.innerHTML='';
-  const base=new Date();
-  for(let i=0;i<30;i++){
-    const d=new Date(base); d.setDate(base.getDate()-i);
-    const iso=localDateISO(d);
-    const btn=document.createElement('button');
-    btn.className='day'+(iso===selectedDate?' active':'');
-    btn.innerHTML=`<span>${d.toLocaleDateString('pt-PT',{weekday:'long'})}</span><strong>${d.toLocaleDateString('pt-PT',{day:'2-digit',month:'2-digit'})}</strong>`;
-    btn.onclick=()=>{
-      selectedDate=iso;
-      renderDays();
-      loadHourly().catch(function(error){
-        const body=$('hourTable')?.querySelector('tbody');
-        if(body) body.innerHTML='<tr><td colspan="10" class="muted" style="text-align:center">'+escapeHtml(error?.message||'Falha ao carregar o histórico horário.')+'</td></tr>';
-      });
-    };
-    host.appendChild(btn);
-  }
+function renderClients(d){
+  const rows=d.analytics?.errors?.clients||[];
+  $('clientHealthTable').innerHTML=rows.length?
+    '<table><thead><tr><th>BROWSER</th><th>VERSÃO</th><th>SISTEMA</th><th>OS</th><th>REDE</th><th>FINAIS</th><th>ERROS</th><th>TAXA</th></tr></thead><tbody>'+
+    rows.map(x=>'<tr><td class="label">'+escapeHtml(x.browser_name||'Unknown')+'</td><td>'+escapeHtml(x.browser_version||'Unknown')+'</td><td>'+escapeHtml(x.os_platform||'Unknown')+'</td><td>'+escapeHtml(x.os_version||'Unknown')+'</td><td>'+escapeHtml(x.network_type||'Unknown')+'</td><td>'+num(x.finals_qty)+'</td><td class="'+(Number(x.error_qty)>0?'red':'green')+'">'+num(x.error_qty)+'</td><td class="'+(Number(x.error_qty)>0?'yellow':'green')+'">'+pct(x.finals_qty?100*Number(x.error_qty)/Number(x.finals_qty):null)+'</td></tr>').join('')+'</tbody></table>'
+    :'<div class="empty">Ainda não existem grupos de cliente suficientes.</div>';
 }
-
-async function loadHourly(){
-  const sequence=++hourlyLoadSequence;
-  const dateRequested=selectedDate;
-  const data=await request(`${HOURLY_API}?date=${encodeURIComponent(dateRequested)}&v=${API_CACHE_BUSTER}`);
-  if(sequence!==hourlyLoadSequence || dateRequested!==selectedDate) return;
-  const rows=Array.isArray(data.rows)?data.rows:[];
-  const body=$('hourTable').querySelector('tbody'); body.innerHTML='';
-  if(!rows.length){
-    body.innerHTML='<tr><td colspan="10" class="muted" style="text-align:center">Sem dados para o dia selecionado.</td></tr>';
-    $('dayUsers').textContent='0';
-    $('peakHour').textContent='00:00';
-    $('peakUsers').textContent='0';
-    $('daySearches').textContent='0';
-    return;
-  }
-  let dayUsers=Number(rows[0]?.day_unique_users||0), searches=0, peakHour='00:00', peakUsers=0;
-  rows.forEach(r=>{
-    searches+=Number(r.vehicle_searches||0);
-    if(Number(r.users||0)>peakUsers){peakUsers=Number(r.users||0);peakHour=String(r.hour).padStart(2,'0')+':00';}
-    const tr=document.createElement('tr');
-    tr.innerHTML=`
-      <td class="row-label">${String(r.hour).padStart(2,'0')}:00–${String((Number(r.hour)+1)%24).padStart(2,'0')}:00</td>
-      <td>${fmt(r.users)}</td><td>${fmt(r.heartbeats)}</td><td>${fmt(r.app_opens)}</td>
-      <td>${fmt(r.vehicle_searches)}</td><td>${fmt(r.speeds)}</td><td>${fmt(r.legislation)}</td>
-      <td>${fmt(r.copies)}</td><td>${fmt(r.alcohol)}</td><td>${fmt(r.tools)}</td>`;
-    body.appendChild(tr);
-  });
-  $('dayUsers').textContent=fmt(dayUsers);
-  $('peakHour').textContent=peakUsers?peakHour:'00:00';
-  $('peakUsers').textContent=fmt(peakUsers);
-  $('daySearches').textContent=fmt(searches);
+function renderSystem(d){
+  const o=d.analytics?.overview||{},t=d.analytics?.telemetry||{},b=d.analytics?.bounds||{};
+  const last=o.last_event_at?new Date(o.last_event_at):null;
+  const age=last?Math.max(0,Math.round((Date.now()-last.getTime())/60000)):null;
+  $('systemStateCards').innerHTML=
+    card('BACKEND','ONLINE','Autenticação e leitura administrativa.','green',true)+
+    card('ÚLTIMO EVENTO',age===null?'—':age+' min','Idade do último evento recebido.','cyan',true)+
+    card('EVENTOS · 30D',num(o.events_30d),'Base de análise.','',true);
+  $('systemStateText').innerHTML=
+    '<div class="grid3">'+
+      '<div class="system-box"><div class="system-label">JANELA 24H</div><div class="system-value">'+escapeHtml(datePT(b.s24))+'</div></div>'+
+      '<div class="system-box"><div class="system-label">JANELA 7 DIAS</div><div class="system-value">'+escapeHtml(datePT(b.s7))+'</div></div>'+
+      '<div class="system-box"><div class="system-label">JANELA 30 DIAS</div><div class="system-value">'+escapeHtml(datePT(b.s30))+'</div></div>'+
+    '</div>'+
+    '<div class="info-note">A aplicação visível continua na versão <b>1.4</b>. O número técnico de deploy do backend não é mostrado aqui para não o confundir com a versão do produto.</div>';
+  const ev=d.analytics?.events||[];
+  $('eventVolumeTable').innerHTML='<table><thead><tr><th>EVENTO</th><th>30 DIAS</th></tr></thead><tbody>'+ev.slice(0,20).map(x=>'<tr><td class="label">'+escapeHtml(x.event)+'</td><td>'+num(x.qty)+'</td></tr>').join('')+'</tbody></table>';
+  $('systemTelemetryTable').innerHTML='<table><thead><tr><th>INDICADOR</th><th>VALOR</th><th>JANELA</th></tr></thead><tbody>'+
+    '<tr><td class="label">Eventos totais</td><td>'+num(t.events_30d)+'</td><td>30 dias</td></tr>'+
+    '<tr><td class="label">Heartbeats</td><td>'+num(t.heartbeats_30d)+'</td><td>30 dias</td></tr>'+
+    '<tr><td class="label">Cliente</td><td>'+pct(t.client_coverage_30d)+'</td><td>30 dias</td></tr>'+
+    '<tr><td class="label">Diagnóstico ASF</td><td>'+pct(t.asf_diagnostic_coverage_30d)+'</td><td>30 dias</td></tr>'+
+    '<tr><td class="label">Detalhe Cinemómetro</td><td>'+pct(t.cin_detail_coverage_30d)+'</td><td>30 dias</td></tr>'+
+    '</tbody></table>';
+  $('reset24hStatus').textContent='Último reset 24H: '+(d.reset24hAt?datePT(d.reset24hAt):'—');
 }
-
-
-function renderCinemometer(d){
-  const host=$('cinAnalytics'); if(!host)return;
-  const c=d?.cinemometer;
-  if(!c || c.error){host.innerHTML='<div class="empty">Sem dados do Cinemómetro no período selecionado.</div>';return;}
-  const pct=v=>v==null?'—':Number(v).toFixed(1).replace('.',',')+'%';
-  const num=v=>v==null?'—':fmt(v);
-  const sessions=Array.isArray(c.recent_sessions)?c.recent_sessions:[];
-  const operators=Array.isArray(c.operators)?c.operators:[];
-  const flags=c.flag_counts||{};
-  const flagLabels={poucos_dados:'Poucos dados',todas_velocidades_iguais:'Todas as velocidades iguais',alternancia_de_2_valores:'Alternância de 2 valores',sequencia_monotona:'Sequência monotónica',forte_concentracao_em_multiplos_de_5:'Concentração em múltiplos de 5',intervalos_muito_curto:'Intervalos < 2 s'};
-  let html='';
-  html+='<div class="cin-admin-grid">';
-  html+='<div class="cin-admin-card"><span>SESSÕES</span><strong>'+num(c.sessions)+'</strong><small>'+num(c.sessions_compatible)+' compatíveis com uso operacional</small></div>';
-  html+='<div class="cin-admin-card"><span>CÁLCULOS</span><strong>'+num(c.calculations)+'</strong><small>'+num(c.speed_entries)+' entradas de velocidade</small></div>';
-  html+='<div class="cin-admin-card"><span>VELOCIDADES</span><strong>'+num(c.speed_min)+'–'+num(c.speed_max)+'</strong><small>P50 '+num(c.speed_p50)+' · média '+num(c.speed_avg)+'</small></div>';
-  html+='<div class="cin-admin-card"><span>MÚLTIPLOS DE 5</span><strong>'+pct(c.round5_pct)+'</strong><small>Múltiplos de 10: '+pct(c.round10_pct)+'</small></div>';
-  html+='<div class="cin-admin-card"><span>IDENTIFICAÇÃO</span><strong>'+num(c.sessions_with_operator)+'</strong><small>sessões com operador declarado</small></div>';
-  html+='<div class="cin-admin-card"><span>PADRÕES A REVER</span><strong>'+num(c.sessions_atypical)+'</strong><small>não são prova de irregularidade</small></div>';
-  html+='</div>';
-  html+='<div class="cin-admin-note">Estes indicadores descrevem comportamento de utilização do software. Não permitem, por si só, provar que uma velocidade foi real, que uma operação ocorreu no terreno ou que uma determinada pessoa foi o operador. A identificação abaixo é a que foi declarada na sessão.</div>';
-  html+='<details class="admin-expander" style="margin-top:10px"><summary><span>SESSÕES RECENTES</span><span style="color:#8fa3aa;font-size:9px">'+num(sessions.length)+' analisadas</span></summary><div class="admin-expander-body">';
-  if(sessions.length){
-    sessions.slice(0,30).forEach(function(x,idx){
-      const op=x.operator||{}, ap=x.aparelho||{}, cfg=x.configuracao||{};
-      const opText=[op.nome,op.numero].filter(Boolean).join(' · ')||'Operador não identificado';
-      const apText=[ap.marca,ap.modelo,ap.serie].filter(Boolean).join(' · ')||'Aparelho não configurado';
-      const flagsText=(x.flags||[]).join(' · ');
-      const summary=(x.first_seen?new Date(x.first_seen).toLocaleString('pt-PT'):'—')+' · '+opText+' · '+num(x.calculations)+' cálculos · '+(x.min_speed==null?'—':num(x.min_speed)+'–'+num(x.max_speed)+' km/h');
-      html+='<details class="admin-expander" style="margin-top:8px"><summary><span>'+escapeHtml(summary)+'</span><span style="color:#8fa3aa;font-size:9px">'+escapeHtml(x.pattern||'—')+'</span></summary><div class="admin-expander-body">';
-      html+='<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:9px">';
-      html+='<div class="cin-admin-card"><span>OPERAÇÃO</span><strong style="font-size:12px">'+escapeHtml(x.operation_id||'ID legado')+'</strong><small>Browser: '+escapeHtml(x.browser||'—')+'</small></div>';
-      html+='<div class="cin-admin-card"><span>OPERADOR DECLARADO</span><strong style="font-size:13px">'+escapeHtml(opText)+'</strong><small>Posto: '+escapeHtml(op.posto||'—')+'</small></div>';
-      html+='<div class="cin-admin-card"><span>APARELHO</span><strong style="font-size:12px">'+escapeHtml(apText)+'</strong><small>Configurado: '+(ap.configurado?'sim':'não')+'</small></div>';
-      html+='<div class="cin-admin-card"><span>CONFIGURAÇÃO</span><strong style="font-size:12px">'+escapeHtml(cfg.modo||'—')+'</strong><small>'+escapeHtml(cfg.enquadramento||'—')+' · limite '+(cfg.limite==null?'—':num(cfg.limite)+' km/h')+'</small></div>';
-      html+='</div>';
-      html+='<div class="cin-admin-note"><strong>Sequência observada:</strong> '+escapeHtml((x.speed_sequence||[]).join(' → ')||'ainda não disponível')+' km/h';
-      html+=' · intervalo mediano '+(x.median_interval_s==null?'—':num(Number(x.median_interval_s).toFixed(1))+' s');
-      html+=' · repetição '+pct(x.repeated_speed_pct);
-      html+=' · múltiplos de 5 '+pct(x.round5_pct);
-      html+=' · '+escapeHtml(flagsText||'sem sinalizadores')+'</div>';
-      html+='</div></details>';
-    });
-  } else html+='<div class="empty">Sem sessões com velocidades registadas.</div>';
-  html+='</div></details>';
-  html+='<details class="admin-expander" style="margin-top:10px"><summary><span>OPERADORES DECLARADOS</span><span style="color:#8fa3aa;font-size:9px">'+num(operators.length)+' identificações distintas</span></summary><div class="admin-expander-body">';
-  if(operators.length){html+='<div style="overflow:auto"><table class="diag-table"><thead><tr><th>N.º</th><th>NOME</th><th>POSTO</th><th>SESSÕES</th><th>CÁLCULOS</th><th>ÚLTIMA ATIVIDADE</th></tr></thead><tbody>';
-    operators.forEach(function(o){html+='<tr><td>'+escapeHtml(o.numero||'—')+'</td><td>'+escapeHtml(o.nome||'—')+'</td><td>'+escapeHtml(o.posto||'—')+'</td><td>'+num(o.sessions)+'</td><td>'+num(o.calculations)+'</td><td class="diag-muted">'+(o.last_seen?new Date(o.last_seen).toLocaleString('pt-PT'):'—')+'</td></tr>';});
-    html+='</tbody></table></div>';} else html+='<div class="empty">Nenhuma identificação de operador foi declarada nas sessões analisadas.</div>';
-  html+='</div></details>';
-  html+='<details class="admin-expander" style="margin-top:10px"><summary><span>PADRÕES / ALERTAS DE TELEMETRIA</span><span style="color:#8fa3aa;font-size:9px">'+num(Object.keys(flags).length)+' tipos</span></summary><div class="admin-expander-body">';
-  if(Object.keys(flags).length){Object.keys(flags).forEach(function(k){html+='<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:10px"><span>'+escapeHtml(flagLabels[k]||k)+'</span><strong>'+num(flags[k])+'</strong></div>';});} else html+='<div class="empty">Nenhum padrão de atenção detetado.</div>';
-  html+='</div></details>';
-  host.innerHTML=html;
+function renderAll(d){
+  latestData=d;
+  renderOverview(d);renderOverviewPace(d);renderOverviewTrend(d);
+  renderInsurance(d);renderInsurancePerf(d);renderInsuranceDiag(d);
+  renderSpeed(d);renderSpeedPatterns(d);renderSpeedConfig(d);
+  renderLegislation(d);renderUsage(d);renderDevices(d);renderTelemetry(d);
+  renderErrors(d);renderClients(d);renderSystem(d);
 }
-function renderDiagnostics(d){
-  const types=Array.isArray(d?.error_types_24h)?d.error_types_24h:[];
-  const clients=Array.isArray(d?.client_health_24h)?d.client_health_24h:[];
-  const recent=Array.isArray(d?.recent_errors_24h)?d.recent_errors_24h:[];
-  const uninsured=Array.isArray(d?.recent_uninsured_24h)?d.recent_uninsured_24h:[];
-  const signatures=Array.isArray(d?.error_signatures_24h)?d.error_signatures_24h:[];
-  const plateErrors=Array.isArray(d?.plate_errors_24h)?d.plate_errors_24h:[];
-  const typeEl=$('asfErrorTypes');
-  const clientEl=$('asfClientHealth');
-  const recentEl=$('asfRecentErrors');
-  if(typeEl){
-    if(!types.length) typeEl.innerHTML='<div class="empty">Sem erros ASF registados nas últimas 24h.</div>';
-    else typeEl.innerHTML='<table class="diag-table"><thead><tr><th>ERRO</th><th>QTD.</th><th>MÉDIA</th><th>RESPOSTAS</th><th>ÚLTIMO</th></tr></thead><tbody>'+types.map(r=>
-      '<tr><td><span class="diag-pill">'+escapeHtml(r.error_type||'unknown')+'</span></td><td class="bad">'+fmt(r.errors)+'</td><td>'+fmt(r.avg_ms)+' ms</td><td>'+fmt(r.distinct_response_hashes)+'</td><td class="diag-muted">'+(r.last_at?new Date(r.last_at).toLocaleString('pt-PT'):'—')+'</td></tr>'
-    ).join('')+'</tbody></table>';
-  }
-  if(clientEl){
-    if(!clients.length) clientEl.innerHTML='<div class="empty">Ainda não existem resultados suficientes com diagnóstico de cliente.</div>';
-    else clientEl.innerHTML='<table class="diag-table"><thead><tr><th>BROWSER / VERSÃO</th><th>SISTEMA</th><th>REDE</th><th>TOTAL</th><th>ERROS</th><th>%</th></tr></thead><tbody>'+clients.slice(0,40).map(r=>
-      '<tr><td>'+escapeHtml(r.browser||'Unknown')+' '+escapeHtml(r.browser_version||'')+'</td><td>'+escapeHtml(r.os_platform||'Unknown')+' '+escapeHtml(r.os_version||'')+'</td><td>'+escapeHtml(r.effective_type||'Unknown')+'</td><td>'+fmt(r.completed)+'</td><td class="'+(Number(r.errors)>0?'bad':'ok')+'">'+fmt(r.errors)+'</td><td class="'+(Number(r.errors)>0?'bad':'ok')+'">'+fmtPct(r.error_rate)+'</td></tr>'
-    ).join('')+'</tbody></table>';
-  }
-  if(recentEl){
-    if(!recent.length) recentEl.innerHTML='<div class="empty">Sem falhas ASF nas últimas 24h.</div>';
-    else recentEl.innerHTML='<table class="diag-table"><thead><tr><th>HORA</th><th>MATRÍCULA</th><th>ERRO</th><th>HTTP</th><th>DURAÇÃO ASF</th><th>FILA</th><th>GQL</th><th>HASH</th><th>BROWSER</th><th>SISTEMA</th><th>REDE</th><th>MENSAGEM</th></tr></thead><tbody>'+recent.map(function(r){
-      return '<tr><td class="diag-muted">'+(r.occurred_at?new Date(r.occurred_at).toLocaleString('pt-PT'):'—')+
-      '</td><td class="'+(r.matricula?'bad':'diag-muted')+'">'+escapeHtml(r.matricula||'—')+
-      '</td><td><span class="diag-pill">'+escapeHtml(r.error_type||'unknown')+
-      '</span></td><td>'+escapeHtml(r.http_status||'—')+
-      '</td><td>'+fmt(r.duration_ms)+' ms</td><td>'+fmt(r.queue_wait_ms)+' ms</td><td>'+
-      escapeHtml((Array.isArray(r.graphql_messages)&&r.graphql_messages.length?r.graphql_messages.join(' | '):
-        (Array.isArray(r.graphql_codes)&&r.graphql_codes.length?r.graphql_codes.join(', '):
-        (r.graphql_error_count!=null?r.graphql_error_count:'—')))+(r.response_class?' ['+r.response_class+']':''))+
-      '</td><td class="diag-muted">'+escapeHtml(r.response_hash||'—')+
-      '</td><td>'+escapeHtml(r.browser||'Unknown')+' '+escapeHtml(r.browser_version||'')+
-      '</td><td>'+escapeHtml(r.os_platform||'Unknown')+' '+escapeHtml(r.os_version||'')+
-      '</td><td>'+escapeHtml(r.effective_type||'Unknown')+(r.rtt_ms!=null?' / '+fmt(r.rtt_ms)+'ms':'')+
-      '</td><td>'+escapeHtml(r.message||'—')+'</td></tr>';
-    }).join('')+'</tbody></table>';
-  }
-  const signaturesEl=$('asfErrorSignatures');
-  if(signaturesEl){
-    if(!signatures.length) signaturesEl.innerHTML='<div class="empty">Ainda não existem assinaturas de erro enriquecidas.</div>';
-    else signaturesEl.innerHTML='<table class="diag-table"><thead><tr><th>TIPO</th><th>QTD.</th><th>CONSULTAS</th><th>MATRÍCULAS</th><th>INSTALAÇÕES</th><th>HASH</th><th>GQL</th></tr></thead><tbody>'+signatures.map(function(r){
-      return '<tr><td><span class="diag-pill">'+escapeHtml(r.error_type||'unknown')+'</span></td><td class="bad">'+fmt(r.count)+'</td><td>'+fmt(r.distinct_queries)+'</td><td>'+fmt(r.distinct_plates)+'</td><td>'+fmt(r.distinct_installations)+'</td><td class="diag-muted">'+escapeHtml(r.response_hash||'—')+'</td><td>'+escapeHtml((r.graphql_messages||[]).join(' | ') || (r.graphql_codes||[]).join(', ') || '—')+'</td></tr>';
-    }).join('')+'</tbody></table>';
-  }
-
-  const plateErrorsEl=$('asfPlateErrors');
-  if(plateErrorsEl){
-    if(!plateErrors.length) plateErrorsEl.innerHTML='<div class="empty">Ainda não existem erros associados a matrículas com diagnóstico.</div>';
-    else plateErrorsEl.innerHTML='<table class="diag-table"><thead><tr><th>MATRÍCULA</th><th>NORMALIZADA</th><th>ERROS</th><th>ÚLTIMO ERRO</th><th>TIPOS</th></tr></thead><tbody>'+plateErrors.map(function(r){
-      return '<tr><td class="bad">'+escapeHtml(r.matricula||'—')+'</td><td class="diag-muted">'+escapeHtml(r.matricula_normalizada||'—')+'</td><td class="bad">'+fmt(r.errors)+'</td><td>'+ (r.last_error?new Date(r.last_error).toLocaleString('pt-PT'):'—') +'</td><td>'+escapeHtml((r.error_types||[]).join(', ')||'—')+'</td></tr>';
-    }).join('')+'</tbody></table>';
-  }
-
-  const qualityEl=$('asfQuality');
-  if(qualityEl){
-    const q=d?.quality_24h||{};
-    const pending=Array.isArray(q.unresolved_items)?q.unresolved_items:[];
-    qualityEl.innerHTML=`
-      <div class="diag-quality-grid">
-        <div class="diag-quality-card"><span>CONSULTAS</span><strong>${fmt(q.lookups)}</strong></div>
-        <div class="diag-quality-card"><span>CONCLUÍDAS</span><strong>${fmt(q.completed)}</strong><small>${q.completion_rate==null?'—':fmtPct(q.completion_rate)}</small></div>
-        <div class="diag-quality-card"><span>ERROS</span><strong class="bad">${fmt(q.error_queries)}</strong><small>${q.error_rate==null?'—':fmtPct(q.error_rate)}</small></div>
-        <div class="diag-quality-card"><span>COM SEGURO</span><strong>${fmt(q.insured_queries)}</strong><small>${q.insured_rate==null?'—':fmtPct(q.insured_rate)}</small></div>
-        <div class="diag-quality-card"><span>SEM SEGURO</span><strong>${fmt(q.uninsured_queries)}</strong><small>${q.uninsured_rate==null?'—':fmtPct(q.uninsured_rate)}</small></div>
-        <div class="diag-quality-card"><span>ASF P50</span><strong>${fmt(q.asf_p50_ms)} ms</strong><small>P95 ${fmt(q.asf_p95_ms)} ms</small></div>
-        <div class="diag-quality-card"><span>TOTAL P50</span><strong>${fmt(q.total_p50_ms)} ms</strong><small>P95 ${fmt(q.total_p95_ms)} ms</small></div>
-        <div class="diag-quality-card"><span>FILA P95</span><strong>${fmt(q.queue_p95_ms)} ms</strong><small>pendentes: ${fmt(pending.length)}</small></div>
-      </div>
-      ${pending.length ? '<div style="margin-top:12px"><table class="diag-table"><thead><tr><th>PENDENTE</th><th>MATRÍCULA</th><th>IDADE</th><th>BROWSER</th><th>VERSÃO</th></tr></thead><tbody>'+pending.map(function(p){
-        return '<tr><td class="diag-muted">'+(p.occurred_at?new Date(p.occurred_at).toLocaleString('pt-PT'):'—')+'</td><td class="'+(p.matricula?'bad':'diag-muted')+'">'+escapeHtml(p.matricula||'—')+'</td><td>'+fmt(Math.round(Number(p.age_seconds||0)/60))+' min</td><td>'+escapeHtml(p.browser||'Unknown')+'</td><td>'+escapeHtml(p.app_version||'—')+'</td></tr>';
-      }).join('')+'</tbody></table></div>' : '<div class="empty" style="margin-top:12px">Não existem consultas pendentes sem resultado final.</div>'}
-    `;
-  }
-
-  const uninsuredEl=$('asfRecentUninsured');
-  if(uninsuredEl){
-    if(!uninsured.length) uninsuredEl.innerHTML='<div class="empty">Sem resultados “sem seguro” nas últimas 24h.</div>';
-    else uninsuredEl.innerHTML='<table class="diag-table"><thead><tr><th>HORA</th><th>MATRÍCULA</th><th>HTTP</th><th>DURAÇÃO ASF</th><th>FILA</th><th>HASH</th><th>BROWSER</th><th>SISTEMA</th><th>REDE</th></tr></thead><tbody>'+uninsured.map(function(r){
-      return '<tr><td class="diag-muted">'+(r.occurred_at?new Date(r.occurred_at).toLocaleString('pt-PT'):'—')+
-      '</td><td class="'+(r.matricula?'red':'diag-muted')+'">'+escapeHtml(r.matricula||'—')+
-      '</td><td>'+escapeHtml(r.http_status||'—')+'</td><td>'+fmt(r.duration_ms)+' ms</td><td>'+
-      fmt(r.queue_wait_ms)+' ms</td><td class="diag-muted">'+escapeHtml(r.response_hash||'—')+
-      '</td><td>'+escapeHtml(r.browser||'Unknown')+' '+escapeHtml(r.browser_version||'')+
-      '</td><td>'+escapeHtml(r.os_platform||'Unknown')+' '+escapeHtml(r.os_version||'')+
-      '</td><td>'+escapeHtml(r.effective_type||'Unknown')+(r.rtt_ms!=null?' / '+fmt(r.rtt_ms)+'ms':'')+
-      '</td></tr>';
-    }).join('')+'</tbody></table>';
-  }
+function renderBars(id,rows,red=false){
+  const el=$(id);if(!el)return;
+  const a=(rows||[]).filter(x=>Number(x.value??x.qty??0)>0);
+  if(!a.length){el.innerHTML='<div class="empty">Sem dados disponíveis.</div>';return}
+  const max=Math.max(1,...a.map(x=>Number(x.value??x.qty??0)));
+  el.innerHTML=a.map(x=>{
+    const val=Number(x.value??x.qty??0);
+    return '<div class="bar-row"><div class="bar-label">'+escapeHtml(x.label??x.value??'—')+'</div><div class="bar-track"><div class="bar-fill '+(red?'red':'')+'" style="width:'+Math.max(2,(val/max)*100)+'%"></div></div><div class="bar-num">'+fmt(val)+'</div></div>';
+  }).join('');
 }
-
+function renderTable(id,rows,cols,htmlValues=false,emptyText='Sem dados disponíveis.'){
+  const el=$(id);if(!el)return;
+  if(!rows?.length){el.innerHTML='<div class="empty">'+escapeHtml(emptyText)+'</div>';return}
+  el.innerHTML='<table><thead><tr>'+cols.map(x=>'<th>'+escapeHtml(x[1])+'</th>').join('')+'</tr></thead><tbody>'+
+    rows.map(r=>'<tr>'+cols.map(x=>{
+      let v=r[x[0]];
+      if(Array.isArray(v))v=v.join(', ');
+      if(v===null||v===undefined||v==='')v='—';
+      if(x[0].includes('at'))v=datePT(v);
+      return '<td class="'+(x[0]==='qty'&&Number(v)>0?'cyan':'')+'">'+(htmlValues?String(v):escapeHtml(v))+'</td>';
+    }).join('')+'</tr>').join('')+'</tbody></table>';
+}
 async function loadDashboard(){
-  if(dashboardInFlight) return null;
-  dashboardInFlight=true;
-  setBackendState('loading');
-  $('statusLine').textContent='A atualizar...';
+  if(dashboardInFlight)return;
+  dashboardInFlight=true;setBackendState('loading');$('statusLine').textContent='A atualizar o painel...';
   const t0=performance.now();
   try{
     const data=await request(STATS_API);
-    const backendErrors=(data.errors && typeof data.errors==='object') ? Object.keys(data.errors).filter(k=>data.errors[k]) : [];
-    const o=data.overview||{};
-    $('onlineValue').textContent=fmt(o.online_now);
-    $('activeValue').textContent=fmt(o.active_10m);
-    $('unique24Value').textContent=fmt(o.unique_24h);
-    $('unique30Value').textContent=fmt(o.unique_30d);
-    conference(o);
-    renderActivity(data.activity);
-    renderCompare(data.compare);
-    renderMenus(data.menus);
-    renderLegislation(data.legislation);
-    renderDiagnostics(data.diagnostics || {});
-    renderCinemometer(data);
-    const resetAt = data.reset24hAt ? new Date(data.reset24hAt).toLocaleString('pt-PT') : '—';
-    const resetStatus = $('reset24hStatus');
-    if(resetStatus && !resetStatus.classList.contains('ok') && !resetStatus.classList.contains('err')){
-      resetStatus.textContent='Último reset 24H: '+resetAt;
-    }
-
-    let hourlyOk=true;
-    try{
-      await loadHourly();
-    }catch(hourlyError){
-      hourlyOk=false;
-      const body=$('hourTable')?.querySelector('tbody');
-      if(body) body.innerHTML='<tr><td colspan="10" class="muted" style="text-align:center">Falha ao carregar o histórico horário.</td></tr>';
-    }
-
-    const partial=backendErrors.length>0 || !hourlyOk;
-    if(partial){
-      setBackendState('partial');
-      const details=backendErrors.length ? ' · '+backendErrors.join(', ') : '';
-      $('statusLine').textContent='Atualizado com avisos'+details+'.';
-      $('backendTime').textContent=`BACKEND ONLINE · parcial · ${Math.round(performance.now()-t0)} ms`;
-    }else{
-      setBackendState('online');
-      $('statusLine').textContent=`Atualizado em ${new Date(data.generatedAt||Date.now()).toLocaleString('pt-PT')}`;
-      $('backendTime').textContent=`BACKEND ONLINE · ${Math.round(performance.now()-t0)} ms`;
-    }
-    return !partial;
-  }catch(e){
-    setBackendState('offline');
-    $('statusLine').textContent='Falha na atualização: '+e.message;
-    $('backendTime').textContent='BACKEND OFFLINE/ERRO · '+Math.round(performance.now()-t0)+' ms';
-    return false;
-  }finally{
-    dashboardInFlight=false;
+    const issues=Object.entries(data.errors||{}).filter(x=>x[1]).map(x=>x[0]);
+    renderAll(data);
+    setBackendState(issues.length?'partial':'online');
+    $('statusLine').textContent='Leitura concluída · '+new Date().toLocaleString('pt-PT');
+    $('backendTime').textContent='BACKEND · '+Math.round(performance.now()-t0)+' MS';
     refreshIn=30;
-  }
+    if(issues.length)$('statusLine').textContent+=' · alguns módulos antigos devolveram avisos';
+  }catch(e){
+    setBackendState('offline');$('statusLine').textContent=e?.message||'Falha ao atualizar.';
+  }finally{dashboardInFlight=false}
 }
-
 function startRefresh(){
-  if(refreshTimer) clearInterval(refreshTimer);
-  if(countdownTimer) clearInterval(countdownTimer);
-  refreshTimer=setInterval(loadDashboard,REFRESH_MS);
-  countdownTimer=setInterval(()=>{
-    refreshIn=Math.max(0,refreshIn-1);
-    $('nextRefresh').textContent=`PRÓXIMA ATUALIZAÇÃO EM ${refreshIn} S`;
-    if(refreshIn===0) refreshIn=30;
-  },1000);
+  if(refreshTimer)clearInterval(refreshTimer);
+  if(countdownTimer)clearInterval(countdownTimer);
+  refreshTimer=setInterval(()=>loadDashboard(),REFRESH_MS);
+  refreshIn=30;
+  countdownTimer=setInterval(()=>{refreshIn=Math.max(0,refreshIn-1);$('refreshMeta').textContent='PRÓXIMA ATUALIZAÇÃO · '+refreshIn+' S'},1000);
+}
+async function reset24h(){
+  if(!confirm('RESET — JANELA 24H\\n\\nA janela 24H passa a contar a partir deste momento.\\n\\nNenhum evento será apagado.\\nOs dados de 7 dias, 30 dias e histórico permanecem intactos.\\n\\nContinuar?'))return;
+  const btn=$('reset24hBtn'),status=$('reset24hStatus');btn.disabled=true;status.className='reset-status';status.textContent='A aplicar reset...';
+  try{
+    const data=await request(STATS_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'reset_24h'})});
+    status.className='reset-status ok';status.textContent='Último reset 24H: '+datePT(data.reset_at)+'.';
+    toast('RESET 24H aplicado.');
+    await loadDashboard();
+  }catch(e){
+    status.className='reset-status err';status.textContent='Erro no reset: '+(e?.message||'serviço indisponível');
+  }finally{btn.disabled=false}
 }
 
 $('loginForm').addEventListener('submit',async e=>{
   e.preventDefault();
-  $('loginError').textContent='';
+  const err=$('loginError');err.textContent='A autenticar...';
   try{
     await doLogin($('password').value);
-    $('loginScreen').classList.add('hidden');
-    $('app').classList.remove('hidden');
-    renderDays();
-    await loadDashboard();
-    startRefresh();
-  }catch(err){$('loginError').textContent=err.message}
+    $('loginScreen').classList.add('hidden');$('app').classList.remove('hidden');$('loginError').textContent='';
+    await loadDashboard();startRefresh();
+  }catch(ex){err.textContent=ex?.message||'Falha ao autenticar.'}
 });
-
-$('refreshBtn').addEventListener('click',async()=>{
-  const ok=await loadDashboard();
-  if(ok===null) return;
-  toast(ok?'Dados atualizados.':'A atualização terminou com erros.');
-});
-$('reset24hBtn').addEventListener('click',reset24h);
 $('logoutBtn').addEventListener('click',logout);
+$('refreshBtn').addEventListener('click',loadDashboard);
+$('reset24hBtn').addEventListener('click',reset24h);
+initNavigation();
 
 if(token()){
-  $('loginScreen').classList.add('hidden');
-  $('app').classList.remove('hidden');
-  renderDays();
-  loadDashboard();
-  startRefresh();
+  $('loginScreen').classList.add('hidden');$('app').classList.remove('hidden');
+  loadDashboard();startRefresh();
 }
 </script>
 </body>
