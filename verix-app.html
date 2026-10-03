@@ -1220,46 +1220,18 @@ function submitConjunto(event) {
   const ASF_JANELA_SEG = 60;
   const ASF_LIMITE_JANELA = 6;
   const ASF_RATE_STORAGE_KEY = 'VERIX_ASF_RATE_STATE_V1';
-  const ASF_CACHE_TTL_MS = 600000; // 10 minutos — igual à aplicação base IPO_2.2
 
   /* CAMINHO ASF DELIBERADAMENTE SIMPLES:
-     1 consulta = 1 pedido físico POST, alinhado com a app base/Android.
-     Sem GET alternativo. Resultados iguais à aplicação base são reutilizados por 10 minutos;
-     a telemetria observa o pedido físico e não cria pedidos adicionais. */
+     1 consulta = 1 pedido físico POST, alinhado com a APK base.
+     Sem GET alternativo, sem retries automáticos e sem cache de resultado.
+     A telemetria observa o pedido físico e não cria pedidos adicionais. */
 
   var asfRequestTimes = [];
-  var ASF_CACHE = new Map();
   var ASF_EM_CURSO = false;
   var ASF_SERVER_COOLDOWN_UNTIL = 0;
   var ASF_PENDING_TIMER = null;
 
   function agoraASF() { return Date.now(); }
-  function esperarASF(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
-
-  function chaveCacheASF(matLimpa) {
-    var d = new Date();
-    var data = d.getFullYear() + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0');
-    return String(matLimpa || '') + '|' + data;
-  }
-
-  function obterCacheASF(matLimpa) {
-    var key = chaveCacheASF(matLimpa);
-    var item = ASF_CACHE.get(key);
-    if (!item) return null;
-    if ((agoraASF() - item.timestamp) >= ASF_CACHE_TTL_MS) {
-      ASF_CACHE.delete(key);
-      return null;
-    }
-    return item;
-  }
-
-  function guardarCacheASF(matLimpa, resultado) {
-    if (!resultado || !resultado.estado) return;
-    ASF_CACHE.set(chaveCacheASF(matLimpa), {
-      timestamp: agoraASF(),
-      resultado: resultado
-    });
-  }
 
   // Mantém o limite VÉRIX após refresh/reabertura da página no mesmo posto.
   // Isto impede que o cache-busting, por si só, seja usado para zerar a quota local.
@@ -1716,6 +1688,9 @@ function submitConjunto(event) {
 
   // CONSULTA ASF = mesmo endpoint/mutation da app base/Android, com parser robusto e
   // controlo VÉRIX de 8 s + 6 pedidos/60 s, persistido entre refreshes, sem cache de resultados.
+  // CONSULTA ASF = referência direta da APK base:
+  // POST + query no parâmetro ?query= + 1 pedido físico + timeout 10 s + 0 retries.
+  // A única proteção adicional do VÉRIX é a cadência local antes do pedido.
   async function realizarConsultaASF_IPO(matLimpa, matDisplay, queryId, queryStartedAtMs, queuePosition) {
     var hoje = new Date();
     var yyyy = hoje.getFullYear();
@@ -1723,98 +1698,96 @@ function submitConjunto(event) {
     var dd = String(hoje.getDate()).padStart(2, '0');
     var dataHoje = yyyy + '/' + mm + '/' + dd;
 
-    /* Query reproduzida a partir do ASF_URL observado na APK base. */
+    /* Query reproduzida a partir do ASF_URL observado na APK base, incluindo a
+       mesma seleção de campos e a mesma matrícula sem hífens. */
     var queryGQL = 'mutation license {  mobishoutEntry {    noone {      entry {        licenseNumber(license: "' + matLimpa + '", date: "' + dataHoje + '") {          nodes {            id            entity            startDate            endDate            policy            license            code            logo          }        }      }    }  }            }';
     var url = ASF_API_URL + encodeURIComponent(queryGQL);
 
-    var maxTentativas = 2;
-    var tentativasAcumuladas = [];
-    var ultimoDiag = null;
+    var resposta = await efetuarPedidoHttpASF(url, matDisplay, queryId, queryStartedAtMs, queuePosition);
+    var diag = resposta && resposta.__asfDiagnostic
+      ? resposta.__asfDiagnostic
+      : criarDiagASF(queryId, matDisplay, queryStartedAtMs, queuePosition);
 
-    for (var tentativaN = 1; tentativaN <= maxTentativas; tentativaN++) {
-      var resposta = await efetuarPedidoHttpASF(url, matDisplay, queryId, queryStartedAtMs, queuePosition);
-      var diag = resposta && resposta.__asfDiagnostic ? resposta.__asfDiagnostic : criarDiagASF(queryId, matDisplay, queryStartedAtMs, queuePosition);
-      ultimoDiag = diag;
+    var httpStatus = resposta.status;
+    var responseText = resposta.text;
+    diag.asfHttpStatus = httpStatus == null ? null : Number(httpStatus);
+    diag.asfResponseBytes = responseText ? String(responseText).length : 0;
+    diag.asfRetryCount = 0;
 
-      var httpStatus = resposta.status;
-      var responseText = resposta.text;
-      diag.asfHttpStatus = httpStatus == null ? null : Number(httpStatus);
-      diag.asfResponseBytes = responseText ? String(responseText).length : 0;
-      diag.asfRetryCount = tentativaN - 1;
+    if (httpStatus === 429) {
+      diag.asfErrorType = 'http_429';
+      diag.asfMessage = 'Servidor ASF bloqueado por rate limit (HTTP 429)';
+      ASF_SERVER_COOLDOWN_UNTIL = agoraASF() + 15000;
+      guardarEstadoRateASF();
+      throw erroComDiagASF(diag.asfMessage, diag);
+    }
 
-      if (httpStatus === 429) {
-        diag.asfErrorType = 'http_429';
-        diag.asfMessage = 'Servidor ASF bloqueado por rate limit (HTTP 429)';
-        ASF_SERVER_COOLDOWN_UNTIL = agoraASF() + 15000;
-        guardarEstadoRateASF();
-        throw erroComDiagASF(diag.asfMessage, diag);
-      }
-      if (httpStatus === 403) {
-        diag.asfErrorType = 'http_403';
-        diag.asfMessage = 'Acesso proibido ao servidor ASF (HTTP 403)';
-        throw erroComDiagASF(diag.asfMessage, diag);
-      }
-      if (httpStatus < 200 || httpStatus >= 300) {
-        diag.asfErrorType = 'http_' + httpStatus;
-        diag.asfMessage = 'Erro HTTP ' + httpStatus;
-        throw erroComDiagASF(diag.asfMessage, diag);
-      }
+    if (httpStatus === 403) {
+      diag.asfErrorType = 'http_403';
+      diag.asfMessage = 'Acesso proibido ao servidor ASF (HTTP 403)';
+      throw erroComDiagASF(diag.asfMessage, diag);
+    }
 
-      var json;
-      try {
-        json = JSON.parse(responseText);
-      } catch (_) {
-        diag.asfErrorType = 'invalid_json';
-        diag.asfMessage = 'Resposta ASF não é JSON válido';
-        throw erroComDiagASF(diag.asfMessage, diag);
-      }
+    if (httpStatus < 200 || httpStatus >= 300) {
+      diag.asfErrorType = 'http_' + httpStatus;
+      diag.asfMessage = 'Erro HTTP ' + httpStatus;
+      throw erroComDiagASF(diag.asfMessage, diag);
+    }
 
-      var isGraphqlError = Array.isArray(json.errors) && json.errors.length > 0;
-      if (isGraphqlError) {
+    var json;
+    try {
+      json = JSON.parse(responseText);
+    } catch (_) {
+      diag.asfErrorType = 'invalid_json';
+      diag.asfMessage = 'Resposta ASF não é JSON válido';
+      throw erroComDiagASF(diag.asfMessage, diag);
+    }
+
+    try {
+      if (Array.isArray(json.errors) && json.errors.length) {
         diag.asfErrorType = 'graphql';
         diag.asfResponseClass = 'graphql_error';
         diag.asfParsePath = 'graphql_error';
         diag.asfGraphqlErrorCount = json.errors.length;
         diag.asfGraphqlCodes = json.errors.map(function (e) {
-          return e && e.extensions && e.extensions.code ? String(e.extensions.code).slice(0, 80) : null;
+          return e && e.extensions && e.extensions.code
+            ? String(e.extensions.code).slice(0, 80)
+            : null;
         }).filter(Boolean).slice(0, 6);
         diag.asfGraphqlMessages = json.errors.map(function (e) {
-          return e && e.message ? String(e.message).trim().slice(0, 240) : null;
+          return e && e.message
+            ? String(e.message).trim().slice(0, 240)
+            : null;
         }).filter(Boolean).slice(0, 3);
 
         var gqlText = diag.asfGraphqlMessages.join(' | ').toLowerCase();
-        var serviceUnavailable = gqlText.indexOf('serviço indisponível') >= 0 || gqlText.indexOf('servico indisponivel') >= 0;
-
-        if (serviceUnavailable) {
+        if (gqlText.indexOf('serviço indisponível') >= 0 || gqlText.indexOf('servico indisponivel') >= 0) {
           diag.asfErrorType = 'graphql_service_unavailable';
-          diag.asfMessage = diag.asfGraphqlMessages[0] || 'Serviço ASF indisponível';
-          tentativasAcumuladas = tentativasAcumuladas.concat(diag.asfAttempts || []);
-          if (tentativaN < maxTentativas) {
-            diag.asfRetryScheduled = true;
-            await esperarASF(250);
-            continue;
-          }
         }
-      }
-
-      try {
-        var resultado = interpretarRespostaASF(json);
-        diag.asfResponseClass = diag.asfResponseClass || 'graphql_data';
-        diag.asfParsePath = resultado && resultado.parsePath ? String(resultado.parsePath).slice(0, 180) : diag.asfParsePath;
-        if (tentativasAcumuladas.length) diag.asfAttempts = tentativasAcumuladas.concat(diag.asfAttempts || []);
-        if (diag._queryStartedAtMs) diag.asfTotalMs = Math.max(0, agoraMsASFDiag() - diag._queryStartedAtMs);
-        return { resultado: resultado, asfDiagnostic: diag };
-      } catch (e) {
-        if (!diag.asfErrorType) {
-          diag.asfErrorType = isGraphqlError ? 'graphql' : 'invalid_response';
-        }
-        diag.asfMessage = String(e && e.message || diag.asfMessage || 'Resposta ASF inválida').slice(0, 500);
-        if (tentativasAcumuladas.length) diag.asfAttempts = tentativasAcumuladas.concat(diag.asfAttempts || []);
+        diag.asfMessage = diag.asfGraphqlMessages[0] || 'Erro GraphQL ASF (HTTP 200).';
         throw erroComDiagASF(diag.asfMessage, diag);
       }
-    }
 
-    throw erroComDiagASF('Serviço ASF indisponível após nova tentativa', ultimoDiag || criarDiagASF(queryId, matDisplay, queryStartedAtMs, queuePosition));
+      var resultado = interpretarRespostaASF(json);
+      diag.asfResponseClass = 'graphql_data';
+      diag.asfParsePath = resultado && resultado.parsePath
+        ? String(resultado.parsePath).slice(0, 180)
+        : diag.asfParsePath;
+
+      if (diag._queryStartedAtMs) {
+        diag.asfTotalMs = Math.max(0, agoraMsASFDiag() - diag._queryStartedAtMs);
+      }
+
+      return { resultado: resultado, asfDiagnostic: diag };
+    } catch (e) {
+      if (e && e.asfDiagnostic) throw e;
+
+      if (!diag.asfErrorType) {
+        diag.asfErrorType = 'invalid_response';
+      }
+      diag.asfMessage = String(e && e.message || 'Resposta ASF inválida').slice(0, 500);
+      throw erroComDiagASF(diag.asfMessage, diag);
+    }
   }
 
   function limparPendenteASF() {
@@ -2026,7 +1999,7 @@ function submitConjunto(event) {
 
   // ---- Orquestração ASF ----
   // Uma consulta = uma tentativa HTTP física. A cadência é aplicada antes
-  // dessa única tentativa e a telemetria é apenas observacional.
+  // dessa única tentativa; não há retry automático nem cache de resultado.
   async function processarConsultaSeguroComCadencia(matLimpa, matDisplay, queryId, queryStartedAtMs, queuePosition) {
     mostrarSeguroLoading(matDisplay, 'A VERIFICAR...');
 
@@ -2034,7 +2007,6 @@ function submitConjunto(event) {
       var consulta = await realizarConsultaASF_IPO(matLimpa, matDisplay, queryId, queryStartedAtMs, queuePosition);
       var resultado = consulta.resultado;
       var asfDiagnostic = consulta.asfDiagnostic || null;
-      guardarCacheASF(matLimpa, resultado);
       if (resultado.estado === 'sim') {
         registarEventoSeguroV2('vehicle_insurance_yes', queryId, asfDiagnostic);
         renderSeguroEncontrado(resultado.node || {}, matDisplay, queryId, asfDiagnostic);
@@ -2065,27 +2037,6 @@ function submitConjunto(event) {
 
     var matLimpa = sanitizarMatriculaASF(matDisplay);
     if (!matLimpa) return;
-
-    /* Igual à aplicação base: uma matrícula consultada novamente dentro de 10 minutos
-       não gera novo pedido físico à ASF. Isto reduz carga, evita consultas duplicadas
-       e elimina um dos principais motivos para receber novamente o mesmo erro transitório. */
-    var cacheASF = obterCacheASF(matLimpa);
-    if (cacheASF && cacheASF.resultado) {
-      var cacheQueryId = window.__VERIX_CURRENT_QUERY_ID || null;
-      var cacheDiag = criarDiagASF(cacheQueryId, matDisplay, agoraMsASFDiag(), 0);
-      cacheDiag.asfErrorType = null;
-      cacheDiag.asfResponseClass = 'cache';
-      cacheDiag.asfParsePath = 'local_cache_10m';
-      cacheDiag.asfMessage = 'Resultado local reutilizado; nenhum pedido enviado à ASF.';
-      if (cacheASF.resultado.estado === 'sim') {
-        registarEventoSeguroV2('vehicle_insurance_yes', cacheQueryId, cacheDiag);
-        renderSeguroEncontrado(cacheASF.resultado.node || {}, matDisplay, cacheQueryId, cacheDiag);
-      } else {
-        registarEventoSeguroV2('vehicle_insurance_no', cacheQueryId, cacheDiag);
-        renderSeguroNaoEncontrado(matDisplay, cacheQueryId, cacheDiag);
-      }
-      return;
-    }
 
     /* Nunca acumular pedidos ASF. Se já existe um pedido físico em curso,
        o segundo disparo não entra numa fila nem gera outra tentativa. */
@@ -17193,7 +17144,7 @@ html body .leg-card-new .copy-all-new{
   var APP_VERSION = '1.4';
   // Identificador técnico interno do build. A versão do produto mantém-se 1.4.
   // Permite distinguir builds diferentes sem expor uma nova versão ao utilizador.
-  var BUILD_ID='2026-10-02-r6';
+  var BUILD_ID='2026-10-03-r7';
   var INSTALL_KEY = 'VERIX_T2_INSTALL_ID';
   var SESSION_KEY = 'VERIX_T2_SESSION_ID';
   var TAB_KEY = 'VERIX_T2_TAB_ID';
