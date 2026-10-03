@@ -55,8 +55,7 @@
   function blockUnauthorized(){
     try {
       document.open();
-      document.write('<!doctype html><html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VÉRIX — Acesso não autorizado</title><style>html,body{margin:0;min-height:100%;background:#03080c;color:#eef4f5;font-family:Arial,Helvetica,sans-serif}body{display:grid;place-items:center;padding:24px;box-sizing:border-box}.box{max-width:620px;padding:34px 36px;border:1px solid #5b7078;border-radius:18px;background:linear-gradient(180deg,#11212a,#071117);box-shadow:0 24px 70px rgba(0,0,0,.55);text-align:center}.tag{display:inline-block;margin-bottom:14px;padding:6px 10px;border:1px solid #c8102e;border-radius:999px;color:#ff7c91;font-size:11px;font-weight:800;letter-spacing:1.2px}.title{font-size:28px;font-weight:900;margin-bottom:12px}.text{color:#b9c7cc;font-size:15px;line-height:1.6}</style>
-</head><body><div class="box"><div class="tag">VERIX // PROTEÇÃO</div><div class="title">Publicação não autorizada</div><div class="text">Esta versão do VÉRIX não está autorizada a funcionar neste endereço.</div></div></body></html>');
+      document.write('<!doctype html><html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VÉRIX — Acesso não autorizado</title><style>html,body{margin:0;min-height:100%;background:#03080c;color:#eef4f5;font-family:Arial,Helvetica,sans-serif}body{display:grid;place-items:center;padding:24px;box-sizing:border-box}.box{max-width:620px;padding:34px 36px;border:1px solid #5b7078;border-radius:18px;background:linear-gradient(180deg,#11212a,#071117);box-shadow:0 24px 70px rgba(0,0,0,.55);text-align:center}.tag{display:inline-block;margin-bottom:14px;padding:6px 10px;border:1px solid #c8102e;border-radius:999px;color:#ff7c91;font-size:11px;font-weight:800;letter-spacing:1.2px}.title{font-size:28px;font-weight:900;margin-bottom:12px}.text{color:#b9c7cc;font-size:15px;line-height:1.6}</style></head><body><div class="box"><div class="tag">VERIX // PROTEÇÃO</div><div class="title">Publicação não autorizada</div><div class="text">Esta versão do VÉRIX não está autorizada a funcionar neste endereço.</div></div></body></html>');
       document.close();
     } catch (_) {
       try { document.documentElement.innerHTML = '<body style="background:#03080c;color:#eef4f5;font-family:Arial;text-align:center;padding:40px">Publicação não autorizada.</body>'; } catch (__) {}
@@ -17184,7 +17183,7 @@ html body .leg-card-new .copy-all-new{
   var APP_VERSION = '1.4';
   // Identificador técnico interno do build. A versão do produto mantém-se 1.4.
   // Permite distinguir builds diferentes sem expor uma nova versão ao utilizador.
-  var BUILD_ID='2026-10-03-r8';
+  var BUILD_ID='2026-10-03-r9';
   var INSTALL_KEY = 'VERIX_T2_INSTALL_ID';
   var SESSION_KEY = 'VERIX_T2_SESSION_ID';
   var TAB_KEY = 'VERIX_T2_TAB_ID';
