@@ -1232,6 +1232,7 @@ function submitConjunto(event) {
   var ASF_PENDING_TIMER = null;
 
   function agoraASF() { return Date.now(); }
+  function esperarASF(ms) { return new Promise(function (resolve) { setTimeout(resolve, Math.max(0, Number(ms) || 0)); }); }
 
   // Mantém o limite VÉRIX após refresh/reabertura da página no mesmo posto.
   // Isto impede que o cache-busting, por si só, seja usado para zerar a quota local.
@@ -1421,7 +1422,18 @@ function submitConjunto(event) {
 
   function classificarErroASF(e, timeoutForcado) {
     var t = textoErroASF(e).toLowerCase();
-    if (timeoutForcado || t.indexOf('abort') >= 0 || t.indexOf('timed out') >= 0 || t.indexOf('timeout') >= 0 || t.indexOf('tempo esgotado') >= 0) return 'timeout';
+    var n = null;
+    try { n = Number(e && e.number); } catch (_) {}
+    if (
+      timeoutForcado ||
+      t.indexOf('abort') >= 0 ||
+      t.indexOf('timed out') >= 0 ||
+      t.indexOf('timeout') >= 0 ||
+      t.indexOf('tempo esgotado') >= 0 ||
+      n === 12002 ||
+      n === -2147012894 ||
+      String(e && e.number || '').toLowerCase().indexOf('80072ee2') >= 0
+    ) return 'timeout';
     if (t.indexOf('cors') >= 0 || t.indexOf('networkerror') >= 0 || t.indexOf('network error') >= 0 || t.indexOf('failed to fetch') >= 0 || t.indexOf('internet') >= 0) return 'network';
     return 'unknown';
   }
@@ -1482,103 +1494,124 @@ function submitConjunto(event) {
   // ---- HTTP ASF: POST como na aplicação base/Android ----
   // A query GraphQL segue no parâmetro ?query= da URL; o POST não envia corpo.
   // Não fazemos GET alternativo nem acrescentamos pedidos físicos à consulta.
-  function efetuarPedidoHttpASF_SyncNative(url) {
+  function efetuarPedidoHttpASF_SyncNative(url, timeoutMs) {
     var xhr = new ActiveXObject("WinHttp.WinHttpRequest.5.1");
+    var timeout = Number(timeoutMs) || ASF_TIMEOUT_MS;
     xhr.open("POST", url, false);
-    xhr.setTimeouts(10000, 10000, ASF_TIMEOUT_MS, ASF_TIMEOUT_MS);
+    xhr.setTimeouts(timeout, timeout, timeout, timeout);
     xhr.send(null);
     return { status: xhr.Status, text: xhr.ResponseText, statusText: xhr.StatusText || null };
   }
 
   async function efetuarPedidoHttpASF(url, matDisplay, queryId, queryStartedAtMs, queuePosition) {
     var diag = criarDiagASF(queryId, matDisplay, queryStartedAtMs, queuePosition);
-    var queueStartedAt = agoraMsASFDiag();
+    var totalQueueWait = 0;
+    var maxTentativas = 2; // APK base: DefaultRetryPolicy(10000, 1, 1.0)
 
-    await reservarSlotFisicoASF(matDisplay);
-    diag.asfQueueWaitMs = Math.max(0, agoraMsASFDiag() - queueStartedAt);
+    for (var tentativaN = 0; tentativaN < maxTentativas; tentativaN++) {
+      var queueStartedAt = agoraMsASFDiag();
+      await reservarSlotFisicoASF(matDisplay);
+      totalQueueWait += Math.max(0, agoraMsASFDiag() - queueStartedAt);
+      diag.asfQueueWaitMs = totalQueueWait;
 
-    var tentativa = {
-      method: 'POST',
-      transport: (typeof ActiveXObject !== 'undefined') ? 'WinHTTP' : 'Fetch',
-      startedAt: agoraMsASFDiag(),
-      status: null,
-      durationMs: null,
-      errorType: null,
-      message: null,
-      responseBytes: null,
-      responseHash: null,
-      responseContentType: null,
-      statusText: null
-    };
-
-    try {
-      var status = null;
-      var body = '';
-      var contentType = null;
-      var statusText = null;
-
-      if (typeof ActiveXObject !== 'undefined') {
-        var native = efetuarPedidoHttpASF_SyncNative(url);
-        status = native && native.status;
-        body = native && native.text || '';
-        statusText = native && native.statusText || null;
-      } else {
-        var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-        var timeoutId = null;
-        var timeoutForcado = false;
-
-        try {
-          timeoutId = setTimeout(function () {
-            timeoutForcado = true;
-            try { if (controller) controller.abort(); } catch (_) {}
-          }, ASF_TIMEOUT_MS);
-
-          var options = {
-            method: 'POST',
-            cache: 'no-store',
-            credentials: 'omit',
-            mode: 'cors',
-            headers: { 'Accept': 'application/json, text/plain, */*' },
-            body: null
-          };
-          if (controller) options.signal = controller.signal;
-
-          var res = await fetch(url, options);
-          status = res.status;
-          statusText = res.statusText || null;
-          contentType = (res.headers && res.headers.get) ? (res.headers.get('content-type') || null) : null;
-          body = await res.text();
-        } catch (e) {
-          tentativa.errorType = classificarErroASF(e, timeoutForcado);
-          tentativa.message = textoErroASF(e);
-          throw e;
-        } finally {
-          if (timeoutId) clearTimeout(timeoutId);
-        }
-      }
-
-      tentativa.status = status == null ? null : Number(status);
-      tentativa.statusText = statusText || null;
-      tentativa.responseContentType = contentType || null;
-      tentativa.responseBytes = body ? String(body).length : 0;
-      tentativa.responseHash = body ? fingerprintASF(body) : null;
-      if (status >= 400) tentativa.errorType = 'http_' + status;
-
-      finalizarTentativaDiagASF(diag, tentativa);
-      return {
-        status: status,
-        statusText: statusText,
-        text: body || '',
-        __asfDiagnostic: diag
+      var attemptTimeoutMs = ASF_TIMEOUT_MS * (tentativaN === 0 ? 1 : 2);
+      var tentativa = {
+        method: 'POST',
+        transport: (typeof ActiveXObject !== 'undefined') ? 'WinHTTP' : 'Fetch',
+        startedAt: agoraMsASFDiag(),
+        status: null,
+        durationMs: null,
+        errorType: null,
+        message: null,
+        responseBytes: null,
+        responseHash: null,
+        responseContentType: null,
+        statusText: null,
+        timeoutMs: attemptTimeoutMs,
+        retryIndex: tentativaN
       };
-    } catch (e) {
-      if (!tentativa.durationMs) {
-        tentativa.message = tentativa.message || textoErroASF(e);
-        if (!tentativa.errorType) tentativa.errorType = classificarErroASF(e, false);
+
+      try {
+        var status = null;
+        var body = '';
+        var contentType = null;
+        var statusText = null;
+
+        if (typeof ActiveXObject !== 'undefined') {
+          var native = efetuarPedidoHttpASF_SyncNative(url, attemptTimeoutMs);
+          status = native && native.status;
+          body = native && native.text || '';
+          statusText = native && native.statusText || null;
+        } else {
+          var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+          var timeoutId = null;
+          var timeoutForcado = false;
+
+          try {
+            timeoutId = setTimeout(function () {
+              timeoutForcado = true;
+              try { if (controller) controller.abort(); } catch (_) {}
+            }, attemptTimeoutMs);
+
+            var options = {
+              method: 'POST',
+              cache: 'no-store',
+              credentials: 'omit',
+              mode: 'cors',
+              body: null
+            };
+            if (controller) options.signal = controller.signal;
+
+            var res = await fetch(url, options);
+            status = res.status;
+            statusText = res.statusText || null;
+            contentType = (res.headers && res.headers.get) ? (res.headers.get('content-type') || null) : null;
+            body = await res.text();
+          } catch (e) {
+            tentativa.errorType = classificarErroASF(e, timeoutForcado);
+            tentativa.message = textoErroASF(e);
+            throw e;
+          } finally {
+            if (timeoutId) clearTimeout(timeoutId);
+          }
+        }
+
+        tentativa.status = status == null ? null : Number(status);
+        tentativa.statusText = statusText || null;
+        tentativa.responseContentType = contentType || null;
+        tentativa.responseBytes = body ? String(body).length : 0;
+        tentativa.responseHash = body ? fingerprintASF(body) : null;
+        if (status >= 400) tentativa.errorType = 'http_' + status;
+
         finalizarTentativaDiagASF(diag, tentativa);
+        if (tentativaN > 0) diag.asfRetryCount = tentativaN;
+
+        return {
+          status: status,
+          statusText: statusText,
+          text: body || '',
+          __asfDiagnostic: diag
+        };
+      } catch (e) {
+        if (!tentativa.durationMs) {
+          tentativa.message = tentativa.message || textoErroASF(e);
+          if (!tentativa.errorType) tentativa.errorType = classificarErroASF(e, false);
+          finalizarTentativaDiagASF(diag, tentativa);
+        }
+
+        // A APK só deixa o DefaultRetryPolicy atuar em timeout de socket.
+        // Não repetir HTTP 200 + GraphQL errors, 4xx, 5xx ou erros de rede genéricos.
+        var retryable = tentativaN === 0 && tentativa.errorType === 'timeout';
+        if (retryable) {
+          diag.asfRetryCount = 1;
+          continue;
+        }
+
+        throw erroComDiagASF((e && e.message) || 'Falha ASF por transporte', diag);
       }
-      throw erroComDiagASF((e && e.message) || 'Falha ASF por transporte', diag);
     }
+
+    throw erroComDiagASF('Falha ASF após retry de timeout', diag);
   }
 
   // Parser robusto inspirado no Consulta Veiculo(2): aceita os envelopes ASF
@@ -1743,11 +1776,9 @@ function submitConjunto(event) {
       throw erroComDiagASF(diag.asfMessage, diag);
     }
 
+    var isGraphqlError = Array.isArray(json.errors) && json.errors.length > 0;
     try {
-      if (Array.isArray(json.errors) && json.errors.length) {
-        diag.asfErrorType = 'graphql';
-        diag.asfResponseClass = 'graphql_error';
-        diag.asfParsePath = 'graphql_error';
+      if (isGraphqlError) {
         diag.asfGraphqlErrorCount = json.errors.length;
         diag.asfGraphqlCodes = json.errors.map(function (e) {
           return e && e.extensions && e.extensions.code
@@ -1759,15 +1790,11 @@ function submitConjunto(event) {
             ? String(e.message).trim().slice(0, 240)
             : null;
         }).filter(Boolean).slice(0, 3);
-
-        var gqlText = diag.asfGraphqlMessages.join(' | ').toLowerCase();
-        if (gqlText.indexOf('serviço indisponível') >= 0 || gqlText.indexOf('servico indisponivel') >= 0) {
-          diag.asfErrorType = 'graphql_service_unavailable';
-        }
-        diag.asfMessage = diag.asfGraphqlMessages[0] || 'Erro GraphQL ASF (HTTP 200).';
-        throw erroComDiagASF(diag.asfMessage, diag);
       }
 
+      // A APK entrega HTTP 200 ao onResponse mesmo quando existem errors[].
+      // Primeiro tenta consumir data/.../nodes; só falha em GraphQL se não houver
+      // estrutura utilizável para produzir um resultado.
       var resultado = interpretarRespostaASF(json);
       diag.asfResponseClass = 'graphql_data';
       diag.asfParsePath = resultado && resultado.parsePath
@@ -1782,10 +1809,23 @@ function submitConjunto(event) {
     } catch (e) {
       if (e && e.asfDiagnostic) throw e;
 
-      if (!diag.asfErrorType) {
+      if (isGraphqlError) {
+        var gqlFinalText = diag.asfGraphqlMessages.join(' | ').toLowerCase();
+        diag.asfErrorType = (
+          gqlFinalText.indexOf('serviço indisponível') >= 0 ||
+          gqlFinalText.indexOf('servico indisponivel') >= 0
+        ) ? 'graphql_service_unavailable' : 'graphql';
+        diag.asfResponseClass = 'graphql_error';
+        diag.asfParsePath = 'graphql_error';
+      } else if (!diag.asfErrorType) {
         diag.asfErrorType = 'invalid_response';
       }
-      diag.asfMessage = String(e && e.message || 'Resposta ASF inválida').slice(0, 500);
+
+      diag.asfMessage = String(
+        e && e.message ||
+        (diag.asfGraphqlMessages && diag.asfGraphqlMessages[0]) ||
+        'Resposta ASF inválida'
+      ).slice(0, 500);
       throw erroComDiagASF(diag.asfMessage, diag);
     }
   }
@@ -17144,7 +17184,7 @@ html body .leg-card-new .copy-all-new{
   var APP_VERSION = '1.4';
   // Identificador técnico interno do build. A versão do produto mantém-se 1.4.
   // Permite distinguir builds diferentes sem expor uma nova versão ao utilizador.
-  var BUILD_ID='2026-10-03-r7';
+  var BUILD_ID='2026-10-03-r8';
   var INSTALL_KEY = 'VERIX_T2_INSTALL_ID';
   var SESSION_KEY = 'VERIX_T2_SESSION_ID';
   var TAB_KEY = 'VERIX_T2_TAB_ID';
