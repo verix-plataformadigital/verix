@@ -20,13 +20,12 @@
     var p = originalFetch.apply(this, arguments);
     if (!isASF) return p;
     return p.then(function(response){
-      try {
-        response.clone().text().then(function(text){
-          responses.push({at:Date.now(),plate:plateFromUrl(url),status:response.status,contentType:response.headers&&response.headers.get?response.headers.get('content-type'):null,raw:String(text||'').slice(0,4000)});
-          if (responses.length > 30) responses.shift();
-        }).catch(function(){});
-      } catch (_) {}
-      return response;
+      var clone = response.clone();
+      return clone.text().then(function(text){
+        responses.push({at:Date.now(),plate:plateFromUrl(url),status:response.status,contentType:response.headers&&response.headers.get?response.headers.get('content-type'):null,raw:String(text||'').slice(0,4000)});
+        if (responses.length > 30) responses.shift();
+        return response;
+      }).catch(function(){ return response; });
     });
   };
   function augment(){
