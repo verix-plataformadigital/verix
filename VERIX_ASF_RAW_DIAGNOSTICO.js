@@ -9,7 +9,7 @@
   var captures = [];
   var captureSeq = 0;
   var MAX_CAPTURES = 60;
-  var MAX_RAW = 65536;
+  var MAX_RAW = 262144;
   var MAX_QUERY = 16000;
   var MAX_STACK = 12000;
   var MAX_HEADERS = 80;
@@ -260,7 +260,7 @@
     } catch (_) {}
 
     return {
-      captureVersion:'2',
+      captureVersion:'3',
       captureId:'asf-' + stamp + '-' + (++captureSeq),
       requestStartEpochMs:stamp,
       requestStartIso:new Date(stamp).toISOString(),
@@ -360,20 +360,88 @@
     }
 
     return p.then(function(response){
-      // Do not hold up the real response: forensic body reading runs on a clone.
+      /* Capture headers/status immediately, then hook the exact body consumer.
+         The VÉRIX ASF path uses Response.text(), so this guarantees the raw body
+         is available before the application receives the body result. */
+      try {
+        c.ok=typeof response.ok === 'boolean' ? response.ok : null;
+        c.status=finite(response.status);
+        c.statusText=s(response.statusText,300);
+        c.redirected=typeof response.redirected === 'boolean' ? response.redirected : null;
+        c.responseType=s(response.type,80);
+        c.responseUrl=s(response.url,8000);
+        c.responseHeaders=headerObject(response.headers);
+        c.responseContentType=response.headers&&response.headers.get?s(response.headers.get('content-type'),200):null;
+      } catch (_) {}
+
+      var done=false;
+      function captureRaw(raw){
+        if(done) return;
+        done=true;
+        finishCapture(c,response,raw,null);
+        addCapture(c);
+      }
+      function captureFailure(err){
+        if(done) return;
+        done=true;
+        finishCapture(c,response,null,err);
+        addCapture(c);
+      }
+
+      try {
+        if (typeof response.text === 'function'){
+          var originalText=response.text.bind(response);
+          response.text=function(){
+            var args=arguments;
+            try {
+              return originalText.apply(null,args).then(function(raw){
+                captureRaw(raw);
+                return raw;
+              },function(err){
+                captureFailure(err);
+                throw err;
+              });
+            } catch (err) {
+              captureFailure(err);
+              throw err;
+            }
+          };
+        }
+      } catch (_) {}
+
+      try {
+        if (typeof response.json === 'function'){
+          var originalJson=response.json.bind(response);
+          response.json=function(){
+            var args=arguments;
+            try {
+              return originalJson.apply(null,args).then(function(value){
+                captureRaw(safeJson(value,MAX_RAW));
+                return value;
+              },function(err){
+                captureFailure(err);
+                throw err;
+              });
+            } catch (err) {
+              captureFailure(err);
+              throw err;
+            }
+          };
+        }
+      } catch (_) {}
+
+      /* Secondary clone path for clients that do not consume text/json. */
       try {
         var clone=response.clone();
         clone.text().then(function(raw){
-          finishCapture(c,response,raw,null);
-          addCapture(c);
-        }).catch(function(err){
-          finishCapture(c,response,null,err);
-          addCapture(c);
-        });
-      } catch (err2) {
-        finishCapture(c,response,null,err2);
-        addCapture(c);
-      }
+          if(!done){
+            finishCapture(c,response,raw,null);
+            addCapture(c);
+            done=true;
+          }
+        }).catch(function(){});
+      } catch (_) {}
+
       return response;
     },function(err){
       finishCapture(c,null,null,err);
