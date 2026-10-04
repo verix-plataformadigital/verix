@@ -1,5 +1,5 @@
 <!-- VÉRIX 1.4 — publicação limpa -->
-<!DOCTYPE html><html lang="pt"><head><script src="./VERIX_ASF_RAW_DIAGNOSTICO.js?_verix_diag=v3"></script>
+<!DOCTYPE html><html lang="pt"><head><script src="./VERIX_ASF_RAW_DIAGNOSTICO.js?_verix_diag=v4"></script>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -17183,7 +17183,7 @@ html body .leg-card-new .copy-all-new{
   var APP_VERSION = '1.4';
   // Identificador técnico interno do build. A versão do produto mantém-se 1.4.
   // Permite distinguir builds diferentes sem expor uma nova versão ao utilizador.
-  var BUILD_ID='2026-10-03-r9';
+  var BUILD_ID='2026-10-04-r10';
   var INSTALL_KEY = 'VERIX_T2_INSTALL_ID';
   var SESSION_KEY = 'VERIX_T2_SESSION_ID';
   var TAB_KEY = 'VERIX_T2_TAB_ID';
@@ -17434,40 +17434,92 @@ html body .leg-card-new .copy-all-new{
 
     if (m.asfDiagnostic && typeof m.asfDiagnostic === 'object') {
       var a = m.asfDiagnostic;
+      var isErrorDiag = !!(a.asfErrorType || (Number(a.asfGraphqlErrorCount) > 0) || a.asfNetworkError);
+      function clip(v, max) {
+        try { return v == null ? null : String(v).slice(0, max); } catch (_) { return null; }
+      }
+      function finiteOrNull(v) {
+        var n = Number(v);
+        return Number.isFinite(n) ? n : null;
+      }
+      function cloneLimitedObject(v, valueMax) {
+        if (!v || typeof v !== 'object' || Array.isArray(v)) return null;
+        var outObj = {};
+        Object.keys(v).slice(0, 80).forEach(function (k) {
+          outObj[String(k).slice(0, 100)] = clip(v[k], valueMax);
+        });
+        return outObj;
+      }
       out.asfDiagnostic = {
-        queryId: a.queryId ? String(a.queryId).slice(0, 120) : null,
-        matricula: a.matricula ? String(a.matricula).slice(0, 30) : null,
-        asfHttpStatus: a.asfHttpStatus == null ? null : Number(a.asfHttpStatus),
-        asfDurationMs: a.asfDurationMs == null ? null : Number(a.asfDurationMs),
-        asfTotalMs: a.asfTotalMs == null ? null : Number(a.asfTotalMs),
-        asfQueueWaitMs: a.asfQueueWaitMs == null ? null : Number(a.asfQueueWaitMs),
-        asfQueuePosition: a.asfQueuePosition == null ? null : Number(a.asfQueuePosition),
-        asfMethod: a.asfMethod ? String(a.asfMethod).slice(0, 20) : null,
-        asfTransport: a.asfTransport ? String(a.asfTransport).slice(0, 30) : null,
-        asfErrorType: a.asfErrorType ? String(a.asfErrorType).slice(0, 60) : null,
-        asfMessage: a.asfMessage ? String(a.asfMessage).slice(0, 500) : null,
-        asfResponseBytes: a.asfResponseBytes == null ? null : Number(a.asfResponseBytes),
-        asfResponseHash: a.asfResponseHash ? String(a.asfResponseHash).slice(0, 20) : null,
-        asfResponseContentType: a.asfResponseContentType ? String(a.asfResponseContentType).slice(0, 120) : null,
-        asfStatusText: a.asfStatusText ? String(a.asfStatusText).slice(0, 120) : null,
-        asfParsePath: a.asfParsePath ? String(a.asfParsePath).slice(0, 180) : null,
-        asfGraphqlErrorCount: a.asfGraphqlErrorCount == null ? null : Number(a.asfGraphqlErrorCount),
-        asfGraphqlCodes: Array.isArray(a.asfGraphqlCodes) ? a.asfGraphqlCodes.slice(0, 6).map(function (x) {
-          return String(x || '').slice(0, 80);
+        captureVersion: clip(a.captureVersion, 10),
+        asfForensicsVersion: clip(a.asfForensicsVersion, 10),
+        asfCaptureId: clip(a.asfCaptureId, 120),
+        build_id: clip(a.build_id, 60),
+        queryId: clip(a.queryId, 120),
+        matricula: clip(a.matricula, 30),
+        asfHttpStatus: finiteOrNull(a.asfHttpStatus),
+        asfDurationMs: finiteOrNull(a.asfDurationMs),
+        asfTotalMs: finiteOrNull(a.asfTotalMs),
+        asfQueueWaitMs: finiteOrNull(a.asfQueueWaitMs),
+        asfQueuePosition: finiteOrNull(a.asfQueuePosition),
+        asfMethod: clip(a.asfMethod, 20),
+        asfTransport: clip(a.asfTransport, 30),
+        asfErrorType: clip(a.asfErrorType, 60),
+        asfMessage: clip(a.asfMessage, 500),
+        asfResponseBytes: finiteOrNull(a.asfResponseBytes),
+        asfResponseHash: clip(a.asfResponseHash, 20),
+        asfResponseContentType: clip(a.asfResponseContentType, 120),
+        asfStatusText: clip(a.asfStatusText, 120),
+        asfParsePath: clip(a.asfParsePath, 180),
+        asfResponseClass: clip(a.asfResponseClass, 60),
+        asfGraphqlErrorCount: finiteOrNull(a.asfGraphqlErrorCount),
+        asfGraphqlCodes: Array.isArray(a.asfGraphqlCodes) ? a.asfGraphqlCodes.slice(0, 10).map(function (x) {
+          return clip(x, 120);
         }).filter(Boolean) : [],
-        asfAttempts: Array.isArray(a.asfAttempts) ? a.asfAttempts.slice(-4).map(function (t) {
+        asfGraphqlMessages: Array.isArray(a.asfGraphqlMessages) ? a.asfGraphqlMessages.slice(0, 10).map(function (x) {
+          return clip(x, 1000);
+        }).filter(Boolean) : [],
+        asfAttempts: Array.isArray(a.asfAttempts) ? a.asfAttempts.slice(-6).map(function (t) {
           return {
-            method: t.method ? String(t.method).slice(0, 20) : null,
-            transport: t.transport ? String(t.transport).slice(0, 30) : null,
-            status: t.status == null ? null : Number(t.status),
-            durationMs: t.durationMs == null ? null : Number(t.durationMs),
-            errorType: t.errorType ? String(t.errorType).slice(0, 60) : null,
-            message: t.message ? String(t.message).slice(0, 500) : null,
-            responseBytes: t.responseBytes == null ? null : Number(t.responseBytes),
-            responseHash: t.responseHash ? String(t.responseHash).slice(0, 20) : null
+            method: clip(t.method, 20),
+            transport: clip(t.transport, 30),
+            status: finiteOrNull(t.status),
+            durationMs: finiteOrNull(t.durationMs),
+            errorType: clip(t.errorType, 60),
+            message: clip(t.message, 500),
+            responseBytes: finiteOrNull(t.responseBytes),
+            responseHash: clip(t.responseHash, 20),
+            responseContentType: clip(t.responseContentType, 120),
+            statusText: clip(t.statusText, 120),
+            retryIndex: finiteOrNull(t.retryIndex),
+            timeoutMs: finiteOrNull(t.timeoutMs)
           };
         }) : []
       };
+      if (isErrorDiag) {
+        out.asfDiagnostic.asfRequestStartEpochMs = finiteOrNull(a.asfRequestStartEpochMs);
+        out.asfDiagnostic.asfRequestStartIso = clip(a.asfRequestStartIso, 60);
+        out.asfDiagnostic.asfRequestEndEpochMs = finiteOrNull(a.asfRequestEndEpochMs);
+        out.asfDiagnostic.asfRequestEndIso = clip(a.asfRequestEndIso, 60);
+        out.asfDiagnostic.asfRequestQuery = clip(a.asfRequestQuery, 20000);
+        out.asfDiagnostic.asfRequestHeaders = cloneLimitedObject(a.asfRequestHeaders, 2000);
+        out.asfDiagnostic.asfRequestBody = clip(a.asfRequestBody, 40000);
+        out.asfDiagnostic.asfRequestBodyBytes = finiteOrNull(a.asfRequestBodyBytes);
+        out.asfDiagnostic.asfRequestBodyHash = clip(a.asfRequestBodyHash, 20);
+        out.asfDiagnostic.asfResponseUrl = clip(a.asfResponseUrl, 8000);
+        out.asfDiagnostic.asfResponseType = clip(a.asfResponseType, 80);
+        out.asfDiagnostic.asfResponseHeaders = cloneLimitedObject(a.asfResponseHeaders, 2000);
+        out.asfDiagnostic.asfRawResponse = clip(a.asfRawResponse, 65536);
+        out.asfDiagnostic.asfGraphqlErrors = Array.isArray(a.asfGraphqlErrors) ? a.asfGraphqlErrors.slice(0, 10) : [];
+        out.asfDiagnostic.asfGraphqlErrorsRaw = clip(a.asfGraphqlErrorsRaw, 65536);
+        out.asfDiagnostic.asfGraphqlRawParsed = a.asfGraphqlRawParsed && typeof a.asfGraphqlRawParsed === 'object' ? a.asfGraphqlRawParsed : null;
+        out.asfDiagnostic.asfResourceTiming = a.asfResourceTiming && typeof a.asfResourceTiming === 'object' ? a.asfResourceTiming : null;
+        out.asfDiagnostic.asfClientContext = a.asfClientContext && typeof a.asfClientContext === 'object' ? a.asfClientContext : null;
+        out.asfDiagnostic.asfCallerStack = clip(a.asfCallerStack, 12000);
+        out.asfDiagnostic.asfNetworkError = a.asfNetworkError && typeof a.asfNetworkError === 'object' ? a.asfNetworkError : null;
+        out.asfDiagnostic.asfCaptureAgeMs = finiteOrNull(a.asfCaptureAgeMs);
+        out.asfDiagnostic.asfCaptureMatch = clip(a.asfCaptureMatch, 80);
+      }
     }
     return out;
   }
