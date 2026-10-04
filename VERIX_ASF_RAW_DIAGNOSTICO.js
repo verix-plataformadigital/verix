@@ -160,7 +160,7 @@
       if (m) out.plate = s(m[1],50).toUpperCase();
       var d = q.match(/date\s*:\s*"([0-9/ -]+)"/i);
       if (d) out.date = s(d[1],50);
-      var op = q.match(/(?:mutation|query)\\s+([A-Za-z0-9_]+)/i);
+      var op = q.match(/(?:mutation|query)\s+([A-Za-z0-9_]+)/i);
       if (op) out.operation = s(op[1],100);
     } catch (_) {}
     return out;
