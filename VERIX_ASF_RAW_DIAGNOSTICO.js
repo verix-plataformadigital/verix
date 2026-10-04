@@ -639,7 +639,8 @@
         }
 
         if (!target && !capture && diagnostico && typeof diagnostico==='object'){
-          diagnostico.asfForensicsVersion='2';
+          diagnostico.asfForensicsVersion='4';
+          diagnostico.captureVersion='4';
           diagnostico.asfCaptureMatch='no_matching_capture';
         }
       } catch (_) {}
