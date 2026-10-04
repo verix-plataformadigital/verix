@@ -1,9 +1,10 @@
-/* VÉRIX ASF forensic capture — comprehensive, side-effect-minimising diagnostics. */
+/* VÉRIX ASF forensic capture V4 — raw ASF response + request forensic diagnostics. */
 (function(){
   'use strict';
 
-  if (window.__VERIX_ASF_FORENSICS_V2__) return;
-  window.__VERIX_ASF_FORENSICS_V2__ = true;
+  if (window.__VERIX_ASF_FORENSICS_V4__) return;
+  window.__VERIX_ASF_FORENSICS_V4__ = true;
+  window.__VERIX_ASF_FORENSICS_VERSION__ = '4';
 
   var originalFetch = window.fetch;
   var captures = [];
@@ -155,9 +156,9 @@
       var q = u.searchParams.get('query') || '';
       out.queryEncoded = s((String(url).split('?')[1] || ''), MAX_QUERY);
       out.query = s(q, MAX_QUERY);
-      var m = q.match(/license\\s*:\\s*\\?"([A-Z0-9-]+)\\?"/i);
+      var m = q.match(/license\s*:\s*"([A-Z0-9-]+)"/i);
       if (m) out.plate = s(m[1],50).toUpperCase();
-      var d = q.match(/date\\s*:\\s*\\?"([0-9/ -]+)\\?"/i);
+      var d = q.match(/date\s*:\s*"([0-9/ -]+)"/i);
       if (d) out.date = s(d[1],50);
       var op = q.match(/(?:mutation|query)\\s+([A-Za-z0-9_]+)/i);
       if (op) out.operation = s(op[1],100);
@@ -260,7 +261,7 @@
     } catch (_) {}
 
     return {
-      captureVersion:'3',
+      captureVersion:'4',
       captureId:'asf-' + stamp + '-' + (++captureSeq),
       requestStartEpochMs:stamp,
       requestStartIso:new Date(stamp).toISOString(),
@@ -596,7 +597,8 @@
         }
 
         if (target && capture){
-          target.asfForensicsVersion='2';
+          target.asfForensicsVersion='4';
+          target.captureVersion=capture.captureVersion || '4';
           target.asfCaptureId=capture.captureId;
           target.asfRequestStartEpochMs=capture.requestStartEpochMs;
           target.asfRequestStartIso=capture.requestStartIso;
