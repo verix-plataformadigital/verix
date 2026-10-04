@@ -148,7 +148,12 @@ function cleanMetadata(value: unknown): Record<string, unknown> {
 
   if (m.asfDiagnostic && typeof m.asfDiagnostic === "object" && !Array.isArray(m.asfDiagnostic)) {
     const a = m.asfDiagnostic as Record<string, unknown>;
-    const attempts = Array.isArray(a.asfAttempts) ? a.asfAttempts.slice(-4).map((t: any) => ({
+    const isErrorDiag =
+      !!a.asfErrorType ||
+      Number(a.asfGraphqlErrorCount ?? 0) > 0 ||
+      !!a.asfNetworkError ||
+      !!a.asfRawResponse;
+    const attempts = Array.isArray(a.asfAttempts) ? a.asfAttempts.slice(-6).map((t: any) => ({
       method: cleanText(t?.method, 20),
       transport: cleanText(t?.transport, 30),
       status: finiteNumber(t?.status),
@@ -156,9 +161,16 @@ function cleanMetadata(value: unknown): Record<string, unknown> {
       errorType: cleanText(t?.errorType, 60),
       message: cleanText(t?.message, 500),
       responseBytes: finiteNumber(t?.responseBytes),
-      responseHash: cleanText(t?.responseHash, 20)
+      responseHash: cleanText(t?.responseHash, 20),
+      responseContentType: cleanText(t?.responseContentType, 120),
+      statusText: cleanText(t?.statusText, 120),
+      retryIndex: finiteNumber(t?.retryIndex),
+      timeoutMs: finiteNumber(t?.timeoutMs)
     })) : [];
-    out.asfDiagnostic = {
+    const diag: Record<string, unknown> = {
+      captureVersion: cleanText(a.captureVersion, 10),
+      asfForensicsVersion: cleanText(a.asfForensicsVersion, 10),
+      asfCaptureId: cleanText(a.asfCaptureId, 120),
       build_id: cleanText(a.build_id, 60),
       queryId: cleanText(a.queryId, 120),
       matricula: cleanText(a.matricula, 30),
@@ -179,15 +191,43 @@ function cleanMetadata(value: unknown): Record<string, unknown> {
       asfResponseClass: cleanText(a.asfResponseClass, 60),
       asfGraphqlErrorCount: finiteNumber(a.asfGraphqlErrorCount),
       asfGraphqlCodes: Array.isArray(a.asfGraphqlCodes)
-        ? a.asfGraphqlCodes.slice(0, 6).map((x: unknown) => cleanText(x, 80)).filter(Boolean)
+        ? a.asfGraphqlCodes.slice(0, 10).map((x: unknown) => cleanText(x, 120)).filter(Boolean)
         : [],
       asfGraphqlMessages: Array.isArray(a.asfGraphqlMessages)
-        ? a.asfGraphqlMessages.slice(0, 3).map((x: unknown) => cleanText(x, 240)).filter(Boolean)
+        ? a.asfGraphqlMessages.slice(0, 10).map((x: unknown) => cleanText(x, 1000)).filter(Boolean)
         : [],
       asfAttempts: attempts
     };
+    if (isErrorDiag) {
+      diag.asfRequestStartEpochMs = finiteNumber(a.asfRequestStartEpochMs);
+      diag.asfRequestStartIso = cleanText(a.asfRequestStartIso, 60);
+      diag.asfRequestEndEpochMs = finiteNumber(a.asfRequestEndEpochMs);
+      diag.asfRequestEndIso = cleanText(a.asfRequestEndIso, 60);
+      diag.asfRequestQuery = cleanText(a.asfRequestQuery, 20000);
+      diag.asfRequestHeaders = a.asfRequestHeaders && typeof a.asfRequestHeaders === "object" && !Array.isArray(a.asfRequestHeaders)
+        ? Object.fromEntries(Object.entries(a.asfRequestHeaders as Record<string, unknown>).slice(0, 80).map(([k,v]) => [String(k).slice(0,100), cleanText(v, 2000)]))
+        : null;
+      diag.asfRequestBody = cleanText(a.asfRequestBody, 40000);
+      diag.asfRequestBodyBytes = finiteNumber(a.asfRequestBodyBytes);
+      diag.asfRequestBodyHash = cleanText(a.asfRequestBodyHash, 20);
+      diag.asfResponseUrl = cleanText(a.asfResponseUrl, 8000);
+      diag.asfResponseType = cleanText(a.asfResponseType, 80);
+      diag.asfResponseHeaders = a.asfResponseHeaders && typeof a.asfResponseHeaders === "object" && !Array.isArray(a.asfResponseHeaders)
+        ? Object.fromEntries(Object.entries(a.asfResponseHeaders as Record<string, unknown>).slice(0, 80).map(([k,v]) => [String(k).slice(0,100), cleanText(v, 2000)]))
+        : null;
+      diag.asfRawResponse = cleanText(a.asfRawResponse, 65536);
+      diag.asfGraphqlErrors = Array.isArray(a.asfGraphqlErrors) ? a.asfGraphqlErrors.slice(0, 10) : [];
+      diag.asfGraphqlErrorsRaw = cleanText(a.asfGraphqlErrorsRaw, 65536);
+      diag.asfGraphqlRawParsed = a.asfGraphqlRawParsed && typeof a.asfGraphqlRawParsed === "object" ? a.asfGraphqlRawParsed : null;
+      diag.asfResourceTiming = a.asfResourceTiming && typeof a.asfResourceTiming === "object" ? a.asfResourceTiming : null;
+      diag.asfClientContext = a.asfClientContext && typeof a.asfClientContext === "object" ? a.asfClientContext : null;
+      diag.asfCallerStack = cleanText(a.asfCallerStack, 12000);
+      diag.asfNetworkError = a.asfNetworkError && typeof a.asfNetworkError === "object" ? a.asfNetworkError : null;
+      diag.asfCaptureAgeMs = finiteNumber(a.asfCaptureAgeMs);
+      diag.asfCaptureMatch = cleanText(a.asfCaptureMatch, 80);
+    }
+    out.asfDiagnostic = diag;
   }
-
   return out;
 }
 
