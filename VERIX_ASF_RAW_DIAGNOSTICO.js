@@ -4,7 +4,7 @@
 
   if (window.__VERIX_ASF_FORENSICS_V4__) return;
   window.__VERIX_ASF_FORENSICS_V4__ = true;
-  window.__VERIX_ASF_FORENSICS_VERSION__ = '4';
+  window.__VERIX_ASF_FORENSICS_VERSION__ = '5';
 
   var originalFetch = window.fetch;
   var captures = [];
@@ -261,7 +261,7 @@
     } catch (_) {}
 
     return {
-      captureVersion:'4',
+      captureVersion:'5',
       captureId:'asf-' + stamp + '-' + (++captureSeq),
       requestStartEpochMs:stamp,
       requestStartIso:new Date(stamp).toISOString(),
@@ -340,6 +340,108 @@
     }
   }
 
+  /*
+   * ASF TRANSIENT-ERROR RECOVERY V5
+   * The reference Android client exhibits up to 3 physical attempts for the
+   * same ASF lookup. Reproduce that only for transient ASF failures:
+   *   - HTTP 200 + GraphQL error "Serviço Indisponível"
+   *   - network/timeout failures
+   * Never retry 403/405/429 or a valid ASF response.
+   * Each retry is a real physical request and is captured individually.
+   */
+  var ASF_RETRY_MAX = 2; // 2 retries = 3 physical attempts total
+  var ASF_RETRY_DELAY_MS = 250;
+  var ASF_RETRY_TIMEOUT_MS = 12000;
+
+  function retryableGraphqlBody(raw){
+    try {
+      var j=JSON.parse(String(raw||''));
+      if (!j || !Array.isArray(j.errors) || !j.errors.length) return false;
+      return j.errors.some(function(e){
+        var m=s(e&&e.message,500).toLowerCase();
+        var code=s(e&&e.extensions&&e.extensions.code,200).toLowerCase();
+        return m.indexOf('serviço indisponível')>=0 ||
+               m.indexOf('servico indisponivel')>=0 ||
+               m.indexOf('service unavailable')>=0 ||
+               code==='graphql_service_unavailable';
+      });
+    } catch (_) { return false; }
+  }
+
+  function waitASF(ms){ return new Promise(function(resolve){setTimeout(resolve,ms);}); }
+
+  function retryInitASF(init, method, body, controller){
+    var o={};
+    try { o.method=method; } catch (_) {}
+    try { o.cache=init&&init.cache; } catch (_) {}
+    try { o.credentials=init&&init.credentials; } catch (_) {}
+    try { o.mode=init&&init.mode; } catch (_) {}
+    try { o.headers=init&&init.headers; } catch (_) {}
+    try { if (body!==undefined) o.body=body; } catch (_) {}
+    if (controller) o.signal=controller.signal;
+    return o;
+  }
+
+  function runASFWithRetry(input, init, url, method){
+    var group='asf-retry-'+Date.now()+'-'+(++captureSeq);
+    var groupAttempts=[];
+
+    function one(attemptIndex){
+      var started=Date.now();
+      var controller=null, timeoutId=null;
+      var requestInit;
+      if (attemptIndex===0){
+        requestInit=init;
+      } else {
+        controller=(typeof AbortController!=='undefined') ? new AbortController() : null;
+        requestInit=retryInitASF(init||{},method,(init&&Object.prototype.hasOwnProperty.call(init,'body'))?init.body:null,controller);
+        if (controller){ timeoutId=setTimeout(function(){try{controller.abort();}catch(_){}},ASF_RETRY_TIMEOUT_MS); }
+      }
+
+      var p;
+      try {
+        p=attemptIndex===0 ? originalFetch.call(window,input,init) : originalFetch.call(window,url,requestInit);
+      } catch(err){
+        clearTimeout(timeoutId);
+        var ce={retryGroup:group,retryIndex:attemptIndex,method:method,startedAt:started,status:null,errorType:'network',message:s(err&&err.message||err,2000)};
+        groupAttempts.push(ce);
+        var cap=buildBase(url,method,attemptIndex===0?input:null,requestInit);
+        finishCapture(cap,null,null,err); cap.retryGroup=group; cap.retryIndex=attemptIndex; cap.retryReason='transport_exception'; addCapture(cap);
+        if (attemptIndex<ASF_RETRY_MAX) return waitASF(ASF_RETRY_DELAY_MS).then(function(){return one(attemptIndex+1);});
+        throw err;
+      }
+
+      return p.then(function(response){
+        clearTimeout(timeoutId);
+        var inspect;
+        try { inspect=response.clone().text(); } catch (_) { inspect=Promise.resolve(''); }
+        return inspect.then(function(raw){
+          var retryGraphql=(response.status===200 && retryableGraphqlBody(raw));
+          var retryHttp=(response.status===0);
+          var cap=buildBase(url,method,attemptIndex===0?input:null,requestInit);
+          finishCapture(cap,response,raw,null);
+          cap.retryGroup=group; cap.retryIndex=attemptIndex;
+          cap.retryReason=retryGraphql?'graphql_service_unavailable':(retryHttp?'network':'');
+          addCapture(cap);
+          groupAttempts.push({retryGroup:group,retryIndex:attemptIndex,method:method,status:response.status,durationMs:Date.now()-started,errorType:retryGraphql?'graphql_service_unavailable':(retryHttp?'network':null),responseHash:cap.responseBodyHash,responseBytes:cap.responseBytes});
+          if ((retryGraphql || retryHttp) && attemptIndex<ASF_RETRY_MAX){
+            return waitASF(ASF_RETRY_DELAY_MS).then(function(){return one(attemptIndex+1);});
+          }
+          try { response.__verixAsfRetryGroup=group; response.__verixAsfRetryIndex=attemptIndex; response.__verixAsfRetryAttempts=groupAttempts.slice(); } catch (_) {}
+          return response;
+        });
+      },function(err){
+        clearTimeout(timeoutId);
+        var cap=buildBase(url,method,attemptIndex===0?input:null,requestInit);
+        finishCapture(cap,null,null,err); cap.retryGroup=group; cap.retryIndex=attemptIndex; cap.retryReason='network'; addCapture(cap);
+        groupAttempts.push({retryGroup:group,retryIndex:attemptIndex,method:method,status:0,durationMs:Date.now()-started,errorType:'network',message:s(err&&err.message||err,2000)});
+        if (attemptIndex<ASF_RETRY_MAX) return waitASF(ASF_RETRY_DELAY_MS).then(function(){return one(attemptIndex+1);});
+        throw err;
+      });
+    }
+    return one(0);
+  }
+
   window.fetch = function(input, init){
     var url='';
     var method='';
@@ -353,7 +455,7 @@
     var c=buildBase(url,method,input,init);
     var p;
     try {
-      p=originalFetch.apply(this,arguments);
+      p=runASFWithRetry(input,init,url,String(method||'GET').toUpperCase());
     } catch (err) {
       finishCapture(c,null,null,err);
       addCapture(c);
@@ -597,8 +699,8 @@
         }
 
         if (target && capture){
-          target.asfForensicsVersion='4';
-          target.captureVersion=capture.captureVersion || '4';
+          target.asfForensicsVersion='5';
+          target.captureVersion=capture.captureVersion || '5';
           target.asfCaptureId=capture.captureId;
           target.asfRequestStartEpochMs=capture.requestStartEpochMs;
           target.asfRequestStartIso=capture.requestStartIso;
@@ -635,6 +737,10 @@
           target.asfCallerStack=capture.callerStack;
           target.asfNetworkError=capture.error || null;
           target.asfCaptureAgeMs=Date.now()-(capture.requestEndEpochMs||capture.requestStartEpochMs||Date.now());
+          target.asfRetryCount = capture.retryIndex || 0;
+          target.asfRetryGroup = capture.retryGroup || null;
+          target.asfRetryReason = capture.retryReason || null;
+          target.asfRetryAttempts = capture.retryGroup ? captures.filter(function(x){return x && x.retryGroup===capture.retryGroup;}).slice(-10).map(function(x){return {retryIndex:x.retryIndex,status:x.status,errorType:x.error&&x.error.message?x.error.message:null,responseHash:x.responseBodyHash,responseBytes:x.responseBytes,durationMs:x.durationMs};}) : [];
           target.asfCaptureMatch='plate+nearest_recent_error';
         }
 
