@@ -1,0 +1,24 @@
+# Secrets and local credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+credentials/
+
+# Local/dev dependencies
+node_modules/
+.npm/
+.supabase/
+coverage/
+tmp/
+dist/
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
