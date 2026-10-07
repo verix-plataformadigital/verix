@@ -1302,8 +1302,6 @@ function submitConjunto(event) {
    * Retries existem exclusivamente para falhas transitórias de transporte.
    * Um 429 devolvido pela ASF é respeitado e não é contornado automaticamente.
    */
-
-  var ASF_FILA = Promise.resolve();
   var ASF_FILA_PENDENTES = 0;
   var ASF_PENDING_TIMER = null;
 
@@ -2026,6 +2024,12 @@ function submitConjunto(event) {
   
 var ASF_EM_VOO = Object.create(null);
 
+  /*
+   * EXECUÇÃO PARALELA:
+   * ASF, inspeção IMT e livrete IMT são canais independentes.
+   * Não existe fila entre consultas ASF e não existe espera pelo RNSI.
+   * A única proteção local é deduplicar uma chamada idêntica ainda em execução.
+   */
 async function consultarSeguroASF(matricula) {
     var matDisplay = String(matricula || '').trim().toUpperCase();
     if (!matDisplay) return;
@@ -2036,28 +2040,21 @@ async function consultarSeguroASF(matricula) {
     var queryId = window.__VERIX_CURRENT_QUERY_ID || null;
     var dedupeKey = matLimpa + '|' + String(queryId || '');
 
-    if (ASF_EM_VOO[dedupeKey]) {
-      return ASF_EM_VOO[dedupeKey];
-    }
+    if (ASF_EM_VOO[dedupeKey]) return ASF_EM_VOO[dedupeKey];
 
     ASF_FILA_PENDENTES = (ASF_FILA_PENDENTES || 0) + 1;
     atualizarContadorVisualASF();
+    mostrarSeguroLoading(matDisplay, 'A VERIFICAR...');
 
-    var promise = ASF_FILA.then(async function () {
-      try {
-        await processarConsultaSeguroComCadencia(matLimpa, matDisplay, queryId);
-      } finally {
-        ASF_FILA_PENDENTES = Math.max(0, (ASF_FILA_PENDENTES || 1) - 1);
-        atualizarContadorVisualASF();
-      }
-    }).catch(function (e) {
+    var promise = processarConsultaSeguroComCadencia(
+      matLimpa,
+      matDisplay,
+      queryId
+    ).finally(function () {
       ASF_FILA_PENDENTES = Math.max(0, (ASF_FILA_PENDENTES || 1) - 1);
       atualizarContadorVisualASF();
-      console.error('[ASF] fila:', e);
-      mostrarSeguroErro((e && e.message) || 'Falha na consulta ASF', matDisplay, '', queryId);
     });
 
-    ASF_FILA = promise;
     ASF_EM_VOO[dedupeKey] = promise;
     promise.then(function () {
       delete ASF_EM_VOO[dedupeKey];
@@ -2065,10 +2062,8 @@ async function consultarSeguroASF(matricula) {
       delete ASF_EM_VOO[dedupeKey];
     });
 
-    mostrarSeguroLoading(matDisplay, ASF_FILA_PENDENTES > 1 ? 'Na fila ASF…' : 'A VERIFICAR...');
     return promise;
   }
-
 
 function verificarSeguro() {
  const mat = obterMatriculaOuVazia();
