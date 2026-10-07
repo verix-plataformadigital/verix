@@ -2875,10 +2875,16 @@ function toggleFullscreen() {
 /* 10.11 — IMT: vista total da página dentro da janela.
  O conteúdo RNSI/IMT é externo; por isso não tentamos aceder ao DOM cross-origin.
  O próprio iframe é reduzido para mostrar o enquadramento integral. */
-#veiculoFrame, #reboqueFrame {
- width: 133.3333% !important;
- height: 133.3333% !important;
- transform: scale(0.75);
+#veiculoFrame {
+ width: 83.3333% !important;
+ height: 83.3333% !important;
+ transform: scale(1.20);
+ transform-origin: top left;
+}
+#reboqueFrame {
+ width: 111.1111% !important;
+ height: 111.1111% !important;
+ transform: scale(0.90);
  transform-origin: top left;
 }
 </style> <style id="ajustes-10-12">
