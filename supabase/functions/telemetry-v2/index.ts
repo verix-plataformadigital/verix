@@ -245,6 +245,7 @@ function cleanMetadata(value: unknown): Record<string, unknown> {
     }
 
     out.asfDiagnostic = diag;
+  }
   return out;
 }
 
