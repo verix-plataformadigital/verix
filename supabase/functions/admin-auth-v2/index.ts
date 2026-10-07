@@ -1,30 +1,37 @@
 declare const Deno: any;
 
+const BASE_CORS_HEADERS = {
+  "Access-Control-Allow-Headers": "content-type",
+  "Access-Control-Allow-Methods": "POST,OPTIONS",
+  "Vary": "Origin",
+  "Cache-Control": "no-store",
+  "X-Content-Type-Options": "nosniff",
+  "Referrer-Policy": "no-referrer"
+};
+
 const ALLOWED_ORIGINS = new Set([
   "https://verix-plataformadigital.github.io",
   "https://verix.vxops.workers.dev",
   "http://localhost",
-  "http://127.0.0.1"
+  "http://127.0.0.1",
+  "null"
 ]);
 
+function isAllowedOrigin(origin: string | null): boolean {
+  if (!origin) return true;
+  if (ALLOWED_ORIGINS.has(origin)) return true;
+  return /^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?$/.test(origin);
+}
+
 function getCorsHeaders(req: Request) {
-  const origin = req.headers.get("origin") || "";
-  const allowed = origin && ALLOWED_ORIGINS.has(origin)
-    ? origin
-    : "https://verix-plataformadigital.github.io";
-  return {
-    "Access-Control-Allow-Origin": allowed,
-    "Access-Control-Allow-Headers": "content-type",
-    "Access-Control-Allow-Methods": "POST,OPTIONS",
-    "Vary": "Origin",
-    "Cache-Control": "no-store"
-  };
+  const headers: Record<string,string> = { ...BASE_CORS_HEADERS };
+  const origin = req.headers.get("origin");
+  if (origin && isAllowedOrigin(origin)) headers["Access-Control-Allow-Origin"] = origin;
+  return headers;
 }
 
 function json(data: unknown, status = 200, req?: Request) {
-  const headers = req
-    ? getCorsHeaders(req)
-    : getCorsHeaders(new Request("https://verix-plataformadigital.github.io"));
+  const headers = req ? getCorsHeaders(req) : { ...BASE_CORS_HEADERS };
   return new Response(JSON.stringify(data), {
     status,
     headers: {
@@ -147,6 +154,10 @@ async function makeToken(secret: string) {
 }
 
 Deno.serve(async (req) => {
+  const origin = req.headers.get("origin");
+  if (!isAllowedOrigin(origin)) {
+    return json({ ok: false, error: "origin_not_allowed" }, 403, req);
+  }
 
   if (req.method === "OPTIONS") {
     return new Response(null, {
