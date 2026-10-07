@@ -1460,6 +1460,16 @@ function submitConjunto(event) {
 
   function agoraMsASFDiag() { return Date.now(); }
 
+  function hashTextoASF(value) {
+    var s = String(value || '');
+    var h = 2166136261;
+    for (var i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return (h >>> 0).toString(16).padStart(8, '0');
+  }
+
   function textoErroASF(e) {
     if (!e) return '';
     var parts = [];
@@ -1505,6 +1515,8 @@ function submitConjunto(event) {
       asfAttempts: [],
       asfResponseBytes: null,
       asfResponseContentType: null,
+      asfResponseHash: null,
+      asfStatusText: null,
       asfRelayLatencyMs: null
     };
   }
@@ -1535,6 +1547,8 @@ function submitConjunto(event) {
       ? String(tentativa.message).slice(0, 500)
       : diag.asfMessage;
     diag.asfResponseContentType = tentativa.responseContentType || diag.asfResponseContentType || null;
+    diag.asfResponseHash = tentativa.responseHash || diag.asfResponseHash || null;
+    diag.asfStatusText = tentativa.statusText || diag.asfStatusText || null;
   }
 
   // ---- HTTP ASF: relay servidor-servidor ----
@@ -1628,6 +1642,7 @@ function submitConjunto(event) {
           });
 
           tentativa.status = res.status;
+          tentativa.statusText = res.statusText || null;
           tentativa.responseContentType = res.headers && res.headers.get
             ? (res.headers.get('content-type') || null)
             : null;
@@ -1655,6 +1670,9 @@ function submitConjunto(event) {
       }
 
       tentativa.responseBytes = bodyText ? String(bodyText).length : 0;
+      tentativa.responseHash = hashTextoASF(bodyText);
+      diag.asfResponseHash = tentativa.responseHash;
+      diag.asfStatusText = tentativa.statusText || null;
       finalizarTentativaDiagASF(diag, tentativa);
 
       return {
