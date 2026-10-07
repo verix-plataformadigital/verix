@@ -1,22 +1,78 @@
 <!-- VÉRIX 1.3 — publicação limpa -->
 <!DOCTYPE html><html lang="pt"><head>
-<style id="verix-boot-core">
-/* Impede qualquer flash da interface enquanto o arranque está ativo. */
-html.verix-booting body{
-  visibility:hidden !important;
+<style id="verix-startup-lock">
+/* ===== VÉRIX STARTUP LOCK — única autoridade do arranque ===== */
+html.verix-starting,
+html.verix-starting body{
   overflow:hidden !important;
 }
-html.verix-booting #opsBootOverlay{
+html.verix-starting body{
+  visibility:hidden !important;
+}
+html.verix-starting #opsBootOverlay{
   visibility:visible !important;
 }
-</style>
-<script id="verix-boot-flag">
-(function(){
-  try{ document.documentElement.classList.add('verix-booting'); }
-  catch(e){}
-})();
-</script>
-
+html.verix-starting #verixAsfNoticeOverlay,
+html.verix-starting #mainMenuScreen,
+html.verix-starting .main,
+html.verix-starting .rail,
+html.verix-starting .command,
+html.verix-starting .bottom,
+html.verix-starting .operational-strip{
+  visibility:hidden !important;
+}
+#opsBootOverlay{
+  position:fixed !important;
+  inset:0 !important;
+  z-index:2147483647 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  flex-direction:column !important;
+  gap:14px !important;
+  background:#010407 !important;
+  opacity:1 !important;
+  visibility:visible !important;
+  pointer-events:auto !important;
+  transition:opacity .25s ease !important;
+}
+#opsBootOverlay.ops-hide{
+  opacity:0 !important;
+  pointer-events:none !important;
+}
+#opsBootOverlay .ops-boot-title{
+  font:900 22px/1.2 Arial,sans-serif !important;
+  letter-spacing:6px !important;
+  color:#e8f7f8 !important;
+  text-transform:uppercase !important;
+  text-shadow:0 0 24px rgba(106,240,255,.35) !important;
+}
+#opsBootOverlay .ops-boot-sub{
+  font:700 10px/1.4 Arial,sans-serif !important;
+  letter-spacing:2px !important;
+  color:#6a8a94 !important;
+  text-transform:uppercase !important;
+}
+#opsBootOverlay .ops-boot-bar{
+  width:min(280px,70vw) !important;
+  height:3px !important;
+  background:rgba(106,240,255,.15) !important;
+  border-radius:3px !important;
+  overflow:hidden !important;
+  margin-top:8px !important;
+}
+#opsBootOverlay .ops-boot-bar > i{
+  display:block !important;
+  height:100% !important;
+  width:0 !important;
+  background:linear-gradient(90deg,#3dffa8,#6af0ff) !important;
+  box-shadow:0 0 12px rgba(106,240,255,.6) !important;
+  animation:verixStartupBar 1.05s linear forwards !important;
+}
+@keyframes verixStartupBar{ to{width:100%;} }
+#verixAsfNoticeOverlay[aria-hidden="true"]{display:none !important;}
+#verixAsfNoticeOverlay[aria-hidden="false"]{display:flex !important;}
+<script id="verix-startup-flag">(function(){try{document.documentElement.classList.add('verix-starting');}catch(e){}})();</script>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -7173,92 +7229,11 @@ html body .asf-operational-result .asf-note{
 
 
 </head><body>
-<script id="verix-boot-controller">
-(function(){
-  'use strict';
-
-  /* VÉRIX — ARRANQUE ÚNICO E DETERMINÍSTICO
-     Ordem: SPLASH (~1,2s) → menu preparado → aviso inicial.
-     Não cria overlays dinamicamente nem abre o aviso em paralelo. */
-  var BOOT_VISIBLE_MS = 1200;
-  var FADE_MS = 250;
-  var start = Date.now();
-  var domReady = document.readyState !== 'loading';
-  var timerReady = false;
-  var done = false;
-
-  var splash = document.getElementById('opsBootOverlay');
-  var notice = document.getElementById('verixAsfNoticeOverlay');
-  var menu = document.getElementById('mainMenuScreen');
-
-  function keepStartupState(){
-    try { document.documentElement.classList.add('verix-booting'); } catch(e) {}
-    if (notice) notice.setAttribute('aria-hidden','true');
-    if (menu) menu.classList.remove('show');
-    try { document.body.classList.remove('main-menu-active'); } catch(e) {}
-  }
-
-  function showMainMenu(){
-    try {
-      if (typeof window.mostrarMenuPrincipal === 'function') {
-        window.mostrarMenuPrincipal();
-      } else if (menu) {
-        menu.classList.add('show');
-        document.body.classList.add('main-menu-active');
-      }
-    } catch(e) {}
-  }
-
-  window.fecharAvisoASFInicial = function(){
-    var o = document.getElementById('verixAsfNoticeOverlay');
-    if (o) o.setAttribute('aria-hidden','true');
-  };
-
-  function finish(){
-    if (done || !domReady || !timerReady) return;
-    done = true;
-
-    /* Primeiro termina visualmente o splash. */
-    if (splash) splash.classList.add('ops-hide');
-
-    window.setTimeout(function(){
-      try { if (splash) splash.remove(); } catch(e) {}
-
-      /* Só agora desbloqueia a aplicação e prepara o menu. */
-      try { document.documentElement.classList.remove('verix-booting'); } catch(e) {}
-      showMainMenu();
-
-      /* O aviso é o último passo do arranque. */
-      window.requestAnimationFrame(function(){
-        var o = document.getElementById('verixAsfNoticeOverlay');
-        if (o) o.setAttribute('aria-hidden','false');
-        try { document.dispatchEvent(new CustomEvent('verix:boot-complete')); } catch(e) {}
-      });
-    }, FADE_MS);
-  }
-
-  keepStartupState();
-
-  if (!domReady) {
-    document.addEventListener('DOMContentLoaded', function(){
-      domReady = true;
-      finish();
-    }, {once:true});
-  }
-
-  var remaining = BOOT_VISIBLE_MS - (Date.now() - start);
-  if (remaining <= 0) {
-    timerReady = true;
-    finish();
-  } else {
-    window.setTimeout(function(){
-      timerReady = true;
-      finish();
-    }, remaining);
-  }
-})();
-</script>
-
+<div id="opsBootOverlay" aria-hidden="false">
+  <div class="ops-boot-title">VÉRIX // Plataforma Digital</div>
+  <div class="ops-boot-sub">Inicializar módulos · Consulta · Livrete · Seguro · Cinemómetro</div>
+  <div class="ops-boot-bar"><i></i></div>
+</div>
 
 <div id="verixAsfNoticeOverlay" class="verix-asf-notice-overlay" aria-hidden="true">
   <div class="verix-asf-notice-window" role="dialog" aria-modal="true" aria-labelledby="verixAsfNoticeTitle">
@@ -19184,5 +19159,114 @@ html body .toast-notification {
 
 
 
+<script id="verix-startup-controller">
+(function(){
+  'use strict';
+
+  /* VÉRIX — ARRANQUE ÚNICO
+     1) Splash visível ~1,2 s
+     2) Fade do splash
+     3) Menu principal VÉRIX (NUNCA a consulta)
+     4) Aviso inicial
+  */
+  var SPLASH_MS = 1200;
+  var FADE_MS = 250;
+  var NOTICE_DELAY_MS = 80;
+  var started = performance.now();
+  var finished = false;
+
+  var splash = document.getElementById('opsBootOverlay');
+  var notice = document.getElementById('verixAsfNoticeOverlay');
+  var menu = document.getElementById('mainMenuScreen');
+  var main = document.querySelector('.main');
+
+  function forceStartupState(){
+    try { document.documentElement.classList.add('verix-starting'); } catch(e) {}
+    if (notice) notice.setAttribute('aria-hidden','true');
+    if (menu) menu.classList.remove('show');
+    document.body.classList.remove(
+      'main-menu-active',
+      'fixed-workspace-active',
+      'consultation-screen-active',
+      'cinemometro-page-active',
+      'history-page-active'
+    );
+    if (main) main.classList.remove('consultation-fixed-active');
+  }
+
+  function prepareMainMenu(){
+    /* Usa a função oficial, mas limpa explicitamente qualquer estado de consulta. */
+    document.body.classList.remove(
+      'fixed-workspace-active',
+      'consultation-screen-active',
+      'cinemometro-page-active',
+      'history-page-active'
+    );
+    if (main) main.classList.remove('consultation-fixed-active');
+
+    if (typeof window.mostrarMenuPrincipal === 'function') {
+      try { window.mostrarMenuPrincipal(); } catch(e) {}
+    } else {
+      if (menu) menu.classList.add('show');
+      document.body.classList.add('main-menu-active');
+    }
+
+    if (menu) menu.classList.add('show');
+    document.body.classList.add('main-menu-active');
+
+    if (main) main.classList.remove('consultation-fixed-active');
+    document.body.classList.remove('fixed-workspace-active','consultation-screen-active');
+  }
+
+  function finish(){
+    if (finished) return;
+    finished = true;
+
+    if (splash) splash.classList.add('ops-hide');
+
+    window.setTimeout(function(){
+      if (splash) {
+        try { splash.remove(); } catch(e) {}
+      }
+
+      /* Menu já preparado, mas continua invisível durante esta passagem. */
+      prepareMainMenu();
+
+      /* O desbloqueio visual só acontece quando o menu está no estado certo. */
+      requestAnimationFrame(function(){
+        try { document.documentElement.classList.remove('verix-starting'); } catch(e) {}
+
+        /* Garante que o menu aparece antes do aviso. */
+        requestAnimationFrame(function(){
+          var o=document.getElementById('verixAsfNoticeOverlay');
+          if (o) o.setAttribute('aria-hidden','false');
+          try { document.dispatchEvent(new CustomEvent('verix:boot-complete')); } catch(e) {}
+        });
+      });
+    }, FADE_MS);
+  }
+
+  forceStartupState();
+
+  /* Espera o documento inteiro estar parseado. */
+  function startTimer(){
+    if (finished) return;
+    var elapsed=performance.now()-started;
+    var remaining=Math.max(0,SPLASH_MS-elapsed);
+    window.setTimeout(finish,remaining);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded',startTimer,{once:true});
+  } else {
+    startTimer();
+  }
+
+  window.fecharAvisoASFInicial=function(){
+    var o=document.getElementById('verixAsfNoticeOverlay');
+    if(o) o.setAttribute('aria-hidden','true');
+  };
+})();
+</script>
 </body>
 </html>
