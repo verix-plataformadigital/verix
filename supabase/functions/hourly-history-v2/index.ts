@@ -89,7 +89,7 @@ async function rpc(name: string, body: Record<string,unknown>) {
   return t?JSON.parse(t):[];
 }
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
   const origin = req.headers.get("origin");
   if (!isAllowedOrigin(origin)) {
     return json({ok:false,error:"origin_not_allowed"},403,req);
