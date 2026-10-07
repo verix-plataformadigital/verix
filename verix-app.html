@@ -1207,9 +1207,9 @@ function submitConjunto(event) {
   const ASF_API_URL = 'https://ext01.asf.com.pt/api/src/?query=';
   const ASF_TIMEOUT_MS = 12000;
   const ASF_MIN_INTERVAL_MS = 8000;
-  const ASF_JANELA_SEG = 60;
+  const ASF_JANELA_SEG = 63;
   const ASF_LIMITE_JANELA = 5;
-  const ASF_RATE_STORAGE_KEY = 'VERIX_ASF_RATE_STATE_V1';
+  const ASF_RATE_STORAGE_KEY = 'VERIX_ASF_RATE_STATE_V2';
   /* SEM retries automáticos. SEM cache de resultados. 1 tentativa = 1 pedido físico. */
 
 
@@ -1379,29 +1379,10 @@ function submitConjunto(event) {
   }
   setInterval(atualizarContadorVisualASF, 500);
 
-  // ---- HTTP ASF: POST primeiro, GET como fallback de transporte/método ----
-  // Cada tentativa HTTP física reserva um slot VÉRIX (8 s / 5 por 60 s).
-  async function reservarSlotFisicoASF(matDisplay, metodo) {
-    var atraso = calcularAtrasoCadenciaASF();
-    while (atraso > 0) {
-      if (matDisplay) {
-        mostrarSeguroLoading(matDisplay, 'A AGUARDAR (' + Math.ceil(atraso / 1000) + 's)');
-      }
-      await esperarASF(Math.min(atraso, 1000));
-      atraso = calcularAtrasoCadenciaASF();
-    }
 
-    var agora = agoraASF();
-    ASF_ULTIMO_PEDIDO_T = agora;
-    asfRequestTimes.push(agora);
-    guardarEstadoRateASF();
-    atualizarContadorVisualASF();
-    return agora;
-  }
+  // ---- HTTP ASF: POST único, sem GET de fallback ----
+  // Um pedido físico = um slot. Sem retries e sem GET alternativo.
 
-  // ---- Diagnóstico ASF V2 ----
-  // Instrumentação exclusivamente observacional. Não altera POST/GET, timeouts,
-  // rate-limit, parser ou regras de classificação. Regista cada tentativa física.
   function agoraMsASFDiag() { return Date.now(); }
 
   function textoErroASF(e) {
@@ -1441,11 +1422,8 @@ function submitConjunto(event) {
     return err;
   }
 
-  function finalizarTentativaDiagASF(diag, tentativa, extra) {
+  function finalizarTentativaDiagASF(diag, tentativa) {
     tentativa.durationMs = Math.max(0, agoraMsASFDiag() - tentativa.startedAt);
-    if (extra) {
-      Object.keys(extra).forEach(function (k) { tentativa[k] = extra[k]; });
-    }
     diag.asfAttempts.push(tentativa);
     diag.asfDurationMs = tentativa.durationMs;
     diag.asfHttpStatus = tentativa.status == null ? null : Number(tentativa.status);
@@ -1464,15 +1442,13 @@ function submitConjunto(event) {
     return { status: xhr.Status, text: xhr.ResponseText };
   }
 
-  async function fetchASF(metodo, url, matDisplay, diag) {
-    await reservarSlotFisicoASF(matDisplay, metodo);
+  async function efetuarPedidoHttpASF(url, matDisplay, queryId) {
+    var diag = criarDiagASF(queryId, matDisplay);
+    await reservarSlotFisicoASF(matDisplay);
 
-    var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-    var timeoutId = null;
-    var timeoutForcado = false;
     var tentativa = {
-      method: metodo,
-      transport: 'Fetch',
+      method: 'POST',
+      transport: (typeof ActiveXObject !== 'undefined' ? 'WinHTTP' : 'Fetch'),
       startedAt: agoraMsASFDiag(),
       status: null,
       durationMs: null,
@@ -1481,195 +1457,69 @@ function submitConjunto(event) {
       responseBytes: null
     };
 
-    timeoutId = setTimeout(function () {
-      timeoutForcado = true;
-      try { if (controller) controller.abort(); } catch (_) {}
-    }, ASF_TIMEOUT_MS);
-
     try {
-      var options = {
-        method: metodo,
-        cache: 'no-store',
-        credentials: 'omit',
-        mode: 'cors',
-        headers: { 'Accept': 'application/json, text/plain, */*' }
-      };
-      if (controller) options.signal = controller.signal;
-      if (metodo === 'POST') options.body = null;
+      if (typeof ActiveXObject !== 'undefined') {
+        var native = efetuarPedidoHttpASF_SyncNative(url);
+        tentativa.status = native.status;
+        tentativa.responseBytes = native.text ? String(native.text).length : 0;
+        if (native.status >= 400) tentativa.errorType = 'http_' + native.status;
+        finalizarTentativaDiagASF(diag, tentativa);
+        native.__asfDiagnostic = diag;
+        return native;
+      }
 
-      var res = await fetch(url, options);
-      var body = await res.text();
-      tentativa.status = res.status;
-      tentativa.responseBytes = body ? String(body).length : 0;
-      if (res.status >= 400) tentativa.errorType = 'http_' + res.status;
-      finalizarTentativaDiagASF(diag, tentativa);
-      return { status: res.status, text: body, __asfDiagnostic: diag };
+      var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+      var timeoutId = setTimeout(function () {
+        try { if (controller) controller.abort(); } catch (_) {}
+      }, ASF_TIMEOUT_MS);
+
+      try {
+        var options = {
+          method: 'POST',
+          cache: 'no-store',
+          credentials: 'omit',
+          mode: 'cors',
+          headers: { 'Accept': 'application/json, text/plain, */*' }
+        };
+        if (controller) options.signal = controller.signal;
+
+        var res = await fetch(url, options);
+        var body = await res.text();
+
+        tentativa.status = res.status;
+        tentativa.responseBytes = body ? String(body).length : 0;
+        if (res.status >= 400) tentativa.errorType = 'http_' + res.status;
+        finalizarTentativaDiagASF(diag, tentativa);
+
+        return { status: res.status, text: body, __asfDiagnostic: diag };
+      } finally {
+        clearTimeout(timeoutId);
+      }
     } catch (e) {
-      tentativa.errorType = classificarErroASF(e, timeoutForcado);
+      tentativa.errorType = classificarErroASF(e, false);
       tentativa.message = textoErroASF(e);
       finalizarTentativaDiagASF(diag, tentativa);
       throw erroComDiagASF(tentativa.message || 'Falha de transporte ASF', diag);
-    } finally {
-      clearTimeout(timeoutId);
     }
   }
 
-  function deveTentarGETASF(status) {
-    var s = Number(status);
-    // 403/405 podem significar que o endpoint recusou o método POST;
-    // nestes casos repetimos a consulta pelo GET, como no Consulta Veiculo.
-    // 429 fica expressamente fora: é rate-limit do servidor e deve ser respeitado.
-    return s === 403 || s === 405;
-  }
 
-  async function efetuarPedidoHttpASF(url, matDisplay, queryId) {
-    var diag = criarDiagASF(queryId, matDisplay);
+  // ---- Parser ASF: estrutura oficial + critério estrito de seguro ----
+  // Erro de estrutura/GraphQL nunca é convertido em "sem seguro".
 
-    // Em HTA/ambientes Windows onde ActiveX está disponível, manter exatamente
-    // o transporte nativo já existente. A única alteração é a recolha de diagnóstico.
-    if (typeof ActiveXObject !== 'undefined') {
-      try {
-        await reservarSlotFisicoASF(matDisplay, 'POST');
-        var inicioNativePOST = agoraMsASFDiag();
-        var tentativaNative = {
-          method: 'POST',
-          transport: 'WinHTTP',
-          startedAt: inicioNativePOST,
-          status: null,
-          durationMs: null,
-          errorType: null,
-          message: null,
-          responseBytes: null
-        };
-        var nativePost = efetuarPedidoHttpASF_SyncNative(url);
-        tentativaNative.status = nativePost && nativePost.status;
-        tentativaNative.responseBytes = nativePost && nativePost.text ? String(nativePost.text).length : 0;
-        if (deveTentarGETASF(nativePost && nativePost.status)) tentativaNative.errorType = 'http_' + nativePost.status;
-        finalizarTentativaDiagASF(diag, tentativaNative);
-
-        if (deveTentarGETASF(nativePost && nativePost.status)) {
-          console.warn('[ASF] WinHTTP POST devolveu HTTP ' + nativePost.status + '; a tentar GET de fallback após nova cadência.');
-          return await fetchASF('GET', url, matDisplay, diag);
-        }
-        nativePost.__asfDiagnostic = diag;
-        return nativePost;
-      } catch (e) {
-        var tentativaNativeErro = {
-          method: 'POST',
-          transport: 'WinHTTP',
-          startedAt: (typeof inicioNativePOST !== 'undefined' ? inicioNativePOST : agoraMsASFDiag()),
-          status: null,
-          durationMs: null,
-          errorType: classificarErroASF(e, false),
-          message: textoErroASF(e),
-          responseBytes: null
-        };
-        finalizarTentativaDiagASF(diag, tentativaNativeErro);
-        console.warn('[ASF] WinHTTP POST falhou; a tentar GET de fallback:', e && e.message);
-        try {
-          return await fetchASF('GET', url, matDisplay, diag);
-        } catch (e2) {
-          throw erroComDiagASF((e2 && e2.message) || tentativaNativeErro.message || 'Falha ASF', diag);
-        }
-      }
-    }
-
-    try {
-      var post = await fetchASF('POST', url, matDisplay, diag);
-      if (deveTentarGETASF(post && post.status)) {
-        console.warn('[ASF] POST devolveu HTTP ' + post.status + '; a tentar GET de fallback após nova cadência.');
-        return await fetchASF('GET', url, matDisplay, diag);
-      }
-      return post;
-    } catch (e) {
-      console.warn('[ASF] POST falhou; a tentar GET de fallback após nova cadência:', e && e.message);
-      try {
-        return await fetchASF('GET', url, matDisplay, diag);
-      } catch (e2) {
-        throw erroComDiagASF((e2 && e2.message) || (e && e.message) || 'Falha ASF', diag);
-      }
-    }
-  }
-
-  // Parser robusto inspirado no Consulta Veiculo(2): aceita os envelopes ASF
-  // conhecidos e uma estrutura alternativa onde o resultado aparece dentro de
-  // outro objecto nodes. Nunca transforma erro de esquema em "sem seguro".
   function extrairNodesASF(data) {
-    var candidatos = [
-      data && data.data && data.data.mobishoutEntry && data.data.mobishoutEntry.noone && data.data.mobishoutEntry.noone.entry && data.data.mobishoutEntry.noone.entry.licenseNumber && data.data.mobishoutEntry.noone.entry.licenseNumber.nodes,
-      data && data.mobishoutEntry && data.mobishoutEntry.noone && data.mobishoutEntry.noone.entry && data.mobishoutEntry.noone.entry.licenseNumber && data.mobishoutEntry.noone.entry.licenseNumber.nodes,
-      data && data.data && data.data.licenseNumber && data.data.licenseNumber.nodes,
-      data && data.licenseNumber && data.licenseNumber.nodes
-    ];
+    var path = data && data.data && data.data.mobishoutEntry &&
+      data.data.mobishoutEntry.noone && data.data.mobishoutEntry.noone.entry &&
+      data.data.mobishoutEntry.noone.entry.licenseNumber;
 
-    for (var i = 0; i < candidatos.length; i++) {
-      if (Array.isArray(candidatos[i])) {
-        return { found: true, nodes: candidatos[i] };
-      }
+    if (!path || !Array.isArray(path.nodes)) {
+      throw new Error('Resposta ASF sem estrutura de resultados reconhecida');
     }
-
-    var encontrado = null;
-    function arrayTemCamposSeguro(arr) {
-      if (!Array.isArray(arr) || !arr.length) return false;
-      var campos = ['entity','insurer','insuranceCompany','policy','policyNumber','startDate','validFrom','endDate','validTo','license','licenseNumber','code'];
-      return arr.some(function (item) {
-        if (!item || typeof item !== 'object') return false;
-        return campos.some(function (k) { return Object.prototype.hasOwnProperty.call(item, k); });
-      });
-    }
-
-    function walk(v, profundidade, caminho) {
-      if (encontrado || !v || profundidade > 12) return;
-      if (Array.isArray(v) || typeof v !== 'object') return;
-
-      if (Array.isArray(v.nodes)) {
-        var caminhoTexto = (caminho || []).join('.').toLowerCase();
-        var contextoASF = /license|insurance|mobishout|entry|noone|asf/.test(caminhoTexto)
-          || Object.prototype.hasOwnProperty.call(v, 'licenseNumber')
-          || Object.prototype.hasOwnProperty.call(v, 'policy');
-        // Arrays vazios só podem ser considerados um "sem seguro" conclusivo
-        // quando estão num contexto ASF conhecido. Arrays não vazios podem
-        // ser aceites quando trazem campos de seguro reconhecíveis.
-        if ((v.nodes.length === 0 && contextoASF) || arrayTemCamposSeguro(v.nodes)) {
-          encontrado = v.nodes;
-          return;
-        }
-      }
-
-      var vals = Object.keys(v);
-      for (var j = 0; j < vals.length; j++) {
-        var k = vals[j];
-        walk(v[k], profundidade + 1, (caminho || []).concat(k));
-        if (encontrado) return;
-      }
-    }
-    walk(data, 0, []);
-
-    return encontrado ? { found: true, nodes: encontrado } : { found: false, nodes: [] };
-  }
-
-  function asfValorUtilizavel(obj, key) {
-    if (!obj || typeof obj !== 'object') return false;
-    var v = obj[key];
-    if (v === undefined || v === null) return false;
-    if (typeof v === 'object') {
-      v = v.name || v.label || v.value || v.description || '';
-    }
-    return String(v).trim() !== '';
-  }
-
-  function asfNodeTemDados(node) {
-    var campos = ['entity','insurer','insuranceCompany','policy','policyNumber','startDate','validFrom','endDate','validTo','license','licenseNumber','code'];
-    for (var i = 0; i < campos.length; i++) {
-      if (asfValorUtilizavel(node, campos[i])) return true;
-    }
-    return false;
+    return path.nodes;
   }
 
   function interpretarRespostaASF(json) {
-    if (!json || typeof json !== 'object') {
-      throw new Error('Resposta ASF inválida');
-    }
+    if (!json || typeof json !== 'object') throw new Error('Resposta ASF inválida');
 
     if (Array.isArray(json.errors) && json.errors.length) {
       var msgs = json.errors.map(function (e) {
@@ -1678,122 +1528,50 @@ function submitConjunto(event) {
       throw new Error(msgs.length ? msgs.join(' | ') : 'A ASF devolveu um erro GraphQL');
     }
 
-    var extraido = extrairNodesASF(json);
-    if (!extraido.found) {
-      throw new Error('Resposta ASF sem estrutura de resultados reconhecida');
-    }
+    var nodes = extrairNodesASF(json);
+    if (nodes.length === 0) return { estado: 'nao', node: null, nodes: nodes };
 
-    var nodes = Array.isArray(extraido.nodes) ? extraido.nodes : null;
-    if (!nodes) {
-      throw new Error('Resposta ASF com campo nodes inválido');
-    }
+    var nodeSeguro = nodes.find(function (node) {
+      return node && node.license != null;
+    });
 
-    /*
-     * LÓGICA ASF ALINHADA COM A VERSÃO Consulta Veiculo(3):
-     *
-     * - nodes vazio = SEM SEGURO
-     * - nodes com dados de seguro utilizáveis = TEM SEGURO
-     * - nodes existentes mas sem dados de seguro utilizáveis = SEM SEGURO
-     *
-     * Não se deve exigir que `license` esteja preenchido. A ASF pode devolver
-     * outros campos contratuais válidos.
-     */
-    if (nodes.length === 0) {
-      return { estado: 'nao', node: null };
-    }
-
-    var camposSeguro = [
-      'entity',
-      'insurer',
-      'insuranceCompany',
-      'policy',
-      'policyNumber',
-      'startDate',
-      'validFrom',
-      'endDate',
-      'validTo',
-      'license',
-      'licenseNumber',
-      'code'
-    ];
-
-    var nodeValido = null;
-
-    for (var i = 0; i < nodes.length; i++) {
-      var node = nodes[i];
-      if (!node || typeof node !== 'object') continue;
-
-      for (var j = 0; j < camposSeguro.length; j++) {
-        var chave = camposSeguro[j];
-        var valor = node[chave];
-
-        if (valor !== undefined && valor !== null) {
-          if (typeof valor === 'object') {
-            valor = valor.name || valor.label || valor.value || valor.description || '';
-          }
-
-          if (String(valor).trim() !== '') {
-            nodeValido = node;
-            break;
-          }
-        }
-      }
-
-      if (nodeValido) break;
-    }
-
-    if (nodeValido) {
-      return { estado: 'sim', node: nodeValido };
-    }
-
-    /*
-     * Resposta ASF conhecida, mas sem dados úteis no(s) node(s).
-     * Segue a lógica da Consulta Veiculo(3): tratar como ausência de seguro.
-     */
-    return { estado: 'nao', node: null };
+    if (nodeSeguro) return { estado: 'sim', node: nodeSeguro, nodes: nodes };
+    return { estado: 'nao', node: null, nodes: nodes };
   }
 
-  // CONSULTA ASF = mesmo endpoint/mutation do IPO_2.2, com parser robusto e
-  // controlo VÉRIX de 8 s + 5 pedidos/60 s, persistido entre refreshes, sem cache de resultados.
-  async function realizarConsultaASF_IPO(matLimpa, matDisplay, queryId) {
-    var hoje = new Date();
-    var yyyy = hoje.getFullYear();
-    var mm = String(hoje.getMonth() + 1).padStart(2, '0');
-    var dd = String(hoje.getDate()).padStart(2, '0');
-    var dataHoje = yyyy + '/' + mm + '/' + dd;
 
-    var queryGQL = 'mutation license { mobishoutEntry { noone { entry { licenseNumber(license: "' + matLimpa + '", date: "' + dataHoje + '") { nodes { id entity startDate endDate policy license code logo } } } } } }';
+  async function realizarConsultaASF_IPO(matLimpa, matDisplay, queryId) {
+    var dataHoje = formatarDataASF(new Date());
+    // Query mínima alinhada com o canal de referência.
+    var queryGQL = 'mutation license { mobishoutEntry { noone { entry { licenseNumber(license: "' + matLimpa + '", date: "' + dataHoje + '") { nodes { id license } } } } } }';
     var url = ASF_API_URL + encodeURIComponent(queryGQL);
 
-    var resposta;
-    try {
-      resposta = await efetuarPedidoHttpASF(url, matDisplay, queryId);
-    } catch (e) {
-      throw e;
-    }
-
+    var resposta = await efetuarPedidoHttpASF(url, matDisplay, queryId);
     var diag = resposta && resposta.__asfDiagnostic ? resposta.__asfDiagnostic : criarDiagASF(queryId, matDisplay);
-    var httpStatus = resposta.status;
-    var responseText = resposta.text;
-    diag.asfHttpStatus = httpStatus == null ? null : Number(httpStatus);
-    diag.asfResponseBytes = responseText ? String(responseText).length : 0;
+    var httpStatus = Number(resposta && resposta.status);
+    var responseText = resposta && resposta.text ? String(resposta.text) : '';
+
+    diag.asfHttpStatus = Number.isFinite(httpStatus) ? httpStatus : null;
+    diag.asfResponseBytes = responseText.length;
 
     if (httpStatus === 429) {
       diag.asfErrorType = 'http_429';
-      diag.asfMessage = 'Servidor ASF bloqueado por rate limit (HTTP 429)';
+      diag.asfMessage = 'Servidor ASF bloqueou a consulta (HTTP 429)';
       ASF_SERVER_COOLDOWN_UNTIL = agoraASF() + 15000;
       guardarEstadoRateASF();
-      throw erroComDiagASF('Servidor ASF bloqueado por rate limit (HTTP 429)', diag);
+      throw erroComDiagASF(diag.asfMessage, diag);
     }
+
     if (httpStatus === 403) {
       diag.asfErrorType = 'http_403';
       diag.asfMessage = 'Acesso proibido ao servidor ASF (HTTP 403)';
-      throw erroComDiagASF('Acesso proibido ao servidor ASF (HTTP 403)', diag);
+      throw erroComDiagASF(diag.asfMessage, diag);
     }
+
     if (httpStatus < 200 || httpStatus >= 300) {
       diag.asfErrorType = 'http_' + httpStatus;
       diag.asfMessage = 'Erro HTTP ' + httpStatus;
-      throw erroComDiagASF('Erro HTTP ' + httpStatus, diag);
+      throw erroComDiagASF(diag.asfMessage, diag);
     }
 
     var json;
@@ -1802,17 +1580,14 @@ function submitConjunto(event) {
     } catch (_) {
       diag.asfErrorType = 'invalid_json';
       diag.asfMessage = 'Resposta ASF não é JSON válido';
-      throw erroComDiagASF('Resposta ASF não é JSON válido', diag);
+      throw erroComDiagASF(diag.asfMessage, diag);
     }
 
     try {
-      if (Array.isArray(json.errors) && json.errors.length) diag.asfErrorType = 'graphql';
       var resultado = interpretarRespostaASF(json);
       return { resultado: resultado, asfDiagnostic: diag };
     } catch (e) {
-      if (!diag.asfErrorType) {
-        diag.asfErrorType = (String(e && e.message || '').toLowerCase().indexOf('estrutura') >= 0) ? 'invalid_response' : 'graphql';
-      }
+      diag.asfErrorType = diag.asfErrorType || 'invalid_response';
       diag.asfMessage = String(e && e.message || 'Resposta ASF inválida').slice(0, 500);
       throw erroComDiagASF(diag.asfMessage, diag);
     }
