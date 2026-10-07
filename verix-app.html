@@ -19210,6 +19210,31 @@ html body .toast-notification {
 </style>
 
 
+<style id="verix-notice-button-fix-2026-10-07">
+/* Corrige o aviso inicial em ecrãs com pouca altura.
+   O conteúdo pode crescer, mas o botão COMPREENDIDO permanece sempre acessível. */
+html body .verix-asf-notice-window{
+  display:flex!important;
+  flex-direction:column!important;
+  overflow:hidden!important;
+}
+html body .verix-asf-notice-top,
+html body .verix-asf-notice-footer{
+  flex:0 0 auto!important;
+}
+html body .verix-asf-notice-body{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  scrollbar-width:thin!important;
+}
+@media(max-width:760px){
+  html body .verix-asf-notice-window{
+    max-height:92vh!important;
+  }
+}
+</style>
 <script id="verix-asf-popup-script">
 (function(){
   function abrirAvisoASFInicial(){
