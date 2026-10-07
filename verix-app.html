@@ -18575,16 +18575,31 @@ html body .toast-notification {
   function abrirAvisoASFInicial(){
     var o=document.getElementById('verixAsfNoticeOverlay');
     if(!o) return;
-    o.setAttribute('aria-hidden','false');
+
+    /* O splash inicial tem prioridade visual.
+       O aviso só entra depois de o opsBootOverlay desaparecer. */
+    function esperarSplash(){
+      var boot=document.getElementById('opsBootOverlay');
+      if(boot){
+        setTimeout(esperarSplash,80);
+        return;
+      }
+      o.setAttribute('aria-hidden','false');
+    }
+
+    esperarSplash();
   }
+
   window.fecharAvisoASFInicial=function(){
     var o=document.getElementById('verixAsfNoticeOverlay');
     if(!o) return;
     o.setAttribute('aria-hidden','true');
   };
+
   document.addEventListener('keydown',function(e){
     if(e.key==='Escape') window.fecharAvisoASFInicial();
   });
+
   if(document.readyState==='loading'){
     document.addEventListener('DOMContentLoaded',abrirAvisoASFInicial);
   }else{
