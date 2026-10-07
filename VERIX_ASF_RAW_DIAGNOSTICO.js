@@ -68,11 +68,11 @@
     try{
       var u=new URL(String(url),window.location.href),q=u.searchParams.get('query')||'';
       out.query=s(q,MAX_QUERY);
-      var m=q.match(/license\\s*:\\s*"([A-Z0-9-]+)"/i);
+      var m=q.match(/license\s*:\s*"([A-Z0-9-]+)"/i);
       if(m)out.plate=s(m[1],50).toUpperCase();
-      var d=q.match(/date\\s*:\\s*"([0-9/ -]+)"/i);
+      var d=q.match(/date\s*:\s*"([0-9/ -]+)"/i);
       if(d)out.date=s(d[1],50);
-      var op=q.match(/(?:mutation|query)\\s+([A-Za-z0-9_]+)/i);
+      var op=q.match(/(?:mutation|query)\s+([A-Za-z0-9_]+)/i);
       if(op)out.operation=s(op[1],100);
     }catch(_){}
     return out;
