@@ -92,7 +92,48 @@ html.verix-starting .operational-strip{
   if(protocol!=='http:' && protocol!=='https:') return;
   if(!allowed[host]){
     try{
-      document.documentElement.innerHTML='<head><meta charset="utf-8"><title>VÉRIX — Acesso não autorizado</title></head><body style="margin:0;min-height:100vh;background:#03080c;color:#eef4f5;font-family:Arial,Helvetica,sans-serif;display:grid;place-items:center"><div style="max-width:620px;margin:24px;padding:34px 36px;border:1px solid #5b7078;border-radius:18px;background:#0b1820;box-shadow:0 24px 70px rgba(0,0,0,.55);text-align:center"><div style="display:inline-block;margin-bottom:14px;padding:6px 10px;border:1px solid #c8102e;border-radius:999px;color:#ff7c91;font-size:11px;font-weight:800;letter-spacing:1.2px">VÉRIX // PROTEÇÃO</div><div style="font-size:28px;font-weight:900;margin-bottom:12px">Publicação não autorizada</div><div style="color:#b9c7cc;font-size:15px;line-height:1.6">Esta versão do VÉRIX não está autorizada a funcionar neste endereço.</div></div></body>';
+      document.documentElement.innerHTML='<head><meta charset="utf-8"><title>VÉRIX — Acesso não autorizado</title><style id="verix-performance-layer">
+/* Perfil de baixo consumo para máquinas operacionais modestamente dimensionadas. */
+html.verix-low-power .cinematic-bg,
+html.verix-low-power .command,
+html.verix-low-power .rail,
+html.verix-low-power .panel,
+html.verix-low-power .consult,
+html.verix-low-power .tool{
+  animation:none !important;
+}
+html.verix-low-power .cinematic-bg{
+  filter:none !important;
+}
+html.verix-low-power .command,
+html.verix-low-power .rail,
+html.verix-low-power .panel,
+html.verix-low-power .main{
+  transform:none !important;
+}
+html.verix-low-power .verix-holo-scan{
+  display:none !important;
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+}
+</style>
+<script id="verix-performance-profile">
+(function(){
+  try{
+    var cores=Number(navigator.hardwareConcurrency||0);
+    var memory=Number(navigator.deviceMemory||0);
+    var low=(cores>0 && cores<=4) || (memory>0 && memory<=4);
+    if(low) document.documentElement.classList.add('verix-low-power');
+  }catch(_){}
+})();
+</script>
+</head><body style="margin:0;min-height:100vh;background:#03080c;color:#eef4f5;font-family:Arial,Helvetica,sans-serif;display:grid;place-items:center"><div style="max-width:620px;margin:24px;padding:34px 36px;border:1px solid #5b7078;border-radius:18px;background:#0b1820;box-shadow:0 24px 70px rgba(0,0,0,.55);text-align:center"><div style="display:inline-block;margin-bottom:14px;padding:6px 10px;border:1px solid #c8102e;border-radius:999px;color:#ff7c91;font-size:11px;font-weight:800;letter-spacing:1.2px">VÉRIX // PROTEÇÃO</div><div style="font-size:28px;font-weight:900;margin-bottom:12px">Publicação não autorizada</div><div style="color:#b9c7cc;font-size:15px;line-height:1.6">Esta versão do VÉRIX não está autorizada a funcionar neste endereço.</div></div></body>';
     }catch(e){}
     throw new Error('VÉRIX: publicação não autorizada neste domínio.');
   }
@@ -1204,7 +1245,7 @@ function submitConjunto(event) {
   // MOTOR = CÓPIA FUNCIONAL DO IPO_2.2 (único caminho que funciona no posto).
   // UI do VÉRIX mantida; transporte e cadência = IPO exacto.
 
-  const ASF_API_URL = 'https://ext01.asf.com.pt/api/src/?query=';
+  const ASF_PROXY_URL = 'https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/asf-proxy-v1';
   const ASF_TIMEOUT_MS = 12000;
   const ASF_MIN_INTERVAL_MS = 8000;
   const ASF_JANELA_SEG = 60;
@@ -1379,215 +1420,134 @@ function submitConjunto(event) {
   }
   setInterval(atualizarContadorVisualASF, 500);
 
-  // ---- HTTP ASF: POST primeiro, GET como fallback de transporte/método ----
-  // Cada tentativa HTTP física reserva um slot VÉRIX (8 s / 5 por 60 s).
-  async function reservarSlotFisicoASF(matDisplay, metodo) {
-    var atraso = calcularAtrasoCadenciaASF();
-    while (atraso > 0) {
-      if (matDisplay) {
-        mostrarSeguroLoading(matDisplay, 'A AGUARDAR (' + Math.ceil(atraso / 1000) + 's)');
+  // ---- HTTP ASF: relay servidor-servidor ----
+  // O browser deixa de contactar ext01.asf.com.pt diretamente.
+  // O pedido é enviado ao relay VÉRIX por HTTPS; o relay fala com a ASF.
+  // Assim o caminho crítico do cliente não depende de CORS/LNA/PNA, split-DNS
+  // ou das políticas de acesso do browser à origem ASF.
+  // Uma consulta = um pedido físico. Sem GET de fallback e sem retries.
+
+  function obterAsfInstallationId() {
+    try {
+      var id = localStorage.getItem('VERIX_T2_INSTALL_ID');
+      if (id) return String(id).slice(0, 120);
+    } catch (_) {}
+
+    try {
+      var existing = localStorage.getItem('VERIX_ASF_INSTALL_ID_V1');
+      if (existing) return String(existing).slice(0, 120);
+
+      var created;
+      if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+        created = 'i-' + window.crypto.randomUUID();
+      } else {
+        created = 'i-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 12);
       }
-      await esperarASF(Math.min(atraso, 1000));
-      atraso = calcularAtrasoCadenciaASF();
+      localStorage.setItem('VERIX_ASF_INSTALL_ID_V1', created);
+      return created.slice(0, 120);
+    } catch (_) {
+      return 'i-anon';
     }
-
-    var agora = agoraASF();
-    ASF_ULTIMO_PEDIDO_T = agora;
-    asfRequestTimes.push(agora);
-    guardarEstadoRateASF();
-    atualizarContadorVisualASF();
-    return agora;
   }
 
-  // ---- Diagnóstico ASF V2 ----
-  // Instrumentação exclusivamente observacional. Não altera POST/GET, timeouts,
-  // rate-limit, parser ou regras de classificação. Regista cada tentativa física.
-  function agoraMsASFDiag() { return Date.now(); }
+  async function efetuarPedidoHttpASF(payload, matDisplay, queryId) {
+    var diag = criarDiagASF(queryId, matDisplay);
+    var queueStarted = agoraMsASFDiag();
 
-  function textoErroASF(e) {
-    if (!e) return '';
-    var parts = [];
-    try { if (e.name) parts.push(String(e.name)); } catch (_) {}
-    try { if (e.message) parts.push(String(e.message)); } catch (_) {}
-    try { if (e.number) parts.push('number=' + String(e.number)); } catch (_) {}
-    return parts.join(' | ').slice(0, 500);
-  }
+    await reservarSlotFisicoASF(matDisplay, 'POST');
+    diag.asfQueueWaitMs = Math.max(0, agoraMsASFDiag() - queueStarted);
 
-  function classificarErroASF(e, timeoutForcado) {
-    var t = textoErroASF(e).toLowerCase();
-    if (timeoutForcado || t.indexOf('abort') >= 0 || t.indexOf('timed out') >= 0 || t.indexOf('timeout') >= 0 || t.indexOf('tempo esgotado') >= 0) return 'timeout';
-    if (t.indexOf('cors') >= 0 || t.indexOf('networkerror') >= 0 || t.indexOf('network error') >= 0 || t.indexOf('failed to fetch') >= 0 || t.indexOf('internet') >= 0) return 'network';
-    return 'unknown';
-  }
-
-  function criarDiagASF(queryId, matDisplay) {
-    return {
-      queryId: queryId || null,
-      matricula: String(matDisplay || '').slice(0, 30),
-      asfHttpStatus: null,
-      asfDurationMs: null,
-      asfMethod: null,
-      asfTransport: null,
-      asfErrorType: null,
-      asfMessage: null,
-      asfAttempts: [],
-      asfResponseBytes: null
-    };
-  }
-
-  function erroComDiagASF(mensagem, diagnostico) {
-    var err = new Error(String(mensagem || 'Falha ASF'));
-    try { err.asfDiagnostic = diagnostico || null; } catch (_) {}
-    return err;
-  }
-
-  function finalizarTentativaDiagASF(diag, tentativa, extra) {
-    tentativa.durationMs = Math.max(0, agoraMsASFDiag() - tentativa.startedAt);
-    if (extra) {
-      Object.keys(extra).forEach(function (k) { tentativa[k] = extra[k]; });
-    }
-    diag.asfAttempts.push(tentativa);
-    diag.asfDurationMs = tentativa.durationMs;
-    diag.asfHttpStatus = tentativa.status == null ? null : Number(tentativa.status);
-    diag.asfMethod = tentativa.method || null;
-    diag.asfTransport = tentativa.transport || null;
-    diag.asfErrorType = tentativa.errorType || null;
-    diag.asfMessage = tentativa.message ? String(tentativa.message).slice(0, 500) : null;
-  }
-
-  function efetuarPedidoHttpASF_SyncNative(url) {
-    var xhr = new ActiveXObject("WinHttp.WinHttpRequest.5.1");
-    xhr.open("POST", url, false);
-    xhr.setTimeouts(10000, 10000, ASF_TIMEOUT_MS, ASF_TIMEOUT_MS);
-    xhr.setRequestHeader("Accept", "application/json, text/plain, */*");
-    xhr.send(null);
-    return { status: xhr.Status, text: xhr.ResponseText };
-  }
-
-  async function fetchASF(metodo, url, matDisplay, diag) {
-    await reservarSlotFisicoASF(matDisplay, metodo);
-
-    var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-    var timeoutId = null;
-    var timeoutForcado = false;
     var tentativa = {
-      method: metodo,
-      transport: 'Fetch',
+      method: 'POST',
+      transport: (typeof ActiveXObject !== 'undefined') ? 'WinHTTP→VÉRIX-RELAY' : 'Fetch→VÉRIX-RELAY',
       startedAt: agoraMsASFDiag(),
       status: null,
       durationMs: null,
       errorType: null,
       message: null,
-      responseBytes: null
+      responseBytes: null,
+      responseContentType: null
     };
 
-    timeoutId = setTimeout(function () {
-      timeoutForcado = true;
-      try { if (controller) controller.abort(); } catch (_) {}
-    }, ASF_TIMEOUT_MS);
+    var requestBody = JSON.stringify(payload || {});
+    var bodyText = '';
 
     try {
-      var options = {
-        method: metodo,
-        cache: 'no-store',
-        credentials: 'omit',
-        mode: 'cors',
-        headers: { 'Accept': 'application/json, text/plain, */*' }
-      };
-      if (controller) options.signal = controller.signal;
-      if (metodo === 'POST') options.body = null;
+      if (typeof ActiveXObject !== 'undefined') {
+        var xhr = new ActiveXObject('WinHttp.WinHttpRequest.5.1');
+        xhr.open('POST', ASF_PROXY_URL, false);
+        xhr.setTimeouts(10000, 10000, ASF_TIMEOUT_MS, ASF_TIMEOUT_MS);
+        xhr.setRequestHeader('Accept', 'application/json, text/plain, */*');
+        xhr.setRequestHeader('Content-Type', 'text/plain; charset=UTF-8');
+        xhr.send(requestBody);
 
-      var res = await fetch(url, options);
-      var body = await res.text();
-      tentativa.status = res.status;
-      tentativa.responseBytes = body ? String(body).length : 0;
-      if (res.status >= 400) tentativa.errorType = 'http_' + res.status;
-      finalizarTentativaDiagASF(diag, tentativa);
-      return { status: res.status, text: body, __asfDiagnostic: diag };
-    } catch (e) {
-      tentativa.errorType = classificarErroASF(e, timeoutForcado);
-      tentativa.message = textoErroASF(e);
-      finalizarTentativaDiagASF(diag, tentativa);
-      throw erroComDiagASF(tentativa.message || 'Falha de transporte ASF', diag);
-    } finally {
-      clearTimeout(timeoutId);
-    }
-  }
+        tentativa.status = xhr.Status;
+        tentativa.responseContentType = null;
+        bodyText = xhr.ResponseText || '';
+      } else {
+        var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+        var timeoutId = null;
+        var timeoutForcado = false;
 
-  function deveTentarGETASF(status) {
-    var s = Number(status);
-    // 403/405 podem significar que o endpoint recusou o método POST;
-    // nestes casos repetimos a consulta pelo GET, como no Consulta Veiculo.
-    // 429 fica expressamente fora: é rate-limit do servidor e deve ser respeitado.
-    return s === 403 || s === 405;
-  }
-
-  async function efetuarPedidoHttpASF(url, matDisplay, queryId) {
-    var diag = criarDiagASF(queryId, matDisplay);
-
-    // Em HTA/ambientes Windows onde ActiveX está disponível, manter exatamente
-    // o transporte nativo já existente. A única alteração é a recolha de diagnóstico.
-    if (typeof ActiveXObject !== 'undefined') {
-      try {
-        await reservarSlotFisicoASF(matDisplay, 'POST');
-        var inicioNativePOST = agoraMsASFDiag();
-        var tentativaNative = {
-          method: 'POST',
-          transport: 'WinHTTP',
-          startedAt: inicioNativePOST,
-          status: null,
-          durationMs: null,
-          errorType: null,
-          message: null,
-          responseBytes: null
-        };
-        var nativePost = efetuarPedidoHttpASF_SyncNative(url);
-        tentativaNative.status = nativePost && nativePost.status;
-        tentativaNative.responseBytes = nativePost && nativePost.text ? String(nativePost.text).length : 0;
-        if (deveTentarGETASF(nativePost && nativePost.status)) tentativaNative.errorType = 'http_' + nativePost.status;
-        finalizarTentativaDiagASF(diag, tentativaNative);
-
-        if (deveTentarGETASF(nativePost && nativePost.status)) {
-          console.warn('[ASF] WinHTTP POST devolveu HTTP ' + nativePost.status + '; a tentar GET de fallback após nova cadência.');
-          return await fetchASF('GET', url, matDisplay, diag);
-        }
-        nativePost.__asfDiagnostic = diag;
-        return nativePost;
-      } catch (e) {
-        var tentativaNativeErro = {
-          method: 'POST',
-          transport: 'WinHTTP',
-          startedAt: (typeof inicioNativePOST !== 'undefined' ? inicioNativePOST : agoraMsASFDiag()),
-          status: null,
-          durationMs: null,
-          errorType: classificarErroASF(e, false),
-          message: textoErroASF(e),
-          responseBytes: null
-        };
-        finalizarTentativaDiagASF(diag, tentativaNativeErro);
-        console.warn('[ASF] WinHTTP POST falhou; a tentar GET de fallback:', e && e.message);
         try {
-          return await fetchASF('GET', url, matDisplay, diag);
-        } catch (e2) {
-          throw erroComDiagASF((e2 && e2.message) || tentativaNativeErro.message || 'Falha ASF', diag);
+          timeoutId = setTimeout(function () {
+            timeoutForcado = true;
+            try { if (controller) controller.abort(); } catch (_) {}
+          }, ASF_TIMEOUT_MS);
+
+          var res = await fetch(ASF_PROXY_URL, {
+            method: 'POST',
+            cache: 'no-store',
+            credentials: 'omit',
+            mode: 'cors',
+            redirect: 'error',
+            headers: {
+              'Accept': 'application/json, text/plain, */*',
+              /* text/plain mantém a chamada simples e evita preflight CORS. */
+              'Content-Type': 'text/plain;charset=UTF-8'
+            },
+            body: requestBody,
+            signal: controller ? controller.signal : undefined
+          });
+
+          tentativa.status = res.status;
+          tentativa.responseContentType = res.headers && res.headers.get
+            ? (res.headers.get('content-type') || null)
+            : null;
+          bodyText = await res.text();
+
+          if (res.status >= 400) {
+            tentativa.errorType = res.status === 429
+              ? 'http_429'
+              : (res.status === 504 ? 'relay_timeout' : 'http_' + res.status);
+          }
+        } catch (e) {
+          tentativa.errorType = timeoutForcado
+            ? 'timeout'
+            : classificarErroASF(e, false);
+          tentativa.message = textoErroASF(e);
+          throw e;
+        } finally {
+          if (timeoutId) clearTimeout(timeoutId);
         }
       }
-    }
 
-    try {
-      var post = await fetchASF('POST', url, matDisplay, diag);
-      if (deveTentarGETASF(post && post.status)) {
-        console.warn('[ASF] POST devolveu HTTP ' + post.status + '; a tentar GET de fallback após nova cadência.');
-        return await fetchASF('GET', url, matDisplay, diag);
-      }
-      return post;
+      tentativa.responseBytes = bodyText ? String(bodyText).length : 0;
+      finalizarTentativaDiagASF(diag, tentativa);
+
+      return {
+        status: tentativa.status,
+        statusText: null,
+        text: bodyText || '',
+        __asfDiagnostic: diag
+      };
     } catch (e) {
-      console.warn('[ASF] POST falhou; a tentar GET de fallback após nova cadência:', e && e.message);
-      try {
-        return await fetchASF('GET', url, matDisplay, diag);
-      } catch (e2) {
-        throw erroComDiagASF((e2 && e2.message) || (e && e.message) || 'Falha ASF', diag);
+      if (!tentativa.durationMs) {
+        tentativa.message = tentativa.message || textoErroASF(e);
+        if (!tentativa.errorType) tentativa.errorType = classificarErroASF(e, false);
+        finalizarTentativaDiagASF(diag, tentativa);
       }
+      throw erroComDiagASF((e && e.message) || 'Falha de comunicação com o relay ASF', diag);
     }
   }
 
@@ -1722,38 +1682,51 @@ function submitConjunto(event) {
     var dd = String(hoje.getDate()).padStart(2, '0');
     var dataHoje = yyyy + '/' + mm + '/' + dd;
 
-    var queryGQL = 'mutation license { mobishoutEntry { noone { entry { licenseNumber(license: "' + matLimpa + '", date: "' + dataHoje + '") { nodes { id entity startDate endDate policy license code logo } } } } } }';
-    var url = ASF_API_URL + encodeURIComponent(queryGQL);
+    var resposta = await efetuarPedidoHttpASF({
+      matricula: matLimpa,
+      date: dataHoje,
+      installationId: obterAsfInstallationId(),
+      queryId: queryId || ''
+    }, matDisplay, queryId);
 
-    var resposta;
-    try {
-      resposta = await efetuarPedidoHttpASF(url, matDisplay, queryId);
-    } catch (e) {
-      throw e;
-    }
+    var diag = resposta && resposta.__asfDiagnostic
+      ? resposta.__asfDiagnostic
+      : criarDiagASF(queryId, matDisplay);
 
-    var diag = resposta && resposta.__asfDiagnostic ? resposta.__asfDiagnostic : criarDiagASF(queryId, matDisplay);
-    var httpStatus = resposta.status;
-    var responseText = resposta.text;
-    diag.asfHttpStatus = httpStatus == null ? null : Number(httpStatus);
-    diag.asfResponseBytes = responseText ? String(responseText).length : 0;
+    var httpStatus = resposta && resposta.status != null
+      ? Number(resposta.status)
+      : null;
+    var responseText = resposta && resposta.text
+      ? String(resposta.text)
+      : '';
+
+    diag.asfHttpStatus = Number.isFinite(httpStatus) ? httpStatus : null;
+    diag.asfResponseBytes = responseText.length;
 
     if (httpStatus === 429) {
       diag.asfErrorType = 'http_429';
-      diag.asfMessage = 'Servidor ASF bloqueado por rate limit (HTTP 429)';
+      diag.asfMessage = 'Limite temporário de consultas ASF atingido';
       ASF_SERVER_COOLDOWN_UNTIL = agoraASF() + 15000;
       guardarEstadoRateASF();
-      throw erroComDiagASF('Servidor ASF bloqueado por rate limit (HTTP 429)', diag);
+      throw erroComDiagASF(diag.asfMessage, diag);
     }
-    if (httpStatus === 403) {
-      diag.asfErrorType = 'http_403';
-      diag.asfMessage = 'Acesso proibido ao servidor ASF (HTTP 403)';
-      throw erroComDiagASF('Acesso proibido ao servidor ASF (HTTP 403)', diag);
+
+    if (httpStatus === 504) {
+      diag.asfErrorType = 'relay_timeout';
+      diag.asfMessage = 'O relay VÉRIX excedeu o tempo de resposta da ASF';
+      throw erroComDiagASF(diag.asfMessage, diag);
     }
+
+    if (httpStatus === 502) {
+      diag.asfErrorType = 'relay_network';
+      diag.asfMessage = 'O relay VÉRIX não conseguiu comunicar com a ASF';
+      throw erroComDiagASF(diag.asfMessage, diag);
+    }
+
     if (httpStatus < 200 || httpStatus >= 300) {
       diag.asfErrorType = 'http_' + httpStatus;
       diag.asfMessage = 'Erro HTTP ' + httpStatus;
-      throw erroComDiagASF('Erro HTTP ' + httpStatus, diag);
+      throw erroComDiagASF(diag.asfMessage, diag);
     }
 
     var json;
@@ -1762,16 +1735,22 @@ function submitConjunto(event) {
     } catch (_) {
       diag.asfErrorType = 'invalid_json';
       diag.asfMessage = 'Resposta ASF não é JSON válido';
-      throw erroComDiagASF('Resposta ASF não é JSON válido', diag);
+      throw erroComDiagASF(diag.asfMessage, diag);
     }
 
     try {
-      if (Array.isArray(json.errors) && json.errors.length) diag.asfErrorType = 'graphql';
+      if (Array.isArray(json.errors) && json.errors.length) {
+        diag.asfErrorType = 'graphql';
+      }
+
       var resultado = interpretarRespostaASF(json);
       return { resultado: resultado, asfDiagnostic: diag };
     } catch (e) {
       if (!diag.asfErrorType) {
-        diag.asfErrorType = (String(e && e.message || '').toLowerCase().indexOf('estrutura') >= 0) ? 'invalid_response' : 'graphql';
+        diag.asfErrorType =
+          (String(e && e.message || '').toLowerCase().indexOf('estrutura') >= 0)
+            ? 'invalid_response'
+            : 'graphql';
       }
       diag.asfMessage = String(e && e.message || 'Resposta ASF inválida').slice(0, 500);
       throw erroComDiagASF(diag.asfMessage, diag);
