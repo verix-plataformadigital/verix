@@ -1290,41 +1290,119 @@ function submitConjunto(event) {
   }
 
   function extrairNodesASF(data) {
-    const candidatos = [
-      data?.data?.mobishoutEntry?.noone?.entry?.licenseNumber?.nodes,
-      data?.mobishoutEntry?.noone?.entry?.licenseNumber?.nodes,
-      data?.data?.licenseNumber?.nodes,
-      data?.licenseNumber?.nodes
-    ];
+    /*
+     * ASF pode devolver mais do que um envelope GraphQL. Nunca aceitar
+     * imediatamente um array vazio só porque apareceu primeiro: procurar
+     * primeiro um conjunto de nodes com dados reais de seguro.
+     */
+    var candidatos = [];
 
-    for (const c of candidatos) {
-      if (Array.isArray(c)) return c;
+    function adicionar(v, path) {
+      if (!Array.isArray(v)) return;
+      candidatos.push({ nodes: v, path: path || 'unknown' });
     }
 
-    const encontrados = [];
-    function walk(v, profundidade = 0) {
-      if (!v || profundidade > 12) return;
+    adicionar(data && data.data && data.data.mobishoutEntry &&
+      data.data.mobishoutEntry.noone &&
+      data.data.mobishoutEntry.noone.entry &&
+      data.data.mobishoutEntry.noone.entry.licenseNumber &&
+      data.data.mobishoutEntry.noone.entry.licenseNumber.nodes,
+      'canonical.data.mobishoutEntry.noone.entry.licenseNumber.nodes');
 
-      if (Array.isArray(v)) {
-        if (v.length && v.every(x => x && typeof x === 'object')) {
-          const temCampoSeguro = v.some(x =>
-            ['entity','insurer','policy','startDate','endDate','license','code']
-              .some(k => x[k] !== undefined)
-          );
-          if (temCampoSeguro) encontrados.push(v);
+    adicionar(data && data.mobishoutEntry &&
+      data.mobishoutEntry.noone &&
+      data.mobishoutEntry.noone.entry &&
+      data.mobishoutEntry.noone.entry.licenseNumber &&
+      data.mobishoutEntry.noone.entry.licenseNumber.nodes,
+      'legacy.mobishoutEntry.noone.entry.licenseNumber.nodes');
+
+    adicionar(data && data.data && data.data.licenseNumber &&
+      data.data.licenseNumber.nodes,
+      'legacy.data.licenseNumber.nodes');
+
+    adicionar(data && data.licenseNumber &&
+      data.licenseNumber.nodes,
+      'legacy.licenseNumber.nodes');
+
+    function nodeTemDadosSeguro(node) {
+      if (!node || typeof node !== 'object') return false;
+      var campos = ['license','entity','policy','startDate','endDate','code','logo'];
+      return campos.some(function (k) {
+        var v = node[k];
+        if (v === undefined || v === null) return false;
+        if (typeof v === 'object') {
+          v = v.name || v.label || v.value || v.description || '';
         }
-        v.forEach(x => walk(x, profundidade + 1));
+        return String(v).trim() !== '';
+      });
+    }
+
+    function nodeTemLicense(node) {
+      if (!node || typeof node !== 'object') return false;
+      var v = node.license;
+      if (v === undefined || v === null) return false;
+      if (typeof v === 'object') {
+        v = v.name || v.label || v.value || v.description || '';
+      }
+      return String(v).trim() !== '';
+    }
+
+    function pontuacao(item) {
+      if (!item || !Array.isArray(item.nodes) || !item.nodes.length) return -1;
+      var score = 0;
+      item.nodes.forEach(function (n) {
+        if (nodeTemLicense(n)) score += 100;
+        else if (nodeTemDadosSeguro(n)) score += 10;
+      });
+      return score;
+    }
+
+    /* Primeiro: nodes com license real. Segundo: qualquer node ASF utilizável. */
+    candidatos.sort(function (a, b) { return pontuacao(b) - pontuacao(a); });
+    for (var i = 0; i < candidatos.length; i++) {
+      if (pontuacao(candidatos[i]) >= 100) return candidatos[i];
+    }
+    for (var j = 0; j < candidatos.length; j++) {
+      if (pontuacao(candidatos[j]) > 0) return candidatos[j];
+    }
+
+    /* Último recurso: procurar recursivamente outros arrays "nodes".
+       Arrays vazios nunca ganham aos que contenham dados. */
+    var encontrados = [];
+    function walk(v, profundidade, caminho) {
+      if (!v || profundidade > 14) return;
+      if (Array.isArray(v)) {
+        if (v.length && v.every(function (x) { return x && typeof x === 'object'; })) {
+          var score = v.reduce(function (s, n) {
+            return s + (nodeTemLicense(n) ? 100 : (nodeTemDadosSeguro(n) ? 10 : 0));
+          }, 0);
+          if (score > 0) encontrados.push({ nodes: v, path: (caminho || []).join('.') });
+        }
+        v.forEach(function (x) { walk(x, profundidade + 1, caminho); });
         return;
       }
-
-      if (typeof v === 'object') {
-        if (Array.isArray(v.nodes)) walk(v.nodes, profundidade + 1);
-        Object.values(v).forEach(x => walk(x, profundidade + 1));
+      if (typeof v !== 'object') return;
+      if (Array.isArray(v.nodes)) {
+        var p = (caminho || []).concat('nodes').join('.');
+        walk(v.nodes, profundidade + 1, (caminho || []).concat('nodes'));
+        if (v.nodes.length) encontrados.push({ nodes: v.nodes, path: p });
       }
+      Object.keys(v).forEach(function (k) {
+        walk(v[k], profundidade + 1, (caminho || []).concat(k));
+      });
+    }
+    walk(data, 0, []);
+
+    encontrados.sort(function (a, b) { return pontuacao(b) - pontuacao(a); });
+    if (encontrados.length) return encontrados[0];
+
+    /* Se o ASF respondeu explicitamente com nodes vazio, só então concluímos
+       "sem seguro". */
+    if (candidatos.length) {
+      return candidatos[0];
     }
 
-    walk(data);
-    return encontrados[0] || [];
+    return { nodes: [], path: 'no_nodes_found' };
   }
 
   function renderSeguro(nodes, matricula, queryId) {
@@ -16575,7 +16653,7 @@ html body .leg-card-new .copy-all-new{
   var APP_VERSION = '1.4';
   // Identificador técnico interno do build. A versão do produto mantém-se 1.4.
   // Permite distinguir builds diferentes sem expor uma nova versão ao utilizador.
-  var BUILD_ID='2026-10-04-r10';
+  var BUILD_ID='2026-10-07-r8';
   var INSTALL_KEY = 'VERIX_T2_INSTALL_ID';
   var SESSION_KEY = 'VERIX_T2_SESSION_ID';
   var TAB_KEY = 'VERIX_T2_TAB_ID';
