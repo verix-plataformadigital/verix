@@ -10,3 +10,5 @@ verify_jwt = false
 verify_jwt = false
 [functions.asf-proxy-v1]
 verify_jwt = false
+[functions.verix-gate-v1]
+verify_jwt = false
