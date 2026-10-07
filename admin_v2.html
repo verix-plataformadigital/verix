@@ -459,24 +459,33 @@ function renderErrors(d){
  const total=(e.types||[]).reduce((s,x)=>s+Number(x.qty||0),0);
  $('errorCards').innerHTML=
   card('ERROS NAS 24 H',num(total),'Falhas classificadas.','red')+
-  card('ERROS DA 1.4',num(inv.app14_errors),'Na janela recente.','amber')+
-  card('INSTALAÇÕES AFETADAS',num(inv.app14_installations),'Onde apareceu um erro 1.4.')+
-  card('MATRÍCULAS AFETADAS',num(inv.app14_plates),'Quando a matrícula foi capturada.');
+  card('ERROS COM DIAGNÓSTICO',num(inv.diagnostic_errors),'Falhas ASF com diagnóstico técnico.','amber')+
+  card('INSTALAÇÕES AFETADAS',num(inv.diagnostic_installations),'Instalações com diagnóstico ASF.')+
+  card('MATRÍCULAS AFETADAS',num(inv.diagnostic_plates),'Quando a matrícula foi capturada.');
  $('errorTypes').innerHTML=table(['TIPO','QUANTIDADE','ÚLTIMO REGISTO'],(e.types||[]).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'Desconhecido')+'</span>')+td('<strong>'+fmt(x.qty)+'</strong>')+td(datePT(x.last_at))+'</tr>'));
- const bursts=inv.app14_bursts_5m||[];$('errorBursts').innerHTML=table(['HORA','ERROS'],bursts.slice(0,12).map(x=>'<tr>'+td('<strong>'+datePT(x.start)+'</strong>')+td('<strong>'+fmt(x.count)+'</strong>')+'</tr>'));
+ const bursts=inv.diagnostic_bursts_5m||[];$('errorBursts').innerHTML=table(['HORA','ERROS'],bursts.slice(0,12).map(x=>'<tr>'+td('<strong>'+datePT(x.start)+'</strong>')+td('<strong>'+fmt(x.count)+'</strong>')+'</tr>'));
  $('errorReading').innerHTML=buildErrorReading(d);
  $('errorInstallations').innerHTML=table(['INSTALAÇÃO','ERROS','QUERIES'],(e.installations||[]).slice(0,15).map(x=>'<tr>'+td('<strong>'+esc(x.installation_id||'—')+'</strong>')+td(fmt(x.qty))+td(fmt(x.queries))+'</tr>'));
  $('errorSignatures').innerHTML=table(['TIPO','QUANTIDADE','INSTALAÇÕES'],(e.signatures||[]).slice(0,15).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'—')+'</span>')+td(fmt(x.qty))+td(fmt(x.installs))+'</tr>'));
- const recent=inv.latest_app14||[];
+ const recent=inv.latest_diagnostic||[];
  $('errorTechnical').innerHTML=recent.length?'<table class="table"><thead><tr><th>Hora</th><th>Browser</th><th>Transporte</th><th>Tipo</th><th>HTTP</th><th>ASF ms</th><th>Relay ms</th><th>Hash</th></tr></thead><tbody>'+recent.slice(0,15).map(x=>'<tr>'+td(datePT(x.occurred_at))+td(esc(x.browser||'—'))+td(esc(x.transport||'—'))+td(esc(x.error_type||'—'))+td(x.http_status==null?'—':fmt(x.http_status))+td(x.duration_ms==null?'—':fmt(x.duration_ms)+' ms')+td(x.relay_latency_ms==null?'—':fmt(x.relay_latency_ms)+' ms')+td(esc(x.response_hash||'—'))+'</tr>').join('')+'</tbody></table>':'<div class="empty">Sem incidentes recentes.</div>';
  function buildErrorReading(data){
-   const n=Number(inv.app14_errors||0),inst=Number(inv.app14_installations||0),hashes=Number(inv.app14_hashes||0);
-   const types=(e.types||[]).slice().sort((a,b)=>Number(b.qty||0)-Number(a.qty||0));
+   const n=Number(inv.diagnostic_errors||0),inst=Number(inv.diagnostic_installations||0),hashes=Number(inv.diagnostic_hashes||0);
+   const versions=(inv.diagnostic_versions||[]).join(', ')||'—';
+   const types=(inv.diagnostic_types||[]).length
+     ? inv.diagnostic_types
+     : (e.types||[]).map(x=>({type:x.kind, count:x.qty}));
    const top=types[0];
    let html='';
-   if(!n) html+='<div class="goodbox"><strong>Não existem erros 1.4 nas últimas 24 horas.</strong><br>A janela atual não mostra um incidente ativo.</div>';
-   else html+='<div class="warnbox"><strong>Existem '+fmt(n)+' falhas na versão 1.4 nas últimas 24 horas.</strong><br>Foram observadas em '+fmt(inst)+' instalações e '+fmt(hashes)+' assinaturas de resposta. Isto mostra concentração técnica; não determina sozinho a causa.</div>';
-   if(top) html+='<div style="margin-top:10px" class="explain"><strong>Tipo mais frequente:</strong> '+esc(top.kind||'desconhecido')+' · '+fmt(top.qty)+' ocorrências.<br><strong>Como ler:</strong> devemos cruzar hora, instalação, browser e resposta antes de atribuir a origem do problema.</div>';
+   if(!n) {
+     html+='<div class="goodbox"><strong>Não existem falhas ASF com diagnóstico nas últimas 24 horas.</strong><br>A janela atual não mostra um incidente técnico com dados forenses completos.</div>';
+   } else {
+     html+='<div class="warnbox"><strong>Existem '+fmt(n)+' falhas ASF com diagnóstico nas últimas 24 horas.</strong><br>Foram observadas em '+fmt(inst)+' instalações e '+fmt(hashes)+' fingerprints de resposta. Versões observadas: <strong>'+esc(versions)+'</strong>. Isto mostra concentração técnica; não determina sozinho a causa.</div>';
+   }
+   if(top) {
+     const kind=top.type||top.kind||'desconhecido', qty=top.count??top.qty??0;
+     html+='<div style="margin-top:10px" class="explain"><strong>Tipo mais frequente:</strong> '+esc(kind)+' · '+fmt(qty)+' ocorrências.<br><strong>Como ler:</strong> devemos cruzar hora, instalação, browser, transporte, HTTP, latência e fingerprint da resposta antes de atribuir a origem do problema.</div>';
+   }
    return html;
  }
 }
