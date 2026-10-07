@@ -7,65 +7,10 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <title>VÉRIX — Plataforma Digital</title>
-<style>
-html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#010407}
-#verixLoaderSplash{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;background:#010407;color:#e8f7f8}
-#verixLoaderSplash .t{font:900 22px/1.2 Arial,sans-serif;letter-spacing:6px;text-transform:uppercase;text-shadow:0 0 24px rgba(106,240,255,.35)}
-#verixLoaderSplash .s{font:700 10px/1.4 Arial,sans-serif;letter-spacing:2px;color:#6a8a94;text-transform:uppercase}
-#verixLoaderSplash .b{width:min(280px,70vw);height:3px;background:rgba(106,240,255,.15);border-radius:3px;overflow:hidden;margin-top:8px}
-#verixLoaderSplash .b i{display:block;height:100%;width:0;background:linear-gradient(90deg,#3dffa8,#6af0ff);box-shadow:0 0 12px rgba(106,240,255,.6);animation:verixLoaderBar 1.05s linear forwards}
-@keyframes verixLoaderBar{to{width:100%}}
-</style>
+<style>html,body{margin:0;width:100%;height:100%;background:#010407;overflow:hidden}</style>
 </head>
 <body>
-<div id="verixLoaderSplash"><div class="t">VÉRIX // Plataforma Digital</div><div class="s">Inicializar módulos · Consulta · Livrete · Seguro · Cinemómetro</div><div class="b"><i></i></div></div>
-<script>
-(function(){
-  'use strict';
-  var started=performance.now();
-  var MIN_SPLASH=1200;
-  var appReady=false;
-  var appText='';
-
-  function patchApp(html){
-    /* Remove controladores antigos de arranque/aviso. O loader passa a ser a única autoridade. */
-    var ids=['verix-boot-controller','verix-startup-controller','verix-asf-popup-script'];
-    ids.forEach(function(id){
-      var re=new RegExp('<script[^>]*id=["\\']'+id+'["\\'][^>]*>[\\s\\S]*?<\\/script>\\s*','i');
-      html=html.replace(re,'');
-    });
-    /* O cache-buster interno não pode redirecionar o documento para o URL do loader. */
-    html=html.replace(/<script[^>]*id=["']verix-cache-buster["'][^>]*>[\s\S]*?<\/script>\s*/i,'');
-
-    var lock='<style id="verix-single-startup-lock">html.verix-starting,html.verix-starting body{overflow:hidden!important}html.verix-starting body{visibility:hidden!important}html.verix-starting #opsBootOverlay{visibility:visible!important}html.verix-starting #verixAsfNoticeOverlay,html.verix-starting #mainMenuScreen,html.verix-starting .main,html.verix-starting .rail,html.verix-starting .command,html.verix-starting .bottom,html.verix-starting .operational-strip{visibility:hidden!important}#opsBootOverlay[aria-hidden="false"]{display:flex!important}#verixAsfNoticeOverlay[aria-hidden="true"]{display:none!important}#verixAsfNoticeOverlay[aria-hidden="false"]{display:flex!important}</style><script id="verix-single-startup-flag">document.documentElement.classList.add("verix-starting");</script>';
-    html=html.replace('</head>',lock+'</head>');
-
-    var splash='<div id="opsBootOverlay" aria-hidden="false"><div class="ops-boot-title">VÉRIX // Plataforma Digital</div><div class="ops-boot-sub">Inicializar módulos · Consulta · Livrete · Seguro · Cinemómetro</div><div class="ops-boot-bar"><i></i></div></div>';
-    html=html.replace(/<body([^>]*)>/i,'<body$1>'+splash);
-
-    var controller='<script id="verix-single-startup-controller">(function(){\n  var SPLASH_MS=1200;\n  var FADE_MS=250;\n  var NOTICE_DELAY_MS=100;\n  var splash=document.getElementById("opsBootOverlay");\n  var notice=document.getElementById("verixAsfNoticeOverlay");\n  var menu=document.getElementById("mainMenuScreen");\n  var main=document.querySelector(".main");\n  var done=false;\n  function lock(){\n    document.documentElement.classList.add("verix-starting");\n    if(notice)notice.setAttribute("aria-hidden","true");\n    if(menu)menu.classList.remove("show");\n    document.body.classList.remove("main-menu-active","fixed-workspace-active","consultation-screen-active","cinemometro-page-active","history-page-active");\n    if(main)main.classList.remove("consultation-fixed-active");\n  }\n  function mainMenu(){\n    document.body.classList.remove("fixed-workspace-active","consultation-screen-active","cinemometro-page-active","history-page-active");\n    if(main)main.classList.remove("consultation-fixed-active");\n    try{ if(typeof window.mostrarMenuPrincipal==="function")window.mostrarMenuPrincipal(); }catch(e){}\n    if(menu)menu.classList.add("show");\n    document.body.classList.add("main-menu-active");\n    document.body.classList.remove("fixed-workspace-active","consultation-screen-active");\n    if(main)main.classList.remove("consultation-fixed-active");\n  }\n  function finish(){\n    if(done)return; done=true;\n    if(splash)splash.classList.add("ops-hide");\n    setTimeout(function(){\n      if(splash)try{splash.remove();}catch(e){}\n      mainMenu();\n      requestAnimationFrame(function(){\n        document.documentElement.classList.remove("verix-starting");\n        requestAnimationFrame(function(){\n          setTimeout(function(){\n            var n=document.getElementById("verixAsfNoticeOverlay");\n            if(n)n.setAttribute("aria-hidden","false");\n            try{document.dispatchEvent(new CustomEvent("verix:boot-complete"));}catch(e){}\n          },NOTICE_DELAY_MS);\n        });\n      });\n    },FADE_MS);\n  }\n  lock();\n  var elapsed=performance.now()-window.__verixLoaderStarted;\n  var wait=Math.max(0,SPLASH_MS-elapsed);\n  function go(){\n    if(appReady)setTimeout(finish,wait);\n    else setTimeout(go,50);\n  }\n  go();\n  window.fecharAvisoASFInicial=function(){var n=document.getElementById("verixAsfNoticeOverlay");if(n)n.setAttribute("aria-hidden","true");};\n})();</script>';
-    html=html.replace(/<\/body>/i,controller+'</body>');
-    return html;
-  }
-
-  window.__verixLoaderStarted=started;
-  fetch('./verix-app.html?_verix_loader='+Date.now(),{cache:'no-store'})
-    .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text();})
-    .then(function(text){appText=patchApp(text);appReady=true;})
-    .catch(function(err){
-      document.getElementById('verixLoaderSplash').innerHTML='<div style="font:900 14px Arial;letter-spacing:2px;margin-bottom:12px">VÉRIX</div><div style="font:700 11px Arial;color:#9aaeb5">Erro ao carregar a plataforma.</div>';
-      console.error(err);
-    });
-
-  var timer=setInterval(function(){
-    if(appReady && performance.now()-started>=MIN_SPLASH){
-      clearInterval(timer);
-      document.open();
-      document.write(appText);
-      document.close();
-    }
-  },25);
-})();
-</script>
+<script>(function(){'use strict';window.location.replace('./verix-app.html?_verix='+Date.now());})();</script>
+<noscript><meta http-equiv="refresh" content="0;url=./verix-app.html"></noscript>
 </body>
 </html>
