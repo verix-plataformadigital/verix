@@ -1,0 +1,35 @@
+name: Patch ASF loader
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.event.head_commit.message == 'TRIGGER ASF PATCH'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch ASF script cache and method
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path("ASF_SIMPLE_DIRECT.js")
+          s=p.read_text()
+          s=s.replace("1 matrícula = 1 POST directo ao endpoint ASF.","1 matrícula = 1 GET directo ao endpoint ASF.")
+          s=s.replace("method: 'POST',","method: 'GET',")
+          p.write_text(s)
+          p=Path("verix-app.html")
+          s=p.read_text()
+          s=s.replace('./ASF_SIMPLE_DIRECT.js"></script>','./ASF_SIMPLE_DIRECT.js?v=8c0d2a1"></script>')
+          p.write_text(s)
+          Path(".asf_patch_trigger").unlink(missing_ok=True)
+          PY
+      - name: Commit patch
+        run: |
+          git config user.name "verix-plataformadigital"
+          git config user.email "verix-plataformadigital@users.noreply.github.com"
+          git add ASF_SIMPLE_DIRECT.js verix-app.html .asf_patch_trigger
+          git commit -m "PATCH ASF CACHE"
+          git push
