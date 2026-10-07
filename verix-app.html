@@ -1069,31 +1069,23 @@ function submitConjunto(event) {
  const valReboque = inputReboque.value.trim();
 
  if (!valVeiculo && !valReboque) {
- mostrarToast("Introduza pelo menos uma matrícula.");
- return;
+   mostrarToast("Introduza pelo menos uma matrícula.");
+   return;
  }
 
  // Uma pesquisa operacional = um query_id. Não são enviados matrícula nem resultados.
  try {
- window.__VERIX_CURRENT_QUERY_ID = (window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.newQueryId === 'function')
- ? window.VERIX_TELEMETRY.newQueryId() : null;
- if (!window.__VERIX_CURRENT_QUERY_ID) {
-   window.__VERIX_CURRENT_QUERY_ID = 'q_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
- }
- if (window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.track === 'function') {
- window.VERIX_TELEMETRY.track('vehicle_lookup','consulta',{queryId:window.__VERIX_CURRENT_QUERY_ID});
- }
+   window.__VERIX_CURRENT_QUERY_ID = (window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.newQueryId === 'function')
+     ? window.VERIX_TELEMETRY.newQueryId() : null;
+   if (!window.__VERIX_CURRENT_QUERY_ID) {
+     window.__VERIX_CURRENT_QUERY_ID = 'q_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+   }
+   if (window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.track === 'function') {
+     window.VERIX_TELEMETRY.track('vehicle_lookup','consulta',{queryId:window.__VERIX_CURRENT_QUERY_ID});
+   }
  } catch (_) {}
 
  guardarHistorico(valVeiculo, valReboque, window.__VERIX_CURRENT_QUERY_ID);
-
- // ASF é um canal independente do RNSI/IMT. Disparar primeiro garante que
- // uma falha de navegação dos frames internos nunca impede a consulta de seguro.
- try {
-   consultarSeguroASF(valVeiculo || valReboque);
- } catch (e) {
-   console.error('[ASF] Falha ao iniciar consulta:', e);
- }
 
  const placaInspecao = valVeiculo || valReboque;
  const placaLivrete = valReboque || valVeiculo;
@@ -1101,20 +1093,51 @@ function submitConjunto(event) {
  const imtSequence = ++imtQuerySequence;
  window.__VERIX_CURRENT_IMT_QUERY_SEQUENCE = imtSequence;
 
- carregarConsultaIMT(
- 'veiculoFrame',
- 'veiculoLoading',
- baseIMT + 'consulta_inspecao.php?Matricula=' + placaInspecao,
- 'inspecao',
- imtSequence
- );
- carregarConsultaIMT(
- 'reboqueFrame',
- 'reboqueLoading',
- baseIMT + 'consulta_livrete.php?Matricula=' + placaLivrete,
- 'livrete',
- imtSequence
- );
+ /*
+  * ARRANQUE PARALELO DA CONSULTA
+  * ------------------------------
+  * As três pesquisas são disparadas neste mesmo ciclo do submit:
+  *   1) IMT / Inspeção
+  *   2) IMT / Livrete
+  *   3) ASF / Seguro
+  *
+  * Não existe await, callback ou resultado de uma consulta que bloqueie
+  * qualquer das outras. Um erro num canal é independente dos restantes.
+  */
+
+ // 1 — IMT / INSPEÇÃO
+ try {
+   carregarConsultaIMT(
+     'veiculoFrame',
+     'veiculoLoading',
+     baseIMT + 'consulta_inspecao.php?Matricula=' + placaInspecao,
+     'inspecao',
+     imtSequence
+   );
+ } catch (e) {
+   console.error('[IMT] Falha ao iniciar inspeção:', e);
+ }
+
+ // 2 — IMT / LIVRETE
+ try {
+   carregarConsultaIMT(
+     'reboqueFrame',
+     'reboqueLoading',
+     baseIMT + 'consulta_livrete.php?Matricula=' + placaLivrete,
+     'livrete',
+     imtSequence
+   );
+ } catch (e) {
+   console.error('[IMT] Falha ao iniciar livrete:', e);
+ }
+
+ // 3 — ASF / SEGURO
+ // Disparado imediatamente, sem esperar pelos dois iframes.
+ try {
+   consultarSeguroASF(placaInspecao);
+ } catch (e) {
+   console.error('[ASF] Falha ao iniciar consulta:', e);
+ }
 
  // Uma matrícula pesquisada = 1 resultado IMT no Admin,
  // independentemente de serem carregados os dois endpoints (inspeção + livrete).
@@ -1131,8 +1154,7 @@ function submitConjunto(event) {
  inputVeiculo.value = '';
  inputReboque.value = '';
  try { inputVeiculo.focus(); } catch (_) {}
- }
-
+}
  function obterMatriculaOuVazia() {
  return ultimaMatriculaPesquisada || "";
  }
