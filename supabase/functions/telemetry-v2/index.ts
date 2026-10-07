@@ -153,20 +153,22 @@ function cleanMetadata(value: unknown): Record<string, unknown> {
       Number(a.asfGraphqlErrorCount ?? 0) > 0 ||
       !!a.asfNetworkError ||
       !!a.asfRawResponse;
-    const attempts = Array.isArray(a.asfAttempts) ? a.asfAttempts.slice(-6).map((t: any) => ({
-      method: cleanText(t?.method, 20),
-      transport: cleanText(t?.transport, 30),
-      status: finiteNumber(t?.status),
-      durationMs: finiteNumber(t?.durationMs),
-      errorType: cleanText(t?.errorType, 60),
-      message: cleanText(t?.message, 500),
-      responseBytes: finiteNumber(t?.responseBytes),
-      responseHash: cleanText(t?.responseHash, 20),
-      responseContentType: cleanText(t?.responseContentType, 120),
-      statusText: cleanText(t?.statusText, 120),
-      retryIndex: finiteNumber(t?.retryIndex),
-      timeoutMs: finiteNumber(t?.timeoutMs)
-    })) : [];
+
+    const attempts = Array.isArray(a.asfAttempts)
+      ? a.asfAttempts.slice(-6).map((t: any) => ({
+          method: cleanText(t?.method, 20),
+          transport: cleanText(t?.transport, 40),
+          status: finiteNumber(t?.status),
+          durationMs: finiteNumber(t?.durationMs),
+          errorType: cleanText(t?.errorType, 60),
+          message: cleanText(t?.message, 500),
+          responseBytes: finiteNumber(t?.responseBytes),
+          responseHash: cleanText(t?.responseHash, 20),
+          responseContentType: cleanText(t?.responseContentType, 120),
+          statusText: cleanText(t?.statusText, 120)
+        }))
+      : [];
+
     const diag: Record<string, unknown> = {
       captureVersion: cleanText(a.captureVersion, 10),
       asfForensicsVersion: cleanText(a.asfForensicsVersion, 10),
@@ -180,7 +182,7 @@ function cleanMetadata(value: unknown): Record<string, unknown> {
       asfQueueWaitMs: finiteNumber(a.asfQueueWaitMs),
       asfQueuePosition: finiteNumber(a.asfQueuePosition),
       asfMethod: cleanText(a.asfMethod, 20),
-      asfTransport: cleanText(a.asfTransport, 30),
+      asfTransport: cleanText(a.asfTransport, 40),
       asfErrorType: cleanText(a.asfErrorType, 60),
       asfMessage: cleanText(a.asfMessage, 500),
       asfResponseBytes: finiteNumber(a.asfResponseBytes),
@@ -198,36 +200,51 @@ function cleanMetadata(value: unknown): Record<string, unknown> {
         : [],
       asfAttempts: attempts
     };
+
     if (isErrorDiag) {
-      diag.asfRequestStartEpochMs = finiteNumber(a.asfRequestStartEpochMs);
-      diag.asfRequestStartIso = cleanText(a.asfRequestStartIso, 60);
-      diag.asfRequestEndEpochMs = finiteNumber(a.asfRequestEndEpochMs);
-      diag.asfRequestEndIso = cleanText(a.asfRequestEndIso, 60);
-      diag.asfRequestQuery = cleanText(a.asfRequestQuery, 20000);
-      diag.asfRequestHeaders = a.asfRequestHeaders && typeof a.asfRequestHeaders === "object" && !Array.isArray(a.asfRequestHeaders)
-        ? Object.fromEntries(Object.entries(a.asfRequestHeaders as Record<string, unknown>).slice(0, 80).map(([k,v]) => [String(k).slice(0,100), cleanText(v, 2000)]))
-        : null;
-      diag.asfRequestBody = cleanText(a.asfRequestBody, 40000);
-      diag.asfRequestBodyBytes = finiteNumber(a.asfRequestBodyBytes);
-      diag.asfRequestBodyHash = cleanText(a.asfRequestBodyHash, 20);
-      diag.asfResponseUrl = cleanText(a.asfResponseUrl, 8000);
-      diag.asfResponseType = cleanText(a.asfResponseType, 80);
-      diag.asfResponseHeaders = a.asfResponseHeaders && typeof a.asfResponseHeaders === "object" && !Array.isArray(a.asfResponseHeaders)
-        ? Object.fromEntries(Object.entries(a.asfResponseHeaders as Record<string, unknown>).slice(0, 80).map(([k,v]) => [String(k).slice(0,100), cleanText(v, 2000)]))
-        : null;
-      diag.asfRawResponse = cleanText(a.asfRawResponse, 65536);
-      diag.asfGraphqlErrors = Array.isArray(a.asfGraphqlErrors) ? a.asfGraphqlErrors.slice(0, 10) : [];
-      diag.asfGraphqlErrorsRaw = cleanText(a.asfGraphqlErrorsRaw, 65536);
-      diag.asfGraphqlRawParsed = a.asfGraphqlRawParsed && typeof a.asfGraphqlRawParsed === "object" ? a.asfGraphqlRawParsed : null;
-      diag.asfResourceTiming = a.asfResourceTiming && typeof a.asfResourceTiming === "object" ? a.asfResourceTiming : null;
-      diag.asfClientContext = a.asfClientContext && typeof a.asfClientContext === "object" ? a.asfClientContext : null;
-      diag.asfCallerStack = cleanText(a.asfCallerStack, 12000);
-      diag.asfNetworkError = a.asfNetworkError && typeof a.asfNetworkError === "object" ? a.asfNetworkError : null;
+      /*
+       * Mantemos apenas forense leve. Query, body, URL, headers e resposta
+       * bruta podem conter matrícula/apólice/dados do serviço ASF e não precisam
+       * de ser persistidos para diagnosticar a falha.
+       */
       diag.asfCaptureAgeMs = finiteNumber(a.asfCaptureAgeMs);
       diag.asfCaptureMatch = cleanText(a.asfCaptureMatch, 80);
+
+      diag.asfNetworkError = a.asfNetworkError && typeof a.asfNetworkError === "object"
+        ? {
+            name: cleanText((a.asfNetworkError as any)?.name, 80),
+            message: cleanText((a.asfNetworkError as any)?.message, 500)
+          }
+        : null;
+
+      diag.asfResourceTiming = a.asfResourceTiming && typeof a.asfResourceTiming === "object"
+        ? {
+            startTime: finiteNumber((a.asfResourceTiming as any)?.startTime),
+            responseStart: finiteNumber((a.asfResourceTiming as any)?.responseStart),
+            responseEnd: finiteNumber((a.asfResourceTiming as any)?.responseEnd),
+            duration: finiteNumber((a.asfResourceTiming as any)?.duration)
+          }
+        : null;
+
+      diag.asfClientContext = a.asfClientContext && typeof a.asfClientContext === "object"
+        ? {
+            online: typeof (a.asfClientContext as any)?.online === "boolean"
+              ? (a.asfClientContext as any).online
+              : null,
+            effectiveType: cleanText((a.asfClientContext as any)?.effectiveType, 20),
+            rttMs: finiteNumber((a.asfClientContext as any)?.rttMs)
+          }
+        : null;
+
+      diag.asfGraphqlErrors = Array.isArray(a.asfGraphqlErrors)
+        ? a.asfGraphqlErrors.slice(0, 10).map((x: any) => ({
+            message: cleanText(x?.message, 1000),
+            path: Array.isArray(x?.path) ? x.path.slice(0, 10) : null
+          }))
+        : [];
     }
+
     out.asfDiagnostic = diag;
-  }
   return out;
 }
 
