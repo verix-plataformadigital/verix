@@ -534,7 +534,6 @@ let ultimaMatriculaLivrete = "";
  // Primeiro verificamos se o servidor RNSI está acessível. Só depois
  // carregamos o conteúdo no iframe. Assim, quando a rede RNSI não está
  // disponível, o Chrome não substitui o nosso aviso pela página de erro.
- const IPO_IMT_MODE = true; // IMT usa atribuição direta como IPO_2.2
   const IMT_TIMEOUT_MS = 12000;
  const imtTimers = {};
 let imtQuerySequence = 0;
@@ -588,7 +587,6 @@ let imtQuerySequence = 0;
   if (!overlay || !frame) return;
 
   const queryId = window.__VERIX_CURRENT_QUERY_ID || null;
-  const sourceName = source || (frameId === 'reboqueFrame' ? 'livrete' : 'inspecao');
   const requestSequence = Number(sequence || imtQuerySequence || 0);
 
   mostrarLoading(frameId, overlayId);
@@ -7513,8 +7511,6 @@ html.verix-low-power .verix-holo-scan{
 
  const originalOpen=window.abrirModulo;
  window.abrirModulo=function(nome,el){originalOpen.call(this,nome,el);if(nome==='legislacao'){setTimeout(ensureLegUI,0);}};
-
- const originalFilter=window.filtrarLegislacao;
  window.filtrarLegislacao=function(valor,keepFav){
  const raw=String(valor??'');
  const q=searchNorm(raw);
@@ -7609,7 +7605,6 @@ const alias={
 };
 const normalize10=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 function expandedQuery10(v){let q=normalize10(v);Object.keys(alias).forEach(k=>{if(q.includes(normalize10(k)))q+=' '+normalize10(alias[k]);});return q;}
-const oldEnsure=window.VÉRIX10?.ensureLegUI;
 // Improve the search matcher without changing the visible wording.
 const oldFilter=window.filtrarLegislacao;
 window.filtrarLegislacao=function(valor){
@@ -7997,10 +7992,6 @@ setTimeout(()=>{try{cinAplicarEstadoLimiteV42();}catch(e){}},0);
  maquina_agricola:{coexistencia:20,local_geral:20,autoestrada:null,reservada:null,restante:20},
  maquina_industrial:{coexistencia:20,local_geral:40,autoestrada:80,reservada:70,restante:70}
  };
- const LIGHT=new Set([
- 'motociclo_mais50_sem','motociclo_mais50_com','motociclo_ate50','triciclo',
- 'ligeiro_passageiros_sem','ligeiro_passageiros_com','ligeiro_mercadorias_sem','ligeiro_mercadorias_com'
- ]);
 
  function prepararSelectors(){
  const v=document.getElementById('cinVeiculo');
@@ -9461,7 +9452,6 @@ body.theme-light .settings-factory-reset{background:linear-gradient(90deg,rgba(1
  const w=window.innerWidth||document.documentElement.clientWidth,h=window.innerHeight||document.documentElement.clientHeight;
  el.innerHTML='<strong>POSTO</strong> '+w+'×'+h+' px<br><strong>HISTÓRICO</strong> '+hist+' / 100 registos<br><strong>DADOS LOCAIS</strong> '+storage[0];
  }
- const originalReset=window.VÉRIXSettings&&window.VÉRIXSettings.reset;
  if(window.VÉRIXSettings){
  window.VÉRIXSettingsPrefs=function(){try{return Object.assign({theme:'dark',density:'compact',scale:'auto',hud:true,transitions:true,history:true,cinRadarCollapsed:true},JSON.parse(localStorage.getItem('VÉRIX_PREFS_V1')||'{}'));}catch(e){return null;}};
  window.VÉRIXSettings.setProfile=function(v){
