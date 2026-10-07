@@ -9170,20 +9170,6 @@ body.theme-light .module-card,.theme-light .leg-intro,.theme-light .leg-category
 (function () {
  function qs(id) { return document.getElementById(id); }
 
- function ensureBoot() {
- if (qs('opsBootOverlay')) return;
- var el = document.createElement('div');
- el.id = 'opsBootOverlay';
- el.innerHTML = '<div class="ops-boot-title">VÉRIX // Plataforma Digital</div>' +
- '<div class="ops-boot-sub">Inicializar módulos · Consulta · Livrete · Seguro · Cinemómetro</div>' +
- '<div class="ops-boot-bar"><i></i></div>';
- document.body.appendChild(el);
- setTimeout(function () {
- el.classList.add('ops-hide');
- setTimeout(function () { try { el.remove(); } catch (e) {} }, 700);
- }, 1200);
- }
-
  function ensureHotkeys() {
  if (qs('opsHotkeysHint')) return;
  var h = document.createElement('div');
@@ -9255,7 +9241,8 @@ body.theme-light .module-card,.theme-light .leg-intro,.theme-light .leg-category
 
  ready(function () {
  try { document.body.classList.add('fx-hud-body', 'ops-console-12'); } catch (e) {}
- ensureBoot();
+ // O aviso ASF inicial deve ser a primeira janela da aplicação.
+ // Não existe splash/boot visual intermédio.
  ensureHotkeys();
  document.addEventListener('keydown', onKey, true);
 
