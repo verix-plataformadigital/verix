@@ -39,7 +39,7 @@ for (const kind of ["script", "style"]) {
 const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "verix-audit-"));
 try {
   let idx = 0;
-  const scriptRe = /<script\\b([^>]*)>([\\s\\S]*?)<\\/script>/gi;
+  const scriptRe = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
   for (const m of app.matchAll(scriptRe)) {
     const attrs = m[1] || "";
     const body = m[2] || "";
