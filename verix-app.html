@@ -1519,7 +1519,7 @@ function submitConjunto(event) {
             cache: 'no-store',
             credentials: 'omit',
             mode: 'cors',
-            redirect: 'error',
+            redirect: 'follow',
             headers: {
               'Accept': 'application/json, text/plain, */*',
               /* text/plain mantém a chamada simples e evita preflight CORS. */
@@ -1533,6 +1533,11 @@ function submitConjunto(event) {
           tentativa.responseContentType = res.headers && res.headers.get
             ? (res.headers.get('content-type') || null)
             : null;
+          if (res.headers && res.headers.get) {
+            var relayLatencyHeader = res.headers.get('X-Verix-ASF-Latency-Ms');
+            var relayLatencyMs = Number(relayLatencyHeader);
+            if (Number.isFinite(relayLatencyMs)) diag.asfRelayLatencyMs = relayLatencyMs;
+          }
           bodyText = await res.text();
 
           if (res.status >= 400) {
