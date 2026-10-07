@@ -55,7 +55,52 @@
   function blockUnauthorized(){
     try {
       document.open();
-      document.write('<!doctype html><html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VÉRIX — Acesso não autorizado</title><style>html,body{margin:0;min-height:100%;background:#03080c;color:#eef4f5;font-family:Arial,Helvetica,sans-serif}body{display:grid;place-items:center;padding:24px;box-sizing:border-box}.box{max-width:620px;padding:34px 36px;border:1px solid #5b7078;border-radius:18px;background:linear-gradient(180deg,#11212a,#071117);box-shadow:0 24px 70px rgba(0,0,0,.55);text-align:center}.tag{display:inline-block;margin-bottom:14px;padding:6px 10px;border:1px solid #c8102e;border-radius:999px;color:#ff7c91;font-size:11px;font-weight:800;letter-spacing:1.2px}.title{font-size:28px;font-weight:900;margin-bottom:12px}.text{color:#b9c7cc;font-size:15px;line-height:1.6}</style></head><body><div class="box"><div class="tag">VERIX // PROTEÇÃO</div><div class="title">Publicação não autorizada</div><div class="text">Esta versão do VÉRIX não está autorizada a funcionar neste endereço.</div></div></body></html>');
+      document.write('<!doctype html><html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VÉRIX — Acesso não autorizado</title><style>html,body{margin:0;min-height:100%;background:#03080c;color:#eef4f5;font-family:Arial,Helvetica,sans-serif}body{display:grid;place-items:center;padding:24px;box-sizing:border-box}.box{max-width:620px;padding:34px 36px;border:1px solid #5b7078;border-radius:18px;background:linear-gradient(180deg,#11212a,#071117);box-shadow:0 24px 70px rgba(0,0,0,.55);text-align:center}.tag{display:inline-block;margin-bottom:14px;padding:6px 10px;border:1px solid #c8102e;border-radius:999px;color:#ff7c91;font-size:11px;font-weight:800;letter-spacing:1.2px}.title{font-size:28px;font-weight:900;margin-bottom:12px}.text{color:#b9c7cc;font-size:15px;line-height:1.6}</style><style id="verix-boot-splash">
+#opsBootOverlay{
+ position:fixed;
+ inset:0;
+ z-index:200000;
+ background:#010407;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ flex-direction:column;
+ gap:14px;
+ transition:opacity .6s ease;
+}
+#opsBootOverlay.ops-hide{opacity:0;pointer-events:none}
+#opsBootOverlay .ops-boot-title{
+ font:900 22px/1.2 Arial,sans-serif;
+ letter-spacing:6px;
+ color:#e8f7f8;
+ text-transform:uppercase;
+ text-shadow:0 0 24px rgba(106,240,255,.35);
+}
+#opsBootOverlay .ops-boot-sub{
+ font:700 10px/1.4 Arial,sans-serif;
+ letter-spacing:2px;
+ color:#6a8a94;
+ text-transform:uppercase;
+}
+#opsBootOverlay .ops-boot-bar{
+ width:min(280px,70vw);
+ height:3px;
+ background:rgba(106,240,255,.15);
+ border-radius:3px;
+ overflow:hidden;
+ margin-top:8px;
+}
+#opsBootOverlay .ops-boot-bar>i{
+ display:block;
+ height:100%;
+ width:0;
+ background:linear-gradient(90deg,var(--ops-mint),var(--ops-cyan));
+ box-shadow:0 0 12px rgba(106,240,255,.6);
+ animation:opsBootBar 1.1s ease forwards;
+}
+@keyframes opsBootBar{to{width:100%}}
+</style>
+</head><body><div class="box"><div class="tag">VERIX // PROTEÇÃO</div><div class="title">Publicação não autorizada</div><div class="text">Esta versão do VÉRIX não está autorizada a funcionar neste endereço.</div></div></body></html>');
       document.close();
     } catch (_) {
       try { document.documentElement.innerHTML = '<body style="background:#03080c;color:#eef4f5;font-family:Arial;text-align:center;padding:40px">Publicação não autorizada.</body>'; } catch (__) {}
@@ -9131,6 +9176,25 @@ body.theme-light .module-card,.theme-light .leg-intro,.theme-light .leg-category
 </script> <script id="v-ops-console-12-js">
 (function () {
  function qs(id) { return document.getElementById(id); }
+ function ensureBoot() {
+  if (qs('opsBootOverlay')) return;
+
+  var el = document.createElement('div');
+  el.id = 'opsBootOverlay';
+  el.innerHTML =
+    '<div class="ops-boot-title">VÉRIX // Plataforma Digital</div>' +
+    '<div class="ops-boot-sub">Inicializar módulos · Consulta · Livrete · Seguro · Cinemómetro</div>' +
+    '<div class="ops-boot-bar"><i></i></div>';
+
+  document.body.appendChild(el);
+
+  setTimeout(function () {
+    el.classList.add('ops-hide');
+    setTimeout(function () {
+      try { el.remove(); } catch (e) {}
+    }, 700);
+  }, 1200);
+ }
 
  function ensureHotkeys() {
  if (qs('opsHotkeysHint')) return;
@@ -9203,9 +9267,8 @@ body.theme-light .module-card,.theme-light .leg-intro,.theme-light .leg-category
 
  ready(function () {
  try { document.body.classList.add('fx-hud-body', 'ops-console-12'); } catch (e) {}
- // O aviso ASF inicial deve ser a primeira janela da aplicação.
- // Não existe splash/boot visual intermédio.
- ensureHotkeys();
+ ensureBoot();
+  ensureHotkeys();
  document.addEventListener('keydown', onKey, true);
 
  // Placeholder mais intuitivo nos campos de matrícula
