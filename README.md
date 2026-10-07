@@ -1,2 +1,0 @@
-# verix
-VÉRIX — Plataforma Digital
