@@ -4851,66 +4851,6 @@ body {
  }
 }
 
-/* ===== VÉRIX BOOT — camada única de arranque ===== */
-html.verix-booting body{
-  visibility:hidden !important;
-  overflow:hidden !important;
-}
-html.verix-booting #opsBootOverlay{
-  visibility:visible !important;
-}
-#opsBootOverlay{
-  position:fixed !important;
-  inset:0 !important;
-  z-index:2147483000 !important;
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  flex-direction:column !important;
-  gap:14px !important;
-  background:#010407 !important;
-  opacity:1;
-  pointer-events:auto;
-  visibility:visible !important;
-  transition:opacity .25s ease !important;
-}
-#opsBootOverlay.ops-hide{
-  opacity:0 !important;
-  pointer-events:none !important;
-}
-#opsBootOverlay .ops-boot-title{
-  font:900 22px/1.2 Arial,sans-serif !important;
-  letter-spacing:6px !important;
-  color:#e8f7f8 !important;
-  text-transform:uppercase !important;
-  text-shadow:0 0 24px rgba(106,240,255,.35) !important;
-}
-#opsBootOverlay .ops-boot-sub{
-  font:700 10px/1.4 Arial,sans-serif !important;
-  letter-spacing:2px !important;
-  color:#6a8a94 !important;
-  text-transform:uppercase !important;
-}
-#opsBootOverlay .ops-boot-bar{
-  width:min(280px,70vw) !important;
-  height:3px !important;
-  background:rgba(106,240,255,.15) !important;
-  border-radius:3px !important;
-  overflow:hidden !important;
-  margin-top:8px !important;
-}
-#opsBootOverlay .ops-boot-bar > i{
-  display:block !important;
-  height:100% !important;
-  width:0 !important;
-  background:linear-gradient(90deg,#3dffa8,#6af0ff) !important;
-  box-shadow:0 0 12px rgba(106,240,255,.6) !important;
-  animation:verixBootBar .95s linear forwards !important;
-}
-@keyframes verixBootBar{
-  to{width:100%;}
-}
-
 /* Rodapé operacional */
 .bottom {
  letter-spacing: 1.1px !important;
@@ -15549,19 +15489,8 @@ html body .corner{
  }
 }
 </style>
-<script id="verix-fx-holo-scan-inject">
-(function(){
- function add(){
- if(document.querySelector('.verix-holo-scan')) return;
- var el=document.createElement('div');
- el.className='verix-holo-scan';
- el.setAttribute('aria-hidden','true');
- document.body.appendChild(el);
- }
- if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',add);
- else add();
-})();
-</script> <style id="verix-asf-bar-final-v2">
+
+<style id="verix-asf-bar-final-v2">
 /* ASF — barra full-width, legível, sem corte de texto */
 html body .panel.insurance,
 html body .insurance{
@@ -19075,7 +19004,6 @@ html body .toast-notification {
   */
   var SPLASH_MS = 1200;
   var FADE_MS = 250;
-  var NOTICE_DELAY_MS = 80;
   var started = (typeof window.__verixSplashStarted === 'number') ? window.__verixSplashStarted : performance.now();
   var finished = false;
 
