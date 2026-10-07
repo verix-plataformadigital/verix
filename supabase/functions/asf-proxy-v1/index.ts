@@ -2,7 +2,7 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "content-type",
   "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-  "Access-Control-Expose-Headers": "X-Verix-ASF-Relay, X-Verix-ASF-Latency-Ms",
+  "Access-Control-Expose-Headers": "X-Verix-ASF-Relay, X-Verix-ASF-Latency-Ms, Retry-After",
   "Cache-Control": "no-store, max-age=0",
   "Vary": "Origin",
   "X-Content-Type-Options": "nosniff"
@@ -13,15 +13,16 @@ const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 const ASF_ORIGIN = "https://ext01.asf.com.pt";
 const ASF_PATH = "/api/src/";
 const MAX_BODY_BYTES = 16 * 1024;
-const UPSTREAM_TIMEOUT_MS = 12000;
-const CLIENT_WINDOW_SECONDS = 60;
-const CLIENT_LIMIT = 5;
-const IP_LIMIT = 30;
+const UPSTREAM_TIMEOUT_MS = 15000;
 
-function json(data: unknown, status = 200) {
+function json(data: unknown, status = 200, extraHeaders: Record<string, string> = {}) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { "Content-Type": "application/json; charset=utf-8", ...corsHeaders }
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      ...corsHeaders,
+      ...extraHeaders
+    }
   });
 }
 
@@ -47,64 +48,30 @@ function validDate(value: unknown): string | null {
   return s;
 }
 
-function clientIp(req: Request): string {
-  const cf = req.headers.get("cf-connecting-ip");
-  if (cf) return cf.trim();
-  const xr = req.headers.get("x-real-ip");
-  if (xr) return xr.trim();
-  const xf = req.headers.get("x-forwarded-for");
-  if (xf) return xf.split(",")[0].trim();
-  return "unknown";
-}
-
-async function hmacHex(value: string): Promise<string> {
-  const key = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(SERVICE_KEY),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"]
-  );
-  const bytes = new Uint8Array(await crypto.subtle.sign(
-    "HMAC", key, new TextEncoder().encode(value)
-  ));
-  return [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-async function consumeRate(key: string, limit: number): Promise<boolean> {
-  const r = await fetch(SUPABASE_URL + "/rest/v1/rpc/verix2_consume_rate_limit", {
-    method: "POST",
-    headers: {
-      "apikey": SERVICE_KEY,
-      "Authorization": "Bearer " + SERVICE_KEY,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      p_key: key,
-      p_limit: limit,
-      p_window_seconds: CLIENT_WINDOW_SECONDS
-    })
-  });
-  if (!r.ok) throw new Error("rate_limit_rpc_failed");
-  return (await r.text()).trim() === "true";
-}
-
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders });
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
 
   if (req.method === "GET") {
     return json({
       ok: true,
       service: "verix-asf-proxy",
-      version: "1.0",
+      version: "2.0",
       upstream: ASF_ORIGIN,
       mode: "server-relay",
-      retries: false
+      retries: "client-transport-only",
+      limiter: "none-local"
     });
   }
 
-  if (req.method !== "POST") return json({ ok: false, error: "method_not_allowed" }, 405);
-  if (!SUPABASE_URL || !SERVICE_KEY) return json({ ok: false, error: "proxy_not_configured" }, 503);
+  if (req.method !== "POST") {
+    return json({ ok: false, error: "method_not_allowed" }, 405);
+  }
+
+  if (!SUPABASE_URL || !SERVICE_KEY) {
+    return json({ ok: false, error: "proxy_not_configured" }, 503);
+  }
 
   try {
     const contentLength = Number(req.headers.get("content-length") || 0);
@@ -119,23 +86,9 @@ Deno.serve(async (req: Request) => {
     if (!/^[A-Z0-9]{6,8}$/.test(plate)) {
       return json({ ok: false, error: "invalid_plate" }, 400);
     }
-    if (!date) return json({ ok: false, error: "invalid_date" }, 400);
 
-    const installationId = cleanText(body?.installationId, 120);
-
-    if (!installationId) return json({ ok: false, error: "missing_installation" }, 400);
-
-    const ipKey = await hmacHex("ip:" + clientIp(req));
-    const installKey = await hmacHex("installation:" + installationId);
-
-    if (!(await consumeRate("asf-global", 60))) {
-      return json({ ok: false, error: "rate_limited_global" }, 429);
-    }
-    if (!(await consumeRate("asf-ip:" + ipKey, IP_LIMIT))) {
-      return json({ ok: false, error: "rate_limited" }, 429);
-    }
-    if (!(await consumeRate("asf-install:" + installKey, CLIENT_LIMIT))) {
-      return json({ ok: false, error: "rate_limited" }, 429);
+    if (!date) {
+      return json({ ok: false, error: "invalid_date" }, 400);
     }
 
     const query =
@@ -154,8 +107,7 @@ Deno.serve(async (req: Request) => {
         headers: {
           "Accept": "application/json, text/plain, */*",
           "Cache-Control": "no-cache",
-          "Pragma": "no-cache",
-          "User-Agent": "VERIX-ASF-Relay/1.0"
+          "Pragma": "no-cache"
         },
         body: null,
         redirect: "follow",
@@ -165,14 +117,19 @@ Deno.serve(async (req: Request) => {
       const text = await upstream.text();
       const elapsedMs = Date.now() - started;
 
+      const outHeaders: Record<string, string> = {
+        ...corsHeaders,
+        "Content-Type": upstream.headers.get("content-type") || "application/json; charset=utf-8",
+        "X-Verix-ASF-Relay": "1",
+        "X-Verix-ASF-Latency-Ms": String(elapsedMs)
+      };
+
+      const retryAfter = upstream.headers.get("retry-after");
+      if (retryAfter) outHeaders["Retry-After"] = retryAfter;
+
       return new Response(text, {
         status: upstream.status,
-        headers: {
-          ...corsHeaders,
-          "Content-Type": upstream.headers.get("content-type") || "application/json; charset=utf-8",
-          "X-Verix-ASF-Relay": "1",
-          "X-Verix-ASF-Latency-Ms": String(elapsedMs),
-        }
+        headers: outHeaders
       });
     } catch (error) {
       const aborted = (error as Error)?.name === "AbortError";
@@ -185,7 +142,10 @@ Deno.serve(async (req: Request) => {
       clearTimeout(timeout);
     }
   } catch (error) {
-    console.error("verix_asf_proxy_failed", String((error as Error)?.message || error));
+    console.error(
+      "verix_asf_proxy_failed",
+      String((error as Error)?.message || error)
+    );
     return json({ ok: false, error: "proxy_failed" }, 500);
   }
 });
