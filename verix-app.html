@@ -1848,8 +1848,8 @@ function mostrarSeguroLoading(matricula, extra) {
   }
 
   // ---- Orquestração ASF ----
-  // O controlo de cadência pertence agora ao nível do pedido físico, para que
-  // POST e eventual GET de fallback contem e respeitem os mesmos limites.
+  // O controlo de cadência pertence ao nível do pedido físico.
+  // Um pedido físico = um slot; não existem retries nem fallback GET.
   async function processarConsultaSeguroComCadencia(matLimpa, matDisplay, queryId) {
     mostrarSeguroLoading(matDisplay, 'A VERIFICAR...');
 
@@ -12084,19 +12084,7 @@ body.fixed-workspace-active .main.consultation-fixed-active .panel{min-height:0!
  setTimeout(sync,120);
 })();
 </script>
-\n<style id="v72-menu-arquitecture">\n\n.main-menu-screen{padding:34px 28px 30px!important;}\n.main-menu-shell-clean{max-width:1120px!important;justify-content:flex-start!important;}\n.main-menu-head-clean{padding-bottom:14px!important;}\n.main-menu-info-line{margin:16px auto 12px;max-width:900px;width:100%;text-align:center;color:#8aa0a8;font:800 10px/1.4 Arial,sans-serif;letter-spacing:.45px;}\n.main-menu-grid-clean{display:grid!important;grid-template-columns:repeat(3,minmax(220px,1fr))!important;gap:16px!important;margin:16px auto 0!important;width:min(980px,100%);}\n.main-menu-floating{min-height:88px!important;height:88px!important;padding:14px 16px!important;border-radius:14px!important;background:linear-gradient(145deg,rgba(12,30,39,.98),rgba(3,11,16,.98))!important;box-shadow:0 14px 34px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.04)!important;}\n.main-menu-floating .main-menu-copy small{display:none!important;}\n.main-menu-floating .main-menu-icon{font-size:27px!important;}\n.main-menu-floating .main-menu-copy strong{font-size:12px!important;letter-spacing:1.1px!important;}\n.main-menu-radar{grid-column:2!important;}\n.main-menu-settings{grid-column:3!important;}\n.main-menu-foot{text-align:center!important;margin-top:24px!important;}\n.consultation-history-tool{display:none!important;}\nbody.fixed-workspace-active .consultation-history-tool.history-active{display:inline-flex!important;}\n@media(max-width:950px){\n .main-menu-grid-clean{grid-template-columns:repeat(2,minmax(0,1fr))!important;width:min(700px,100%);} \n .main-menu-radar,.main-menu-settings{grid-column:auto!important;}\n}\n@media(max-width:620px){\n .main-menu-grid-clean{grid-template-columns:1fr!important;}\n}\n</style><script id="v72-navigation-fix">
-(function(){
- // Histórico só existe dentro da área de Inspeções/Seguro.
- const oldOpen=window.abrirModulo;
- if(typeof oldOpen==='function'){
- window.abrirModulo=function(nome,el){
- document.getElementById('consultaHistoryTool')?.classList.remove('history-active');
- return oldOpen(nome,el);
- };
- }
-})();
-</script>
-<style id="v74-main-menu-clean">
+\n<style id="v72-menu-arquitecture">\n\n.main-menu-screen{padding:34px 28px 30px!important;}\n.main-menu-shell-clean{max-width:1120px!important;justify-content:flex-start!important;}\n.main-menu-head-clean{padding-bottom:14px!important;}\n.main-menu-info-line{margin:16px auto 12px;max-width:900px;width:100%;text-align:center;color:#8aa0a8;font:800 10px/1.4 Arial,sans-serif;letter-spacing:.45px;}\n.main-menu-grid-clean{display:grid!important;grid-template-columns:repeat(3,minmax(220px,1fr))!important;gap:16px!important;margin:16px auto 0!important;width:min(980px,100%);}\n.main-menu-floating{min-height:88px!important;height:88px!important;padding:14px 16px!important;border-radius:14px!important;background:linear-gradient(145deg,rgba(12,30,39,.98),rgba(3,11,16,.98))!important;box-shadow:0 14px 34px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.04)!important;}\n.main-menu-floating .main-menu-copy small{display:none!important;}\n.main-menu-floating .main-menu-icon{font-size:27px!important;}\n.main-menu-floating .main-menu-copy strong{font-size:12px!important;letter-spacing:1.1px!important;}\n.main-menu-radar{grid-column:2!important;}\n.main-menu-settings{grid-column:3!important;}\n.main-menu-foot{text-align:center!important;margin-top:24px!important;}\n.consultation-history-tool{display:none!important;}\nbody.fixed-workspace-active .consultation-history-tool.history-active{display:inline-flex!important;}\n@media(max-width:950px){\n .main-menu-grid-clean{grid-template-columns:repeat(2,minmax(0,1fr))!important;width:min(700px,100%);} \n .main-menu-radar,.main-menu-settings{grid-column:auto!important;}\n}\n@media(max-width:620px){\n .main-menu-grid-clean{grid-template-columns:1fr!important;}\n}\n</style><style id="v74-main-menu-clean">
 
 body.main-menu-active .command{display:none!important;}
 body:not(.consultation-screen-active) .command{display:none!important;}
@@ -12174,20 +12162,7 @@ body.main-menu-active .rail{display:none!important;}
  return oldAbrirModulo.apply(this,arguments);
  };
  }
- function atualizarMenuPrincipalRelogio(){
- const el=document.getElementById('mainMenuDateTime'); if(!el)return;
- const d=new Date();
- const meses=['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
- const dd=String(d.getDate()).padStart(2,'0');
- const hh=String(d.getHours()).padStart(2,'0');
- const mm=String(d.getMinutes()).padStart(2,'0');
- const ss=String(d.getSeconds()).padStart(2,'0');
- el.textContent=dd+' '+meses[d.getMonth()]+' '+d.getFullYear()+' | '+hh+':'+mm+':'+ss;
- }
- window.addEventListener('DOMContentLoaded',function(){
- atualizarMenuPrincipalRelogio();
- setInterval(atualizarMenuPrincipalRelogio,1000);
- });
+
 })();
 </script> <style id="v76-historico-consulta-bottom">
 
@@ -12199,12 +12174,7 @@ body.main-menu-active .rail{display:none!important;}
 .consultation-history-tool,#historyRail{display:none!important;}
 @media(max-width:700px){.consulta-history-bottom{min-width:240px;width:min(92vw,420px);}}
 </style>
-<script id="v76-history-cleanup">
-(function(){
- document.getElementById('consultaHistoryTool')?.remove();
- document.getElementById('historyRail')?.remove();
-})();
-</script> <style id="v82-historico-fixo">
+<style id="v82-historico-fixo">
 
 .consulta-history-bottom-wrap{
  position:fixed!important;
@@ -13294,31 +13264,7 @@ body.theme-light .settings-section-title{color:#587078!important}
 body.theme-light .loading-overlay{background:radial-gradient(circle at center,#f8fbfc,#e3eaec 70%)!important;color:#536a72!important}
 body.theme-light .toast-notification{box-shadow:0 7px 20px rgba(35,54,62,.22)!important}
 </style>
-<script id="cin-v158-restaura-edicao-default">
-(function(){
- function aplicar(){
- try{
- const r=document.getElementById('cinRegime');
- if(!r)return;
- r.value='autoestrada';
- if(typeof window.cinAtualizarLimite==='function') window.cinAtualizarLimite();
- }catch(e){}
- }
- const oldOpen=window.abrirModulo;
- if(typeof oldOpen==='function' && !window.__cinV158Wrapped){
- window.__cinV158Wrapped=true;
- window.abrirModulo=function(nome,el){
- oldOpen(nome,el);
- if(nome==='cinemometro') setTimeout(aplicar,20);
- };
- }
- document.addEventListener('change',function(e){
- if(e.target && e.target.id==='cinRegime'){
- /* A escolha manual continua a ser respeitada depois da abertura. */
- }
- });
-})();
-</script> <style id="verix-cache-refresh-control">
+<style id="verix-cache-refresh-control">
 .settings-cache-refresh-card{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:10px;padding:11px 13px;border:1px solid rgba(78,204,214,.24);border-radius:9px;background:linear-gradient(90deg,rgba(10,39,47,.72),rgba(5,17,22,.82));box-shadow:inset 0 0 18px rgba(60,195,205,.025)}
 .settings-cache-refresh-copy{display:flex;align-items:center;gap:10px;min-width:0}
 .settings-cache-refresh-icon{width:31px;height:31px;flex:0 0 31px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(88,214,221,.38);border-radius:7px;background:rgba(33,135,146,.10);color:#6fe1e5;font:950 17px/1 Arial}
@@ -15268,19 +15214,7 @@ html body .corner{
  }
 }
 </style>
-<script id="verix-fx-holo-scan-inject">
-(function(){
- function add(){
- if(document.querySelector('.verix-holo-scan')) return;
- var el=document.createElement('div');
- el.className='verix-holo-scan';
- el.setAttribute('aria-hidden','true');
- document.body.appendChild(el);
- }
- if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',add);
- else add();
-})();
-</script> <style id="verix-asf-bar-final-v2">
+<style id="verix-asf-bar-final-v2">
 /* ASF — barra full-width, legível, sem corte de texto */
 html body .panel.insurance,
 html body .insurance{
