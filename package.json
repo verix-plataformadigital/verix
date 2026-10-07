@@ -7,6 +7,6 @@
     "build:secure": "node tools/build-secure-release.mjs"
   },
   "devDependencies": {
-    "javascript-obfuscator": "4.1.1"
+    "javascript-obfuscator": "5.9.0"
   }
 }
