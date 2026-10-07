@@ -15,8 +15,8 @@ const ASF_PATH = "/api/src/";
 const MAX_BODY_BYTES = 16 * 1024;
 const UPSTREAM_TIMEOUT_MS = 12000;
 const CLIENT_WINDOW_SECONDS = 60;
-const CLIENT_LIMIT = 5;
-const IP_LIMIT = 30;
+const CLIENT_LIMIT = 10;
+const IP_LIMIT = 60;
 
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
