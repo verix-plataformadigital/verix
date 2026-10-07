@@ -15,12 +15,12 @@ if (!fs.existsSync(INPUT)) {
 }
 
 const html = fs.readFileSync(INPUT, "utf8");
-const scriptPattern = /(<script\\b[^>]*>)([\\s\\S]*?)(<\\/script>)/gi;
+const scriptPattern = /(<script\b[^>]*>)([\s\S]*?)(<\/script>)/gi;
 
 let scriptCount = 0;
 const output = html.replace(scriptPattern, (full, open, source, close) => {
   const trimmed = String(source || "").trim();
-  if (!trimmed || /src\\s*=\\s*["']/i.test(open)) return full;
+  if (!trimmed || /src\s*=\s*["']/i.test(open)) return full;
 
   scriptCount++;
   const result = JavaScriptObfuscator.obfuscate(trimmed, {
@@ -68,7 +68,7 @@ const output = html.replace(scriptPattern, (full, open, source, close) => {
   return open + "\n" + result + "\n" + close;
 });
 
-const secureHtml = output.replace(/<!--(?!(?:\\[\\s\\S]*?))(?:(?!\\[\\s\\S]*?-->)[\\s\\S])*-->/g, "");
+const secureHtml = output.replace(/<!--(?!(?:\\[\s\S]*?))(?:(?!\\[\s\S]*?-->)[\s\S])*-->/g, "");
 
 fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 fs.writeFileSync(OUTPUT, secureHtml, "utf8");
