@@ -1274,13 +1274,9 @@ function submitConjunto(event) {
 
 
   var asfRequestTimes = [];
-  var ASF_ULTIMO_PEDIDO_T = 0;
   var ASF_FILA = Promise.resolve();
-  var ASF_EM_CURSO = false;
-  var ASF_ULTIMA_UI_SEQUENCIA = 0;
   var ASF_SERVER_COOLDOWN_UNTIL = 0;
   var ASF_FILA_PENDENTES = 0;
-  var ASF_DIAGNOSTICO = [];
   var ASF_PENDING_TIMER = null;
 
   function agoraASF() { return Date.now(); }
@@ -1443,7 +1439,7 @@ function submitConjunto(event) {
   // Uma consulta = uma tentativa física. Este bloco é deliberadamente
   // independente do transporte (WinHTTP ou Fetch) para que o diagnóstico
   // não possa quebrar o próprio motor ASF.
-  function reservarSlotFisicoASF(matDisplay, metodo) {
+  function reservarSlotFisicoASF(matDisplay) {
     var atraso = calcularAtrasoCadenciaASF();
 
     while (atraso > 0) {
@@ -1451,12 +1447,11 @@ function submitConjunto(event) {
         mostrarSeguroLoading(matDisplay, 'A AGUARDAR (' + Math.ceil(atraso / 1000) + 's)');
       }
       return esperarASF(Math.min(atraso, 1000)).then(function () {
-        return reservarSlotFisicoASF(matDisplay, metodo);
+        return reservarSlotFisicoASF(matDisplay);
       });
     }
 
     var agora = agoraASF();
-    ASF_ULTIMO_PEDIDO_T = agora;
     asfRequestTimes.push(agora);
     guardarEstadoRateASF();
     atualizarContadorVisualASF();
@@ -1576,7 +1571,7 @@ function submitConjunto(event) {
     var diag = criarDiagASF(queryId, matDisplay);
     var queueStarted = agoraMsASFDiag();
 
-    await reservarSlotFisicoASF(matDisplay, 'POST');
+    await reservarSlotFisicoASF(matDisplay);
     diag.asfQueueWaitMs = Math.max(0, agoraMsASFDiag() - queueStarted);
 
     var tentativa = {
@@ -2051,7 +2046,6 @@ function submitConjunto(event) {
     var queryId = window.__VERIX_CURRENT_QUERY_ID || null;
 
     ASF_FILA_PENDENTES = (ASF_FILA_PENDENTES || 0) + 1;
-    ASF_EM_CURSO = true;
     if (ASF_FILA_PENDENTES > 1) {
       mostrarSeguroLoading(matDisplay, 'Na fila ASF…');
     } else {
@@ -2063,12 +2057,10 @@ function submitConjunto(event) {
         await processarConsultaSeguroComCadencia(matLimpa, matDisplay, queryId);
       } finally {
         ASF_FILA_PENDENTES = Math.max(0, (ASF_FILA_PENDENTES || 1) - 1);
-        ASF_EM_CURSO = ASF_FILA_PENDENTES > 0;
         try { atualizarContadorVisualASF(); } catch (_) {}
       }
     }).catch(function (e) {
       ASF_FILA_PENDENTES = Math.max(0, (ASF_FILA_PENDENTES || 1) - 1);
-      ASF_EM_CURSO = ASF_FILA_PENDENTES > 0;
       console.error('[ASF] fila:', e);
       mostrarSeguroErro((e && e.message) || 'Falha na consulta ASF', matDisplay, '', queryId);
     });
