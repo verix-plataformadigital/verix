@@ -1946,27 +1946,6 @@ function submitConjunto(event) {
     return 'Não foi possível concluir a consulta ao serviço ASF.';
   }
 
-  function repetirConsultaSeguro(matricula) {
-    var mat = String(matricula || '').trim().toUpperCase();
-    if (!mat) return;
-    try {
-      window.__VERIX_CURRENT_QUERY_ID = (window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.newQueryId === 'function')
-        ? window.VERIX_TELEMETRY.newQueryId() : null;
-      if (!window.__VERIX_CURRENT_QUERY_ID) {
-        window.__VERIX_CURRENT_QUERY_ID = 'q_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
-      }
-      if (window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.track === 'function') {
-        window.VERIX_TELEMETRY.track('vehicle_lookup', 'consulta', {
-          queryId: window.__VERIX_CURRENT_QUERY_ID,
-          matricula: mat,
-          matriculaNormalizada: sanitizarMatriculaASF(mat),
-          retry: true,
-          retryOf: window.__VERIX_LAST_FAILED_QUERY_ID || null
-        });
-      }
-    } catch (_) {}
-    consultarSeguroASF(mat);
-  }
 
   function mostrarSeguroErro(mensagem, matricula, diagnostico, queryId, asfDiagnostic) {
     limparPendenteASF();
@@ -1992,7 +1971,6 @@ function submitConjunto(event) {
       +   (diagnostico ? '<div class="asf-diag">' + escapeHtml(diagnostico) + '</div>' : '')
       +   '<div class="asf-note">A falha foi registada automaticamente para diagnóstico. Uma falha de serviço nunca é apresentada como “sem seguro”.</div>'
       +   '<div class="asf-actions">'
-      +     '<button type="button" class="aux-btn secondary" onclick="repetirConsultaSeguro(\'' + escapeHtml(matShow) + '\')">↻ TENTAR NOVAMENTE</button>'
       +     '<button type="button" class="aux-btn" onclick="verificarSeguro()">ABRIR CONSULTA OFICIAL ASF</button>'
       +   '</div>'
       + '</div>';
