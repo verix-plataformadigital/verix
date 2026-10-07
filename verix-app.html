@@ -458,12 +458,7 @@ body:after{z-index:2!important}
 .credit strong{color:rgba(240,245,247,.82)!important}
 @media(max-width:1200px){.command .brand{width:390px!important}.command .searchbar{left:405px!important;right:300px!important}.command .brand-title{font-size:14px!important}.command .verix-wordmark{font-size:31px!important}}
 </style>
-<style id="v126-footer-unofficial">
-.mm74-footer-notice{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;}
-.mm74-footer-title{white-space:nowrap!important;text-align:center!important;}
-.mm74-footer-unofficial{margin-top:4px!important;color:#d33a4f!important;font-size:13px!important;line-height:1.1!important;font-weight:950!important;letter-spacing:1.5px!important;text-align:center!important;text-shadow:0 0 10px rgba(200,16,46,.25)!important;}
-@media(max-width:900px){.mm74-footer-title{white-space:normal!important}.mm74-footer-unofficial{font-size:12px!important;}}
-</style><script>
+<script>
 
 
  let ultimaMatriculaPesquisada = "";
@@ -1317,14 +1312,6 @@ function submitConjunto(event) {
 
   carregarEstadoRateASF();
 
-  function formatarDataASF(date) {
-    date = date || new Date();
-    var dd = String(date.getDate()).padStart(2, '0');
-    var mm = String(date.getMonth() + 1).padStart(2, '0');
-    var yyyy = date.getFullYear();
-    return yyyy + '/' + mm + '/' + dd;
-  }
-
   function formatarDataPT(valor) {
     if (valor === undefined || valor === null || String(valor).trim() === '' || String(valor) === '—') return '—';
     var s = String(valor).trim();
@@ -1333,10 +1320,6 @@ function submitConjunto(event) {
     m = s.match(/^(\d{4})\/(\d{2})\/(\d{2})/);
     if (m) return m[3] + '/' + m[2] + '/' + m[1];
     return s;
-  }
-
-  function normalizarMatriculaExata(mat) {
-    return formatarMatriculaVeiculo(mat);
   }
 
   function formatarMatriculaDisplay(mat) {
@@ -1665,14 +1648,6 @@ function submitConjunto(event) {
       v = v.name || v.label || v.value || v.description || '';
     }
     return String(v).trim() !== '';
-  }
-
-  function asfNodeTemDados(node) {
-    var campos = ['entity','insurer','insuranceCompany','policy','policyNumber','startDate','validFrom','endDate','validTo','license','licenseNumber','code'];
-    for (var i = 0; i < campos.length; i++) {
-      if (asfValorUtilizavel(node, campos[i])) return true;
-    }
-    return false;
   }
 
   function interpretarRespostaASF(json) {
@@ -3423,27 +3398,7 @@ body.history-page-active .history-footer{position:sticky!important;bottom:0!impo
 })();
 </script> <style id="v117-motto-highlight">@media(max-width:1500px){}
 @media(max-width:1200px){}
-</style> <style id="v127-developer-meta-right">
-
-.main-menu-v74-footer{position:relative!important;}
-.mm74-footer-meta{
- position:absolute!important;
- right:8px!important;
- left:auto!important;
- bottom:12px!important;
- margin:0!important;
- text-align:right!important;
- font-size:8px!important;
- line-height:1.5!important;
- letter-spacing:.85px!important;
-}
-@media(max-width:900px){
- .mm74-footer-meta{right:4px!important;left:auto!important;bottom:10px!important;text-align:right!important;}
-}
-@media(max-width:560px){
- .mm74-footer-meta{right:0!important;left:auto!important;bottom:10px!important;text-align:right!important;}
-}
-</style> <style id="leg-card-compact-v139">
+</style>  <style id="leg-card-compact-v139">
 
 .leg-list-new{gap:7px;padding:9px}
 .leg-card-new{padding:9px 12px}
@@ -8965,29 +8920,7 @@ html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultatio
 html body.fixed-workspace-active:not(.cinemometro-page-active) .time{
  text-shadow:0 1px 4px rgba(0,0,0,.8),0 0 9px rgba(81,190,150,.08)!important;
 }
-</style> <style id="v128-meta-right">
-
-.main-menu-v74-footer-meta{
- position:absolute!important;
- left:auto!important;
- right:8px!important;
- bottom:12px!important;
- text-align:right!important;
- margin:0!important;
-}
-.mm74-footer-meta{
- left:auto!important;
- right:8px!important;
- bottom:12px!important;
- text-align:right!important;
-}
-@media(max-width:900px){
- .mm74-footer-meta{left:auto!important;right:4px!important;text-align:right!important;}
-}
-@media(max-width:560px){
- .mm74-footer-meta{left:auto!important;right:0!important;text-align:right!important;}
-}
-</style> <style id="v130-main-menu-and-terminology">
+</style>  <style id="v130-main-menu-and-terminology">
 
 .main-menu-v74-title{
  text-align:center!important;
@@ -9751,29 +9684,7 @@ try {
  MODULES.alcoolExcel={title:'ÁLCOOL / DEDUÇÕES',sub:'TAE // TAS // EMA // REGIME',html:renderAlcool()};
  MODULES.tachoExcel={title:'TACÓGRAFO',sub:'REFERÊNCIAS // MANIPULAÇÃO',html:renderTacho()};
 } catch(e){ console.warn('Módulos Excel não carregados',e); }
-</script> <style id="v125-institucional-final">
-
-.mm74-footer-title{
- white-space:nowrap!important;
-}
-.mm74-footer-title span{
- display:block!important;
- margin-top:3px!important;
- color:#d13b4f!important;
- font-size:.92em!important;
- font-weight:950!important;
- letter-spacing:1px!important;
- text-shadow:0 0 10px rgba(209,59,79,.16)!important;
-}
-.mm74-footer-meta{
- left:8px!important;
- bottom:12px!important;
- text-align:left!important;
-}
-@media(max-width:900px){
- .mm74-footer-title{white-space:normal!important;}
-}
-</style> <style id="v166-searchbar-one-centimeter">
+</script>  <style id="v166-searchbar-one-centimeter">
 
 html body.fixed-workspace-active:not(.cinemometro-page-active) .command .searchbar{
  width:484px!important;
@@ -13039,22 +12950,7 @@ body.main-menu-active .main-menu-screen:before{content:"";position:absolute;inse
  .mm74-footer-copy{font-size:8px!important;}
  .mm74-footer-meta{left:0!important;}
 }
-</style> <style id="v129-main-meta-right">
-
-.main-menu-v74-footer .mm74-footer-meta{
- left:auto!important;
- right:8px!important;
- bottom:12px!important;
- text-align:right!important;
- margin:0!important;
-}
-@media(max-width:900px){
- .main-menu-v74-footer .mm74-footer-meta{left:auto!important;right:4px!important;bottom:10px!important;text-align:right!important;}
-}
-@media(max-width:560px){
- .main-menu-v74-footer .mm74-footer-meta{left:auto!important;right:0!important;bottom:10px!important;text-align:right!important;}
-}
-</style> <style id="v132-navigation-cleanup">
+</style>  <style id="v132-navigation-cleanup">
 
 /* O botão de retorno próprio da Consulta não aparece em Legislação, Ferramentas, Informações ou Definições,
  evitando a duplicação com o botão de retorno do cabeçalho do módulo. */
@@ -14201,34 +14097,7 @@ html body .main-menu-screen.show .verix-developer-final strong{
  grid-row:auto!important;
  }
 }
-</style> <style id="-special-detachments-no-posts">
-/* DESTACAMENTOS ESPECIAIS — contacto apenas, sem postos */
-.-special-contact{
- margin:10px;
- padding:10px 11px;
- border:1px solid rgba(218,180,64,.20);
- border-radius:8px;
- background:rgba(60,48,12,.10);
-}
-.-special-title{
- color:#e8d27a;
- font:900 8px/1.25 Arial,sans-serif;
- text-transform:uppercase;
- letter-spacing:.55px;
-}
-.-special-meta{
- display:flex;
- justify-content:space-between;
- gap:10px;
- margin-top:6px;
- color:#9babb0;
- font:700 7px Arial,sans-serif;
-}
-.-special-meta a{
- color:#79dbe7;
- text-decoration:none;
-}
-</style> <style id="-collapse-expand-css">
+</style>  <style id="-collapse-expand-css">
 .-hierarchy-panel{max-width:1280px;margin:0 auto}
 .-tree-toolbar{display:flex;gap:10px;align-items:center;max-width:1180px;margin:0 auto 14px}
 .-tree-toolbar input{flex:1;height:44px;text-align:center;border-radius:11px}
