@@ -1,5 +1,5 @@
 <!-- VÉRIX 1.4 — publicação limpa -->
-<!DOCTYPE html><html lang="pt"><head><script src="./VERIX_ASF_RAW_DIAGNOSTICO.js?_verix_diag=v4"></script>
+<!DOCTYPE html><html lang="pt"><head><script src="./VERIX_ASF_RAW_DIAGNOSTICO.js?_verix_diag=v6"></script>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -1505,7 +1505,7 @@ function submitConjunto(event) {
   async function efetuarPedidoHttpASF(url, matDisplay, queryId, queryStartedAtMs, queuePosition) {
     var diag = criarDiagASF(queryId, matDisplay, queryStartedAtMs, queuePosition);
     var totalQueueWait = 0;
-    var maxTentativas = 2; // APK base: DefaultRetryPolicy(10000, 1, 1.0)
+    var maxTentativas = 1; // VÉRIX: uma consulta física por matrícula; sem retry automático.
 
     for (var tentativaN = 0; tentativaN < maxTentativas; tentativaN++) {
       var queueStartedAt = agoraMsASFDiag();
@@ -1598,19 +1598,13 @@ function submitConjunto(event) {
           finalizarTentativaDiagASF(diag, tentativa);
         }
 
-        // A APK só deixa o DefaultRetryPolicy atuar em timeout de socket.
-        // Não repetir HTTP 200 + GraphQL errors, 4xx, 5xx ou erros de rede genéricos.
-        var retryable = tentativaN === 0 && tentativa.errorType === 'timeout';
-        if (retryable) {
-          diag.asfRetryCount = 1;
-          continue;
-        }
-
+        // VÉRIX: uma consulta = um pedido físico.
+        // Não repetir timeouts, HTTP 200 + GraphQL errors, 4xx, 5xx ou erros de rede.
         throw erroComDiagASF((e && e.message) || 'Falha ASF por transporte', diag);
       }
     }
 
-    throw erroComDiagASF('Falha ASF após retry de timeout', diag);
+    throw erroComDiagASF('Falha ASF por timeout', diag);
   }
 
   // Parser robusto inspirado no Consulta Veiculo(2): aceita os envelopes ASF
