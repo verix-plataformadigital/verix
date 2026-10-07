@@ -67,7 +67,7 @@ html.verix-starting .operational-strip{
   width:0 !important;
   background:linear-gradient(90deg,#3dffa8,#6af0ff) !important;
   box-shadow:0 0 12px rgba(106,240,255,.6) !important;
-  animation:verixStartupBar 1.05s linear forwards !important;
+  animation:verixStartupBar 1.2s linear forwards !important;
 }
 @keyframes verixStartupBar{ to{width:100%;} }
 #verixAsfNoticeOverlay[aria-hidden="true"]{display:none !important;}
@@ -7149,6 +7149,7 @@ html body .asf-operational-result .asf-note{
 
 
 </head><body>
+<script id="verix-splash-clock">(function(){try{window.__verixSplashStarted=performance.now();}catch(e){window.__verixSplashStarted=Date.now();}})();</script>
 <div id="opsBootOverlay" aria-hidden="false">
   <div class="ops-boot-title">VÉRIX // Plataforma Digital</div>
   <div class="ops-boot-sub">Inicializar módulos · Consulta · Livrete · Seguro · Cinemómetro</div>
@@ -19092,7 +19093,7 @@ html body .toast-notification {
   var SPLASH_MS = 1200;
   var FADE_MS = 250;
   var NOTICE_DELAY_MS = 80;
-  var started = performance.now();
+  var started = (typeof window.__verixSplashStarted === 'number') ? window.__verixSplashStarted : performance.now();
   var finished = false;
 
   var splash = document.getElementById('opsBootOverlay');
