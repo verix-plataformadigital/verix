@@ -1477,11 +1477,174 @@ function submitConjunto(event) {
     }
   }
 
+  // ---- Forense ASF ----
+  // Os helpers abaixo são deliberadamente síncronos e independentes da UI.
+  // A camada HTTP anexa sempre o diagnóstico ao erro, permitindo que a
+  // telemetria conserve a causa técnica mesmo quando a fila entra no catch
+  // externo. Nenhuma resposta ASF bruta é persistida aqui.
+  function agoraMsASFDiag() {
+    return Date.now();
+  }
+
+  function textoErroASF(error) {
+    try {
+      if (!error) return 'Erro ASF desconhecido';
+      var name = error.name ? String(error.name).trim() : '';
+      var message = error.message ? String(error.message).trim() : String(error).trim();
+      if (!message) message = 'Erro ASF desconhecido';
+      return (name && name !== 'Error' && message.indexOf(name) < 0)
+        ? (name + ': ' + message).slice(0, 500)
+        : message.slice(0, 500);
+    } catch (_) {
+      return 'Erro ASF desconhecido';
+    }
+  }
+
+  function classificarErroASF(error, forcarRede) {
+    var name = '';
+    var message = '';
+    try {
+      name = String(error && error.name || '').toLowerCase();
+      message = String(error && error.message || error || '').toLowerCase();
+    } catch (_) {}
+
+    if (name === 'aborterror' || name === 'timeouterror' || /timeout|timed out|tempo limite/.test(message)) {
+      return 'timeout';
+    }
+    if (
+      name === 'typeerror' ||
+      /failed to fetch|networkerror|network error|connection|cors|blocked by|fetch/.test(message)
+    ) {
+      return forcarRede ? 'network_forced' : 'network_error';
+    }
+    if (name === 'error' && /http|status/.test(message)) return 'http_error';
+    return 'client_error';
+  }
+
+  function criarDiagASF(queryId, matricula) {
+    var now = agoraMsASFDiag();
+    var nonce;
+    try {
+      nonce = (window.crypto && typeof window.crypto.randomUUID === 'function')
+        ? window.crypto.randomUUID()
+        : (Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 12));
+    } catch (_) {
+      nonce = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 12);
+    }
+
+    return {
+      captureVersion: '2',
+      asfForensicsVersion: '2',
+      asfCaptureId: 'asf-' + now.toString(36) + '-' + nonce,
+      startedAt: now,
+      queryId: queryId || null,
+      matricula: matricula ? sanitizarMatriculaASF(matricula) : null,
+      asfHttpStatus: null,
+      asfDurationMs: null,
+      asfTotalMs: null,
+      asfQueueWaitMs: null,
+      asfQueuePosition: ASF_FILA_PENDENTES || 0,
+      asfMethod: null,
+      asfTransport: null,
+      asfErrorType: null,
+      asfMessage: null,
+      asfResponseBytes: null,
+      asfRelayLatencyMs: null,
+      asfResponseContentType: null,
+      asfStatusText: null,
+      asfParsePath: null,
+      asfResponseClass: null,
+      asfGraphqlErrorCount: 0,
+      asfGraphqlCodes: [],
+      asfGraphqlMessages: [],
+      asfAttempts: []
+    };
+  }
+
+  function finalizarTentativaDiagASF(diag, tentativa) {
+    if (!diag || !tentativa) return;
+    var endedAt = agoraMsASFDiag();
+
+    if (!Number.isFinite(tentativa.durationMs) || tentativa.durationMs < 0) {
+      var started = Number(tentativa.startedAt);
+      tentativa.durationMs = Number.isFinite(started)
+        ? Math.max(0, endedAt - started)
+        : 0;
+    }
+
+    tentativa.status = Number.isFinite(Number(tentativa.status))
+      ? Number(tentativa.status)
+      : null;
+    tentativa.responseBytes = tentativa.responseBytes == null
+      ? null
+      : Math.max(0, Number(tentativa.responseBytes) || 0);
+    tentativa.responseContentType = tentativa.responseContentType
+      ? String(tentativa.responseContentType).slice(0, 120)
+      : null;
+    tentativa.errorType = tentativa.errorType
+      ? String(tentativa.errorType).slice(0, 60)
+      : null;
+    tentativa.message = tentativa.message
+      ? String(tentativa.message).slice(0, 500)
+      : null;
+
+    var normalized = {
+      method: tentativa.method ? String(tentativa.method).slice(0, 20) : null,
+      transport: tentativa.transport ? String(tentativa.transport).slice(0, 40) : null,
+      status: tentativa.status,
+      durationMs: tentativa.durationMs,
+      errorType: tentativa.errorType,
+      message: tentativa.message,
+      responseBytes: tentativa.responseBytes,
+      responseContentType: tentativa.responseContentType,
+      statusText: tentativa.statusText ? String(tentativa.statusText).slice(0, 120) : null
+    };
+
+    diag.asfAttempts = Array.isArray(diag.asfAttempts) ? diag.asfAttempts : [];
+    diag.asfAttempts.push(normalized);
+    if (diag.asfAttempts.length > 6) diag.asfAttempts = diag.asfAttempts.slice(-6);
+
+    diag.asfHttpStatus = normalized.status;
+    diag.asfDurationMs = normalized.durationMs;
+    diag.asfMethod = normalized.method;
+    diag.asfTransport = normalized.transport;
+    diag.asfResponseBytes = normalized.responseBytes;
+    diag.asfResponseContentType = normalized.responseContentType;
+    diag.asfStatusText = normalized.statusText;
+
+    if (normalized.errorType) diag.asfErrorType = normalized.errorType;
+    if (normalized.message) diag.asfMessage = normalized.message;
+    if (Number.isFinite(Number(diag.startedAt))) {
+      diag.asfTotalMs = Math.max(0, endedAt - Number(diag.startedAt));
+    }
+  }
+
+  function erroComDiagASF(message, diag) {
+    var error = new Error(String(message || 'Falha na consulta ASF'));
+    try {
+      Object.defineProperty(error, 'asfDiagnostic', {
+        value: diag || null,
+        enumerable: false,
+        configurable: true
+      });
+    } catch (_) {
+      try { error.asfDiagnostic = diag || null; } catch (_) {}
+    }
+    return error;
+  }
+
   async function efetuarPedidoHttpASF(payload, matDisplay, queryId) {
     var diag = criarDiagASF(queryId, matDisplay);
     var queueStarted = agoraMsASFDiag();
 
-    await reservarSlotFisicoASF(matDisplay, 'POST');
+    try {
+      await reservarSlotFisicoASF(matDisplay);
+    } catch (slotError) {
+      diag.asfErrorType = 'rate_wait_failed';
+      diag.asfMessage = textoErroASF(slotError);
+      diag.asfTotalMs = Math.max(0, agoraMsASFDiag() - diag.startedAt);
+      throw erroComDiagASF(diag.asfMessage, diag);
+    }
     diag.asfQueueWaitMs = Math.max(0, agoraMsASFDiag() - queueStarted);
 
     var tentativa = {
