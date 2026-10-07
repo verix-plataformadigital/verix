@@ -2,12 +2,32 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 declare const Deno: any;
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "content-type,apikey,authorization",
-  "Access-Control-Allow-Methods": "POST,OPTIONS",
-  "Cache-Control": "no-store"
-};
+const ALLOWED_ORIGINS = new Set([
+  "https://verix.vxops.workers.dev",
+  "https://verix-plataformadigital.github.io"
+]);
+
+function isLegacyLocal(req: Request): boolean {
+  const origin = req.headers.get("origin");
+  if (origin) return false;
+  const ua = req.headers.get("user-agent") || "";
+  return /Trident\\//i.test(ua) || /MSIE\\s/i.test(ua) || /MSHTA/i.test(ua);
+}
+
+function corsHeaders(req?: Request) {
+  const origin = req?.headers.get("origin") || "";
+  return {
+    "Access-Control-Allow-Origin": ALLOWED_ORIGINS.has(origin) ? origin : "",
+    "Access-Control-Allow-Headers": "content-type,apikey,authorization,x-verix-build-id",
+    "Access-Control-Allow-Methods": "POST,OPTIONS",
+    "Cache-Control": "no-store",
+    "Vary": "Origin",
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "no-referrer",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+    "X-Frame-Options": "DENY"
+  };
+}
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 
@@ -55,10 +75,10 @@ const allowedEvents = new Set([
   "legislation_search","legislation_copy","legislation_favorite_toggle"
 ]);
 
-function json(data: unknown, status = 200) {
+function json(data: unknown, status = 200, req?: Request) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8" }
+    headers: { ...corsHeaders(req), "Content-Type": "application/json; charset=utf-8" }
   });
 }
 
@@ -284,25 +304,50 @@ async function consumeRate(key: string, limit: number): Promise<boolean> {
   return data === true;
 }
 
-Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders });
-  if (req.method !== "POST") return json({ ok: false, error: "method_not_allowed" }, 405);
-  if (!SUPABASE_URL || !secretKey) return json({ ok: false, error: "telemetry_not_configured" }, 503);
-  if (!rateSecret && !secretKey) return json({ ok: false, error: "rate_secret_not_configured" }, 503);
+async function buildEnabled(buildId: string): Promise<boolean> {
+  if (!SUPABASE_URL || !secretKey) return false;
+  const q = new URLSearchParams({
+    select: "build_id,enabled",
+    build_id: "eq." + buildId,
+    enabled: "eq.true",
+    limit: "1"
+  });
+  const response = await fetch(
+    SUPABASE_URL + "/rest/v1/verix_build_registry?" + q.toString(),
+    { headers: { apikey: secretKey, Authorization: "Bearer " + secretKey } }
+  );
+  if (!response.ok) return false;
+  const rows = await response.json().catch(() => []);
+  return Array.isArray(rows) && rows.length === 1 && rows[0]?.enabled === true;
+}
 
-  const origin = req.headers.get("origin");
-  if (origin && !ALLOWED_ORIGINS.has(origin)) {
-    return json({ ok: false, error: "origin_not_allowed" }, 403);
+Deno.serve(async (req: Request) => {
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders(req) });
+  if (req.method !== "POST") return json({ ok: false, error: "method_not_allowed" }, 405, req);
+  if (!SUPABASE_URL || !secretKey) return json({ ok: false, error: "telemetry_not_configured" }, 503, req);
+  if (!rateSecret && !secretKey) return json({ ok: false, error: "rate_secret_not_configured" }, 503, req);
+
+  const origin = req.headers.get("origin") || "";
+  if (!(ALLOWED_ORIGINS.has(origin) || isLegacyLocal(req))) {
+    return json({ ok: false, error: "origin_not_allowed" }, 403, req);
+  }
+
+  const buildId = String(req.headers.get("x-verix-build-id") || "").trim().slice(0, 80);
+  if (!/^1\\.5-sec-[0-9]{8}-[a-z0-9-]{1,20}$/i.test(buildId)) {
+    return json({ ok: false, error: "invalid_build" }, 400, req);
+  }
+  if (!(await buildEnabled(buildId))) {
+    return json({ ok: false, error: "build_revoked" }, 403, req);
   }
 
   try {
     const contentLength = Number(req.headers.get("content-length") || 0);
     if (Number.isFinite(contentLength) && contentLength > 1024 * 1024) {
-      return json({ ok: false, error: "payload_too_large" }, 413);
+      return json({ ok: false, error: "payload_too_large" }, 413, req);
     }
 
     if (!(await consumeRate(`all:${await hmacHex(clientIp(req))}`, 600))) {
-      return json({ ok: false, error: "rate_limited" }, 429);
+      return json({ ok: false, error: "rate_limited" }, 429, req);
     }
 
     const body = await req.json().catch(() => null);
