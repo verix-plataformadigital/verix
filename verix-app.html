@@ -1489,12 +1489,12 @@ function submitConjunto(event) {
     }
   }
 
-  // ---- HTTP ASF: um único GET por consulta ----
-  // A query GraphQL já está no parâmetro ?query= da URL. Mantemos o transporte
-  // o mais simples possível e nunca repetimos automaticamente o pedido físico.
+  // ---- HTTP ASF: POST como na aplicação base/Android ----
+  // A query GraphQL segue no parâmetro ?query= da URL; o POST não envia corpo.
+  // Não fazemos GET alternativo nem acrescentamos pedidos físicos à consulta.
   function efetuarPedidoHttpASF_SyncNative(url) {
     var xhr = new ActiveXObject("WinHttp.WinHttpRequest.5.1");
-    xhr.open("GET", url, false);
+    xhr.open("POST", url, false);
     xhr.setTimeouts(10000, 10000, ASF_TIMEOUT_MS, ASF_TIMEOUT_MS);
     xhr.setRequestHeader("Accept", "application/json, text/plain, */*");
     xhr.send(null);
@@ -1545,7 +1545,7 @@ function submitConjunto(event) {
           }, ASF_TIMEOUT_MS);
 
           var options = {
-            method: 'GET',
+            method: 'POST',
             cache: 'no-store',
             credentials: 'omit',
             mode: 'cors',
