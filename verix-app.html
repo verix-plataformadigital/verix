@@ -1215,7 +1215,7 @@ function submitConjunto(event) {
   // Espaçamento mínimo obrigatório: 8 segundos entre o início de dois pedidos.
 
   const ASF_API_URL = 'https://ext01.asf.com.pt/api/src/?query=';
-  const ASF_TIMEOUT_MS = 12000;
+  const ASF_TIMEOUT_MS = 10000;
   const ASF_INTERVAL_MS = 8000;
 
   let ASF_ULTIMO_PEDIDO_MS = 0;
@@ -1409,33 +1409,19 @@ function submitConjunto(event) {
     const box = document.getElementById('seguroResult');
     if (!box) return;
 
-    if (!Array.isArray(nodes) || nodes.length === 0) {
-      actualizarHistoricoASF(matricula, 'nao', queryId);
-      box.innerHTML = `
-        <div class="insurance-no-result">
-          <div class="insurance-no-icon">&times;</div>
-          <div class="insurance-no-title">Seguro Não Encontrado</div>
-        </div>
-        <div class="insurance-no-matricula">
-          <strong>Matrícula</strong>
-          <span>${escapeHtml(matricula)}</span>
-        </div>
-        <div class="insurance-no-message">
-          Não foi encontrado nenhum seguro com a matrícula<br>
-          e data atual.
-        </div><div class="insurance-official-warning">
-          Confirme sempre esta informação através dos meios oficiais e procedimentos instituídos pela sua instituição.
-        </div>
-      `;
-      return;
-    }
+    const lista = Array.isArray(nodes) ? nodes : [];
 
-    const n = nodes.find(x => {
-      if (!x || typeof x !== 'object') return false;
-      return ['entity','policy','startDate','endDate','license'].some(k =>
-        x[k] !== undefined && x[k] !== null && String(x[k]).trim() !== ''
-      );
-    });
+    /*
+     * Correspondência com ResultActivity da APK oficial:
+     * a existência de license é o critério de “TEM SEGURO”.
+     */
+    const n = lista.find(x =>
+      x &&
+      typeof x === 'object' &&
+      x.license !== undefined &&
+      x.license !== null &&
+      String(x.license).trim() !== ''
+    );
 
     if (!n) {
       actualizarHistoricoASF(matricula, 'nao', queryId);
@@ -1451,8 +1437,10 @@ function submitConjunto(event) {
         <div class="insurance-no-message">
           Não foi encontrado nenhum seguro com a matrícula<br>
           e data atual.
-        </div><div class="insurance-official-warning">
-          Confirme sempre esta informação através dos meios oficiais e procedimentos instituídos pela sua instituição.
+        </div>
+        <div class="insurance-official-warning">
+          Resultado baseado na resposta da base de dados ASF.
+          Confirme sempre esta informação através dos meios oficiais.
         </div>
       `;
       return;
@@ -1460,11 +1448,11 @@ function submitConjunto(event) {
 
     actualizarHistoricoASF(matricula, 'sim', queryId);
 
-    const seguradora = valorCampo(n, ['entity','insurer','insuranceCompany'], '—');
-    const apolice = valorCampo(n, ['policy','policyNumber'], '—');
-    const inicio = valorCampo(n, ['startDate','validFrom'], '—');
-    const fim = valorCampo(n, ['endDate','validTo'], '—');
-    const license = valorCampo(n, ['license','licenseNumber'], matricula);
+    const license = valorCampo(n, ['license'], matricula);
+    const seguradora = valorCampo(n, ['entity'], '—');
+    const apolice = valorCampo(n, ['policy'], '—');
+    const inicio = valorCampo(n, ['startDate'], '—');
+    const fim = valorCampo(n, ['endDate'], '—');
 
     box.innerHTML = `
       <div class="status ok">✓ TEM SEGURO</div>
@@ -1475,22 +1463,36 @@ function submitConjunto(event) {
         <div class="insurance-row"><strong>Início</strong><span>${escapeHtml(inicio)}</span></div>
         <div class="insurance-row"><strong>Fim</strong><span>${escapeHtml(fim)}</span></div>
       </div>
-      <div class="insurance-source">Consulta automática ao serviço ASF / Tem Seguro?</div><div class="insurance-official-warning">
+      <div class="insurance-source">Consulta automática ao serviço ASF / Tem Seguro?</div>
+      <div class="insurance-official-warning">
         Confirme sempre esta informação através dos meios oficiais e procedimentos instituídos pela sua instituição.
       </div>
     `;
   }
 
   async function efetuarPedidoHttpASF(url) {
+    /*
+     * ASF / “Tem Seguro?” — transporte alinhado com a aplicação oficial.
+     *
+     * IMPORTANTE:
+     * - A aplicação oficial envia POST para o endpoint GraphQL.
+     * - O body é NULL.
+     * - A query GraphQL vai no parâmetro ?query= da URL.
+     * - Não usar GET: foi precisamente essa divergência que estava a provocar
+     *   respostas diferentes das obtidas pela aplicação oficial.
+     */
     const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
     let timer = null;
 
     try {
       const options = {
-        method: 'GET',
+        method: 'POST',
         cache: 'no-store',
         credentials: 'omit',
-        mode: 'cors'
+        mode: 'cors',
+        redirect: 'follow',
+        referrerPolicy: 'no-referrer',
+        body: null
       };
 
       if (controller) {
@@ -1504,7 +1506,14 @@ function submitConjunto(event) {
       const text = await response.text();
 
       if (!response.ok) {
-        throw new Error('ASF HTTP ' + response.status);
+        const e = new Error('ASF HTTP ' + response.status);
+        e.httpStatus = response.status;
+        e.responseText = text;
+        throw e;
+      }
+
+      if (!text.trim()) {
+        throw new Error('A ASF devolveu uma resposta vazia.');
       }
 
       let data;
@@ -1515,21 +1524,15 @@ function submitConjunto(event) {
       }
 
       return data;
+    } catch (err) {
+      if (err && err.name === 'AbortError') {
+        const e = new Error('Timeout de 10 segundos na comunicação com a ASF.');
+        e.code = 'TIMEOUT';
+        throw e;
+      }
+      throw err;
     } finally {
       if (timer) clearTimeout(timer);
-    }
-  }
-
-  async function aguardarEspacamentoASF(matricula) {
-    let restante = Math.max(0, ASF_INTERVAL_MS - (agoraASF() - ASF_ULTIMO_PEDIDO_MS));
-
-    while (restante > 0) {
-      mostrarSeguroLoading(
-        matricula,
-        'A AGUARDAR ' + Math.ceil(restante / 1000) + 's — intervalo ASF obrigatório'
-      );
-      await esperarASF(Math.min(restante, 250));
-      restante = Math.max(0, ASF_INTERVAL_MS - (agoraASF() - ASF_ULTIMO_PEDIDO_MS));
     }
   }
 
@@ -1537,7 +1540,7 @@ function submitConjunto(event) {
     const mat = String(matricula || '').trim().toUpperCase();
     if (!mat || ASF_EM_CURSO) return;
 
-    const matriculaASF = mat.replace(/-/g, '').replace(/\s+/g, '');
+    const matriculaASF = mat.replace(/-/g, '').replace(/\\s+/g, '');
     if (!matriculaASF) return;
 
     const queryId = window.__VERIX_CURRENT_QUERY_ID || null;
@@ -1546,25 +1549,79 @@ function submitConjunto(event) {
     try {
       await aguardarEspacamentoASF(mat);
 
-      // Marca o instante do início do único pedido físico.
-      ASF_ULTIMO_PEDIDO_MS = agoraASF();
-
       const dataASF = formatarDataASF();
-      const query = `mutation license {  mobishoutEntry {    noone {      entry {        licenseNumber(license: "${matriculaASF}", date: "${dataASF}") {          nodes {            id            entity            startDate            endDate            policy            license            code            logo          }        }      }    }  }            }`;
+
+      /*
+       * Query EXATA usada pela aplicação “Tem Seguro?”.
+       */
+      const query = `mutation license { mobishoutEntry { noone { entry { licenseNumber(license: "${matriculaASF}", date: "${dataASF}") { nodes { id entity startDate endDate policy license code logo } } } } } }`;
       const url = ASF_API_URL + encodeURIComponent(query);
 
-      const data = await efetuarPedidoHttpASF(url);
-      const nodes = extrairNodesASF(data);
+      /*
+       * A Volley da aplicação oficial admite uma repetição para falhas de
+       * transporte. Repetimos apenas timeout/erro de rede; nunca repetimos
+       * uma resposta HTTP/JSON válida.
+       */
+      let data = null;
+      let ultimoErro = null;
 
-      renderSeguro(nodes, mat, queryId);
+      for (let tentativa = 1; tentativa <= 2; tentativa++) {
+        try {
+          data = await efetuarPedidoHttpASF(url);
+          ultimoErro = null;
+          break;
+        } catch (err) {
+          ultimoErro = err;
+          const repetivel =
+            err?.code === 'TIMEOUT' ||
+            !Number(err?.httpStatus || 0);
+
+          if (!repetivel || tentativa === 2) break;
+
+          await esperarASF(300);
+        }
+      }
+
+      if (ultimoErro) throw ultimoErro;
+
+      /*
+       * Envelope canónico confirmado na APK oficial.
+       */
+      const raiz = data?.data?.mobishoutEntry?.noone?.entry?.licenseNumber;
+
+      if (!raiz || typeof raiz !== 'object' || !Array.isArray(raiz.nodes)) {
+        throw new Error('Resposta ASF sem o envelope GraphQL esperado.');
+      }
+
+      const nodes = raiz.nodes.filter(n => n && typeof n === 'object');
+
+      /*
+       * Regra da aplicação oficial:
+       * Nodes.getLicense() != null => TEM SEGURO.
+       * license == null => NÃO TEM SEGURO.
+       *
+       * Não aceitar entity/policy/startDate/etc. como substituto de license.
+       */
+      const nodeComLicenca = nodes.find(n =>
+        n.license !== undefined &&
+        n.license !== null &&
+        String(n.license).trim() !== ''
+      );
+
+      if (nodeComLicenca) {
+        renderSeguro([nodeComLicenca], mat, queryId);
+      } else {
+        renderSeguro([], mat, queryId);
+      }
     } catch (err) {
       const msg = err?.message || 'Falha de comunicação com a ASF.';
-      console.warn('[ASF] consulta única falhou:', msg);
+      console.warn('[ASF] consulta falhou:', msg, err);
       mostrarSeguroErro(msg, mat, queryId);
     } finally {
       ASF_EM_CURSO = false;
     }
   }
+
 
 
 function verificarSeguro() {
