@@ -1,19 +1,43 @@
 declare const Deno: any;
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+const BASE_CORS_HEADERS = {
   "Access-Control-Allow-Headers": "authorization,content-type",
   "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-  "Cache-Control": "no-store"
+  "Cache-Control": "no-store",
+  "Vary": "Origin",
+  "X-Content-Type-Options": "nosniff",
+  "Referrer-Policy": "no-referrer"
 };
+
+const ALLOWED_ORIGINS = new Set([
+  "https://verix-plataformadigital.github.io",
+  "https://verix.vxops.workers.dev",
+  "http://localhost",
+  "http://127.0.0.1",
+  "null"
+]);
+
+function isAllowedOrigin(origin: string | null): boolean {
+  if (!origin) return true;
+  if (ALLOWED_ORIGINS.has(origin)) return true;
+  return /^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?$/.test(origin);
+}
+
+function corsHeaders(req: Request) {
+  const headers: Record<string,string> = { ...BASE_CORS_HEADERS };
+  const origin = req.headers.get("origin");
+  if (origin && isAllowedOrigin(origin)) headers["Access-Control-Allow-Origin"] = origin;
+  return headers;
+}
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-function json(data: unknown, status=200) {
+function json(data: unknown, status=200, req?: Request) {
+  const headers = req ? corsHeaders(req) : { ...BASE_CORS_HEADERS };
   return new Response(JSON.stringify(data), {
     status,
-    headers:{"Content-Type":"application/json",...corsHeaders}
+    headers:{"Content-Type":"application/json",...headers}
   });
 }
 
@@ -436,22 +460,27 @@ async function resetState() {
 }
 
 Deno.serve(async (req) => {
+  const origin = req.headers.get("origin");
+  if (!isAllowedOrigin(origin)) {
+    return json({ok:false,error:"origin_not_allowed"},403,req);
+  }
+
   if(req.method==="OPTIONS") {
-    return new Response(null,{status:204,headers:corsHeaders});
+    return new Response(null,{status:204,headers:corsHeaders(req)});
   }
 
   if(req.method!=="GET" && req.method!=="POST") {
     return json({
       ok:false,
       error:"method_not_allowed"
-    },405);
+    },405,req);
   }
 
   if(!(await verifyToken(req))) {
     return json({
       ok:false,
       error:"unauthorized"
-    },401);
+    },401,req);
   }
 
   try {
@@ -466,7 +495,7 @@ Deno.serve(async (req) => {
         return json({
           ok:false,
           error:"invalid_action"
-        },400);
+        },400,req);
       }
 
       const resetAt = await reset24h();
@@ -476,7 +505,7 @@ Deno.serve(async (req) => {
         ok:true,
         action:"reset_24h",
         reset_at:resetAt || new Date().toISOString()
-      },200);
+      },200,req);
     }
 
     const now = new Date().toISOString();
@@ -484,7 +513,7 @@ Deno.serve(async (req) => {
     if (req.method === "GET" && cachedStats && (Date.now() - cachedStats.at) < STATS_CACHE_MS) {
       return new Response(cachedStats.body, {
         status: 200,
-        headers: {"Content-Type":"application/json", ...corsHeaders, "X-VÉRIX-Stats-Cache":"HIT"}
+        headers: {"Content-Type":"application/json", ...corsHeaders(req), "X-VÉRIX-Stats-Cache":"HIT"}
       });
     }
 
@@ -575,7 +604,7 @@ Deno.serve(async (req) => {
     };
     
     cachedStats = {at:Date.now(), body:JSON.stringify(payload)};
-    return json(payload,200);
+    return json(payload,200,req);
 
   } catch(error) {
     return json({
@@ -584,6 +613,6 @@ Deno.serve(async (req) => {
       detail:String(
         (error as Error)?.message || error
       )
-    },500);
+    },500,req);
   }
 });
