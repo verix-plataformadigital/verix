@@ -1,0 +1,12 @@
+{
+  "name": "verix-release-security",
+  "private": true,
+  "version": "1.0.0",
+  "description": "VÉRIX production release hardening",
+  "scripts": {
+    "build:secure": "node tools/build-secure-release.mjs"
+  },
+  "devDependencies": {
+    "javascript-obfuscator": "4.1.1"
+  }
+}
