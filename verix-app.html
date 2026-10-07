@@ -1226,6 +1226,51 @@ function submitConjunto(event) {
   function agoraASF() { return Date.now(); }
   function esperarASF(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
+
+  /*
+   * RESERVA DE SLOT ASF — motor único do VÉRIX.
+   * Aproveita a correção do Grok, mas integrada no mesmo estado interno
+   * da aplicação. Assim o contador visual, a fila e o localStorage usam
+   * exatamente a mesma fonte de verdade.
+   */
+  async function reservarSlotFisicoASF(matDisplay) {
+    carregarEstadoRateASF();
+
+    var atraso = calcularAtrasoCadenciaASF();
+
+    while (atraso > 0) {
+      try {
+        mostrarSeguroLoading(
+          matDisplay || '',
+          'A AGUARDAR (' + Math.ceil(atraso / 1000) + 's) · LIMITE ASF'
+        );
+      } catch (_) {}
+
+      await esperarASF(Math.min(atraso, 1000));
+      carregarEstadoRateASF();
+      atraso = calcularAtrasoCadenciaASF();
+    }
+
+    // A fila ASF garante serialização das consultas. Ainda assim,
+    // recalculamos imediatamente antes de reservar o pedido físico.
+    carregarEstadoRateASF();
+    atraso = calcularAtrasoCadenciaASF();
+
+    if (atraso > 0) {
+      await esperarASF(atraso);
+      carregarEstadoRateASF();
+    }
+
+    var agora = agoraASF();
+    asfRequestTimes.push(agora);
+    ASF_ULTIMO_PEDIDO_T = agora;
+    guardarEstadoRateASF();
+    atualizarContadorVisualASF();
+
+    return agora;
+  }
+
+
   // Mantém o limite VÉRIX após refresh/reabertura da página no mesmo posto.
   // Isto impede que o cache-busting, por si só, seja usado para zerar a quota local.
   function carregarEstadoRateASF() {
@@ -1355,7 +1400,7 @@ function submitConjunto(event) {
     var usados = Math.min(asfRequestTimes.length, ASF_LIMITE_JANELA);
     var disponiveis = Math.max(0, ASF_LIMITE_JANELA - usados);
 
-    if (usage) usage.innerHTML = usados + ' / ' + ASF_LIMITE_JANELA + ' <strong>60S</strong>';
+    if (usage) usage.innerHTML = usados + ' / ' + ASF_LIMITE_JANELA + ' <strong>' + ASF_JANELA_SEG + 'S</strong>';
     if (windowText) {
       windowText.textContent = disponiveis === 1 ? '1 PESQUISA DISPONÍVEL' : disponiveis + ' PESQUISAS DISPONÍVEIS';
       windowText.setAttribute('data-window-state', usados >= ASF_LIMITE_JANELA ? 'full' : 'ready');
