@@ -153,7 +153,7 @@ async function makeToken(secret: string) {
   return `${payload}.${await sign(payload, secret)}`;
 }
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
   const origin = req.headers.get("origin");
   if (!isAllowedOrigin(origin)) {
     return json({ ok: false, error: "origin_not_allowed" }, 403, req);
