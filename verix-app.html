@@ -1890,6 +1890,21 @@ function submitConjunto(event) {
     diag.asfHttpStatus = Number.isFinite(httpStatus) ? httpStatus : null;
     diag.asfResponseBytes = responseText.length;
 
+    try {
+      if (window.crypto && window.crypto.subtle && typeof TextEncoder !== 'undefined') {
+        var digestBuffer = await window.crypto.subtle.digest(
+          'SHA-256',
+          new TextEncoder().encode(responseText)
+        );
+        var digestBytes = new Uint8Array(digestBuffer);
+        var digestHex = '';
+        for (var di = 0; di < digestBytes.length && di < 10; di++) {
+          digestHex += digestBytes[di].toString(16).padStart(2, '0');
+        }
+        diag.asfResponseHash = digestHex || null;
+      }
+    } catch (_) {}
+
     if (httpStatus === 429) {
       diag.asfErrorType = 'http_429';
       diag.asfMessage = 'Limite temporário de consultas ASF atingido';
@@ -17409,27 +17424,49 @@ html body .leg-card-new .copy-all-new{
     if (m.asfDiagnostic && typeof m.asfDiagnostic === 'object') {
       var a = m.asfDiagnostic;
       out.asfDiagnostic = {
+        captureVersion: a.captureVersion ? String(a.captureVersion).slice(0, 10) : null,
+        asfForensicsVersion: a.asfForensicsVersion ? String(a.asfForensicsVersion).slice(0, 10) : null,
+        asfCaptureId: a.asfCaptureId ? String(a.asfCaptureId).slice(0, 120) : null,
         queryId: a.queryId ? String(a.queryId).slice(0, 120) : null,
         matricula: a.matricula ? String(a.matricula).slice(0, 30) : null,
         asfHttpStatus: a.asfHttpStatus == null ? null : Number(a.asfHttpStatus),
         asfDurationMs: a.asfDurationMs == null ? null : Number(a.asfDurationMs),
+        asfTotalMs: a.asfTotalMs == null ? null : Number(a.asfTotalMs),
+        asfQueueWaitMs: a.asfQueueWaitMs == null ? null : Number(a.asfQueueWaitMs),
+        asfQueuePosition: a.asfQueuePosition == null ? null : Number(a.asfQueuePosition),
         asfMethod: a.asfMethod ? String(a.asfMethod).slice(0, 20) : null,
-        asfTransport: a.asfTransport ? String(a.asfTransport).slice(0, 30) : null,
+        asfTransport: a.asfTransport ? String(a.asfTransport).slice(0, 40) : null,
         asfErrorType: a.asfErrorType ? String(a.asfErrorType).slice(0, 60) : null,
         asfMessage: a.asfMessage ? String(a.asfMessage).slice(0, 500) : null,
         asfResponseBytes: a.asfResponseBytes == null ? null : Number(a.asfResponseBytes),
-        asfAttempts: Array.isArray(a.asfAttempts) ? a.asfAttempts.slice(-4).map(function (t) {
+        asfRelayLatencyMs: a.asfRelayLatencyMs == null ? null : Number(a.asfRelayLatencyMs),
+        asfResponseHash: a.asfResponseHash ? String(a.asfResponseHash).slice(0, 20) : null,
+        asfResponseContentType: a.asfResponseContentType ? String(a.asfResponseContentType).slice(0, 120) : null,
+        asfStatusText: a.asfStatusText ? String(a.asfStatusText).slice(0, 120) : null,
+        asfParsePath: a.asfParsePath ? String(a.asfParsePath).slice(0, 180) : null,
+        asfResponseClass: a.asfResponseClass ? String(a.asfResponseClass).slice(0, 60) : null,
+        asfGraphqlErrorCount: a.asfGraphqlErrorCount == null ? null : Number(a.asfGraphqlErrorCount),
+        asfGraphqlCodes: Array.isArray(a.asfGraphqlCodes) ? a.asfGraphqlCodes.slice(0, 10).map(function (x) {
+          return String(x == null ? '' : x).slice(0, 120);
+        }).filter(Boolean) : [],
+        asfGraphqlMessages: Array.isArray(a.asfGraphqlMessages) ? a.asfGraphqlMessages.slice(0, 10).map(function (x) {
+          return String(x == null ? '' : x).slice(0, 1000);
+        }).filter(Boolean) : [],
+        asfAttempts: Array.isArray(a.asfAttempts) ? a.asfAttempts.slice(-6).map(function (t) {
           return {
             method: t.method ? String(t.method).slice(0, 20) : null,
-            transport: t.transport ? String(t.transport).slice(0, 30) : null,
+            transport: t.transport ? String(t.transport).slice(0, 40) : null,
             status: t.status == null ? null : Number(t.status),
             durationMs: t.durationMs == null ? null : Number(t.durationMs),
             errorType: t.errorType ? String(t.errorType).slice(0, 60) : null,
             message: t.message ? String(t.message).slice(0, 500) : null,
-            responseBytes: t.responseBytes == null ? null : Number(t.responseBytes)
+            responseBytes: t.responseBytes == null ? null : Number(t.responseBytes),
+            responseHash: t.responseHash ? String(t.responseHash).slice(0, 20) : null,
+            responseContentType: t.responseContentType ? String(t.responseContentType).slice(0, 120) : null,
+            statusText: t.statusText ? String(t.statusText).slice(0, 120) : null
           };
         }) : []
-      };
+      };;
     }
     return out;
   }
