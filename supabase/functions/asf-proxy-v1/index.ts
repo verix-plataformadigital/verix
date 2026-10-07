@@ -126,7 +126,7 @@ Deno.serve(async (req: Request) => {
       upstream: ASF_ORIGIN,
       mode: "server-relay",
       retries: false
-    });
+    }, 200, req);
   }
 
   if (req.method !== "POST") return json({ ok: false, error: "method_not_allowed" }, 405, req);
@@ -206,7 +206,7 @@ Deno.serve(async (req: Request) => {
         ok: false,
         error: aborted ? "upstream_timeout" : "upstream_network",
         message: aborted ? "ASF upstream timeout" : "ASF upstream network error"
-      }, aborted ? 504 : 502);
+      }, aborted ? 504 : 502, req);
     } finally {
       clearTimeout(timeout);
     }
