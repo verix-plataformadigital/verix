@@ -2,6 +2,7 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "content-type",
   "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+  "Access-Control-Expose-Headers": "X-Verix-ASF-Relay, X-Verix-ASF-Latency-Ms",
   "Cache-Control": "no-store, max-age=0",
   "Vary": "Origin",
   "X-Content-Type-Options": "nosniff"
@@ -167,12 +168,11 @@ Deno.serve(async (req: Request) => {
       return new Response(text, {
         status: upstream.status,
         headers: {
+          ...corsHeaders,
           "Content-Type": upstream.headers.get("content-type") || "application/json; charset=utf-8",
-          "Cache-Control": "no-store, max-age=0",
-          "Vary": "Origin",
           "X-Verix-ASF-Relay": "1",
           "X-Verix-ASF-Latency-Ms": String(elapsedMs),
-          }
+        }
       });
     } catch (error) {
       const aborted = (error as Error)?.name === "AbortError";
