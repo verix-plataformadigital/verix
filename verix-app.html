@@ -77,109 +77,28 @@ html.verix-starting .operational-strip{
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<script id="verix-cache-buster">
-(function(){
-  /* Cache-bust real a cada abertura do documento (http/https).
-     Não depende de sessionStorage. Meta Cache-Control no HTML não basta
-     para impedir o browser de servir o documento a partir do disco. */
-  try {
-    var u = new URL(window.location.href);
-    if (u.protocol !== 'http:' && u.protocol !== 'https:') return;
-    var key = '_verix_cache';
-    if (!u.searchParams.has(key)) {
-      u.searchParams.set(key, String(Date.now()));
-      window.location.replace(u.href);
-      return;
-    }
-    if (window.history && window.history.replaceState) {
-      u.searchParams.delete(key);
-      window.history.replaceState({}, document.title, u.href);
-    }
-  } catch (_) {}
-})();
-</script>
 <script id="verix-access-protection">
 (function(){
   'use strict';
-  /*
-   * VÉRIX — proteção de publicação.
-   * O browser precisa de receber o código para o executar, por isso não existe
-   * uma proteção 100% contra engenharia reversa. Esta camada bloqueia cópias
-   * publicadas fora dos domínios autorizados e dificulta a cópia casual do código.
-   */
-  var ALLOWED_HOSTS = new Set([
-    'verix.vxops.workers.dev',
-    'verix-plataformadigital.github.io',
-    'localhost',
-    '127.0.0.1',
-    '[::1]'
-  ]);
-
-  function hostAuthorized(){
-    try {
-      var host = String(window.location.hostname || '').toLowerCase();
-      return window.location.protocol === 'http:' || window.location.protocol === 'https:'
-        ? ALLOWED_HOSTS.has(host)
-        : false;
-    } catch (_) {
-      return false;
-    }
-  }
-
-  function blockUnauthorized(){
-    try {
-      document.open();
-      document.write('<!doctype html><html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VÉRIX — Acesso não autorizado</title><style>html,body{margin:0;min-height:100%;background:#03080c;color:#eef4f5;font-family:Arial,Helvetica,sans-serif}body{display:grid;place-items:center;padding:24px;box-sizing:border-box}.box{max-width:620px;padding:34px 36px;border:1px solid #5b7078;border-radius:18px;background:linear-gradient(180deg,#11212a,#071117);box-shadow:0 24px 70px rgba(0,0,0,.55);text-align:center}.tag{display:inline-block;margin-bottom:14px;padding:6px 10px;border:1px solid #c8102e;border-radius:999px;color:#ff7c91;font-size:11px;font-weight:800;letter-spacing:1.2px}.title{font-size:28px;font-weight:900;margin-bottom:12px}.text{color:#b9c7cc;font-size:15px;line-height:1.6}</style></head><body>
-<div id="opsBootOverlay" aria-hidden="false">
-  <div class="ops-boot-title">VÉRIX // Plataforma Digital</div>
-  <div class="ops-boot-sub">Inicializar módulos · Consulta · Livrete · Seguro · Cinemómetro</div>
-  <div class="ops-boot-bar"><i></i></div>
-</div>
-<div class="box"><div class="tag">VERIX // PROTEÇÃO</div><div class="title">Publicação não autorizada</div><div class="text">Esta versão do VÉRIX não está autorizada a funcionar neste endereço.</div></div></body></html>');
-      document.close();
-    } catch (_) {
-      try { document.documentElement.innerHTML = '<body style="background:#03080c;color:#eef4f5;font-family:Arial;text-align:center;padding:40px">Publicação não autorizada.</body>'; } catch (__) {}
-    }
-  }
-
-  if (!hostAuthorized()) {
-    blockUnauthorized();
+  var allowed={
+    'verix.vxops.workers.dev':1,
+    'verix-plataformadigital.github.io':1,
+    'localhost':1,
+    '127.0.0.1':1,
+    '[::1]':1
+  };
+  var host=String(window.location.hostname||'').toLowerCase();
+  var protocol=window.location.protocol;
+  if(protocol!=='http:' && protocol!=='https:') return;
+  if(!allowed[host]){
+    try{
+      document.documentElement.innerHTML='<head><meta charset="utf-8"><title>VÉRIX — Acesso não autorizado</title></head><body style="margin:0;min-height:100vh;background:#03080c;color:#eef4f5;font-family:Arial,Helvetica,sans-serif;display:grid;place-items:center"><div style="max-width:620px;margin:24px;padding:34px 36px;border:1px solid #5b7078;border-radius:18px;background:#0b1820;box-shadow:0 24px 70px rgba(0,0,0,.55);text-align:center"><div style="display:inline-block;margin-bottom:14px;padding:6px 10px;border:1px solid #c8102e;border-radius:999px;color:#ff7c91;font-size:11px;font-weight:800;letter-spacing:1.2px">VÉRIX // PROTEÇÃO</div><div style="font-size:28px;font-weight:900;margin-bottom:12px">Publicação não autorizada</div><div style="color:#b9c7cc;font-size:15px;line-height:1.6">Esta versão do VÉRIX não está autorizada a funcionar neste endereço.</div></div></body>';
+    }catch(e){}
     throw new Error('VÉRIX: publicação não autorizada neste domínio.');
   }
-
-  /* Evita execução normal dentro de iframes de terceiros. */
-  try {
-    if (window.top !== window.self) {
-      window.top.location = window.location.href;
-    }
-  } catch (_) {
-    try { window.location.replace(window.location.href); } catch (__) {}
-  }
-
-  /* Dificulta cópia casual do código sem bloquear a utilização normal da app. */
-  document.addEventListener('contextmenu', function(e){ e.preventDefault(); }, true);
-  document.addEventListener('dragstart', function(e){ e.preventDefault(); }, true);
-  document.addEventListener('keydown', function(e){
-    var k = String(e.key || '').toLowerCase();
-    var devtools = e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['i','j','c'].indexOf(k) >= 0);
-    var source = e.ctrlKey && k === 'u';
-    var save = e.ctrlKey && k === 's';
-    var macDevtools = e.metaKey && e.altKey && ['i','j','c'].indexOf(k) >= 0;
-    if (devtools || source || save || macDevtools) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-    }
-  }, true);
-
-  /* Se a página voltar do BFCache, força novamente uma navegação sem cache. */
-  window.addEventListener('pageshow', function(ev){
-    if (!ev.persisted) return;
-    try {
-      var u = new URL(window.location.href);
-      u.searchParams.set('_verix_cache', String(Date.now()));
-      window.location.replace(u.href);
-    } catch (_) {}
-  }, true);
+  try{
+    if(window.top!==window.self){ window.top.location=window.location.href; }
+  }catch(e){}
 })();
 </script><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VÉRIX — Plataforma Digital 1.3</title>
 <meta name="description" content="VÉRIX — Plataforma Digital de apoio ao serviço operacional.">
