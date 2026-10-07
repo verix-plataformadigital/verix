@@ -1,11 +1,32 @@
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+const BASE_CORS_HEADERS = {
   "Access-Control-Allow-Headers": "content-type",
   "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
   "Cache-Control": "no-store, max-age=0",
   "Vary": "Origin",
-  "X-Content-Type-Options": "nosniff"
+  "X-Content-Type-Options": "nosniff",
+  "Referrer-Policy": "no-referrer"
 };
+
+const ALLOWED_ORIGINS = new Set([
+  "https://verix-plataformadigital.github.io",
+  "https://verix.vxops.workers.dev",
+  "http://localhost",
+  "http://127.0.0.1",
+  "null"
+]);
+
+function isAllowedOrigin(origin: string | null): boolean {
+  if (!origin) return true;
+  if (ALLOWED_ORIGINS.has(origin)) return true;
+  return /^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?$/.test(origin);
+}
+
+function corsHeaders(req: Request) {
+  const headers: Record<string, string> = { ...BASE_CORS_HEADERS };
+  const origin = req.headers.get("origin");
+  if (origin && isAllowedOrigin(origin)) headers["Access-Control-Allow-Origin"] = origin;
+  return headers;
+}
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
@@ -17,10 +38,11 @@ const CLIENT_WINDOW_SECONDS = 60;
 const CLIENT_LIMIT = 5;
 const IP_LIMIT = 30;
 
-function json(data: unknown, status = 200) {
+function json(data: unknown, status = 200, req?: Request) {
+  const headers = req ? corsHeaders(req) : { ...BASE_CORS_HEADERS };
   return new Response(JSON.stringify(data), {
     status,
-    headers: { "Content-Type": "application/json; charset=utf-8", ...corsHeaders }
+    headers: { "Content-Type": "application/json; charset=utf-8", ...headers }
   });
 }
 
@@ -89,7 +111,12 @@ async function consumeRate(key: string, limit: number): Promise<boolean> {
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders });
+  const origin = req.headers.get("origin");
+  if (!isAllowedOrigin(origin)) {
+    return json({ ok: false, error: "origin_not_allowed" }, 403, req);
+  }
+
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders(req) });
 
   if (req.method === "GET") {
     return json({
@@ -102,13 +129,13 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  if (req.method !== "POST") return json({ ok: false, error: "method_not_allowed" }, 405);
-  if (!SUPABASE_URL || !SERVICE_KEY) return json({ ok: false, error: "proxy_not_configured" }, 503);
+  if (req.method !== "POST") return json({ ok: false, error: "method_not_allowed" }, 405, req);
+  if (!SUPABASE_URL || !SERVICE_KEY) return json({ ok: false, error: "proxy_not_configured" }, 503, req);
 
   try {
     const contentLength = Number(req.headers.get("content-length") || 0);
     if (Number.isFinite(contentLength) && contentLength > MAX_BODY_BYTES) {
-      return json({ ok: false, error: "payload_too_large" }, 413);
+      return json({ ok: false, error: "payload_too_large" }, 413, req);
     }
 
     const body = await req.json().catch(() => null);
@@ -116,25 +143,25 @@ Deno.serve(async (req: Request) => {
     const date = validDate(body?.date);
 
     if (!/^[A-Z0-9]{6,8}$/.test(plate)) {
-      return json({ ok: false, error: "invalid_plate" }, 400);
+      return json({ ok: false, error: "invalid_plate" }, 400, req);
     }
-    if (!date) return json({ ok: false, error: "invalid_date" }, 400);
+    if (!date) return json({ ok: false, error: "invalid_date" }, 400, req);
 
     const installationId = cleanText(body?.installationId, 120);
 
-    if (!installationId) return json({ ok: false, error: "missing_installation" }, 400);
+    if (!installationId) return json({ ok: false, error: "missing_installation" }, 400, req);
 
     const ipKey = await hmacHex("ip:" + clientIp(req));
     const installKey = await hmacHex("installation:" + installationId);
 
     if (!(await consumeRate("asf-global", 60))) {
-      return json({ ok: false, error: "rate_limited_global" }, 429);
+      return json({ ok: false, error: "rate_limited_global" }, 429, req);
     }
     if (!(await consumeRate("asf-ip:" + ipKey, IP_LIMIT))) {
-      return json({ ok: false, error: "rate_limited" }, 429);
+      return json({ ok: false, error: "rate_limited" }, 429, req);
     }
     if (!(await consumeRate("asf-install:" + installKey, CLIENT_LIMIT))) {
-      return json({ ok: false, error: "rate_limited" }, 429);
+      return json({ ok: false, error: "rate_limited" }, 429, req);
     }
 
     const query =
@@ -167,12 +194,11 @@ Deno.serve(async (req: Request) => {
       return new Response(text, {
         status: upstream.status,
         headers: {
+          ...corsHeaders(req),
           "Content-Type": upstream.headers.get("content-type") || "application/json; charset=utf-8",
-          "Cache-Control": "no-store, max-age=0",
-          "Vary": "Origin",
           "X-Verix-ASF-Relay": "1",
-          "X-Verix-ASF-Latency-Ms": String(elapsedMs),
-          }
+          "X-Verix-ASF-Latency-Ms": String(elapsedMs)
+        }
       });
     } catch (error) {
       const aborted = (error as Error)?.name === "AbortError";
@@ -186,6 +212,6 @@ Deno.serve(async (req: Request) => {
     }
   } catch (error) {
     console.error("verix_asf_proxy_failed", String((error as Error)?.message || error));
-    return json({ ok: false, error: "proxy_failed" }, 500);
+    return json({ ok: false, error: "proxy_failed" }, 500, req);
   }
 });
