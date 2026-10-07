@@ -123,6 +123,7 @@ async function enrichAsfDiagnostics(diagnostics:any, now:string) {
       graphql_codes: item?.graphql_codes ?? (Array.isArray(a.asfGraphqlCodes) ? a.asfGraphqlCodes : []),
       retry: src?.metadata?.retry === true,
       retry_of: src?.metadata?.retryOf || null,
+      transport: item?.transport ?? a.asfTransport ?? null,
       matricula_normalizada: src?.metadata?.matriculaNormalizada || a.matriculaNormalizada || null
     };
   };
@@ -135,8 +136,10 @@ async function enrichAsfDiagnostics(diagnostics:any, now:string) {
     const msgs=Array.isArray(a.asfGraphqlMessages)?a.asfGraphqlMessages.filter(Boolean):[];
     const codes=Array.isArray(a.asfGraphqlCodes)?a.asfGraphqlCodes.filter(Boolean):[];
     const message=msgs[0] || String(a.asfMessage||e?.metadata?.asfUserMessage||"");
+    const transport=String(a.asfTransport||"unknown");
     const key=[type,hash,codes.join(", "),message].join("|");
-    const cur=signatures.get(key) || {error_type:type,response_hash:a.asfResponseHash||null,graphql_codes:codes,graphql_messages:msgs,count:0,queries:new Set<string>(),plates:new Set<string>(),installations:new Set<string>()};
+    const cur=signatures.get(key) || {error_type:type,response_hash:a.asfResponseHash||null,graphql_codes:codes,graphql_messages:msgs,transports:new Set<string>(),count:0,queries:new Set<string>(),plates:new Set<string>(),installations:new Set<string>()};
+    cur.transports.add(transport);
     cur.count++;
     if(e?.query_id) cur.queries.add(String(e.query_id));
     const plate=a.matricula || e?.metadata?.matricula || "";
@@ -153,7 +156,8 @@ async function enrichAsfDiagnostics(diagnostics:any, now:string) {
     distinct_installations:x.installations.size,
     response_hash:x.response_hash,
     graphql_codes:x.graphql_codes,
-    graphql_messages:x.graphql_messages
+    graphql_messages:x.graphql_messages,
+    transports:[...x.transports]
   })).sort((a:any,b:any)=>b.count-a.count).slice(0,20);
 
   const plates = new Map<string,any>();
@@ -306,7 +310,7 @@ async function loadErrorInvestigation24h(now:string){
   const typeRows=[...byType.entries()].map(([type,count])=>({type,count})).sort((a,b)=>b.count-a.count);
   const installRows=[...byInstall.entries()].map(([installation_id,count])=>({installation_id:shortId(installation_id),count})).sort((a,b)=>b.count-a.count).slice(0,10);
   const burstRows=[...bursts.entries()].map(([start,count])=>({start,count})).sort((a,b)=>b.count-a.count).slice(0,12);
-  const recent=app14.slice(-12).reverse().map((e:any)=>{const a=e?.metadata?.asfDiagnostic||{};return {occurred_at:e?.occurred_at||null,installation_id:shortId(e?.installation_id),query_id:shortId(e?.query_id),browser:e?.browser||"Unknown",error_type:a.asfErrorType||"unknown",http_status:a.asfHttpStatus??null,duration_ms:a.asfDurationMs??null,response_hash:a.asfResponseHash||null,response_class:a.asfResponseClass||null,graphql_error_count:a.asfGraphqlErrorCount??null,response_bytes:a.asfResponseBytes??null,parse_path:a.asfParsePath||null,build_id:e?.metadata?.build_id||a.build_id||null};});
+  const recent=app14.slice(-12).reverse().map((e:any)=>{const a=e?.metadata?.asfDiagnostic||{};return {occurred_at:e?.occurred_at||null,installation_id:shortId(e?.installation_id),query_id:shortId(e?.query_id),browser:e?.browser||"Unknown",error_type:a.asfErrorType||"unknown",transport:a.asfTransport||null,http_status:a.asfHttpStatus??null,duration_ms:a.asfDurationMs??null,response_hash:a.asfResponseHash||null,response_class:a.asfResponseClass||null,graphql_error_count:a.asfGraphqlErrorCount??null,response_bytes:a.asfResponseBytes??null,parse_path:a.asfParsePath||null,build_id:e?.metadata?.build_id||a.build_id||null};});
   return {generated_at:now,errors_24h:rows.length,app14_errors:app14.length,app14_installations:new Set(app14.map((e:any)=>String(e?.installation_id||""))).size,app14_plates:new Set(app14.map((e:any)=>String(e?.metadata?.asfDiagnostic?.matricula||"")).filter(Boolean)).size,app14_hashes:byHash.size,app14_types:typeRows,app14_hashes_top:hashRows,app14_installations_top:installRows,app14_bursts_5m:burstRows,latest_app14:recent};
 }
 async function loadLifetime(now:string){
