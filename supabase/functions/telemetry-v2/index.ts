@@ -186,6 +186,7 @@ function cleanMetadata(value: unknown): Record<string, unknown> {
       asfErrorType: cleanText(a.asfErrorType, 60),
       asfMessage: cleanText(a.asfMessage, 500),
       asfResponseBytes: finiteNumber(a.asfResponseBytes),
+      asfRelayLatencyMs: finiteNumber(a.asfRelayLatencyMs),
       asfResponseHash: cleanText(a.asfResponseHash, 20),
       asfResponseContentType: cleanText(a.asfResponseContentType, 120),
       asfStatusText: cleanText(a.asfStatusText, 120),
