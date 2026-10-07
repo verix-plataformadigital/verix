@@ -1210,10 +1210,24 @@ function submitConjunto(event) {
 
 
  // ========================= ASF / TEM SEGURO =========================
-  // A aplicação "Tem Seguro?" utiliza a API da ASF com uma query GraphQL.
-  // Mantemos a consulta no lado do cliente para não armazenar matrículas num servidor intermédio.
+  // MOTOR ASF VÉRIX — SIMPLES E DETERMINÍSTICO
+  // 1 matrícula = 1 pedido HTTP.
+  // Espaçamento mínimo obrigatório: 8 segundos entre o início de dois pedidos.
+
   const ASF_API_URL = 'https://ext01.asf.com.pt/api/src/?query=';
-  const ASF_MOBINTEG_FALLBACK = 'http://ws.mobinteg.com/asf-matricula/?';
+  const ASF_TIMEOUT_MS = 12000;
+  const ASF_INTERVAL_MS = 8000;
+
+  let ASF_ULTIMO_PEDIDO_MS = 0;
+  let ASF_EM_CURSO = false;
+
+  function agoraASF() {
+    return Date.now();
+  }
+
+  function esperarASF(ms) {
+    return new Promise(resolve => setTimeout(resolve, Math.max(0, Number(ms) || 0)));
+  }
 
   function formatarDataASF(date = new Date()) {
     const dd = String(date.getDate()).padStart(2, '0');
@@ -1231,25 +1245,34 @@ function submitConjunto(event) {
       .replace(/'/g, '&#039;');
   }
 
-  function mostrarSeguroLoading(matricula) {
+  function actualizarHistoricoASF(matricula, estado, queryId) {
+    try {
+      atualizarSeguroNoHistorico(queryId || null, matricula, estado);
+    } catch (_) {}
+  }
+
+  function mostrarSeguroLoading(matricula, mensagem) {
     const box = document.getElementById('seguroResult');
+    if (!box) return;
     box.innerHTML = `
       <div class="status wait">A consultar seguro...</div>
       <div style="font-size:14px;color:#777">Matrícula: <strong>${escapeHtml(matricula)}</strong></div>
+      <div style="font-size:13px;color:#777;margin-top:12px">${escapeHtml(mensagem || 'A contactar a ASF…')}</div>
       <div class="spinner" style="margin-top:18px"></div>
     `;
   }
 
-  function mostrarSeguroErro(mensagem, matricula) {
-    atualizarSeguroNoHistorico(matricula, 'indisponivel');
+  function mostrarSeguroErro(mensagem, matricula, queryId) {
+    actualizarHistoricoASF(matricula, 'indisponivel', queryId);
     const box = document.getElementById('seguroResult');
+    if (!box) return;
     box.innerHTML = `
       <div class="status warn">Consulta não concluída</div>
-      <div style="max-width:520px;font-size:14px;line-height:1.5">${escapeHtml(mensagem)}</div>
+      <div style="max-width:520px;font-size:14px;line-height:1.5">${escapeHtml(mensagem || 'Não foi possível obter uma resposta válida da ASF.')}</div>
       <div class="insurance-details">
         <div class="insurance-row"><strong>Matrícula</strong><span>${escapeHtml(matricula)}</span></div>
       </div>
-      <div class="insurance-source">Pode usar o botão SEGURO para abrir a consulta oficial da ASF.</div>
+      <div class="insurance-source">Foi efetuado apenas um pedido à ASF.</div>
     `;
   }
 
@@ -1267,7 +1290,6 @@ function submitConjunto(event) {
   }
 
   function extrairNodesASF(data) {
-    // Aceita as variantes de envelope que podem ser devolvidas pelo endpoint.
     const candidatos = [
       data?.data?.mobishoutEntry?.noone?.entry?.licenseNumber?.nodes,
       data?.mobishoutEntry?.noone?.entry?.licenseNumber?.nodes,
@@ -1279,35 +1301,38 @@ function submitConjunto(event) {
       if (Array.isArray(c)) return c;
     }
 
-    // Último recurso: procura recursivamente um objeto "nodes" associado
-    // a uma resposta JSON, sem assumir um envelope único.
     const encontrados = [];
     function walk(v, profundidade = 0) {
       if (!v || profundidade > 12) return;
+
       if (Array.isArray(v)) {
         if (v.length && v.every(x => x && typeof x === 'object')) {
           const temCampoSeguro = v.some(x =>
-            ['entity','insurer','policy','startDate','endDate','license','code'].some(k => x[k] !== undefined)
+            ['entity','insurer','policy','startDate','endDate','license','code']
+              .some(k => x[k] !== undefined)
           );
           if (temCampoSeguro) encontrados.push(v);
         }
         v.forEach(x => walk(x, profundidade + 1));
         return;
       }
+
       if (typeof v === 'object') {
         if (Array.isArray(v.nodes)) walk(v.nodes, profundidade + 1);
         Object.values(v).forEach(x => walk(x, profundidade + 1));
       }
     }
+
     walk(data);
     return encontrados[0] || [];
   }
 
-  function renderSeguro(nodes, matricula) {
+  function renderSeguro(nodes, matricula, queryId) {
     const box = document.getElementById('seguroResult');
+    if (!box) return;
 
     if (!Array.isArray(nodes) || nodes.length === 0) {
-      atualizarSeguroNoHistorico(matricula, 'nao');
+      actualizarHistoricoASF(matricula, 'nao', queryId);
       box.innerHTML = `
         <div class="insurance-no-result">
           <div class="insurance-no-icon">&times;</div>
@@ -1321,15 +1346,12 @@ function submitConjunto(event) {
           Não foi encontrado nenhum seguro com a matrícula<br>
           e data atual.
         </div><div class="insurance-official-warning">
-  Confirme sempre esta informação através dos meios oficiais e procedimentos instituídos pela sua instituição.
-</div>
+          Confirme sempre esta informação através dos meios oficiais e procedimentos instituídos pela sua instituição.
+        </div>
       `;
       return;
     }
 
-    // Não mostramos "TEM SEGURO" só porque existe um nó. A resposta tem de
-    // conter dados de seguro utilizáveis, evitando falsos positivos com um
-    // envelope GraphQL diferente.
     const n = nodes.find(x => {
       if (!x || typeof x !== 'object') return false;
       return ['entity','policy','startDate','endDate','license'].some(k =>
@@ -1338,9 +1360,7 @@ function submitConjunto(event) {
     });
 
     if (!n) {
-      atualizarSeguroNoHistorico(matricula, 'nao');
-      // A ASF pode devolver um envelope válido com nodes sem dados de seguro.
-      // Nesse caso, tratar como ausência de seguro, e não como erro técnico.
+      actualizarHistoricoASF(matricula, 'nao', queryId);
       box.innerHTML = `
         <div class="insurance-no-result">
           <div class="insurance-no-icon">&times;</div>
@@ -1354,13 +1374,14 @@ function submitConjunto(event) {
           Não foi encontrado nenhum seguro com a matrícula<br>
           e data atual.
         </div><div class="insurance-official-warning">
-  Confirme sempre esta informação através dos meios oficiais e procedimentos instituídos pela sua instituição.
-</div>
+          Confirme sempre esta informação através dos meios oficiais e procedimentos instituídos pela sua instituição.
+        </div>
       `;
       return;
     }
 
-    atualizarSeguroNoHistorico(matricula, 'sim');
+    actualizarHistoricoASF(matricula, 'sim', queryId);
+
     const seguradora = valorCampo(n, ['entity','insurer','insuranceCompany'], '—');
     const apolice = valorCampo(n, ['policy','policyNumber'], '—');
     const inicio = valorCampo(n, ['startDate','validFrom'], '—');
@@ -1376,76 +1397,97 @@ function submitConjunto(event) {
         <div class="insurance-row"><strong>Início</strong><span>${escapeHtml(inicio)}</span></div>
         <div class="insurance-row"><strong>Fim</strong><span>${escapeHtml(fim)}</span></div>
       </div>
-      <div class="insurance-source">Consulta automática ao site oficial da ASF</div><div class="insurance-official-warning">
-  Confirme sempre esta informação através dos meios oficiais e procedimentos instituídos pela sua instituição.
-</div>
+      <div class="insurance-source">Consulta automática ao serviço ASF / Tem Seguro?</div><div class="insurance-official-warning">
+        Confirme sempre esta informação através dos meios oficiais e procedimentos instituídos pela sua instituição.
+      </div>
     `;
+  }
+
+  async function efetuarPedidoHttpASF(url) {
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    let timer = null;
+
+    try {
+      const options = {
+        method: 'GET',
+        cache: 'no-store',
+        credentials: 'omit',
+        mode: 'cors'
+      };
+
+      if (controller) {
+        options.signal = controller.signal;
+        timer = setTimeout(() => {
+          try { controller.abort(); } catch (_) {}
+        }, ASF_TIMEOUT_MS);
+      }
+
+      const response = await fetch(url, options);
+      const text = await response.text();
+
+      if (!response.ok) {
+        throw new Error('ASF HTTP ' + response.status);
+      }
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (_) {
+        throw new Error('A ASF devolveu uma resposta que não é JSON.');
+      }
+
+      return data;
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+  }
+
+  async function aguardarEspacamentoASF(matricula) {
+    let restante = Math.max(0, ASF_INTERVAL_MS - (agoraASF() - ASF_ULTIMO_PEDIDO_MS));
+
+    while (restante > 0) {
+      mostrarSeguroLoading(
+        matricula,
+        'A AGUARDAR ' + Math.ceil(restante / 1000) + 's — intervalo ASF obrigatório'
+      );
+      await esperarASF(Math.min(restante, 250));
+      restante = Math.max(0, ASF_INTERVAL_MS - (agoraASF() - ASF_ULTIMO_PEDIDO_MS));
+    }
   }
 
   async function consultarSeguroASF(matricula) {
-    const mat = (matricula || '').trim().toUpperCase();
-    if (!mat) return;
-
-    mostrarSeguroLoading(mat);
+    const mat = String(matricula || '').trim().toUpperCase();
+    if (!mat || ASF_EM_CURSO) return;
 
     const matriculaASF = mat.replace(/-/g, '').replace(/\s+/g, '');
-    const dataASF = formatarDataASF();
-    const query = `mutation license {  mobishoutEntry {    noone {      entry {        licenseNumber(license: "${matriculaASF}", date: "${dataASF}") {          nodes {            id            entity            startDate            endDate            policy            license            code            logo          }        }      }    }  }            }`;
-    const url = ASF_API_URL + encodeURIComponent(query);
+    if (!matriculaASF) return;
 
-    // IMPORTANTE: esta é a mesma API usada pela aplicação oficial "Tem Seguro?".
-    // A app faz POST para /api/src/?query=... e não envia um CAPTCHA.
-    // No browser tentamos primeiro POST simples (sem headers que provoquem preflight)
-    // e, se necessário, GET. Se o servidor não permitir CORS, o navegador impede
-    // legitimamente a leitura da resposta e abrimos a página oficial da ASF.
-    let ultimoErro = '';
+    const queryId = window.__VERIX_CURRENT_QUERY_ID || null;
+    ASF_EM_CURSO = true;
 
-    for (const metodo of ['POST', 'GET']) {
-      try {
-        const options = {
-          method: metodo,
-          cache: 'no-store',
-          credentials: 'omit',
-          mode: 'cors'
-        };
-        if (metodo === 'POST') options.body = null;
+    try {
+      await aguardarEspacamentoASF(mat);
 
-        const response = await fetch(url, options);
-        const text = await response.text();
-        if (!response.ok) throw new Error(`ASF HTTP ${response.status}`);
+      // Marca o instante do início do único pedido físico.
+      ASF_ULTIMO_PEDIDO_MS = agoraASF();
 
-        let data;
-        try {
-          data = JSON.parse(text);
-        } catch (_) {
-          throw new Error('A ASF devolveu uma resposta que não é JSON.');
-        }
+      const dataASF = formatarDataASF();
+      const query = `mutation license {  mobishoutEntry {    noone {      entry {        licenseNumber(license: "${matriculaASF}", date: "${dataASF}") {          nodes {            id            entity            startDate            endDate            policy            license            code            logo          }        }      }    }  }            }`;
+      const url = ASF_API_URL + encodeURIComponent(query);
 
-        const nodes = extrairNodesASF(data);
-        renderSeguro(nodes, mat);
-        return;
-      } catch (err) {
-        ultimoErro = err?.message || String(err);
-      }
+      const data = await efetuarPedidoHttpASF(url);
+      const nodes = extrairNodesASF(data);
+
+      renderSeguro(nodes, mat, queryId);
+    } catch (err) {
+      const msg = err?.message || 'Falha de comunicação com a ASF.';
+      console.warn('[ASF] consulta única falhou:', msg);
+      mostrarSeguroErro(msg, mat, queryId);
+    } finally {
+      ASF_EM_CURSO = false;
     }
-
-    // Não inventamos resultado. Se o endpoint não aceitar chamadas CORS,
-    // encaminhamos para o formulário oficial, onde o CAPTCHA é tratado pelo site.
-    atualizarSeguroNoHistorico(mat, 'indisponivel');
-    const box = document.getElementById('seguroResult');
-    box.innerHTML = `
-      <div class="status warn">CONSULTA ASF BLOQUEADA PELO NAVEGADOR</div>
-      <div style="font-size:15px;color:#555;margin-bottom:12px">Matrícula: <strong>${escapeHtml(mat)}</strong></div>
-      <div style="font-size:13px;line-height:1.55;color:#666;max-width:560px">
-        A API oficial da aplicação <strong>Tem Seguro?</strong> foi contactada, mas o navegador não permitiu ler a resposta desta página (CORS/rede).
-      </div>
-      <button type="button" class="aux-btn" style="margin-top:20px" onclick="verificarSeguro()">ABRIR CONSULTA ASF</button>
-      <div class="insurance-source">A matrícula fica copiada para colar diretamente no formulário oficial. Não é feito qualquer contorno do reCAPTCHA.</div>
-    `;
-    console.warn('Consulta ASF não pôde ser lida no browser:', ultimoErro);
   }
 
-  
 
 function verificarSeguro() {
  const mat = obterMatriculaOuVazia();
