@@ -1,12 +1,30 @@
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "content-type",
-  "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-  "Access-Control-Expose-Headers": "X-Verix-ASF-Relay, X-Verix-ASF-Latency-Ms, Retry-After",
-  "Cache-Control": "no-store, max-age=0",
-  "Vary": "Origin",
-  "X-Content-Type-Options": "nosniff"
-};
+const ALLOWED_ORIGINS = new Set([
+  "https://verix.vxops.workers.dev",
+  "https://verix-plataformadigital.github.io"
+]);
+
+function isLegacyLocal(req: Request): boolean {
+  const origin = req.headers.get("origin");
+  if (origin) return false;
+  const ua = req.headers.get("user-agent") || "";
+  return /Trident\\//i.test(ua) || /MSIE\\s/i.test(ua) || /MSHTA/i.test(ua);
+}
+
+function corsHeaders(req: Request) {
+  const origin = req.headers.get("origin") || "";
+  return {
+    "Access-Control-Allow-Origin": ALLOWED_ORIGINS.has(origin) ? origin : "",
+    "Access-Control-Allow-Headers": "content-type,x-verix-build-id",
+    "Access-Control-Allow-Methods": "POST,OPTIONS",
+    "Access-Control-Expose-Headers": "X-Verix-ASF-Relay, X-Verix-ASF-Latency-Ms, Retry-After",
+    "Cache-Control": "no-store, max-age=0",
+    "Vary": "Origin",
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "no-referrer",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+    "X-Frame-Options": "DENY"
+  };
+}
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
@@ -15,15 +33,32 @@ const ASF_PATH = "/api/src/";
 const MAX_BODY_BYTES = 16 * 1024;
 const UPSTREAM_TIMEOUT_MS = 15000;
 
-function json(data: unknown, status = 200, extraHeaders: Record<string, string> = {}) {
+function json(data: unknown, status = 200, req?: Request, extraHeaders: Record<string, string> = {}) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
       "Content-Type": "application/json; charset=utf-8",
-      ...corsHeaders,
+      ...(req ? corsHeaders(req) : {}),
       ...extraHeaders
     }
   });
+}
+
+async function buildEnabled(buildId: string): Promise<boolean> {
+  if (!SUPABASE_URL || !SERVICE_KEY) return false;
+  const q = new URLSearchParams({
+    select: "build_id,enabled",
+    build_id: "eq." + buildId,
+    enabled: "eq.true",
+    limit: "1"
+  });
+  const response = await fetch(
+    SUPABASE_URL + "/rest/v1/verix_build_registry?" + q.toString(),
+    { headers: { apikey: SERVICE_KEY, Authorization: "Bearer " + SERVICE_KEY } }
+  );
+  if (!response.ok) return false;
+  const rows = await response.json().catch(() => []);
+  return Array.isArray(rows) && rows.length === 1 && rows[0]?.enabled === true;
 }
 
 function cleanText(value: unknown, max: number): string {
@@ -50,33 +85,34 @@ function validDate(value: unknown): string | null {
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { status: 204, headers: corsHeaders });
-  }
-
-  if (req.method === "GET") {
-    return json({
-      ok: true,
-      service: "verix-asf-proxy",
-      version: "2.0",
-      upstream: ASF_ORIGIN,
-      mode: "server-relay",
-      retries: "client-transport-only",
-      limiter: "none-local"
-    });
+    return new Response(null, { status: 204, headers: corsHeaders(req) });
   }
 
   if (req.method !== "POST") {
-    return json({ ok: false, error: "method_not_allowed" }, 405);
+    return json({ ok: false, error: "method_not_allowed" }, 405, req);
+  }
+
+  const origin = req.headers.get("origin") || "";
+  if (!(ALLOWED_ORIGINS.has(origin) || isLegacyLocal(req))) {
+    return json({ ok: false, error: "origin_not_allowed" }, 403, req);
   }
 
   if (!SUPABASE_URL || !SERVICE_KEY) {
-    return json({ ok: false, error: "proxy_not_configured" }, 503);
+    return json({ ok: false, error: "proxy_not_configured" }, 503, req);
   }
 
   try {
+    const buildId = cleanText(req.headers.get("x-verix-build-id"), 80);
+    if (!/^1\\.5-sec-[0-9]{8}-[a-z0-9-]{1,20}$/i.test(buildId)) {
+      return json({ ok: false, error: "invalid_build" }, 400, req);
+    }
+    if (!(await buildEnabled(buildId))) {
+      return json({ ok: false, error: "build_revoked" }, 403, req);
+    }
+
     const contentLength = Number(req.headers.get("content-length") || 0);
     if (Number.isFinite(contentLength) && contentLength > MAX_BODY_BYTES) {
-      return json({ ok: false, error: "payload_too_large" }, 413);
+      return json({ ok: false, error: "payload_too_large" }, 413, req);
     }
 
     const body = await req.json().catch(() => null);
@@ -137,7 +173,7 @@ Deno.serve(async (req: Request) => {
         ok: false,
         error: aborted ? "upstream_timeout" : "upstream_network",
         message: aborted ? "ASF upstream timeout" : "ASF upstream network error"
-      }, aborted ? 504 : 502);
+      }, aborted ? 504 : 502, req);
     } finally {
       clearTimeout(timeout);
     }
@@ -146,6 +182,6 @@ Deno.serve(async (req: Request) => {
       "verix_asf_proxy_failed",
       String((error as Error)?.message || error)
     );
-    return json({ ok: false, error: "proxy_failed" }, 500);
+    return json({ ok: false, error: "proxy_failed" }, 500, req);
   }
 });
