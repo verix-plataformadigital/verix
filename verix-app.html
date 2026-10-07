@@ -19624,6 +19624,14 @@ html body [contenteditable="true"]{
     const sel=document.getElementById('v14GenSelect');if(!sel)return;currentGenIndex=Number(sel.value)||0;const r=DATA[currentGenIndex];const fields=document.getElementById('v14GenFields');if(!r||!fields)return;currentTokens=tokenize(r.desc);
     const seen=[]; const ui=[];
     currentTokens.forEach(t=>{if(t.type==='select'){ui.push(`<div class="v14-field"><label class="v14-label">ESCOLHA</label><select class="v14-select v14-gfield" data-key="${t.key}">${t.options.map(o=>`<option>${esc(o)}</option>`).join('')}</select><small>${esc(t.raw)}</small></div>`);}else if(t.placeholder){const key=t.key;ui.push(`<div class="v14-field"><label class="v14-label">CAMPO ${key.replace('f','')}</label><input class="v14-input v14-gfield" data-key="${key}" placeholder="Preencher..." autocomplete="off"></div>`);}});
+    const legalOpen=(r.legal_flags||[]).some(f=>String(f).includes('CAMPO LEGAL EM ABERTO'));
+    if(legalOpen){
+      let opts=[];
+      if(r.name==='TRANSPORTE GRANDES DIMENSÕES SEM ESCOLTA POLICIAL') opts=[['a)','Art. 19.º, n.º 1, al. a) — comprimento'],['b)','Art. 19.º, n.º 1, al. b) — largura'],['c)','Art. 19.º, n.º 1, al. c) — altura']];
+      else if(r.name==='TRANSPORTE GRANDES DIMENSÕES SEM UM CARRO PILOTO') opts=[['a)','Art. 17.º, n.º 1, al. a) — comprimento'],['b)','Art. 17.º, n.º 1, al. b) — largura']];
+      else if(r.name==='TRANSPORTE GRANDES DIMENSÕES SEM DOIS CARROS PILOTO') opts=[['a)','Art. 17.º, n.º 2, al. a) — comprimento'],['b)','Art. 17.º, n.º 2, al. b) — largura']];
+      if(opts.length) ui.push(`<div class="v14-field"><label class="v14-label">ENQUADRAMENTO LEGAL OBRIGATÓRIO</label><select class="v14-select v14-gfield" data-key="legalAl"><option value="">— selecionar —</option>${opts.map(o=>`<option value="${esc(o[0])}" data-desc="${esc(o[1])}">${esc(o[1])}</option>`).join('')}</select><small>A alínea depende do facto efetivamente verificado. Não é assumida automaticamente.</small></div>`);
+    }
     fields.innerHTML=ui.length?ui.join(''):'<div class="v14-muted">Esta descrição não contém campos variáveis. Pode copiá-la diretamente.</div>';
     document.getElementById('v14GenInfo').innerHTML=`<strong>${esc(r.name)}</strong> • ${esc(r.sheet)} • ${esc(r.code)} • ${esc(r.fine)}<br>${esc(r.basis)}`;
     document.getElementById('v14GenWarning').innerHTML=r.legal_flags.length?`<div class="v14-note v14-alert"><strong>Atenção:</strong> ${esc(r.legal_flags.join(' '))}</div>`:'';
@@ -19632,10 +19640,14 @@ html body [contenteditable="true"]{
   window.v14GenRender=function(){
     const r=DATA[currentGenIndex];if(!r)return;
     const vals={};document.querySelectorAll('.v14-gfield').forEach(el=>vals[el.dataset.key]=el.value||'________________');
-    const out=currentTokens.map(t=>{if(t.type==='text')return t.text;if(t.type==='select')return vals[t.key]||t.options[0]||'';return vals[t.key]||'________________';}).join('');
+    let out=currentTokens.map(t=>{if(t.type==='text')return t.text;if(t.type==='select')return vals[t.key]||t.options[0]||'';return vals[t.key]||'________________';}).join('');
+    if(vals.legalAl && vals.legalAl!=='________________'){
+      out=out.replace(/al\. __\)/g,`al. ${vals.legalAl}`);
+      if(r.name==='TRANSPORTE GRANDES DIMENSÕES SEM DOIS CARROS PILOTO') out=out.replace(/n\.º__/g,'n.º 2');
+    }
     const warning=document.getElementById('v14GenWarning');
     const blocked=(r.legal_flags||[]).some(f=>String(f).includes('CAMPO LEGAL EM ABERTO'));
-    const incomplete=/_{3,}|__\)/.test(out);
+    const incomplete=/_{3,}|__\)/.test(out) || ((r.legal_flags||[]).some(f=>String(f).includes('CAMPO LEGAL EM ABERTO')) && (!vals.legalAl || vals.legalAl==='________________'));
     const btn=document.querySelector('button[onclick="window.v14GenCopy()"]');
     if(blocked || incomplete){
       if(warning) warning.innerHTML=(r.legal_flags||[]).length?`<div class="v14-note v14-alert"><strong>Atenção:</strong> ${esc(r.legal_flags.join(' '))}<br><strong>Antes de copiar:</strong> preencha todos os campos variáveis e a alínea/número legal aplicável.</div>`:'<div class="v14-note v14-alert"><strong>Atenção:</strong> preencha todos os campos variáveis antes de copiar.</div>';
@@ -19750,5 +19762,7 @@ html body [contenteditable="true"]{
   try{document.querySelectorAll('strong').forEach(e=>{if(e.textContent.trim()==='1.3')e.textContent='1.4'})}catch(_){}
 })();
 </script>
+</body>
+</html>
 </body>
 </html>
