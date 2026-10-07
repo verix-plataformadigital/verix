@@ -3,7 +3,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "content-type",
   "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
   "Cache-Control": "no-store, max-age=0",
-  "Vary": "Origin"
+  "Vary": "Origin",
+  "X-Content-Type-Options": "nosniff"
 };
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
@@ -120,7 +121,6 @@ Deno.serve(async (req: Request) => {
     if (!date) return json({ ok: false, error: "invalid_date" }, 400);
 
     const installationId = cleanText(body?.installationId, 120);
-    const queryId = cleanText(body?.queryId, 120);
 
     if (!installationId) return json({ ok: false, error: "missing_installation" }, 400);
 
