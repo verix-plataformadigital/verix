@@ -1087,6 +1087,14 @@ function submitConjunto(event) {
 
  guardarHistorico(valVeiculo, valReboque, window.__VERIX_CURRENT_QUERY_ID);
 
+ // ASF é um canal independente do RNSI/IMT. Disparar primeiro garante que
+ // uma falha de navegação dos frames internos nunca impede a consulta de seguro.
+ try {
+   consultarSeguroASF(valVeiculo || valReboque);
+ } catch (e) {
+   console.error('[ASF] Falha ao iniciar consulta:', e);
+ }
+
  const placaInspecao = valVeiculo || valReboque;
  const placaLivrete = valReboque || valVeiculo;
  const baseIMT = 'http://consultapsp.imtt.external.rnsi.local/veiculos/';
@@ -1123,9 +1131,6 @@ function submitConjunto(event) {
  inputVeiculo.value = '';
  inputReboque.value = '';
  try { inputVeiculo.focus(); } catch (_) {}
-
- // Uma única consulta ASF por submissão.
- consultarSeguroASF(ultimaMatriculaPesquisada);
  }
 
  function obterMatriculaOuVazia() {
