@@ -214,27 +214,27 @@ async function enrichAsfDiagnostics(diagnostics:any, now:string) {
 }
 
 
-function n(v){const x=Number(v);return Number.isFinite(x)?x:null;}
-function cinSnapshotOf(e){
+function n(v:any){const x=Number(v);return Number.isFinite(x)?x:null;}
+function cinSnapshotOf(e:any){
   const c=e?.metadata?.cin;
   return c && typeof c==="object" && !Array.isArray(c) ? c : null;
 }
-function percentile(values,p){
-  const a=values.filter(Number.isFinite).sort((x,y)=>x-y);
+function percentile(values:number[],p:number){
+  const a=values.filter(Number.isFinite).sort((x:number,y:number)=>x-y);
   if(!a.length)return null;
   const i=(a.length-1)*p, lo=Math.floor(i), hi=Math.ceil(i);
   return lo===hi?a[lo]:a[lo]+(a[hi]-a[lo])*(i-lo);
 }
-function sessionPattern(rows){
+function sessionPattern(rows:any[]){
   const speedRows=rows.filter((e:any)=>e.event==="cinemometer_speed_entry" && cinSnapshotOf(e)?.velocidade_registada!=null);
   const calculationRows=rows.filter((e:any)=>e.event==="cinemometer_calculation" && cinSnapshotOf(e)?.velocidade_registada!=null);
   const measurements=speedRows.length?speedRows:calculationRows;
   const speeds=measurements.map((e:any)=>Number(cinSnapshotOf(e).velocidade_registada)).filter(Number.isFinite);
   const unique=[...new Set(speeds)];
-  const times=measurements.map((e:any)=>new Date(e.occurred_at).getTime()).filter(Number.isFinite).sort((a,b)=>a-b);
+  const times=measurements.map((e:any)=>new Date(e.occurred_at).getTime()).filter(Number.isFinite).sort((a:number,b:number)=>a-b);
   const intervals=[]; for(let i=1;i<times.length;i++) intervals.push((times[i]-times[i-1])/1000);
-  const round5=speeds.length?100*speeds.filter(v=>v%5===0).length/speeds.length:null;
-  const round10=speeds.length?100*speeds.filter(v=>v%10===0).length/speeds.length:null;
+  const round5=speeds.length?100*speeds.filter((v:number)=>v%5===0).length/speeds.length:null;
+  const round10=speeds.length?100*speeds.filter((v:number)=>v%10===0).length/speeds.length:null;
   const repeats=speeds.length>1?100*(1-unique.length/speeds.length):0;
   let monotonic=true, direction=0;
   for(let i=1;i<speeds.length;i++){
@@ -243,12 +243,12 @@ function sessionPattern(rows){
     if(direction===0)direction=d>0?1:-1;
     else if((d>0?1:-1)!==direction){monotonic=false;break;}
   }
-  const counts=new Map<number,number>(); speeds.forEach(v=>counts.set(v,(counts.get(v)||0)+1));
+  const counts=new Map<number,number>(); speeds.forEach((v:number)=>counts.set(v,(counts.get(v)||0)+1));
   const top=[...counts.entries()].sort((a,b)=>b[1]-a[1]).slice(0,2);
   let alternating2=false;
   if(speeds.length>=6 && top.length===2){
-    alternating2=speeds.every((v,i)=>i%2===0?v===top[0][0]:v===top[1][0]) ||
-                 speeds.every((v,i)=>i%2===0?v===top[1][0]:v===top[0][0]);
+    alternating2=speeds.every((v:number,i:number)=>i%2===0?v===top[0][0]:v===top[1][0]) ||
+                 speeds.every((v:number,i:number)=>i%2===0?v===top[1][0]:v===top[0][0]);
   }
   const copies=rows.filter((e:any)=>e.event==="cinemometer_copy_code"||e.event==="cinemometer_copy_text").length;
   const configCount=measurements.filter((e:any)=>cinSnapshotOf(e)?.aparelho_configurado===true).length;
@@ -279,7 +279,7 @@ function sessionPattern(rows){
     unique_speeds:unique.length,
     min_speed:speeds.length?Math.min(...speeds):null,
     max_speed:speeds.length?Math.max(...speeds):null,
-    avg_speed:speeds.length?speeds.reduce((a,b)=>a+b,0)/speeds.length:null,
+    avg_speed:speeds.length?speeds.reduce((a:number,b:number)=>a+b,0)/speeds.length:null,
     speed_p50:percentile(speeds,.5),
     round5_pct:round5,
     round10_pct:round10,
@@ -506,11 +506,11 @@ async function loadCinemometerAnalytics24h(now:string){
     sessions_with_operator:sessions.filter(s=>s.operator.identificado).length,
     sessions_with_apparatus:sessions.filter(s=>s.aparelho?.configurado).length,
     speed_p50:percentile(speeds,.5),
-    speed_avg:speeds.length?speeds.reduce((a,b)=>a+b,0)/speeds.length:null,
+    speed_avg:speeds.length?speeds.reduce((a:number,b:number)=>a+b,0)/speeds.length:null,
     speed_min:speeds.length?Math.min(...speeds):null,
     speed_max:speeds.length?Math.max(...speeds):null,
-    round5_pct:speeds.length?100*speeds.filter(v=>v%5===0).length/speeds.length:null,
-    round10_pct:speeds.length?100*speeds.filter(v=>v%10===0).length/speeds.length:null,
+    round5_pct:speeds.length?100*speeds.filter((v:number)=>v%5===0).length/speeds.length:null,
+    round10_pct:speeds.length?100*speeds.filter((v:number)=>v%10===0).length/speeds.length:null,
     sessions_compatible:sessions.filter(s=>s.pattern==="compativel_com_uso_operacional").length,
     sessions_atypical:sessions.filter(s=>s.pattern==="padrao_atipico_a_rever").length,
     sessions_with_copy:sessions.filter(s=>s.copies>0).length,
@@ -552,7 +552,7 @@ async function resetState() {
   return rows?.[0]?.reset_24h_at || null;
 }
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
   const origin = req.headers.get("origin");
   if (!isAllowedOrigin(origin)) {
     return json({ok:false,error:"origin_not_allowed"},403,req);
