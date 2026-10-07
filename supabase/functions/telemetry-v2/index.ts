@@ -57,13 +57,6 @@ const db = createClient(SUPABASE_URL, secretKey, {
   auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
 });
 
-const ALLOWED_ORIGINS = new Set([
-  "https://verix-plataformadigital.github.io",
-  "https://verix.vxops.workers.dev",
-  "http://localhost",
-  "http://127.0.0.1"
-]);
-
 const allowedEvents = new Set([
   "app_open","heartbeat","vehicle_lookup",
   "vehicle_insurance_pending","vehicle_insurance_yes",
