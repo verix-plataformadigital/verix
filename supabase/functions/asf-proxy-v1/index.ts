@@ -73,6 +73,38 @@ function base64UrlDecode(value: string): Uint8Array {
   return Uint8Array.from(binary, c => c.charCodeAt(0));
 }
 
+async function hmacHex(value: string): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(GATE_SECRET),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const bytes = new Uint8Array(await crypto.subtle.sign(
+    "HMAC", key, new TextEncoder().encode(value)
+  ));
+  return [...bytes].map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+function safeEqual(a: string, b: string): boolean {
+  a = String(a || "");
+  b = String(b || "");
+  const max = Math.max(a.length, b.length);
+  let diff = a.length ^ b.length;
+  for (let i = 0; i < max; i++) {
+    diff |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0);
+  }
+  return diff === 0;
+}
+
+function base64UrlDecode(value: string): Uint8Array {
+  let s = String(value || "").replace(/-/g, "+").replace(/_/g, "/");
+  while (s.length % 4) s += "=";
+  const binary = atob(s);
+  return Uint8Array.from(binary, c => c.charCodeAt(0));
+}
+
 async function verifyClientToken(
   token: string,
   buildId: string,
@@ -84,27 +116,8 @@ async function verifyClientToken(
   if (parts.length !== 3 || parts[0] !== "v1") return false;
 
   const encoded = parts[1];
-  const signature = base64UrlDecode(
-    parts[2]
-      .replace(/\\+/g, "-")
-      .replace(/\\//g, "_")
-  );
-
-  const key = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(GATE_SECRET),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["verify"]
-  );
-
-  const validSignature = await crypto.subtle.verify(
-    "HMAC",
-    key,
-    signature,
-    new TextEncoder().encode(encoded)
-  );
-  if (!validSignature) return false;
+  const expectedSignature = await hmacHex(encoded);
+  if (!safeEqual(expectedSignature, parts[2])) return false;
 
   try {
     const payload = JSON.parse(
@@ -121,28 +134,6 @@ async function verifyClientToken(
   } catch (_) {
     return false;
   }
-}
-
-function cleanText(value: unknown, max: number): string {
-  return String(value ?? "").trim().slice(0, max);
-}
-
-function normalizePlate(value: unknown): string {
-  return cleanText(value, 20).toUpperCase().replace(/[^A-Z0-9]/g, "");
-}
-
-function validDate(value: unknown): string | null {
-  const s = cleanText(value, 10);
-  const m = s.match(/^(\d{4})\/(\d{2})\/(\d{2})$/);
-  if (!m) return null;
-  const y = Number(m[1]);
-  const mo = Number(m[2]);
-  const d = Number(m[3]);
-  if (!Number.isInteger(y) || !Number.isInteger(mo) || !Number.isInteger(d)) return null;
-  if (mo < 1 || mo > 12 || d < 1 || d > 31) return null;
-  const dt = new Date(Date.UTC(y, mo - 1, d));
-  if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== mo - 1 || dt.getUTCDate() !== d) return null;
-  return s;
 }
 
 Deno.serve(async (req: Request) => {
