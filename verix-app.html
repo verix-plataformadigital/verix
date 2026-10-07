@@ -18576,18 +18576,15 @@ html body .toast-notification {
     var o=document.getElementById('verixAsfNoticeOverlay');
     if(!o) return;
 
-    /* O splash inicial tem prioridade visual.
-       O aviso só entra depois de o opsBootOverlay desaparecer. */
-    function esperarSplash(){
-      var boot=document.getElementById('opsBootOverlay');
-      if(boot){
-        setTimeout(esperarSplash,80);
-        return;
-      }
+    /* O splash inicial tem prioridade visual durante ~1,2 s. */
+    var boot=document.getElementById('opsBootOverlay');
+    if(boot){
+      setTimeout(function(){
+        o.setAttribute('aria-hidden','false');
+      },1250);
+    }else{
       o.setAttribute('aria-hidden','false');
     }
-
-    esperarSplash();
   }
 
   window.fecharAvisoASFInicial=function(){
