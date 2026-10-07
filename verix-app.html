@@ -1577,6 +1577,8 @@ function submitConjunto(event) {
     if (nodes.length === 0) return { estado: 'nao', node: null, nodes: nodes };
 
     var nodeSeguro = nodes.find(function (node) {
+      // CRITÉRIO PRIMÁRIO: apenas a existência de licença não nula confirma o registo.
+      // entity, policy, datas, code e logo são apenas dados complementares de apresentação.
       return node && node.license != null;
     });
 
@@ -1588,7 +1590,7 @@ function submitConjunto(event) {
   async function realizarConsultaASF_IPO(matLimpa, matDisplay, queryId) {
     var dataHoje = formatarDataASF(new Date());
     // Query mínima alinhada com o canal de referência.
-    var queryGQL = 'mutation license { mobishoutEntry { noone { entry { licenseNumber(license: "' + matLimpa + '", date: "' + dataHoje + '") { nodes { id license } } } } } }';
+    var queryGQL = 'mutation license { mobishoutEntry { noone { entry { licenseNumber(license: "' + matLimpa + '", date: "' + dataHoje + '") { nodes { id entity startDate endDate policy license code logo } } } } } }';
     var url = ASF_API_URL + encodeURIComponent(queryGQL);
 
     var resposta = await efetuarPedidoHttpASF(url, matDisplay, queryId);
