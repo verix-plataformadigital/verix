@@ -1,5 +1,5 @@
 /* VÉRIX ASF — modo simples/directo
-   1 matrícula = 1 POST directo ao endpoint ASF.
+   1 matrícula = 1 GET directo ao endpoint ASF.
    Sem retries, sem fallback, sem fila, sem espera/cadência.
    A interpretação usa o parser ASF já validado da aplicação.
 */
@@ -74,7 +74,7 @@
       }
 
       var options = {
-        method: 'POST',
+        method: 'GET',
         cache: 'no-store',
         credentials: 'omit',
         mode: 'cors',
