@@ -12102,8 +12102,12 @@ body.fixed-workspace-active .main.consultation-fixed-active .panel{min-height:0!
  return ver==='primeira'?0.03:0.05;
  };
 
- window.cinEtiquetaEMA=function(){
- return (cinEMA()*100).toFixed(0)+' %';
+ window.cinEtiquetaEMA=function(registada){
+ const v=Number.isFinite(Number(registada))
+   ? Number(registada)
+   : parseFloat(document.getElementById('cinRegistada')?.value);
+ const pct=(cinEMA()*100).toFixed(0);
+ return Number.isFinite(v) && v>100 ? '± '+pct+' %' : '± '+pct+' km/h';
  };
 
  window.cinCalcularDeducida=function(registada){
@@ -12185,18 +12189,20 @@ body.fixed-workspace-active .main.consultation-fixed-active .panel{min-height:0!
  };
 
  window.cinAtualizarEMA=function(){
- const pct=(cinEMA()*100).toFixed(0)+' %';
+ const registada=parseFloat(document.getElementById('cinRegistada')?.value);
+ const pct=(cinEMA()*100).toFixed(0);
+ const etiqueta=cinEtiquetaEMA(registada);
  const ver=(document.getElementById('cinVerificacao')?.value==='primeira')?'1.ª verificação':'Verificação periódica';
  const e=document.getElementById('cinEmaValor');
  const n=document.getElementById('cinEmaNota');
  const top=document.getElementById('cinEmaTopValor');
  const topNota=document.getElementById('cinEmaTopNota');
- if(e)e.textContent=pct;
+ if(e)e.textContent=etiqueta;
  if(n){n.textContent=ver;n.classList.add('cin-v61-ema-note');}
- if(top)top.textContent=pct;
+ if(top)top.textContent=etiqueta;
  const modoEl=document.getElementById('cinSessaoModo');
  const modoTexto=modoEl?.selectedOptions?.[0]?.textContent||'Fixo';
- if(topNota)topNota.textContent=modoTexto+' • '+ver;
+ if(topNota)topNota.textContent=modoTexto+' • '+ver+' • '+pct+'% acima de 100 km/h';
  try{cinRecalcular();}catch(e){}
  };
 
