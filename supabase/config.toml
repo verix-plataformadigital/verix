@@ -8,3 +8,5 @@ verify_jwt = false
 verify_jwt = false
 [functions.hourly-history-v2]
 verify_jwt = false
+[functions.asf-proxy-v1]
+verify_jwt = false
