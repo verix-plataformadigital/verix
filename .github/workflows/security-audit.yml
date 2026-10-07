@@ -1,0 +1,43 @@
+name: VÉRIX Security Audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build secure release
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install release tooling
+        run: npm install --ignore-scripts --no-audit --no-fund
+
+      - name: Produce hardened build
+        env:
+          VERIX_BUILD_ID: 1.5-sec-20261008-a
+        run: npm run build:secure
+
+      - name: Verify release does not contain source maps
+        run: |
+          test ! -f dist/verix-app.html.map
+          ! grep -R "\\.map" dist/verix-app.html
+
+      - name: Verify required security markers
+        run: |
+          grep -q "verix-gate-v1" verix-app.html
+          grep -q "X-Verix-Build-Id" verix-app.html
+          grep -q "X-Verix-Client-Token" verix-app.html
