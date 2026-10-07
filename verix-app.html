@@ -1541,6 +1541,32 @@ function submitConjunto(event) {
     return efetuarPedidoHttpASF(url);
   }
 
+  async function aguardarEspacamentoASF(matricula) {
+    /*
+     * Garante apenas o intervalo mínimo entre pedidos à ASF.
+     * Esta função fica definida localmente no motor ASF para evitar
+     * referências quebradas por versões antigas/cacheadas.
+     */
+    let restante = Math.max(
+      0,
+      ASF_INTERVAL_MS - (agoraASF() - ASF_ULTIMO_PEDIDO_MS)
+    );
+
+    while (restante > 0) {
+      mostrarSeguroLoading(
+        matricula,
+        'A AGUARDAR ' + Math.ceil(restante / 1000) + 's — intervalo ASF'
+      );
+      await esperarASF(Math.min(restante, 250));
+      restante = Math.max(
+        0,
+        ASF_INTERVAL_MS - (agoraASF() - ASF_ULTIMO_PEDIDO_MS)
+      );
+    }
+
+    ASF_ULTIMO_PEDIDO_MS = agoraASF();
+  }
+
   async function consultarSeguroASF(matricula) {
     const mat = String(matricula || '').trim().toUpperCase();
     if (!mat || ASF_EM_CURSO) return;
