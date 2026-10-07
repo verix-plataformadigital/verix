@@ -11763,78 +11763,6 @@ body.cinemometro-page-active{
  }
  }
 
- const _cinV44AtualizarLimite=window.cinAtualizarLimite;
- window.cinAtualizarLimite=function(){
- const r=document.getElementById('cinRegime')?.value||'local_geral';
- const l=document.getElementById('cinLimite');
- const fonte=document.getElementById('cinLimiteFonte');
- const label=document.getElementById('cinLimiteLabel');
- if(r==='auto_placas'){
- if(l){l.dataset.manual='0';l.value='100';l.placeholder='100';}
- if(label)label.textContent='LIMITE ENTRE PLACAS';
- if(fonte)fonte.textContent='O programa aplica o limite operacional definido para esta configuração.';
- try{cinRecalcular();}catch(e){}
- cinV44AtualizarRegimeVisual();
- return;
- }
- if(r==='local_placas'||r==='fora_placas'){
- if(l){l.dataset.manual='1';l.value='';l.placeholder='Valor sinalizado';}
- if(label)label.textContent='LIMITE ENTRE PLACAS';
- if(fonte)fonte.textContent='Introduza o limite definido pela sinalização aplicável no local.';
- try{cinRecalcular();}catch(e){}
- cinV44AtualizarRegimeVisual();
- return;
- }
- if(typeof _cinV44AtualizarLimite==='function') _cinV44AtualizarLimite();
- cinV44AtualizarRegimeVisual();
- };
-
- // Mantém o modo atual, mas reconhece Autoestrada entre placas como enquadramento fora de localidade.
- if(typeof window.cinClassificarExcesso==='function'){
- const _origClass=window.cinClassificarExcesso;
- window.cinClassificarExcesso=function(excesso){
- const r=document.getElementById('cinRegime')?.value||'local_geral';
- if(r==='auto_placas'){
- const vGrupo=typeof cinGrupoVeiculoV42==='function'?cinGrupoVeiculoV42():'ligeiros';
- const ligeiro=(vGrupo==='ligeiros');
- const limGrave=ligeiro?30:20, limMuito=ligeiro?60:40, limTopo=ligeiro?80:60;
- if(excesso<=limGrave)return {gravidade:'Leve',coima:'60€ a 300€',pontos:'—',inibicao:'—',faixa:'leve'};
- if(excesso<=limMuito)return {gravidade:'Grave',coima:'120€ a 600€',pontos:'2',inibicao:'1 mês a 1 ano',faixa:'grave'};
- if(excesso<=limTopo)return {gravidade:'Muito Grave',coima:'300€ a 1500€',pontos:'4',inibicao:'2 meses a 2 anos',faixa:'muito'};
- return {gravidade:'Muito Grave',coima:'500€ a 2500€',pontos:'4',inibicao:'2 meses a 2 anos',faixa:'topo'};
- }
- return _origClass(excesso);
- };
- }
- if(typeof window.cinCodigoOperacional==='function'){
- const _origCode=window.cinCodigoOperacional;
- window.cinCodigoOperacional=function(classificacao){
- const r=document.getElementById('cinRegime')?.value||'local_geral';
- if(r==='auto_placas')return ({leve:'1860270113',grave:'2860270114',muito:'3860270115',topo:'3860270116'})[classificacao?.faixa]||'—';
- return _origCode(classificacao);
- };
- }
-
- // Texto do auto: Posto + N.º + Nome. Ex.: Cabo N.º 2230453 - Luis Ferraz.
- const _origTexto=window.cinMontarTexto;
- if(typeof _origTexto==='function'){
- window.cinMontarTexto=function(){
- _origTexto();
- const ta=document.getElementById('cinTexto');
- if(!ta)return;
- let t=ta.value||'';
- const no=(document.getElementById('cinSessaoOperadorNo')?.value||'').trim();
- const nome=(document.getElementById('cinSessaoOperadorNome')?.value||'').trim();
- const posto=(document.getElementById('cinSessaoOperadorPosto')?.value||'').trim();
- const re=/Operador(?:\s+n\.º\s*[^—.]+)?(?:\s+—\s*[^.]+)?(?:\s+—\s*[^.]+)?\.?$/;
- const dados=[posto?posto+' N.º '+no:'',(!posto&&no)?'N.º '+no:'',nome?((posto||no)?' - ':'')+nome:''].filter(Boolean).join('').replace(/N\.º\s*-\s*/,'N.º ');
- if(dados){
- if(re.test(t)) t=t.replace(re,dados+'.');
- else t=t.replace(/\s*$/,'')+' '+dados+'.';
- }
- ta.value=t;
- };
- }
 
  document.addEventListener('change',function(e){
  if(e.target?.id==='cinRegime') setTimeout(cinV44AtualizarRegimeVisual,0);
@@ -11843,59 +11771,7 @@ body.cinemometro-page-active{
  try{cinV44AtualizarRegimeVisual();}catch(e){}
  },0);
 })();
-</script>\n\n<!-- ===== v45 — ENTRE PLACAS + FORMATO OPERADOR ===== -->\n<script>
-(function(){
- // Entre placas: classifica pelo excesso relativamente ao limite sinalizado.
- // Os códigos abaixo são os que constam da ficha operacional M1 HP2 "Entre Placas" fornecida.
- const _v44Class=window.cinClassificarExcesso;
- window.cinClassificarExcesso=function(excesso){
- const r=document.getElementById('cinRegime')?.value||'local_geral';
- if(['local_placas','fora_placas','auto_placas'].includes(r)){
- const grupo=typeof cinGrupoVeiculoV42==='function'?cinGrupoVeiculoV42():'ligeiros';
- const ligeiro=grupo==='ligeiros';
- const limGrave=ligeiro?30:20;
- const limMuito=ligeiro?60:40;
- const limTopo=ligeiro?80:60;
- if(excesso<=limGrave)return {gravidade:'Leve',coima:'60€ a 300€',pontos:'—',inibicao:'—',faixa:'leve'};
- if(excesso<=limMuito)return {gravidade:'Grave',coima:'120€ a 600€',pontos:'2',inibicao:'1 mês a 1 ano',faixa:'grave'};
- if(excesso<=limTopo)return {gravidade:'Muito Grave',coima:'300€ a 1500€',pontos:'4',inibicao:'2 meses a 2 anos',faixa:'muito'};
- return {gravidade:'Muito Grave',coima:'500€ a 2500€',pontos:'4',inibicao:'2 meses a 2 anos',faixa:'topo'};
- }
- return typeof _v44Class==='function'?_v44Class(excesso):null;
- };
-
- const _v44Code=window.cinCodigoOperacional;
- window.cinCodigoOperacional=function(classificacao){
- const r=document.getElementById('cinRegime')?.value||'local_geral';
- if(['local_placas','fora_placas','auto_placas'].includes(r)){
- return ({leve:'1860280110',grave:'2860280111',muito:'3860280112',topo:'3860280113'})[classificacao?.faixa]||'—';
- }
- return typeof _v44Code==='function'?_v44Code(classificacao):'—';
- };
-
- // Formato do operador: "Cabo N.º 2230453 - Luis Ferraz."
- const _v44Texto=window.cinMontarTexto;
- window.cinMontarTexto=function(){
- if(typeof _v44Texto!=='function')return;
- _v44Texto();
- const ta=document.getElementById('cinTexto'); if(!ta)return;
- let t=ta.value||'';
- const no=(document.getElementById('cinSessaoOperadorNo')?.value||'').trim();
- const nome=(document.getElementById('cinSessaoOperadorNome')?.value||'').trim();
- const posto=(document.getElementById('cinSessaoOperadorPosto')?.value||'').trim();
- const partes=[];
- if(posto)partes.push(posto);
- if(no)partes.push('N.º '+no);
- let operador=partes.join(' ');
- if(nome)operador+=(operador?' - ':'')+nome;
- if(!operador)return;
- const re=/Operador(?:\s+n\.º\s*[^—.]+)?(?:\s+—\s*[^.]+)?(?:\s+—\s*[^.]+)?\.?$/;
- if(re.test(t))t=t.replace(re,operador+'.');
- else t=t.replace(/\s*$/,'')+' '+operador+'.';
- ta.value=t;
- };
-})();
-</script>
+</script>\n\n<!-- ===== v45 — ENTRE PLACAS + FORMATO OPERADOR ===== -->\n
 
 <style id="cin-v55-top-config-help">
 
