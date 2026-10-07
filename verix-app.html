@@ -1265,137 +1265,23 @@ function submitConjunto(event) {
   // UI do VÉRIX mantida; transporte e cadência = IPO exacto.
 
   const ASF_PROXY_URL = 'https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/asf-proxy-v1';
-  const ASF_TIMEOUT_MS = 12000;
-  const ASF_MIN_INTERVAL_MS = 8000;
-  const ASF_JANELA_SEG = 60;
-  const ASF_LIMITE_JANELA = 5;
-  const ASF_RATE_STORAGE_KEY = 'VERIX_ASF_RATE_STATE_V1';
-  /* SEM retries automáticos. SEM cache de resultados. 1 tentativa = 1 pedido físico. */
 
+  const ASF_TIMEOUT_MS = 15000;
+  const ASF_MAX_ATTEMPTS = 3;
+  const ASF_RETRY_DELAYS_MS = [300, 900];
+  /*
+   * Sem quota artificial VÉRIX por minuto.
+   * A fila apenas serializa pedidos concorrentes para proteger a estabilidade.
+   * Retries existem exclusivamente para falhas transitórias de transporte.
+   * Um 429 devolvido pela ASF é respeitado e não é contornado automaticamente.
+   */
 
-  var asfRequestTimes = [];
   var ASF_FILA = Promise.resolve();
-  var ASF_SERVER_COOLDOWN_UNTIL = 0;
   var ASF_FILA_PENDENTES = 0;
   var ASF_PENDING_TIMER = null;
 
   function agoraASF() { return Date.now(); }
   function esperarASF(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
-
-  // Mantém o limite VÉRIX após refresh/reabertura da página no mesmo posto.
-  // Isto impede que o cache-busting, por si só, seja usado para zerar a quota local.
-  function carregarEstadoRateASF() {
-    try {
-      var raw = localStorage.getItem(ASF_RATE_STORAGE_KEY);
-      if (!raw) return;
-      var obj = JSON.parse(raw);
-      var agora = agoraASF();
-      if (obj && Array.isArray(obj.times)) {
-        asfRequestTimes = obj.times.map(Number).filter(function (t) {
-          return Number.isFinite(t) && (agora - t) < ASF_JANELA_SEG * 1000;
-        }).slice(-ASF_LIMITE_JANELA);
-      }
-      if (obj && Number(obj.cooldownUntil) > agora) {
-        ASF_SERVER_COOLDOWN_UNTIL = Number(obj.cooldownUntil);
-      }
-    } catch (_) {}
-  }
-
-  function guardarEstadoRateASF() {
-    try {
-      var agora = agoraASF();
-      var times = (asfRequestTimes || []).filter(function (t) {
-        return Number.isFinite(t) && (agora - t) < ASF_JANELA_SEG * 1000;
-      }).slice(-ASF_LIMITE_JANELA);
-      localStorage.setItem(ASF_RATE_STORAGE_KEY, JSON.stringify({
-        times: times,
-        cooldownUntil: Number(ASF_SERVER_COOLDOWN_UNTIL || 0)
-      }));
-    } catch (_) {}
-  }
-
-  carregarEstadoRateASF();
-
-  function formatarDataASF(date) {
-    date = date || new Date();
-    var dd = String(date.getDate()).padStart(2, '0');
-    var mm = String(date.getMonth() + 1).padStart(2, '0');
-    var yyyy = date.getFullYear();
-    return yyyy + '/' + mm + '/' + dd;
-  }
-
-  function formatarDataPT(valor) {
-    if (valor === undefined || valor === null || String(valor).trim() === '' || String(valor) === '—') return '—';
-    var s = String(valor).trim();
-    var m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
-    if (m) return m[3] + '/' + m[2] + '/' + m[1];
-    m = s.match(/^(\d{4})\/(\d{2})\/(\d{2})/);
-    if (m) return m[3] + '/' + m[2] + '/' + m[1];
-    return s;
-  }
-
-  function normalizarMatriculaExata(mat) {
-    return formatarMatriculaVeiculo(mat);
-  }
-
-  function formatarMatriculaDisplay(mat) {
-    // O ecrã ASF deve mostrar a matrícula exatamente no formato já
-    // apresentado no campo de consulta; não voltar a aplicar a regra 2-2-2.
-    return String(mat || '').trim().toUpperCase();
-  }
-
-  function sanitizarMatriculaASF(matricula) {
-    // IGUAL AO IPO_2.2: no pedido ASF a matrícula vai sem hífens/separadores.
-    // O formato com hífen fica apenas na apresentação do VÉRIX.
-    return String(matricula || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
-  }
-
-  function escapeHtml(value) {
-    return String(value == null ? '' : value)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-  }
-
-  function valorCampo(obj, nomes, fallback) {
-    fallback = fallback || '';
-    if (!obj) return fallback;
-    for (var i = 0; i < nomes.length; i++) {
-      var v = obj[nomes[i]];
-      if (v !== undefined && v !== null && String(v).trim() !== '') {
-        if (typeof v === 'object') return v.name || v.label || v.value || v.description || fallback;
-        return String(v);
-      }
-    }
-    return fallback;
-  }
-
-  function limparJanelaASF() {
-    carregarEstadoRateASF();
-    var t = agoraASF();
-    var antes = asfRequestTimes.length;
-    asfRequestTimes = asfRequestTimes.filter(function (x) { return (t - x) < ASF_JANELA_SEG * 1000; });
-    if (asfRequestTimes.length !== antes) guardarEstadoRateASF();
-  }
-
-  function calcularAtrasoCadenciaASF() {
-    var agora = agoraASF();
-    limparJanelaASF();
-    var atraso = 0;
-    if (asfRequestTimes.length) {
-      var decorrido = agora - asfRequestTimes[asfRequestTimes.length - 1];
-      if (decorrido < ASF_MIN_INTERVAL_MS) atraso = Math.max(atraso, ASF_MIN_INTERVAL_MS - decorrido);
-    }
-    if (asfRequestTimes.length >= ASF_LIMITE_JANELA) {
-      atraso = Math.max(atraso, (asfRequestTimes[0] + ASF_JANELA_SEG * 1000) - agora + 200);
-    }
-    if (ASF_SERVER_COOLDOWN_UNTIL > agora) {
-      atraso = Math.max(atraso, ASF_SERVER_COOLDOWN_UNTIL - agora);
-    }
-    return Math.max(0, Math.ceil(atraso));
-  }
 
   function atualizarContadorVisualASF() {
     var widget = document.getElementById('asfRateWidget');
@@ -1404,59 +1290,26 @@ function submitConjunto(event) {
     var windowText = document.getElementById('asfRateWindowText');
     if (!widget || !cd) return;
 
-    limparJanelaASF();
-    var agora = agoraASF();
-    var restoMs = calcularAtrasoCadenciaASF();
-    var restoSeg = Math.max(0, Math.ceil(restoMs / 1000));
-    var usados = Math.min(asfRequestTimes.length, ASF_LIMITE_JANELA);
-    var disponiveis = Math.max(0, ASF_LIMITE_JANELA - usados);
-
-    if (usage) usage.innerHTML = usados + ' / ' + ASF_LIMITE_JANELA + ' <strong>60S</strong>';
-    if (windowText) {
-      windowText.textContent = disponiveis === 1 ? '1 PESQUISA DISPONÍVEL' : disponiveis + ' PESQUISAS DISPONÍVEIS';
-      windowText.setAttribute('data-window-state', usados >= ASF_LIMITE_JANELA ? 'full' : 'ready');
-    }
-
     widget.classList.remove('warn', 'high', 'cooldown', 'asf-wait-state');
+    if (usage) usage.innerHTML = 'SEM QUOTA LOCAL';
 
-    if (usados >= ASF_LIMITE_JANELA) widget.classList.add('high');
-    else if (usados >= ASF_LIMITE_JANELA - 1) widget.classList.add('warn');
-
-    if (restoSeg > 0) {
-      widget.classList.add('cooldown');
-      cd.textContent = restoSeg + 's';
-      cd.setAttribute('data-state', 'wait');
-      cd.title = 'Próxima pesquisa disponível em ' + restoSeg + ' segundos';
-    } else {
-      cd.textContent = 'LIVRE';
-      cd.setAttribute('data-state', 'ready');
-      cd.title = 'Pode iniciar uma nova pesquisa ASF';
+    if (windowText) {
+      windowText.textContent = (ASF_FILA_PENDENTES || 0) > 0
+        ? (ASF_FILA_PENDENTES + ' CONSULTA' + (ASF_FILA_PENDENTES === 1 ? '' : 'S') + ' EM FILA')
+        : 'PESQUISA DISPONÍVEL';
+      windowText.setAttribute('data-window-state', 'ready');
     }
+
+    cd.textContent = (ASF_FILA_PENDENTES || 0) > 0 ? 'A PROCESSAR' : 'LIVRE';
+    cd.setAttribute('data-state', 'ready');
+    cd.title = 'Sem limite local VÉRIX; pedidos concorrentes são processados sequencialmente.';
   }
-  setInterval(atualizarContadorVisualASF, 1000);
 
-  // ---- ASF scheduling + diagnostics ----
-  // Uma consulta = uma tentativa física. Este bloco é deliberadamente
-  // independente do transporte (WinHTTP ou Fetch) para que o diagnóstico
-  // não possa quebrar o próprio motor ASF.
-  function reservarSlotFisicoASF(matDisplay) {
-    var atraso = calcularAtrasoCadenciaASF();
-
-    while (atraso > 0) {
-      if (matDisplay) {
-        mostrarSeguroLoading(matDisplay, 'A AGUARDAR (' + Math.ceil(atraso / 1000) + 's)');
-      }
-      return esperarASF(Math.min(atraso, 1000)).then(function () {
-        return reservarSlotFisicoASF(matDisplay);
-      });
-    }
-
-    var agora = agoraASF();
-    asfRequestTimes.push(agora);
-    guardarEstadoRateASF();
+  function reservarSlotFisicoASF() {
     atualizarContadorVisualASF();
-    return Promise.resolve(agora);
+    return Promise.resolve(agoraASF());
   }
+  atualizarContadorVisualASF();
 
   function agoraMsASFDiag() { return Date.now(); }
 
@@ -1581,6 +1434,13 @@ function submitConjunto(event) {
     }
   }
 
+
+  function asfTentativaRetryable(status, errorType) {
+    if (Number(status) === 429) return false;
+    if ([502, 503, 504].indexOf(Number(status)) >= 0) return true;
+    return ['timeout', 'network', 'unknown'].indexOf(String(errorType || '')) >= 0;
+  }
+
   async function efetuarPedidoHttpASF(payload, matDisplay, queryId) {
     var diag = criarDiagASF(queryId, matDisplay);
     var queueStarted = agoraMsASFDiag();
@@ -1588,107 +1448,134 @@ function submitConjunto(event) {
     await reservarSlotFisicoASF(matDisplay);
     diag.asfQueueWaitMs = Math.max(0, agoraMsASFDiag() - queueStarted);
 
-    var tentativa = {
-      method: 'POST',
-      transport: (typeof ActiveXObject !== 'undefined') ? 'WinHTTP→VÉRIX-RELAY' : 'Fetch→VÉRIX-RELAY',
-      startedAt: agoraMsASFDiag(),
-      status: null,
-      durationMs: null,
-      errorType: null,
-      message: null,
-      responseBytes: null,
-      responseContentType: null
-    };
-
     var requestBody = JSON.stringify(payload || {});
-    var bodyText = '';
+    var ultimaTentativa = null;
 
-    try {
-      if (typeof ActiveXObject !== 'undefined') {
-        var xhr = new ActiveXObject('WinHttp.WinHttpRequest.5.1');
-        xhr.open('POST', ASF_PROXY_URL, false);
-        xhr.setTimeouts(10000, 10000, ASF_TIMEOUT_MS, ASF_TIMEOUT_MS);
-        xhr.setRequestHeader('Accept', 'application/json, text/plain, */*');
-        xhr.setRequestHeader('Content-Type', 'text/plain; charset=UTF-8');
-        xhr.send(requestBody);
-
-        tentativa.status = xhr.Status;
-        tentativa.responseContentType = null;
-        bodyText = xhr.ResponseText || '';
-      } else {
-        var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-        var timeoutId = null;
-        var timeoutForcado = false;
-
-        try {
-          timeoutId = setTimeout(function () {
-            timeoutForcado = true;
-            try { if (controller) controller.abort(); } catch (_) {}
-          }, ASF_TIMEOUT_MS);
-
-          var res = await fetch(ASF_PROXY_URL, {
-            method: 'POST',
-            cache: 'no-store',
-            credentials: 'omit',
-            mode: 'cors',
-            redirect: 'follow',
-            headers: {
-              'Accept': 'application/json, text/plain, */*',
-              /* text/plain mantém a chamada simples e evita preflight CORS. */
-              'Content-Type': 'text/plain;charset=UTF-8'
-            },
-            body: requestBody,
-            signal: controller ? controller.signal : undefined
-          });
-
-          tentativa.status = res.status;
-          tentativa.statusText = res.statusText || null;
-          tentativa.responseContentType = res.headers && res.headers.get
-            ? (res.headers.get('content-type') || null)
-            : null;
-          if (res.headers && res.headers.get) {
-            var relayLatencyHeader = res.headers.get('X-Verix-ASF-Latency-Ms');
-            var relayLatencyMs = Number(relayLatencyHeader);
-            if (Number.isFinite(relayLatencyMs)) diag.asfRelayLatencyMs = relayLatencyMs;
-          }
-          bodyText = await res.text();
-
-          if (res.status >= 400) {
-            tentativa.errorType = res.status === 429
-              ? 'http_429'
-              : (res.status === 504 ? 'relay_timeout' : 'http_' + res.status);
-          }
-        } catch (e) {
-          tentativa.errorType = timeoutForcado
-            ? 'timeout'
-            : classificarErroASF(e, false);
-          tentativa.message = textoErroASF(e);
-          throw e;
-        } finally {
-          if (timeoutId) clearTimeout(timeoutId);
-        }
-      }
-
-      tentativa.responseBytes = bodyText ? String(bodyText).length : 0;
-      tentativa.responseHash = hashTextoASF(bodyText);
-      diag.asfResponseHash = tentativa.responseHash;
-      diag.asfStatusText = tentativa.statusText || null;
-      finalizarTentativaDiagASF(diag, tentativa);
-
-      return {
-        status: tentativa.status,
+    for (var tentativaNo = 1; tentativaNo <= ASF_MAX_ATTEMPTS; tentativaNo++) {
+      var tentativa = {
+        attempt: tentativaNo,
+        method: 'POST',
+        transport: (typeof ActiveXObject !== 'undefined') ? 'WinHTTP→VÉRIX-RELAY' : 'Fetch→VÉRIX-RELAY',
+        startedAt: agoraMsASFDiag(),
+        status: null,
         statusText: null,
-        text: bodyText || '',
-        __asfDiagnostic: diag
+        durationMs: null,
+        errorType: null,
+        message: null,
+        responseBytes: null,
+        responseContentType: null
       };
-    } catch (e) {
-      if (!tentativa.durationMs) {
-        tentativa.message = tentativa.message || textoErroASF(e);
-        if (!tentativa.errorType) tentativa.errorType = classificarErroASF(e, false);
+
+      var bodyText = '';
+      try {
+        if (typeof ActiveXObject !== 'undefined') {
+          var xhr = new ActiveXObject('WinHttp.WinHttpRequest.5.1');
+          xhr.open('POST', ASF_PROXY_URL, false);
+          xhr.setTimeouts(10000, 10000, ASF_TIMEOUT_MS, ASF_TIMEOUT_MS);
+          xhr.setRequestHeader('Accept', 'application/json, text/plain, */*');
+          xhr.setRequestHeader('Content-Type', 'text/plain; charset=UTF-8');
+          xhr.send(requestBody);
+
+          tentativa.status = Number(xhr.Status || 0);
+          bodyText = xhr.ResponseText || '';
+        } else {
+          var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+          var timeoutId = null;
+          var timeoutForcado = false;
+
+          try {
+            timeoutId = setTimeout(function () {
+              timeoutForcado = true;
+              try { if (controller) controller.abort(); } catch (_) {}
+            }, ASF_TIMEOUT_MS);
+
+            var res = await fetch(ASF_PROXY_URL, {
+              method: 'POST',
+              cache: 'no-store',
+              credentials: 'omit',
+              mode: 'cors',
+              redirect: 'follow',
+              headers: {
+                'Accept': 'application/json, text/plain, */*',
+                'Content-Type': 'text/plain;charset=UTF-8'
+              },
+              body: requestBody,
+              signal: controller ? controller.signal : undefined
+            });
+
+            tentativa.status = Number(res.status);
+            tentativa.statusText = res.statusText || null;
+            tentativa.responseContentType = res.headers && res.headers.get
+              ? (res.headers.get('content-type') || null)
+              : null;
+
+            if (res.headers && res.headers.get) {
+              var relayLatencyHeader = res.headers.get('X-Verix-ASF-Latency-Ms');
+              var relayLatencyMs = Number(relayLatencyHeader);
+              if (Number.isFinite(relayLatencyMs)) diag.asfRelayLatencyMs = relayLatencyMs;
+            }
+
+            bodyText = await res.text();
+
+            if (res.status >= 400) {
+              tentativa.errorType = res.status === 429
+                ? 'http_429'
+                : (res.status === 503
+                  ? 'http_503'
+                  : (res.status === 504 ? 'relay_timeout' : (res.status === 502 ? 'relay_network' : 'http_' + res.status)));
+            }
+          } catch (e) {
+            tentativa.errorType = timeoutForcado
+              ? 'timeout'
+              : classificarErroASF(e, false);
+            tentativa.message = textoErroASF(e);
+          } finally {
+            if (timeoutId) clearTimeout(timeoutId);
+          }
+        }
+
+        tentativa.responseBytes = bodyText ? String(bodyText).length : 0;
+        tentativa.responseHash = hashTextoASF(bodyText);
         finalizarTentativaDiagASF(diag, tentativa);
+        ultimaTentativa = tentativa;
+
+        var retryable = asfTentativaRetryable(tentativa.status, tentativa.errorType);
+        if (!retryable || tentativaNo >= ASF_MAX_ATTEMPTS) {
+          if (Number(tentativa.status) >= 200 && Number(tentativa.status) < 300) {
+            diag.asfErrorType = null;
+            diag.asfMessage = null;
+          }
+          return {
+            status: tentativa.status,
+            statusText: tentativa.statusText || null,
+            text: bodyText || '',
+            __asfDiagnostic: diag
+          };
+        }
+
+        var delay = ASF_RETRY_DELAYS_MS[Math.min(tentativaNo - 1, ASF_RETRY_DELAYS_MS.length - 1)] || 900;
+        await esperarASF(delay);
+      } catch (e) {
+        if (!tentativa.durationMs) {
+          tentativa.message = tentativa.message || textoErroASF(e);
+          tentativa.errorType = tentativa.errorType || classificarErroASF(e, false);
+          finalizarTentativaDiagASF(diag, tentativa);
+        }
+        ultimaTentativa = tentativa;
+
+        if (tentativaNo >= ASF_MAX_ATTEMPTS || !asfTentativaRetryable(null, tentativa.errorType)) {
+          throw erroComDiagASF((e && e.message) || 'Falha de comunicação com o relay ASF', diag);
+        }
+
+        var delayEx = ASF_RETRY_DELAYS_MS[Math.min(tentativaNo - 1, ASF_RETRY_DELAYS_MS.length - 1)] || 900;
+        await esperarASF(delayEx);
       }
-      throw erroComDiagASF((e && e.message) || 'Falha de comunicação com o relay ASF', diag);
     }
+
+    throw erroComDiagASF(
+      (ultimaTentativa && ultimaTentativa.message) || 'Falha de comunicação com o relay ASF',
+      diag
+    );
   }
 
   // Parser robusto inspirado no Consulta Veiculo(2): aceita os envelopes ASF
@@ -1815,6 +1702,7 @@ function submitConjunto(event) {
 
   // CONSULTA ASF = mesmo endpoint/mutation do IPO_2.2, com parser robusto e
   // controlo VÉRIX de 8 s + 5 pedidos/60 s, persistido entre refreshes, sem cache de resultados.
+
   async function realizarConsultaASF_IPO(matLimpa, matDisplay, queryId) {
     var hoje = new Date();
     var yyyy = hoje.getFullYear();
@@ -1833,33 +1721,33 @@ function submitConjunto(event) {
       ? resposta.__asfDiagnostic
       : criarDiagASF(queryId, matDisplay);
 
-    var httpStatus = resposta && resposta.status != null
-      ? Number(resposta.status)
-      : null;
-    var responseText = resposta && resposta.text
-      ? String(resposta.text)
-      : '';
+    var httpStatus = resposta && resposta.status != null ? Number(resposta.status) : null;
+    var responseText = resposta && resposta.text ? String(resposta.text) : '';
 
     diag.asfHttpStatus = Number.isFinite(httpStatus) ? httpStatus : null;
     diag.asfResponseBytes = responseText.length;
 
     if (httpStatus === 429) {
       diag.asfErrorType = 'http_429';
-      diag.asfMessage = 'Limite temporário de consultas ASF atingido';
-      ASF_SERVER_COOLDOWN_UNTIL = agoraASF() + 15000;
-      guardarEstadoRateASF();
+      diag.asfMessage = 'A ASF recusou temporariamente a consulta (HTTP 429)';
       throw erroComDiagASF(diag.asfMessage, diag);
     }
 
     if (httpStatus === 504) {
       diag.asfErrorType = 'relay_timeout';
-      diag.asfMessage = 'O relay VÉRIX excedeu o tempo de resposta da ASF';
+      diag.asfMessage = 'O relay VÉRIX excedeu o tempo de resposta da ASF após as tentativas automáticas';
       throw erroComDiagASF(diag.asfMessage, diag);
     }
 
     if (httpStatus === 502) {
       diag.asfErrorType = 'relay_network';
-      diag.asfMessage = 'O relay VÉRIX não conseguiu comunicar com a ASF';
+      diag.asfMessage = 'O relay VÉRIX não conseguiu comunicar com a ASF após as tentativas automáticas';
+      throw erroComDiagASF(diag.asfMessage, diag);
+    }
+
+    if (httpStatus === 503) {
+      diag.asfErrorType = 'http_503';
+      diag.asfMessage = 'Serviço temporariamente indisponível após as tentativas automáticas';
       throw erroComDiagASF(diag.asfMessage, diag);
     }
 
@@ -1884,6 +1772,8 @@ function submitConjunto(event) {
       }
 
       var resultado = interpretarRespostaASF(json);
+      diag.asfErrorType = null;
+      diag.asfMessage = null;
       return { resultado: resultado, asfDiagnostic: diag };
     } catch (e) {
       if (!diag.asfErrorType) {
@@ -2053,37 +1943,50 @@ function submitConjunto(event) {
     }
   }
 
-  async function consultarSeguroASF(matricula) {
+  
+var ASF_EM_VOO = Object.create(null);
+
+async function consultarSeguroASF(matricula) {
     var matDisplay = String(matricula || '').trim().toUpperCase();
     if (!matDisplay) return;
 
-    // Pedido ASF: matrícula sem hífens/separadores. Display mantém o formato.
     var matLimpa = sanitizarMatriculaASF(matDisplay);
     if (!matLimpa) return;
 
     var queryId = window.__VERIX_CURRENT_QUERY_ID || null;
+    var dedupeKey = matLimpa + '|' + String(queryId || '');
 
-    ASF_FILA_PENDENTES = (ASF_FILA_PENDENTES || 0) + 1;
-    if (ASF_FILA_PENDENTES > 1) {
-      mostrarSeguroLoading(matDisplay, 'Na fila ASF…');
-    } else {
-      mostrarSeguroLoading(matDisplay, 'A VERIFICAR...');
+    if (ASF_EM_VOO[dedupeKey]) {
+      return ASF_EM_VOO[dedupeKey];
     }
 
-    ASF_FILA = ASF_FILA.then(async function () {
+    ASF_FILA_PENDENTES = (ASF_FILA_PENDENTES || 0) + 1;
+    atualizarContadorVisualASF();
+
+    var promise = ASF_FILA.then(async function () {
       try {
         await processarConsultaSeguroComCadencia(matLimpa, matDisplay, queryId);
       } finally {
         ASF_FILA_PENDENTES = Math.max(0, (ASF_FILA_PENDENTES || 1) - 1);
-        try { atualizarContadorVisualASF(); } catch (_) {}
+        atualizarContadorVisualASF();
       }
     }).catch(function (e) {
       ASF_FILA_PENDENTES = Math.max(0, (ASF_FILA_PENDENTES || 1) - 1);
+      atualizarContadorVisualASF();
       console.error('[ASF] fila:', e);
       mostrarSeguroErro((e && e.message) || 'Falha na consulta ASF', matDisplay, '', queryId);
     });
 
-    return ASF_FILA;
+    ASF_FILA = promise;
+    ASF_EM_VOO[dedupeKey] = promise;
+    promise.then(function () {
+      delete ASF_EM_VOO[dedupeKey];
+    }, function () {
+      delete ASF_EM_VOO[dedupeKey];
+    });
+
+    mostrarSeguroLoading(matDisplay, ASF_FILA_PENDENTES > 1 ? 'Na fila ASF…' : 'A VERIFICAR...');
+    return promise;
   }
 
 
@@ -7346,9 +7249,7 @@ html.verix-low-power .verix-holo-scan{
 </div>
 <button id="consultationBackBtn" class="consultation-back-btn" type="button" onclick="mostrarMenuPrincipal()" aria-label="Voltar">←</button>
 <div class="main"> <section class="panel"><div class="head red"><span class="head-title">INSPEÇÃO TÉCNICA</span><span class="head-tag">IMT</span></div><div class="panel-body"><div class="corner tl"></div><div class="corner br"></div><div class="scan"></div><div id="veiculoLoading" class="loading-overlay" style="display:none"><div class="spinner"></div>A CARREGAR CONSULTA<div><small>IMT • ACESSO À REDE RNSI</small></div></div><iframe id="veiculoFrame"></iframe></div></section> <section class="panel verix-livrete-panel"><div class="head green"><span class="head-title">LIVRETE / VEÍCULO</span><span class="head-tag">IMT</span></div><div class="panel-body"><div class="corner tl"></div><div class="corner br"></div><div class="scan"></div><div id="reboqueLoading" class="loading-overlay" style="display:none"><div class="spinner"></div>A CARREGAR CONSULTA<div><small>IMT • ACESSO À REDE RNSI</small></div></div><iframe id="reboqueFrame"></iframe></div></section> <section class="panel insurance"><div class="head red"><span class="head-title">SEGURO AUTO</span><span class="head-tag">ASF</span></div><div id="asfRateWidget" class="asf-rate-widget" aria-label="Controlo de consultas ASF">
-<div class="asf-rate-label"><span class="asf-rate-dot"></span><span>CONTROLO ASF</span></div>
-<div class="asf-rate-center"><div class="asf-rate-main" id="asfRateUsage">0 / 5 <strong>60S</strong></div><div class="asf-rate-sub" id="asfRateWindowText" data-window-state="ready">5 PESQUISAS DISPONÍVEIS</div></div>
-<div class="asf-rate-countdown" id="asfRateCountdown" data-state="ready" title="Pode iniciar uma nova pesquisa ASF">LIVRE</div>
+<div class="asf-rate-label"><span class="asf-rate-dot"></span><span>CANAL ASF</span></div><div class="asf-rate-center"><div class="asf-rate-main" id="asfRateUsage">SEM QUOTA LOCAL</div><div class="asf-rate-sub" id="asfRateWindowText" data-window-state="ready">PESQUISA DISPONÍVEL</div></div><div class="asf-rate-countdown" id="asfRateCountdown" data-state="ready" title="Sem limite local VÉRIX">LIVRE</div>
 </div><div id="seguroResult" class="insurance-body"><div class="asf-app asf-app-wait"><div class="asf-status-card wait"><div class="asf-status-glow"></div><div class="asf-status-icon"><span style="font-size:14px;letter-spacing:1px">ASF</span></div><div class="asf-status-title" style="font-size:16px">Seguro automóvel</div><div class="asf-status-sub">Introduza a matrícula e carregue em CONSULTAR</div></div><div class="asf-actions"><button type="button" class="aux-btn secondary" onclick="verificarSeguro()">Consulta oficial ASF</button></div></div></div></section> <div class="verix-livrete-warning" role="note" aria-label="Aviso sobre a situação do veículo"><span class="verix-warning-icon">⚠</span><span><strong>ATENÇÃO:</strong> Verifica Sempre a Situação do Veículo (Regular / Apreendido)</span></div>
 </div>
 <div class="consulta-history-bottom-wrap"><button type="button" class="consulta-history-bottom" onclick="abrirHistorico()"><span class="consulta-history-bottom-icon">◷</span> HISTÓRICO DE CONSULTAS</button></div>
@@ -13841,7 +13742,7 @@ body.theme-light .system-factory-modal{background:rgba(12,25,29,.48)}body.theme-
 function open(){m.classList.add('open');m.setAttribute('aria-hidden','false');setTimeout(()=>m.querySelector('.system-factory-btn')?.focus(),20)}
 function close(){m.classList.remove('open','final');m.setAttribute('aria-hidden','true');m.querySelector('.system-factory-body').innerHTML=originalBody;m.querySelector('.system-factory-foot').innerHTML=originalFoot}
 function confirmReset(){m.classList.add('final');m.querySelector('.system-factory-body').innerHTML='<div class="system-factory-warning"><strong>CONFIRMAÇÃO FINAL</strong><br><br>Todos os dados locais serão eliminados definitivamente e a consola será reiniciada.</div><div class="system-factory-question">Confirmar a reposição de fábrica?</div>';m.querySelector('.system-factory-foot').innerHTML='<button type="button" class="system-factory-btn" onclick="VÉRIXFactoryResetModal.close()">CANCELAR</button><button type="button" class="system-factory-btn danger" onclick="VÉRIXFactoryResetModal.execute()">CONFIRMAR REPOSIÇÃO</button>'}
-function execute(){try{['VÉRIX_CINEMETROS_LISTA_RECOLHIDA_V1','VÉRIX_CINEMETROS_V2','VÉRIX_CINEMETRO_OPERADOR_V2','VÉRIX_PREFS_V1','VÉRIX_CONSULTAS_HISTORICO_V1','APP_TELEMETRY_QUEUE_V1','APP_TELEMETRY_INSTALL_V1','VERIX_T2_QUEUE','VERIX_T2_INSTALL_ID','VERIX_ASF_RATE_STATE_V1'].forEach(function(k){try{localStorage.removeItem(k);}catch(e){}});['APP_TELEMETRY_TAB_V1','APP_TELEMETRY_SESSION_START_V1','VERIX_T2_SESSION_ID','VERIX_T2_TAB_ID'].forEach(function(k){try{sessionStorage.removeItem(k);}catch(e){}});localStorage.setItem('VÉRIX_FACTORY_RESET_PENDING','1');localStorage.setItem('VÉRIX_CINEMOMETROS_V2','[]')}catch(e){}window.location.reload()}
+function execute(){try{['VÉRIX_CINEMETROS_LISTA_RECOLHIDA_V1','VÉRIX_CINEMETROS_V2','VÉRIX_CINEMETRO_OPERADOR_V2','VÉRIX_PREFS_V1','VÉRIX_CONSULTAS_HISTORICO_V1','APP_TELEMETRY_QUEUE_V1','APP_TELEMETRY_INSTALL_V1','VERIX_T2_QUEUE','VERIX_T2_INSTALL_ID'].forEach(function(k){try{localStorage.removeItem(k);}catch(e){}});['APP_TELEMETRY_TAB_V1','APP_TELEMETRY_SESSION_START_V1','VERIX_T2_SESSION_ID','VERIX_T2_TAB_ID'].forEach(function(k){try{sessionStorage.removeItem(k);}catch(e){}});localStorage.setItem('VÉRIX_FACTORY_RESET_PENDING','1');localStorage.setItem('VÉRIX_CINEMOMETROS_V2','[]')}catch(e){}window.location.reload()}
 window.VÉRIXFactoryResetModal={open,close,confirm:confirmReset,execute};m.addEventListener('click',e=>{if(e.target===m)close()});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&m.classList.contains('open'))close()});})();
 </script> <style id="verix-contact-v168-mainmenu">
 
