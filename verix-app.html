@@ -1536,6 +1536,11 @@ function submitConjunto(event) {
     }
   }
 
+  // Compatibilidade com versões antigas/cacheadas que ainda chamam este nome.
+  async function efetuarPedidoASF(url) {
+    return efetuarPedidoHttpASF(url);
+  }
+
   async function consultarSeguroASF(matricula) {
     const mat = String(matricula || '').trim().toUpperCase();
     if (!mat || ASF_EM_CURSO) return;
