@@ -64,6 +64,15 @@ if (callReserve < 1) fail("efetuarPedidoHttpASF no longer reserves a physical sl
 if (!/\bfunction\s+efetuarPedidoHttpASF\b[\s\S]*?reservarSlotFisicoASF/.test(app)) {
   fail("ASF HTTP path does not call reservarSlotFisicoASF");
 }
+
+// Metrologia: below/equal 100 km/h the EMA is expressed in km/h;
+// above 100 km/h it switches to a percentage. This mirrors Portaria 352/2023.
+if (!/window\.cinEtiquetaEMA\s*=\s*function\(registada\)[\s\S]*?v>100[\s\S]*?'± '\+pct\+' %'[\s\S]*?'± '\+pct\+' km\/h'/.test(app)) {
+  fail("Cinemometer EMA display no longer follows the <=100 km/h / >100 km/h unit switch");
+}
+if (!/window\.cinCalcularDeducida\s*=\s*function\(registada\)[\s\S]*?registada<=100[\s\S]*?ema\*100[\s\S]*?registada\*ema/.test(app)) {
+  fail("Cinemometer deduction formula lost the metrological unit switch");
+}
 if (!/\bfunction\s+interpretarRespostaASF\b[\s\S]*?node\.license\s*!==\s*undefined[\s\S]*?node\.license\s*!==\s*null/.test(app)) {
   fail("ASF result semantics no longer enforce node.license != null");
 }
