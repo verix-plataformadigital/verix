@@ -61,6 +61,68 @@ async function buildEnabled(buildId: string): Promise<boolean> {
   return Array.isArray(rows) && rows.length === 1 && rows[0]?.enabled === true;
 }
 
+const GATE_SECRET =
+  Deno.env.get("VERIX_GATE_SECRET") ||
+  Deno.env.get("VERIX_ADMIN_SECRET") ||
+  "";
+
+function base64UrlDecode(value: string): Uint8Array {
+  let s = String(value || "").replace(/-/g, "+").replace(/_/g, "/");
+  while (s.length % 4) s += "=";
+  const binary = atob(s);
+  return Uint8Array.from(binary, c => c.charCodeAt(0));
+}
+
+async function verifyClientToken(
+  token: string,
+  buildId: string,
+  installationId: string,
+  origin: string
+): Promise<boolean> {
+  if (!GATE_SECRET) return false;
+  const parts = String(token || "").split(".");
+  if (parts.length !== 3 || parts[0] !== "v1") return false;
+
+  const encoded = parts[1];
+  const signature = base64UrlDecode(
+    parts[2]
+      .replace(/\\+/g, "-")
+      .replace(/\\//g, "_")
+  );
+
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(GATE_SECRET),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["verify"]
+  );
+
+  const validSignature = await crypto.subtle.verify(
+    "HMAC",
+    key,
+    signature,
+    new TextEncoder().encode(encoded)
+  );
+  if (!validSignature) return false;
+
+  try {
+    const payload = JSON.parse(
+      new TextDecoder().decode(base64UrlDecode(encoded))
+    );
+    const expectedOrigin = origin || "legacy-local";
+    const now = Math.floor(Date.now() / 1000);
+    return payload?.scope === "verix-client" &&
+      String(payload?.build || "") === buildId &&
+      String(payload?.install || "") === installationId &&
+      String(payload?.origin || "") === expectedOrigin &&
+      Number(payload?.exp || 0) > now &&
+      Number(payload?.iat || 0) <= now + 60;
+  } catch (_) {
+    return false;
+  }
+}
+
 function cleanText(value: unknown, max: number): string {
   return String(value ?? "").trim().slice(0, max);
 }
@@ -108,6 +170,23 @@ Deno.serve(async (req: Request) => {
     }
     if (!(await buildEnabled(buildId))) {
       return json({ ok: false, error: "build_revoked" }, 403, req);
+    }
+
+    const token = cleanText(req.headers.get("x-verix-client-token"), 4096);
+    let bodyPreview: any = null;
+    try {
+      const raw = await req.clone().text();
+      bodyPreview = raw ? JSON.parse(raw) : null;
+    } catch (_) {}
+
+    const installationId = cleanText(bodyPreview?.installationId, 120);
+    if (!installationId || !(await verifyClientToken(
+      token,
+      buildId,
+      installationId,
+      origin
+    ))) {
+      return json({ ok: false, error: "client_not_authorized" }, 401, req);
     }
 
     const contentLength = Number(req.headers.get("content-length") || 0);
