@@ -1,19 +1,43 @@
 declare const Deno: any;
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+const BASE_CORS_HEADERS = {
   "Access-Control-Allow-Headers": "authorization,content-type",
   "Access-Control-Allow-Methods": "GET,OPTIONS",
-  "Cache-Control": "no-store"
+  "Cache-Control": "no-store",
+  "Vary": "Origin",
+  "X-Content-Type-Options": "nosniff",
+  "Referrer-Policy": "no-referrer"
 };
+
+const ALLOWED_ORIGINS = new Set([
+  "https://verix-plataformadigital.github.io",
+  "https://verix.vxops.workers.dev",
+  "http://localhost",
+  "http://127.0.0.1",
+  "null"
+]);
+
+function isAllowedOrigin(origin: string | null): boolean {
+  if (!origin) return true;
+  if (ALLOWED_ORIGINS.has(origin)) return true;
+  return /^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?$/.test(origin);
+}
+
+function corsHeaders(req: Request) {
+  const headers: Record<string,string> = { ...BASE_CORS_HEADERS };
+  const origin = req.headers.get("origin");
+  if (origin && isAllowedOrigin(origin)) headers["Access-Control-Allow-Origin"] = origin;
+  return headers;
+}
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-function json(data: unknown, status=200) {
+function json(data: unknown, status=200, req?: Request) {
+  const headers = req ? corsHeaders(req) : { ...BASE_CORS_HEADERS };
   return new Response(JSON.stringify(data), {
     status,
-    headers:{"Content-Type":"application/json",...corsHeaders}
+    headers:{"Content-Type":"application/json",...headers}
   });
 }
 
@@ -66,9 +90,14 @@ async function rpc(name: string, body: Record<string,unknown>) {
 }
 
 Deno.serve(async (req) => {
-  if(req.method==="OPTIONS") return new Response(null,{status:204,headers:corsHeaders});
-  if(req.method!=="GET") return json({ok:false,error:"method_not_allowed"},405);
-  if(!(await verifyToken(req))) return json({ok:false,error:"unauthorized"},401);
+  const origin = req.headers.get("origin");
+  if (!isAllowedOrigin(origin)) {
+    return json({ok:false,error:"origin_not_allowed"},403,req);
+  }
+
+  if(req.method==="OPTIONS") return new Response(null,{status:204,headers:corsHeaders(req)});
+  if(req.method!=="GET") return json({ok:false,error:"method_not_allowed"},405,req);
+  if(!(await verifyToken(req))) return json({ok:false,error:"unauthorized"},401,req);
 
   const parsedUrl = new URL(req.url);
   let date = parsedUrl.searchParams.get("date") || "";
@@ -78,12 +107,12 @@ Deno.serve(async (req) => {
     const legacyMatch = legacyV.match(/\?date=(\d{4}-\d{2}-\d{2})/);
     if(legacyMatch) date = legacyMatch[1];
   }
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(date||"")) return json({ok:false,error:"invalid_date"},400);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date||"")) return json({ok:false,error:"invalid_date"},400,req);
 
   try {
     const rows = await rpc("verix2_hourly", {p_date:date});
-    return json({ok:true,date,rows},200);
+    return json({ok:true,date,rows},200,req);
   } catch(error) {
-    return json({ok:false,error:"hourly_v2_failed",detail:String((error as Error)?.message||error)},500);
+    return json({ok:false,error:"hourly_v2_failed",detail:String((error as Error)?.message||error)},500,req);
   }
 });
