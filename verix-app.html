@@ -1282,6 +1282,59 @@ function submitConjunto(event) {
 
   function agoraASF() { return Date.now(); }
   function esperarASF(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+  // ASF helpers — kept independent from quota/rate-control code.
+  function formatarDataASF(date) {
+    date = date || new Date();
+    var dd = String(date.getDate()).padStart(2, '0');
+    var mm = String(date.getMonth() + 1).padStart(2, '0');
+    var yyyy = date.getFullYear();
+    return yyyy + '/' + mm + '/' + dd;
+  }
+
+  function formatarDataPT(valor) {
+    if (valor === undefined || valor === null || String(valor).trim() === '' || String(valor) === '—') return '—';
+    var s = String(valor).trim();
+    var m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return m[3] + '/' + m[2] + '/' + m[1];
+    m = s.match(/^(\d{4})\/(\d{2})\/(\d{2})/);
+    if (m) return m[3] + '/' + m[2] + '/' + m[1];
+    return s;
+  }
+
+  function normalizarMatriculaExata(mat) {
+    return formatarMatriculaVeiculo(mat);
+  }
+
+  function formatarMatriculaDisplay(mat) {
+    return String(mat || '').trim().toUpperCase();
+  }
+
+  function sanitizarMatriculaASF(matricula) {
+    return String(matricula || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  }
+
+  function escapeHtml(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function valorCampo(obj, nomes, fallback) {
+    fallback = fallback || '';
+    if (!obj) return fallback;
+    for (var i = 0; i < nomes.length; i++) {
+      var v = obj[nomes[i]];
+      if (v !== undefined && v !== null && String(v).trim() !== '') {
+        if (typeof v === 'object') return v.name || v.label || v.value || v.description || fallback;
+        return String(v);
+      }
+    }
+    return fallback;
+  }
+
 
   function atualizarContadorVisualASF() {
     var widget = document.getElementById('asfRateWidget');
