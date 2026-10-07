@@ -1494,7 +1494,7 @@ function submitConjunto(event) {
   // Não fazemos GET alternativo nem acrescentamos pedidos físicos à consulta.
   function efetuarPedidoHttpASF_SyncNative(url) {
     var xhr = new ActiveXObject("WinHttp.WinHttpRequest.5.1");
-    xhr.open("POST", url, false);
+    xhr.open("GET", url, false);
     xhr.setTimeouts(10000, 10000, ASF_TIMEOUT_MS, ASF_TIMEOUT_MS);
     xhr.setRequestHeader("Accept", "application/json, text/plain, */*");
     xhr.send(null);
@@ -1545,7 +1545,7 @@ function submitConjunto(event) {
           }, ASF_TIMEOUT_MS);
 
           var options = {
-            method: 'POST',
+            method: 'GET',
             cache: 'no-store',
             credentials: 'omit',
             mode: 'cors',
@@ -1710,7 +1710,7 @@ function submitConjunto(event) {
 
     /* Query reproduzida a partir do ASF_URL observado na APK base, incluindo a
        mesma seleção de campos e a mesma matrícula sem hífens. */
-    var queryGQL = 'mutation license {  mobishoutEntry {    noone {      entry {        licenseNumber(license: "' + matLimpa + '", date: "' + dataHoje + '") {          nodes {            id            entity            startDate            endDate            policy            license            code            logo          }        }      }    }  }            }';
+      var queryGQL = 'mutation license { mobishoutEntry { noone { entry { licenseNumber(license: "' + matLimpa + '", date: "' + dataHoje + '") { nodes { id entity startDate endDate policy license code logo } } } } } }';
     var url = ASF_API_URL + encodeURIComponent(queryGQL);
 
     var resposta = await efetuarPedidoHttpASF(url, matDisplay, queryId, queryStartedAtMs, queuePosition);
@@ -19972,5 +19972,5 @@ html body [contenteditable="true"]{
   }
 })();
 </script>
-<script src="./ASF_SIMPLE_DIRECT.js?v=8c0d2a1"></script></body>
+<script src="./ASF_SIMPLE_DIRECT.js?v=20261007-ASF3"></script></body>
 </html>
