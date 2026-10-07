@@ -1,5 +1,5 @@
 <!-- VÉRIX 1.4 — publicação limpa -->
-<!DOCTYPE html><html lang="pt"><head><script src="./VERIX_ASF_RAW_DIAGNOSTICO.js?_verix_diag=v6"></script>
+<!DOCTYPE html><html lang="pt"><head>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -1210,20 +1210,20 @@ function submitConjunto(event) {
 
 
  // ========================= ASF / TEM SEGURO =========================
-  // MOTOR = CÓPIA FUNCIONAL DO IPO_2.2 / base Android (caminho POST).
-  // UI do VÉRIX mantida; transporte ASF alinhado com a aplicação base.
+  // MOTOR = CÓPIA FUNCIONAL DO IPO_2.2 (único caminho que funciona no posto).
+  // UI do VÉRIX mantida; transporte e cadência = IPO exacto.
 
   const ASF_API_URL = 'https://ext01.asf.com.pt/api/src/?query=';
-  const ASF_TIMEOUT_MS = 10000;
+  const ASF_TIMEOUT_MS = 12000;
   const ASF_MIN_INTERVAL_MS = 8000;
   const ASF_JANELA_SEG = 60;
-  const ASF_LIMITE_JANELA = 6;
+  const ASF_LIMITE_JANELA = 5;
   const ASF_RATE_STORAGE_KEY = 'VERIX_ASF_RATE_STATE_V1';
 
   /* CAMINHO ASF DELIBERADAMENTE SIMPLES:
-     1 consulta = 1 pedido físico POST, alinhado com a APK base.
-     Sem GET alternativo, sem retries automáticos e sem cache de resultado.
-     A telemetria observa o pedido físico e não cria pedidos adicionais. */
+     1 consulta = 1 pedido físico GET.
+     Sem POST→GET, sem fila de pedidos e sem retries automáticos.
+     A telemetria observa o pedido; não cria pedidos adicionais. */
 
   var asfRequestTimes = [];
   var ASF_EM_CURSO = false;
@@ -1231,7 +1231,7 @@ function submitConjunto(event) {
   var ASF_PENDING_TIMER = null;
 
   function agoraASF() { return Date.now(); }
-  function esperarASF(ms) { return new Promise(function (resolve) { setTimeout(resolve, Math.max(0, Number(ms) || 0)); }); }
+  function esperarASF(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
   // Mantém o limite VÉRIX após refresh/reabertura da página no mesmo posto.
   // Isto impede que o cache-busting, por si só, seja usado para zerar a quota local.
@@ -1267,7 +1267,14 @@ function submitConjunto(event) {
 
   carregarEstadoRateASF();
 
-  
+  function formatarDataASF(date) {
+    date = date || new Date();
+    var dd = String(date.getDate()).padStart(2, '0');
+    var mm = String(date.getMonth() + 1).padStart(2, '0');
+    var yyyy = date.getFullYear();
+    return yyyy + '/' + mm + '/' + dd;
+  }
+
   function formatarDataPT(valor) {
     if (valor === undefined || valor === null || String(valor).trim() === '' || String(valor) === '—') return '—';
     var s = String(valor).trim();
@@ -1278,7 +1285,10 @@ function submitConjunto(event) {
     return s;
   }
 
-  
+  function normalizarMatriculaExata(mat) {
+    return formatarMatriculaVeiculo(mat);
+  }
+
   function formatarMatriculaDisplay(mat) {
     // O ecrã ASF deve mostrar a matrícula exatamente no formato já
     // apresentado no campo de consulta; não voltar a aplicar a regra 2-2-2.
@@ -1376,22 +1386,119 @@ function submitConjunto(event) {
   }
   setInterval(atualizarContadorVisualASF, 500);
 
-  // ---- HTTP ASF: caminho simples ----
-  // 1 consulta = 1 pedido físico GET.
-  // A query GraphQL segue no parâmetro ?query= da URL.
-  // Sem POST, sem GET de fallback e sem retries automáticos.
+  // ---- HTTP ASF: POST primeiro, GET como fallback de transporte/método ----
+  // Cada tentativa HTTP física reserva um slot VÉRIX (8 s / 5 por 60 s).
+  async function reservarSlotFisicoASF(matDisplay) {
+    var atraso = calcularAtrasoCadenciaASF();
+    while (atraso > 0) {
+      if (matDisplay) {
+        mostrarSeguroLoading(matDisplay, 'A AGUARDAR (' + Math.ceil(atraso / 1000) + 's)');
+      }
+      await esperarASF(Math.min(atraso, 1000));
+      atraso = calcularAtrasoCadenciaASF();
+    }
 
+    var agora = agoraASF();
+    asfRequestTimes.push(agora);
+    guardarEstadoRateASF();
+    atualizarContadorVisualASF();
+    return agora;
+  }
+
+  // ---- Diagnóstico ASF V2 ----
+  // Instrumentação exclusivamente observacional. Não altera POST/GET, timeouts,
+  // rate-limit, parser ou regras de classificação. Regista cada tentativa física.
+  function fingerprintASF(value) {
+    var text = String(value || '');
+    var h = 2166136261;
+    for (var i = 0; i < text.length; i++) {
+      h ^= text.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return ('00000000' + (h >>> 0).toString(16)).slice(-8);
+  }
+
+  function agoraMsASFDiag() { return Date.now(); }
+
+  function textoErroASF(e) {
+    if (!e) return '';
+    var parts = [];
+    try { if (e.name) parts.push(String(e.name)); } catch (_) {}
+    try { if (e.message) parts.push(String(e.message)); } catch (_) {}
+    try { if (e.number) parts.push('number=' + String(e.number)); } catch (_) {}
+    return parts.join(' | ').slice(0, 500);
+  }
+
+  function classificarErroASF(e, timeoutForcado) {
+    var t = textoErroASF(e).toLowerCase();
+    if (timeoutForcado || t.indexOf('abort') >= 0 || t.indexOf('timed out') >= 0 || t.indexOf('timeout') >= 0 || t.indexOf('tempo esgotado') >= 0) return 'timeout';
+    if (t.indexOf('cors') >= 0 || t.indexOf('networkerror') >= 0 || t.indexOf('network error') >= 0 || t.indexOf('failed to fetch') >= 0 || t.indexOf('internet') >= 0) return 'network';
+    return 'unknown';
+  }
+
+  function criarDiagASF(queryId, matDisplay, queryStartedAtMs, queuePosition) {
+    return {
+      queryId: queryId || null,
+      matricula: String(matDisplay || '').slice(0, 30),
+      asfHttpStatus: null,
+      asfDurationMs: null,
+      asfTotalMs: null,
+      asfQueueWaitMs: null,
+      asfQueuePosition: queuePosition == null ? null : Number(queuePosition),
+      asfMethod: null,
+      asfTransport: null,
+      asfErrorType: null,
+      asfMessage: null,
+      asfAttempts: [],
+      asfResponseBytes: null,
+      asfResponseHash: null,
+      asfResponseContentType: null,
+      asfStatusText: null,
+      asfParsePath: null,
+      asfResponseClass: null,
+      asfGraphqlErrorCount: 0,
+      asfGraphqlCodes: [],
+      asfGraphqlMessages: [],
+      _queryStartedAtMs: Number(queryStartedAtMs) || null
+    };
+  }
+
+  function erroComDiagASF(mensagem, diagnostico) {
+    var err = new Error(String(mensagem || 'Falha ASF'));
+    try { err.asfDiagnostic = diagnostico || null; } catch (_) {}
+    return err;
+  }
+
+  function finalizarTentativaDiagASF(diag, tentativa, extra) {
+    tentativa.durationMs = Math.max(0, agoraMsASFDiag() - tentativa.startedAt);
+    if (extra) {
+      Object.keys(extra).forEach(function (k) { tentativa[k] = extra[k]; });
+    }
+    diag.asfAttempts.push(tentativa);
+    diag.asfDurationMs = tentativa.durationMs;
+    diag.asfHttpStatus = tentativa.status == null ? null : Number(tentativa.status);
+    diag.asfMethod = tentativa.method || null;
+    diag.asfTransport = tentativa.transport || null;
+    diag.asfErrorType = tentativa.errorType || null;
+    diag.asfMessage = tentativa.message ? String(tentativa.message).slice(0, 500) : null;
+    diag.asfResponseHash = tentativa.responseHash || diag.asfResponseHash || null;
+    diag.asfResponseContentType = tentativa.responseContentType || diag.asfResponseContentType || null;
+    diag.asfStatusText = tentativa.statusText || diag.asfStatusText || null;
+    if (diag._queryStartedAtMs) {
+      diag.asfTotalMs = Math.max(0, agoraMsASFDiag() - diag._queryStartedAtMs);
+    }
+  }
+
+  // ---- HTTP ASF: um único GET por consulta ----
+  // A query GraphQL já está no parâmetro ?query= da URL. Mantemos o transporte
+  // o mais simples possível e nunca repetimos automaticamente o pedido físico.
   function efetuarPedidoHttpASF_SyncNative(url) {
     var xhr = new ActiveXObject("WinHttp.WinHttpRequest.5.1");
     xhr.open("GET", url, false);
     xhr.setTimeouts(10000, 10000, ASF_TIMEOUT_MS, ASF_TIMEOUT_MS);
     xhr.setRequestHeader("Accept", "application/json, text/plain, */*");
     xhr.send(null);
-    return {
-      status: xhr.Status,
-      text: xhr.ResponseText,
-      statusText: xhr.StatusText || null
-    };
+    return { status: xhr.Status, text: xhr.ResponseText, statusText: xhr.StatusText || null };
   }
 
   async function efetuarPedidoHttpASF(url, matDisplay, queryId, queryStartedAtMs, queuePosition) {
@@ -1449,9 +1556,7 @@ function submitConjunto(event) {
           var res = await fetch(url, options);
           status = res.status;
           statusText = res.statusText || null;
-          contentType = (res.headers && res.headers.get)
-            ? (res.headers.get('content-type') || null)
-            : null;
+          contentType = (res.headers && res.headers.get) ? (res.headers.get('content-type') || null) : null;
           body = await res.text();
         } catch (e) {
           tentativa.errorType = classificarErroASF(e, timeoutForcado);
@@ -1470,7 +1575,6 @@ function submitConjunto(event) {
       if (status >= 400) tentativa.errorType = 'http_' + status;
 
       finalizarTentativaDiagASF(diag, tentativa);
-
       return {
         status: status,
         statusText: statusText,
