@@ -7220,24 +7220,41 @@ html body .asf-operational-result .asf-note{
   max-width:585px;
 }
 .verix-asf-notice-body p strong{color:#f3f7f8;font-weight:850;}
-.verix-asf-notice-highlight{
-  margin:20px auto 8px;
-  padding:17px 18px;
-  border:1px solid rgba(101,215,232,.13);
+.verix-asf-notice-warning,
+.verix-asf-notice-thanks-box{
+  margin:16px auto 0;
+  padding:16px 18px 14px;
   border-radius:12px;
-  background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(101,215,232,.025));
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
 }
-.verix-asf-notice-highlight strong{
-  display:block;
-  margin-bottom:5px;
-  font:950 12px/1.3 Arial,sans-serif;
-  letter-spacing:1.2px;
-  color:#ffffff;
+.verix-asf-notice-warning{
+  border:1px solid rgba(255,82,102,.42);
+  background:linear-gradient(180deg,rgba(188,20,47,.16),rgba(74,8,19,.10));
+  box-shadow:inset 0 1px 0 rgba(255,120,135,.05),0 8px 24px rgba(0,0,0,.16);
 }
-.verix-asf-notice-highlight span{
-  font:500 12px/1.55 Arial,sans-serif;
-  color:#b8c5ca;
+.verix-asf-notice-thanks-box{
+  margin-top:12px;
+  border:1px solid rgba(61,255,168,.30);
+  background:linear-gradient(180deg,rgba(61,255,168,.10),rgba(18,75,52,.10));
+  box-shadow:inset 0 1px 0 rgba(115,255,198,.05),0 8px 24px rgba(0,0,0,.16);
+}
+.verix-asf-notice-section-title{
+  margin:0 0 9px;
+  font:950 11px/1.2 Arial,sans-serif;
+  letter-spacing:1.4px;
+}
+.verix-asf-notice-warning .verix-asf-notice-section-title{color:#ff6f82;}
+.verix-asf-notice-thanks-box .verix-asf-notice-section-title{color:#5dffb2;}
+.verix-asf-notice-warning p,
+.verix-asf-notice-thanks-box p{
+  margin:0 auto 10px;
+}
+.verix-asf-notice-warning p:last-child,
+.verix-asf-notice-thanks-box p:last-child{margin-bottom:0;}
+.verix-asf-notice-thanks-box p{
+  text-align:center;
+}
+.verix-asf-notice-thanks-box p strong{
+  color:#eafff4;
 }
 .verix-asf-notice-thanks{
   margin-top:14px!important;
@@ -7349,13 +7366,18 @@ html.verix-low-power .verix-holo-scan{
       <div class="verix-asf-notice-badge">VÉRIX</div>
     </div>
     <div class="verix-asf-notice-body">
-      <p class="verix-asf-notice-lead">Foram detetadas algumas <strong>falhas nas consultas automáticas ASF</strong>, relacionadas, em alguns casos, com a <strong>rede RNSI</strong>. A equipa do <strong>VERIX está a trabalhar na sua correção</strong>.</p>
+      <div class="verix-asf-notice-warning">
+        <div class="verix-asf-notice-section-title">ATENÇÃO / AVISO OPERACIONAL</div>
+        <p class="verix-asf-notice-lead">Foram detetadas algumas <strong>falhas nas consultas automáticas ASF</strong>, relacionadas, em alguns casos, com a <strong>rede RNSI</strong>. A equipa do <strong>VERIX está a trabalhar na sua correção</strong>.</p>
+        <p>Foram também detetadas <strong>tentativas de sobrecarga (Brute Force)</strong> e a <strong>cópia do código de consulta de seguros para outros ficheiros HTML.</strong></p>
+        <p><strong>Pedimos que não sobrecarreguem a plataforma, de forma deliberada e maldosa, nem reproduzam o código do VERIX sem o consentimento dos desenvolvedores.</strong></p>
+      </div>
 
-      <p>Foram também detetadas <strong>tentativas de sobrecarga (Brute Force)</strong> e a <strong>cópia do código de consulta de seguros para outros ficheiros HTML.</strong></p>
-
-      <p><strong>Pedimos que não sobrecarreguem a plataforma, de forma deliberada e maldosa, nem reproduzam o código do VERIX sem o consentimento dos desenvolvedores.</strong></p>
-
-      <div class="verix-asf-notice-highlight"><strong>OBRIGADO!</strong><br>Já foram realizadas <strong>mais de 150.000 consultas em apenas duas semanas</strong>.<br><strong>Obrigado a todos pela utilização e confiança no VERIX.</strong></div>
+      <div class="verix-asf-notice-thanks-box">
+        <div class="verix-asf-notice-section-title">OBRIGADO</div>
+        <p><strong>Já foram realizadas mais de 150.000 consultas em apenas duas semanas.</strong></p>
+        <p>Obrigado a todos pela utilização e confiança no VERIX.</p>
+      </div>
     </div>
     <div class="verix-asf-notice-footer">
       <button type="button" class="verix-asf-notice-continue" onclick="fecharAvisoASFInicial()">COMPREENDIDO &nbsp;→</button>
