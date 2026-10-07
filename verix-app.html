@@ -1563,6 +1563,99 @@ function submitConjunto(event) {
     return path.nodes;
   }
 
+  function extrairCampoComplementarASF(node, nomes) {
+    if (!node || typeof node !== 'object') return '';
+    var vistos = [];
+    function walk(obj, depth) {
+      if (obj == null || depth > 4) return '';
+      if (typeof obj === 'string' || typeof obj === 'number') return String(obj);
+      if (Array.isArray(obj)) {
+        for (var ai = 0; ai < obj.length; ai++) {
+          var av = walk(obj[ai], depth + 1);
+          if (av) return av;
+        }
+        return '';
+      }
+      if (typeof obj !== 'object') return '';
+      if (vistos.indexOf(obj) >= 0) return '';
+      vistos.push(obj);
+
+      for (var ni = 0; ni < nomes.length; ni++) {
+        var alvo = String(nomes[ni]).toLowerCase();
+        for (var k in obj) {
+          if (!Object.prototype.hasOwnProperty.call(obj, k)) continue;
+          if (String(k).toLowerCase() !== alvo) continue;
+          var v = obj[k];
+          if (v == null) continue;
+          if (typeof v === 'string' || typeof v === 'number') {
+            var sv = String(v).trim();
+            if (sv) return sv;
+          }
+          var nested = walk(v, depth + 1);
+          if (nested) return nested;
+        }
+      }
+
+      // Alguns payloads colocam o valor dentro de name/text/value/description.
+      var comuns = ['name','text','value','description','number','date'];
+      for (var ci = 0; ci < comuns.length; ci++) {
+        var cv = obj[comuns[ci]];
+        if (typeof cv === 'string' || typeof cv === 'number') {
+          var cs = String(cv).trim();
+          if (cs) return cs;
+        }
+      }
+
+      return '';
+    }
+    return walk(node, 0);
+  }
+
+  function construirNodeSeguroASF(nodes) {
+    var seguro = null;
+    for (var i = 0; i < nodes.length; i++) {
+      var node = nodes[i];
+      if (!node || typeof node !== 'object') continue;
+      if (node.license != null) {
+        seguro = node;
+        break;
+      }
+    }
+    if (!seguro) return null;
+
+    // A licença define o estado. O resto é apenas enriquecimento visual.
+    var out = {};
+    var campos = {
+      id: ['id'],
+      license: ['license'],
+      entity: ['entity','insurer','insuranceCompany','insuranceEntity'],
+      policy: ['policy','policyNumber','policyNumberText'],
+      startDate: ['startDate','validFrom','start'],
+      endDate: ['endDate','validTo','end'],
+      code: ['code'],
+      logo: ['logo']
+    };
+
+    Object.keys(campos).forEach(function (destino) {
+      var valor = '';
+      for (var j = 0; j < nodes.length; j++) {
+        valor = extrairCampoComplementarASF(nodes[j], campos[destino]);
+        if (valor) break;
+      }
+      if (!valor) valor = extrairCampoComplementarASF(seguro, campos[destino]);
+      if (valor) out[destino] = valor;
+    });
+
+    // Preserva também qualquer campo escalar diretamente presente no nó escolhido.
+    Object.keys(seguro).forEach(function (k) {
+      if (out[k] === undefined && (typeof seguro[k] === 'string' || typeof seguro[k] === 'number')) {
+        out[k] = String(seguro[k]);
+      }
+    });
+
+    return out;
+  }
+
   function interpretarRespostaASF(json) {
     if (!json || typeof json !== 'object') throw new Error('Resposta ASF inválida');
 
@@ -1582,7 +1675,13 @@ function submitConjunto(event) {
       return node && node.license != null;
     });
 
-    if (nodeSeguro) return { estado: 'sim', node: nodeSeguro, nodes: nodes };
+    if (nodeSeguro) {
+      return {
+        estado: 'sim',
+        node: construirNodeSeguroASF(nodes) || nodeSeguro,
+        nodes: nodes
+      };
+    }
     return { estado: 'nao', node: null, nodes: nodes };
   }
 
@@ -1590,7 +1689,7 @@ function submitConjunto(event) {
   async function realizarConsultaASF_IPO(matLimpa, matDisplay, queryId) {
     var dataHoje = formatarDataASF(new Date());
     // Query mínima alinhada com o canal de referência.
-    var queryGQL = 'mutation license { mobishoutEntry { noone { entry { licenseNumber(license: "' + matLimpa + '", date: "' + dataHoje + '") { nodes { id entity startDate endDate policy license code logo } } } } } }';
+    var queryGQL = 'mutation license {\n  mobishoutEntry {\n    noone {\n      entry {\n        licenseNumber(license: "' + matLimpa + '", date: "' + dataHoje + '") {\n          nodes {\n            id\n            entity\n            startDate\n            endDate\n            policy\n            license\n            code\n            logo\n          }\n        }\n      }\n    }\n  }\n}';
     var url = ASF_API_URL + encodeURIComponent(queryGQL);
 
     var resposta = await efetuarPedidoHttpASF(url, matDisplay, queryId);
