@@ -8001,11 +8001,7 @@ function prepararSelectors(){
  .cin-profile-actions-clean{width:100%!important;justify-content:flex-end!important}
 }
 </style>
-<script>
-window.addEventListener('DOMContentLoaded',function(){
- setTimeout(function(){mostrarMenuPrincipal();},0);
-});
-</script> <style id="ajuste-cinemometro-v75-top">
+<style id="ajuste-cinemometro-v75-top">
 
 html body .module-overlay.cinemometro-fullpage{
  position:fixed!important;
@@ -8778,19 +8774,7 @@ html body.fixed-workspace-active:not(.cinemometro-page-active) .time{
 </script> <style id="v155-leg-copy-feedback">
 .copy-btn-new.copied,.copy-desc-new.copied{background:linear-gradient(180deg,#12b76a,#087744)!important;border-color:#49d59a!important;color:#fff!important;box-shadow:0 0 12px rgba(18,183,106,.22)!important}
 #toastNotification{z-index:999999!important}
-</style> <script id="v158-safe-module-stability">
-(function(){
- // Não envolve nem substitui abrirModulo. A navegação fica a cargo da função base e dos patches estáveis anteriores.
- // Apenas garante que o estado visual do módulo não herda classes antigas.
- document.addEventListener('click', function(e){
- const btn=e.target && e.target.closest && e.target.closest('.mm74-card');
- if(!btn) return;
- const ov=document.getElementById('moduleOverlay');
- const win=ov && ov.querySelector('.module-window'); if(ov){ ov.classList.remove('cinemometro-fullpage'); }
- if(win){ win.classList.remove('cinemometro-fullpage-window'); }
- }, true);
-})();
-</script> <style id="v161-searchbar-narrow">
+</style> <style id="v161-searchbar-narrow">
 /* Caixa de pesquisa centrada e mais estreita para não sobrepor a mensagem institucional. */
 html body.fixed-workspace-active:not(.cinemometro-page-active) .command .searchbar{
  left:50%!important;
@@ -11646,32 +11630,7 @@ body.cinemometro-page-active{
  .cin-ema-topbar{width:100%!important;height:auto!important}
 }
 </style>
-<script id="cin-v55-help-sync">
-(function(){
- function cinV55SyncLimitHelp(){
- const r=document.getElementById('cinRegime');
- const fonte=document.getElementById('cinLimiteFonte');
- if(!r||!fonte)return;
- const map={
- coexistencia:'',
- local_geral:'',
- restante:'',
- reservada:'',
- autoestrada:'',
- local_placas:'Introduza o limite definido pela sinalização aplicável no local.',
- fora_placas:'Introduza o limite definido pela sinalização aplicável no local.',
- auto_placas:'O programa aplica o limite operacional definido para esta configuração.',
- especial:'Introduza o limite definido pela sinalização aplicável no local.',
- personalizado:'Introduza o limite aplicável nesta sessão.'
- };
- fonte.textContent=map[r.value]||'O programa calcula automaticamente o limite quando aplicável.';
- }
- document.addEventListener('change',e=>{
- if(e.target?.id==='cinRegime'||e.target?.id==='cinVeiculo')setTimeout(cinV55SyncLimitHelp,0);
- });
- setTimeout(cinV55SyncLimitHelp,100);
-})();
-</script> <style id="cin-v58-radar-between-config-speed">
+<style id="cin-v58-radar-between-config-speed">
 
 .cin-active-device-top{
  grid-column:1 / -1!important;
@@ -12137,34 +12096,7 @@ body.main-menu-active .rail{display:none!important;}
  .main-menu-v74-title{font-size:21px}.main-menu-v74-grid-big .mm74-card{width:min(92vw,300px);height:138px}.main-menu-v74-grid-small .mm74-card{width:calc(50% - 7px);height:96px;}.mm74-footer-title{font-size:12px}.mm74-footer-copy{font-size:8px;}
 }
 </style>
-<script id="v74-main-menu-script">
-(function(){
- const oldMostrar=window.mostrarMenuPrincipal;
- if(typeof oldMostrar==='function'){
- window.mostrarMenuPrincipal=function(){
- document.body.classList.remove('consultation-screen-active');
- const r=oldMostrar.apply(this,arguments);
- atualizarMenuPrincipalRelogio();
- return r;
- };
- }
- const oldAbrirConsulta=window.abrirConsultaPrincipal;
- if(typeof oldAbrirConsulta==='function'){
- window.abrirConsultaPrincipal=function(){
- document.body.classList.add('consultation-screen-active');
- return oldAbrirConsulta.apply(this,arguments);
- };
- }
- const oldAbrirModulo=window.abrirModulo;
- if(typeof oldAbrirModulo==='function'){
- window.abrirModulo=function(nome,el){
- document.body.classList.remove('consultation-screen-active');
- return oldAbrirModulo.apply(this,arguments);
- };
- }
-
-})();
-</script> <style id="v76-historico-consulta-bottom">
+<style id="v76-historico-consulta-bottom">
 
 .consulta-history-bottom-wrap{width:100%;display:flex;justify-content:center;align-items:center;margin:10px 0 8px;padding:0 16px;}
 .consulta-history-bottom{min-width:300px;height:46px;padding:0 28px;border:1px solid #e13b56;border-radius:8px;background:linear-gradient(180deg,#c8102e,#8f0c22);color:#fff;box-shadow:0 8px 24px rgba(200,16,46,.22),inset 0 1px 0 rgba(255,255,255,.12);font:900 11px/1 Arial,sans-serif;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:.16s;display:inline-flex;align-items:center;justify-content:center;gap:10px;}
