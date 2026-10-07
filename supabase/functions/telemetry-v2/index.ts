@@ -2,12 +2,35 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 declare const Deno: any;
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+const BASE_CORS_HEADERS = {
   "Access-Control-Allow-Headers": "content-type,apikey,authorization",
   "Access-Control-Allow-Methods": "POST,OPTIONS",
-  "Cache-Control": "no-store"
+  "Cache-Control": "no-store",
+  "Vary": "Origin",
+  "X-Content-Type-Options": "nosniff",
+  "Referrer-Policy": "no-referrer"
 };
+
+const ALLOWED_ORIGINS = new Set([
+  "https://verix-plataformadigital.github.io",
+  "https://verix.vxops.workers.dev",
+  "http://localhost",
+  "http://127.0.0.1",
+  "null"
+]);
+
+function isAllowedOrigin(origin: string | null): boolean {
+  if (!origin) return true;
+  if (ALLOWED_ORIGINS.has(origin)) return true;
+  return /^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?$/.test(origin);
+}
+
+function corsHeaders(req: Request) {
+  const headers: Record<string, string> = { ...BASE_CORS_HEADERS };
+  const origin = req.headers.get("origin");
+  if (origin && isAllowedOrigin(origin)) headers["Access-Control-Allow-Origin"] = origin;
+  return headers;
+}
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 
@@ -55,10 +78,11 @@ const allowedEvents = new Set([
   "legislation_search","legislation_copy","legislation_favorite_toggle"
 ]);
 
-function json(data: unknown, status = 200) {
+function json(data: unknown, status = 200, req?: Request) {
+  const headers = req ? corsHeaders(req) : { ...BASE_CORS_HEADERS };
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8" }
+    headers: { ...headers, "Content-Type": "application/json; charset=utf-8" }
   });
 }
 
@@ -285,29 +309,29 @@ async function consumeRate(key: string, limit: number): Promise<boolean> {
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders });
-  if (req.method !== "POST") return json({ ok: false, error: "method_not_allowed" }, 405);
-  if (!SUPABASE_URL || !secretKey) return json({ ok: false, error: "telemetry_not_configured" }, 503);
-  if (!rateSecret && !secretKey) return json({ ok: false, error: "rate_secret_not_configured" }, 503);
-
   const origin = req.headers.get("origin");
-  if (origin && !ALLOWED_ORIGINS.has(origin)) {
-    return json({ ok: false, error: "origin_not_allowed" }, 403);
+  if (!isAllowedOrigin(origin)) {
+    return json({ ok: false, error: "origin_not_allowed" }, 403, req);
   }
+
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders(req) });
+  if (req.method !== "POST") return json({ ok: false, error: "method_not_allowed" }, 405, req);
+  if (!SUPABASE_URL || !secretKey) return json({ ok: false, error: "telemetry_not_configured" }, 503, req);
+  if (!rateSecret && !secretKey) return json({ ok: false, error: "rate_secret_not_configured" }, 503, req);
 
   try {
     const contentLength = Number(req.headers.get("content-length") || 0);
     if (Number.isFinite(contentLength) && contentLength > 1024 * 1024) {
-      return json({ ok: false, error: "payload_too_large" }, 413);
+      return json({ ok: false, error: "payload_too_large" }, 413, req);
     }
 
     if (!(await consumeRate(`all:${await hmacHex(clientIp(req))}`, 600))) {
-      return json({ ok: false, error: "rate_limited" }, 429);
+      return json({ ok: false, error: "rate_limited" }, 429, req);
     }
 
     const body = await req.json().catch(() => null);
     const input = Array.isArray(body?.events) ? body.events.slice(0, 100) : [];
-    if (!input.length) return json({ ok: true, accepted: 0, rejected: 0 });
+    if (!input.length) return json({ ok: true, accepted: 0, rejected: 0 }, 200, req);
 
     const events: any[] = [];
 
@@ -377,7 +401,7 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    if (!events.length) return json({ ok: true, accepted: 0, rejected: input.length });
+    if (!events.length) return json({ ok: true, accepted: 0, rejected: input.length }, 200, req);
 
     // Impede nova duplicação do mesmo query_id. O índice SQL reforça isto,
     // mas filtramos antes do upsert para evitar conflitos que o PostgREST
@@ -493,9 +517,9 @@ Deno.serve(async (req: Request) => {
     });
     if (eventsError) throw new Error(`events:${eventsError.message}`);
 
-    return json({ ok: true, accepted: events.length, rejected: input.length - events.length });
+    return json({ ok: true, accepted: events.length, rejected: input.length - events.length }, 200, req);
   } catch (error) {
     console.error("telemetry_write_failed", error);
-    return json({ ok: false, error: "telemetry_write_failed" }, 500);
+    return json({ ok: false, error: "telemetry_write_failed" }, 500, req);
   }
 });
