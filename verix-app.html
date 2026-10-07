@@ -1439,6 +1439,109 @@ function submitConjunto(event) {
   }
   setInterval(atualizarContadorVisualASF, 1000);
 
+  // ---- ASF scheduling + diagnostics ----
+  // Uma consulta = uma tentativa física. Este bloco é deliberadamente
+  // independente do transporte (WinHTTP ou Fetch) para que o diagnóstico
+  // não possa quebrar o próprio motor ASF.
+  function reservarSlotFisicoASF(matDisplay, metodo) {
+    var atraso = calcularAtrasoCadenciaASF();
+
+    while (atraso > 0) {
+      if (matDisplay) {
+        mostrarSeguroLoading(matDisplay, 'A AGUARDAR (' + Math.ceil(atraso / 1000) + 's)');
+      }
+      return esperarASF(Math.min(atraso, 1000)).then(function () {
+        return reservarSlotFisicoASF(matDisplay, metodo);
+      });
+    }
+
+    var agora = agoraASF();
+    ASF_ULTIMO_PEDIDO_T = agora;
+    asfRequestTimes.push(agora);
+    guardarEstadoRateASF();
+    atualizarContadorVisualASF();
+    return Promise.resolve(agora);
+  }
+
+  function agoraMsASFDiag() { return Date.now(); }
+
+  function textoErroASF(e) {
+    if (!e) return '';
+    var parts = [];
+    try { if (e.name) parts.push(String(e.name)); } catch (_) {}
+    try { if (e.message) parts.push(String(e.message)); } catch (_) {}
+    try { if (e.number) parts.push('number=' + String(e.number)); } catch (_) {}
+    return parts.join(' | ').slice(0, 500);
+  }
+
+  function classificarErroASF(e, timeoutForcado) {
+    var t = textoErroASF(e).toLowerCase();
+    if (
+      timeoutForcado ||
+      t.indexOf('abort') >= 0 ||
+      t.indexOf('timed out') >= 0 ||
+      t.indexOf('timeout') >= 0 ||
+      t.indexOf('tempo esgotado') >= 0
+    ) return 'timeout';
+
+    if (
+      t.indexOf('cors') >= 0 ||
+      t.indexOf('networkerror') >= 0 ||
+      t.indexOf('network error') >= 0 ||
+      t.indexOf('failed to fetch') >= 0 ||
+      t.indexOf('internet') >= 0
+    ) return 'network';
+
+    return 'unknown';
+  }
+
+  function criarDiagASF(queryId, matDisplay) {
+    return {
+      queryId: queryId || null,
+      matricula: String(matDisplay || '').slice(0, 30),
+      asfHttpStatus: null,
+      asfDurationMs: null,
+      asfTotalMs: null,
+      asfQueueWaitMs: null,
+      asfMethod: null,
+      asfTransport: null,
+      asfErrorType: null,
+      asfMessage: null,
+      asfAttempts: [],
+      asfResponseBytes: null,
+      asfResponseContentType: null,
+      asfRelayLatencyMs: null
+    };
+  }
+
+  function erroComDiagASF(mensagem, diagnostico) {
+    var err = new Error(String(mensagem || 'Falha ASF'));
+    try { err.asfDiagnostic = diagnostico || null; } catch (_) {}
+    return err;
+  }
+
+  function finalizarTentativaDiagASF(diag, tentativa, extra) {
+    tentativa.durationMs = Math.max(0, agoraMsASFDiag() - tentativa.startedAt);
+
+    if (extra) {
+      Object.keys(extra).forEach(function (k) {
+        tentativa[k] = extra[k];
+      });
+    }
+
+    diag.asfAttempts.push(tentativa);
+    diag.asfDurationMs = tentativa.durationMs;
+    diag.asfTotalMs = (diag.asfQueueWaitMs || 0) + tentativa.durationMs;
+    diag.asfHttpStatus = tentativa.status == null ? null : Number(tentativa.status);
+    diag.asfMethod = tentativa.method || null;
+    diag.asfTransport = tentativa.transport || null;
+    diag.asfErrorType = tentativa.errorType || diag.asfErrorType || null;
+    diag.asfMessage = tentativa.message
+      ? String(tentativa.message).slice(0, 500)
+      : diag.asfMessage;
+    diag.asfResponseContentType = tentativa.responseContentType || diag.asfResponseContentType || null;
+  }
+
   // ---- HTTP ASF: relay servidor-servidor ----
   // O browser deixa de contactar ext01.asf.com.pt diretamente.
   // O pedido é enviado ao relay VÉRIX por HTTPS; o relay fala com a ASF.
