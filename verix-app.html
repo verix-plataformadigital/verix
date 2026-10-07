@@ -1274,13 +1274,10 @@ function submitConjunto(event) {
 
 
   var asfRequestTimes = [];
-  var ASF_ULTIMO_PEDIDO_T = 0;
   var ASF_FILA = Promise.resolve();
   var ASF_EM_CURSO = false;
-  var ASF_ULTIMA_UI_SEQUENCIA = 0;
   var ASF_SERVER_COOLDOWN_UNTIL = 0;
   var ASF_FILA_PENDENTES = 0;
-  var ASF_DIAGNOSTICO = [];
   var ASF_PENDING_TIMER = null;
 
   function agoraASF() { return Date.now(); }
@@ -1408,7 +1405,6 @@ function submitConjunto(event) {
     var windowText = document.getElementById('asfRateWindowText');
     if (!widget || !cd) return;
 
-    limparJanelaASF();
     var agora = agoraASF();
     var restoMs = calcularAtrasoCadenciaASF();
     var restoSeg = Math.max(0, Math.ceil(restoMs / 1000));
@@ -1438,6 +1434,35 @@ function submitConjunto(event) {
     }
   }
   setInterval(atualizarContadorVisualASF, 1000);
+
+  // ---- Cadência ASF / reserva do pedido físico ----
+  // Este é o único ponto que "consome" uma consulta local. A camada HTTP
+  // continua deliberadamente sem retries automáticos: 1 consulta = 1 pedido.
+  async function reservarSlotFisicoASF(matDisplay) {
+    while (true) {
+      var atraso = calcularAtrasoCadenciaASF();
+      if (!(atraso > 0)) break;
+
+      var segundos = Math.max(1, Math.ceil(atraso / 1000));
+      try {
+        if (matDisplay) {
+          mostrarSeguroLoading(
+            matDisplay,
+            'A AGUARDAR · LIMITE ASF (' + segundos + 's)'
+          );
+        }
+      } catch (_) {}
+      try { atualizarContadorVisualASF(); } catch (_) {}
+
+      await esperarASF(Math.min(atraso, 1000));
+    }
+
+    var agora = agoraASF();
+    asfRequestTimes.push(agora);
+    guardarEstadoRateASF();
+    try { atualizarContadorVisualASF(); } catch (_) {}
+    return agora;
+  }
 
   // ---- HTTP ASF: relay servidor-servidor ----
   // O browser deixa de contactar ext01.asf.com.pt diretamente.
@@ -1808,11 +1833,49 @@ function submitConjunto(event) {
   function calcularDiasRestantesASF(dateText) {
     var raw = String(dateText || '').trim();
     if (!raw) return null;
-    var m = raw.match(/^(\d{2})[\/-](\d{2})[\/-](\d{4})$/);
-    var d = m ? new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]), 23, 59, 59, 999) : new Date(raw);
-    if (isNaN(d.getTime())) return null;
+
+    var d = null;
+    var m = raw.match(/^(\d{4})[\/-](\d{2})[\/-](\d{2})(?:$|[T\s])/);
+    if (m) {
+      var y1 = Number(m[1]);
+      var mo1 = Number(m[2]);
+      var d1 = Number(m[3]);
+      var local1 = new Date(y1, mo1 - 1, d1, 23, 59, 59, 999);
+      if (
+        local1.getFullYear() === y1 &&
+        local1.getMonth() === mo1 - 1 &&
+        local1.getDate() === d1
+      ) {
+        d = local1;
+      }
+    }
+
+    if (!d) {
+      m = raw.match(/^(\d{2})[\/-](\d{2})[\/-](\d{4})(?:$|[T\s])/);
+      if (m) {
+        var d2 = Number(m[1]);
+        var mo2 = Number(m[2]);
+        var y2 = Number(m[3]);
+        var local2 = new Date(y2, mo2 - 1, d2, 23, 59, 59, 999);
+        if (
+          local2.getFullYear() === y2 &&
+          local2.getMonth() === mo2 - 1 &&
+          local2.getDate() === d2
+        ) {
+          d = local2;
+        }
+      }
+    }
+
+    if (!d) {
+      var parsed = new Date(raw);
+      if (!Number.isNaN(parsed.getTime())) d = parsed;
+    }
+
+    if (!d || Number.isNaN(d.getTime())) return null;
+
     var today = new Date();
-    today.setHours(0,0,0,0);
+    today.setHours(0, 0, 0, 0);
     var end = new Date(d.getFullYear(), d.getMonth(), d.getDate());
     return Math.ceil((end.getTime() - today.getTime()) / 86400000);
   }
@@ -1832,6 +1895,12 @@ function submitConjunto(event) {
     var diasRestantes = calcularDiasRestantesASF(fim);
     var validadeTexto = diasRestantes == null ? 'VALIDADE NÃO DETERMINADA' : (diasRestantes >= 0 ? ('VÁLIDO · ' + diasRestantes + ' ' + (diasRestantes === 1 ? 'DIA' : 'DIAS')) : ('EXPIRADO · ' + Math.abs(diasRestantes) + ' ' + (Math.abs(diasRestantes) === 1 ? 'DIA' : 'DIAS')));
     var validadeClasse = diasRestantes == null ? 'unknown' : (diasRestantes >= 0 ? 'valid' : 'expired');
+    var heroTitle = diasRestantes == null ? 'SEGURO ENCONTRADO' : (diasRestantes >= 0 ? 'SEGURO VÁLIDO' : 'SEGURO EXPIRADO');
+    var heroSub = diasRestantes == null
+      ? 'REGISTO ENCONTRADO NO CANAL ASF · VALIDADE NÃO DETERMINADA'
+      : (diasRestantes >= 0
+        ? 'REGISTO ENCONTRADO NO CANAL ASF · SITUAÇÃO OPERACIONAL'
+        : 'REGISTO ENCONTRADO NO CANAL ASF · CONTRATO EXPIRADO');
     var logoHtml = (logo && !/default\.png/i.test(logo))
       ? '<div class="asf-logo-wrap"><img class="asf-logo" src="' + escapeHtml(logo) + '" alt="" onerror="this.parentNode.style.display=\'none\'"></div>'
       : '<div class="asf-logo-wrap asf-logo-fallback">ASF</div>';
@@ -1839,7 +1908,7 @@ function submitConjunto(event) {
       + '<div class="asf-app asf-app-ok asf-operational-result">'
       +   '<div class="asf-success-hero">'
       +     '<div class="asf-success-badge">✓</div>'
-      +     '<div class="asf-success-copy"><div class="asf-success-title">SEGURO ATIVO</div><div class="asf-success-sub">REGISTO ENCONTRADO NO CANAL ASF · SITUAÇÃO OPERACIONAL</div></div>'
+      +     '<div class="asf-success-copy"><div class="asf-success-title">' + escapeHtml(heroTitle) + '</div><div class="asf-success-sub">' + escapeHtml(heroSub) + '</div></div>'
       +     '<div class="asf-success-plate"><span>' + escapeHtml(matShow) + '</span></div>'
       +   '</div>'
       +   '<div class="asf-operational-status ' + validadeClasse + '">'
