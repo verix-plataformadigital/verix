@@ -318,25 +318,118 @@ async function loadErrorInvestigation24h(now:string){
   qs.set("occurred_at","gte."+new Date(Date.now()-24*60*60*1000).toISOString());
   qs.set("order","occurred_at.asc");
   qs.set("limit","1000");
-  const rr=await fetch(supabaseUrl+"/rest/v1/verix2_events?"+qs.toString(),{headers:{apikey:serviceKey,Authorization:"Bearer "+serviceKey}});
+
+  const rr=await fetch(
+    supabaseUrl+"/rest/v1/verix2_events?"+qs.toString(),
+    {headers:{apikey:serviceKey,Authorization:"Bearer "+serviceKey}}
+  );
   const tt=await rr.text();
   if(!rr.ok)throw new Error("error_investigation:"+tt);
+
   const rows=tt?JSON.parse(tt):[];
-  const app14=rows.filter((e:any)=>String(e?.app_version||"")==="1.4");
-  const shortId=(v:any)=>{const s=String(v||"");return s.length>14?s.slice(0,8)+"…"+s.slice(-4):s;};
-  const byHash=new Map<string,number>(), byType=new Map<string,number>(), byInstall=new Map<string,number>(), bursts=new Map<string,number>();
-  for(const e of app14){
-    const a=e?.metadata?.asfDiagnostic||{}, hash=String(a.asfResponseHash||"sem-hash"), type=String(a.asfErrorType||"unknown"), inst=String(e?.installation_id||"unknown");
-    byHash.set(hash,(byHash.get(hash)||0)+1); byType.set(type,(byType.get(type)||0)+1); byInstall.set(inst,(byInstall.get(inst)||0)+1);
-    const t=new Date(e.occurred_at).getTime(); if(Number.isFinite(t)){const k=new Date(Math.floor(t/300000)*300000).toISOString();bursts.set(k,(bursts.get(k)||0)+1);}
+
+  // A investigação não pode ficar presa a uma versão específica.
+  // Inclui qualquer erro ASF que já tenha diagnóstico estruturado.
+  const diagnosticErrors=rows.filter((e:any)=>{
+    const a=e?.metadata?.asfDiagnostic;
+    return !!(a && typeof a==="object");
+  });
+
+  const shortId=(v:any)=>{
+    const s=String(v||"");
+    return s.length>14?s.slice(0,8)+"…"+s.slice(-4):s;
+  };
+
+  const byHash=new Map<string,number>();
+  const byType=new Map<string,number>();
+  const byInstall=new Map<string,number>();
+  const bursts=new Map<string,number>();
+
+  for(const e of diagnosticErrors){
+    const a=e?.metadata?.asfDiagnostic||{};
+    const hash=String(a.asfResponseHash||"sem-hash");
+    const type=String(a.asfErrorType||"unknown");
+    const inst=String(e?.installation_id||"unknown");
+
+    byHash.set(hash,(byHash.get(hash)||0)+1);
+    byType.set(type,(byType.get(type)||0)+1);
+    byInstall.set(inst,(byInstall.get(inst)||0)+1);
+
+    const t=new Date(e.occurred_at).getTime();
+    if(Number.isFinite(t)){
+      const k=new Date(Math.floor(t/300000)*300000).toISOString();
+      bursts.set(k,(bursts.get(k)||0)+1);
+    }
   }
-  const hashRows=[...byHash.entries()].map(([hash,count])=>({hash,count})).sort((a,b)=>b.count-a.count).slice(0,10);
-  const typeRows=[...byType.entries()].map(([type,count])=>({type,count})).sort((a,b)=>b.count-a.count);
-  const installRows=[...byInstall.entries()].map(([installation_id,count])=>({installation_id:shortId(installation_id),count})).sort((a,b)=>b.count-a.count).slice(0,10);
-  const burstRows=[...bursts.entries()].map(([start,count])=>({start,count})).sort((a,b)=>b.count-a.count).slice(0,12);
-  const recent=app14.slice(-12).reverse().map((e:any)=>{const a=e?.metadata?.asfDiagnostic||{};return {occurred_at:e?.occurred_at||null,installation_id:shortId(e?.installation_id),query_id:shortId(e?.query_id),browser:e?.browser||"Unknown",error_type:a.asfErrorType||"unknown",transport:a.asfTransport||null,relay_latency_ms:a.asfRelayLatencyMs??null,http_status:a.asfHttpStatus??null,duration_ms:a.asfDurationMs??null,response_hash:a.asfResponseHash||null,response_class:a.asfResponseClass||null,graphql_error_count:a.asfGraphqlErrorCount??null,response_bytes:a.asfResponseBytes??null,parse_path:a.asfParsePath||null,build_id:e?.metadata?.build_id||a.build_id||null};});
-  return {generated_at:now,errors_24h:rows.length,app14_errors:app14.length,app14_installations:new Set(app14.map((e:any)=>String(e?.installation_id||""))).size,app14_plates:new Set(app14.map((e:any)=>String(e?.metadata?.asfDiagnostic?.matricula||"")).filter(Boolean)).size,app14_hashes:byHash.size,app14_types:typeRows,app14_hashes_top:hashRows,app14_installations_top:installRows,app14_bursts_5m:burstRows,latest_app14:recent};
+
+  const hashRows=[...byHash.entries()]
+    .map(([hash,count])=>({hash,count}))
+    .sort((a,b)=>b.count-a.count)
+    .slice(0,10);
+
+  const typeRows=[...byType.entries()]
+    .map(([type,count])=>({type,count}))
+    .sort((a,b)=>b.count-a.count);
+
+  const installRows=[...byInstall.entries()]
+    .map(([installation_id,count])=>({installation_id:shortId(installation_id),count}))
+    .sort((a,b)=>b.count-a.count)
+    .slice(0,10);
+
+  const burstRows=[...bursts.entries()]
+    .map(([start,count])=>({start,count}))
+    .sort((a,b)=>b.count-a.count)
+    .slice(0,12);
+
+  const recent=diagnosticErrors.slice(-12).reverse().map((e:any)=>{
+    const a=e?.metadata?.asfDiagnostic||{};
+    return {
+      occurred_at:e?.occurred_at||null,
+      installation_id:shortId(e?.installation_id),
+      query_id:shortId(e?.query_id),
+      app_version:e?.app_version||null,
+      browser:e?.browser||"Unknown",
+      error_type:a.asfErrorType||"unknown",
+      transport:a.asfTransport||null,
+      relay_latency_ms:a.asfRelayLatencyMs??null,
+      http_status:a.asfHttpStatus??null,
+      duration_ms:a.asfDurationMs??null,
+      total_ms:a.asfTotalMs??null,
+      queue_wait_ms:a.asfQueueWaitMs??null,
+      queue_position:a.asfQueuePosition??null,
+      response_hash:a.asfResponseHash||null,
+      response_class:a.asfResponseClass||null,
+      response_content_type:a.asfResponseContentType||null,
+      graphql_error_count:a.asfGraphqlErrorCount??null,
+      response_bytes:a.asfResponseBytes??null,
+      parse_path:a.asfParsePath||null,
+      capture_id:a.asfCaptureId||null,
+      build_id:e?.metadata?.build_id||a.build_id||null
+    };
+  });
+
+  const versions=[...new Set(diagnosticErrors.map((e:any)=>String(e?.app_version||"unknown")))].sort();
+
+  return {
+    generated_at:now,
+    errors_24h:rows.length,
+    diagnostic_errors:diagnosticErrors.length,
+    diagnostic_versions:versions,
+    diagnostic_installations:new Set(diagnosticErrors.map((e:any)=>String(e?.installation_id||""))).size,
+    diagnostic_plates:new Set(
+      diagnosticErrors
+        .map((e:any)=>String(e?.metadata?.asfDiagnostic?.matricula||""))
+        .filter(Boolean)
+    ).size,
+    diagnostic_hashes:byHash.size,
+    diagnostic_types:typeRows,
+    diagnostic_hashes_top:hashRows,
+    diagnostic_installations_top:installRows,
+    diagnostic_bursts_5m:burstRows,
+    latest_diagnostic:recent
+  };
 }
+
 async function loadLifetime(now:string){
   async function resetAllAt(){
     const q=new URLSearchParams({select:"reset_all_at",singleton:"eq.true",limit:"1"});
