@@ -33,7 +33,16 @@ function normalizePlate(value: unknown): string {
 
 function validDate(value: unknown): string | null {
   const s = cleanText(value, 10);
-  return /^\d{4}\/\d{2}\/\d{2}$/.test(s) ? s : null;
+  const m = s.match(/^(\d{4})\/(\d{2})\/(\d{2})$/);
+  if (!m) return null;
+  const y = Number(m[1]);
+  const mo = Number(m[2]);
+  const d = Number(m[3]);
+  if (!Number.isInteger(y) || !Number.isInteger(mo) || !Number.isInteger(d)) return null;
+  if (mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+  const dt = new Date(Date.UTC(y, mo - 1, d));
+  if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== mo - 1 || dt.getUTCDate() !== d) return null;
+  return s;
 }
 
 function clientIp(req: Request): string {
@@ -105,7 +114,7 @@ Deno.serve(async (req: Request) => {
     const plate = normalizePlate(body?.matricula);
     const date = validDate(body?.date);
 
-    if (!/^\w{6,8}$/.test(plate)) {
+    if (!/^[A-Z0-9]{6,8}$/.test(plate)) {
       return json({ ok: false, error: "invalid_plate" }, 400);
     }
     if (!date) return json({ ok: false, error: "invalid_date" }, 400);
@@ -118,6 +127,9 @@ Deno.serve(async (req: Request) => {
     const ipKey = await hmacHex("ip:" + clientIp(req));
     const installKey = await hmacHex("installation:" + installationId);
 
+    if (!(await consumeRate("asf-global", 60))) {
+      return json({ ok: false, error: "rate_limited_global" }, 429);
+    }
     if (!(await consumeRate("asf-ip:" + ipKey, IP_LIMIT))) {
       return json({ ok: false, error: "rate_limited" }, 429);
     }
@@ -160,8 +172,7 @@ Deno.serve(async (req: Request) => {
           "Vary": "Origin",
           "X-Verix-ASF-Relay": "1",
           "X-Verix-ASF-Latency-Ms": String(elapsedMs),
-          "X-Verix-ASF-Query": queryId
-        }
+          }
       });
     } catch (error) {
       const aborted = (error as Error)?.name === "AbortError";
@@ -169,7 +180,7 @@ Deno.serve(async (req: Request) => {
         ok: false,
         error: aborted ? "upstream_timeout" : "upstream_network",
         message: aborted ? "ASF upstream timeout" : "ASF upstream network error"
-      }, 504);
+      }, aborted ? 504 : 502);
     } finally {
       clearTimeout(timeout);
     }
