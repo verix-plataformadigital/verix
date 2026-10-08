@@ -130,3 +130,41 @@ it('mostra o texto operacional e regista cópia quando a API Clipboard aceita', 
     { copied: true }
   );
 });
+
+
+it("colapsa e reabre a ficha operacional com preferência persistida", () => {
+  const root = document.createElement("main");
+  const telemetry = { track: vi.fn() };
+  const storage = new Map<string, string>();
+  const profiles = new CinemometerProfileService({
+    getItem: (key: string) => storage.get(key) ?? null,
+    setItem: (key: string, value: string) => { storage.set(key, value); },
+    removeItem: (key: string) => { storage.delete(key); }
+  });
+  profiles.create({ marca: "Marca", modelo: "Modelo" });
+  let collapsed = true;
+
+  new CinemometerModule({
+    telemetry,
+    profiles,
+    contextCollapsed: () => collapsed,
+    onContextCollapsedChange: (next) => { collapsed = next; }
+  }).mount(root);
+
+  const panel = root.querySelector<HTMLElement>("#cin-context-panel");
+  const toggle = root.querySelector<HTMLButtonElement>(".cin-context-toggle");
+  expect(panel?.hidden).toBe(true);
+  expect(toggle?.getAttribute("aria-expanded")).toBe("false");
+
+  toggle?.click();
+  expect(panel?.hidden).toBe(false);
+  expect(collapsed).toBe(false);
+  expect(toggle?.getAttribute("aria-expanded")).toBe("true");
+
+  toggle?.click();
+  expect(panel?.hidden).toBe(true);
+  expect(collapsed).toBe(true);
+  expect(telemetry.track).toHaveBeenCalledWith("cinemometer_context_toggle", "cinemometro", {
+    collapsed: true
+  });
+});

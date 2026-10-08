@@ -304,3 +304,9 @@ Fonte externa: Diário da República, Código da Estrada consolidado.
 #### Definições — restauro das opções persistidas
 - Corrigida a construção dos controlos `select`: o valor persistido é agora aplicado depois de todas as opções existirem, para que o browser selecione a preferência correta.
 - Criados testes de DOM para garantir que perfil, tema, densidade e escala são restaurados ao montar o módulo e que o valor do tema se mantém após uma alteração e novo render.
+
+
+#### Preferência de recolher a ficha operacional do cinemómetro
+- A opção antes apresentada como `Radar do cinemómetro recolhido` era guardada mas não tinha efeito na interface. Está agora ligada à ficha operacional (aparelho/perfil e operador).
+- O módulo inclui um botão para mostrar/recolher a ficha; o estado `aria-expanded` é atualizado e o valor é persistido na mesma preferência local existente, mantendo compatibilidade com dados já guardados.
+- O teste DOM cobre estado inicial recolhido, expansão, recolha e telemetria.
