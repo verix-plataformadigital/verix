@@ -1,6 +1,7 @@
 import type { TelemetryService } from "../../services/telemetry/telemetry-service";
 import { CinemometerContextPanel } from "./cinemometer-context-panel";
 import type { CinemometerProfileService } from "./cinemometer-profile-service";
+import { buildCinemometerOperationalText } from "./cinemometer-text";
 import {
   calculateDeducedSpeedForCinemometer,
   classifyExcess,
@@ -276,6 +277,24 @@ export class CinemometerModule {
       }
 
       const context = this.contextPanel?.snapshot();
+      const operationalText = buildCinemometerOperationalText({
+        recordedSpeed,
+        deducedSpeed: deduced,
+        speedLimit,
+        mode: modeValue,
+        marca: context?.profile?.marca,
+        modelo: context?.profile?.modelo,
+        serie: context?.profile?.serie,
+        ansr: context?.profile?.ansr,
+        ipq: context?.profile?.ipq,
+        dataipq: context?.profile?.dataipq,
+        certtipo: context?.profile?.certtipo,
+        cert: context?.profile?.cert,
+        operadorNumero: context?.operator?.numero,
+        operadorNome: context?.operator?.nome,
+        operadorPosto: context?.operator?.posto
+      });
+
       this.options.telemetry.track("cinemometer_operation_start", "cinemometro");
       this.options.telemetry.track("cinemometer_calculation", "cinemometro", {
         mode: modeValue,
@@ -313,7 +332,8 @@ export class CinemometerModule {
           classification.inibicao,
           code,
           absolute,
-          percent
+          percent,
+          operationalText
         )
       );
     });
@@ -344,7 +364,8 @@ export class CinemometerModule {
     ban: string,
     code: string,
     absolute: number,
-    percent: number
+    percent: number,
+    operationalText: string
   ): HTMLElement {
     const card = document.createElement("article");
     card.className = `cin-result-card-v2 cin-result-${gravity.toLowerCase().replaceAll(" ", "-")}`;
@@ -368,8 +389,63 @@ export class CinemometerModule {
     ema.className = "cin-ema-note";
     ema.textContent = `EMA: ${absolute} km/h até 100 km/h · ${percent}% acima de 100 km/h`;
 
-    card.append(title, grid, ema);
+    const copyRow = document.createElement("div");
+    copyRow.className = "cin-copy-row";
+
+    const copyCode = document.createElement("button");
+    copyCode.type = "button";
+    copyCode.className = "cin-copy-button";
+    copyCode.textContent = "COPIAR CÓDIGO";
+    copyCode.disabled = excess <= 0 || code === "—";
+    copyCode.addEventListener("click", () => {
+      void this.copyValue(code, "cinemometer_copy_code", copyCode);
+    });
+
+    const copyText = document.createElement("button");
+    copyText.type = "button";
+    copyText.className = "cin-copy-button";
+    copyText.textContent = "COPIAR TEXTO";
+    copyText.disabled = !operationalText;
+    copyText.addEventListener("click", () => {
+      void this.copyValue(operationalText, "cinemometer_copy_text", copyText);
+    });
+
+    copyRow.append(copyCode, copyText);
+
+    const textArea = document.createElement("textarea");
+    textArea.className = "cin-operational-text";
+    textArea.readOnly = true;
+    textArea.value = operationalText;
+    textArea.setAttribute("aria-label", "Texto operacional");
+
+    card.append(title, grid, ema, copyRow, textArea);
     return card;
+  }
+
+  private async copyValue(
+    value: string,
+    event: "cinemometer_copy_code" | "cinemometer_copy_text",
+    button: HTMLButtonElement
+  ): Promise<void> {
+    if (!value || value === "—") return;
+
+    let copied = false;
+    try {
+      await navigator.clipboard.writeText(value);
+      copied = true;
+    } catch {
+      copied = false;
+    }
+
+    if (copied) {
+      const original = button.textContent;
+      button.textContent = "✓ COPIADO";
+      window.setTimeout(() => {
+        if (button.isConnected) button.textContent = original;
+      }, 1400);
+    }
+
+    this.options.telemetry.track(event, "cinemometro", { copied });
   }
 
   private resultValue(parent: HTMLElement, label: string, value: string): void {
