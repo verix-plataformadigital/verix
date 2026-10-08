@@ -68,7 +68,7 @@ const output = html.replace(scriptPattern, (full, open, source, close) => {
   return open + "\n" + result + "\n" + close;
 });
 
-const secureHtml = output.replace(/<!--(?!(?:\\[\s\S]*?))(?:(?!\\[\s\S]*?-->)[\s\S])*-->/g, "");
+const secureHtml = output.replace(/<!--[\\s\\S]*?-->/g, "");
 
 fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 fs.writeFileSync(OUTPUT, secureHtml, "utf8");
