@@ -139,9 +139,13 @@ export class SettingsService {
   }
 }
 
+type MutableSettingsPatch = {
+  -readonly [K in keyof VerixSettings]?: VerixSettings[K];
+};
+
 function sanitize(
   patch: Record<string, unknown> | Partial<VerixSettings>
-): Partial<VerixSettings> {
+): MutableSettingsPatch {
   const p = patch as Record<string, unknown>;
   const result: Partial<VerixSettings> = {};
 
