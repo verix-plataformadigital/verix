@@ -2,6 +2,7 @@ import type { TelemetryService } from "../../services/telemetry/telemetry-servic
 import type { AsfService, AsfServiceError } from "../insurance/asf-service";
 import { normalizePlate } from "../../shared/validators/vehicle";
 import { VehicleQueryController } from "./vehicle-query-controller";
+import type { HistoryRecord, HistoryService } from "../history/history-service";
 
 const RNSI_URL = "http://consultapsp.imtt.external.rnsi.local/veiculos/";
 
@@ -12,6 +13,7 @@ export interface VehicleModuleOptions {
     setBusy(isBusy: boolean): void;
     setQueryId(queryId: string | null): void;
   };
+  readonly history: HistoryService;
 }
 
 export class VehicleModule {
@@ -32,6 +34,14 @@ export class VehicleModule {
 
   mount(root: HTMLElement): void {
     this.root = root;
+    this.render();
+  }
+
+  reopen(record: HistoryRecord): void {
+    this.lastPlate = record.veiculo;
+    this.lastTrailer = record.reboque;
+    this.lastDate = this.isoDateFromHistory(record.data);
+    this.localNotice = "";
     this.render();
   }
 
@@ -139,10 +149,22 @@ export class VehicleModule {
     submit.disabled = true;
     submit.textContent = "A CONSULTAR…";
 
-    await this.controller.lookup({
+    const result = await this.controller.lookup({
       plate: normalizedPlate,
       date: isoDateToAsfDate(isoDate)
     });
+
+    if (result.queryId) {
+      this.options.history.updateInsurance(
+        result.queryId,
+        normalizedPlate,
+        result.status === "success" && result.outcome.kind === "insured"
+          ? "sim"
+          : result.status === "success"
+            ? "nao"
+            : "desconhecido"
+      );
+    }
 
     if (!this.root) return;
     this.render();
@@ -349,6 +371,16 @@ export class VehicleModule {
       result.tabIndex = -1;
       result.focus({ preventScroll: false });
     }
+  }
+
+  private isoDateFromHistory(value: string): string {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return this.isoToday();
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
   }
 
   private isoToday(): string {
