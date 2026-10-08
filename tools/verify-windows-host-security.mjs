@@ -8,10 +8,13 @@ const required = [
   "NewWindowRequested",
   "IsUserInitiated",
   "consultapsp.imtt.external.rnsi.local",
-  "X-Content-Type",
   "AreDevToolsEnabled = false",
   "AreHostObjectsAllowed = false",
-  "IsWebMessageEnabled = false"
+  "IsWebMessageEnabled = false",
+  "IsPasswordAutosaveEnabled = false",
+  "IsGeneralAutofillEnabled = false",
+  "IsSwipeNavigationEnabled = false",
+  'uri.AbsolutePath.StartsWith("/veiculos/"'
 ];
 
 for (const marker of required) {

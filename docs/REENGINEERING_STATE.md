@@ -236,3 +236,9 @@ Fonte externa: Diário da República, Código da Estrada consolidado.
 - O adaptador foi alterado para usar `window.open(url, "_blank")`, anular imediatamente `opened.opener` e devolver `false` apenas se não foi criada uma referência (ou se o isolamento do opener não pôde ser concluído).
 - A política `no-referrer` permanece no HTML V2. Foram acrescentados testes DOM para distinguir abertura permitida de pop-up bloqueado.
 - A pesquisa também confirmou a restrição de ativação do utilizador por janela; se o segundo canal RNSI for bloqueado, o caminho continua a ser o respetivo botão explícito, em vez de remover proteções do browser.
+
+
+#### Correção do verificador WebView2
+- A pipeline falhava porque `tools/verify-windows-host-security.mjs` exigia a string `X-Content-Type` em `windows/VerixPortable/Program.cs`. O host WinForms carrega o site remoto e não é o servidor que emite os cabeçalhos HTTP; esta verificação não comprovava um controlo implementado.
+- Removido esse falso requisito e reforçada a lista de marcadores com as definições reais de desativação do autofill, gravação de palavras-passe, mensagens web e navegação por swipe, além do prefixo de caminho interno RNSI.
+- A correção altera o verificador, não reduz o allowlist, não relaxa navegações e não introduz flags inseguras no Chromium.
