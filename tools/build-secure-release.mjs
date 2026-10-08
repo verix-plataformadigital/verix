@@ -158,8 +158,8 @@ for (const f of ["verix-mobile.css", "verix-mobile.js"]) {
 // to expose their endpoint, heartbeat and security runtime markers.
 function verifyCriticalRuntime(outputPath) {
   const html = fs.readFileSync(outputPath, "utf8");
-  const telemetry = html.match(/<script\\b[^>]*id=["']verix-telemetry-v2["'][^>]*>[\\s\\S]*?<\\/script>/i);
-  const security = html.match(/<script\\b[^>]*id=["']verix-security-runtime["'][^>]*>[\\s\\S]*?<\\/script>/i);
+  const telemetry = html.match(/<script\b[^>]*id=["']verix-telemetry-v2["'][^>]*>[\s\S]*?<\/script>/i);
+  const security = html.match(/<script\b[^>]*id=["']verix-security-runtime["'][^>]*>[\s\S]*?<\/script>/i);
   if (!telemetry) throw new Error("Critical telemetry runtime block missing from secure build");
   if (!/telemetry-v2/i.test(telemetry[0])) throw new Error("Critical telemetry endpoint marker missing");
   if (!/heartbeat/i.test(telemetry[0])) throw new Error("Critical telemetry heartbeat marker missing");
