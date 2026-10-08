@@ -60,10 +60,12 @@ async function hmacHex(value: string, secret: string): Promise<string> {
   return [...bytes].map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
-async function consumeLoginRate(req: Request, secret: string): Promise<boolean> {
+type LoginRateState = "allowed" | "limited" | "unavailable";
+
+async function consumeLoginRate(req: Request, secret: string): Promise<LoginRateState> {
   const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-  if (!supabaseUrl || !serviceKey) return false;
+  if (!supabaseUrl || !serviceKey) return "unavailable";
 
   const rateSecret = Deno.env.get("VERIX_ADMIN_RATE_SECRET") || secret;
   const rateKey = await hmacHex("admin-login:" + clientIp(req), rateSecret);
@@ -83,9 +85,9 @@ async function consumeLoginRate(req: Request, secret: string): Promise<boolean> 
       })
     }
   );
-  if (!response.ok) return false;
+  if (!response.ok) return "unavailable";
   const body = await response.text();
-  return body.trim() === "true";
+  return body.trim() === "true" ? "allowed" : "limited";
 }
 
 function b64(bytes: Uint8Array) {
@@ -194,7 +196,11 @@ Deno.serve(async (req) => {
       return json({ ok: false, error: "payload_too_large" }, 413, req);
     }
 
-    if (!(await consumeLoginRate(req, secret))) {
+    const rateState = await consumeLoginRate(req, secret);
+    if (rateState === "unavailable") {
+      return json({ ok: false, error: "rate_limit_unavailable" }, 503, req);
+    }
+    if (rateState === "limited") {
       return json({ ok: false, error: "rate_limited" }, 429, req);
     }
 
