@@ -66,8 +66,7 @@ describe("VehicleModule history preference", () => {
 
     plate.value = "12-AB-34";
     form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
-    await Promise.resolve();
-    await Promise.resolve();
+    await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(asf.query).toHaveBeenCalled();
     expect(history.add).not.toHaveBeenCalled();
@@ -120,8 +119,8 @@ describe("VehicleModule history preference", () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(imtOpen).toHaveBeenCalledTimes(2);
-    expect(imtOpen).toHaveBeenNthCalledWith(1, "inspecao", "12AB34");
-    expect(imtOpen).toHaveBeenNthCalledWith(2, "livrete", "VC1234");
+    expect(imtOpen).toHaveBeenNthCalledWith(1, "http://consultapsp.imtt.external.rnsi.local/veiculos/consulta_inspecao.php?Matricula=12AB34");
+    expect(imtOpen).toHaveBeenNthCalledWith(2, "http://consultapsp.imtt.external.rnsi.local/veiculos/consulta_livrete.php?Matricula=VC1234");
     expect(asf.query).toHaveBeenCalledWith({
       matricula: "12AB34",
       date: "2026/10/08"
@@ -137,8 +136,7 @@ describe("VehicleModule history preference", () => {
 
     plate.value = "12-AB-34";
     form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
-    await Promise.resolve();
-    await Promise.resolve();
+    await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(history.add).toHaveBeenCalledWith("12AB34", "", "q-test");
     expect(history.updateInsurance).toHaveBeenCalledWith("q-test", "12AB34", "nao");

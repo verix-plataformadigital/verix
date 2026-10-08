@@ -30,9 +30,9 @@ describe("vehicle lookup orchestration", () => {
     if (!result.ok) return;
 
     expect(calls).toEqual([
-      "asf:12-AB-34:q-1:2026/10/08",
       "imt-inspecao:12-AB-34",
-      "imt-livrete:VC-1234"
+      "imt-livrete:VC-1234",
+      "asf:12-AB-34:q-1:2026/10/08"
     ]);
 
     await expect(result.value).resolves.toMatchObject({

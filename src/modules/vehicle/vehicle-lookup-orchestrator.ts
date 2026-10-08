@@ -57,19 +57,21 @@ export class VehicleLookupOrchestrator<TImt, TAsf> {
       }
     };
 
+    // Open RNSI first while the submit handler still has user activation.
+    // Some browsers block window.open if the ASF request is initiated first.
+    const imtInspection = safeAsync(() =>
+      this.dependencies.startImtInspection(inspectionPlate, queryId)
+    );
+    const imtLivrete = safeAsync(() =>
+      this.dependencies.startImtLivrete(livretePlate, queryId)
+    );
+
     const asf = safeAsync(() =>
       this.dependencies.queryAsf(
         inspectionPlate,
         queryId,
         request.asfDate
       )
-    );
-
-    const imtInspection = safeAsync(() =>
-      this.dependencies.startImtInspection(inspectionPlate, queryId)
-    );
-    const imtLivrete = safeAsync(() =>
-      this.dependencies.startImtLivrete(livretePlate, queryId)
     );
 
     return {
