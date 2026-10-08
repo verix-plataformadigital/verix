@@ -134,3 +134,26 @@ A implementação V2 foi comparada com a versão consolidada do Código da Estra
 Resultado: os thresholds já caracterizados no domínio V61 (incluindo a distinção entre ligeiros/motociclos e outros veículos e a zona de coexistência) não devem ser alterados sem nova evidência legal. A versão consolidada consultada indica como última alteração 2025-03-12. A implementação continua a usar o V61 observado no runtime legado como referência operacional e a legislação como validação externa.
 
 Fonte externa: Diário da República, Código da Estrada consolidado.
+
+
+## Continuação — 2026-10-08 19:xx
+
+### Telemetria / presença
+- `TelemetryService.track()` passou a iniciar flush imediato para `app_open`, `heartbeat` e `vehicle_lookup`. A fila continua a ser o fallback de fiabilidade.
+- `DefaultConnectivityService` passou a aceitar `probeMethod`; o bootstrap V2 usa `OPTIONS` ao `verix-gate-v1` para testar reachability do backend sem fabricar um evento de telemetria.
+- A Edge Function `telemetry-v2` foi atualizada para persistir `verix2_events` antes de avançar `verix2_installations` e `verix2_sessions`. Isto reduz o risco de `last_seen` avançar sem o evento correspondente.
+- A versão 34 de `telemetry-v2` foi publicada no projeto Supabase de produção; o runtime ASF não foi alterado.
+- Verificação direta do banco após a alteração: os heartbeats estão a chegar de forma regular e `online_now` do RPC administrativo está a devolver `1` no momento da consulta.
+- Foi observado anteriormente um estado incoerente em que `last_seen` estava recente mas não havia eventos correspondentes; a causa provável era a ordem das escritas na Edge Function.
+
+### V2 / versão de produto
+- `runtimeConfig.appVersion` e a identificação visual da shell/admin foram alinhados para `1.4`; `BUILD_ID` continua a ser identidade técnica interna.
+- Não alterar a versão de produto novamente sem confirmar a intenção operacional, porque o runtime legado atualmente observado no banco ainda envia `app_version = 1.5`.
+
+### CI
+- O `VÉRIX Security Audit` ficou verde num dos commits intermédios.
+- A qualidade V2 falhou num fixture por `exactOptionalPropertyTypes`; o fixture foi corrigido sem relaxar o `tsconfig`.
+- Há execuções subsequentes da CI em curso para os commits mais recentes. O próximo estado útil é o resultado do typecheck/build dessa revisão.
+
+### Regra acrescentada
+- Erros de presença devem ser resolvidos na ingestão/fonte de verdade; não mascarar o problema apenas no contador do Admin.
