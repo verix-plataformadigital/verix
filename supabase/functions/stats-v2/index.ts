@@ -213,10 +213,16 @@ async function loadErrorInvestigation24h(now:string){
   if(!rr.ok)throw new Error("error_investigation:"+tt);
   const rows=tt?JSON.parse(tt):[];
   const app15=rows.filter((e:any)=>String(e?.app_version||"")==="1.5");
+  const classifyErrorType=(diagnostic:any)=>{
+    const raw=String(diagnostic?.asfErrorType||"unknown");
+    const message=String(diagnostic?.asfMessage||"");
+    if(raw==="unknown" && /criarDiagASF is not defined/i.test(message)) return "legacy_diagnostic";
+    return raw;
+  };
   const shortId=(v:any)=>{const s=String(v||"");return s.length>14?s.slice(0,8)+"…"+s.slice(-4):s;};
   const byHash=new Map<string,number>(), byType=new Map<string,number>(), byInstall=new Map<string,number>(), bursts=new Map<string,number>();
   for(const e of app15){
-    const a=e?.metadata?.asfDiagnostic||{}, hash=String(a.asfResponseHash||"sem-hash"), type=String(a.asfErrorType||"unknown"), inst=String(e?.installation_id||"unknown");
+    const a=e?.metadata?.asfDiagnostic||{}, hash=String(a.asfResponseHash||"sem-hash"), type=classifyErrorType(a), inst=String(e?.installation_id||"unknown");
     byHash.set(hash,(byHash.get(hash)||0)+1); byType.set(type,(byType.get(type)||0)+1); byInstall.set(inst,(byInstall.get(inst)||0)+1);
     const t=new Date(e.occurred_at).getTime(); if(Number.isFinite(t)){const k=new Date(Math.floor(t/300000)*300000).toISOString();bursts.set(k,(bursts.get(k)||0)+1);}
   }
@@ -224,7 +230,7 @@ async function loadErrorInvestigation24h(now:string){
   const typeRows=[...byType.entries()].map(([type,count])=>({type,count})).sort((a,b)=>b.count-a.count);
   const installRows=[...byInstall.entries()].map(([installation_id,count])=>({installation_id:shortId(installation_id),count})).sort((a,b)=>b.count-a.count).slice(0,10);
   const burstRows=[...bursts.entries()].map(([start,count])=>({start,count})).sort((a,b)=>b.count-a.count).slice(0,12);
-  const recent=app15.slice(-12).reverse().map((e:any)=>{const a=e?.metadata?.asfDiagnostic||{};return {occurred_at:e?.occurred_at||null,installation_id:shortId(e?.installation_id),query_id:shortId(e?.query_id),browser:e?.browser||"Unknown",error_type:a.asfErrorType||"unknown",transport:a.asfTransport||null,relay_latency_ms:a.asfRelayLatencyMs??null,http_status:a.asfHttpStatus??null,duration_ms:a.asfDurationMs??null,response_hash:a.asfResponseHash||null,response_class:a.asfResponseClass||null,graphql_error_count:a.asfGraphqlErrorCount??null,response_bytes:a.asfResponseBytes??null,parse_path:a.asfParsePath||null,build_id:e?.metadata?.build_id||a.build_id||null};});
+  const recent=app15.slice(-12).reverse().map((e:any)=>{const a=e?.metadata?.asfDiagnostic||{};return {occurred_at:e?.occurred_at||null,installation_id:shortId(e?.installation_id),query_id:shortId(e?.query_id),browser:e?.browser||"Unknown",error_type:classifyErrorType(a),transport:a.asfTransport||null,relay_latency_ms:a.asfRelayLatencyMs??null,http_status:a.asfHttpStatus??null,duration_ms:a.asfDurationMs??null,response_hash:a.asfResponseHash||null,response_class:a.asfResponseClass||null,graphql_error_count:a.asfGraphqlErrorCount??null,response_bytes:a.asfResponseBytes??null,parse_path:a.asfParsePath||null,build_id:e?.metadata?.build_id||a.build_id||null};});
   return {generated_at:now,errors_24h:rows.length,app15_errors:app15.length,app15_installations:new Set(app15.map((e:any)=>String(e?.installation_id||""))).size,app15_plates:new Set(app15.map((e:any)=>String(e?.metadata?.asfDiagnostic?.matricula||"")).filter(Boolean)).size,app15_hashes:byHash.size,app15_types:typeRows,app15_hashes_top:hashRows,app15_installations_top:installRows,app15_bursts_5m:burstRows,latest_app15:recent};
 }
 async function loadLifetime(now:string){
