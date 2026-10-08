@@ -40,7 +40,7 @@ export class AppShell {
     const brandName = document.createElement("strong");
     brandName.textContent = "VÉRIX";
     const brandVersion = document.createElement("small");
-    brandVersion.textContent = "v1.4";
+    brandVersion.textContent = "v1.5";
     brandText.append(brandName, brandVersion);
 
     brand.append(mark, brandText);
