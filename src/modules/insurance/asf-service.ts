@@ -3,11 +3,13 @@ import { classifyAsfResponse, type AsfOutcome } from "./asf-classifier";
 import type { Result } from "../../shared/types/result";
 import { err, ok } from "../../shared/types/result";
 import { normalizeAsfDate, normalizePlate } from "../../shared/validators/vehicle";
+import { GateService, GateServiceException } from "../../services/security/gate-service";
 
 export type AsfServiceError =
   | { readonly kind: "invalid-input"; readonly message: string }
   | { readonly kind: "timeout"; readonly message: string }
   | { readonly kind: "network"; readonly message: string }
+  | { readonly kind: "auth"; readonly message: string }
   | { readonly kind: "http"; readonly status: number; readonly message: string }
   | { readonly kind: "rate-limited"; readonly status: number; readonly retryAfterMs: number | null; readonly message: string }
   | { readonly kind: "invalid-json"; readonly message: string }
@@ -17,13 +19,11 @@ export type AsfServiceError =
 export interface AsfServiceRequest {
   readonly matricula: string;
   readonly date: string;
-  readonly installationId: string;
-  readonly buildId: string;
-  readonly clientToken: string;
 }
 
 export interface AsfServiceOptions {
   readonly relayUrl: string;
+  readonly gate: GateService;
   readonly fetchImpl?: typeof fetch;
   readonly timeoutMs?: number;
   readonly classify?: (response: AsfGraphqlResponse) => AsfOutcome;
@@ -52,10 +52,24 @@ export class AsfService {
     if (!date) {
       return err({ kind: "invalid-input", message: "Data ASF inválida." });
     }
-    if (!request.installationId || !request.buildId || !request.clientToken) {
-      return err({ kind: "invalid-input", message: "Identidade VÉRIX incompleta." });
+
+    let clientToken: string;
+    try {
+      clientToken = await this.options.gate.getToken();
+    } catch (error: unknown) {
+      if (error instanceof GateServiceException) {
+        if (error.kind === "timeout") {
+          return err({ kind: "timeout", message: error.message });
+        }
+        if (error.kind === "network") {
+          return err({ kind: "network", message: error.message });
+        }
+        return err({ kind: "auth", message: error.message });
+      }
+      return err({ kind: "auth", message: "Não foi possível obter autorização VÉRIX." });
     }
 
+    const identity = this.options.gate.getIdentity();
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
 
@@ -65,13 +79,13 @@ export class AsfService {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
-          "X-Verix-Build-Id": request.buildId,
-          "X-Verix-Client-Token": request.clientToken
+          "X-Verix-Build-Id": identity.buildId,
+          "X-Verix-Client-Token": clientToken
         },
         body: JSON.stringify({
           matricula,
           date,
-          installationId: request.installationId
+          installationId: identity.installationId
         }),
         credentials: "omit",
         cache: "no-store",
@@ -81,6 +95,14 @@ export class AsfService {
       const raw = await response.text();
 
       if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          this.options.gate.clear();
+          return err({
+            kind: "auth",
+            message: "A autorização VÉRIX foi recusada pelo relay."
+          });
+        }
+
         if (response.status === 429) {
           return err({
             kind: "rate-limited",
