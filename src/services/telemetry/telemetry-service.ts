@@ -29,9 +29,8 @@ const CRITICAL_EVENTS = new Set<TelemetryEventName>([
   "vehicle_lookup"
 ]);
 
-// Browser keepalive/beacon payloads are constrained to roughly 64 KiB.
-// Keep margin for browser differences instead of aiming at the hard limit.
-const MAX_TRANSPORT_BYTES = 60 * 1024;
+// Keep margin below browser keepalive/beacon payload limits.
+const MAX_BEACON_BYTES = 60 * 1024;
 
 export class TelemetryService {
   private readonly local: SafeStorage;
