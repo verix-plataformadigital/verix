@@ -136,12 +136,8 @@ internal static class Program
             {
                 MessageBox.Show(
                     this,
-                    "Não foi possível iniciar o motor WebView2.
-
-" +
-                    "Confirma que o Microsoft Edge WebView2 Runtime está disponível neste PC.
-
-" +
+                    "Não foi possível iniciar o motor WebView2.\n\n" +
+                    "Confirma que o Microsoft Edge WebView2 Runtime está disponível neste PC.\n\n" +
                     ex.Message,
                     "VÉRIX — Inicialização",
                     MessageBoxButtons.OK,
