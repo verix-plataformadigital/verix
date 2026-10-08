@@ -23,7 +23,8 @@ function inspect(file) {
     { re: /\bon(?:click|input|change|submit|load|error|keydown|keyup|touchstart|touchend)\s*=/i, code: "inline-event-handler" },
     { re: /javascript\s*:/i, code: "javascript-url" },
     { re: /\beval\s*\(/, code: "eval" },
-    { re: /\bnew\s+Function\s*\(/, code: "function-constructor" }
+    { re: /\bnew\s+Function\s*\(/, code: "function-constructor" },
+    { re: /\b(?:innerHTML|outerHTML|insertAdjacentHTML)\s*=/, code: "html-injection-sink" }
   ];
 
   for (const [lineNumber, line] of lines.entries()) {
