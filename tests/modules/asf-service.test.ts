@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { AsfService } from "../../src/modules/insurance/asf-service";
-import type { GateService } from "../../src/services/security/gate-service";
+import type { GateAuthorization } from "../../src/services/security/gate-contract";
 
 const insuredResponse = {
   data: {
@@ -25,7 +25,7 @@ const insuredResponse = {
   }
 };
 
-function createGate(): GateService {
+function createGate(): GateAuthorization {
   return {
     getToken: vi.fn().mockResolvedValue("v1.token"),
     getIdentity: vi.fn().mockReturnValue({
@@ -35,7 +35,7 @@ function createGate(): GateService {
       buildId: "1.5-sec-20261008-a"
     }),
     clear: vi.fn()
-  } as unknown as GateService;
+  };
 }
 
 function request() {
