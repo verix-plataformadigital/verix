@@ -91,10 +91,10 @@ describe("VehicleModule history preference", () => {
     const form = root.querySelector<HTMLFormElement>(".vehicle-query-form");
     if (!plate || !form) return;
 
-    plate.value = "INVALIDA";
+    plate.value = "BAD";
     form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
 
-    expect(root.querySelector<HTMLInputElement>("#vehicle-plate")?.value).toBe("INVALIDA");
+    expect(root.querySelector<HTMLInputElement>("#vehicle-plate")?.value).toBe("BAD");
     expect(root.querySelector(".vehicle-local-notice")?.textContent).toContain("Introduza uma matrícula válida");
   });
 
