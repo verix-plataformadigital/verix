@@ -64,11 +64,11 @@ describe("TelemetryScheduler", () => {
       });
 
       scheduler.start();
-      await vi.runOnlyPendingTimersAsync();
+      await vi.advanceTimersByTimeAsync(0);
       expect(telemetry.flush).toHaveBeenCalledTimes(1);
 
       await vi.advanceTimersByTimeAsync(2_000);
-      await vi.runOnlyPendingTimersAsync();
+      await vi.advanceTimersByTimeAsync(0);
       expect(telemetry.flush).toHaveBeenCalledTimes(2);
 
       scheduler.stop();
@@ -88,7 +88,7 @@ describe("TelemetryScheduler", () => {
       const scheduler = new TelemetryScheduler({ telemetry, retryDelaysMs: [1_000] });
 
       scheduler.start();
-      await vi.runOnlyPendingTimersAsync();
+      await vi.advanceTimersByTimeAsync(0);
       expect(telemetry.flush).toHaveBeenCalledTimes(1);
 
       await vi.advanceTimersByTimeAsync(6_999);
