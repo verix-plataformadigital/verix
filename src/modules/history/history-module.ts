@@ -1,7 +1,9 @@
 import type { HistoryRecord, HistoryService } from "./history-service";
+import type { TelemetryService } from "../../services/telemetry/telemetry-service";
 
 export interface HistoryModuleOptions {
   readonly history: HistoryService;
+  readonly telemetry?: Pick<TelemetryService, "track">;
   readonly onReopen: (record: HistoryRecord) => void;
 }
 
@@ -12,6 +14,7 @@ export class HistoryModule {
 
   mount(root: HTMLElement): void {
     this.root = root;
+    this.options.telemetry?.track("history_open", "history");
     this.render();
   }
 
@@ -77,7 +80,12 @@ export class HistoryModule {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "history-row-v2";
-    button.addEventListener("click", () => this.options.onReopen(record));
+    button.addEventListener("click", () => {
+      this.options.telemetry?.track("history_reopen", "history", {
+        queryId: record.id
+      });
+      this.options.onReopen(record);
+    });
 
     const indexEl = document.createElement("span");
     indexEl.className = "history-index-v2";
