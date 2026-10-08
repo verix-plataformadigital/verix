@@ -3,7 +3,7 @@ import type { ImtSource } from './imt-contract';
 import { ImtSequence } from './imt-sequence';
 
 export interface ImtWindowAdapter {
-  open(url: string): Window | null;
+  open(url: string): boolean;
 }
 
 export interface ImtOperation {
@@ -35,6 +35,6 @@ export class ImtService {
 
 export function browserImtWindowAdapter(): ImtWindowAdapter {
   return {
-    open: (url) => window.open(url, '_blank', 'noopener,noreferrer')
+    open: (url) => Boolean(window.open(url, '_blank', 'noopener,noreferrer'))
   };
 }
