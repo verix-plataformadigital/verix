@@ -15,6 +15,9 @@ const required = [
   "IsGeneralAutofillEnabled = false",
   "IsSwipeNavigationEnabled = false",
   "InternalHttpAllowedHosts.Contains(uri.Host)",
+  "private static bool IsAllowedExternalUri(Uri uri)",
+  "uri.Port == 443",
+  "uri.Port == 80",
   'uri.AbsolutePath.StartsWith("/veiculos/"'
 ];
 

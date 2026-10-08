@@ -256,3 +256,9 @@ Fonte externa: Diário da República, Código da Estrada consolidado.
 - Extraída `src/shared/browser/open-external-window.ts` para corrigir o mesmo falso diagnóstico de pop-up nos módulos Ferramentas e Informações, não apenas no adaptador IMT.
 - As três origens de abertura externa usam agora a mesma política: abertura sincrónica, isolamento de `opener`, resultado booleano consistente e sem alterar o allowlist do host.
 - Adicionado teste de integração DOM ao módulo Ferramentas e atualizado o teste do Diário da República para verificar o valor de telemetria real.
+
+
+#### Portas explícitas no host Windows
+- O allowlist de navegação exige HTTPS na porta 443 para ferramentas externas e HTTP na porta 80 para o host RNSI interno, além de validar nome do host e ausência de userinfo.
+- Os handlers de navegação externa usam a mesma função `IsAllowedExternalUri`; deixaram de aceitar URLs com portas arbitrárias só porque o nome do host corresponde.
+- O verificador estático exige estes controlos. Os endereços fixos do IMT/RNSI e o relay ASF não foram alterados.

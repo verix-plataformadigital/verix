@@ -162,7 +162,7 @@ internal static class Program
                     return;
                 }
 
-                if (uri.Scheme == Uri.UriSchemeHttps && ExternalAllowedHosts.Contains(uri.Host))
+                if (IsAllowedExternalUri(uri))
                 {
                     e.Cancel = true;
                     LaunchExternal(uri);
@@ -243,8 +243,7 @@ internal static class Program
                     return;
                 }
 
-                if (uri.Scheme == Uri.UriSchemeHttps &&
-                    ExternalAllowedHosts.Contains(uri.Host))
+                if (IsAllowedExternalUri(uri))
                 {
                     e.Handled = true;
                     LaunchExternal(uri);
@@ -375,10 +374,19 @@ internal static class Program
             }
         }
 
+        private static bool IsAllowedExternalUri(Uri uri)
+        {
+            return uri.Scheme == Uri.UriSchemeHttps &&
+                ExternalAllowedHosts.Contains(uri.Host) &&
+                uri.Port == 443 &&
+                string.IsNullOrEmpty(uri.UserInfo);
+        }
+
         private static bool IsAllowedInternalRnsUri(Uri uri)
         {
             return uri.Scheme == Uri.UriSchemeHttp &&
                 InternalHttpAllowedHosts.Contains(uri.Host) &&
+                uri.Port == 80 &&
                 uri.AbsolutePath.StartsWith("/veiculos/", StringComparison.OrdinalIgnoreCase) &&
                 string.IsNullOrEmpty(uri.UserInfo);
         }
