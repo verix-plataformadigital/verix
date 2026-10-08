@@ -1,9 +1,22 @@
 import { describe, expect, it, vi } from "vitest";
 import { createTelemetryLegacyFacade } from "../../src/services/telemetry/telemetry-legacy-facade";
+import type { TelemetryEventName } from "../../src/services/telemetry/telemetry-contract";
 
 describe("legacy telemetry facade", () => {
   it("expõe o contrato mínimo esperado pelo runtime legado", async () => {
-    const service = {
+    const service: {
+      readonly installationId: string;
+      readonly endpoint: string;
+      readonly queueSize: number;
+      newQueryId: () => string;
+      track: (
+        event: TelemetryEventName,
+        module: string | null,
+        metadata?: Readonly<Record<string, unknown>>
+      ) => unknown;
+      flush: () => Promise<Readonly<{ ok: true; sent: number }>>;
+      flushBeacon: () => number;
+    } = {
       installationId: "install-1",
       endpoint: "/telemetry",
       queueSize: 3,
@@ -11,7 +24,7 @@ describe("legacy telemetry facade", () => {
       track: vi.fn(() => ({ eventId: "e-1" })),
       flush: vi.fn().mockResolvedValue({ ok: true, sent: 3 }),
       flushBeacon: vi.fn(() => 2)
-    } as any;
+    };
 
     const facade = createTelemetryLegacyFacade(service);
     expect(facade.version).toBe(2);
