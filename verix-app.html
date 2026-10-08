@@ -1154,7 +1154,6 @@ function submitConjunto(event) {
    * Um 429 devolvido pela ASF é respeitado e não é contornado automaticamente.
    */
   var ASF_FILA_PENDENTES = 0;
-  var ASF_PENDING_TIMER = null;
 
   function agoraASF() { return Date.now(); }
   function esperarASF(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
@@ -1715,12 +1714,7 @@ function submitConjunto(event) {
     }
   }
 
-  function limparPendenteASF() {
-    if (ASF_PENDING_TIMER) { clearInterval(ASF_PENDING_TIMER); ASF_PENDING_TIMER = null; }
-  }
-
   function mostrarSeguroLoading(matricula, extra) {
-    limparPendenteASF();
     var box = document.getElementById('seguroResult');
     if (!box) return;
     var matShow = formatarMatriculaDisplay(matricula || '');
@@ -1752,7 +1746,6 @@ function submitConjunto(event) {
   }
 
   function renderSeguroEncontrado(n, matricula, queryId, asfDiagnostic) {
-    limparPendenteASF();
     try { atualizarSeguroNoHistorico(queryId, matricula, 'sim'); } catch (_) {}
     var box = document.getElementById('seguroResult');
     if (!box) return;
@@ -1797,7 +1790,6 @@ function submitConjunto(event) {
   }
 
   function renderSeguroNaoEncontrado(matricula, queryId, asfDiagnostic) {
-    limparPendenteASF();
     try { atualizarSeguroNoHistorico(queryId, matricula, 'nao'); } catch (_) {}
     var box = document.getElementById('seguroResult');
     if (!box) return;
@@ -1820,7 +1812,6 @@ function submitConjunto(event) {
   }
 
   function mostrarSeguroErro(mensagem, matricula, diagnostico, queryId, asfDiagnostic) {
-    limparPendenteASF();
     try { atualizarSeguroNoHistorico(queryId, matricula, 'indisponivel'); } catch (_) {}
     var box = document.getElementById('seguroResult');
     if (!box) return;
