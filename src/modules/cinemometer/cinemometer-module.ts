@@ -139,9 +139,6 @@ export class CinemometerModule {
           ? "MOSTRAR FICHA OPERACIONAL"
           : "RECOLHER FICHA OPERACIONAL";
         this.options.onContextCollapsedChange?.(nextCollapsed);
-        this.options.telemetry.track("cinemometer_context_toggle", "cinemometro", {
-          collapsed: nextCollapsed
-        });
       });
 
       head.append(contextToggle);

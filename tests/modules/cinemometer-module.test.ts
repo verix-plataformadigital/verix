@@ -164,7 +164,4 @@ it("colapsa e reabre a ficha operacional com preferência persistida", () => {
   toggle?.click();
   expect(panel?.hidden).toBe(true);
   expect(collapsed).toBe(true);
-  expect(telemetry.track).toHaveBeenCalledWith("cinemometer_context_toggle", "cinemometro", {
-    collapsed: true
-  });
 });
