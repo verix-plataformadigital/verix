@@ -1,7 +1,10 @@
 declare const Deno: any;
 
-const ALLOWED_ORIGINS = new Set([,
-  "https://verix-plataformadigital.github.io"
+const ALLOWED_ORIGINS = new Set([
+  "https://verix-plataformadigital.github.io",
+  "https://verix.vxops.workers.dev",
+  "http://localhost",
+  "http://127.0.0.1"
 ]);
 
 function corsHeaders(req: Request) {
@@ -99,110 +102,6 @@ async function rpc(name: string, body: Record<string,unknown>) {
   return t ? JSON.parse(t) : null;
 }
 
-
-
-async function readAsfEvents24h(now:string) {
-  const start = await rpc("verix2_24h_start", {p_now:now});
-  const startAt = Array.isArray(start) ? (start[0]?.verix2_24h_start || start[0]?.s24 || null) : start;
-  const qs = new URLSearchParams();
-  qs.set("select","occurred_at,event,query_id,installation_id,app_version,browser,metadata");
-  qs.set("event","in.(vehicle_insurance_error,vehicle_insurance_no)");
-  qs.set("occurred_at","gte." + (startAt || new Date(Date.now()-24*60*60*1000).toISOString()));
-  qs.set("order","occurred_at.desc");
-  qs.set("limit","500");
-  const r = await fetch(supabaseUrl + "/rest/v1/verix2_events?" + qs.toString(), {
-    headers:{apikey:serviceKey,Authorization:"Bearer " + serviceKey}
-  });
-  const t = await r.text();
-  if(!r.ok) throw new Error("asf_events:" + (t || r.status));
-  return t ? JSON.parse(t) : [];
-}
-
-async function enrichAsfDiagnostics(diagnostics:any, now:string) {
-  const d = diagnostics && typeof diagnostics === "object" ? diagnostics : {};
-  const events = await readAsfEvents24h(now);
-  const errRows = events.filter((e:any)=>e.event==="vehicle_insurance_error");
-
-  const byQuery = new Map<string,any>();
-  for(const e of events){
-    if(e?.query_id) byQuery.set(String(e.query_id),e);
-  }
-
-  const enrichItem = (item:any) => {
-    const src = item?.query_id ? byQuery.get(String(item.query_id)) : null;
-    const a = src?.metadata?.asfDiagnostic || {};
-    return {
-      ...item,
-      response_class: item?.response_class ?? a.asfResponseClass ?? null,
-      graphql_messages: item?.graphql_messages ?? (Array.isArray(a.asfGraphqlMessages) ? a.asfGraphqlMessages : []),
-      graphql_codes: item?.graphql_codes ?? (Array.isArray(a.asfGraphqlCodes) ? a.asfGraphqlCodes : []),
-      retry: src?.metadata?.retry === true,
-      retry_of: src?.metadata?.retryOf || null,
-      transport: item?.transport ?? a.asfTransport ?? null,
-      matricula_normalizada: src?.metadata?.matriculaNormalizada || a.matriculaNormalizada || null
-    };
-  };
-
-  const signatures = new Map<string,any>();
-  for(const e of errRows){
-    const a=e?.metadata?.asfDiagnostic||{};
-    const type=String(a.asfErrorType||"unknown");
-    const hash=a.asfResponseHash?String(a.asfResponseHash):"sem-hash";
-    const msgs=Array.isArray(a.asfGraphqlMessages)?a.asfGraphqlMessages.filter(Boolean):[];
-    const codes=Array.isArray(a.asfGraphqlCodes)?a.asfGraphqlCodes.filter(Boolean):[];
-    const message=msgs[0] || String(a.asfMessage||e?.metadata?.asfUserMessage||"");
-    const transport=String(a.asfTransport||"unknown");
-    const key=[type,hash,codes.join(", "),message].join("|");
-    const cur=signatures.get(key) || {error_type:type,response_hash:a.asfResponseHash||null,graphql_codes:codes,graphql_messages:msgs,transports:new Set<string>(),count:0,queries:new Set<string>(),plates:new Set<string>(),installations:new Set<string>()};
-    cur.transports.add(transport);
-    cur.count++;
-    if(e?.query_id) cur.queries.add(String(e.query_id));
-    const plate=a.matricula || e?.metadata?.matricula || "";
-    if(plate) cur.plates.add(String(plate));
-    if(e?.installation_id) cur.installations.add(String(e.installation_id));
-    signatures.set(key,cur);
-  }
-
-  const errorSignatures=[...signatures.values()].map((x:any)=>({
-    error_type:x.error_type,
-    count:x.count,
-    distinct_queries:x.queries.size,
-    distinct_plates:x.plates.size,
-    distinct_installations:x.installations.size,
-    response_hash:x.response_hash,
-    graphql_codes:x.graphql_codes,
-    graphql_messages:x.graphql_messages,
-    transports:[...x.transports]
-  })).sort((a:any,b:any)=>b.count-a.count).slice(0,20);
-
-  const plates = new Map<string,any>();
-  for(const e of errRows){
-    const a=e?.metadata?.asfDiagnostic||{};
-    const display=String(a.matricula || e?.metadata?.matricula || "").trim();
-    const norm=String(e?.metadata?.matriculaNormalizada || a.matriculaNormalizada || display.replace(/[^A-Z0-9]/gi,"")).toUpperCase();
-    if(!norm) continue;
-    const cur=plates.get(norm)||{matricula:display||norm,matricula_normalizada:norm,errors:0,last_error:null,types:new Set<string>()};
-    cur.errors++;
-    cur.last_error=cur.last_error || e?.occurred_at || null;
-    if(a.asfErrorType) cur.types.add(String(a.asfErrorType));
-    plates.set(norm,cur);
-  }
-  const plateErrors=[...plates.values()].map((x:any)=>({
-    matricula:x.matricula,
-    matricula_normalizada:x.matricula_normalizada,
-    errors:x.errors,
-    last_error:x.last_error,
-    error_types:[...x.types]
-  })).sort((a:any,b:any)=>b.errors-a.errors || String(b.last_error||"").localeCompare(String(a.last_error||""))).slice(0,30);
-
-  return {
-    ...d,
-    recent_errors_24h:Array.isArray(d.recent_errors_24h) ? d.recent_errors_24h.map(enrichItem) : [],
-    recent_uninsured_24h:Array.isArray(d.recent_uninsured_24h) ? d.recent_uninsured_24h.map(enrichItem) : [],
-    error_signatures_24h:errorSignatures,
-    plate_errors_24h:plateErrors
-  };
-}
 
 
 function n(v){const x=Number(v);return Number.isFinite(x)?x:null;}
