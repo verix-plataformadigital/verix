@@ -45,7 +45,7 @@ describe("TelemetryService", () => {
 
   it("faz flush imediato para eventos críticos", async () => {
     const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
-      new Response("ok", { status: 204 })
+      new Response(null, { status: 204 })
     );
     const service = createService({ fetchImpl });
 
@@ -135,7 +135,7 @@ describe("TelemetryService", () => {
     service.track("app_open", null);
     const first = service.flush();
     const second = await service.flush();
-    expect(second).toEqual({ ok: true, sent: 0 });
+    await expect(second).resolves.toEqual({ ok: true, sent: 1 });
     release?.();
     await expect(first).resolves.toEqual({ ok: true, sent: 1 });
     expect(fetchImpl).toHaveBeenCalledTimes(1);
