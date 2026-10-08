@@ -64,3 +64,36 @@ if (rejectedByBackend.length) {
     " backend allowlist entries)."
   );
 }
+
+const eventPersistence = endpointSource.indexOf(
+  'const { error: eventsError } = await db.from("verix2_events").upsert(events'
+);
+const installationPersistence = endpointSource.indexOf(
+  'await db.from("verix2_installations").upsert([...installations.values()]'
+);
+const sessionPersistence = endpointSource.indexOf(
+  'await db.from("verix2_sessions").upsert([...sessions.values()]'
+);
+
+if (
+  eventPersistence < 0 ||
+  installationPersistence < 0 ||
+  sessionPersistence < 0
+) {
+  console.error(
+    "Telemetry persistence invariant missing: events, installations, and sessions must all be persisted."
+  );
+  process.exitCode = 1;
+} else if (
+  eventPersistence >= installationPersistence ||
+  eventPersistence >= sessionPersistence
+) {
+  console.error(
+    "Telemetry persistence invariant failed: canonical events must be written before installation/session presence is advanced."
+  );
+  process.exitCode = 1;
+} else {
+  console.log(
+    "Telemetry persistence order passed: canonical events are written before installation/session presence."
+  );
+}
