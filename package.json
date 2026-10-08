@@ -7,8 +7,8 @@
   "scripts": {
     "dev": "vite --config vite.config.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "vitest run --config vitest.config.ts",
+    "test:watch": "vitest --config vitest.config.ts",
     "build:v2": "vite build --config vite.config.ts",
     "build:legacy": "node tools/build-secure-release.mjs",
     "build": "npm run build:legacy",
