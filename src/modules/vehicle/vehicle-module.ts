@@ -1,5 +1,5 @@
 import type { TelemetryService } from "../../services/telemetry/telemetry-service";
-import type { AsfService } from "../insurance/asf-service";
+import type { AsfService, AsfServiceError } from "../insurance/asf-service";
 import { normalizePlate } from "../../shared/validators/vehicle";
 import { VehicleQueryController } from "./vehicle-query-controller";
 
