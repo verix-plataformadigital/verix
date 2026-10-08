@@ -58,7 +58,7 @@ describe('SettingsService', () => {
     const body = document.body;
     service.applyToDocument(document);
 
-    expect(body.style.zoom).toBe('0.820');
+    expect(body.style.zoom).toBe('0.82');
   });
 
   it('rejeita valores persistidos inválidos', () => {
