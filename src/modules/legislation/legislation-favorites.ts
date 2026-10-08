@@ -1,4 +1,4 @@
-import type { LegislationItem } from './legislation-data';
+import { LEGISLATION_CATEGORIES, type LegislationItem } from './legislation-data';
 
 export const LEGISLATION_FAVORITES_KEY = 'VÉRIX_LEGISLACAO_FAVORITOS_V1';
 
@@ -38,31 +38,25 @@ export class LegislationFavorites {
   }
 
   count(): number {
-    // Count distinct favorites where an old key and a new ID key both map to
-    // the same catalog item; don't expose the storage representation to UI.
-    const keys = new Set<string>();
-    for (const item of this.catalogItems()) {
-      if (this.has(item)) keys.add(item.id);
-    }
-    // Retain unknown legacy entries in the reported count rather than silently
-    // losing data imported from an earlier catalog.
+    const items = LEGISLATION_CATEGORIES.flatMap((category) => category.items);
     const recognized = new Set<string>();
-    for (const item of this.catalogItems()) {
-      recognized.add(favoriteKey(item));
-      recognized.add(legacyFavoriteKey(item));
+    const favorites = new Set<string>();
+
+    for (const item of items) {
+      const key = favoriteKey(item);
+      const legacyKey = legacyFavoriteKey(item);
+      recognized.add(key);
+      recognized.add(legacyKey);
+      if (this.values.has(key) || this.values.has(legacyKey)) favorites.add(item.id);
     }
-    const unknown = [...this.values].filter((value) => !recognized.has(value)).length;
-    return keys.size + unknown;
+
+    // Preserve count visibility for entries from older/unknown catalog snapshots.
+    const unknownEntries = [...this.values].filter((value) => !recognized.has(value)).length;
+    return favorites.size + unknownEntries;
   }
 
   key(item: LegislationItem): string {
     return favoriteKey(item);
-  }
-
-  private catalogItems(): readonly LegislationItem[] {
-    // The catalog is deliberately static, so importing it here does not perform
-    // storage access or introduce a runtime service dependency.
-    return [];
   }
 
   private load(): Set<string> {
