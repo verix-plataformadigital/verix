@@ -147,8 +147,7 @@ Fonte externa: Diário da República, Código da Estrada consolidado.
 - Foi observado anteriormente um estado incoerente em que `last_seen` estava recente mas não havia eventos correspondentes; a causa provável era a ordem das escritas na Edge Function.
 
 ### V2 / versão de produto
-- `runtimeConfig.appVersion` e a identificação visual da shell/admin foram alinhados para `1.4`; `BUILD_ID` continua a ser identidade técnica interna.
-- Não alterar a versão de produto novamente sem confirmar a intenção operacional, porque o runtime legado atualmente observado no banco ainda envia `app_version = 1.5`.
+- `runtimeConfig.appVersion` e a identificação visual da shell/admin estão alinhados para `1.5`, que corresponde ao runtime legado atualmente observado; `BUILD_ID` continua a ser identidade técnica interna.
 
 ### CI
 - O `VÉRIX Security Audit` ficou verde num dos commits intermédios.
