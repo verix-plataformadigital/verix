@@ -17934,6 +17934,23 @@ html body .leg-card-new .copy-all-new{
     });
 
     wrap('consultarSeguroASF', function (matricula) {
+      // Última barreira de consistência: quando o motor ASF é chamado,
+      // a consulta já existe operacionalmente. Garantimos query_id + lookup
+      // aqui, independentemente de o código de submit ter conseguido emitir
+      // a telemetria antes.
+      try {
+        var q = window.__VERIX_CURRENT_QUERY_ID || null;
+        if (!q) {
+          q = newQueryId();
+          window.__VERIX_CURRENT_QUERY_ID = q;
+        }
+        var qKey = 'query:' + String(q);
+        if (!lastAction[qKey]) {
+          lastAction[qKey] = Date.now();
+          push('vehicle_lookup', 'consulta', { queryId: q });
+        }
+      } catch (_) {}
+
       push('vehicle_insurance_pending', 'consulta', {
         queryId: window.__VERIX_CURRENT_QUERY_ID || null
       });
