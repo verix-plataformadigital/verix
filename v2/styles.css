@@ -236,3 +236,16 @@ button{font:inherit}
 .tools-tacho-card span{display:block;color:#7edbd3;font-size:9px;font-weight:800;line-height:1.5}
 @media(max-width:900px){.tools-external-grid{grid-template-columns:1fr 1fr}.tools-district-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.tools-tacho-grid{grid-template-columns:1fr}}
 @media(max-width:650px){.tools-external-grid{grid-template-columns:1fr}.tools-district-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tools-section-head{align-items:start;flex-direction:column}.tools-search{width:100%}}
+
+
+.legislation-search-row{grid-template-columns:minmax(0,1fr) auto auto}
+.legislation-favorites-toggle{padding:0 12px;border:1px solid rgba(255,255,255,.08);border-radius:10px;background:rgba(255,255,255,.035);color:#aeb9bd;font-size:9px;font-weight:800;letter-spacing:.08em;cursor:pointer}
+.legislation-favorites-toggle.is-active{border-color:rgba(255,211,74,.3);background:rgba(255,190,0,.08);color:#ffd34a}
+.legislation-item-toolbar{display:flex;justify-content:flex-end;gap:6px;margin-top:9px}
+.legislation-favorite{width:31px;height:28px;border:1px solid rgba(255,255,255,.12);border-radius:7px;background:rgba(255,255,255,.03);color:#6f7e84;font-size:15px;line-height:1;cursor:pointer}
+.legislation-favorite.is-active{border-color:rgba(255,211,74,.35);background:rgba(255,190,0,.08);color:#ffd34a}
+.legislation-copy-all{padding:7px 9px;border:1px solid rgba(255,255,255,.08);border-radius:7px;background:rgba(255,255,255,.035);color:#aeb9bd;font-size:8px;font-weight:800;letter-spacing:.06em;cursor:pointer}
+@media(max-width:700px){
+ .legislation-search-row{grid-template-columns:1fr}
+ .legislation-favorites-toggle{min-height:40px}
+}
