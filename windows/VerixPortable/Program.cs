@@ -17,6 +17,11 @@ internal static class Program
         "location.wazept.com"
     };
 
+    private static readonly HashSet<string> InternalHttpAllowedHosts = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "consultapsp.imtt.external.rnsi.local"
+    };
+
     [STAThread]
     private static void Main()
     {
@@ -157,7 +162,14 @@ internal static class Program
                     return;
                 }
 
-                if (ExternalAllowedHosts.Contains(uri.Host))
+                if (uri.Scheme == Uri.UriSchemeHttps && ExternalAllowedHosts.Contains(uri.Host))
+                {
+                    e.Cancel = true;
+                    LaunchExternal(uri);
+                    return;
+                }
+
+                if (IsAllowedInternalRnsUri(uri))
                 {
                     e.Cancel = true;
                     LaunchExternal(uri);
@@ -191,6 +203,10 @@ internal static class Program
                 {
                     LaunchExternal(uri);
                 }
+                else if (IsAllowedInternalRnsUri(uri))
+                {
+                    LaunchExternal(uri);
+                }
             }
             catch
             {
@@ -221,6 +237,14 @@ internal static class Program
             {
                 // Keep external navigation blocked if launch fails.
             }
+        }
+
+        private static bool IsAllowedInternalRnsUri(Uri uri)
+        {
+            return uri.Scheme == Uri.UriSchemeHttp &&
+                InternalHttpAllowedHosts.Contains(uri.Host) &&
+                uri.AbsolutePath.StartsWith("/veiculos/", StringComparison.OrdinalIgnoreCase) &&
+                string.IsNullOrEmpty(uri.UserInfo);
         }
 
         private static void OnDownloadStarting(object? sender, CoreWebView2DownloadStartingEventArgs e)
