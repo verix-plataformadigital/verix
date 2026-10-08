@@ -13,8 +13,12 @@ function isLegacyLocal(req: Request): boolean {
 
 function corsHeaders(req?: Request) {
   const origin = req?.headers.get("origin") || "";
+  const opaqueLocal = !origin || origin === "null";
+  const allowedOrigin = opaqueLocal
+    ? "*"
+    : (ALLOWED_ORIGINS.has(origin) ? origin : "");
   return {
-    "Access-Control-Allow-Origin": ALLOWED_ORIGINS.has(origin) ? origin : "",
+    "Access-Control-Allow-Origin": allowedOrigin,
     "Access-Control-Allow-Headers": "content-type,apikey,authorization,x-verix-build-id",
     "Access-Control-Allow-Methods": "POST,OPTIONS",
     "Cache-Control": "no-store",
@@ -324,7 +328,8 @@ Deno.serve(async (req: Request) => {
   if (!rateSecret && !secretKey) return json({ ok: false, error: "rate_secret_not_configured" }, 503, req);
 
   const origin = req.headers.get("origin") || "";
-  if (!(ALLOWED_ORIGINS.has(origin) || isLegacyLocal(req))) {
+  const opaqueLocal = !origin || origin === "null";
+  if (!(opaqueLocal || ALLOWED_ORIGINS.has(origin) || isLegacyLocal(req))) {
     return json({ ok: false, error: "origin_not_allowed" }, 403, req);
   }
 
