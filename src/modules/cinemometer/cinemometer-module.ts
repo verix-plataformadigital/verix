@@ -255,6 +255,26 @@ export class CinemometerModule {
         verificationValue
       );
 
+      if (this.options.profiles) {
+        const currentOperator =
+          this.options.profiles.operatorSession() ?? {
+            posto: "",
+            numero: "",
+            nome: "",
+            modo: "fixo" as const,
+            veiculo: "",
+            regime: "",
+            limite: ""
+          };
+        this.options.profiles.saveOperator({
+          ...currentOperator,
+          modo: modeValue,
+          veiculo: vehicleValue,
+          regime: regimeValue,
+          limite: String(speedLimit)
+        });
+      }
+
       const context = this.contextPanel?.snapshot();
       this.options.telemetry.track("cinemometer_operation_start", "cinemometro");
       this.options.telemetry.track("cinemometer_calculation", "cinemometro", {
