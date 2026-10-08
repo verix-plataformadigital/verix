@@ -19,7 +19,7 @@ describe("CinemometerModule", () => {
 
     expect(root.querySelector("form.cin-form")).toBeTruthy();
     expect(root.querySelector(".cin-context")).toBeTruthy();
-    expect(root.querySelectorAll("select")).toHaveLength(6);
+    expect(root.querySelectorAll("select")).toHaveLength(7);
     expect(root.querySelector('input[type="number"]')).toBeTruthy();
   });
 });
@@ -117,7 +117,7 @@ it('mostra o texto operacional e regista cópia quando a API Clipboard aceita', 
 
   expect(clipboard.writeText).toHaveBeenCalled();
   expect(telemetry.track).toHaveBeenCalledWith(
-    'cinemometer_copy_text',
+    'cinemometer_copy_code',
     'cinemometro',
     { copied: true }
   );
