@@ -18,6 +18,8 @@ import {
 export interface CinemometerModuleOptions {
   readonly telemetry: Pick<TelemetryService, "track">;
   readonly profiles?: CinemometerProfileService;
+  readonly contextCollapsed?: () => boolean;
+  readonly onContextCollapsedChange?: (collapsed: boolean) => void;
 }
 
 const VEHICLES: readonly [VehicleType, string][] = [
@@ -112,11 +114,37 @@ export class CinemometerModule {
 
     head.append(kicker, title, note);
 
+    let contextRoot: HTMLDivElement | null = null;
     if (this.contextPanel) {
-      const contextRoot = document.createElement("div");
+      const collapsed = this.options.contextCollapsed?.() ?? false;
+      const contextToggle = document.createElement("button");
+      contextToggle.type = "button";
+      contextToggle.className = "cin-context-toggle";
+      contextToggle.textContent = collapsed ? "MOSTRAR FICHA OPERACIONAL" : "RECOLHER FICHA OPERACIONAL";
+      contextToggle.setAttribute("aria-controls", "cin-context-panel");
+      contextToggle.setAttribute("aria-expanded", String(!collapsed));
+
+      contextRoot = document.createElement("div");
+      contextRoot.id = "cin-context-panel";
       contextRoot.className = "cin-context-host";
+      contextRoot.hidden = collapsed;
       this.contextPanel.mount(contextRoot);
-      section.append(contextRoot);
+
+      contextToggle.addEventListener("click", () => {
+        if (!contextRoot) return;
+        const nextCollapsed = !contextRoot.hidden;
+        contextRoot.hidden = nextCollapsed;
+        contextToggle.setAttribute("aria-expanded", String(!nextCollapsed));
+        contextToggle.textContent = nextCollapsed
+          ? "MOSTRAR FICHA OPERACIONAL"
+          : "RECOLHER FICHA OPERACIONAL";
+        this.options.onContextCollapsedChange?.(nextCollapsed);
+        this.options.telemetry.track("cinemometer_context_toggle", "cinemometro", {
+          collapsed: nextCollapsed
+        });
+      });
+
+      head.append(contextToggle);
     }
 
     const form = document.createElement("form");
@@ -354,7 +382,9 @@ export class CinemometerModule {
       actions
     );
 
-    section.append(head, form, result);
+    section.append(head);
+    if (contextRoot) section.append(contextRoot);
+    section.append(form, result);
     this.root.replaceChildren(section);
   }
 

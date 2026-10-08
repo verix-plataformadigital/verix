@@ -65,14 +65,18 @@ export async function bootstrap(root: HTMLElement): Promise<void> {
 
   const history = new HistoryService(localStorage);
   const cinemometerProfiles = new CinemometerProfileService(localStorage);
+  const settings = new SettingsService(localStorage);
+  settings.applyToDocument(document);
   const cinemometerModule = new CinemometerModule({
     telemetry,
-    profiles: cinemometerProfiles
+    profiles: cinemometerProfiles,
+    contextCollapsed: () => settings.snapshot().cinRadarCollapsed,
+    onContextCollapsedChange: (collapsed) => {
+      settings.update({ cinRadarCollapsed: collapsed });
+    }
   });
   const legislationModule = new LegislationModule({ telemetry, storage: localStorage });
   const alcoholModule = new AlcoholModule({ telemetry });
-  const settings = new SettingsService(localStorage);
-  settings.applyToDocument(document);
   const settingsModule = new SettingsModule({ settings, telemetry });
   const toolsModule = new ToolsModule({ telemetry });
   const informationModule = new InformationModule({ telemetry });

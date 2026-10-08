@@ -76,7 +76,7 @@ export class SettingsModule {
       this.toggle('HUD', this.options.settings.snapshot().hud, value => this.update({ hud: value })),
       this.toggle('Transições', this.options.settings.snapshot().transitions, value => this.update({ transitions: value })),
       this.toggle('Histórico local', this.options.settings.snapshot().history, value => this.update({ history: value })),
-      this.toggle('Radar do cinemómetro recolhido', this.options.settings.snapshot().cinRadarCollapsed, value => this.update({ cinRadarCollapsed: value }))
+      this.toggle('Ficha operacional recolhida', this.options.settings.snapshot().cinRadarCollapsed, value => this.update({ cinRadarCollapsed: value }))
     );
 
     const diagnosis = this.fieldset('DIAGNÓSTICO LOCAL');
