@@ -1,7 +1,10 @@
 declare const Deno: any;
 
-const ALLOWED_ORIGINS = new Set([,
-  "https://verix-plataformadigital.github.io"
+const ALLOWED_ORIGINS = new Set([
+  "https://verix-plataformadigital.github.io",
+  "https://verix.vxops.workers.dev",
+  "http://localhost",
+  "http://127.0.0.1"
 ]);
 
 function corsHeaders(req: Request) {
