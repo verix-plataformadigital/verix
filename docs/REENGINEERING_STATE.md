@@ -299,3 +299,8 @@ Fonte externa: Diário da República, Código da Estrada consolidado.
 - Matrículas vazias ou inválidas não abrem URL RNSI incompleta; a mensagem de validação é atualizada sem voltar a renderizar e perder o texto introduzido.
 - O fallback de cópia tolera browsers sem Clipboard API ou `document.execCommand` sem gerar rejeições não tratadas.
 - Testes cobrem valores atuais, bloqueio de matrícula vazia e preservação da introdução inválida.
+
+
+#### Definições — restauro das opções persistidas
+- Corrigida a construção dos controlos `select`: o valor persistido é agora aplicado depois de todas as opções existirem, para que o browser selecione a preferência correta.
+- Criados testes de DOM para garantir que perfil, tema, densidade e escala são restaurados ao montar o módulo e que o valor do tema se mantém após uma alteração e novo render.
