@@ -1,15 +1,13 @@
 import type { TelemetryService } from "../../services/telemetry/telemetry-service";
 import type { AsfService, AsfServiceError } from "../insurance/asf-service";
 import { normalizePlate } from "../../shared/validators/vehicle";
-import {
-  buildImtRnsiUrl,
-  type ImtQueryTargets
-} from "../imt/imt-url-builder";
+import type { ImtService } from "../imt/imt-service";
 import { VehicleQueryController } from "./vehicle-query-controller";
 import type { HistoryRecord, HistoryService } from "../history/history-service";
 
 export interface VehicleModuleOptions {
   readonly asf: AsfService;
+  readonly imt: ImtService;
   readonly telemetry: TelemetryService;
   readonly store: {
     setBusy(isBusy: boolean): void;
@@ -311,11 +309,10 @@ export class VehicleModule {
         source === "rnsi-livrete" ? this.lastTrailer || this.lastPlate : this.lastPlate
       );
 
-      const targetUrl = buildImtRnsiUrl(
+      const popup = this.options.imt.open(
         source === "rnsi-inspecao" ? "inspecao" : "livrete",
         plate
       );
-      const popup = window.open(targetUrl, "_blank", "noopener,noreferrer");
       void copyText(plate);
 
       this.options.telemetry.track("external_tool_open", "consulta", {
