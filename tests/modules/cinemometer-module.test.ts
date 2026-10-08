@@ -23,3 +23,67 @@ describe("CinemometerModule", () => {
     expect(root.querySelector('input[type="number"]')).toBeTruthy();
   });
 });
+
+
+it('inclui o aparelho e a sessão do operador no evento de cálculo', () => {
+  const root = document.createElement('main');
+  const telemetry = { track: vi.fn() };
+  const values = new Map<string, string>();
+  const profiles = new CinemometerProfileService({
+    getItem: (key: string) => values.get(key) ?? null,
+    setItem: (key: string, value: string) => values.set(key, value),
+    removeItem: (key: string) => values.delete(key)
+  });
+
+  const saved = profiles.create({
+    marca: 'M',
+    modelo: 'X',
+    serie: '123',
+    ansr: 'ANSR',
+    ipq: 'IPQ',
+    verificacao: 'periodica'
+  });
+  expect(saved.marca).toBe('M');
+
+  profiles.saveOperator({
+    posto: 'POSTO',
+    numero: '42',
+    nome: 'Operador',
+    modo: 'fixo',
+    veiculo: '',
+    regime: 'autoestrada',
+    limite: ''
+  });
+
+  new CinemometerModule({ telemetry, profiles }).mount(root);
+
+  const speed = root.querySelector<HTMLInputElement>('input[type="number"][required]');
+  expect(speed).not.toBeNull();
+  if (!speed) return;
+
+  speed.value = '130';
+  root.querySelector('form.cin-form')?.dispatchEvent(
+    new Event('submit', { bubbles: true, cancelable: true })
+  );
+
+  expect(telemetry.track).toHaveBeenCalledWith(
+    'cinemometer_calculation',
+    'cinemometro',
+    expect.objectContaining({
+      aparelho_marca: 'M',
+      aparelho_modelo: 'X',
+      aparelho_serie: '123',
+      aparelho_configurado: true,
+      operador_nome: 'Operador',
+      operador_numero: '42',
+      operador_posto: 'POSTO',
+      operador_identificado: true
+    })
+  );
+
+  expect(profiles.operatorSession()).toMatchObject({
+    modo: 'fixo',
+    regime: 'autoestrada',
+    limite: '120'
+  });
+});
