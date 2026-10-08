@@ -20,6 +20,7 @@ export interface TelemetryServiceOptions {
   readonly batchSize?: number;
   readonly maxQueueSize?: number;
   readonly timeoutMs?: number;
+  readonly sendBeacon?: (url: string, data: Blob) => boolean;
 }
 
 const CRITICAL_EVENTS = new Set<TelemetryEventName>([
@@ -27,6 +28,10 @@ const CRITICAL_EVENTS = new Set<TelemetryEventName>([
   "heartbeat",
   "vehicle_lookup"
 ]);
+
+// Browser keepalive/beacon payloads are constrained to roughly 64 KiB.
+// Keep margin for browser differences instead of aiming at the hard limit.
+const MAX_TRANSPORT_BYTES = 60 * 1024;
 
 export class TelemetryService {
   private readonly local: SafeStorage;
@@ -38,6 +43,7 @@ export class TelemetryService {
   private readonly batchSize: number;
   private readonly timeoutMs: number;
   private readonly identity;
+  private readonly sendBeaconImpl: ((url: string, data: Blob) => boolean) | null;
   private flushBusy = false;
 
   constructor(private readonly options: TelemetryServiceOptions) {
@@ -54,6 +60,10 @@ export class TelemetryService {
     this.queueKey = options.queueKey ?? "VERIX_T2_QUEUE";
     this.batchSize = options.batchSize ?? 25;
     this.timeoutMs = options.timeoutMs ?? 10_000;
+    this.sendBeaconImpl = options.sendBeacon
+      ?? (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function"
+        ? (url, data) => navigator.sendBeacon(url, data)
+        : null);
     this.identity = createIdentity(
       options.localStorage ?? null,
       options.sessionStorage ?? null,
@@ -112,7 +122,11 @@ export class TelemetryService {
 
     this.flushBusy = true;
     try {
-      const batch = this.queue.peek(this.batchSize);
+      const batch = this.takeBatch();
+      if (batch.length === 0) {
+        return { ok: false, sent: 0, retryAfterMs: null };
+      }
+
       const body: TelemetryBatch = { events: batch };
       const response = await this.send(body);
 
@@ -134,6 +148,44 @@ export class TelemetryService {
 
   shouldFlushImmediately(event: TelemetryEventName): boolean {
     return CRITICAL_EVENTS.has(event);
+  }
+
+  flushBeacon(): number {
+    if (this.flushBusy || this.queue.size === 0 || !this.sendBeaconImpl) return 0;
+
+    const batch = this.takeBatch();
+    if (batch.length === 0) return 0;
+
+    const payload = new Blob(
+      [JSON.stringify({ events: batch })],
+      { type: "text/plain;charset=UTF-8" }
+    );
+
+    if (!this.sendBeaconImpl(this.options.endpoint, payload)) return 0;
+
+    const removed = this.queue.acknowledge(batch.map((event) => event.eventId));
+    this.persist();
+    return removed;
+  }
+
+  private takeBatch(): readonly TelemetryEvent[] {
+    const candidates = this.queue.peek(this.batchSize);
+    const selected: TelemetryEvent[] = [];
+
+    for (const event of candidates) {
+      const next = selected.concat(event);
+      const bytes = new TextEncoder().encode(
+        JSON.stringify({ events: next })
+      ).byteLength;
+
+      if (bytes > MAX_TRANSPORT_BYTES) {
+        break;
+      }
+
+      selected.push(event);
+    }
+
+    return selected;
   }
 
   private persist(): void {
