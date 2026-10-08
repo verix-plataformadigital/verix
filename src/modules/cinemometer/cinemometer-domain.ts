@@ -1,9 +1,4 @@
-export type CinemometerMode =
-  | "fixo"
-  | "movimento"
-  | "perseguicao"
-  | "media";
-
+export type CinemometerMode = "fixo" | "movimento" | "perseguicao" | "media";
 export type VerificationType = "primeira" | "periodica";
 
 export type VehicleType =
@@ -11,8 +6,9 @@ export type VehicleType =
   | "ligeiro_passageiros_com"
   | "ligeiro_mercadorias_sem"
   | "ligeiro_mercadorias_com"
-  | "motociclo_sem"
-  | "motociclo_com"
+  | "motociclo_mais50_sem"
+  | "motociclo_mais50_com"
+  | "motociclo_ate50"
   | "triciclo"
   | "ciclomotor"
   | "pesado_passageiros_sem"
@@ -21,8 +17,7 @@ export type VehicleType =
   | "pesado_mercadorias_com"
   | "trator"
   | "maquina_agricola"
-  | "maquina_industrial_sem"
-  | "maquina_industrial_com";
+  | "maquina_industrial";
 
 export type SpeedRegime =
   | "coexistencia"
@@ -36,7 +31,8 @@ export type SpeedRegime =
   | "especial"
   | "personalizado";
 
-export type VehicleGroup = "ligeiros" | "pesados";
+export type VehicleGroup = "light" | "other";
+export type CodeFamily = "local_geral" | "local_placas" | "fora_geral" | "fora_placas";
 
 export interface ExcessClassification {
   readonly gravidade: "Leve" | "Grave" | "Muito Grave";
@@ -46,6 +42,17 @@ export interface ExcessClassification {
   readonly faixa: "leve" | "grave" | "muito" | "topo";
 }
 
+export const CIN_LIGHT_VEHICLES: ReadonlySet<VehicleType> = new Set([
+  "ligeiro_passageiros_sem",
+  "ligeiro_passageiros_com",
+  "ligeiro_mercadorias_sem",
+  "ligeiro_mercadorias_com",
+  "motociclo_mais50_sem",
+  "motociclo_mais50_com",
+  "motociclo_ate50",
+  "triciclo"
+]);
+
 export const CIN_VEHICLE_LIMITS: Readonly<
   Record<VehicleType, Partial<Record<SpeedRegime, number | null>>>
 > = {
@@ -53,8 +60,9 @@ export const CIN_VEHICLE_LIMITS: Readonly<
   ligeiro_passageiros_com: { coexistencia: 20, local_geral: 50, autoestrada: 100, reservada: 80, restante: 70 },
   ligeiro_mercadorias_sem: { coexistencia: 20, local_geral: 50, autoestrada: 110, reservada: 90, restante: 80 },
   ligeiro_mercadorias_com: { coexistencia: 20, local_geral: 50, autoestrada: 90, reservada: 80, restante: 70 },
-  motociclo_sem: { coexistencia: 20, local_geral: 50, autoestrada: 120, reservada: 100, restante: 90 },
-  motociclo_com: { coexistencia: 20, local_geral: 50, autoestrada: 100, reservada: 80, restante: 70 },
+  motociclo_mais50_sem: { coexistencia: 20, local_geral: 50, autoestrada: 120, reservada: 100, restante: 90 },
+  motociclo_mais50_com: { coexistencia: 20, local_geral: 50, autoestrada: 100, reservada: 80, restante: 70 },
+  motociclo_ate50: { coexistencia: 20, local_geral: 40, autoestrada: null, reservada: null, restante: 60 },
   triciclo: { coexistencia: 20, local_geral: 50, autoestrada: 100, reservada: 90, restante: 80 },
   ciclomotor: { coexistencia: 20, local_geral: 40, autoestrada: null, reservada: null, restante: 45 },
   pesado_passageiros_sem: { coexistencia: 20, local_geral: 50, autoestrada: 100, reservada: 90, restante: 80 },
@@ -63,34 +71,50 @@ export const CIN_VEHICLE_LIMITS: Readonly<
   pesado_mercadorias_com: { coexistencia: 20, local_geral: 40, autoestrada: 80, reservada: 70, restante: 70 },
   trator: { coexistencia: 20, local_geral: 30, autoestrada: null, reservada: null, restante: 40 },
   maquina_agricola: { coexistencia: 20, local_geral: 20, autoestrada: null, reservada: null, restante: 20 },
-  maquina_industrial_sem: { coexistencia: 20, local_geral: 30, autoestrada: null, reservada: null, restante: 30 },
-  maquina_industrial_com: { coexistencia: 20, local_geral: 40, autoestrada: 80, reservada: 70, restante: 70 }
+  maquina_industrial: { coexistencia: 20, local_geral: 40, autoestrada: 80, reservada: 70, restante: 70 }
 };
 
+const CIN_CODES = {
+  light: {
+    local_geral: { leve: "1860270109", grave: "2860270110", muito: "3860270111", topo: "3860270112" },
+    local_placas: { leve: "1860280106", grave: "2860280107", muito: "3860280108", topo: "3860280109" },
+    fora_geral: { leve: "1860270113", grave: "2860270114", muito: "3860270115", topo: "3860270116" },
+    fora_placas: { leve: "1860280110", grave: "2860280111", muito: "3860280112", topo: "3860280113" }
+  },
+  other: {
+    local_geral: { leve: "1860270117", grave: "2860270118", muito: "3860270119", topo: "3860270120" },
+    local_placas: { leve: "1860280118", grave: "2860280119", muito: "3860280120", topo: "3860280121" },
+    fora_geral: { leve: "1860270121", grave: "2860270122", muito: "3860270123", topo: "3860270124" },
+    fora_placas: { leve: "1860280122", grave: "2860280123", muito: "3860280124", topo: "3860280125" }
+  }
+} as const;
+
 export function vehicleGroup(vehicle: VehicleType): VehicleGroup {
-  return (
-    vehicle.startsWith("ligeiro_") ||
-    vehicle.startsWith("motociclo_") ||
-    vehicle === "triciclo"
-  ) ? "ligeiros" : "pesados";
+  return CIN_LIGHT_VEHICLES.has(vehicle) ? "light" : "other";
 }
 
-export function defaultSpeedLimit(
-  vehicle: VehicleType,
-  regime: SpeedRegime
-): number | null {
-  if (regime === "especial" || regime === "personalizado") return null;
+export function codeFamily(regime: SpeedRegime): CodeFamily | null {
+  if (regime === "coexistencia" || regime === "local_geral") return "local_geral";
+  if (regime === "local_placas") return "local_placas";
+  if (regime === "autoestrada" || regime === "reservada" || regime === "restante") return "fora_geral";
+  if (regime === "fora_placas" || regime === "auto_placas") return "fora_placas";
+  return null;
+}
+
+export function defaultSpeedLimit(vehicle: VehicleType, regime: SpeedRegime): number | null {
+  if (regime === "especial" || regime === "personalizado" || regime === "local_placas" || regime === "fora_placas") {
+    return null;
+  }
+  if (regime === "auto_placas") return 100;
   return CIN_VEHICLE_LIMITS[vehicle][regime] ?? null;
 }
 
-export function ema(
-  mode: CinemometerMode,
-  verification: VerificationType
-): number {
-  if (mode === "perseguicao") {
-    return verification === "primeira" ? 0.03 : 0.05;
-  }
-  if (mode === "movimento") {
+/**
+ * This reproduces the final effective V61 rule found in the legacy runtime.
+ * Do not change without a new characterization comparison.
+ */
+export function ema(mode: CinemometerMode, verification: VerificationType): number {
+  if (mode === "movimento" || mode === "perseguicao") {
     return verification === "primeira" ? 0.05 : 0.07;
   }
   return verification === "primeira" ? 0.03 : 0.05;
@@ -120,29 +144,18 @@ export function classifyExcess(
   vehicle: VehicleType,
   regime: SpeedRegime
 ): ExcessClassification {
-  const group = vehicleGroup(vehicle);
-  const outside = regime === "autoestrada" || regime === "reservada" || regime === "restante";
+  const light = vehicleGroup(vehicle) === "light";
+  const inside = regime === "coexistencia" || regime === "local_geral" || regime === "local_placas";
   const coexist = regime === "coexistencia";
-  const inside = !outside;
 
-  let seriousLimit: number;
-  let verySeriousLimit: number;
-  let topLimit: number;
+  const serious = light ? (inside ? 20 : 30) : (inside ? 10 : 20);
+  const verySerious = light ? (inside ? 40 : 60) : (inside ? 20 : 40);
+  const top = light ? (inside ? 60 : 80) : (inside ? 40 : 60);
 
-  if (group === "ligeiros") {
-    seriousLimit = inside ? 20 : 30;
-    verySeriousLimit = inside ? 40 : 60;
-    topLimit = inside ? 60 : 80;
-  } else {
-    seriousLimit = inside ? 10 : 20;
-    verySeriousLimit = inside ? 20 : 40;
-    topLimit = inside ? 40 : 60;
-  }
-
-  if (excess <= seriousLimit) {
+  if (excess <= serious) {
     return { gravidade: "Leve", coima: "60€ a 300€", pontos: "—", inibicao: "—", faixa: "leve" };
   }
-  if (excess <= verySeriousLimit) {
+  if (excess <= verySerious) {
     return {
       gravidade: "Grave",
       coima: "120€ a 600€",
@@ -151,7 +164,7 @@ export function classifyExcess(
       faixa: "grave"
     };
   }
-  if (excess <= topLimit) {
+  if (excess <= top) {
     return {
       gravidade: "Muito Grave",
       coima: "300€ a 1500€",
@@ -160,7 +173,6 @@ export function classifyExcess(
       faixa: "muito"
     };
   }
-
   return {
     gravidade: "Muito Grave",
     coima: "500€ a 2500€",
@@ -174,19 +186,28 @@ export function operationalCode(
   classification: ExcessClassification,
   regime: SpeedRegime
 ): string {
-  const outside = regime === "autoestrada" || regime === "reservada" || regime === "restante";
-  const external = {
-    leve: "1860270113",
-    grave: "2860270114",
-    muito: "3860270115",
-    topo: "3860270116"
-  } as const;
-  const internal = {
-    leve: "1860270109",
-    grave: "2860270110",
-    muito: "3860270111",
-    topo: "3860270112"
-  } as const;
+  const family = codeFamily(regime);
+  if (!family) return "—";
+  return CIN_CODES[vehicleGroupForCode(classification, regime)][family][classification.faixa];
+}
 
-  return (outside ? external : internal)[classification.faixa];
+// The final legacy code family is selected from the vehicle, not from the classification object.
+// Kept as an explicit helper to make accidental coupling visible.
+function vehicleGroupForCode(
+  classification: ExcessClassification,
+  _regime: SpeedRegime
+): VehicleGroup {
+  // classification alone cannot identify the vehicle family; this overload is intentionally
+  // replaced below by the vehicle-aware API.
+  return classification.faixa === "____" ? "light" : "other";
+}
+
+export function operationalCodeForVehicle(
+  classification: ExcessClassification,
+  vehicle: VehicleType,
+  regime: SpeedRegime
+): string {
+  const family = codeFamily(regime);
+  if (!family) return "—";
+  return CIN_CODES[vehicleGroup(vehicle)][family][classification.faixa];
 }

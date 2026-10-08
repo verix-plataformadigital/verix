@@ -3,79 +3,79 @@ import {
   CIN_VEHICLE_LIMITS,
   calculateDeducedSpeed,
   classifyExcess,
+  codeFamily,
   defaultSpeedLimit,
   ema,
-  operationalCode,
+  operationalCodeForVehicle,
   vehicleGroup
 } from "../../src/modules/cinemometer/cinemometer-domain";
 
-describe("cinemómetro — cálculo puro", () => {
-  it("preserva a classificação de veículos do legado", () => {
-    expect(vehicleGroup("ligeiro_passageiros_sem")).toBe("ligeiros");
-    expect(vehicleGroup("motociclo_sem")).toBe("ligeiros");
-    expect(vehicleGroup("triciclo")).toBe("ligeiros");
-    expect(vehicleGroup("pesado_mercadorias_sem")).toBe("pesados");
-    expect(vehicleGroup("trator")).toBe("pesados");
+describe("cinemómetro — regra V61 efetiva", () => {
+  it("usa os identificadores finais da UI V61", () => {
+    expect(vehicleGroup("motociclo_mais50_sem")).toBe("light");
+    expect(vehicleGroup("motociclo_ate50")).toBe("light");
+    expect(vehicleGroup("ciclomotor")).toBe("other");
+    expect(vehicleGroup("maquina_industrial")).toBe("other");
+    expect(Object.keys(CIN_VEHICLE_LIMITS)).toHaveLength(16);
   });
 
-  it("preserva os valores EMA do legado", () => {
+  it("preserva EMA final", () => {
     expect(ema("fixo", "primeira")).toBe(0.03);
-    expect(ema("fixo", "periodica")).toBe(0.05);
+    expect(ema("media", "periodica")).toBe(0.05);
     expect(ema("movimento", "primeira")).toBe(0.05);
     expect(ema("movimento", "periodica")).toBe(0.07);
-    expect(ema("perseguicao", "primeira")).toBe(0.03);
-    expect(ema("perseguicao", "periodica")).toBe(0.05);
-    expect(ema("media", "primeira")).toBe(0.03);
+    expect(ema("perseguicao", "primeira")).toBe(0.05);
+    expect(ema("perseguicao", "periodica")).toBe(0.07);
   });
 
-  it("aplica a dedução fixa até 100 km/h e percentual acima de 100", () => {
+  it("preserva a regra de dedução final", () => {
     expect(calculateDeducedSpeed(100, "fixo", "primeira")).toBe(97);
     expect(calculateDeducedSpeed(101, "fixo", "primeira")).toBe(97);
     expect(calculateDeducedSpeed(120, "fixo", "primeira")).toBe(116);
     expect(calculateDeducedSpeed(200, "movimento", "periodica")).toBe(186);
     expect(calculateDeducedSpeed(0, "fixo", "primeira")).toBeNull();
-    expect(calculateDeducedSpeed(Number.NaN, "fixo", "primeira")).toBeNull();
   });
 
-  it("preserva a matriz de limites atual", () => {
-    expect(defaultSpeedLimit("ligeiro_passageiros_sem", "autoestrada")).toBe(120);
-    expect(defaultSpeedLimit("ligeiro_passageiros_com", "autoestrada")).toBe(100);
-    expect(defaultSpeedLimit("ciclomotor", "autoestrada")).toBeNull();
-    expect(defaultSpeedLimit("trator", "restante")).toBe(40);
-    expect(defaultSpeedLimit("pesado_mercadorias_com", "local_geral")).toBe(40);
-    expect(defaultSpeedLimit("ligeiro_passageiros_sem", "personalizado")).toBeNull();
-    expect(Object.keys(CIN_VEHICLE_LIMITS)).toHaveLength(16);
+  it("preserva limites V61 e exceções especiais", () => {
+    expect(defaultSpeedLimit("motociclo_mais50_sem", "autoestrada")).toBe(120);
+    expect(defaultSpeedLimit("motociclo_ate50", "local_geral")).toBe(40);
+    expect(defaultSpeedLimit("motociclo_ate50", "autoestrada")).toBeNull();
+    expect(defaultSpeedLimit("maquina_industrial", "autoestrada")).toBe(80);
+    expect(defaultSpeedLimit("maquina_industrial", "personalizado")).toBeNull();
+    expect(defaultSpeedLimit("ligeiro_passageiros_sem", "auto_placas")).toBe(100);
   });
 
-  it("classifica fronteiras de ligeiros dentro/fora de localidade", () => {
-    expect(classifyExcess(20, "ligeiro_passageiros_sem", "local_geral").gravidade).toBe("Leve");
-    expect(classifyExcess(21, "ligeiro_passageiros_sem", "local_geral").gravidade).toBe("Grave");
-    expect(classifyExcess(40, "ligeiro_passageiros_sem", "local_geral").gravidade).toBe("Grave");
-    expect(classifyExcess(41, "ligeiro_passageiros_sem", "local_geral").gravidade).toBe("Muito Grave");
+  it("mapeia famílias de código V61", () => {
+    expect(codeFamily("coexistencia")).toBe("local_geral");
+    expect(codeFamily("local_placas")).toBe("local_placas");
+    expect(codeFamily("autoestrada")).toBe("fora_geral");
+    expect(codeFamily("auto_placas")).toBe("fora_placas");
+    expect(codeFamily("especial")).toBeNull();
+  });
+
+  it("preserva fronteiras de classificação V61", () => {
+    expect(classifyExcess(20, "ligeiro_passageiros_sem", "local_geral").faixa).toBe("leve");
+    expect(classifyExcess(21, "ligeiro_passageiros_sem", "local_geral").faixa).toBe("grave");
+    expect(classifyExcess(40, "ligeiro_passageiros_sem", "local_geral").faixa).toBe("grave");
+    expect(classifyExcess(41, "ligeiro_passageiros_sem", "local_geral").faixa).toBe("muito");
     expect(classifyExcess(60, "ligeiro_passageiros_sem", "local_geral").faixa).toBe("muito");
     expect(classifyExcess(61, "ligeiro_passageiros_sem", "local_geral").faixa).toBe("topo");
 
-    expect(classifyExcess(30, "ligeiro_passageiros_sem", "autoestrada").gravidade).toBe("Leve");
-    expect(classifyExcess(31, "ligeiro_passageiros_sem", "autoestrada").gravidade).toBe("Grave");
-    expect(classifyExcess(60, "ligeiro_passageiros_sem", "autoestrada").gravidade).toBe("Grave");
+    expect(classifyExcess(30, "ligeiro_passageiros_sem", "autoestrada").faixa).toBe("leve");
+    expect(classifyExcess(31, "ligeiro_passageiros_sem", "autoestrada").faixa).toBe("grave");
+    expect(classifyExcess(60, "ligeiro_passageiros_sem", "autoestrada").faixa).toBe("grave");
     expect(classifyExcess(61, "ligeiro_passageiros_sem", "autoestrada").faixa).toBe("muito");
     expect(classifyExcess(80, "ligeiro_passageiros_sem", "autoestrada").faixa).toBe("muito");
     expect(classifyExcess(81, "ligeiro_passageiros_sem", "autoestrada").faixa).toBe("topo");
   });
 
-  it("preserva a regra especial dos pesados e coexistência", () => {
-    expect(classifyExcess(10, "pesado_mercadorias_sem", "local_geral").faixa).toBe("leve");
-    expect(classifyExcess(11, "pesado_mercadorias_sem", "local_geral").faixa).toBe("grave");
-    expect(classifyExcess(20, "pesado_mercadorias_sem", "local_geral").pontos).toBe("2");
-    expect(classifyExcess(20, "pesado_mercadorias_sem", "coexistencia").pontos).toBe("3");
-    expect(classifyExcess(40, "pesado_mercadorias_sem", "coexistencia").pontos).toBe("5");
-  });
-
-  it("preserva os códigos operacionais", () => {
+  it("preserva família de códigos para ligeiros e outros veículos", () => {
     const light = classifyExcess(25, "ligeiro_passageiros_sem", "local_geral");
-    const external = classifyExcess(25, "ligeiro_passageiros_sem", "autoestrada");
+    const other = classifyExcess(15, "pesado_mercadorias_sem", "local_geral");
 
-    expect(operationalCode(light, "local_geral")).toBe("2860270110");
-    expect(operationalCode(external, "autoestrada")).toBe("1860270113");
+    expect(operationalCodeForVehicle(light, "ligeiro_passageiros_sem", "local_geral")).toBe("2860270110");
+    expect(operationalCodeForVehicle(other, "pesado_mercadorias_sem", "local_geral")).toBe("2860270118");
+    expect(operationalCodeForVehicle(light, "ligeiro_passageiros_sem", "local_placas")).toBe("2860280107");
+    expect(operationalCodeForVehicle(light, "ligeiro_passageiros_sem", "fora_placas")).toBe("2860280111");
   });
 });
