@@ -209,8 +209,8 @@ export class AlcoholModule {
     thresholdEl.textContent = `≥ ${threshold.toFixed(2).replace('.', ',')} g/L`;
     const copy = document.createElement('p');
     copy.textContent = description;
-    const bands = document.createElement('div');
-    bands.className = 'alcohol-bands';
+    const bandsEl = document.createElement('div');
+    bandsEl.className = 'alcohol-bands';
     for (const bandData of bands) {
       const band = document.createElement('div');
       band.className = 'alcohol-band';
@@ -228,9 +228,9 @@ export class AlcoholModule {
         ' g/L · ' +
         bandData.fine;
       band.append(p, f);
-      bands.append(band);
+      bandsEl.append(band);
     }
-    card.append(strong, thresholdEl, copy, bands);
+    card.append(strong, thresholdEl, copy, bandsEl);
     return card;
   }
 }
