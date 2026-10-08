@@ -6,9 +6,9 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%;background:#03070a}
-body{min-height:100vh}
+body{min-height:100vh;min-height:100dvh;padding-top:env(safe-area-inset-top);padding-right:env(safe-area-inset-right);padding-bottom:env(safe-area-inset-bottom);padding-left:env(safe-area-inset-left)}
 button{font:inherit}
-.verix-shell{min-height:100vh;display:grid;grid-template-rows:72px 1fr;background:
+.verix-shell{min-height:100vh;min-height:100dvh;display:grid;grid-template-rows:72px 1fr;background:
  radial-gradient(circle at top right,rgba(46,190,180,.09),transparent 32rem),
  linear-gradient(180deg,#071016 0%,#020507 100%)}
 .verix-header{display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-bottom:1px solid rgba(255,255,255,.07);background:rgba(2,6,9,.82);backdrop-filter:blur(18px)}
