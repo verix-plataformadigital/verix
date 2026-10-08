@@ -22,7 +22,12 @@ export class HistoryService {
   constructor(
     private readonly storage: HistoryStorage | null,
     private readonly now: () => Date = () => new Date(),
-    private readonly idFactory: () => string = () => crypto.randomUUID()
+    private readonly idFactory: () => string = () => {
+      if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+        return crypto.randomUUID();
+      }
+      return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    }
   ) {
     this.records = this.load();
   }
