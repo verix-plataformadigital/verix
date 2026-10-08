@@ -30,6 +30,9 @@ jobs:
       - name: Unit tests
         run: npm test
 
+      - name: Static repository audit
+        run: node tools/audit-repository.mjs
+
       - name: V2 build
         run: npm run build:v2
 
@@ -40,3 +43,10 @@ jobs:
             echo "Source maps are not allowed in the V2 production artifact."
             exit 1
           fi
+
+      - name: Upload audit
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: verix-v2-audit
+          path: audit-output/
+          retention-days: 14
