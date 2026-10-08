@@ -16,46 +16,6 @@ const DOMAIN_LOCK = [
 ];
 
 /** Shared strong but safe obfuscation options */
-const CRITICAL_RUNTIME_NAMES = [
-  "criarDiagASF",
-  "reservarSlotFisicoASF",
-  "textoErroASF",
-  "classificarErroASF",
-  "finalizarTentativaDiagASF",
-  "erroComDiagASF",
-  "agoraMsASFDiag",
-  "hashTextoASF",
-  "consultarSeguroASF",
-  "processarConsultaSeguroComCadencia",
-  "realizarConsultaASF_IPO",
-  "renderSeguroEncontrado",
-  "renderSeguroNaoEncontrado",
-  "mostrarSeguroErro"
-];
-
-const COMPATIBILITY_OPTIONS = {
-  ...OBFUSCATOR_OPTIONS,
-  // The main VÉRIX runtime is a large legacy single-file application.
-  // Keep semantics deterministic: no control-flow rewriting, anti-debug
-  // runtime, or self-defending wrapper in this critical block.
-  controlFlowFlattening: false,
-  controlFlowFlatteningThreshold: 0,
-  debugProtection: false,
-  debugProtectionInterval: 0,
-  selfDefending: false,
-  stringArray: true,
-  stringArrayCallsTransform: false,
-  stringArrayIndexShift: false,
-  stringArrayRotate: false,
-  stringArrayShuffle: false,
-  stringArrayThreshold: 0.5,
-  splitStrings: false,
-  reservedNames: [
-    ...OBFUSCATOR_OPTIONS.reservedNames,
-    ...CRITICAL_RUNTIME_NAMES.map(name => "^" + name + "$")
-  ]
-};
-
 const OBFUSCATOR_OPTIONS = {
   target: "browser-no-eval",
   compact: true,
@@ -106,6 +66,48 @@ const OBFUSCATOR_OPTIONS = {
   splitStrings: true,
   splitStringsChunkLength: 8
 };
+
+
+const CRITICAL_RUNTIME_NAMES = [
+  "criarDiagASF",
+  "reservarSlotFisicoASF",
+  "textoErroASF",
+  "classificarErroASF",
+  "finalizarTentativaDiagASF",
+  "erroComDiagASF",
+  "agoraMsASFDiag",
+  "hashTextoASF",
+  "consultarSeguroASF",
+  "processarConsultaSeguroComCadencia",
+  "realizarConsultaASF_IPO",
+  "renderSeguroEncontrado",
+  "renderSeguroNaoEncontrado",
+  "mostrarSeguroErro"
+];
+
+const COMPATIBILITY_OPTIONS = {
+  ...OBFUSCATOR_OPTIONS,
+  // The main VÉRIX runtime is a large legacy single-file application.
+  // Keep semantics deterministic: no control-flow rewriting, anti-debug
+  // runtime, or self-defending wrapper in this critical block.
+  controlFlowFlattening: false,
+  controlFlowFlatteningThreshold: 0,
+  debugProtection: false,
+  debugProtectionInterval: 0,
+  selfDefending: false,
+  stringArray: true,
+  stringArrayCallsTransform: false,
+  stringArrayIndexShift: false,
+  stringArrayRotate: false,
+  stringArrayShuffle: false,
+  stringArrayThreshold: 0.5,
+  splitStrings: false,
+  reservedNames: [
+    ...OBFUSCATOR_OPTIONS.reservedNames,
+    ...CRITICAL_RUNTIME_NAMES.map(name => "^" + name + "$")
+  ]
+};
+
 
 function obfuscateHtml(html, label) {
   const scriptPattern = /(<script\b[^>]*>)([\s\S]*?)(<\/script>)/gi;
