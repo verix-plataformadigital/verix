@@ -79,7 +79,8 @@ export async function bootstrap(root: HTMLElement): Promise<void> {
     imt,
     telemetry,
     store,
-    history
+    history,
+    historyEnabled: () => settings.snapshot().history
   });
 
   const historyModule = new HistoryModule({
