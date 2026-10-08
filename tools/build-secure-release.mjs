@@ -9,10 +9,10 @@ const OUTPUT_DIR = path.join(ROOT, "dist");
 const BUILD_ID = process.env.VERIX_BUILD_ID || `1.5-sec-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-a`;
 
 const DOMAIN_LOCK = [
-  "verix.vxops.workers.dev",
   "verix-plataformadigital.github.io",
   "localhost",
-  "127.0.0.1"
+  "127.0.0.1",
+  "[::1]"
 ];
 
 /** Shared strong but safe obfuscation options */
