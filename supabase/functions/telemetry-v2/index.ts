@@ -56,6 +56,7 @@ const db = createClient(SUPABASE_URL, secretKey, {
 });
 
 const ALLOWED_ORIGINS = new Set([
+  "https://verix.vxops.workers.dev",
   "https://verix-plataformadigital.github.io",
   "http://localhost",
   "http://127.0.0.1"
