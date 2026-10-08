@@ -6,8 +6,10 @@ import { normalizeAsfDate, normalizePlate } from "../../shared/validators/vehicl
 
 export type AsfServiceError =
   | { readonly kind: "invalid-input"; readonly message: string }
-  | { readonly kind: "transport"; readonly message: string }
+  | { readonly kind: "timeout"; readonly message: string }
+  | { readonly kind: "network"; readonly message: string }
   | { readonly kind: "http"; readonly status: number; readonly message: string }
+  | { readonly kind: "rate-limited"; readonly status: number; readonly retryAfterMs: number | null; readonly message: string }
   | { readonly kind: "invalid-json"; readonly message: string }
   | { readonly kind: "graphql"; readonly messages: readonly string[] }
   | { readonly kind: "invalid-response"; readonly message: string };
@@ -79,6 +81,15 @@ export class AsfService {
       const raw = await response.text();
 
       if (!response.ok) {
+        if (response.status === 429) {
+          return err({
+            kind: "rate-limited",
+            status: response.status,
+            retryAfterMs: parseRetryAfter(response.headers.get("Retry-After")),
+            message: "O serviço ASF limitou temporariamente o pedido."
+          });
+        }
+
         return err({
           kind: "http",
           status: response.status,
@@ -104,14 +115,22 @@ export class AsfService {
       return ok(outcome);
     } catch (error: unknown) {
       if (error instanceof DOMException && error.name === "AbortError") {
-        return err({ kind: "transport", message: "Tempo excedido na comunicação ASF." });
+        return err({ kind: "timeout", message: "Tempo excedido na comunicação ASF." });
       }
       if (error instanceof TypeError) {
-        return err({ kind: "transport", message: "Falha de rede na comunicação ASF." });
+        return err({ kind: "network", message: "Falha de rede na comunicação ASF." });
       }
-      return err({ kind: "transport", message: "Falha de comunicação ASF." });
+      return err({ kind: "network", message: "Falha de comunicação ASF." });
     } finally {
       clearTimeout(timeout);
     }
   }
+}
+
+function parseRetryAfter(value: string | null): number | null {
+  if (!value) return null;
+  const seconds = Number(value);
+  if (Number.isFinite(seconds) && seconds >= 0) return Math.round(seconds * 1000);
+  const date = Date.parse(value);
+  return Number.isNaN(date) ? null : Math.max(0, date - Date.now());
 }
