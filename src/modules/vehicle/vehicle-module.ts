@@ -1,8 +1,11 @@
-import type { TelemetryService } from "../../services/telemetry/telemetry-service";
 import type { AsfServiceError } from "../insurance/asf-service";
 import { normalizePlate } from "../../shared/validators/vehicle";
 import type { ImtService } from "../imt/imt-service";
-import { VehicleQueryController } from "./vehicle-query-controller";
+import {
+  VehicleQueryController,
+  type VehicleAsfClient,
+  type VehicleTelemetryClient
+} from "./vehicle-query-controller";
 import type { HistoryRecord, HistoryService } from "../history/history-service";
 
 export interface VehicleModuleOptions {
