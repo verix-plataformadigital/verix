@@ -121,6 +121,12 @@ export class AppShell {
     this.renderedModule = state.activeModule;
     this.workspace.replaceChildren();
 
+    // Custom modules own their complete layout. Mount them before the generic
+    // placeholder so they cannot accidentally erase shell-level content.
+    if (this.moduleRenderer?.(this.workspace, state.activeModule, state)) {
+      return;
+    }
+
     const heading = document.createElement("div");
     heading.className = "verix-workspace-heading";
 
@@ -135,16 +141,6 @@ export class AppShell {
     p.textContent = description;
 
     heading.append(overline, h1, p);
-
-    if (
-      this.moduleRenderer?.(
-        this.workspace,
-        state.activeModule,
-        state
-      )
-    ) {
-      return;
-    }
 
     const card = document.createElement("div");
     card.className = "verix-placeholder";
