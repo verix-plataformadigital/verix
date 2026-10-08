@@ -18,7 +18,7 @@ Commit de referência desta sessão: `c84566831821822eac92186617b0bea3f06ad3c9`
 - Direção tecnológica: TypeScript + Vite + DOM nativo, sem framework de UI por defeito.
 - TypeScript 7.0.2.
 - Vite 8.3.3.
-- Vitest 4.1.9.
+- Vitest 5.0.3.
 - Node 22 continua a ser o runtime de build.
 - TypeScript usa modo estrito e verificações adicionais contra código não utilizado e acessos potencialmente indefinidos.
 - O contrato operacional ASF deve ser preservado antes de qualquer otimização.
@@ -71,7 +71,7 @@ Commit de referência desta sessão: `c84566831821822eac92186617b0bea3f06ad3c9`
 
 ## Próxima sequência obrigatória
 
-1. Obter e estudar o relatório integral da auditoria do runner.
+1. Confirmar CI verde da fundação e obter o relatório integral da auditoria do runner.
 2. Fechar o inventário de funções, listeners, globals, HTML sinks, endpoints, RPCs e duplicações.
 3. Mapear o grafo de dependências do runtime operacional.
 4. Extrair contratos puros e adapters sem alterar comportamento.
