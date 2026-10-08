@@ -104,10 +104,10 @@ export class TelemetryService {
       tabId: this.identity.tabId,
       event,
       buildId: this.options.buildId,
-      module: module ? module.slice(0, 50) : undefined,
       occurredAt: new Date(this.now()).toISOString(),
       appVersion: this.options.appVersion,
-      metadata
+      ...(module ? { module: module.slice(0, 50) } : {}),
+      ...(metadata ? { metadata } : {})
     };
 
     this.queue.enqueue(item);
