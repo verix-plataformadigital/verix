@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070c10">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta http-equiv="Cache-Control" content="no-store,no-cache,must-revalidate,proxy-revalidate,max-age=0">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>VÉRIX — Mobile</title>
+<link rel="stylesheet" href="./verix-mobile.css?v=1">
+<script>window.__VERIX_MOBILE=true;</script>
+<style>
+html,body{margin:0;width:100%;min-height:100%;background:#010407;color:#fff}
+#vxMobileLoading{position:fixed;inset:0;z-index:999999;background:#010407;display:grid;place-items:center;font:800 12px Arial,sans-serif;letter-spacing:1.5px}
+#vxMobileLoading span{opacity:.8}
+</style>
+</head>
+<body>
+<div id="vxMobileLoading"><span>A INICIAR VÉRIX MOBILE…</span></div>
+<script>
+(async function(){
+  'use strict';
+  function fail(msg){
+    document.body.innerHTML='<main style="min-height:100dvh;display:grid;place-items:center;padding:24px;background:#010407;color:#fff;font:600 15px/1.5 Arial"><div style="max-width:420px;text-align:center"><strong style="display:block;font-size:18px;margin-bottom:10px">VÉRIX Mobile</strong>'+msg+'</div></main>';
+  }
+  try{
+    if(location.protocol==='file:'){
+      fail('Abra esta versão através do endereço web do VÉRIX. O modo mobile usa os mesmos serviços seguros da versão principal.');
+      return;
+    }
+    const url='./verix-app.html?_verix='+Date.now()+'&_mobile=1';
+    const res=await fetch(url,{cache:'no-store',credentials:'same-origin'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    let app=await res.text();
+    app=app.replace(/<meta[^>]+name=["']viewport["'][^>]*>/i,
+      '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">');
+    app=app.replace('</head>',
+      '<link rel="stylesheet" href="./verix-mobile.css?v=1"><script>window.__VERIX_MOBILE=true;<\/script></head>');
+    app=app.replace('</body>',
+      '<script src="./verix-mobile.js?v=1"><\/script></body>');
+    document.open();
+    document.write(app);
+    document.close();
+  }catch(err){
+    fail('Não foi possível carregar o VÉRIX. Verifique a ligação e tente novamente.<br><small style="opacity:.55">'+String(err.message||err)+'</small>');
+  }
+})();
+</script>
+</body>
+</html>
