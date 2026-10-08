@@ -28,7 +28,10 @@ export class VehicleModule {
     this.controller = new VehicleQueryController({
       asf: options.asf,
       telemetry: options.telemetry,
-      store: options.store
+      store: options.store,
+      onQueryStarted: (queryId, request) => {
+        options.history.add(request.plate, this.lastTrailer, queryId);
+      }
     });
   }
 
