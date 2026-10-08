@@ -3,7 +3,7 @@ import { ImtService } from '../../src/modules/imt/imt-service';
 
 describe('ImtService', () => {
   it('cria os dois destinos da consulta com a sequência corrente', () => {
-    const open = vi.fn().mockReturnValue({});
+    const open = vi.fn().mockReturnValue(true);
     const service = new ImtService({ open });
 
     const operation = service.createOperation('12-AB-34', 'VC-1234');
@@ -19,7 +19,7 @@ describe('ImtService', () => {
   });
 
   it('incrementa a sequência a cada operação', () => {
-    const service = new ImtService({ open: () => ({}) });
+    const service = new ImtService({ open: () => true });
     expect(service.createOperation('12-AB-34', '').sequence).toBe(1);
     expect(service.createOperation('AA-11-AA', '').sequence).toBe(2);
   });
@@ -35,7 +35,7 @@ describe('ImtService', () => {
   });
 
   it('devolve false quando o host bloqueia a janela', () => {
-    const service = new ImtService({ open: () => null });
+    const service = new ImtService({ open: () => false });
     expect(service.open('livrete', 'VC-1234')).toBe(false);
   });
 });
