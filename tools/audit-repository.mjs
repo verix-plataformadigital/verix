@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import ts from "typescript";
+import * as ts from "typescript";
 
 const ROOT = process.cwd();
 const OUTPUT_DIR = path.resolve(process.argv[2] || "audit-output");
