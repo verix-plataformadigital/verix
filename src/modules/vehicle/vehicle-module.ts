@@ -4,7 +4,11 @@ import { normalizePlate } from "../../shared/validators/vehicle";
 import { VehicleQueryController } from "./vehicle-query-controller";
 import type { HistoryRecord, HistoryService } from "../history/history-service";
 
-const RNSI_URL = "http://consultapsp.imtt.external.rnsi.local/veiculos/";
+const RNSI_BASE_URL = "http://consultapsp.imtt.external.rnsi.local/veiculos/";
+const RNSI_PATHS = {
+  "rnsi-inspecao": "consulta_inspecao.php",
+  "rnsi-livrete": "consulta_livrete.php"
+} as const;
 
 export interface VehicleModuleOptions {
   readonly asf: AsfService;
@@ -291,7 +295,11 @@ export class VehicleModule {
         source === "rnsi-livrete" ? this.lastTrailer || this.lastPlate : this.lastPlate
       );
 
-      const popup = window.open(RNSI_URL, "_blank", "noopener,noreferrer");
+      const path = RNSI_PATHS[source as keyof typeof RNSI_PATHS];
+      const targetUrl = path
+        ? RNSI_BASE_URL + path + "?Matricula=" + encodeURIComponent(plate)
+        : RNSI_BASE_URL;
+      const popup = window.open(targetUrl, "_blank", "noopener,noreferrer");
       void copyText(plate);
 
       this.options.telemetry.track("external_tool_open", "consulta", {
