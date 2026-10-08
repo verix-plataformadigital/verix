@@ -4,7 +4,8 @@ import {
   alcoholRegime,
   lookupAlcoholTas,
   parseTasInput,
-  tasFromTae
+  tasFromTae,
+  penaltyBands
 } from '../../src/modules/alcohol/alcohol-domain';
 
 describe('alcohol domain', () => {
@@ -36,6 +37,17 @@ describe('alcohol domain', () => {
     expect(alcoholRegime(0.2)).toBe('especial');
     expect(alcoholRegime(0.49)).toBe('especial');
     expect(alcoholRegime(0.5)).toBe('geral');
+  });
+
+  it('mantém os escalões de coima e pontos do regime geral e especial', () => {
+    expect(penaltyBands(false)).toEqual([
+      { minTas: 0.5, maxTasExclusive: 0.8, fine: '250 € — 1250 €', points: 3, severity: 'grave' },
+      { minTas: 0.8, maxTasExclusive: 1.2, fine: '500 € — 2500 €', points: 5, severity: 'muito-grave' }
+    ]);
+    expect(penaltyBands(true)).toEqual([
+      { minTas: 0.2, maxTasExclusive: 0.5, fine: '250 € — 1250 €', points: 3, severity: 'grave' },
+      { minTas: 0.5, maxTasExclusive: 1.2, fine: '500 € — 2500 €', points: 5, severity: 'muito-grave' }
+    ]);
   });
 
   it('converte TAE para TAS pela relação 2,3', () => {
