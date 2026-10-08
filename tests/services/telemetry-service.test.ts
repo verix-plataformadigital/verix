@@ -1,0 +1,93 @@
+import { describe, expect, it, vi } from "vitest";
+import { TelemetryService } from "../../src/services/telemetry/telemetry-service";
+
+class MemoryStorage {
+  private readonly data = new Map<string, string>();
+  getItem(key: string): string | null { return this.data.get(key) ?? null; }
+  setItem(key: string, value: string): void { this.data.set(key, value); }
+  removeItem(key: string): void { this.data.delete(key); }
+}
+
+function createService(overrides: Partial<ConstructorParameters<typeof TelemetryService>[0]> = {}) {
+  return new TelemetryService({
+    endpoint: "https://example.invalid/telemetry",
+    appVersion: "2.0.0",
+    buildId: "2.0",
+    localStorage: new MemoryStorage(),
+    sessionStorage: new MemoryStorage(),
+    createId: () => "id-" + Math.random().toString(36).slice(2),
+    ...overrides
+  });
+}
+
+describe("TelemetryService", () => {
+  it("preserva identidade entre instâncias com os mesmos stores", () => {
+    const local = new MemoryStorage();
+    const session = new MemoryStorage();
+    const serviceA = createService({ localStorage: local, sessionStorage: session });
+    const serviceB = createService({ localStorage: local, sessionStorage: session });
+
+    expect(serviceB.installationId).toBe(serviceA.installationId);
+    expect(serviceB.sessionId).toBe(serviceA.sessionId);
+    expect(serviceB.tabId).toBe(serviceA.tabId);
+  });
+
+  it("cria evento com build id e persiste-o na fila", () => {
+    const local = new MemoryStorage();
+    const service = createService({ localStorage: local });
+    const item = service.track("vehicle_lookup", "consulta");
+
+    expect(item.buildId).toBe("2.0");
+    expect(item.installationId).toBe(service.installationId);
+    expect(service.queueSize).toBe(1);
+    expect(local.getItem("VERIX_T2_QUEUE")).toContain("vehicle_lookup");
+  });
+
+  it("remove lote somente depois de resposta 2xx", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(JSON.stringify({ ok: true }), { status: 200 })
+    );
+    const service = createService({ fetchImpl });
+
+    service.track("module_open", "consulta");
+    const result = await service.flush();
+
+    expect(result).toEqual({ ok: true, sent: 1 });
+    expect(service.queueSize).toBe(0);
+  });
+
+  it("mantém lote quando backend falha", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response("no", { status: 503 })
+    );
+    const service = createService({ fetchImpl });
+
+    service.track("heartbeat", null);
+    const result = await service.flush();
+
+    expect(result.ok).toBe(false);
+    expect(service.queueSize).toBe(1);
+  });
+
+  it("impede flushes concorrentes", async () => {
+    const local = new MemoryStorage();
+    let release: (() => void) | undefined;
+    const pending = new Promise<Response>((resolve) => {
+      release = () => resolve(new Response("ok", { status: 200 }));
+    });
+    const fetchImpl = vi.fn<typeof fetch>().mockReturnValue(pending);
+    const service = createService({
+      localStorage: local,
+      fetchImpl,
+      createId: () => String(Math.random())
+    });
+
+    service.track("app_open", null);
+    const first = service.flush();
+    const second = await service.flush();
+    expect(second).toEqual({ ok: true, sent: 0 });
+    release?.();
+    await expect(first).resolves.toEqual({ ok: true, sent: 1 });
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
+}
