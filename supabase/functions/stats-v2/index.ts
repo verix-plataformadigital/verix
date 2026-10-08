@@ -548,7 +548,7 @@ Deno.serve(async (req) => {
         headers:{
           "Content-Type":"application/json",
           ...corsHeaders(req),
-          "X-VÉRIX-Stats-Cache":"HIT"
+          "X-Verix-Stats-Cache":"HIT"
         }
       });
     }
@@ -598,7 +598,7 @@ Deno.serve(async (req) => {
       headers:{
         "Content-Type":"application/json",
         ...corsHeaders(req),
-        "X-VÉRIX-Stats-Cache":"MISS"
+        "X-Verix-Stats-Cache":"MISS"
       }
     });
 
