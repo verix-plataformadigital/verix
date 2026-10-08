@@ -14,7 +14,8 @@ export const MODULES: readonly ModuleDefinition[] = [
   { id: "legislation", label: "Legislação", description: "Pesquisa rápida e favoritos.", icon: "§" },
   { id: "alcohol", label: "Álcool", description: "Tabela e consulta operacional.", icon: "◌" },
   { id: "settings", label: "Definições", description: "Preferências e diagnóstico.", icon: "⚙" },
-  { id: "tools", label: "Ferramentas", description: "Serviços externos e referências operacionais.", icon: "▦" }
+  { id: "tools", label: "Ferramentas", description: "Serviços externos e referências operacionais.", icon: "▦" },
+  { id: "information", label: "Informações", description: "Informação do sistema e condições de utilização.", icon: "i" }
 ];
 
 export function moduleById(id: VerixModule): ModuleDefinition | undefined {
