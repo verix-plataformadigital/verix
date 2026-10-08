@@ -79,10 +79,22 @@ export class VehicleQueryController {
     this.options.telemetry.track("vehicle_lookup", "consulta", { queryId });
     this.options.telemetry.track("vehicle_insurance_pending", "consulta", { queryId });
 
-    const result = await this.options.asf.query({
-      matricula: request.plate,
-      date: request.date
-    });
+    let result: AsfServiceResult;
+
+    try {
+      result = await this.options.asf.query({
+        matricula: request.plate,
+        date: request.date
+      });
+    } catch {
+      result = {
+        ok: false,
+        error: {
+          kind: "network",
+          message: "Falha inesperada na comunicação com o serviço ASF."
+        }
+      };
+    }
 
     if (sequence !== this.sequence) {
       return this.viewState;
