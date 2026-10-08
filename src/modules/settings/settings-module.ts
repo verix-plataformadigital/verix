@@ -48,7 +48,7 @@ export class SettingsModule {
       ['leitura', 'Leitura — maior conforto'],
       ['posto', 'Posto — ecrã pequeno']
     ], this.options.settings.snapshot().profile, value => {
-      const state = this.options.settings.setProfile(value as SettingsProfile);
+      this.options.settings.setProfile(value as SettingsProfile);
       this.options.settings.applyToDocument(document);
       this.render();
     }));
