@@ -1,3 +1,5 @@
+import type { ConnectivityState } from "../../shared/types/connectivity";
+
 export type VerixModule =
   | "main"
   | "vehicle"
@@ -12,7 +14,7 @@ export type VerixModule =
 export interface AppState {
   readonly activeModule: VerixModule;
   readonly isBusy: boolean;
-  readonly connectivity: "unknown" | "online" | "offline" | "backend-offline" | "timeout" | "network-error";
+  readonly connectivity: ConnectivityState;
   readonly backendReachable: boolean | null;
   readonly currentQueryId: string | null;
 }
