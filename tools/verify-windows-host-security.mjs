@@ -14,6 +14,7 @@ const required = [
   "IsPasswordAutosaveEnabled = false",
   "IsGeneralAutofillEnabled = false",
   "IsSwipeNavigationEnabled = false",
+  "InternalHttpAllowedHosts.Contains(uri.Host)",
   'uri.AbsolutePath.StartsWith("/veiculos/"'
 ];
 
@@ -35,11 +36,6 @@ for (const marker of forbidden) {
   if (file.includes(marker)) {
     throw new Error("Forbidden WebView2 security override detected: " + marker);
   }
-}
-
-const internalHostCount = (file.match(/consultapsp\.imtt\.external\.rnsi\.local/g) || []).length;
-if (internalHostCount < 2) {
-  throw new Error("RNSI host allowlist is not explicit enough.");
 }
 
 console.log("✓ Windows WebView2 host security policy passed.");

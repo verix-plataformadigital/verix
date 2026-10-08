@@ -242,3 +242,6 @@ Fonte externa: Diário da República, Código da Estrada consolidado.
 - A pipeline falhava porque `tools/verify-windows-host-security.mjs` exigia a string `X-Content-Type` em `windows/VerixPortable/Program.cs`. O host WinForms carrega o site remoto e não é o servidor que emite os cabeçalhos HTTP; esta verificação não comprovava um controlo implementado.
 - Removido esse falso requisito e reforçada a lista de marcadores com as definições reais de desativação do autofill, gravação de palavras-passe, mensagens web e navegação por swipe, além do prefixo de caminho interno RNSI.
 - A correção altera o verificador, não reduz o allowlist, não relaxa navegações e não introduz flags inseguras no Chromium.
+
+
+- Refinamento do verificador: a lista do host RNSI é centralizada numa única constante e usada pelo método de validação. O teste deixou de exigir duas ocorrências literais do hostname (duplicação desnecessária) e verifica agora que a validação consulta efetivamente `InternalHttpAllowedHosts.Contains(uri.Host)`.
