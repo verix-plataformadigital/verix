@@ -217,15 +217,25 @@ for (const f of ["verix-mobile.css", "verix-mobile.js"]) {
 // Release-time runtime invariants. These critical blocks are intentionally
 // excluded from heavy obfuscation and must survive packaging unchanged enough
 // to expose their endpoint, heartbeat and security runtime markers.
+function extractInlineScript(html, id) {
+  const opener = new RegExp('<script[^>]*id=[\"\\\']' + id + '[\"\\\'][^>]*>', 'i');
+  const match = html.match(opener);
+  if (!match || match.index == null) return null;
+  const contentStart = match.index + match[0].length;
+  const contentEnd = html.indexOf('</script>', contentStart);
+  if (contentEnd < 0) return null;
+  return html.slice(contentStart, contentEnd);
+}
+
 function verifyCriticalRuntime(outputPath) {
   const html = fs.readFileSync(outputPath, "utf8");
-  const telemetry = html.match(/<script\\b[^>]*id=["']verix-telemetry-v2["'][^>]*>[\\s\\S]*?<\\/script>/i);
-  const security = html.match(/<script\\b[^>]*id=["']verix-security-runtime["'][^>]*>[\\s\\S]*?<\\/script>/i);
+  const telemetry = extractInlineScript(html, "verix-telemetry-v2");
+  const security = extractInlineScript(html, "verix-security-runtime");
   if (!telemetry) throw new Error("Critical telemetry runtime block missing from secure build");
-  if (!/telemetry-v2/i.test(telemetry[0])) throw new Error("Critical telemetry endpoint marker missing");
-  if (!/heartbeat/i.test(telemetry[0])) throw new Error("Critical telemetry heartbeat marker missing");
+  if (!/telemetry-v2/i.test(telemetry)) throw new Error("Critical telemetry endpoint marker missing");
+  if (!/heartbeat/i.test(telemetry)) throw new Error("Critical telemetry heartbeat marker missing");
   if (!security) throw new Error("Critical security runtime block missing from secure build");
-  if (!security[0].includes("var BUILD_ID = '" + BUILD_ID + "'")) {
+  if (!security.includes("var BUILD_ID = '" + BUILD_ID + "'")) {
     throw new Error("Client BUILD_ID does not match release BUILD_ID");
   }
   return { telemetry_runtime: true, security_runtime: true };
