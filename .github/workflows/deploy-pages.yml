@@ -52,6 +52,51 @@ jobs:
           grep -q "X-Verix-Client-Token" dist/verix-app.html
           grep -q "verix-telemetry-v2" dist/verix-app.html
 
+      - name: Validate HTML structure
+        shell: bash
+        run: |
+          python - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+
+          class Validator(HTMLParser):
+              VOID = {
+                  'area','base','br','col','embed','hr','img','input',
+                  'link','meta','param','source','track','wbr'
+              }
+              def __init__(self):
+                  super().__init__()
+                  self.stack = []
+                  self.errors = []
+
+              def handle_starttag(self, tag, attrs):
+                  tag = tag.lower()
+                  if tag not in self.VOID:
+                      self.stack.append(tag)
+
+              def handle_startendtag(self, tag, attrs):
+                  pass
+
+              def handle_endtag(self, tag):
+                  tag = tag.lower()
+                  if not self.stack or self.stack[-1] != tag:
+                      self.errors.append(
+                          f"unexpected closing </{tag}> at {self.getpos()}"
+                      )
+                  else:
+                      self.stack.pop()
+
+          path = Path("dist/verix-app.html")
+          parser = Validator()
+          parser.feed(path.read_text(encoding="utf-8"))
+
+          if parser.errors:
+              raise SystemExit("\n".join(parser.errors[:20]))
+          if parser.stack:
+              raise SystemExit(f"Unclosed HTML tags: {parser.stack[-20:]}")
+          print("HTML structural validation: OK")
+          PY
+
       - name: Ensure .nojekyll in dist
         run: touch dist/.nojekyll
 
