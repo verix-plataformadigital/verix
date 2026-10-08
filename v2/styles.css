@@ -208,3 +208,31 @@ button{font:inherit}
 .theme-light .verix-nav-item.is-active{color:#193b3a;background:rgba(47,167,157,.1)}
 .theme-light .verix-workspace-heading p,.theme-light .settings-module>p{color:#5e7178}
 @media(max-width:700px){.settings-fieldset{padding:13px}}
+
+
+.tools-module{max-width:1080px}
+.tools-module h2{margin:7px 0 8px;font-size:30px}
+.tools-module>p{max-width:800px;margin:0;color:#87959c;font-size:13px;line-height:1.6}
+.tools-section{margin-top:14px;padding:15px;border:1px solid rgba(255,255,255,.07);border-radius:14px;background:rgba(255,255,255,.02);overflow:hidden}
+.tools-section>h3,.tools-section-head h3{margin:0;color:#718188;font-size:9px;font-weight:900;letter-spacing:.13em}
+.tools-external-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:11px}
+.tools-external-button{padding:13px;border:1px solid rgba(112,211,202,.15);border-radius:10px;background:rgba(75,206,195,.04);color:#d5efeb;font-size:10px;font-weight:800;letter-spacing:.1em;cursor:pointer}
+.tools-external-button:hover{background:rgba(75,206,195,.08);border-color:rgba(112,211,202,.3)}
+.tools-district-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin-top:11px}
+.tools-district{display:flex;align-items:center;gap:7px;padding:8px 9px;border:1px solid rgba(255,255,255,.05);border-radius:8px;background:rgba(255,255,255,.02)}
+.tools-district strong{color:#7fdad2;font-size:9px;font-variant-numeric:tabular-nums}
+.tools-district span{color:#9aa7ab;font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tools-section-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tools-search{width:260px;padding:9px 11px;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:#071015;color:#eef5f6}
+.tools-table{width:100%;margin-top:10px;border-collapse:collapse}
+.tools-table th,.tools-table td{padding:8px 9px;border-bottom:1px solid rgba(255,255,255,.05);text-align:left;font-size:9px}
+.tools-table th{color:#718188;font-size:8px;text-transform:uppercase;letter-spacing:.08em}
+.tools-table td{color:#aeb9bd}
+.tools-table td:first-child{color:#d9e6e7;font-weight:800}
+.tools-tacho-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}
+.tools-tacho-card{padding:12px;border:1px solid rgba(255,255,255,.05);border-radius:10px;background:rgba(0,0,0,.12)}
+.tools-tacho-card>strong{display:block;color:#dbe7e8;font-size:10px;line-height:1.45}
+.tools-tacho-card p{margin:8px 0;color:#9aa9ad;font:600 9px/1.5 ui-monospace,Consolas,monospace}
+.tools-tacho-card span{display:block;color:#7edbd3;font-size:9px;font-weight:800;line-height:1.5}
+@media(max-width:900px){.tools-external-grid{grid-template-columns:1fr 1fr}.tools-district-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.tools-tacho-grid{grid-template-columns:1fr}}
+@media(max-width:650px){.tools-external-grid{grid-template-columns:1fr}.tools-district-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tools-section-head{align-items:start;flex-direction:column}.tools-search{width:100%}}
