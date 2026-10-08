@@ -24,7 +24,7 @@ const output = html.replace(scriptPattern, (full, open, source, close) => {
 
   scriptCount++;
   const result = JavaScriptObfuscator.obfuscate(trimmed, {
-    target: "browser",
+    target: "browser-no-eval",
     compact: true,
     simplify: true,
     controlFlowFlattening: true,
@@ -55,7 +55,7 @@ const output = html.replace(scriptPattern, (full, open, source, close) => {
       "^Promise$",
       "^ActiveXObject$"
     ],
-    selfDefending: false,
+    selfDefending: true,
     sourceMap: false,
     stringArray: true,
     stringArrayCallsTransform: true,
