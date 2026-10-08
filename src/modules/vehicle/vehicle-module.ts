@@ -203,9 +203,10 @@ export class VehicleModule {
       return;
     }
 
+    const effectiveIsoDate = isoDate || this.isoToday();
     this.lastPlate = plate;
     this.lastTrailer = trailer;
-    this.lastDate = isoDate || this.isoToday();
+    this.lastDate = effectiveIsoDate;
     this.localNotice = "";
 
     submit.disabled = true;
@@ -215,7 +216,7 @@ export class VehicleModule {
       {
         vehiclePlate: normalizedPlate,
         trailerPlate: normalizePlate(trailer),
-        asfDate: isoDateToAsfDate(isoDate)
+        asfDate: isoDateToAsfDate(effectiveIsoDate)
       }
     );
 
