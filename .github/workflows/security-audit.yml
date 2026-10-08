@@ -43,7 +43,9 @@ jobs:
           fi
 
       - name: Verify required security markers
+        shell: bash
         run: |
-          grep -q "verix-gate-v1" verix-app.html
-          grep -q "X-Verix-Build-Id" verix-app.html
-          grep -q "X-Verix-Client-Token" verix-app.html
+          grep -q "verix-gate-v1" dist/verix-app.html
+          grep -q "X-Verix-Build-Id" dist/verix-app.html
+          grep -q "X-Verix-Client-Token" dist/verix-app.html
+          grep -q "verix-telemetry-v2" dist/verix-app.html
