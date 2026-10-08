@@ -146,3 +146,42 @@ button{font:inherit}
  .legislation-item-top{display:grid}
  .legislation-code{justify-content:space-between}
 }
+
+
+.alcohol-module{max-width:1080px}
+.alcohol-module h2{margin:7px 0 8px;font-size:30px}
+.alcohol-module>p{max-width:820px;margin:0;color:#87959c;font-size:13px;line-height:1.6}
+.alcohol-search-row{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:20px}
+.alcohol-search{width:100%;padding:13px 14px;border:1px solid rgba(255,255,255,.1);border-radius:11px;background:#071015;color:#eef5f6;outline:none}
+.alcohol-search:focus{border-color:rgba(112,211,202,.55);box-shadow:0 0 0 3px rgba(112,211,202,.07)}
+.alcohol-clear{padding:0 15px;border:1px solid rgba(255,255,255,.08);border-radius:10px;background:rgba(255,255,255,.035);color:#aeb9bd;font-size:9px;font-weight:800;letter-spacing:.08em;cursor:pointer}
+.alcohol-clear:disabled{opacity:.45;cursor:default}
+.alcohol-info{margin:9px 0 12px;color:#718188;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.alcohol-lookup{min-width:0;border:1px solid rgba(255,255,255,.07);border-radius:14px;background:rgba(255,255,255,.02);overflow:hidden}
+.alcohol-lookup-head{display:flex;align-items:center;justify-content:space-between;padding:14px 15px;border-bottom:1px solid rgba(255,255,255,.06)}
+.alcohol-lookup-head strong{font-size:10px;letter-spacing:.14em}
+.alcohol-lookup-head span{color:#73838a;font-size:9px}
+.alcohol-table-wrap{max-height:470px;overflow:auto}
+.alcohol-table{width:100%;border-collapse:collapse}
+.alcohol-table th,.alcohol-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.05);text-align:right;font-size:10px}
+.alcohol-table th{position:sticky;top:0;background:#071015;color:#71858c;font-size:8px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;z-index:2}
+.alcohol-table td:first-child,.alcohol-table th:first-child{text-align:left}
+.alcohol-table td{color:#c1cccf;font-variant-numeric:tabular-nums}
+.alcohol-empty{padding:26px!important;text-align:center!important;color:#78878d!important}
+.alcohol-current-regime{margin:10px 12px;padding:10px 12px;border:1px solid rgba(112,211,202,.16);border-radius:9px;background:rgba(75,206,195,.04);color:#81ddd4;font-size:9px;font-weight:800;letter-spacing:.08em}
+.alcohol-regimes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.alcohol-regime-card{padding:15px;border:1px solid rgba(255,255,255,.07);border-radius:14px;background:rgba(255,255,255,.02)}
+.alcohol-regime-card>strong{display:block;font-size:11px;letter-spacing:.1em}
+.alcohol-regime-card>span{display:block;margin-top:6px;color:#7be0d6;font-size:11px;font-weight:800}
+.alcohol-regime-card>p{margin:9px 0;color:#89979c;font-size:10px;line-height:1.55}
+.alcohol-bands{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.alcohol-band{padding:9px;border-radius:9px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05)}
+.alcohol-band b{display:block;color:#c7d1d4;font-size:9px}
+.alcohol-band span{display:block;margin-top:4px;color:#73848b;font-size:10px}
+.alcohol-conversion{grid-column:1/-1;display:grid;grid-template-columns:auto 150px auto 1fr;align-items:center;gap:8px;margin-top:10px;padding:13px;border:1px solid rgba(255,255,255,.07);border-radius:12px;background:rgba(255,255,255,.018)}
+.alcohol-conversion strong{font-size:9px;letter-spacing:.1em}
+.alcohol-conversion input{width:100%;padding:10px;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:#071015;color:#eef5f6}
+.alcohol-conversion button{padding:10px;border:1px solid rgba(112,211,202,.2);border-radius:8px;background:rgba(75,206,195,.08);color:#bfeee9;font-size:8px;font-weight:800;letter-spacing:.08em;cursor:pointer}
+.alcohol-conversion span{color:#7be0d6;font-size:10px;font-weight:800}
+@media(max-width:850px){.alcohol-regimes{grid-template-columns:1fr}.alcohol-conversion{grid-template-columns:1fr 1fr}.alcohol-conversion strong,.alcohol-conversion span{grid-column:1/-1}}
+@media(max-width:600px){.alcohol-search-row{grid-template-columns:1fr}.alcohol-clear{min-height:40px}.alcohol-table th,.alcohol-table td{padding:7px 6px;font-size:9px}.alcohol-conversion{grid-template-columns:1fr}.alcohol-conversion strong,.alcohol-conversion span{grid-column:auto}}
