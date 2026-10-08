@@ -159,9 +159,6 @@ Deno.serve(async (req: Request) => {
   }
 
   const origin = req.headers.get("origin") || "";
-  if (!(ALLOWED_ORIGINS.has(origin) || isLegacyLocal(req))) {
-    return json({ ok: false, error: "origin_not_allowed" }, 403, req);
-  }
 
   if (!SUPABASE_URL || !SERVICE_KEY) {
     return json({ ok: false, error: "proxy_not_configured" }, 503, req);
@@ -222,12 +219,13 @@ Deno.serve(async (req: Request) => {
 
     try {
       const upstream = await fetch(url, {
-        method: "GET",
+        method: "POST",
         headers: {
           "Accept": "application/json, text/plain, */*",
           "Cache-Control": "no-cache",
           "Pragma": "no-cache"
         },
+        body: null,
         redirect: "follow",
         signal: controller.signal
       });
