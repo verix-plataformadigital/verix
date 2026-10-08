@@ -87,3 +87,38 @@ it('inclui o aparelho e a sessão do operador no evento de cálculo', () => {
     limite: '120'
   });
 });
+
+
+it('mostra o texto operacional e regista cópia quando a API Clipboard aceita', async () => {
+  const root = document.createElement('main');
+  const telemetry = { track: vi.fn() };
+  const clipboard = { writeText: vi.fn(async () => undefined) };
+  Object.defineProperty(navigator, 'clipboard', {
+    configurable: true,
+    value: clipboard
+  });
+
+  new CinemometerModule({ telemetry }).mount(root);
+
+  const speed = root.querySelector<HTMLInputElement>('input[type="number"][required]');
+  const form = root.querySelector<HTMLFormElement>('form.cin-form');
+  if (!speed || !form) return;
+
+  speed.value = '130';
+  form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+
+  const text = root.querySelector<HTMLTextAreaElement>('.cin-operational-text');
+  const copy = root.querySelector<HTMLButtonElement>('.cin-copy-button:not(:disabled)');
+  expect(text?.value).toContain('O veículo circulava, pelo menos');
+  expect(copy).not.toBeNull();
+
+  copy?.click();
+  await Promise.resolve();
+
+  expect(clipboard.writeText).toHaveBeenCalled();
+  expect(telemetry.track).toHaveBeenCalledWith(
+    'cinemometer_copy_text',
+    'cinemometro',
+    { copied: true }
+  );
+});
