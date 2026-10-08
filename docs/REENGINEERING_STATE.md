@@ -156,3 +156,31 @@ Fonte externa: Diário da República, Código da Estrada consolidado.
 
 ### Regra acrescentada
 - Erros de presença devem ser resolvidos na ingestão/fonte de verdade; não mascarar o problema apenas no contador do Admin.
+
+### Estado funcional — tranche seguinte — 2026-10-08
+
+#### Módulos V2 já reais
+- Consulta/ASF: VehicleModule + VehicleQueryController + AsfService + AsfClassifier.
+- Histórico: persistência local compatível com VÉRIX_CONSULTAS_HISTORICO_V1; respeito pela preferência history.
+- Cinemómetro: domínio V61 caracterizado + perfis VÉRIX_CINEMOMETROS_V2 + sessão VÉRIX_CINEMOMETRO_OPERADOR_V2 + texto operacional + cópia + metadata de aparelho/operador.
+- Legislação: 19 categorias / 279 itens extraídos programaticamente do legado; pesquisa, favoritos persistentes VÉRIX_LEGISLACAO_FAVORITOS_V1, cópia de código/descrição/tudo.
+- Álcool: 441 valores EMA extraídos; TAE/TAS, limiares gerais/especiais e conversão 2,3.
+- Definições: preferências locais, perfis visuais, escala automática, persistência.
+- Ferramentas: IMT-ERRU, INEM, Waze, distritos, zonas/vias e referências de tacógrafo.
+- IMT: URL builder + sequence + adapter externo; a abertura de RNSI é deliberadamente externa no browser/WebView2 por causa do canal HTTP interno.
+
+#### Decisões de segurança
+- Não transportar RNSI HTTP para um iframe HTTPS através de desativação de segurança do Chromium.
+- WebView2 restringe NavigationStarting, FrameNavigationStarting e NewWindowRequested.
+- asf-proxy-v1 permanece inalterado.
+- telemetry-v2 produção continua na versão 34.
+
+#### Incidente observado no legado
+- Dados de produção mostram 19 erros ASF nas últimas 24 h em 1.5; 10 são unknown com mensagem criarDiagASF is not defined.
+- Isto é tratado como falha do caminho de diagnóstico legado até prova em contrário; não deve ser usado para concluir que o motor ASF falhou.
+- Não corrigir esse incidente modificando asf-proxy-v1 nesta fase.
+
+#### CI
+- Foram adicionados concurrency aos workflows V2 e Security Audit para cancelar execuções obsoletas.
+- Houve um ciclo completo verde antes das alterações finais desta tranche: typecheck, testes, auditoria estática, build V2 e política de segurança.
+- Cada commit posterior gera nova validação; a cabeça atual só deve ser considerada concluída após o respetivo runner terminar verde.
