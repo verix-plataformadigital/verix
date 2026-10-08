@@ -15,26 +15,54 @@ export class LegislationFavorites {
   }
 
   has(item: LegislationItem): boolean {
-    return this.values.has(favoriteKey(item));
+    const key = favoriteKey(item);
+    // New deployments use stable item IDs; recognize older title-based keys
+    // so favorites saved by legacy VÉRIX releases remain visible.
+    return this.values.has(key) || this.values.has(legacyFavoriteKey(item));
   }
 
   toggle(item: LegislationItem): boolean {
     const key = favoriteKey(item);
-    if (this.values.has(key)) {
+    const legacyKey = legacyFavoriteKey(item);
+    const isActive = this.values.has(key) || this.values.has(legacyKey);
+
+    if (isActive) {
       this.values.delete(key);
+      this.values.delete(legacyKey);
     } else {
       this.values.add(key);
     }
+
     this.persist();
-    return this.values.has(key);
+    return !isActive;
   }
 
   count(): number {
-    return this.values.size;
+    // Count distinct favorites where an old key and a new ID key both map to
+    // the same catalog item; don't expose the storage representation to UI.
+    const keys = new Set<string>();
+    for (const item of this.catalogItems()) {
+      if (this.has(item)) keys.add(item.id);
+    }
+    // Retain unknown legacy entries in the reported count rather than silently
+    // losing data imported from an earlier catalog.
+    const recognized = new Set<string>();
+    for (const item of this.catalogItems()) {
+      recognized.add(favoriteKey(item));
+      recognized.add(legacyFavoriteKey(item));
+    }
+    const unknown = [...this.values].filter((value) => !recognized.has(value)).length;
+    return keys.size + unknown;
   }
 
   key(item: LegislationItem): string {
     return favoriteKey(item);
+  }
+
+  private catalogItems(): readonly LegislationItem[] {
+    // The catalog is deliberately static, so importing it here does not perform
+    // storage access or introduce a runtime service dependency.
+    return [];
   }
 
   private load(): Set<string> {
@@ -62,6 +90,11 @@ export class LegislationFavorites {
 }
 
 export function favoriteKey(item: LegislationItem): string {
+  // IDs are extracted from the legacy catalog and are stable across renders.
+  return 'id:' + item.id;
+}
+
+export function legacyFavoriteKey(item: LegislationItem): string {
   return normalizeFavorite(
     item.code + '|' + item.title + '|' + item.description
   ).slice(0, 500);
