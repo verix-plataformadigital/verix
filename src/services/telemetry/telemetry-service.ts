@@ -88,6 +88,10 @@ export class TelemetryService {
     return this.queue.size;
   }
 
+  get endpoint(): string {
+    return this.options.endpoint;
+  }
+
   newQueryId(): string {
     return "q-" + this.createId();
   }
