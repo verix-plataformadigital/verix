@@ -42,7 +42,7 @@ export class InformationModule {
     grid.append(
       this.card('IMT / RNSI', 'Canal operacional para inspeção e livrete. O acesso depende da rede interna do posto.'),
       this.card('ASF', 'Consulta automática do estado do seguro através do relay VÉRIX, sem expor credenciais ASF ao cliente.'),
-      this.card('SEGURANÇA', 'A aplicação restringe os destinos externos conhecidos e mantém o código sensível fora do cliente.' )
+      this.card('SEGURANÇA', 'O host Windows limita os destinos externos. O código publicado no navegador pode ser inspecionado; credenciais privadas não devem ser incluídas no cliente.' )
     );
 
     const legal = document.createElement('section');

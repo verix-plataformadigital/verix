@@ -14,6 +14,7 @@ describe('InformationModule', () => {
     expect(root.querySelector('.information-legal')).toBeTruthy();
     expect(root.textContent).toContain('Esta aplicação não está afiliada');
     expect(root.textContent).toContain('Versão 1.5');
+    expect(root.textContent).toContain('O código publicado no navegador pode ser inspecionado');
     expect(track).toHaveBeenCalledWith('module_open', 'informacoes');
   });
 
