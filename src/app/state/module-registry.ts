@@ -13,7 +13,8 @@ export const MODULES: readonly ModuleDefinition[] = [
   { id: "cinemometer", label: "Cinemómetro", description: "Cálculo, enquadramento e texto operacional.", icon: "◉" },
   { id: "legislation", label: "Legislação", description: "Pesquisa rápida e favoritos.", icon: "§" },
   { id: "alcohol", label: "Álcool", description: "Tabela e consulta operacional.", icon: "◌" },
-  { id: "settings", label: "Definições", description: "Preferências e diagnóstico.", icon: "⚙" }
+  { id: "settings", label: "Definições", description: "Preferências e diagnóstico.", icon: "⚙" },
+  { id: "tools", label: "Ferramentas", description: "Serviços externos e referências operacionais.", icon: "▦" }
 ];
 
 export function moduleById(id: VerixModule): ModuleDefinition | undefined {
