@@ -136,7 +136,7 @@ describe("VehicleModule history preference", () => {
     if (!plate || !date || !form) return;
 
     const defaultDate = date.value;
-    expect(defaultDate).toMatch(/^\\d{4}-\\d{2}-\\d{2}$/);
+    expect(defaultDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     const expectedAsfDate = defaultDate.replaceAll("-", "/");
     date.value = "";
     plate.value = "12-AB-34";
