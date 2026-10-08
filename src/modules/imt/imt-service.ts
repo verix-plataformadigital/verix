@@ -1,5 +1,6 @@
 import { buildImtRnsiUrl, buildImtQueryTargets } from './imt-url-builder';
 import type { ImtSource } from './imt-contract';
+import { ImtSequence } from './imt-sequence';
 
 export interface ImtWindowAdapter {
   open(url: string): Window | null;
@@ -12,16 +13,13 @@ export interface ImtOperation {
 }
 
 export class ImtService {
-  private sequence = 0;
+  private readonly sequence = new ImtSequence();
 
-  constructor(
-    private readonly windowAdapter: ImtWindowAdapter,
-    private readonly sequenceSource: { next(): number } = { next: () => ++this.sequence }
-  ) {}
+  constructor(private readonly windowAdapter: ImtWindowAdapter) {}
 
   createOperation(vehiclePlate: string, trailerPlate: string): ImtOperation {
     const targets = buildImtQueryTargets(vehiclePlate, trailerPlate);
-    const sequence = this.sequenceSource.next();
+    const sequence = this.sequence.next();
     return {
       sequence,
       inspectionUrl: buildImtRnsiUrl('inspecao', targets.inspecao),
