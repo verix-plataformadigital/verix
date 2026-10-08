@@ -56,64 +56,8 @@ BEGIN
   -- no longer matches. Assert the resulting definition contains the required
   -- predicates before executing it; accepting an unchanged, incomplete rewrite
   -- would leave presence/insurance metrics stale without failing the migration.
-  IF position($guard
-
-create or replace function public.verix2_keep_seen_monotonic()
-returns trigger
-language plpgsql
-security invoker
-set search_path = public
-as $$
-begin
-  if old.last_seen is not null and (new.last_seen is null or new.last_seen < old.last_seen) then
-    new.last_seen := old.last_seen;
-  end if;
-  if old.first_seen is not null and (new.first_seen is null or new.first_seen > old.first_seen) then
-    new.first_seen := old.first_seen;
-  end if;
-  return new;
-end;
-$$;
-
-drop trigger if exists verix2_installations_seen_monotonic on public.verix2_installations;
-create trigger verix2_installations_seen_monotonic
-before update on public.verix2_installations
-for each row execute function public.verix2_keep_seen_monotonic();
-
-drop trigger if exists verix2_sessions_seen_monotonic on public.verix2_sessions;
-create trigger verix2_sessions_seen_monotonic
-before update on public.verix2_sessions
-for each row execute function public.verix2_keep_seen_monotonic();
-online_now',(SELECT count(DISTINCT installation_id) FROM ($guard$ IN d) = 0
-    OR position($guard
-
-create or replace function public.verix2_keep_seen_monotonic()
-returns trigger
-language plpgsql
-security invoker
-set search_path = public
-as $$
-begin
-  if old.last_seen is not null and (new.last_seen is null or new.last_seen < old.last_seen) then
-    new.last_seen := old.last_seen;
-  end if;
-  if old.first_seen is not null and (new.first_seen is null or new.first_seen > old.first_seen) then
-    new.first_seen := old.first_seen;
-  end if;
-  return new;
-end;
-$$;
-
-drop trigger if exists verix2_installations_seen_monotonic on public.verix2_installations;
-create trigger verix2_installations_seen_monotonic
-before update on public.verix2_installations
-for each row execute function public.verix2_keep_seen_monotonic();
-
-drop trigger if exists verix2_sessions_seen_monotonic on public.verix2_sessions;
-create trigger verix2_sessions_seen_monotonic
-before update on public.verix2_sessions
-for each row execute function public.verix2_keep_seen_monotonic();
-active_10m',(SELECT count(DISTINCT installation_id) FROM ($guard$ IN d) = 0
+  IF position($guard$'online_now',(SELECT count(DISTINCT installation_id) FROM ($guard$ IN d) = 0
+    OR position($guard$'active_10m',(SELECT count(DISTINCT installation_id) FROM ($guard$ IN d) = 0
     OR position($guard$SELECT installation_id FROM public.verix2_sessions WHERE last_seen >= p_now-interval '5 minutes'$guard$ IN d) = 0
     OR position($guard$SELECT installation_id FROM ev WHERE occurred_at >= p_now-interval '5 minutes'$guard$ IN d) = 0
     OR position($guard$SELECT installation_id FROM public.verix2_sessions WHERE last_seen >= p_now-interval '10 minutes'$guard$ IN d) = 0
@@ -123,7 +67,7 @@ active_10m',(SELECT count(DISTINCT installation_id) FROM ($guard$ IN d) = 0
   END IF;
 
   EXECUTE d;
-END $;
+END $$;
 
 create or replace function public.verix2_keep_seen_monotonic()
 returns trigger
