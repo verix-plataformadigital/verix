@@ -33,7 +33,8 @@ jobs:
       - name: Verify release does not contain source maps
         run: |
           test ! -f dist/verix-app.html.map
-          ! grep -R "\\.map" dist/verix-app.html
+          test ! -f dist/admin_v2.html.map
+          ! grep -R -E "sourceMappingURL|//# sourceURL=|/\\.map(["'<>[:space:]]|$)" dist
 
       - name: Verify required security markers
         run: |
