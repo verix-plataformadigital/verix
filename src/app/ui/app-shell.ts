@@ -149,12 +149,12 @@ export class AppShell {
 
     const badge = document.createElement("span");
     badge.className = "verix-badge";
-    badge.textContent = state.isBusy ? "A PROCESSAR" : "V2 READY";
+    badge.textContent = state.isBusy ? "A PROCESSAR" : "PRONTO";
 
     const message = document.createElement("p");
     message.textContent =
       state.activeModule === "main"
-        ? "Shell V2 ativa. Os módulos são integrados progressivamente através de adapters."
+        ? "Núcleo operacional pronto. Os módulos são integrados progressivamente."
         : "O motor deste módulo será ligado nesta fase sem alterar a interface operacional."
 
     card.append(badge, message);
