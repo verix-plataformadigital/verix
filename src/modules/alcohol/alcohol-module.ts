@@ -94,7 +94,9 @@ export class AlcoholModule {
     strong.textContent = 'TABELA EMA';
     const results = lookupAlcoholTas(this.query);
     const meta = document.createElement('span');
-    meta.textContent = this.query.trim() ? `${results.length} correspondência${results.length === 1 ? '' : 's'}` : '441 valores';
+    meta.textContent = this.query.trim()
+      ? `${results.length} correspondência${results.length === 1 ? '' : 's'}`
+      : ALCOHOL_EMA_TABLE.length + ' valores';
     head.append(strong, meta);
 
     const tableWrap = document.createElement('div');
