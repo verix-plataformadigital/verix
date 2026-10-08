@@ -157,3 +157,22 @@ O cálculo puro deverá ser testado antes de integrar DOM.
 `abrirModulo` é usado diretamente em HTML via `onclick` e é posteriormente envolvido por extensões. Portanto, uma pesquisa apenas por imports não é suficiente para detetar dependências.
 
 A V2 terá um dispatcher tipado que substituirá progressivamente a dependência de globais, mas os handlers legacy continuarão até à regressão estar comprovadamente coberta.
+
+
+## Cinemómetro V61 — cadeia efetiva
+
+A análise do blob de produção identificou que as primeiras regras V42/V47 são posteriormente substituídas por um bloco V61. Para equivalência, a V2 adota apenas a cadeia V61 final:
+
+- IDs finais de motociclos: `motociclo_mais50_sem`, `motociclo_mais50_com`, `motociclo_ate50`.
+- Máquina industrial final: `maquina_industrial`.
+- EMA final:
+  - fixo/media: 3% primeira, 5% periódica;
+  - movimento/perseguição: 5% primeira, 7% periódica.
+- Até 100 km/h: dedução fixa baseada na percentagem EMA.
+- Acima de 100 km/h: dedução percentual.
+- `auto_placas`: limite operacional 100 km/h.
+- `local_placas` e `fora_placas`: limite introduzido manualmente.
+- As famílias de código são diferentes para ligeiros/outros e para local/fora/entre placas.
+- Enquadramentos especial/personalizado não recebem código automaticamente.
+
+As versões anteriores não são consideradas equivalentes ao comportamento final. O domínio V2 foi corrigido para esta cadeia V61 e está coberto por testes.
