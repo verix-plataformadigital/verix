@@ -17661,34 +17661,89 @@ html body .leg-card-new .copy-all-new{
     });
 
     saveQueue();
-    if (queue.length >= BATCH_SIZE) flush();
+
+    // Eventos críticos (arranque, presença e consulta) não ficam dependentes
+    // de uma janela de flush posterior. Tentamos enviar logo.
+    if (event === 'app_open' || event === 'heartbeat' || event === 'vehicle_lookup') {
+      flushNow();
+    } else if (queue.length >= BATCH_SIZE) {
+      flush();
+    }
   }
 
-  async function send(batch) {
-    var controller = new AbortController();
-    var timer = setTimeout(function () { controller.abort(); }, TIMEOUT_MS);
+  async function sendViaFetch(batch) {
+    var controller = typeof AbortController === 'function' ? new AbortController() : null;
+    var timer = controller ? setTimeout(function () { controller.abort(); }, TIMEOUT_MS) : null;
 
     try {
       var response = await fetch(ENDPOINT, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Verix-Build-Id': window.VERIX_BUILD_ID || '1.5-sec-20261008-a'
-        },
+        // text/plain é CORS-safelisted: a telemetria não precisa de preflight.
+        // O Edge Function lê o corpo como JSON independentemente do content-type.
+        headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
         body: JSON.stringify({ events: batch }),
         mode: 'cors',
         credentials: 'omit',
         cache: 'no-store',
         keepalive: true,
-        signal: controller.signal
+        signal: controller ? controller.signal : undefined
       });
-
       return response.ok;
     } catch (_) {
       return false;
     } finally {
-      clearTimeout(timer);
+      if (timer) clearTimeout(timer);
     }
+  }
+
+  function sendViaXhr(batch) {
+    return new Promise(function (resolve) {
+      try {
+        var X = window.XMLHttpRequest;
+        if (typeof X !== 'function') return resolve(false);
+        var xhr = new X();
+        var done = false;
+        var finish = function (ok) {
+          if (done) return;
+          done = true;
+          try { xhr.abort(); } catch (_) {}
+          resolve(!!ok);
+        };
+        xhr.open('POST', ENDPOINT, true);
+        xhr.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
+        xhr.timeout = TIMEOUT_MS;
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState === 4) finish(xhr.status >= 200 && xhr.status < 300);
+        };
+        xhr.onerror = function () { finish(false); };
+        xhr.ontimeout = function () { finish(false); };
+        xhr.send(JSON.stringify({ events: batch }));
+      } catch (_) {
+        resolve(false);
+      }
+    });
+  }
+
+  function sendBeacon(batch) {
+    try {
+      if (!navigator.sendBeacon) return false;
+      var payload = JSON.stringify({ events: batch });
+      // text/plain mantém a chamada como "simple request" sem preflight.
+      return navigator.sendBeacon(
+        ENDPOINT,
+        new Blob([payload], { type: 'text/plain;charset=UTF-8' })
+      );
+    } catch (_) {
+      return false;
+    }
+  }
+
+  async function send(batch) {
+    if (typeof fetch === 'function') {
+      var ok = await sendViaFetch(batch);
+      if (ok) return true;
+    }
+    return await sendViaXhr(batch);
   }
 
   function schedule(delay) {
@@ -17729,6 +17784,15 @@ html body .leg-card-new .copy-all-new{
       flushTimer = null;
       flushNow();
     }, 50);
+  }
+
+  function flushBeacon() {
+    if (!queue.length || flushBusy) return false;
+    var batch = queue.slice(0, Math.min(BATCH_SIZE, 10));
+    if (!sendBeacon(batch)) return false;
+    queue.splice(0, batch.length);
+    saveQueue();
+    return true;
   }
 
   function rateLimited(key, ms) {
@@ -17917,28 +17981,48 @@ html body .leg-card-new .copy-all-new{
 
   }
 
+  function scheduleHeartbeat() {
+    push('heartbeat', null);
+    // Reagenda depois de executar a tentativa atual, evitando acumulação
+    // de intervalos quando o browser está sob throttling.
+    setTimeout(scheduleHeartbeat, HEARTBEAT_MS);
+  }
+
   function start() {
     installWrappers();
     bindDom();
 
+    // Presença imediata: a abertura da aplicação já marca o dispositivo ativo.
     push('app_open', null);
     flush();
 
-    setInterval(function () {
-      push('heartbeat', null);
-      flush();
-    }, HEARTBEAT_MS);
-
-    setInterval(flush, FLUSH_MS);
+    // Heartbeat recursivo + eventos de ciclo de vida.
+    setTimeout(scheduleHeartbeat, HEARTBEAT_MS);
 
     document.addEventListener('visibilitychange', function () {
-      if (document.visibilityState === 'hidden') flush();
+      if (document.visibilityState === 'hidden') {
+        flushBeacon();
+      } else {
+        push('heartbeat', null);
+      }
     });
 
-    window.addEventListener('pagehide', flush);
+    window.addEventListener('pagehide', function () {
+      flushBeacon();
+    });
+
+    window.addEventListener('pageshow', function () {
+      push('heartbeat', null);
+    });
+
+    window.addEventListener('focus', function () {
+      push('heartbeat', null);
+    });
+
     window.addEventListener('online', function () {
       retryStep = 0;
       flush();
+      push('heartbeat', null);
     });
 
     setTimeout(installWrappers, 500);
