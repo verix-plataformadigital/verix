@@ -74,3 +74,23 @@ button{font:inherit}
 @media(max-width:600px){.vehicle-query-form{grid-template-columns:1fr}.vehicle-query-actions{grid-column:auto;flex-wrap:wrap}.vehicle-submit,.vehicle-clear,.vehicle-imt-button{width:100%}}
 .vehicle-local-notice{max-width:980px;margin-top:12px;padding:11px 13px;border:1px solid rgba(255,145,115,.22);border-radius:10px;background:rgba(255,120,90,.045);color:#e6aaa0;font-size:11px;line-height:1.5}
 .vehicle-copy-buffer{position:fixed;left:-10000px;top:0;width:1px;height:1px;opacity:0;pointer-events:none}
+
+.history-module{max-width:980px}
+.history-module-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:18px}
+.history-module h2{margin:7px 0 0;font-size:30px}
+.history-module-controls{display:flex;align-items:center;gap:10px}
+.history-count{color:#75858c;font-size:9px;font-weight:800;letter-spacing:.12em}
+.history-clear{padding:9px 12px;border:1px solid rgba(255,255,255,.08);border-radius:9px;background:rgba(255,255,255,.03);color:#aeb9bd;font-size:9px;font-weight:800;cursor:pointer}
+.history-list{display:grid;gap:7px}
+.history-row-v2{display:grid;grid-template-columns:52px 1fr 110px 145px 110px;align-items:center;gap:12px;width:100%;padding:13px 15px;border:1px solid rgba(255,255,255,.06);border-radius:12px;background:rgba(255,255,255,.025);color:#dce4e6;text-align:left;cursor:pointer}
+.history-row-v2:hover{background:rgba(255,255,255,.045);border-color:rgba(112,211,202,.16)}
+.history-index-v2{color:#617078;font-size:9px;font-weight:800}
+.history-plates-v2{display:flex;gap:6px;flex-wrap:wrap}
+.plate-mini-v2{padding:5px 7px;border:1px solid rgba(255,255,255,.09);border-radius:6px;background:#060c10;font-size:10px;font-weight:800;letter-spacing:.06em}
+.plate-trailer-v2{opacity:.76}
+.history-insurance-v2{font-size:9px;font-weight:800;letter-spacing:.08em}
+.history-insurance-v2-sim{color:#7be8c0}.history-insurance-v2-nao{color:#f0bf7c}.history-insurance-v2-pendente{color:#9bb0b7}.history-insurance-v2-desconhecido{color:#a7a7a7}
+.history-date-v2{color:#738088;font-size:10px}
+.history-action-v2{justify-self:end;color:#7dd8ce;font-size:9px;font-weight:800;letter-spacing:.08em}
+.history-empty-v2{padding:34px;border:1px dashed rgba(255,255,255,.08);border-radius:14px;color:#77858b;font-size:12px;text-align:center}
+@media(max-width:760px){.history-module-head{align-items:start}.history-row-v2{grid-template-columns:38px 1fr 90px}.history-date-v2,.history-action-v2{display:none}.history-insurance-v2{justify-self:end}}
