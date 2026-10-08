@@ -57,6 +57,9 @@ jobs:
       - name: V2 source security policy
         run: node tools/verify-v2-security.mjs
 
+      - name: Windows host security policy
+        run: node tools/verify-windows-host-security.mjs
+
       - name: Reject source maps
         shell: bash
         run: |
