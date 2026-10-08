@@ -258,8 +258,7 @@ html.verix-starting .operational-strip{
     return securityTokenPromise;
   }
 
-  window.VERIX_BUILD_ID = BUILD_ID;
-  window.VERIX_SECURITY = {
+  var securityApi = {
     getToken: getToken,
     getIdentity: function(){
       return {
@@ -274,6 +273,27 @@ html.verix-starting .operational-strip{
       securityTokenExp = 0;
     }
   };
+
+  try {
+    Object.freeze(securityApi);
+    Object.defineProperty(window, 'VERIX_SECURITY', {
+      value: securityApi,
+      writable: false,
+      configurable: false,
+      enumerable: false
+    });
+    Object.defineProperty(window, 'VERIX_BUILD_ID', {
+      value: BUILD_ID,
+      writable: false,
+      configurable: false,
+      enumerable: false
+    });
+  } catch (_) {
+    try {
+      window.VERIX_SECURITY = securityApi;
+      window.VERIX_BUILD_ID = BUILD_ID;
+    } catch (__) {}
+  }
 
   try { window.VERIX_SECURITY_WARMUP = getToken(false).catch(function(){ return null; }); } catch (_) {}
 })();
