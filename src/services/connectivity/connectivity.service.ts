@@ -6,6 +6,7 @@ export interface ConnectivityProbe {
 
 export interface ConnectivityServiceOptions {
   readonly probeUrl?: string;
+  readonly probeMethod?: "HEAD" | "OPTIONS";
   readonly fetchImpl?: typeof fetch;
   readonly timeoutMs?: number;
   readonly now?: () => number;
@@ -50,7 +51,7 @@ export class DefaultConnectivityService implements ConnectivityProbe {
 
     try {
       const response = await this.fetchImpl(probeUrl, {
-        method: "HEAD",
+        method: this.options.probeMethod ?? "HEAD",
         cache: "no-store",
         credentials: "omit",
         mode: "cors",
