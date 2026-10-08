@@ -38,7 +38,8 @@ describe("VehicleModule history preference", () => {
       newQueryId: vi.fn(() => "q-test"),
       track: vi.fn()
     };
-    const imt = new ImtService({ open: vi.fn(() => true) });
+    const imtOpen = vi.fn(() => true);
+    const imt = new ImtService({ open: imtOpen });
 
     const module = new VehicleModule({
       asf,
@@ -53,8 +54,49 @@ describe("VehicleModule history preference", () => {
     });
 
     module.mount(root);
-    return { root, history, asf, module };
+    return { root, history, asf, module, imtOpen };
   }
+
+  it("usa os campos atuais nos botões RNSI e recusa matrículas vazias", async () => {
+    const { root, imtOpen } = createModule(false);
+    const buttons = Array.from(root.querySelectorAll<HTMLButtonElement>(".vehicle-imt-button"));
+    const inspection = buttons[0];
+    const livrete = buttons[1];
+    const plate = root.querySelector<HTMLInputElement>("#vehicle-plate");
+    const trailer = root.querySelector<HTMLInputElement>("#vehicle-trailer");
+    if (!inspection || !livrete || !plate || !trailer) return;
+
+    inspection.click();
+    expect(imtOpen).not.toHaveBeenCalled();
+    expect(root.querySelector(".vehicle-local-notice")?.textContent).toContain("Introduza uma matrícula válida");
+
+    plate.value = "12-AB-34";
+    trailer.value = "VC-12-34";
+    inspection.click();
+    livrete.click();
+
+    expect(imtOpen).toHaveBeenNthCalledWith(
+      1,
+      "http://consultapsp.imtt.external.rnsi.local/veiculos/consulta_inspecao.php?Matricula=12AB34"
+    );
+    expect(imtOpen).toHaveBeenNthCalledWith(
+      2,
+      "http://consultapsp.imtt.external.rnsi.local/veiculos/consulta_livrete.php?Matricula=VC1234"
+    );
+  });
+
+  it("preserva a matrícula introduzida quando a validação mostra um erro local", () => {
+    const { root } = createModule(false);
+    const plate = root.querySelector<HTMLInputElement>("#vehicle-plate");
+    const form = root.querySelector<HTMLFormElement>(".vehicle-query-form");
+    if (!plate || !form) return;
+
+    plate.value = "INVALIDA";
+    form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+
+    expect(root.querySelector<HTMLInputElement>("#vehicle-plate")?.value).toBe("INVALIDA");
+    expect(root.querySelector(".vehicle-local-notice")?.textContent).toContain("Introduza uma matrícula válida");
+  });
 
   it("não grava histórico quando a preferência está desligada", async () => {
     const { root, history, asf } = createModule(false);
