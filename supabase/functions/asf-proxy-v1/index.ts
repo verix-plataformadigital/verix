@@ -26,7 +26,6 @@ const ASF_ORIGIN = "https://ext01.asf.com.pt";
 const ASF_PATH = "/api/src/";
 const MAX_BODY_BYTES = 16 * 1024;
 const UPSTREAM_TIMEOUT_MS = 15000;
-const ACTIVE_BUILD_ID = "1.5-sec-20261008-a";
 
 function json(data: unknown, status = 200, req?: Request, extraHeaders: Record<string, string> = {}) {
   return new Response(JSON.stringify(data), {
@@ -144,8 +143,8 @@ Deno.serve(async (req: Request) => {
 
   try {
     const buildId = cleanText(req.headers.get("x-verix-build-id"), 80);
-    if (buildId !== ACTIVE_BUILD_ID) {
-      return json({ ok: false, error: "invalid_or_revoked_build" }, 403, req);
+    if (!/^1\.5-sec-(?:\d{8}-[a-z0-9-]{1,20}|[0-9]{1,8}-[a-f0-9]{7,64})$/i.test(buildId)) {
+      return json({ ok: false, error: "invalid_build" }, 403, req);
     }
 
     const token = cleanText(req.headers.get("x-verix-client-token"), 4096);
