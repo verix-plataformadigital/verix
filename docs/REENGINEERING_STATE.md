@@ -69,6 +69,14 @@ Commit de referência desta sessão: `c84566831821822eac92186617b0bea3f06ad3c9`
 - O build seguro atual usa perfil conservador para partes críticas do runtime legado.
 - O repositório contém mecanismos de segurança e CI que devem ser preservados e melhorados, não substituídos cegamente.
 
+## Descobertas estruturais desta sessão
+
+- A auditoria AST real identificou 41 blocos de script e 46 blocos de estilo no `verix-app.html`.
+- O maior script inline tem cerca de 416 KB e agrega consulta/IMT/ASF/histórico/cinemómetro; a migração será feita por domínio, não por corte físico.
+- Foram documentadas múltiplas reatribuições globais de funções de navegação, legislação, settings e cinemómetro em `docs/LEGACY_DECOMPOSITION.md`.
+- A telemetria V2 legada está relativamente isolada e tornou-se o primeiro candidato a migração funcional para TypeScript.
+- A CI chegou a typecheck verde e 19/19 testes verdes antes de falhar no auditor AST; o auditor foi então corrigido para usar namespace import do TypeScript.
+
 ## Próxima sequência obrigatória
 
 1. Confirmar CI verde da fundação e obter o relatório integral da auditoria do runner.
