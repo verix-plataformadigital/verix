@@ -144,8 +144,19 @@ describe("VehicleModule history preference", () => {
     expect(history.updateInsurance).toHaveBeenCalledWith("q-test", "12AB34", "nao");
   });
 
-  it("reabre o histórico com a data ASF original, não com a data do registo", () => {
+  it("reabre o histórico com a data ASF original e limpa resultados de outra consulta", async () => {
     const { root, module } = createModule(false);
+    const plate = root.querySelector<HTMLInputElement>("#vehicle-plate");
+    const date = root.querySelector<HTMLInputElement>('input[type="date"]');
+    const form = root.querySelector<HTMLFormElement>(".vehicle-query-form");
+    if (!plate || !date || !form) return;
+
+    plate.value = "88-ZZ-88";
+    date.value = "2026-10-08";
+    form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(root.querySelector(".vehicle-result-no-record")).not.toBeNull();
+
     module.reopen({
       id: "q-old-date",
       veiculo: "12AB34",
@@ -156,6 +167,9 @@ describe("VehicleModule history preference", () => {
     });
 
     expect(root.querySelector<HTMLInputElement>('input[type="date"]')?.value).toBe("2026-01-31");
+    expect(root.querySelector<HTMLInputElement>("#vehicle-plate")?.value).toBe("12AB34");
+    expect(root.querySelector(".vehicle-result-idle")).not.toBeNull();
+    expect(root.querySelector(".vehicle-result-no-record")).toBeNull();
   });
 
 });

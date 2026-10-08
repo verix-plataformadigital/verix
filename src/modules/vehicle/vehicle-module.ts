@@ -77,6 +77,7 @@ export class VehicleModule {
   }
 
   reopen(record: HistoryRecord): void {
+    this.controller.reset();
     this.lastPlate = record.veiculo;
     this.lastTrailer = record.reboque;
     this.lastDate = record.dataConsultaAsf

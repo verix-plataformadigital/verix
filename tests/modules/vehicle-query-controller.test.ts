@@ -193,4 +193,55 @@ describe("VehicleQueryController", () => {
 
     expect(controller.todayAsfDate()).toBe("2026/10/08");
   });
+
+  it("reset cancels in-flight lookups and returns the view to idle", async () => {
+    let resolveLookup: ((value: AsfServiceResult) => void) | undefined;
+    const query = vi.fn<(request: AsfServiceRequest) => Promise<AsfServiceResult>>(
+      () => new Promise((resolve) => { resolveLookup = resolve; })
+    );
+    const setBusy = vi.fn<(isBusy: boolean) => void>();
+    const setQueryId = vi.fn<(queryId: string | null) => void>();
+    const controller = new VehicleQueryController({
+      asf: { query },
+      telemetry: {
+        newQueryId: () => "q-reset",
+        track: vi.fn<(event: TelemetryEventName, module: string | null, metadata?: Readonly<Record<string, unknown>>) => unknown>()
+      },
+      store: { setBusy, setQueryId }
+    });
+
+    const pending = controller.lookup({ plate: "12AB34", date: "2026/10/08" });
+    expect(controller.snapshot.status).toBe("loading");
+
+    controller.reset();
+    expect(controller.snapshot).toEqual({
+      status: "idle",
+      queryId: null,
+      outcome: null,
+      error: null
+    });
+    expect(setBusy).toHaveBeenLastCalledWith(false);
+    expect(setQueryId).toHaveBeenLastCalledWith(null);
+
+    resolveLookup?.({
+      ok: true,
+      value: {
+        kind: "insured",
+        node: {
+          license: "12AB34",
+          entity: null,
+          policy: null,
+          startDate: null,
+          endDate: null,
+          code: null,
+          id: null,
+          logo: null
+        }
+      }
+    });
+    await pending;
+
+    expect(controller.snapshot.status).toBe("idle");
+  });
+
 });

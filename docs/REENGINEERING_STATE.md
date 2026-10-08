@@ -268,3 +268,9 @@ Fonte externa: Diário da República, Código da Estrada consolidado.
 - O histórico local passou a guardar opcionalmente `dataConsultaAsf` em formato `YYYY/MM/DD`, para além do timestamp `data` que continua a representar quando a consulta foi registada.
 - Reabrir uma consulta usa a data ASF originalmente selecionada; registos antigos sem este campo continuam a usar o fallback histórico, sem quebrar a chave local V1.
 - Adicionados testes de persistência após reload e de reabertura com uma data diferente da data de execução.
+
+
+#### Reabertura sem resultados desfasados
+- A reabertura do histórico agora chama `VehicleQueryController.reset()`, que limpa o resultado e invalida respostas de pedidos anteriores ainda em curso.
+- O estado busy e o queryId global são limpos; uma resposta tardia não pode voltar a preencher o painel com o resultado de outro veículo.
+- Testes cobrem tanto uma consulta pendente que termina após reset como o fluxo histórico que reabre uma matrícula/data sem manter o resultado anterior.

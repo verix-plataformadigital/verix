@@ -63,6 +63,22 @@ export class VehicleQueryController {
     return this.viewState;
   }
 
+  /**
+   * Clears the currently displayed result and invalidates any request still in flight.
+   * A late reply from an older query can no longer repopulate the view.
+   */
+  reset(): void {
+    this.sequence += 1;
+    this.viewState = {
+      status: "idle",
+      queryId: null,
+      outcome: null,
+      error: null
+    };
+    this.options.store.setBusy(false);
+    this.options.store.setQueryId(null);
+  }
+
   async lookup(
     request: VehicleQueryRequest,
     queryIdOverride?: string
