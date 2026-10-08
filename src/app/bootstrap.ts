@@ -14,6 +14,7 @@ import { LegislationModule } from "../modules/legislation/legislation-module";
 import { AlcoholModule } from "../modules/alcohol/alcohol-module";
 import { SettingsService } from "../modules/settings/settings-service";
 import { SettingsModule } from "../modules/settings/settings-module";
+import { ToolsModule } from "../modules/tools/tools-module";
 
 function browserStorage(kind: "local" | "session"): Storage | null {
   try {
@@ -65,6 +66,7 @@ export async function bootstrap(root: HTMLElement): Promise<void> {
   const settings = new SettingsService(localStorage);
   settings.applyToDocument(document);
   const settingsModule = new SettingsModule({ settings, telemetry });
+  const toolsModule = new ToolsModule({ telemetry });
   const vehicleModule = new VehicleModule({
     asf,
     telemetry,
@@ -107,6 +109,10 @@ export async function bootstrap(root: HTMLElement): Promise<void> {
       }
       if (module === "settings") {
         settingsModule.mount(workspace);
+        return true;
+      }
+      if (module === "tools") {
+        toolsModule.mount(workspace);
         return true;
       }
       return false;
