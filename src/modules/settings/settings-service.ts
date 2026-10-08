@@ -147,7 +147,7 @@ function sanitize(
   patch: Record<string, unknown> | Partial<VerixSettings>
 ): MutableSettingsPatch {
   const p = patch as Record<string, unknown>;
-  const result: Partial<VerixSettings> = {};
+  const result: MutableSettingsPatch = {};
 
   if (p.theme === 'dark' || p.theme === 'light') result.theme = p.theme;
   if (p.density === 'compact' || p.density === 'normal' || p.density === 'comfortable') {
