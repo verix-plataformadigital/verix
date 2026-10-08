@@ -1,4 +1,5 @@
 export type ConnectivityState =
+  | "unknown"
   | "online"
   | "offline"
   | "backend-offline"
