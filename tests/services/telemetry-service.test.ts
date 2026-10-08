@@ -69,6 +69,23 @@ describe("TelemetryService", () => {
     expect(service.queueSize).toBe(1);
   });
 
+  it("não envia um lote que ultrapasse o limite de transporte", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response("ok", { status: 200 })
+    );
+    const service = createService({ fetchImpl });
+    const metadata = { value: "x".repeat(20_000) };
+
+    for (let i = 0; i < 5; i += 1) {
+      service.track("module_open", "consulta", metadata);
+    }
+
+    const first = await service.flush();
+    expect(first.ok).toBe(true);
+    expect(first.sent).toBeLessThan(5);
+    expect(service.queueSize).toBeGreaterThan(0);
+  });
+
   it("impede flushes concorrentes", async () => {
     const local = new MemoryStorage();
     let release: (() => void) | undefined;
@@ -89,5 +106,7 @@ describe("TelemetryService", () => {
     release?.();
     await expect(first).resolves.toEqual({ ok: true, sent: 1 });
     expect(fetchImpl).toHaveBeenCalledTimes(1);
+    const init = fetchImpl.mock.calls[0]?.[1];
+    expect(String(init?.body)).toContain('"events"');
   });
 }
