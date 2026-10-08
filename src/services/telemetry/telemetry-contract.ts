@@ -38,6 +38,7 @@ export interface TelemetryEvent {
   readonly tabId?: string;
   readonly queryId?: string;
   readonly event: TelemetryEventName;
+  readonly buildId: string;
   readonly module?: string;
   readonly occurredAt: string;
   readonly appVersion: string;
