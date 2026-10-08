@@ -131,10 +131,10 @@ export class TelemetryService {
     if (this.queue.size === 0) return Promise.resolve({ ok: true, sent: 0 });
 
     const run = this.performFlush();
-    this.flushPromise = run.finally(() => {
+    const tracked = run.finally(() => {
       if (this.flushPromise === tracked) this.flushPromise = null;
     });
-    const tracked = this.flushPromise;
+    this.flushPromise = tracked;
     return tracked;
   }
 
