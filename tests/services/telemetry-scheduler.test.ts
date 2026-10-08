@@ -95,7 +95,7 @@ describe("TelemetryScheduler", () => {
       expect(telemetry.flush).toHaveBeenCalledTimes(1);
 
       await vi.advanceTimersByTimeAsync(1);
-      await vi.runOnlyPendingTimersAsync();
+      await vi.advanceTimersByTimeAsync(0);
       expect(telemetry.flush).toHaveBeenCalledTimes(2);
 
       scheduler.stop();
