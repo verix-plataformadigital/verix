@@ -5,10 +5,12 @@ import {
   type LegislationItem
 } from "./legislation-data";
 import { searchLegislation } from "./legislation-search";
+import { LegislationFavorites, type FavoritesStorage } from "./legislation-favorites";
 import type { TelemetryService } from "../../services/telemetry/telemetry-service";
 
 export interface LegislationModuleOptions {
   readonly telemetry?: Pick<TelemetryService, "track">;
+  readonly storage?: FavoritesStorage | null;
 }
 
 export class LegislationModule {
@@ -16,8 +18,12 @@ export class LegislationModule {
   private query = "";
   private openCategory: string | null = null;
   private lastTrackedQuery = "";
+  private favoritesOnly = false;
+  private readonly favorites: LegislationFavorites;
 
-  constructor(private readonly options: LegislationModuleOptions = {}) {}
+  constructor(private readonly options: LegislationModuleOptions = {}) {
+    this.favorites = new LegislationFavorites(options.storage ?? null);
+  }
 
   mount(root: HTMLElement): void {
     this.root = root;
@@ -82,12 +88,27 @@ export class LegislationModule {
       this.root?.querySelector<HTMLInputElement>(".legislation-search")?.focus();
     });
 
-    searchRow.append(input, clear);
+    const favoritesButton = document.createElement("button");
+    favoritesButton.type = "button";
+    favoritesButton.className = "legislation-favorites-toggle";
+    favoritesButton.classList.toggle("is-active", this.favoritesOnly);
+    favoritesButton.textContent = "★ FAVORITOS";
+    favoritesButton.setAttribute("aria-pressed", String(this.favoritesOnly));
+    favoritesButton.addEventListener("click", () => {
+      this.favoritesOnly = !this.favoritesOnly;
+      this.openCategory = null;
+      this.render();
+    });
+
+    searchRow.append(input, clear, favoritesButton);
 
     const count = document.createElement("div");
     count.className = "legislation-count";
 
-    const results = searchLegislation(LEGISLATION_CATEGORIES, this.query);
+    let results = searchLegislation(LEGISLATION_CATEGORIES, this.query);
+    if (this.favoritesOnly) {
+      results = results.filter((result) => this.favorites.has(result.item));
+    }
     if (this.query.trim()) {
       count.textContent = `${results.length} resultado${results.length === 1 ? "" : "s"} em ${LEGISLATION_ITEM_COUNT} registos`;
       if (this.query.trim() !== this.lastTrackedQuery) {
@@ -97,13 +118,15 @@ export class LegislationModule {
           results: results.length
         });
       }
+    } else if (this.favoritesOnly) {
+      count.textContent = `${this.favorites.count()} favorito${this.favorites.count() === 1 ? "" : "s"} em ${LEGISLATION_ITEM_COUNT} registos`;
     } else {
       count.textContent = `${LEGISLATION_ITEM_COUNT} registos · ${LEGISLATION_CATEGORIES.length} categorias`;
     }
 
     section.append(head, searchRow, count);
 
-    if (this.query.trim()) {
+    if (this.query.trim() || this.favoritesOnly) {
       section.append(this.renderResults(results));
     } else {
       section.append(this.renderCategories());
@@ -154,7 +177,10 @@ export class LegislationModule {
       card.append(button);
 
       if (this.openCategory === category.id) {
-        card.append(this.renderItems(category.items));
+        const items = this.favoritesOnly
+          ? category.items.filter((item) => this.favorites.has(item))
+          : category.items;
+        card.append(this.renderItems(items, category));
       }
 
       wrap.append(card);
@@ -184,17 +210,15 @@ export class LegislationModule {
     return wrap;
   }
 
-  private renderItems(items: readonly LegislationItem[]): HTMLElement {
+  private renderItems(
+    items: readonly LegislationItem[],
+    category: LegislationCategory
+  ): HTMLElement {
     const wrap = document.createElement("div");
     wrap.className = "legislation-items";
 
     for (const item of items) {
-      wrap.append(
-        this.renderItem(
-          item,
-          LEGISLATION_CATEGORIES.find((category) => category.id === item.categoryId)!
-        )
-      );
+      wrap.append(this.renderItem(item, category));
     }
 
     return wrap;
@@ -229,6 +253,33 @@ export class LegislationModule {
     codeWrap.append(code, copyCode);
     top.append(title, codeWrap);
 
+    const favorite = document.createElement("button");
+    favorite.type = "button";
+    favorite.className = "legislation-favorite";
+    favorite.textContent = "★";
+    favorite.title = this.favorites.has(item) ? "Remover dos favoritos" : "Adicionar aos favoritos";
+    favorite.classList.toggle("is-active", this.favorites.has(item));
+    favorite.setAttribute("aria-pressed", String(this.favorites.has(item)));
+    favorite.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const active = this.favorites.toggle(item);
+      favorite.classList.toggle("is-active", active);
+      favorite.title = active ? "Remover dos favoritos" : "Adicionar aos favoritos";
+      favorite.setAttribute("aria-pressed", String(active));
+      this.options.telemetry?.track("legislation_favorite_toggle", "legislacao", { itemId: item.id, active });
+      if (this.favoritesOnly && !active) this.render();
+    });
+
+    const copyAll = document.createElement("button");
+    copyAll.type = "button";
+    copyAll.className = "legislation-copy-all";
+    copyAll.textContent = "COPIAR TUDO";
+    copyAll.addEventListener("click", () => void this.copyAll(item, category, copyAll));
+
+    const toolbar = document.createElement("div");
+    toolbar.className = "legislation-item-toolbar";
+    toolbar.append(favorite, copyAll);
+
     const meta = document.createElement("div");
     meta.className = "legislation-meta";
     meta.textContent = `COIMA / LIMITE: ${item.fine || "—"}`;
@@ -251,6 +302,7 @@ export class LegislationModule {
 
     article.append(
       top,
+      toolbar,
       meta,
       descLabel,
       description,
@@ -258,6 +310,40 @@ export class LegislationModule {
     );
 
     return article;
+  }
+
+  private async copyAll(
+    item: LegislationItem,
+    category: LegislationCategory,
+    button: HTMLButtonElement
+  ): Promise<void> {
+    const value = [
+      item.title,
+      "Código: " + item.code,
+      "Coima / limite: " + item.fine,
+      "Descrição: " + item.description
+    ].join("\n\n");
+
+    let copied = false;
+    try {
+      await navigator.clipboard.writeText(value);
+      copied = true;
+    } catch {
+      copied = this.copyFallback(value);
+    }
+
+    button.textContent = copied ? "✓ COPIADO" : "COPIAR TUDO";
+    this.options.telemetry?.track("legislation_copy", "legislacao", {
+      itemId: item.id,
+      itemLabel: item.title,
+      copyType: "all",
+      category: category.id,
+      copied
+    });
+
+    window.setTimeout(() => {
+      if (button.isConnected) button.textContent = "COPIAR TUDO";
+    }, 1200);
   }
 
   private async copy(
