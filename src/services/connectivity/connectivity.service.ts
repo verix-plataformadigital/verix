@@ -1,7 +1,6 @@
 import type { ConnectivitySnapshot } from "../../shared/types/connectivity";
 
 export interface ConnectivityProbe {
-  readonly timeoutMs: number;
   probe(): Promise<ConnectivitySnapshot>;
 }
 
