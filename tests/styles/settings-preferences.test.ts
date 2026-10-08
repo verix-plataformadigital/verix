@@ -8,6 +8,9 @@ describe("V2 persisted presentation preferences", () => {
     expect(stylesheet).toContain("body.ui-compact .verix-workspace");
     expect(stylesheet).toContain("body.ui-normal .verix-workspace");
     expect(stylesheet).toContain("body.ui-comfortable .verix-workspace");
+    expect(stylesheet).toContain("body.ui-compact .cin-context,");
+    expect(stylesheet).toContain("body.ui-comfortable .cin-context,");
+    expect(stylesheet).toContain("body.ui-normal .verix-nav { padding: 10px; }");
   });
 
   it("binds HUD and transition preferences to visible presentation", () => {

@@ -342,6 +342,7 @@ body.ui-compact .vehicle-query-form,
 body.ui-compact .vehicle-result,
 body.ui-compact .vehicle-imt-actions,
 body.ui-compact .cin-form,
+body.ui-compact .cin-context,
 body.ui-compact .cin-context-panel,
 body.ui-compact .settings-fieldset,
 body.ui-compact .tools-section,
@@ -351,6 +352,7 @@ body.ui-comfortable .vehicle-query-form,
 body.ui-comfortable .vehicle-result,
 body.ui-comfortable .vehicle-imt-actions,
 body.ui-comfortable .cin-form,
+body.ui-comfortable .cin-context,
 body.ui-comfortable .cin-context-panel,
 body.ui-comfortable .settings-fieldset,
 body.ui-comfortable .tools-section,
@@ -392,10 +394,16 @@ body.theme-light .verix-workspace textarea {
 }
 
 @media(max-width:760px) {
-  body.ui-compact .verix-workspace,
-  body.ui-normal .verix-workspace { padding: 22px 16px; }
+  body.ui-compact .verix-workspace { padding: 18px 14px; }
+  body.ui-normal .verix-workspace { padding: 24px 18px; }
   body.ui-comfortable .verix-workspace { padding: 30px 18px; }
+
+  body.ui-compact .verix-nav { padding: 8px; }
+  body.ui-normal .verix-nav { padding: 10px; }
   body.ui-comfortable .verix-nav { padding: 12px 10px; }
-  body.ui-comfortable .verix-nav-item { margin: 0; padding: 11px 7px; }
+
+  body.ui-compact .verix-nav-item,
+  body.ui-normal .verix-nav-item { gap: 5px; margin: 0; padding: 8px 6px; }
+  body.ui-comfortable .verix-nav-item { gap: 5px; margin: 0; padding: 11px 7px; }
   body.ui-comfortable .verix-nav-label { font-size: 10px; }
 }
