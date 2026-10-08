@@ -119,13 +119,15 @@ export class SettingsModule {
     const name = document.createElement('span');
     name.textContent = label;
     const select = document.createElement('select');
-    select.value = value;
     for (const [optionValue, text] of options) {
       const option = document.createElement('option');
       option.value = optionValue;
       option.textContent = text;
       select.append(option);
     }
+    // Set the selected value after all options exist; setting it on an empty
+    // select can leave the first option selected instead of the saved preference.
+    select.value = value;
     select.addEventListener('change', () => change(select.value));
     wrapper.append(name, select);
     return wrapper;
