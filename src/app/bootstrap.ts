@@ -61,7 +61,7 @@ export async function bootstrap(root: HTMLElement): Promise<void> {
 
   const history = new HistoryService(localStorage);
   const cinemometerModule = new CinemometerModule({ telemetry });
-  const legislationModule = new LegislationModule({ telemetry });
+  const legislationModule = new LegislationModule({ telemetry, storage: localStorage });
   const alcoholModule = new AlcoholModule({ telemetry });
   const settings = new SettingsService(localStorage);
   settings.applyToDocument(document);
