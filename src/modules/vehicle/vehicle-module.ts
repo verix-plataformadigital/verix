@@ -387,11 +387,20 @@ export class VehicleModule {
     button.className = "vehicle-imt-button";
     button.textContent = label;
     button.addEventListener("click", () => {
-      const plate = normalizePlate(
-        source === "rnsi-livrete" ? this.lastTrailer || this.lastPlate : this.lastPlate
-      );
+      const vehicleValue =
+        this.root?.querySelector<HTMLInputElement>("#vehicle-plate")?.value ?? this.lastPlate;
+      const trailerValue =
+        this.root?.querySelector<HTMLInputElement>("#vehicle-trailer")?.value ?? this.lastTrailer;
+      const requestedPlate =
+        source === "rnsi-livrete" ? trailerValue.trim() || vehicleValue : vehicleValue;
+      const plate = normalizePlate(requestedPlate);
 
-      const popup = this.options.imt.open(
+      if (!/^[A-Z0-9]{6,8}$/.test(plate)) {
+        this.showLocalError("Introduza uma matrícula válida antes de abrir o RNSI.");
+        return;
+      }
+
+      const opened = this.options.imt.open(
         source === "rnsi-inspecao" ? "inspecao" : "livrete",
         plate
       );
@@ -399,10 +408,11 @@ export class VehicleModule {
 
       this.options.telemetry.track("external_tool_open", "consulta", {
         source,
-        queryId: this.controller.snapshot.queryId
+        queryId: this.controller.snapshot.queryId,
+        opened
       });
 
-      if (!popup) {
+      if (!opened) {
         this.showLocalError(
           "O browser bloqueou a abertura do RNSI. Permita pop-ups para o VÉRIX."
         );
@@ -462,7 +472,22 @@ export class VehicleModule {
 
   private showLocalError(message: string): void {
     this.localNotice = message;
-    this.render();
+    const section = this.root?.querySelector<HTMLElement>(".vehicle-module");
+    if (!section) {
+      this.render();
+      return;
+    }
+
+    let notice = section.querySelector<HTMLDivElement>(".vehicle-local-notice");
+    if (!notice) {
+      notice = document.createElement("div");
+      notice.className = "vehicle-local-notice";
+      notice.setAttribute("role", "alert");
+      const heading = section.querySelector(".verix-workspace-heading");
+      if (heading) section.insertBefore(notice, heading);
+      else section.prepend(notice);
+    }
+    notice.textContent = message;
   }
 
   private errorMessage(error: AsfServiceError): string {
@@ -509,10 +534,12 @@ async function copyText(value: string): Promise<void> {
   if (!value) return;
 
   try {
-    await navigator.clipboard.writeText(value);
-    return;
+    if (typeof navigator.clipboard?.writeText === "function") {
+      await navigator.clipboard.writeText(value);
+      return;
+    }
   } catch {
-    // Continue with a DOM fallback for browsers without Clipboard permission.
+    // Continue with the DOM fallback where Clipboard API access is denied.
   }
 
   const area = document.createElement("textarea");
@@ -520,10 +547,14 @@ async function copyText(value: string): Promise<void> {
   area.setAttribute("readonly", "true");
   area.className = "vehicle-copy-buffer";
   document.body.append(area);
-  area.select();
 
   try {
-    document.execCommand("copy");
+    area.select();
+    if (typeof document.execCommand === "function") {
+      document.execCommand("copy");
+    }
+  } catch {
+    // Copying is best-effort in restricted browsers.
   } finally {
     area.remove();
   }
