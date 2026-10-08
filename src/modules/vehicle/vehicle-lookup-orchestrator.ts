@@ -56,10 +56,12 @@ export class VehicleLookupOrchestrator<TImt, TAsf> {
     const imtLivrete = Promise.resolve(
       this.dependencies.startImtLivrete(libretePlate, queryId)
     );
-    const asf = this.dependencies.queryAsf(
-      inspectionPlate,
-      queryId,
-      request.asfDate
+    const asf = safeAsync(() =>
+      this.dependencies.queryAsf(
+        inspectionPlate,
+        queryId,
+        request.asfDate
+      )
     );
 
     return {
