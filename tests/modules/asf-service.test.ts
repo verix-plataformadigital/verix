@@ -175,7 +175,8 @@ describe("ASF service adapter", () => {
   it("rejeita input antes de fazer pedido", async () => {
     const fetchImpl = vi.fn<typeof fetch>();
 
-    const service = new AsfService({ relayUrl: "https://example.invalid/asf", fetchImpl });
+    const gate = createGate();
+    const service = new AsfService({ relayUrl: "https://example.invalid/asf", fetchImpl, gate });
     const result = await service.query({
       ...request(),
       matricula: "ABCDE"
