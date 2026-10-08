@@ -72,3 +72,5 @@ button{font:inherit}
 .vehicle-imt-button{background:rgba(255,255,255,.035);color:#bfc9cc}
 @media(max-width:900px){.vehicle-query-form{grid-template-columns:1fr 1fr}.vehicle-query-actions{grid-column:1/-1}}
 @media(max-width:600px){.vehicle-query-form{grid-template-columns:1fr}.vehicle-query-actions{grid-column:auto;flex-wrap:wrap}.vehicle-submit,.vehicle-clear,.vehicle-imt-button{width:100%}}
+.vehicle-local-notice{max-width:980px;margin-top:12px;padding:11px 13px;border:1px solid rgba(255,145,115,.22);border-radius:10px;background:rgba(255,120,90,.045);color:#e6aaa0;font-size:11px;line-height:1.5}
+.vehicle-copy-buffer{position:fixed;left:-10000px;top:0;width:1px;height:1px;opacity:0;pointer-events:none}
