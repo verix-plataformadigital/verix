@@ -1,7 +1,12 @@
-import type { AppStore } from "../../app/state/app-store";
-import type { TelemetryService } from "../../services/telemetry/telemetry-service";
-import type { AsfOutcome } from "../insurance/asf-classifier";
-import type { AsfService, AsfServiceError } from "../insurance/asf-service";
+import type {
+  AsfOutcome
+} from "../insurance/asf-classifier";
+import type {
+  AsfServiceError,
+  AsfServiceRequest,
+  AsfServiceResult
+} from "../insurance/asf-service";
+import type { TelemetryEventName } from "../../services/telemetry/telemetry-contract";
 
 export type VehicleLookupViewState =
   | { readonly status: "idle"; readonly queryId: null; readonly outcome: null; readonly error: null }
@@ -9,10 +14,28 @@ export type VehicleLookupViewState =
   | { readonly status: "success"; readonly queryId: string; readonly outcome: AsfOutcome; readonly error: null }
   | { readonly status: "error"; readonly queryId: string; readonly outcome: null; readonly error: AsfServiceError };
 
+export interface VehicleAsfClient {
+  query(request: AsfServiceRequest): Promise<AsfServiceResult>;
+}
+
+export interface VehicleTelemetryClient {
+  newQueryId(): string;
+  track(
+    event: TelemetryEventName,
+    module: string | null,
+    metadata?: Readonly<Record<string, unknown>>
+  ): unknown;
+}
+
+export interface VehicleLookupStore {
+  setBusy(isBusy: boolean): void;
+  setQueryId(queryId: string | null): void;
+}
+
 export interface VehicleQueryControllerOptions {
-  readonly asf: Pick<AsfService, "query">;
-  readonly telemetry: Pick<TelemetryService, "newQueryId" | "track">;
-  readonly store: Pick<AppStore, "setBusy" | "setQueryId">;
+  readonly asf: VehicleAsfClient;
+  readonly telemetry: VehicleTelemetryClient;
+  readonly store: VehicleLookupStore;
   readonly now?: () => Date;
 }
 
@@ -54,9 +77,7 @@ export class VehicleQueryController {
     this.options.store.setQueryId(queryId);
 
     this.options.telemetry.track("vehicle_lookup", "consulta", { queryId });
-    this.options.telemetry.track("vehicle_insurance_pending", "consulta", {
-      queryId
-    });
+    this.options.telemetry.track("vehicle_insurance_pending", "consulta", { queryId });
 
     const result = await this.options.asf.query({
       matricula: request.plate,
