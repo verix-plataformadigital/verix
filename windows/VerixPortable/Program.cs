@@ -34,6 +34,8 @@ internal static class Program
     {
         private readonly WebView2 webView = new();
         private readonly string userDataFolder;
+        private CoreWebView2Environment? webEnvironment;
+        private readonly HashSet<Form> rnsiWindows = new();
 
         public VerixMainForm()
         {
@@ -92,13 +94,13 @@ internal static class Program
                     additionalBrowserArguments: "--disable-features=msEdgeSidebarV2"
                 );
 
-                var environment = await CoreWebView2Environment.CreateAsync(
+                webEnvironment = await CoreWebView2Environment.CreateAsync(
                     browserExecutableFolder: null,
                     userDataFolder: userDataFolder,
                     options: options
                 );
 
-                await webView.EnsureCoreWebView2Async(environment);
+                await webView.EnsureCoreWebView2Async(webEnvironment);
 
                 var settings = webView.CoreWebView2.Settings;
                 settings.AreDevToolsEnabled = false;
@@ -205,9 +207,13 @@ internal static class Program
             }
         }
 
-        private void OnNewWindowRequested(object? sender, CoreWebView2NewWindowRequestedEventArgs e)
+        private async void OnNewWindowRequested(object? sender, CoreWebView2NewWindowRequestedEventArgs e)
         {
-            e.Handled = true;
+            if (!e.IsUserInitiated)
+            {
+                e.Handled = true;
+                return;
+            }
 
             try
             {
@@ -215,24 +221,133 @@ internal static class Program
 
                 if (IsAllowedProductionUri(uri))
                 {
+                    e.Handled = true;
                     webView.CoreWebView2.Navigate(uri.ToString());
+                    return;
+                }
+
+                if (IsAllowedInternalRnsUri(uri))
+                {
+                    var deferral = e.GetDeferral();
+                    try
+                    {
+                        var child = await CreateRnsiWindowAsync(uri);
+                        e.NewWindow = child.CoreWebView2;
+                        child.Form.Show(this);
+                        e.Handled = false;
+                    }
+                    finally
+                    {
+                        deferral.Complete();
+                    }
                     return;
                 }
 
                 if (uri.Scheme == Uri.UriSchemeHttps &&
                     ExternalAllowedHosts.Contains(uri.Host))
                 {
+                    e.Handled = true;
                     LaunchExternal(uri);
+                    return;
                 }
-                else if (IsAllowedInternalRnsUri(uri))
-                {
-                    LaunchExternal(uri);
-                }
+
+                e.Handled = true;
             }
             catch
             {
-                // Block malformed or external windows.
+                e.Handled = true;
             }
+        }
+
+        private async Task<(Form Form, CoreWebView2 CoreWebView2)> CreateRnsiWindowAsync(Uri requestedUri)
+        {
+            if (webEnvironment is null)
+            {
+                throw new InvalidOperationException("O ambiente WebView2 ainda não foi inicializado.");
+            }
+
+            var form = new Form
+            {
+                Text = GetRnsiWindowTitle(requestedUri),
+                Width = 1200,
+                Height = 800,
+                StartPosition = FormStartPosition.CenterParent,
+                MinimumSize = new Size(900, 600),
+                BackColor = Color.FromArgb(3, 8, 12)
+            };
+
+            var view = new WebView2 { Dock = DockStyle.Fill };
+            form.Controls.Add(view);
+            rnsiWindows.Add(form);
+
+            form.FormClosed += (_, _) =>
+            {
+                rnsiWindows.Remove(form);
+                view.Dispose();
+            };
+
+            await view.EnsureCoreWebView2Async(webEnvironment);
+
+            var settings = view.CoreWebView2.Settings;
+            settings.AreDevToolsEnabled = false;
+            settings.AreDefaultContextMenusEnabled = false;
+            settings.AreDefaultScriptDialogsEnabled = false;
+            settings.IsStatusBarEnabled = false;
+            settings.IsZoomControlEnabled = true;
+            settings.AreHostObjectsAllowed = false;
+            settings.AreBrowserAcceleratorKeysEnabled = false;
+            settings.IsGeneralAutofillEnabled = false;
+            settings.IsPasswordAutosaveEnabled = false;
+            settings.IsWebMessageEnabled = false;
+            settings.IsSwipeNavigationEnabled = false;
+
+            view.CoreWebView2.NavigationStarting += OnRnsiNavigationStarting;
+            view.CoreWebView2.FrameNavigationStarting += OnRnsiFrameNavigationStarting;
+            view.CoreWebView2.NewWindowRequested += OnRnsiNewWindowRequested;
+            view.CoreWebView2.DownloadStarting += OnRnsDownloadStarting;
+
+            return (form, view.CoreWebView2);
+        }
+
+        private static string GetRnsiWindowTitle(Uri uri)
+        {
+            return uri.AbsolutePath.Contains("consulta_livrete.php", StringComparison.OrdinalIgnoreCase)
+                ? "VÉRIX — RNSI / Livrete"
+                : "VÉRIX — RNSI / Inspeção";
+        }
+
+        private static void OnRnsiNavigationStarting(object? sender, CoreWebView2NavigationStartingEventArgs e)
+        {
+            try
+            {
+                e.Cancel = !IsAllowedInternalRnsUri(new Uri(e.Uri));
+            }
+            catch
+            {
+                e.Cancel = true;
+            }
+        }
+
+        private static void OnRnsiFrameNavigationStarting(object? sender, CoreWebView2NavigationStartingEventArgs e)
+        {
+            try
+            {
+                e.Cancel = !IsAllowedInternalRnsUri(new Uri(e.Uri));
+            }
+            catch
+            {
+                e.Cancel = true;
+            }
+        }
+
+        private static void OnRnsiNewWindowRequested(object? sender, CoreWebView2NewWindowRequestedEventArgs e)
+        {
+            e.Handled = true;
+        }
+
+        private static void OnRnsDownloadStarting(object? sender, CoreWebView2DownloadStartingEventArgs e)
+        {
+            e.Cancel = true;
         }
 
         private static bool IsAllowedProductionUri(Uri uri)
