@@ -10,6 +10,7 @@ import { runtimeConfig } from "../config/runtime-config";
 import { HistoryService } from "../modules/history/history-service";
 import { HistoryModule } from "../modules/history/history-module";
 import { CinemometerModule } from "../modules/cinemometer/cinemometer-module";
+import { CinemometerProfileService } from "../modules/cinemometer/cinemometer-profile-service";
 import { LegislationModule } from "../modules/legislation/legislation-module";
 import { AlcoholModule } from "../modules/alcohol/alcohol-module";
 import { SettingsService } from "../modules/settings/settings-service";
@@ -61,7 +62,11 @@ export async function bootstrap(root: HTMLElement): Promise<void> {
   });
 
   const history = new HistoryService(localStorage);
-  const cinemometerModule = new CinemometerModule({ telemetry });
+  const cinemometerProfiles = new CinemometerProfileService(localStorage);
+  const cinemometerModule = new CinemometerModule({
+    telemetry,
+    profiles: cinemometerProfiles
+  });
   const legislationModule = new LegislationModule({ telemetry, storage: localStorage });
   const alcoholModule = new AlcoholModule({ telemetry });
   const settings = new SettingsService(localStorage);
