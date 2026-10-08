@@ -95,7 +95,12 @@ export async function bootstrap(root: HTMLElement): Promise<void> {
   shell.mount();
   scheduler.start();
 
-  const connectivity = new DefaultConnectivityService();
+  // navigator.onLine is only a browser/network heuristic. Probe the gate
+  // endpoint's CORS preflight so the UI can distinguish network from backend.
+  const connectivity = new DefaultConnectivityService({
+    probeUrl: runtimeConfig.gateEndpoint,
+    probeMethod: "OPTIONS"
+  });
   const snapshot = await connectivity.probe();
   store.setConnectivity(snapshot.state);
   store.setBackendReachable(snapshot.backendReachable);
