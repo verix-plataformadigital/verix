@@ -14,7 +14,8 @@
     "build": "npm run build:legacy",
     "release": "npm run build:legacy && echo '\n✓ dist/ ready. Publish ONLY the contents of dist/. Keep the repo private.'",
     "build:secure": "node tools/build-secure-release.mjs",
-    "typecheck:edge": "tsc -p tools/tsconfig.edge.json --noEmit"
+    "typecheck:edge": "tsc -p tools/tsconfig.edge.json --noEmit",
+    "verify:telemetry-contract": "node tools/verify-telemetry-contract.mjs"
   },
   "devDependencies": {
     "javascript-obfuscator": "5.9.0",

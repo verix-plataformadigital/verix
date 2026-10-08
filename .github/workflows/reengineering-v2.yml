@@ -45,6 +45,9 @@ jobs:
       - name: Edge function typecheck
         run: npm run typecheck:edge
 
+      - name: Telemetry event contract
+        run: npm run verify:telemetry-contract
+
       - name: Unit tests
         run: npm test
 
