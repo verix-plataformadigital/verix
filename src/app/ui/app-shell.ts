@@ -1,10 +1,12 @@
 import type { AppState } from "../state/app-state";
 import type { AppStore } from "../state/app-store";
 import { MODULES, moduleById } from "../state/module-registry";
+import type { VerixModule } from "../state/app-state";
 
 export interface AppShellOptions {
   readonly root: HTMLElement;
   readonly store: AppStore;
+  readonly moduleRenderer?: (workspace: HTMLElement, module: VerixModule, state: AppState) => boolean;
 }
 
 export class AppShell {
@@ -13,11 +15,14 @@ export class AppShell {
   private readonly workspace: HTMLElement;
   private readonly status: HTMLElement;
   private readonly navButtons = new Map<string, HTMLButtonElement>();
+  private readonly moduleRenderer?: AppShellOptions["moduleRenderer"];
   private unsubscribe: (() => void) | null = null;
+  private renderedModule: VerixModule | null = null;
 
   constructor(options: AppShellOptions) {
     this.root = options.root;
     this.store = options.store;
+    this.moduleRenderer = options.moduleRenderer;
 
     const shell = document.createElement("div");
     shell.className = "verix-shell";
@@ -109,6 +114,11 @@ export class AppShell {
     this.status.dataset.state = state.connectivity;
     this.status.textContent = this.statusLabel(state);
 
+    if (this.renderedModule === state.activeModule && this.workspace.childElementCount > 0) {
+      return;
+    }
+
+    this.renderedModule = state.activeModule;
     this.workspace.replaceChildren();
 
     const heading = document.createElement("div");
@@ -125,6 +135,16 @@ export class AppShell {
     p.textContent = description;
 
     heading.append(overline, h1, p);
+
+    if (
+      this.moduleRenderer?.(
+        this.workspace,
+        state.activeModule,
+        state
+      )
+    ) {
+      return;
+    }
 
     const card = document.createElement("div");
     card.className = "verix-placeholder";
