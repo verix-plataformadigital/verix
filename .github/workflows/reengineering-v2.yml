@@ -47,6 +47,9 @@ jobs:
       - name: V2 build
         run: npm run build:v2
 
+      - name: V2 source security policy
+        run: node tools/verify-v2-security.mjs
+
       - name: Reject source maps
         shell: bash
         run: |
