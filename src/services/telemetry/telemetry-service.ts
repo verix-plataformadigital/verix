@@ -161,7 +161,7 @@ export class TelemetryService {
   }
 
   flushBeacon(): number {
-    if (this.flushBusy || this.queue.size === 0 || !this.sendBeaconImpl) return 0;
+    if (this.flushPromise || this.queue.size === 0 || !this.sendBeaconImpl) return 0;
 
     const batch = this.takeBeaconBatch();
     if (batch.length === 0) return 0;
