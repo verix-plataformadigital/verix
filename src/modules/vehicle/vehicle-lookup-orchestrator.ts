@@ -1,8 +1,10 @@
+
 import type { Result } from "../../shared/types/result";
 
 export interface VehicleLookupRequest {
   readonly vehiclePlate: string;
   readonly trailerPlate: string;
+  readonly asfDate: string;
 }
 
 export interface VehicleLookupTargets {
@@ -14,8 +16,11 @@ export interface VehicleLookupDependencies<TImt, TAsf> {
   readonly newQueryId: () => string;
   readonly startImtInspection: (plate: string, queryId: string) => Promise<TImt>;
   readonly startImtLivrete: (plate: string, queryId: string) => Promise<TImt>;
-  readonly queryAsf: (plate: string, queryId: string) => Promise<TAsf>;
-  readonly recordLookup?: (queryId: string) => void;
+  readonly queryAsf: (
+    plate: string,
+    queryId: string,
+    asfDate: string
+  ) => Promise<TAsf>;
 }
 
 export interface VehicleLookupResult<TImt, TAsf> {
@@ -32,27 +37,30 @@ export class VehicleLookupOrchestrator<TImt, TAsf> {
   ) {}
 
   execute(
-    request: VehicleLookupRequest
+    request: VehicleLookupRequest,
+    queryIdOverride?: string
   ): Result<Promise<VehicleLookupResult<TImt, TAsf>>, "missing-plate"> {
     if (!request.vehiclePlate.trim() && !request.trailerPlate.trim()) {
       return { ok: false, error: "missing-plate" };
     }
 
-    const inspectionPlate = request.vehiclePlate.trim() || request.trailerPlate.trim();
-    const libretePlate = request.trailerPlate.trim() || request.vehiclePlate.trim();
-    const queryId = this.dependencies.newQueryId();
+    const inspectionPlate =
+      request.vehiclePlate.trim() || request.trailerPlate.trim();
+    const libretePlate =
+      request.trailerPlate.trim() || request.vehiclePlate.trim();
+    const queryId = queryIdOverride ?? this.dependencies.newQueryId();
 
-    this.dependencies.recordLookup?.(queryId);
-
-    const imtInspection = this.dependencies.startImtInspection(
+    const imtInspection = Promise.resolve(
+      this.dependencies.startImtInspection(inspectionPlate, queryId)
+    );
+    const imtLivrete = Promise.resolve(
+      this.dependencies.startImtLivrete(libretePlate, queryId)
+    );
+    const asf = this.dependencies.queryAsf(
       inspectionPlate,
-      queryId
+      queryId,
+      request.asfDate
     );
-    const imtLivrete = this.dependencies.startImtLivrete(
-      libretePlate,
-      queryId
-    );
-    const asf = this.dependencies.queryAsf(inspectionPlate, queryId);
 
     return {
       ok: true,
