@@ -16,6 +16,46 @@ const DOMAIN_LOCK = [
 ];
 
 /** Shared strong but safe obfuscation options */
+const CRITICAL_RUNTIME_NAMES = [
+  "criarDiagASF",
+  "reservarSlotFisicoASF",
+  "textoErroASF",
+  "classificarErroASF",
+  "finalizarTentativaDiagASF",
+  "erroComDiagASF",
+  "agoraMsASFDiag",
+  "hashTextoASF",
+  "consultarSeguroASF",
+  "processarConsultaSeguroComCadencia",
+  "realizarConsultaASF_IPO",
+  "renderSeguroEncontrado",
+  "renderSeguroNaoEncontrado",
+  "mostrarSeguroErro"
+];
+
+const COMPATIBILITY_OPTIONS = {
+  ...OBFUSCATOR_OPTIONS,
+  // The main VÉRIX runtime is a large legacy single-file application.
+  // Keep semantics deterministic: no control-flow rewriting, anti-debug
+  // runtime, or self-defending wrapper in this critical block.
+  controlFlowFlattening: false,
+  controlFlowFlatteningThreshold: 0,
+  debugProtection: false,
+  debugProtectionInterval: 0,
+  selfDefending: false,
+  stringArray: true,
+  stringArrayCallsTransform: false,
+  stringArrayIndexShift: false,
+  stringArrayRotate: false,
+  stringArrayShuffle: false,
+  stringArrayThreshold: 0.5,
+  splitStrings: false,
+  reservedNames: [
+    ...OBFUSCATOR_OPTIONS.reservedNames,
+    ...CRITICAL_RUNTIME_NAMES.map(name => "^" + name + "$")
+  ]
+};
+
 const OBFUSCATOR_OPTIONS = {
   target: "browser-no-eval",
   compact: true,
@@ -88,7 +128,10 @@ function obfuscateHtml(html, label) {
 
     scriptCount++;
     try {
-      const result = JavaScriptObfuscator.obfuscate(trimmed, OBFUSCATOR_OPTIONS).getObfuscatedCode();
+      const options = trimmed.length >= 250_000
+        ? COMPATIBILITY_OPTIONS
+        : OBFUSCATOR_OPTIONS;
+      const result = JavaScriptObfuscator.obfuscate(trimmed, options).getObfuscatedCode();
       return open + "\n" + result + "\n" + close;
     } catch (err) {
       console.error(`[${label}] Failed to obfuscate script block #${scriptCount}:`, err.message);
@@ -167,9 +210,32 @@ function verifyCriticalRuntime(outputPath) {
   return { telemetry_runtime: true, security_runtime: true };
 }
 
+}
+
+function verifyJavaScriptSyntax(outputPath) {
+  const html = fs.readFileSync(outputPath, "utf8");
+  const scriptPattern = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
+  let checked = 0;
+  let match;
+  while ((match = scriptPattern.exec(html))) {
+    const attrs = match[1] || "";
+    const source = String(match[2] || "").trim();
+    if (!source || /\bsrc\s*=\s*["']/i.test(attrs)) continue;
+    try {
+      // Parse only. Never execute application code in CI.
+      new Function(source);
+    } catch (error) {
+      throw new Error(`JavaScript syntax check failed for inline script #${checked + 1}: ${error.message}`);
+    }
+    checked++;
+  }
+  return checked;
+}
+
 const appOutput = path.join(OUTPUT_DIR, "verix-app.html");
 if (fs.existsSync(appOutput)) {
   verifyCriticalRuntime(appOutput);
+  verifyJavaScriptSyntax(appOutput);
 }
 
 // Build manifest
