@@ -10,7 +10,8 @@ export type VerixModule =
   | "legislation"
   | "alcohol"
   | "settings"
-  | "tools";
+  | "tools"
+  | "information";
 
 export interface AppState {
   readonly activeModule: VerixModule;
