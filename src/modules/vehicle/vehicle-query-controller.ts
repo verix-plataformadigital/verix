@@ -37,6 +37,7 @@ export interface VehicleQueryControllerOptions {
   readonly telemetry: VehicleTelemetryClient;
   readonly store: VehicleLookupStore;
   readonly now?: () => Date;
+  readonly onQueryStarted?: (queryId: string, request: VehicleQueryRequest) => void;
 }
 
 export interface VehicleQueryRequest {
@@ -75,6 +76,7 @@ export class VehicleQueryController {
 
     this.options.store.setBusy(true);
     this.options.store.setQueryId(queryId);
+    this.options.onQueryStarted?.(queryId, request);
 
     this.options.telemetry.track("vehicle_lookup", "consulta", { queryId });
     this.options.telemetry.track("vehicle_insurance_pending", "consulta", { queryId });
