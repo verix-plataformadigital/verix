@@ -3,8 +3,7 @@
 
 const vxMobileViewport = (
   (window.matchMedia && window.matchMedia('(max-width:1199px)').matches) ||
-  (window.matchMedia && window.matchMedia('(pointer:coarse)').matches) ||
-  /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(navigator.userAgent||'')
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(navigator.userAgent||'')
 );
 if(!vxMobileViewport) return;
 
