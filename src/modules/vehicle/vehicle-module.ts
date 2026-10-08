@@ -1,22 +1,12 @@
 import type { TelemetryService } from "../../services/telemetry/telemetry-service";
 import type { AsfService, AsfServiceError } from "../insurance/asf-service";
 import { normalizePlate } from "../../shared/validators/vehicle";
+import {
+  buildImtRnsiUrl,
+  type ImtQueryTargets
+} from "../imt/imt-url-builder";
 import { VehicleQueryController } from "./vehicle-query-controller";
 import type { HistoryRecord, HistoryService } from "../history/history-service";
-
-const RNSI_BASE_URL = "http://consultapsp.imtt.external.rnsi.local/veiculos/";
-const RNSI_PATHS = {
-  "rnsi-inspecao": "consulta_inspecao.php",
-  "rnsi-livrete": "consulta_livrete.php"
-} as const;
-
-export type RnsiSource = keyof typeof RNSI_PATHS;
-
-export function buildRnsiUrl(source: RnsiSource, plate: string): string {
-  const path = RNSI_PATHS[source];
-  const normalized = normalizePlate(plate);
-  return RNSI_BASE_URL + path + "?Matricula=" + encodeURIComponent(normalized);
-}
 
 export interface VehicleModuleOptions {
   readonly asf: AsfService;
@@ -308,7 +298,10 @@ export class VehicleModule {
     return actions;
   }
 
-  private createImtButton(label: string, source: RnsiSource): HTMLButtonElement {
+  private createImtButton(
+    label: string,
+    source: "rnsi-inspecao" | "rnsi-livrete"
+  ): HTMLButtonElement {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "vehicle-imt-button";
@@ -318,8 +311,8 @@ export class VehicleModule {
         source === "rnsi-livrete" ? this.lastTrailer || this.lastPlate : this.lastPlate
       );
 
-      const targetUrl = buildRnsiUrl(
-        source,
+      const targetUrl = buildImtRnsiUrl(
+        source === "rnsi-inspecao" ? "inspecao" : "livrete",
         plate
       );
       const popup = window.open(targetUrl, "_blank", "noopener,noreferrer");
