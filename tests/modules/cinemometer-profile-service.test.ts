@@ -32,10 +32,13 @@ describe('CinemometerProfileService', () => {
     const service = new CinemometerProfileService(storage, () => 'cin-new');
 
     expect(service.list()).toHaveLength(0);
-    const created = service.create(profile);
+    const created = service.create();
 
     expect(created.id).toBe('cin-new');
-    expect(created.modelo).toBe('Modelo');
+    expect(created.id).toBe('cin-new');
+    const saved = { ...profile, id: created.id };
+    service.save(saved);
+    expect(service.list()[0]?.modelo).toBe('Modelo');
     expect(storage.getItem(CINEMOMETER_PROFILES_KEY)).toContain('cin-new');
   });
 
