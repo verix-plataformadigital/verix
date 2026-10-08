@@ -7,7 +7,7 @@ internal static class Program
 {
     // Public production site (obfuscated only)
     private const string AllowedHost = "verix-plataformadigital.github.io";
-    private const string StartUrl = "https://verix-plataformadigital.github.io/verix-site/";
+    private const string StartUrl = "https://verix-plataformadigital.github.io/verix/";
 
     [STAThread]
     private static void Main()
