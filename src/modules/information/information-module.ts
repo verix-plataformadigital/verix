@@ -1,4 +1,3 @@
-import { openExternalWindow } from "../../shared/browser/open-external-window";
 import type { TelemetryService } from '../../services/telemetry/telemetry-service';
 import { runtimeConfig } from '../../config/runtime-config';
 
@@ -64,15 +63,16 @@ export class InformationModule {
       legal.append(p);
     }
 
-    const source = document.createElement('button');
-    source.type = 'button';
+    const source = document.createElement('a');
     source.className = 'information-source';
+    source.href = OFFICIAL_SOURCE;
+    source.target = '_blank';
+    source.rel = 'noopener noreferrer';
     source.textContent = 'ABRIR DIÁRIO DA REPÚBLICA';
     source.addEventListener('click', () => {
-      const opened = openExternalWindow(OFFICIAL_SOURCE);
       this.options.telemetry?.track('external_tool_open', 'informacoes', {
         source: 'diariodarepublica',
-        opened
+        requested: true
       });
     });
 

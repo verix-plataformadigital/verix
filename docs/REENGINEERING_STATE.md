@@ -280,3 +280,9 @@ Fonte externa: Diário da República, Código da Estrada consolidado.
 - Acrescentado um contador de geração ao módulo de consulta: qualquer submissão, limpeza ou reabertura invalida a continuação UI de operações anteriores.
 - Limpar o formulário faz reset do controlador; uma consulta ASF que termine tarde deixa de conseguir restaurar um resultado antigo no ecrã.
 - Teste DOM cobre a sequência iniciar pedido pendente → limpar → resposta antiga chegar, confirmando que o formulário permanece limpo e sem resultado desfasado.
+
+
+#### Links externos adaptados ao contrato real do WebView2
+- Ferramentas e Diário da República passaram de botões que chamavam `window.open()` para âncoras nativas com `target="_blank"` e `rel="noopener noreferrer"`.
+- A telemetria agora regista `requested: true`, não inventa um resultado de abertura que o cliente não consegue observar quando o host encaminha a URL para o navegador do sistema.
+- O adaptador IMT/RNSI mantém o seu helper separado, pois o percurso WebView2 interno do RNSI tem um contrato diferente.

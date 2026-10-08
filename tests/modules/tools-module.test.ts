@@ -8,34 +8,24 @@ describe("ToolsModule external destinations", () => {
     vi.restoreAllMocks();
   });
 
-  it("records successful opening for an isolated external destination", () => {
+  it("renders native allowlisted links with opener/referrer protection", () => {
     const track = vi.fn();
-    const openedWindow = { opener: window } as unknown as WindowProxy;
-    const open = vi.spyOn(window, "open").mockReturnValue(openedWindow);
     const root = document.createElement("main");
 
     new ToolsModule({ telemetry: { track } }).mount(root);
-    root.querySelector<HTMLButtonElement>(".tools-external-button")?.click();
+    const link = root.querySelector<HTMLAnchorElement>(".tools-external-button");
 
-    expect(open).toHaveBeenCalledWith("https://erru.imt-ip.pt/ERRU/", "_blank");
-    expect(openedWindow.opener).toBeNull();
+    expect(link).not.toBeNull();
+    if (!link) return;
+
+    expect(link.href).toBe("https://erru.imt-ip.pt/ERRU/");
+    expect(link.target).toBe("_blank");
+    expect(link.rel).toBe("noopener noreferrer");
+
+    link.click();
     expect(track).toHaveBeenCalledWith("external_tool_open", "ferramentas", {
       source: "IMT-ERRU",
-      opened: true
-    });
-  });
-
-  it("records a blocked popup accurately", () => {
-    const track = vi.fn();
-    vi.spyOn(window, "open").mockReturnValue(null);
-    const root = document.createElement("main");
-
-    new ToolsModule({ telemetry: { track } }).mount(root);
-    root.querySelector<HTMLButtonElement>(".tools-external-button")?.click();
-
-    expect(track).toHaveBeenCalledWith("external_tool_open", "ferramentas", {
-      source: "IMT-ERRU",
-      opened: false
+      requested: true
     });
   });
 });

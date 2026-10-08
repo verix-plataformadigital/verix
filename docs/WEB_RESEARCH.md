@@ -55,3 +55,10 @@
 - O mesmo falso negativo de `window.open(..., "noopener")` existia nos atalhos Ferramentas e Diário da República, afetando o campo de telemetria `opened`.
 - Extraída a função comum `openExternalWindow`: abre sincronicamente em resposta ao clique, anula imediatamente `opener` e devolve um booleano verdadeiro apenas quando a janela pode ser isolada. A política de documento `no-referrer` da shell V2 continua ativa.
 - A função passou a ser usada por IMT/RNSI, Ferramentas e Informações; os testes verificam também a telemetria do link oficial.
+
+
+### Links externos no host WebView2 — 2026-10-08
+- A documentação Microsoft de `CoreWebView2.NewWindowRequested` confirma que, quando o host marca o evento como tratado sem definir `NewWindow`, o WebView2 não cria uma nova janela interna. O host VÉRIX encaminha os destinos HTTPS autorizados para o navegador do sistema.
+- Por isso, Ferramentas e Diário da República usam agora links HTML nativos `target="_blank"` com `rel="noopener noreferrer"`; a navegação do utilizador pode ser tratada pelo host sem depender de `window.open()` na página.
+- A telemetria regista `requested: true` (o utilizador pediu a abertura), não `opened: true/false`, porque a página WebView2 não consegue confirmar de forma fiável o resultado do lançamento externo.
+- Referência: https://learn.microsoft.com/en-us/dotnet/api/microsoft.web.webview2.core.corewebview2.newwindowrequested.

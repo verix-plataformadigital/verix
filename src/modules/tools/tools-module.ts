@@ -1,4 +1,3 @@
-import { openExternalWindow } from "../../shared/browser/open-external-window";
 import {
   DISTRICT_REFERENCES,
   ROAD_ZONE_REFERENCES,
@@ -52,15 +51,19 @@ export class ToolsModule {
     const grid = document.createElement('div');
     grid.className = 'tools-external-grid';
     for (const [label, url] of EXTERNAL_TOOLS) {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'tools-external-button';
-      button.textContent = label;
-      button.addEventListener('click', () => {
-        const opened = openExternalWindow(url);
-        this.options.telemetry?.track('external_tool_open', 'ferramentas', { source: label, opened });
+      const link = document.createElement('a');
+      link.className = 'tools-external-button';
+      link.href = url;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.textContent = label;
+      link.addEventListener('click', () => {
+        this.options.telemetry?.track('external_tool_open', 'ferramentas', {
+          source: label,
+          requested: true
+        });
       });
-      grid.append(button);
+      grid.append(link);
     }
     box.append(heading, grid);
     return box;

@@ -216,7 +216,7 @@ button{font:inherit}
 .tools-section{margin-top:14px;padding:15px;border:1px solid rgba(255,255,255,.07);border-radius:14px;background:rgba(255,255,255,.02);overflow:hidden}
 .tools-section>h3,.tools-section-head h3{margin:0;color:#718188;font-size:9px;font-weight:900;letter-spacing:.13em}
 .tools-external-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:11px}
-.tools-external-button{padding:13px;border:1px solid rgba(112,211,202,.15);border-radius:10px;background:rgba(75,206,195,.04);color:#d5efeb;font-size:10px;font-weight:800;letter-spacing:.1em;cursor:pointer}
+.tools-external-button{display:inline-flex;align-items:center;justify-content:center;padding:13px;border:1px solid rgba(112,211,202,.15);border-radius:10px;background:rgba(75,206,195,.04);color:#d5efeb;font-size:10px;font-weight:800;letter-spacing:.1em;text-decoration:none;cursor:pointer}
 .tools-external-button:hover{background:rgba(75,206,195,.08);border-color:rgba(112,211,202,.3)}
 .tools-district-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin-top:11px}
 .tools-district{display:flex;align-items:center;gap:7px;padding:8px 9px;border:1px solid rgba(255,255,255,.05);border-radius:8px;background:rgba(255,255,255,.02)}
@@ -288,7 +288,7 @@ button{font:inherit}
 .information-legal{margin-top:14px;padding:16px;border:1px solid rgba(255,255,255,.07);border-radius:14px;background:rgba(255,255,255,.018)}
 .information-legal h3{margin:0 0 10px;color:#718188;font-size:9px;font-weight:900;letter-spacing:.14em}
 .information-legal p{margin:7px 0;color:#9ca9ad;font-size:10px;line-height:1.6}
-.information-source{margin-top:8px;padding:10px 12px;border:1px solid rgba(112,211,202,.18);border-radius:9px;background:rgba(75,206,195,.05);color:#bfeee8;font-size:8px;font-weight:800;letter-spacing:.08em;cursor:pointer}
+.information-source{display:inline-flex;align-items:center;margin-top:8px;padding:10px 12px;border:1px solid rgba(112,211,202,.18);border-radius:9px;background:rgba(75,206,195,.05);color:#bfeee8;font-size:8px;font-weight:800;letter-spacing:.08em;text-decoration:none;cursor:pointer}
 .information-version{margin-top:12px;color:#62747b;font:8px ui-monospace,Consolas,monospace;letter-spacing:.08em}
 @media(max-width:820px){.information-grid{grid-template-columns:1fr}}
 

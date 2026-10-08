@@ -17,22 +17,24 @@ describe('InformationModule', () => {
     expect(track).toHaveBeenCalledWith('module_open', 'informacoes');
   });
 
-  it('abre apenas a origem oficial configurada', () => {
+  it('renderiza um link nativo seguro para a origem oficial', () => {
     const root = document.createElement('main');
     const track = vi.fn();
-    const openedWindow = { opener: window } as unknown as WindowProxy;
-    const open = vi.spyOn(window, 'open').mockReturnValue(openedWindow);
 
     new InformationModule({ telemetry: { track } }).mount(root);
-    root.querySelector<HTMLButtonElement>('.information-source')?.click();
+    const source = root.querySelector<HTMLAnchorElement>('.information-source');
 
-    expect(open).toHaveBeenCalledWith('https://diariodarepublica.pt/', '_blank');
-    expect(openedWindow.opener).toBeNull();
+    expect(source).not.toBeNull();
+    if (!source) return;
+
+    expect(source.href).toBe('https://diariodarepublica.pt/');
+    expect(source.target).toBe('_blank');
+    expect(source.rel).toBe('noopener noreferrer');
+
+    source.click();
     expect(track).toHaveBeenCalledWith('external_tool_open', 'informacoes', {
       source: 'diariodarepublica',
-      opened: true
+      requested: true
     });
-
-    open.mockRestore();
   });
 });
