@@ -12,7 +12,9 @@ describe("HttpClient", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error.kind).toBe("http");
-      expect(result.error.status).toBe(429);
+      if (result.error.kind === "http") {
+        expect(result.error.status).toBe(429);
+      }
     }
   });
 
