@@ -6,6 +6,8 @@ import {
   codeFamily,
   defaultSpeedLimit,
   ema,
+  emaForCinemometer,
+  calculateDeducedSpeedForCinemometer,
   operationalCodeForVehicle,
   vehicleGroup
 } from "../../src/modules/cinemometer/cinemometer-domain";
