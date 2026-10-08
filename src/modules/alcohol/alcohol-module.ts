@@ -5,7 +5,12 @@ import {
   ALCOHOL_TAE_TO_TAS_FACTOR,
   type AlcoholEmaRow
 } from './alcohol-data';
-import { alcoholRegime, lookupAlcoholTas, tasFromTae } from './alcohol-domain';
+import {
+  alcoholRegime,
+  lookupAlcoholTas,
+  penaltyBands,
+  tasFromTae
+} from './alcohol-domain';
 import type { TelemetryService } from '../../services/telemetry/telemetry-service';
 
 export interface AlcoholModuleOptions {
@@ -152,7 +157,20 @@ export class AlcoholModule {
   private renderRegimes(): HTMLElement {
     const wrap = document.createElement('div');
     wrap.className = 'alcohol-regimes';
-    wrap.append(this.regimeCard('REGIME ESPECIAL', ALCOHOL_SPECIAL_THRESHOLD_TAS, '250 € — 1250 €', '500 € — 2500 €', 'Regime probatório, socorro/serviço urgente, transporte coletivo de crianças e jovens até aos 16 anos, táxi/TVDE, pesados e mercadorias perigosas.'), this.regimeCard('REGIME GERAL', ALCOHOL_GENERAL_THRESHOLD_TAS, '250 € — 1250 €', '500 € — 2500 €', 'Condutores não abrangidos pelo regime especial.'));
+    wrap.append(
+      this.regimeCard(
+        'REGIME ESPECIAL',
+        ALCOHOL_SPECIAL_THRESHOLD_TAS,
+        penaltyBands(true),
+        'Regime probatório, socorro/serviço urgente, transporte coletivo de crianças e jovens até aos 16 anos, táxi/TVDE, pesados e mercadorias perigosas.'
+      ),
+      this.regimeCard(
+        'REGIME GERAL',
+        ALCOHOL_GENERAL_THRESHOLD_TAS,
+        penaltyBands(false),
+        'Condutores não abrangidos pelo regime especial.'
+      )
+    );
     const box = document.createElement('div');
     box.className = 'alcohol-conversion';
     const label = document.createElement('strong');
@@ -177,7 +195,12 @@ export class AlcoholModule {
     return wrap;
   }
 
-  private regimeCard(title: string, threshold: number, first: string, second: string, description: string): HTMLElement {
+  private regimeCard(
+    title: string,
+    threshold: number,
+    bands: ReturnType<typeof penaltyBands>,
+    description: string
+  ): HTMLElement {
     const card = document.createElement('section');
     card.className = 'alcohol-regime-card';
     const strong = document.createElement('strong');
@@ -188,13 +211,22 @@ export class AlcoholModule {
     copy.textContent = description;
     const bands = document.createElement('div');
     bands.className = 'alcohol-bands';
-    for (const [points, fine] of [['3 PONTOS', first], ['5 PONTOS', second]] as const) {
+    for (const bandData of bands) {
       const band = document.createElement('div');
       band.className = 'alcohol-band';
       const p = document.createElement('b');
-      p.textContent = points;
+      p.textContent =
+        bandData.severity.toUpperCase() +
+        ' · ' +
+        bandData.points +
+        ' PONTOS';
       const f = document.createElement('span');
-      f.textContent = fine;
+      f.textContent =
+        bandData.minTas.toFixed(2).replace('.', ',') +
+        ' a < ' +
+        bandData.maxTasExclusive.toFixed(2).replace('.', ',') +
+        ' g/L · ' +
+        bandData.fine;
       band.append(p, f);
       bands.append(band);
     }
