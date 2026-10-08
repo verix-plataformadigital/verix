@@ -158,7 +158,9 @@ function sessionPattern(rows){
     const hasOperationalEvidence=durationMin>=1 || copies>0 || rows.some((e:any)=>!!cinSnapshotOf(e)?.operador_identificado) || rows.some((e:any)=>!!cinSnapshotOf(e)?.aparelho_configurado);
     pattern=flags.length ? "padrao_atipico_a_rever" : (hasOperationalEvidence ? "compativel_com_uso_operacional" : "atividade_curta_sem_contexto");
   }
-  const latest=calculations.length?cinSnapshotOf(calculations[calculations.length-1]):(cinSnapshotOf(rows[rows.length-1])||{});
+  const latest=calculationRows.length
+    ? cinSnapshotOf(calculationRows[calculationRows.length-1])
+    : (cinSnapshotOf(rows[rows.length-1])||{});
   return {
     calculations:speeds.length,
     raw_calculation_events:calculationRows.length,
