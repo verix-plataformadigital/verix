@@ -4,129 +4,69 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070c10">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
-<meta http-equiv="Cache-Control" content="no-store,no-cache,must-revalidate,proxy-revalidate,max-age=0">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
 <title>VÉRIX — Mobile</title>
 <style>
-html,body{margin:0;width:100%;min-height:100%;background:#010407;color:#fff}
-#vxMobileLoading{position:fixed;inset:0;z-index:999999;background:#010407;display:grid;place-items:center;font:800 12px Arial,sans-serif;letter-spacing:1.5px}
-#vxMobileLoading span{opacity:.8}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#010407}
+#vxMobileFrame{display:block;width:100%;height:100%;border:0;background:#010407}
+#vxMobileLoading{position:fixed;inset:0;z-index:10;display:grid;place-items:center;background:#010407;color:#fff;font:800 12px Arial,sans-serif;letter-spacing:1.5px}
 </style>
 </head>
 <body>
-<div id="vxMobileLoading"><span>A INICIAR VÉRIX MOBILE…</span></div>
+<div id="vxMobileLoading">A INICIAR VÉRIX MOBILE…</div>
+<iframe id="vxMobileFrame" title="VÉRIX Mobile"></iframe>
 <script>
 (async function(){
   'use strict';
+  const frame=document.getElementById('vxMobileFrame');
+  const loading=document.getElementById('vxMobileLoading');
 
   function fail(msg){
-    document.body.innerHTML='<main style="min-height:100dvh;display:grid;place-items:center;padding:24px;background:#010407;color:#fff;font:600 15px/1.5 Arial"><div style="max-width:420px;text-align:center"><strong style="display:block;font-size:18px;margin-bottom:10px">VÉRIX Mobile</strong>'+msg+'</div></main>';
-  }
-
-  function isJsScript(s){
-    const t=(s.getAttribute('type')||'').trim().toLowerCase();
-    return !t || t==='text/javascript' || t==='application/javascript' || t==='application/ecmascript' || t==='text/ecmascript';
-  }
-
-  function copyScriptsAndRun(parsed){
-    const scripts=[...parsed.querySelectorAll('script')].filter(isJsScript);
-    const scriptMeta=new Map();
-
-    scripts.forEach(s=>{
-      scriptMeta.set(s,{
-        src:s.getAttribute('src'),
-        text:s.textContent||'',
-        attrs:[...s.attributes].filter(a=>a.name!=='src')
-      });
-    });
-
-    return scripts.reduce(async (chain, oldScript)=>{
-      await chain;
-      const meta=scriptMeta.get(oldScript);
-      const fresh=document.createElement('script');
-
-      meta.attrs.forEach(a=>fresh.setAttribute(a.name,a.value));
-
-      if(meta.src){
-        await new Promise((resolve,reject)=>{
-          fresh.onload=resolve;
-          fresh.onerror=()=>reject(new Error('Falha ao carregar '+meta.src));
-          fresh.src=meta.src;
-          oldScript.replaceWith(fresh);
-        });
-      }else{
-        fresh.text=meta.text;
-        oldScript.replaceWith(fresh);
-      }
-    },Promise.resolve());
+    loading.innerHTML='<div style="max-width:360px;padding:24px;text-align:center;line-height:1.5">'+msg+'</div>';
   }
 
   try{
-    if(location.protocol==='file:'){
-      fail('Abra esta versão através do endereço web do VÉRIX. O modo mobile usa os mesmos serviços seguros da versão principal.');
-      return;
-    }
+    const doc=frame.contentDocument;
+    const src='./verix-app.html?_verix='+Date.now()+'&_mobile=1';
 
-    const url='./verix-app.html?_verix='+Date.now()+'&_mobile=1';
-    const res=await fetch(url,{cache:'no-store',credentials:'same-origin'});
-    if(!res.ok) throw new Error('HTTP '+res.status);
+    frame.addEventListener('load',function(){
+      try{
+        const d=frame.contentDocument;
+        const head=d.head;
+        const body=d.body;
+        if(!head||!body) throw new Error('Documento VÉRIX inválido');
 
-    const html=await res.text();
-    const parsed=new DOMParser().parseFromString(html,'text/html');
+        d.documentElement.classList.add('vx-mobile-frame');
 
-    if(!parsed || !parsed.body) throw new Error('Documento VÉRIX inválido');
+        const meta=d.createElement('meta');
+        meta.name='viewport';
+        meta.content='width=device-width,initial-scale=1,viewport-fit=cover';
+        head.appendChild(meta);
 
-    /* O método anterior usava document.open()/document.write().
-       Em alguns browsers móveis isso impedia os scripts mobile de arrancar.
-       Agora reconstruímos o documento e executamos os scripts do VÉRIX
-       pela mesma ordem, sem tocar na lógica ASF. */
+        const css=d.createElement('link');
+        css.rel='stylesheet';
+        css.href='./verix-mobile.css?v=3';
+        head.appendChild(css);
 
-    parsed.querySelectorAll('meta[name="viewport"]').forEach(m=>m.remove());
+        const flag=d.createElement('script');
+        flag.text='window.__VERIX_MOBILE=true;';
+        body.appendChild(flag);
 
-    const mobileCss=parsed.createElement('link');
-    mobileCss.rel='stylesheet';
-    mobileCss.href='./verix-mobile.css?v=2';
-    parsed.head.appendChild(mobileCss);
-
-    const mobileFlag=parsed.createElement('script');
-    mobileFlag.text='window.__VERIX_MOBILE=true;';
-    parsed.head.appendChild(mobileFlag);
-
-    const mobileScript=parsed.createElement('script');
-    mobileScript.src='./verix-mobile.js?v=2';
-
-    const bodyScripts=[...parsed.body.querySelectorAll('script')].filter(isJsScript);
-    bodyScripts.length ? bodyScripts[bodyScripts.length-1].after(mobileScript) : parsed.body.appendChild(mobileScript);
-
-    document.documentElement.replaceWith(document.importNode(parsed.documentElement,true));
-
-    /* Os scripts importados por innerHTML/importNode não executam sozinhos.
-       Recriamos apenas os scripts JS, mantendo a ordem original. */
-    const currentScripts=[...document.querySelectorAll('script')].filter(isJsScript);
-    for(const oldScript of currentScripts){
-      const src=oldScript.getAttribute('src');
-      const fresh=document.createElement('script');
-      [...oldScript.attributes].forEach(a=>fresh.setAttribute(a.name,a.value));
-      if(src){
-        await new Promise((resolve,reject)=>{
-          fresh.onload=resolve;
-          fresh.onerror=()=>reject(new Error('Falha ao carregar '+src));
-          oldScript.replaceWith(fresh);
-        });
-      }else{
-        fresh.text=oldScript.textContent||'';
-        oldScript.replaceWith(fresh);
+        const js=d.createElement('script');
+        js.src='./verix-mobile.js?v=3';
+        js.onload=function(){
+          setTimeout(function(){loading.remove()},80);
+        };
+        js.onerror=function(){fail('A interface mobile não conseguiu iniciar.');};
+        body.appendChild(js);
+      }catch(e){
+        fail('Erro ao preparar o modo mobile.<br><small>'+String(e.message||e)+'</small>');
       }
-    }
+    },{once:true});
 
-    const loading=document.getElementById('vxMobileLoading');
-    if(loading) loading.remove();
-  }catch(err){
-    fail('Não foi possível carregar o VÉRIX Mobile.<br><small style="opacity:.55">'+String(err.message||err)+'</small>');
+    frame.src=src;
+  }catch(e){
+    fail('Não foi possível carregar o VÉRIX.<br><small>'+String(e.message||e)+'</small>');
   }
 })();
 </script>
