@@ -2,15 +2,37 @@
 <html lang="pt">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-store,no-cache,must-revalidate,proxy-revalidate,max-age=0">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <title>VÉRIX — Plataforma Digital</title>
-<style>html,body{margin:0;width:100%;height:100%;background:#010407;overflow:hidden}</style>
+<style>
+html,body{margin:0;width:100%;height:100%;background:#010407;overflow:hidden}
+</style>
 </head>
 <body>
-<script>(function(){'use strict';window.location.replace('./verix-app.html?_verix='+Date.now());})();</script>
-<noscript><meta http-equiv="refresh" content="0;url=./verix-app.html"></noscript>
+<script>
+(function(){
+  'use strict';
+
+  const ua=navigator.userAgent||'';
+  const coarse=window.matchMedia && window.matchMedia('(pointer:coarse)').matches;
+  const narrow=window.innerWidth<=1199;
+  const mobileUA=/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(ua);
+
+  /* No telemóvel/tablet entra automaticamente na interface mobile.
+     Desktop continua a abrir a versão principal exatamente como antes. */
+  const isMobile=mobileUA || coarse || narrow;
+  const target=isMobile
+    ? './verix-mobile.html?_verix='+Date.now()+'&_auto=1'
+    : './verix-app.html?_verix='+Date.now();
+
+  window.location.replace(target);
+})();
+</script>
+<noscript>
+<meta http-equiv="refresh" content="0;url=./verix-app.html">
+</noscript>
 </body>
 </html>
