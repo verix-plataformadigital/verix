@@ -488,6 +488,14 @@ function renderUsage(d){
  monthlyChart('usageDaily',u.daily||[],'users');
  $('usageTransitions').innerHTML=table(['DE','PARA','VEZES'],(u.transitions||[]).slice(0,20).map(x=>'<tr>'+td('<strong>'+esc(x.from_module||'—')+'</strong>')+td(esc(x.to_module||'—'))+td(fmt(x.qty))+'</tr>'));
 }
+function errorTypeLabel(value){
+  const k=String(value||'Desconhecido');
+  if(k==='legacy_diagnostic') return 'DIAGNÓSTICO LEGADO';
+  if(k==='http_null') return 'HTTP SEM ESTADO';
+  if(k==='http_503') return 'HTTP 503';
+  if(k==='network') return 'REDE';
+  return k.toUpperCase();
+}
 function renderErrors(d){
  const e=d.analytics?.errors||{},inv=d.investigation||{},q=period(),te=d.analytics?.telemetry||{};
  const total=(e.types||[]).reduce((s,x)=>s+Number(x.qty||0),0);
@@ -496,7 +504,7 @@ function renderErrors(d){
   card('ERROS DA 1.5',num(inv.app15_errors),'Na janela recente.','amber')+
   card('INSTALAÇÕES AFETADAS',num(inv.app15_installations),'Onde apareceu um erro 1.5.')+
   card('MATRÍCULAS AFETADAS',num(inv.app15_plates),'Quando a matrícula foi capturada.');
- $('errorTypes').innerHTML=table(['TIPO','QUANTIDADE','ÚLTIMO REGISTO'],(e.types||[]).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'Desconhecido')+'</span>')+td('<strong>'+fmt(x.qty)+'</strong>')+td(datePT(x.last_at))+'</tr>'));
+ $('errorTypes').innerHTML=table(['TIPO','QUANTIDADE','ÚLTIMO REGISTO'],(e.types||[]).map(x=>'<tr>'+td('<span class="tag red">'+esc(errorTypeLabel(x.kind))+'</span>')+td('<strong>'+fmt(x.qty)+'</strong>')+td(datePT(x.last_at))+'</tr>'));
  const bursts=inv.app15_bursts_5m||[];$('errorBursts').innerHTML=table(['HORA','ERROS'],bursts.slice(0,12).map(x=>'<tr>'+td('<strong>'+datePT(x.start)+'</strong>')+td('<strong>'+fmt(x.count)+'</strong>')+'</tr>'));
  $('errorReading').innerHTML=buildErrorReading(d);
  $('errorInstallations').innerHTML=table(['INSTALAÇÃO','ERROS','QUERIES'],(e.installations||[]).slice(0,15).map(x=>'<tr>'+td('<strong>'+esc(x.installation_id||'—')+'</strong>')+td(fmt(x.qty))+td(fmt(x.queries))+'</tr>'));
