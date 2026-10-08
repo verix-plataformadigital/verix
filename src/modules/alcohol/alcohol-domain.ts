@@ -52,3 +52,26 @@ export function alcoholRegime(tas: number): "geral" | "especial" | "abaixo" {
   if (tas >= 0.5) return "geral";
   return "abaixo";
 }
+
+
+export interface AlcoholPenaltyBand {
+  readonly minTas: number;
+  readonly maxTasExclusive: number;
+  readonly fine: string;
+  readonly points: 3 | 5;
+  readonly severity: 'grave' | 'muito-grave';
+}
+
+export function penaltyBands(
+  specialRegime: boolean
+): readonly AlcoholPenaltyBand[] {
+  return specialRegime
+    ? [
+        { minTas: 0.2, maxTasExclusive: 0.5, fine: '250 € — 1250 €', points: 3, severity: 'grave' },
+        { minTas: 0.5, maxTasExclusive: 1.2, fine: '500 € — 2500 €', points: 5, severity: 'muito-grave' }
+      ]
+    : [
+        { minTas: 0.5, maxTasExclusive: 0.8, fine: '250 € — 1250 €', points: 3, severity: 'grave' },
+        { minTas: 0.8, maxTasExclusive: 1.2, fine: '500 € — 2500 €', points: 5, severity: 'muito-grave' }
+      ];
+}
