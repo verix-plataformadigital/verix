@@ -1,12 +1,16 @@
 {
   "name": "verix-release-security",
   "private": true,
-  "version": "1.0.0",
-  "description": "VÉRIX production release hardening",
+  "version": "1.5.0",
+  "description": "VÉRIX production release hardening — keep repository PRIVATE",
   "scripts": {
-    "build:secure": "node tools/build-secure-release.mjs"
+    "build:secure": "node tools/build-secure-release.mjs",
+    "release": "npm run build:secure && echo '\n✓ dist/ ready. Publish ONLY the contents of dist/. Keep the repo private.'"
   },
   "devDependencies": {
     "javascript-obfuscator": "5.9.0"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }
