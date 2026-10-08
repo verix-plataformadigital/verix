@@ -97,3 +97,38 @@ describe("vehicle lookup orchestration", () => {
     expect(result).toEqual({ ok: false, error: "missing-plate" });
   });
 });
+
+
+it("isola falha síncrona de um canal e mantém os restantes", async () => {
+  const calls: string[] = [];
+  const orchestrator = new VehicleLookupOrchestrator({
+    newQueryId: () => "q-sync",
+    startImtInspection: () => {
+      calls.push("inspection");
+      throw new Error("popup blocked");
+    },
+    startImtLivrete: async () => {
+      calls.push("livrete");
+      return true;
+    },
+    queryAsf: async (_plate, _queryId, _date) => {
+      calls.push("asf");
+      return "ok";
+    }
+  });
+
+  const result = orchestrator.execute({
+    vehiclePlate: "12AB34",
+    trailerPlate: "VC1234",
+    asfDate: "2026/10/08"
+  });
+
+  expect(result.ok).toBe(true);
+  if (!result.ok) return;
+
+  const settled = await result.value;
+  expect(settled.imtInspection.status).toBe("rejected");
+  expect(settled.imtLivrete.status).toBe("fulfilled");
+  expect(settled.asf.status).toBe("fulfilled");
+  expect(calls).toEqual(["inspection", "livrete", "asf"]);
+});
