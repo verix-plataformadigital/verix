@@ -11,7 +11,7 @@ function getCorsHeaders(req: Request) {
   const origin = req.headers.get("origin") || "";
   const allowed = origin && ALLOWED_ORIGINS.has(origin)
     ? origin
-    : "https://verix-plataformadigital.github.io";
+    : "";
   return {
     "Access-Control-Allow-Origin": allowed,
     "Access-Control-Allow-Headers": "content-type",
