@@ -10,11 +10,11 @@
     "skipLibCheck": true
   },
   "include": [
-    "tools/edge-globals.d.ts",
-    "supabase/functions/admin-auth-v2/index.ts",
-    "supabase/functions/asf-proxy-v1/index.ts",
-    "supabase/functions/hourly-history-v2/index.ts",
-    "supabase/functions/stats-v2/index.ts",
-    "supabase/functions/verix-gate-v1/index.ts"
+    "edge-globals.d.ts",
+    "../supabase/functions/admin-auth-v2/index.ts",
+    "../supabase/functions/asf-proxy-v1/index.ts",
+    "../supabase/functions/hourly-history-v2/index.ts",
+    "../supabase/functions/stats-v2/index.ts",
+    "../supabase/functions/verix-gate-v1/index.ts"
   ]
 }
