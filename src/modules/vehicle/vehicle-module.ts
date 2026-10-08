@@ -1,4 +1,3 @@
-import type { AppState } from "../../app/state/app-state";
 import type { TelemetryService } from "../../services/telemetry/telemetry-service";
 import type { AsfService } from "../insurance/asf-service";
 import { normalizePlate } from "../../shared/validators/vehicle";
@@ -168,7 +167,7 @@ export class VehicleModule {
       title.textContent = this.errorTitle(state.error.kind);
 
       const detail = document.createElement("p");
-      detail.textContent = state.error.message;
+      detail.textContent = this.errorMessage(state.error);
 
       const meta = document.createElement("small");
       meta.textContent = `Consulta ${state.queryId}`;
@@ -323,6 +322,12 @@ export class VehicleModule {
     window.alert(message);
   }
 
+  private errorMessage(error: AsfServiceError): string {
+    return error.kind === "graphql"
+      ? error.messages.join(" · ")
+      : error.message;
+  }
+
   private focusResult(): void {
     const result = this.root?.querySelector(".vehicle-result");
     if (result instanceof HTMLElement) result.focus({ preventScroll: false });
@@ -336,7 +341,6 @@ export class VehicleModule {
     return `${year}-${month}-${day}`;
   }
 
-  private renderPlaceholderNote(): void {}
 }
 
 function isoDateToAsfDate(value: string): string {
