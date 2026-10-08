@@ -14,8 +14,8 @@ describe("vehicle lookup orchestration", () => {
         calls.push("imt-livrete:" + plate);
         return "livrete";
       },
-      queryAsf: async (plate) => {
-        calls.push("asf:" + plate);
+      queryAsf: async (plate, queryId, asfDate) => {
+        calls.push("asf:" + plate + ":" + queryId + ":" + asfDate);
         return "asf";
       },
       recordLookup: (queryId) => calls.push("telemetry:" + queryId)
@@ -23,7 +23,8 @@ describe("vehicle lookup orchestration", () => {
 
     const result = orchestrator.execute({
       vehiclePlate: "12-AB-34",
-      trailerPlate: "VC-1234"
+      trailerPlate: "VC-1234",
+      asfDate: "2026/10/08"
     });
 
     expect(result.ok).toBe(true);
@@ -33,7 +34,7 @@ describe("vehicle lookup orchestration", () => {
       "telemetry:q-1",
       "imt-inspecao:12-AB-34",
       "imt-livrete:VC-1234",
-      "asf:12-AB-34"
+      "asf:12-AB-34:q-1:2026/10/08"
     ]);
 
     await expect(result.value).resolves.toMatchObject({
@@ -57,7 +58,7 @@ describe("vehicle lookup orchestration", () => {
         calls.push("livrete");
         return "ok";
       },
-      queryAsf: async () => {
+      queryAsf: async (_plate, _queryId, _asfDate) => {
         calls.push("asf");
         return "ok";
       }
@@ -65,7 +66,8 @@ describe("vehicle lookup orchestration", () => {
 
     const result = orchestrator.execute({
       vehiclePlate: "12AB34",
-      trailerPlate: ""
+      trailerPlate: "",
+      asfDate: "2026/10/08"
     });
 
     expect(result.ok).toBe(true);
@@ -88,7 +90,8 @@ describe("vehicle lookup orchestration", () => {
 
     const result = orchestrator.execute({
       vehiclePlate: " ",
-      trailerPlate: ""
+      trailerPlate: "",
+      asfDate: "2026/10/08"
     });
 
     expect(result).toEqual({ ok: false, error: "missing-plate" });
