@@ -1,3 +1,4 @@
+import { openExternalWindow } from "../../shared/browser/open-external-window";
 import {
   DISTRICT_REFERENCES,
   ROAD_ZONE_REFERENCES,
@@ -56,8 +57,8 @@ export class ToolsModule {
       button.className = 'tools-external-button';
       button.textContent = label;
       button.addEventListener('click', () => {
-        const opened = window.open(url, '_blank', 'noopener,noreferrer');
-        this.options.telemetry?.track('external_tool_open', 'ferramentas', { source: label, opened: Boolean(opened) });
+        const opened = openExternalWindow(url);
+        this.options.telemetry?.track('external_tool_open', 'ferramentas', { source: label, opened });
       });
       grid.append(button);
     }

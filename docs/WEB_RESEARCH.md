@@ -49,3 +49,9 @@
 - A aplicação V2 mantém `Referrer-Policy: no-referrer` no documento e o adaptador IMT abre a janela com retorno verificável, anulando imediatamente `opened.opener` antes de a página externa terminar de carregar.
 - MDN também assinala que os browsers modernos exigem ativação do utilizador para cada nova janela. A V2 mantém botões individuais de inspeção/livrete como caminho explícito de recuperação quando o browser/host bloquear uma das aberturas automáticas.
 - Referências: https://developer.mozilla.org/en-US/docs/Web/API/Window/open e https://developer.mozilla.org/en-US/docs/Web/Glossary/Transient_activation.
+
+
+### Consistência do diagnóstico de janelas externas — 2026-10-08
+- O mesmo falso negativo de `window.open(..., "noopener")` existia nos atalhos Ferramentas e Diário da República, afetando o campo de telemetria `opened`.
+- Extraída a função comum `openExternalWindow`: abre sincronicamente em resposta ao clique, anula imediatamente `opener` e devolve um booleano verdadeiro apenas quando a janela pode ser isolada. A política de documento `no-referrer` da shell V2 continua ativa.
+- A função passou a ser usada por IMT/RNSI, Ferramentas e Informações; os testes verificam também a telemetria do link oficial.

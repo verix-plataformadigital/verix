@@ -20,16 +20,18 @@ describe('InformationModule', () => {
   it('abre apenas a origem oficial configurada', () => {
     const root = document.createElement('main');
     const track = vi.fn();
-    const open = vi.spyOn(window, 'open').mockReturnValue(null);
+    const openedWindow = { opener: window } as unknown as WindowProxy;
+    const open = vi.spyOn(window, 'open').mockReturnValue(openedWindow);
 
     new InformationModule({ telemetry: { track } }).mount(root);
     root.querySelector<HTMLButtonElement>('.information-source')?.click();
 
-    expect(open).toHaveBeenCalledWith(
-      'https://diariodarepublica.pt/',
-      '_blank',
-      'noopener,noreferrer'
-    );
+    expect(open).toHaveBeenCalledWith('https://diariodarepublica.pt/', '_blank');
+    expect(openedWindow.opener).toBeNull();
+    expect(track).toHaveBeenCalledWith('external_tool_open', 'informacoes', {
+      source: 'diariodarepublica',
+      opened: true
+    });
 
     open.mockRestore();
   });

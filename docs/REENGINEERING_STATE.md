@@ -250,3 +250,9 @@ Fonte externa: Diário da República, Código da Estrada consolidado.
 #### Navegação de regresso ao início
 - Acrescentado o botão de navegação `Início` à barra lateral. A landing page V2 já não depende do arranque inicial para ser alcançada.
 - Adicionado teste DOM que navega para `Consulta` e regressa a `main`, verificando conteúdo e estado `aria-current`.
+
+
+#### Abertura externa consistente
+- Extraída `src/shared/browser/open-external-window.ts` para corrigir o mesmo falso diagnóstico de pop-up nos módulos Ferramentas e Informações, não apenas no adaptador IMT.
+- As três origens de abertura externa usam agora a mesma política: abertura sincrónica, isolamento de `opener`, resultado booleano consistente e sem alterar o allowlist do host.
+- Adicionado teste de integração DOM ao módulo Ferramentas e atualizado o teste do Diário da República para verificar o valor de telemetria real.

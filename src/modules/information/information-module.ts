@@ -1,3 +1,4 @@
+import { openExternalWindow } from "../../shared/browser/open-external-window";
 import type { TelemetryService } from '../../services/telemetry/telemetry-service';
 import { runtimeConfig } from '../../config/runtime-config';
 
@@ -68,10 +69,10 @@ export class InformationModule {
     source.className = 'information-source';
     source.textContent = 'ABRIR DIÁRIO DA REPÚBLICA';
     source.addEventListener('click', () => {
-      const opened = window.open(OFFICIAL_SOURCE, '_blank', 'noopener,noreferrer');
+      const opened = openExternalWindow(OFFICIAL_SOURCE);
       this.options.telemetry?.track('external_tool_open', 'informacoes', {
         source: 'diariodarepublica',
-        opened: Boolean(opened)
+        opened
       });
     });
 
