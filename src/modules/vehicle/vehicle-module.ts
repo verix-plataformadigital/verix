@@ -14,6 +14,7 @@ export interface VehicleModuleOptions {
     setQueryId(queryId: string | null): void;
   };
   readonly history: HistoryService;
+  readonly historyEnabled?: () => boolean;
 }
 
 export class VehicleModule {
@@ -30,7 +31,9 @@ export class VehicleModule {
       telemetry: options.telemetry,
       store: options.store,
       onQueryStarted: (queryId, request) => {
-        options.history.add(request.plate, this.lastTrailer, queryId);
+        if (options.historyEnabled?.() ?? true) {
+          options.history.add(request.plate, this.lastTrailer, queryId);
+        }
       }
     });
   }
@@ -172,7 +175,7 @@ export class VehicleModule {
       date: isoDateToAsfDate(isoDate)
     });
 
-    if (result.queryId) {
+    if (result.queryId && (this.options.historyEnabled?.() ?? true)) {
       this.options.history.updateInsurance(
         result.queryId,
         normalizedPlate,
