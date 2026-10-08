@@ -1,14 +1,14 @@
 import type { TelemetryService } from "../../services/telemetry/telemetry-service";
-import type { AsfService, AsfServiceError } from "../insurance/asf-service";
+import type { AsfServiceError } from "../insurance/asf-service";
 import { normalizePlate } from "../../shared/validators/vehicle";
 import type { ImtService } from "../imt/imt-service";
 import { VehicleQueryController } from "./vehicle-query-controller";
 import type { HistoryRecord, HistoryService } from "../history/history-service";
 
 export interface VehicleModuleOptions {
-  readonly asf: AsfService;
+  readonly asf: VehicleAsfClient;
   readonly imt: ImtService;
-  readonly telemetry: TelemetryService;
+  readonly telemetry: VehicleTelemetryClient;
   readonly store: {
     setBusy(isBusy: boolean): void;
     setQueryId(queryId: string | null): void;
