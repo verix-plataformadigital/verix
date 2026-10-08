@@ -14,7 +14,7 @@ function corsHeaders(req: Request) {
   const origin = req.headers.get("origin") || "";
   return {
     "Access-Control-Allow-Origin": ALLOWED_ORIGINS.has(origin) ? origin : "",
-    "Access-Control-Allow-Headers": "content-type,x-verix-build-id",
+    "Access-Control-Allow-Headers": "content-type,x-verix-build-id,x-verix-client-token",
     "Access-Control-Allow-Methods": "POST,OPTIONS",
     "Access-Control-Expose-Headers": "X-Verix-ASF-Relay, X-Verix-ASF-Latency-Ms, Retry-After",
     "Cache-Control": "no-store, max-age=0",
@@ -44,6 +44,26 @@ function json(data: unknown, status = 200, req?: Request, extraHeaders: Record<s
   });
 }
 
+function cleanText(value: unknown, max: number): string {
+  return String(value ?? "").trim().slice(0, max);
+}
+
+function normalizePlate(value: unknown): string {
+  return cleanText(value, 20).toUpperCase().replace(/[^A-Z0-9]/g, "");
+}
+
+function validDate(value: unknown): string | null {
+  const s = cleanText(value, 10);
+  const m = s.match(/^(\d{4})\/(\d{2})\/(\d{2})$/);
+  if (!m) return null;
+  const y = Number(m[1]), mo = Number(m[2]), d = Number(m[3]);
+  if (!Number.isInteger(y) || !Number.isInteger(mo) || !Number.isInteger(d)) return null;
+  if (mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+  const dt = new Date(Date.UTC(y, mo - 1, d));
+  if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== mo - 1 || dt.getUTCDate() !== d) return null;
+  return s;
+}
+
 async function buildEnabled(buildId: string): Promise<boolean> {
   if (!SUPABASE_URL || !SERVICE_KEY) return false;
   const q = new URLSearchParams({
@@ -65,13 +85,6 @@ const GATE_SECRET =
   Deno.env.get("VERIX_GATE_SECRET") ||
   Deno.env.get("VERIX_ADMIN_SECRET") ||
   "";
-
-function base64UrlDecode(value: string): Uint8Array {
-  let s = String(value || "").replace(/-/g, "+").replace(/_/g, "/");
-  while (s.length % 4) s += "=";
-  const binary = atob(s);
-  return Uint8Array.from(binary, c => c.charCodeAt(0));
-}
 
 async function hmacHex(value: string): Promise<string> {
   const key = await crypto.subtle.importKey(
@@ -224,7 +237,7 @@ Deno.serve(async (req: Request) => {
       const elapsedMs = Date.now() - started;
 
       const outHeaders: Record<string, string> = {
-        ...corsHeaders,
+        ...corsHeaders(req),
         "Content-Type": upstream.headers.get("content-type") || "application/json; charset=utf-8",
         "X-Verix-ASF-Relay": "1",
         "X-Verix-ASF-Latency-Ms": String(elapsedMs)
