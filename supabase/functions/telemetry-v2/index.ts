@@ -505,6 +505,14 @@ Deno.serve(async (req: Request) => {
       }
     }
 
+    // Persist the canonical event rows before advancing presence.
+    // This prevents a failed event write from leaving last_seen ahead of reality.
+    const { error: eventsError } = await db.from("verix2_events").upsert(events, {
+      onConflict: "event_id",
+      ignoreDuplicates: true
+    });
+    if (eventsError) throw new Error(`events:${eventsError.message}`);
+
     if (installations.size) {
       const { error } = await db.from("verix2_installations").upsert([...installations.values()], { onConflict: "installation_id" });
       if (error) throw new Error(`installations:${error.message}`);
@@ -514,12 +522,6 @@ Deno.serve(async (req: Request) => {
       const { error } = await db.from("verix2_sessions").upsert([...sessions.values()], { onConflict: "session_id" });
       if (error) throw new Error(`sessions:${error.message}`);
     }
-
-    const { error: eventsError } = await db.from("verix2_events").upsert(events, {
-      onConflict: "event_id",
-      ignoreDuplicates: true
-    });
-    if (eventsError) throw new Error(`events:${eventsError.message}`);
 
     return json({ ok: true, accepted: events.length, rejected: input.length - events.length });
   } catch (error) {
