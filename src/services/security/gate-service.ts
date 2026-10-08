@@ -53,6 +53,10 @@ export class GateService {
     return this.inFlight;
   }
 
+  getIdentity(): VerixSecurityIdentity {
+    return this.options.identity;
+  }
+
   clear(): void {
     this.token = null;
     this.expiresAtMs = 0;
