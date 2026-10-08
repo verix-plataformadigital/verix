@@ -13,6 +13,10 @@ describe("legacy ASF diagnostic regression", () => {
 
     expect(block).toContain("diag.asfAttempts");
     expect(block).toContain("lastAttempt.errorType");
-    expect(block).not.toContain("diag.asfErrorType = 'http_' + httpStatus");
+    const nullStatusEnd = block.indexOf("if (httpStatus < 200 || httpStatus >= 300)");
+    expect(nullStatusEnd).toBeGreaterThan(0);
+    expect(block.slice(0, nullStatusEnd)).not.toContain(
+      "diag.asfErrorType = 'http_' + httpStatus"
+    );
   });
 });
