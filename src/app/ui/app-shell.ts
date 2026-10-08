@@ -27,7 +27,18 @@ export class AppShell {
 
     const brand = document.createElement("div");
     brand.className = "verix-brand";
-    brand.innerHTML = "<span class="verix-mark">V</span><div><strong>VÉRIX</strong><small>reengenharia 2</small></div>";
+    const mark = document.createElement("span");
+    mark.className = "verix-mark";
+    mark.textContent = "V";
+
+    const brandText = document.createElement("div");
+    const brandName = document.createElement("strong");
+    brandName.textContent = "VÉRIX";
+    const brandVersion = document.createElement("small");
+    brandVersion.textContent = "reengenharia 2";
+    brandText.append(brandName, brandVersion);
+
+    brand.append(mark, brandText);
 
     this.status = document.createElement("div");
     this.status.className = "verix-status";
@@ -49,11 +60,16 @@ export class AppShell {
       button.className = "verix-nav-item";
       button.dataset.module = module.id;
       button.setAttribute("aria-label", module.label);
-      button.innerHTML = "<span class="verix-nav-icon" aria-hidden="true">" +
-        module.icon +
-        "</span><span class="verix-nav-label">" +
-        module.label +
-        "</span>";
+      const icon = document.createElement("span");
+      icon.className = "verix-nav-icon";
+      icon.setAttribute("aria-hidden", "true");
+      icon.textContent = module.icon;
+
+      const label = document.createElement("span");
+      label.className = "verix-nav-label";
+      label.textContent = module.label;
+
+      button.append(icon, label);
       button.addEventListener("click", () => this.store.setModule(module.id));
       this.navButtons.set(module.id, button);
       nav.append(button);
