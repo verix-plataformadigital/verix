@@ -308,6 +308,8 @@ const TOKEN_KEY='VERIX_ADMIN_V2_TOKEN';
 const REFRESH_MS=30000;
 
 let currentPeriod='24h',currentPage='dashboard',latestData=null,refreshTimer=null,dashboardBusy=false;
+const detailCache={speed:false,errors:false,system:false};
+const detailBusy={speed:false,errors:false,system:false};
 
 const $=id=>document.getElementById(id);
 const fmt=v=>v==null||v===''||!Number.isFinite(Number(v))?'—':Number(v).toLocaleString('pt-PT');
@@ -330,15 +332,47 @@ function setBackend(state){const dot=$('statusDot'),b=$('backendBadge');dot.clas
 async function request(url,options={}){const h=new Headers(options.headers||{});h.set('Authorization','Bearer '+token());h.set('Accept','application/json');const ac=new AbortController();const tm=setTimeout(()=>ac.abort(),15000);try{const r=await fetch(url,{...options,headers:h,mode:'cors',credentials:'omit',cache:'no-store',signal:ac.signal});const raw=await r.text();let data={};try{data=JSON.parse(raw)}catch(_){data={ok:false,error:raw||('HTTP '+r.status)}}if(r.status===401){logout();throw new Error('Sessão expirada.')}if(!r.ok||data?.ok===false)throw new Error(data?.detail||data?.error||('HTTP '+r.status));return data}catch(e){if(e?.name==='AbortError')throw new Error('O backend demorou demasiado tempo a responder.');if(e instanceof TypeError)throw new Error('Não foi possível comunicar com o backend.');throw e}finally{clearTimeout(tm)}}
 async function doLogin(password){const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),12000);try{const r=await fetch(AUTH_API,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({password:String(password||'').slice(0,256)}),mode:'cors',credentials:'omit',cache:'no-store',signal:ac.signal});const raw=await r.text();let data={};try{data=JSON.parse(raw)}catch(_){data={ok:false,error:raw||('HTTP '+r.status)}}if(!r.ok||!data?.ok)throw new Error(data?.error||('HTTP '+r.status));if(!data.token)throw new Error('O servidor de autenticação não devolveu um token.');sessionStorage.setItem(TOKEN_KEY,data.token);return data}catch(e){if(e?.name==='AbortError')throw new Error('Tempo excedido ao autenticar.');if(e instanceof TypeError)throw new Error('Não foi possível comunicar com a autenticação.');throw e}finally{clearTimeout(tm)}}
 function logout(){sessionStorage.removeItem(TOKEN_KEY);if(refreshTimer)clearInterval(refreshTimer);$('app').style.display='none';$('loginScreen').style.display='grid';$('password').value='';}
-function switchPage(page){currentPage=page;document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.dataset.page===page));const meta={
-dashboard:['Resumo','O que está a acontecer no VÉRIX.'],
-insurance:['Seguro','Consultas ao serviço da ASF.'],
-speed:['Cinemómetro','Utilização e velocidades registadas.'],
-legislation:['Legislação','Itens consultados e utilizados.'],
-usage:['Utilização','Quem usa o VÉRIX e como o usa.'],
-errors:['Erros','Problemas, frequência e concentração.'],
-system:['Sistema','Estado técnico e manutenção.']
-}[page]||['Resumo',''];$('pageTitle').textContent=meta[0];$('pageSubtitle').textContent=meta[1];window.scrollTo({top:0})}
+function switchPage(page){
+  currentPage=page;
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
+  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.dataset.page===page));
+  const meta={
+    dashboard:['Resumo','O que está a acontecer no VÉRIX.'],
+    insurance:['Seguro','Consultas ao serviço da ASF.'],
+    speed:['Cinemómetro','Utilização e velocidades registadas.'],
+    legislation:['Legislação','Itens consultados e utilizados.'],
+    usage:['Utilização','Quem usa o VÉRIX e como o usa.'],
+    errors:['Erros','Problemas, frequência e concentração.'],
+    system:['Sistema','Estado técnico e manutenção.']
+  }[page]||['Resumo',''];
+  $('pageTitle').textContent=meta[0];
+  $('pageSubtitle').textContent=meta[1];
+  window.scrollTo({top:0});
+  ensurePageDetail(page);
+}
+function detailEndpoint(kind){
+  return STATS_API+'&detail='+encodeURIComponent(kind);
+}
+async function ensurePageDetail(page){
+  if(!latestData || !token()) return;
+  const kind=page==='speed'?'speed':page==='errors'?'errors':page==='system'?'system':'';
+  if(!kind || detailCache[kind] || detailBusy[kind]) return;
+  detailBusy[kind]=true;
+  try{
+    const d=await request(detailEndpoint(kind));
+    if(kind==='speed') latestData={...latestData,cinemometer:d.cinemometer||{}};
+    if(kind==='errors') latestData={...latestData,investigation:d.investigation||{}};
+    if(kind==='system') latestData={...latestData,lifetime:d.lifetime||{}};
+    detailCache[kind]=true;
+    if(kind==='speed') renderSpeed(latestData);
+    if(kind==='errors') renderErrors(latestData);
+    if(kind==='system') renderSystem(latestData);
+  }catch(e){
+    toast('Não foi possível carregar os detalhes: '+e.message);
+  }finally{
+    detailBusy[kind]=false;
+  }
+}
 function renderDashboard(d){
  const a=d.analytics||{},o=a.overview||{},p=period(),ret=a.retention||{},u=a.usage||{},s=u.sessions?.[currentPeriod]||{},speed=a.speed?.summary||{},life=d.lifetime||{},invest=d.investigation||{};
  const users=Number(o['unique_'+currentPeriod]||0),lookups=Number(p.started||0),fin=Number(p.finals||0),insured=Number(p.insured||0),uninsured=Number(p.uninsured||0),errs=Number(p.errors||0),dec=insured+uninsured;
@@ -502,7 +536,11 @@ function renderAll(d){latestData=d;renderDashboard(d);renderInsurance(d);renderS
 async function loadDashboard(){
  if(dashboardBusy)return null;dashboardBusy=true;setBackend('loading');
  try{
-  const d=await request(STATS_API);renderAll(d);setBackend(Object.keys(d.errors||{}).length?'partial':'online');return d;
+  const d=await request(STATS_API);
+  renderAll(d);
+  if(Object.keys(d.errors||{}).length)setBackend('partial');else setBackend('online');
+  if(currentPage!=='dashboard')ensurePageDetail(currentPage);
+  return d;
  }catch(e){setBackend('offline');toast(e.message);return null}finally{dashboardBusy=false}
 }
 async function reset24h(){
