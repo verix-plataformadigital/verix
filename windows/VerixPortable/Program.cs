@@ -14,7 +14,8 @@ internal static class Program
         "www.consumidor.asf.com.pt",
         "erru.imt-ip.pt",
         "alvaras.inem.pt",
-        "location.wazept.com"
+        "location.wazept.com",
+        "diariodarepublica.pt"
     };
 
     private static readonly HashSet<string> InternalHttpAllowedHosts = new(StringComparer.OrdinalIgnoreCase)
