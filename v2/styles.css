@@ -249,3 +249,22 @@ button{font:inherit}
  .legislation-search-row{grid-template-columns:1fr}
  .legislation-favorites-toggle{min-height:40px}
 }
+
+
+.cin-context{margin:18px 0;border:1px solid rgba(255,255,255,.07);border-radius:14px;background:rgba(255,255,255,.018);overflow:hidden}
+.cin-context-head{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.06)}
+.cin-context-head strong,.cin-context-head span,.cin-context h4{font-size:9px;font-weight:900;letter-spacing:.12em;color:#73858c}
+.cin-context-head span{font-weight:700;letter-spacing:.04em}
+.cin-context-profile-controls{display:grid;grid-template-columns:minmax(0,1fr) repeat(3,auto);gap:7px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.05)}
+.cin-context-profile-select,.cin-context-field input,.cin-context-field select{width:100%;padding:9px 10px;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:#071015;color:#eaf2f3;outline:none}
+.cin-context-profile-select:focus,.cin-context-field input:focus,.cin-context-field select:focus{border-color:rgba(112,211,202,.5)}
+.cin-context-button{padding:9px 10px;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:rgba(255,255,255,.035);color:#aeb9bd;font-size:8px;font-weight:800;letter-spacing:.07em;cursor:pointer}
+.cin-context-button:hover{background:rgba(255,255,255,.06);color:#dce6e8}
+.cin-context-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:12px 14px}
+.cin-context-field{display:grid;gap:5px}
+.cin-context-field>span{color:#718188;font-size:8px;font-weight:800;letter-spacing:.08em}
+.cin-context-field.cin-context-note{grid-column:1/-1}
+.cin-context-host + .cin-form{margin-top:0}
+.cin-context h4{margin:0;padding:12px 14px 0}
+@media(max-width:900px){.cin-context-profile-controls{grid-template-columns:1fr 1fr}.cin-context-profile-select{grid-column:1/-1}.cin-context-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.cin-context-profile-controls{grid-template-columns:1fr}.cin-context-profile-select{grid-column:auto}.cin-context-grid{grid-template-columns:1fr}}
