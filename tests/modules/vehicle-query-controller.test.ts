@@ -1,57 +1,47 @@
 import { describe, expect, it, vi } from "vitest";
 import { VehicleQueryController } from "../../src/modules/vehicle/vehicle-query-controller";
-import type { AsfServiceError } from "../../src/modules/insurance/asf-service";
+import type {
+  AsfServiceError,
+  AsfServiceRequest,
+  AsfServiceResult
+} from "../../src/modules/insurance/asf-service";
 import type { AsfOutcome } from "../../src/modules/insurance/asf-classifier";
-
-interface FakeAsf {
-  query: ReturnType<typeof vi.fn>;
-}
-
-interface FakeTelemetry {
-  newQueryId: ReturnType<typeof vi.fn>;
-  track: ReturnType<typeof vi.fn>;
-}
-
-interface FakeStore {
-  setBusy: ReturnType<typeof vi.fn>;
-  setQueryId: ReturnType<typeof vi.fn>;
-}
+import type { TelemetryEventName } from "../../src/services/telemetry/telemetry-contract";
 
 function createController(
   asfResult:
     | { readonly ok: true; readonly value: AsfOutcome }
     | { readonly ok: false; readonly error: AsfServiceError },
-  overrides: {
-    readonly now?: () => Date;
-    readonly queryId?: string;
-  } = {}
+  overrides: { readonly now?: () => Date; readonly queryId?: string } = {}
 ) {
-  const asf: FakeAsf = {
-    query: vi.fn().mockResolvedValue(asfResult)
-  };
-  const telemetry: FakeTelemetry = {
-    newQueryId: vi.fn(() => overrides.queryId ?? "q-1"),
-    track: vi.fn()
-  };
-  const store: FakeStore = {
-    setBusy: vi.fn(),
-    setQueryId: vi.fn()
-  };
+  const query = vi.fn<(request: AsfServiceRequest) => Promise<AsfServiceResult>>(
+    async () => asfResult
+  );
+  const newQueryId = vi.fn<() => string>(() => overrides.queryId ?? "q-1");
+  const track = vi.fn<
+    (
+      event: TelemetryEventName,
+      module: string | null,
+      metadata?: Readonly<Record<string, unknown>>
+    ) => unknown
+  >();
+  const setBusy = vi.fn<(isBusy: boolean) => void>();
+  const setQueryId = vi.fn<(queryId: string | null) => void>();
 
   const controller = new VehicleQueryController({
-    asf,
-    telemetry,
-    store,
+    asf: { query },
+    telemetry: { newQueryId, track },
+    store: { setBusy, setQueryId },
     now: overrides.now
   });
 
-  return { controller, asf, telemetry, store };
+  return { controller, query, track, setBusy, setQueryId };
 }
 
 describe("VehicleQueryController", () => {
   it("emite lookup, pending e resultado seguro", async () => {
-    const result = {
-      kind: "insured" as const,
+    const result: AsfOutcome = {
+      kind: "insured",
       node: {
         license: "12AB34",
         entity: "Seguradora",
@@ -64,27 +54,27 @@ describe("VehicleQueryController", () => {
       }
     };
 
-    const { controller, telemetry, store } = createController({
+    const { controller, track, setBusy, setQueryId } = createController({
       ok: true,
       value: result
     });
 
     await controller.lookup({ plate: "12AB34", date: "2026/10/08" });
 
-    expect(store.setBusy).toHaveBeenCalledWith(true);
-    expect(store.setBusy).toHaveBeenLastCalledWith(false);
-    expect(store.setQueryId).toHaveBeenCalledWith("q-1");
-    expect(telemetry.track).toHaveBeenCalledWith(
+    expect(setBusy).toHaveBeenCalledWith(true);
+    expect(setBusy).toHaveBeenLastCalledWith(false);
+    expect(setQueryId).toHaveBeenCalledWith("q-1");
+    expect(track).toHaveBeenCalledWith(
       "vehicle_lookup",
       "consulta",
       { queryId: "q-1" }
     );
-    expect(telemetry.track).toHaveBeenCalledWith(
+    expect(track).toHaveBeenCalledWith(
       "vehicle_insurance_pending",
       "consulta",
       { queryId: "q-1" }
     );
-    expect(telemetry.track).toHaveBeenCalledWith(
+    expect(track).toHaveBeenCalledWith(
       "vehicle_insurance_yes",
       "consulta",
       { queryId: "q-1", source: "asf-relay" }
@@ -93,7 +83,7 @@ describe("VehicleQueryController", () => {
   });
 
   it("mantém o erro ASF separado do resultado sem seguro", async () => {
-    const { controller, telemetry } = createController({
+    const { controller, track } = createController({
       ok: false,
       error: {
         kind: "rate-limited",
@@ -106,7 +96,7 @@ describe("VehicleQueryController", () => {
     await controller.lookup({ plate: "12AB34", date: "2026/10/08" });
 
     expect(controller.snapshot.status).toBe("error");
-    expect(telemetry.track).toHaveBeenCalledWith(
+    expect(track).toHaveBeenCalledWith(
       "vehicle_insurance_error",
       "consulta",
       { queryId: "q-1", errorType: "rate-limited" }
@@ -114,7 +104,7 @@ describe("VehicleQueryController", () => {
   });
 
   it("emite sem seguro quando ASF devolve no-record", async () => {
-    const { controller, telemetry } = createController({
+    const { controller, track } = createController({
       ok: true,
       value: { kind: "no-record" }
     });
@@ -122,7 +112,7 @@ describe("VehicleQueryController", () => {
     await controller.lookup({ plate: "12AB34", date: "2026/10/08" });
 
     expect(controller.snapshot.status).toBe("success");
-    expect(telemetry.track).toHaveBeenCalledWith(
+    expect(track).toHaveBeenCalledWith(
       "vehicle_insurance_no",
       "consulta",
       { queryId: "q-1", source: "asf-relay" }
@@ -130,35 +120,60 @@ describe("VehicleQueryController", () => {
   });
 
   it("ignora resposta de uma consulta antiga", async () => {
-    let resolveFirst: ((value: { ok: true; value: AsfOutcome }) => void) | undefined;
-    const first = new Promise<{ ok: true; value: AsfOutcome }>((resolve) => {
+    let resolveFirst: ((value: AsfServiceResult) => void) | undefined;
+
+    const first = new Promise<AsfServiceResult>((resolve) => {
       resolveFirst = resolve;
     });
 
-    const query = vi.fn()
+    const query = vi.fn<(request: AsfServiceRequest) => Promise<AsfServiceResult>>()
       .mockReturnValueOnce(first)
-      .mockResolvedValueOnce({ ok: true, value: { kind: "no-record" } as const });
+      .mockResolvedValueOnce({ ok: true, value: { kind: "no-record" } });
 
     const controller = new VehicleQueryController({
       asf: { query },
       telemetry: {
-        newQueryId: vi.fn()
+        newQueryId: vi.fn<() => string>()
           .mockReturnValueOnce("q-old")
           .mockReturnValueOnce("q-new"),
-        track: vi.fn()
+        track: vi.fn<
+          (
+            event: TelemetryEventName,
+            module: string | null,
+            metadata?: Readonly<Record<string, unknown>>
+          ) => unknown
+        >()
       },
       store: {
-        setBusy: vi.fn(),
-        setQueryId: vi.fn()
+        setBusy: vi.fn<(isBusy: boolean) => void>(),
+        setQueryId: vi.fn<(queryId: string | null) => void>()
       }
     });
 
-    const oldPromise = controller.lookup({ plate: "11AA11", date: "2026/10/08" });
-    await controller.lookup({ plate: "22BB22", date: "2026/10/08" });
+    const oldPromise = controller.lookup({
+      plate: "11AA11",
+      date: "2026/10/08"
+    });
+    await controller.lookup({
+      plate: "22BB22",
+      date: "2026/10/08"
+    });
 
     resolveFirst?.({
       ok: true,
-      value: { kind: "insured", node: { license: "11AA11", entity: null, policy: null, startDate: null, endDate: null, code: null, id: null, logo: null } }
+      value: {
+        kind: "insured",
+        node: {
+          license: "11AA11",
+          entity: null,
+          policy: null,
+          startDate: null,
+          endDate: null,
+          code: null,
+          id: null,
+          logo: null
+        }
+      }
     });
     await oldPromise;
 
