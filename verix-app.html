@@ -17415,6 +17415,11 @@ html body .leg-card-new .copy-all-new{
   var HEARTBEAT_MS = 45000;
   var TIMEOUT_MS = 10000;
 
+  var localStore = null;
+  var sessionStore = null;
+  try { localStore = window.localStorage; } catch (_) {}
+  try { sessionStore = window.sessionStorage; } catch (_) {}
+
   var queue = [];
   var flushBusy = false;
   var flushTimer = null;
@@ -17449,9 +17454,9 @@ html body .leg-card-new .copy-all-new{
     return value;
   }
 
-  var installationId = persistentId(localStorage, INSTALL_KEY, 'i');
-  var sessionId = persistentId(sessionStorage, SESSION_KEY, 's');
-  var tabId = persistentId(sessionStorage, TAB_KEY, 't');
+  var installationId = persistentId(localStore, INSTALL_KEY, 'i');
+  var sessionId = persistentId(sessionStore, SESSION_KEY, 's');
+  var tabId = persistentId(sessionStore, TAB_KEY, 't');
 
   function deviceType() {
     var w = Math.min(window.innerWidth || 0, window.innerHeight || 0);
@@ -17568,7 +17573,7 @@ html body .leg-card-new .copy-all-new{
 
   function readQueue() {
     try {
-      var value = JSON.parse(storageGet(localStorage, QUEUE_KEY) || '[]');
+      var value = JSON.parse(storageGet(localStore, QUEUE_KEY) || '[]');
       return Array.isArray(value) ? value : [];
     } catch (_) {
       return [];
@@ -17577,7 +17582,7 @@ html body .leg-card-new .copy-all-new{
 
   function saveQueue() {
     try {
-      storageSet(localStorage, QUEUE_KEY, JSON.stringify(queue.slice(-MAX_QUEUE)));
+      storageSet(localStore, QUEUE_KEY, JSON.stringify(queue.slice(-MAX_QUEUE)));
     } catch (_) {}
   }
 
@@ -17738,12 +17743,31 @@ html body .leg-card-new .copy-all-new{
     }
   }
 
+  function sendViaActiveX(batch) {
+    return new Promise(function (resolve) {
+      try {
+        if (typeof ActiveXObject === 'undefined') return resolve(false);
+        var xhr = new ActiveXObject('WinHttp.WinHttpRequest.5.1');
+        xhr.open('POST', ENDPOINT, false);
+        xhr.setTimeouts(3000, 3000, TIMEOUT_MS, TIMEOUT_MS);
+        xhr.setRequestHeader('Content-Type', 'text/plain; charset=UTF-8');
+        xhr.send(JSON.stringify({ events: batch }));
+        var status = Number(xhr.Status || 0);
+        resolve(status >= 200 && status < 300);
+      } catch (_) {
+        resolve(false);
+      }
+    });
+  }
+
   async function send(batch) {
     if (typeof fetch === 'function') {
       var ok = await sendViaFetch(batch);
       if (ok) return true;
     }
-    return await sendViaXhr(batch);
+    var xhrOk = await sendViaXhr(batch);
+    if (xhrOk) return true;
+    return await sendViaActiveX(batch);
   }
 
   function schedule(delay) {
