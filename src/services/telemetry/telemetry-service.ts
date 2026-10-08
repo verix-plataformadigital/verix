@@ -115,6 +115,14 @@ export class TelemetryService {
 
     this.queue.enqueue(item);
     this.persist();
+
+    // Presence and consultation events must reach the backend promptly.
+    // The regular scheduler remains the reliability/retry fallback when this
+    // best-effort immediate flush cannot be delivered.
+    if (this.shouldFlushImmediately(event)) {
+      void this.flush();
+    }
+
     return item;
   }
 
