@@ -59,6 +59,23 @@ export class AppShell {
     nav.className = "verix-nav";
     nav.setAttribute("aria-label", "Módulos VÉRIX");
 
+    const homeButton = document.createElement("button");
+    homeButton.type = "button";
+    homeButton.className = "verix-nav-item";
+    homeButton.dataset.module = "main";
+    homeButton.setAttribute("aria-label", "Início");
+    homeButton.addEventListener("click", () => this.store.setModule("main"));
+    const homeIcon = document.createElement("span");
+    homeIcon.className = "verix-nav-icon";
+    homeIcon.setAttribute("aria-hidden", "true");
+    homeIcon.textContent = "⌂";
+    const homeLabel = document.createElement("span");
+    homeLabel.className = "verix-nav-label";
+    homeLabel.textContent = "Início";
+    homeButton.append(homeIcon, homeLabel);
+    this.navButtons.set("main", homeButton);
+    nav.append(homeButton);
+
     for (const module of MODULES) {
       const button = document.createElement("button");
       button.type = "button";

@@ -245,3 +245,8 @@ Fonte externa: Diário da República, Código da Estrada consolidado.
 
 
 - Refinamento do verificador: a lista do host RNSI é centralizada numa única constante e usada pelo método de validação. O teste deixou de exigir duas ocorrências literais do hostname (duplicação desnecessária) e verifica agora que a validação consulta efetivamente `InternalHttpAllowedHosts.Contains(uri.Host)`.
+
+
+#### Navegação de regresso ao início
+- Acrescentado o botão de navegação `Início` à barra lateral. A landing page V2 já não depende do arranque inicial para ser alcançada.
+- Adicionado teste DOM que navega para `Consulta` e regressa a `main`, verificando conteúdo e estado `aria-current`.
