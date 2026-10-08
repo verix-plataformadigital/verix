@@ -124,7 +124,7 @@ describe("ASF service adapter", () => {
     const service = new AsfService({ relayUrl: "https://example.invalid/asf", fetchImpl });
     const result = await service.query({
       ...request(),
-      matricula: "INVALID"
+      matricula: "ABCDE"
     });
 
     expect(result.ok).toBe(false);
