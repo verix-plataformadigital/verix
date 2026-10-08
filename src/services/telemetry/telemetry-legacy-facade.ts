@@ -1,5 +1,18 @@
 import type { TelemetryEventName } from "./telemetry-contract";
-import type { TelemetryService } from "./telemetry-service";
+
+export interface TelemetryFacadeSource {
+  readonly installationId: string;
+  readonly endpoint: string;
+  readonly queueSize: number;
+  newQueryId(): string;
+  track(
+    event: TelemetryEventName,
+    module: string | null,
+    metadata?: Readonly<Record<string, unknown>>
+  ): unknown;
+  flush(): Promise<unknown>;
+  flushBeacon(): number;
+}
 
 export interface VerixTelemetryLegacyFacade {
   readonly version: 2;
@@ -18,7 +31,7 @@ export interface VerixTelemetryLegacyFacade {
 }
 
 export function createTelemetryLegacyFacade(
-  service: TelemetryService,
+  service: TelemetryFacadeSource,
   enabled = true
 ): VerixTelemetryLegacyFacade {
   return {
