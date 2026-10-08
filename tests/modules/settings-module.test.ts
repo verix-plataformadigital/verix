@@ -48,7 +48,10 @@ describe("SettingsModule", () => {
     const root = document.createElement("main");
 
     new SettingsModule({ settings }).mount(root);
-    const theme = root.querySelector<HTMLSelectElement>(".settings-control select");
+    const selects = Array.from(
+      root.querySelectorAll<HTMLSelectElement>(".settings-control select")
+    );
+    const theme = selects[1];
     expect(theme).not.toBeNull();
     if (!theme) return;
 
@@ -57,7 +60,7 @@ describe("SettingsModule", () => {
 
     expect(settings.snapshot().profile).toBe("escudo");
     expect(settings.snapshot().theme).toBe("light");
-    expect(root.querySelector<HTMLSelectElement>(".settings-control select")?.value).toBe("escudo");
+    expect(root.querySelectorAll<HTMLSelectElement>(".settings-control select")[0]?.value).toBe("escudo");
     expect(root.querySelectorAll<HTMLSelectElement>(".settings-control select")[1]?.value).toBe("light");
   });
 });
