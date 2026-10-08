@@ -4,13 +4,6 @@ declare const Deno: any;
 
 
 
-function isLegacyLocal(req: Request): boolean {
-  const origin = req.headers.get("origin");
-  if (origin) return false;
-  const ua = req.headers.get("user-agent") || "";
-  return /Trident\\//i.test(ua) || /MSIE\\s/i.test(ua) || /MSHTA/i.test(ua);
-}
-
 function corsHeaders(req?: Request) {
   const origin = req?.headers.get("origin") || "";
   const opaqueLocal = !origin || origin === "null";
@@ -309,11 +302,9 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders(req) });
   if (req.method !== "POST") return json({ ok: false, error: "method_not_allowed" }, 405, req);
   if (!SUPABASE_URL || !secretKey) return json({ ok: false, error: "telemetry_not_configured" }, 503, req);
-  if (!rateSecret && !secretKey) return json({ ok: false, error: "rate_secret_not_configured" }, 503, req);
-
   const origin = req.headers.get("origin") || "";
   const opaqueLocal = !origin || origin === "null";
-  if (!(opaqueLocal || ALLOWED_ORIGINS.has(origin) || isLegacyLocal(req))) {
+  if (!(opaqueLocal || ALLOWED_ORIGINS.has(origin))) {
     return json({ ok: false, error: "origin_not_allowed" }, 403, req);
   }
 
