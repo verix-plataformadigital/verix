@@ -69,21 +69,23 @@ describe("TelemetryService", () => {
     expect(service.queueSize).toBe(1);
   });
 
-  it("não envia um lote que ultrapasse o limite de transporte", async () => {
+  it("permite lote normal superior ao limite de beacon/keepalive", async () => {
     const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
       new Response("ok", { status: 200 })
     );
-    const service = createService({ fetchImpl });
+    const service = createService({ fetchImpl, batchSize: 5 });
     const metadata = { value: "x".repeat(20_000) };
 
     for (let i = 0; i < 5; i += 1) {
       service.track("module_open", "consulta", metadata);
     }
 
-    const first = await service.flush();
-    expect(first.ok).toBe(true);
-    expect(first.sent).toBeLessThan(5);
-    expect(service.queueSize).toBeGreaterThan(0);
+    const result = await service.flush();
+    expect(result).toEqual({ ok: true, sent: 5 });
+    expect(service.queueSize).toBe(0);
+
+    const init = fetchImpl.mock.calls[0]?.[1];
+    expect(init?.keepalive).toBe(false);
   });
 
   it("impede flushes concorrentes", async () => {
