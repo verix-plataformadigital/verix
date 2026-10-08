@@ -222,13 +222,12 @@ Deno.serve(async (req: Request) => {
 
     try {
       const upstream = await fetch(url, {
-        method: "POST",
+        method: "GET",
         headers: {
           "Accept": "application/json, text/plain, */*",
           "Cache-Control": "no-cache",
           "Pragma": "no-cache"
         },
-        body: null,
         redirect: "follow",
         signal: controller.signal
       });
