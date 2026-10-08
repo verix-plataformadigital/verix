@@ -283,7 +283,7 @@ export class VehicleModule {
 
     const note = document.createElement("p");
     note.textContent =
-      "O RNSI do posto usa um endereço HTTP interno. A V2 não tenta carregá-lo dentro de HTTPS; abre o serviço externo no ambiente do posto e copia a matrícula.";
+      "O RNSI do posto usa um endereço HTTP interno. No host Windows, o VÉRIX abre a consulta numa janela WebView2 restrita ao serviço autorizado e copia a matrícula.";
 
     const buttons = document.createElement("div");
     buttons.className = "vehicle-imt-buttons";
