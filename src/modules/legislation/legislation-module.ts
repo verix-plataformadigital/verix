@@ -18,6 +18,7 @@ export class LegislationModule {
   private query = "";
   private openCategory: string | null = null;
   private lastTrackedQuery = "";
+  private searchTimer: number | null = null;
   private favoritesOnly = false;
   private readonly favorites: LegislationFavorites;
 
@@ -111,12 +112,8 @@ export class LegislationModule {
     }
     if (this.query.trim()) {
       count.textContent = `${results.length} resultado${results.length === 1 ? "" : "s"} em ${LEGISLATION_ITEM_COUNT} registos`;
-      if (this.query.trim() !== this.lastTrackedQuery) {
-        this.lastTrackedQuery = this.query.trim();
-        this.options.telemetry?.track("legislation_search", "legislacao", {
-          queryLength: this.query.trim().length,
-          results: results.length
-        });
+      if (this.query.trim() !== this.lastTrackedQuery && this.query.trim().length >= 2) {
+        this.scheduleSearchTelemetry(this.query.trim(), results.length);
       }
     } else if (this.favoritesOnly) {
       count.textContent = `${this.favorites.count()} favorito${this.favorites.count() === 1 ? "" : "s"} em ${LEGISLATION_ITEM_COUNT} registos`;
@@ -310,6 +307,21 @@ export class LegislationModule {
     );
 
     return article;
+  }
+
+  private scheduleSearchTelemetry(query: string, results: number): void {
+    if (this.searchTimer !== null) {
+      window.clearTimeout(this.searchTimer);
+    }
+    this.searchTimer = window.setTimeout(() => {
+      this.searchTimer = null;
+      if (query !== this.query.trim() || query === this.lastTrackedQuery) return;
+      this.lastTrackedQuery = query;
+      this.options.telemetry?.track("legislation_search", "legislacao", {
+        queryLength: query.length,
+        results
+      });
+    }, 700);
   }
 
   private async copyAll(
