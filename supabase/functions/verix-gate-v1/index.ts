@@ -87,7 +87,7 @@ Deno.serve(async (req: Request) => {
     const sessionId = cleanText(body?.session_id, 120);
     const tabId = cleanText(body?.tab_id, 120);
 
-    if (!/^1\.5-sec-[0-9]{8}-[a-z0-9-]{1,20}$/i.test(buildId)) {
+    if (!/^1\.5-sec-(?:[0-9]{8}-[a-z0-9-]{1,20}|[0-9]{1,8}-[a-f0-9]{7,64})$/i.test(buildId)) {
       return json({ ok: false, error: "invalid_build" }, 400, req);
     }
     if (!installationId || !sessionId || !tabId) {
