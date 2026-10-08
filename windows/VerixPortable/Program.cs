@@ -113,6 +113,7 @@ internal static class Program
                 settings.IsSwipeNavigationEnabled = false;
 
                 webView.CoreWebView2.NavigationStarting += OnNavigationStarting;
+                webView.CoreWebView2.FrameNavigationStarting += OnFrameNavigationStarting;
                 webView.CoreWebView2.NewWindowRequested += OnNewWindowRequested;
                 webView.CoreWebView2.DownloadStarting += OnDownloadStarting;
 
@@ -169,6 +170,29 @@ internal static class Program
                 {
                     e.Cancel = true;
                     LaunchExternal(uri);
+                    return;
+                }
+
+                e.Cancel = true;
+            }
+            catch
+            {
+                e.Cancel = true;
+            }
+        }
+
+        private void OnFrameNavigationStarting(object? sender, CoreWebView2NavigationStartingEventArgs e)
+        {
+            try
+            {
+                var uri = new Uri(e.Uri);
+
+                // VÉRIX does not require remote frames. Keep child-frame navigation
+                // restricted to the same trusted production origin so an iframe
+                // cannot turn an otherwise safe top-level page into a new network
+                // surface.
+                if (IsAllowedProductionUri(uri))
+                {
                     return;
                 }
 
