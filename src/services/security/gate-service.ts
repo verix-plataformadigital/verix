@@ -1,9 +1,4 @@
 import type { VerixSecurityIdentity } from "./gate-contract";
-  readonly installationId: string;
-  readonly sessionId: string;
-  readonly tabId: string;
-  readonly buildId: string;
-}
 
 export interface GateServiceOptions {
   readonly endpoint: string;
