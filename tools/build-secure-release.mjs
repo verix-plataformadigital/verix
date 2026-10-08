@@ -210,8 +210,6 @@ function verifyCriticalRuntime(outputPath) {
   return { telemetry_runtime: true, security_runtime: true };
 }
 
-}
-
 function verifyJavaScriptSyntax(outputPath) {
   const html = fs.readFileSync(outputPath, "utf8");
   const scriptPattern = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
