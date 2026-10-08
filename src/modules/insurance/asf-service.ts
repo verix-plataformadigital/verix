@@ -3,7 +3,8 @@ import { classifyAsfResponse, type AsfOutcome } from "./asf-classifier";
 import type { Result } from "../../shared/types/result";
 import { err, ok } from "../../shared/types/result";
 import { normalizeAsfDate, normalizePlate } from "../../shared/validators/vehicle";
-import { GateService, GateServiceException } from "../../services/security/gate-service";
+import { GateServiceException } from "../../services/security/gate-service";
+import type { GateAuthorization } from "../../services/security/gate-contract";
 
 export type AsfServiceError =
   | { readonly kind: "invalid-input"; readonly message: string }
@@ -23,7 +24,7 @@ export interface AsfServiceRequest {
 
 export interface AsfServiceOptions {
   readonly relayUrl: string;
-  readonly gate: GateService;
+  readonly gate: GateAuthorization;
   readonly fetchImpl?: typeof fetch;
   readonly timeoutMs?: number;
   readonly classify?: (response: AsfGraphqlResponse) => AsfOutcome;
