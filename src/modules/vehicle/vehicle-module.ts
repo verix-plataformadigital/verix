@@ -126,7 +126,7 @@ export class VehicleModule {
     submit.disabled = true;
     submit.textContent = "A CONSULTAR…";
 
-    const result = await this.controller.lookup({
+    await this.controller.lookup({
       plate: normalizedPlate,
       date: isoDateToAsfDate(isoDate)
     });
