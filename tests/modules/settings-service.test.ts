@@ -73,4 +73,32 @@ describe('SettingsService', () => {
     const service = new SettingsService(storage);
     expect(service.snapshot()).toEqual(DEFAULT_SETTINGS);
   });
+
+  it('applies the persisted visual preferences to the document body', () => {
+    const service = new SettingsService(new MemoryStorage());
+    service.update({
+      theme: 'light',
+      density: 'comfortable',
+      scale: '110',
+      hud: false,
+      transitions: false
+    });
+
+    const body = document.body;
+    const oldClassName = body.className;
+    const oldZoom = body.style.zoom;
+    try {
+      service.applyToDocument(document);
+      expect(body.classList.contains('theme-light')).toBe(true);
+      expect(body.classList.contains('ui-comfortable')).toBe(true);
+      expect(body.classList.contains('no-hud')).toBe(true);
+      expect(body.classList.contains('no-transitions')).toBe(true);
+      expect(body.classList.contains('ui-scale-110')).toBe(true);
+      expect(body.style.zoom).toBe('1.1');
+    } finally {
+      body.className = oldClassName;
+      body.style.zoom = oldZoom;
+    }
+  });
+
 });

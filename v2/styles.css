@@ -321,3 +321,81 @@ button{font:inherit}
 .cin-context-toggle:focus-visible{outline:2px solid #70d3ca;outline-offset:3px}
 .cin-context-host[hidden]{display:none!important}
 @media(max-width:600px){.cin-context-toggle{width:100%;min-height:40px}}
+
+
+/* Visual preferences configured by SettingsService. Keep these selectors
+   explicit so persisted options always map to observable presentation. */
+body.ui-compact .verix-workspace { padding: 22px 26px; }
+body.ui-normal .verix-workspace { padding: 30px 36px; }
+body.ui-comfortable .verix-workspace { padding: 40px 48px; }
+
+body.ui-compact .verix-nav { padding: 12px 8px; }
+body.ui-normal .verix-nav { padding: 18px 12px; }
+body.ui-comfortable .verix-nav { padding: 24px 16px; }
+
+body.ui-compact .verix-nav-item { gap: 8px; margin: 2px 0; padding: 8px 9px; }
+body.ui-normal .verix-nav-item { gap: 11px; margin: 4px 0; padding: 11px 12px; }
+body.ui-comfortable .verix-nav-item { gap: 12px; margin: 6px 0; padding: 14px 13px; }
+body.ui-comfortable .verix-nav-label { font-size: 12px; }
+
+body.ui-compact .vehicle-query-form,
+body.ui-compact .vehicle-result,
+body.ui-compact .vehicle-imt-actions,
+body.ui-compact .cin-form,
+body.ui-compact .cin-context-panel,
+body.ui-compact .settings-fieldset,
+body.ui-compact .tools-section,
+body.ui-compact .information-legal { padding: 12px; }
+
+body.ui-comfortable .vehicle-query-form,
+body.ui-comfortable .vehicle-result,
+body.ui-comfortable .vehicle-imt-actions,
+body.ui-comfortable .cin-form,
+body.ui-comfortable .cin-context-panel,
+body.ui-comfortable .settings-fieldset,
+body.ui-comfortable .tools-section,
+body.ui-comfortable .information-legal { padding: 24px; }
+
+body.ui-compact .home-module-grid { gap: 8px; }
+body.ui-comfortable .home-module-grid { gap: 16px; }
+body.ui-comfortable .home-module-card { min-height: 128px; padding: 19px; }
+
+body.no-hud .verix-status,
+body.no-hud .verix-overline,
+body.no-hud .verix-badge { display: none !important; }
+
+body.no-transitions *,
+body.no-transitions *::before,
+body.no-transitions *::after {
+  animation: none !important;
+  scroll-behavior: auto !important;
+  transition: none !important;
+}
+
+body.theme-light {
+  color-scheme: light;
+  background: #dbe5e8;
+  color: #17262b;
+}
+
+body.theme-light .verix-workspace { color: #17262b; }
+body.theme-light .verix-workspace h1,
+body.theme-light .verix-workspace h2,
+body.theme-light .verix-workspace h3 { color: #1b3036; }
+
+body.theme-light .verix-workspace input:not([type="checkbox"]):not([type="radio"]),
+body.theme-light .verix-workspace select,
+body.theme-light .verix-workspace textarea {
+  background: #fff;
+  border-color: rgba(23, 51, 57, .2);
+  color: #17262b;
+}
+
+@media(max-width:760px) {
+  body.ui-compact .verix-workspace,
+  body.ui-normal .verix-workspace { padding: 22px 16px; }
+  body.ui-comfortable .verix-workspace { padding: 30px 18px; }
+  body.ui-comfortable .verix-nav { padding: 12px 10px; }
+  body.ui-comfortable .verix-nav-item { margin: 0; padding: 11px 7px; }
+  body.ui-comfortable .verix-nav-label { font-size: 10px; }
+}
