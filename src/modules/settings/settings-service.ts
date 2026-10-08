@@ -100,10 +100,20 @@ export class SettingsService {
       body.classList.toggle(`ui-scale-${scale}`, this.settings.scale === scale);
     }
     body.classList.toggle('ui-scale-auto', this.settings.scale === 'auto');
-    body.style.zoom =
-      this.settings.scale === 'auto'
-        ? ''
-        : `${Number(this.settings.scale) / 100}`;
+    if (this.settings.scale === 'auto') {
+      const width = Math.max(
+        doc.documentElement.clientWidth || 0,
+        (doc.defaultView?.innerWidth || 0)
+      );
+      const height = Math.max(
+        doc.documentElement.clientHeight || 0,
+        (doc.defaultView?.innerHeight || 0)
+      );
+      const zoom = Math.max(0.82, Math.min(1.08, Math.min(width / 1600, height / 900)));
+      body.style.zoom = zoom.toFixed(3);
+    } else {
+      body.style.zoom = `${Number(this.settings.scale) / 100}`;
+    }
   }
 
   private load(): VerixSettings {
