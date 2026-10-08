@@ -1,7 +1,6 @@
 declare const Deno: any;
 
-const ALLOWED_ORIGINS = new Set([
-  "https://verix.vxops.workers.dev",
+const ALLOWED_ORIGINS = new Set([,
   "https://verix-plataformadigital.github.io"
 ]);
 
@@ -23,10 +22,13 @@ function corsHeaders(req: Request) {
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-function json(data: unknown, status=200) {
+function json(data: unknown, status=200, req?: Request) {
   return new Response(JSON.stringify(data), {
     status,
-    headers:{"Content-Type":"application/json",...corsHeaders}
+    headers:{
+      "Content-Type":"application/json",
+      ...corsHeaders(req || new Request("https://verix-plataformadigital.github.io"))
+    }
   });
 }
 
@@ -79,9 +81,9 @@ async function rpc(name: string, body: Record<string,unknown>) {
 }
 
 Deno.serve(async (req) => {
-  if(req.method==="OPTIONS") return new Response(null,{status:204,headers:corsHeaders});
-  if(req.method!=="GET") return json({ok:false,error:"method_not_allowed"},405);
-  if(!(await verifyToken(req))) return json({ok:false,error:"unauthorized"},401);
+  if(req.method==="OPTIONS") return new Response(null,{status:204,headers:corsHeaders(req)});
+  if(req.method!=="GET") return json({ok:false,error:"method_not_allowed"},405,req);
+  if(!(await verifyToken(req))) return json({ok:false,error:"unauthorized"},401,req);
 
   const parsedUrl = new URL(req.url);
   let date = parsedUrl.searchParams.get("date") || "";
@@ -91,12 +93,12 @@ Deno.serve(async (req) => {
     const legacyMatch = legacyV.match(/\?date=(\d{4}-\d{2}-\d{2})/);
     if(legacyMatch) date = legacyMatch[1];
   }
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(date||"")) return json({ok:false,error:"invalid_date"},400);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date||"")) return json({ok:false,error:"invalid_date"},400,req);
 
   try {
     const rows = await rpc("verix2_hourly", {p_date:date});
-    return json({ok:true,date,rows},200);
+    return json({ok:true,date,rows},200,req);
   } catch(error) {
-    return json({ok:false,error:"hourly_v2_failed",detail:String((error as Error)?.message||error)},500);
+    return json({ok:false,error:"hourly_v2_failed",detail:String((error as Error)?.message||error)},500,req);
   }
 });
