@@ -19,6 +19,8 @@ export class VehicleModule {
   private root: HTMLElement | null = null;
   private lastPlate = "";
   private lastTrailer = "";
+  private lastDate = this.isoToday();
+  private localNotice = "";
 
   constructor(private readonly options: VehicleModuleOptions) {
     this.controller = new VehicleQueryController({
@@ -65,7 +67,7 @@ export class VehicleModule {
     dateLabel.textContent = "DATA DA CONSULTA ASF";
     const dateInput = document.createElement("input");
     dateInput.type = "date";
-    dateInput.value = this.isoToday();
+    dateInput.value = this.lastDate;
     dateInput.autocomplete = "off";
     dateField.append(dateLabel, dateInput);
 
@@ -87,6 +89,8 @@ export class VehicleModule {
     clear.addEventListener("click", () => {
       this.lastPlate = "";
       this.lastTrailer = "";
+      this.lastDate = this.isoToday();
+      this.localNotice = "";
       this.render();
     });
 
@@ -102,6 +106,14 @@ export class VehicleModule {
         submit
       );
     });
+
+    if (this.localNotice) {
+      const notice = document.createElement("div");
+      notice.className = "vehicle-local-notice";
+      notice.setAttribute("role", "alert");
+      notice.textContent = this.localNotice;
+      section.append(notice);
+    }
 
     section.append(form, this.renderResult(), this.renderImtActions());
     this.root.replaceChildren(section);
@@ -121,6 +133,8 @@ export class VehicleModule {
 
     this.lastPlate = plate;
     this.lastTrailer = trailer;
+    this.lastDate = isoDate || this.isoToday();
+    this.localNotice = "";
 
     submit.disabled = true;
     submit.textContent = "A CONSULTAR…";
@@ -319,7 +333,8 @@ export class VehicleModule {
   }
 
   private showLocalError(message: string): void {
-    window.alert(message);
+    this.localNotice = message;
+    this.render();
   }
 
   private errorMessage(error: AsfServiceError): string {
@@ -330,7 +345,10 @@ export class VehicleModule {
 
   private focusResult(): void {
     const result = this.root?.querySelector(".vehicle-result");
-    if (result instanceof HTMLElement) result.focus({ preventScroll: false });
+    if (result instanceof HTMLElement) {
+      result.tabIndex = -1;
+      result.focus({ preventScroll: false });
+    }
   }
 
   private isoToday(): string {
@@ -362,8 +380,7 @@ async function copyText(value: string): Promise<void> {
   const area = document.createElement("textarea");
   area.value = value;
   area.setAttribute("readonly", "true");
-  area.style.position = "fixed";
-  area.style.opacity = "0";
+  area.className = "vehicle-copy-buffer";
   document.body.append(area);
   area.select();
 
