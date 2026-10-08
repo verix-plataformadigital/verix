@@ -311,6 +311,28 @@ const likelyDeadNamedFunctions = [...symbolIndex.entries()]
 const extensions = {};
 for(const row of rows) extensions[row.extension]=(extensions[row.extension]||0)+1;
 
+// Supabase migration versions are the deployment identity, not just filenames.
+// Require the CLI's 14-digit timestamp form and unique version IDs so a
+// short-date filename cannot silently look like a new migration on production.
+const migrationsDirectory = path.join(ROOT, "supabase", "migrations");
+const migrationFiles = fs.existsSync(migrationsDirectory)
+  ? fs.readdirSync(migrationsDirectory).filter(name => name.endsWith(".sql")).sort()
+  : [];
+const migrationVersions = new Set();
+const migrationIssues = [];
+for (const filename of migrationFiles) {
+  const match = /^(\d{14})_[a-z0-9][a-z0-9_]*\.sql$/i.exec(filename);
+  if (!match) {
+    migrationIssues.push({ file: filename, issue: "expected 14-digit timestamp prefix and descriptive name" });
+    continue;
+  }
+  if (migrationVersions.has(match[1])) {
+    migrationIssues.push({ file: filename, issue: "duplicate migration version " + match[1] });
+    continue;
+  }
+  migrationVersions.add(match[1]);
+}
+
 const summary = {
   generated_at:new Date().toISOString(),
   repository:"verix-plataformadigital/verix",
@@ -319,6 +341,7 @@ const summary = {
   total_lines:rows.reduce((sum,row)=>sum+row.lines,0),
   extensions,
   parse_errors:parseErrors,
+  migration_audit:{files:migrationFiles.length,versions:[...migrationVersions].sort(),issues:migrationIssues},
   largest_files:[...rows].sort((a,b)=>b.bytes-a.bytes).slice(0,25),
   highest_function_counts:[...rows].sort((a,b)=>b.named_function_count-a.named_function_count).slice(0,25),
   listeners_by_file:[...rows].sort((a,b)=>b.add_event_listener_count-a.add_event_listener_count).slice(0,25),
@@ -402,5 +425,13 @@ console.log(JSON.stringify({
   global_reference_hotspots:summary.global_reference_hotspots.length,
   endpoints:summary.endpoints.length,
   supabase_objects:summary.supabase_objects.length,
-  rpc_names:summary.rpc_names.length
+  rpc_names:summary.rpc_names.length,
+  migration_files:summary.migration_audit.files,
+  migration_filename_issues:summary.migration_audit.issues.length
 },null,2));
+
+if (migrationIssues.length) {
+  console.error("Invalid Supabase migration filenames or duplicate versions:");
+  for (const issue of migrationIssues) console.error("- " + issue.file + ": " + issue.issue);
+  process.exitCode = 1;
+}
