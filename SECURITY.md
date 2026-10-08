@@ -69,7 +69,7 @@ Store them only in Supabase / GitHub Secrets.
 
 ## 6. Windows portable host
 
-The Windows host already disables DevTools, context menu, external navigation and downloads. Keep shipping only the WebView2 host.
+The Windows host disables DevTools, context menu and downloads. Navigation is locked to the production VÉRIX host, with an explicit allow-list for the official external services opened by the application (ASF, ERRU/IMT, INEM and Waze). Keep shipping only the WebView2 host.
 
 ## 7. Incident response
 
