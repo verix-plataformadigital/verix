@@ -4,6 +4,7 @@ import type { ImtService } from "../imt/imt-service";
 import {
   VehicleQueryController,
   type VehicleAsfClient,
+  type VehicleLookupViewState,
   type VehicleTelemetryClient
 } from "./vehicle-query-controller";
 import type { HistoryRecord, HistoryService } from "../history/history-service";
@@ -23,7 +24,7 @@ export interface VehicleModuleOptions {
 
 export class VehicleModule {
   private readonly controller: VehicleQueryController;
-  private readonly orchestrator: VehicleLookupOrchestrator<boolean, ReturnType<VehicleQueryController["lookup"]>>;
+  private readonly orchestrator: VehicleLookupOrchestrator<boolean, VehicleLookupViewState>;
   private root: HTMLElement | null = null;
   private lastPlate = "";
   private lastTrailer = "";
@@ -42,7 +43,7 @@ export class VehicleModule {
       }
     });
 
-    this.orchestrator = new VehicleLookupOrchestrator<boolean, Awaited<ReturnType<VehicleQueryController["lookup"]>>>({
+    this.orchestrator = new VehicleLookupOrchestrator<boolean, VehicleLookupViewState>({
       newQueryId: () => this.options.telemetry.newQueryId(),
       startImtInspection: async (plate, queryId) => {
         const opened = this.options.imt.open("inspecao", plate);
