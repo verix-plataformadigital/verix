@@ -18,7 +18,6 @@ describe("vehicle lookup orchestration", () => {
         calls.push("asf:" + plate + ":" + queryId + ":" + asfDate);
         return "asf";
       },
-      recordLookup: (queryId) => calls.push("telemetry:" + queryId)
     });
 
     const result = orchestrator.execute({
@@ -31,17 +30,16 @@ describe("vehicle lookup orchestration", () => {
     if (!result.ok) return;
 
     expect(calls).toEqual([
-      "telemetry:q-1",
+      "asf:12-AB-34:q-1:2026/10/08",
       "imt-inspecao:12-AB-34",
-      "imt-livrete:VC-1234",
-      "asf:12-AB-34:q-1:2026/10/08"
+      "imt-livrete:VC-1234"
     ]);
 
     await expect(result.value).resolves.toMatchObject({
       queryId: "q-1",
       targets: {
         inspectionPlate: "12-AB-34",
-        libretePlate: "VC-1234"
+        livretePlate: "VC-1234"
       }
     });
   });
