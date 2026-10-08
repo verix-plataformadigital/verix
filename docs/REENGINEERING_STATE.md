@@ -274,3 +274,9 @@ Fonte externa: Diário da República, Código da Estrada consolidado.
 - A reabertura do histórico agora chama `VehicleQueryController.reset()`, que limpa o resultado e invalida respostas de pedidos anteriores ainda em curso.
 - O estado busy e o queryId global são limpos; uma resposta tardia não pode voltar a preencher o painel com o resultado de outro veículo.
 - Testes cobrem tanto uma consulta pendente que termina após reset como o fluxo histórico que reabre uma matrícula/data sem manter o resultado anterior.
+
+
+#### Cancelamento do UI após limpar/reabrir
+- Acrescentado um contador de geração ao módulo de consulta: qualquer submissão, limpeza ou reabertura invalida a continuação UI de operações anteriores.
+- Limpar o formulário faz reset do controlador; uma consulta ASF que termine tarde deixa de conseguir restaurar um resultado antigo no ecrã.
+- Teste DOM cobre a sequência iniciar pedido pendente → limpar → resposta antiga chegar, confirmando que o formulário permanece limpo e sem resultado desfasado.

@@ -30,6 +30,7 @@ export class VehicleModule {
   private lastTrailer = "";
   private lastDate = this.isoToday();
   private localNotice = "";
+  private operationGeneration = 0;
 
   constructor(private readonly options: VehicleModuleOptions) {
     this.controller = new VehicleQueryController({
@@ -77,6 +78,7 @@ export class VehicleModule {
   }
 
   reopen(record: HistoryRecord): void {
+    this.operationGeneration += 1;
     this.controller.reset();
     this.lastPlate = record.veiculo;
     this.lastTrailer = record.reboque;
@@ -154,6 +156,8 @@ export class VehicleModule {
     clear.className = "vehicle-clear";
     clear.textContent = "LIMPAR";
     clear.addEventListener("click", () => {
+      this.operationGeneration += 1;
+      this.controller.reset();
       this.lastPlate = "";
       this.lastTrailer = "";
       this.lastDate = this.isoToday();
@@ -192,8 +196,10 @@ export class VehicleModule {
     isoDate: string,
     submit: HTMLButtonElement
   ): Promise<void> {
+    const operationGeneration = ++this.operationGeneration;
     const normalizedPlate = normalizePlate(plate);
     if (!/^[A-Z0-9]{6,8}$/.test(normalizedPlate)) {
+      this.controller.reset();
       this.showLocalError("Introduza uma matrícula válida.");
       return;
     }
@@ -215,11 +221,13 @@ export class VehicleModule {
     );
 
     if (!coordinated.ok) {
+      this.controller.reset();
       this.showLocalError("Introduza pelo menos uma matrícula válida.");
       return;
     }
 
     const settled = await coordinated.value;
+    if (operationGeneration !== this.operationGeneration) return;
 
     const rnsiBlocked = [settled.imtInspection, settled.imtLivrete].some(
       (channel) => channel.status === "fulfilled" && channel.value === false

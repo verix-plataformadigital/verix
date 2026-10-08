@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { VehicleModule } from "../../src/modules/vehicle/vehicle-module";
 import { ImtService } from "../../src/modules/imt/imt-service";
 import { HistoryService } from "../../src/modules/history/history-service";
-import { AsfService } from "../../src/modules/insurance/asf-service";
+import { AsfService, type AsfServiceResult } from "../../src/modules/insurance/asf-service";
 import { buildImtRnsiUrl } from "../../src/modules/imt/imt-url-builder";
 
 describe("RNSI URL compatibility", () => {
@@ -170,6 +170,53 @@ describe("VehicleModule history preference", () => {
     expect(root.querySelector<HTMLInputElement>("#vehicle-plate")?.value).toBe("12AB34");
     expect(root.querySelector(".vehicle-result-idle")).not.toBeNull();
     expect(root.querySelector(".vehicle-result-no-record")).toBeNull();
+  });
+
+
+  it("does not restore a cleared result when an old ASF request finishes late", async () => {
+    let resolveAsf: ((result: AsfServiceResult) => void) | undefined;
+    const query = vi.fn<(request: { matricula: string; date: string }) => Promise<AsfServiceResult>>(
+      () => new Promise((resolve) => { resolveAsf = resolve; })
+    );
+    const root = document.createElement("main");
+    const history = {
+      add: vi.fn(),
+      updateInsurance: vi.fn()
+    } as unknown as HistoryService;
+    const telemetry = {
+      newQueryId: vi.fn(() => "q-slow"),
+      track: vi.fn()
+    };
+    const store = {
+      setBusy: vi.fn(),
+      setQueryId: vi.fn()
+    };
+    const module = new VehicleModule({
+      asf: { query } as unknown as AsfService,
+      imt: new ImtService({ open: vi.fn(() => true) }),
+      telemetry,
+      store,
+      history
+    });
+    module.mount(root);
+
+    const plate = root.querySelector<HTMLInputElement>("#vehicle-plate");
+    const form = root.querySelector<HTMLFormElement>(".vehicle-query-form");
+    if (!plate || !form) return;
+    plate.value = "12-AB-34";
+    form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+
+    expect(root.querySelector(".vehicle-result-loading")).not.toBeNull();
+    root.querySelector<HTMLButtonElement>(".vehicle-clear")?.click();
+    expect(root.querySelector(".vehicle-result-idle")).not.toBeNull();
+    expect(store.setQueryId).toHaveBeenLastCalledWith(null);
+
+    resolveAsf?.({ ok: true, value: { kind: "no-record" } });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(root.querySelector(".vehicle-result-idle")).not.toBeNull();
+    expect(root.querySelector(".vehicle-result-no-record")).toBeNull();
+    expect(root.querySelector<HTMLInputElement>("#vehicle-plate")?.value).toBe("");
   });
 
 });
