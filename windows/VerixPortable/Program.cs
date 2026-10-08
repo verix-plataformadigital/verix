@@ -5,8 +5,9 @@ namespace VerixPortable;
 
 internal static class Program
 {
-    private const string AllowedHost = "verix.vxops.workers.dev";
-    private const string StartUrl = "https://verix.vxops.workers.dev/";
+    // Only production channel: GitHub Pages
+    private const string AllowedHost = "verix-plataformadigital.github.io";
+    private const string StartUrl = "https://verix-plataformadigital.github.io/verix/";
 
     [STAThread]
     private static void Main()
