@@ -74,6 +74,61 @@ describe("VehicleModule history preference", () => {
     expect(history.updateInsurance).not.toHaveBeenCalled();
   });
 
+  it("coordena RNSI inspeção, RNSI livrete e ASF com o mesmo queryId", async () => {
+    const root = document.createElement("main");
+    const history = {
+      add: vi.fn(),
+      updateInsurance: vi.fn()
+    } as unknown as HistoryService;
+    const asf = {
+      query: vi.fn(async () => ({
+        ok: true as const,
+        value: { kind: "no-record" as const }
+      }))
+    } as unknown as AsfService;
+    const telemetry = {
+      newQueryId: vi.fn(() => "q-coord"),
+      track: vi.fn()
+    };
+    const imtOpen = vi.fn(() => true);
+    const imt = new ImtService({ open: imtOpen });
+
+    const module = new VehicleModule({
+      asf,
+      imt,
+      telemetry,
+      store: {
+        setBusy: vi.fn(),
+        setQueryId: vi.fn()
+      },
+      history
+    });
+
+    module.mount(root);
+
+    const plate = root.querySelector<HTMLInputElement>("#vehicle-plate");
+    const trailer = root.querySelector<HTMLInputElement>("#vehicle-trailer");
+    const date = root.querySelector<HTMLInputElement>('input[type="date"]');
+    const form = root.querySelector<HTMLFormElement>(".vehicle-query-form");
+    if (!plate || !trailer || !date || !form) return;
+
+    plate.value = "12-AB-34";
+    trailer.value = "VC-12-34";
+    date.value = "2026-10-08";
+
+    form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(imtOpen).toHaveBeenCalledTimes(2);
+    expect(imtOpen).toHaveBeenNthCalledWith(1, "inspecao", "12AB34");
+    expect(imtOpen).toHaveBeenNthCalledWith(2, "livrete", "VC1234");
+    expect(asf.query).toHaveBeenCalledWith({
+      matricula: "12AB34",
+      date: "2026/10/08"
+    });
+    expect(telemetry.newQueryId).toHaveBeenCalledTimes(1);
+  });
+
   it("grava histórico quando a preferência está ligada", async () => {
     const { root, history } = createModule(true);
     const plate = root.querySelector<HTMLInputElement>("#vehicle-plate");
