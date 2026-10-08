@@ -12,6 +12,8 @@ import { HistoryModule } from "../modules/history/history-module";
 import { CinemometerModule } from "../modules/cinemometer/cinemometer-module";
 import { LegislationModule } from "../modules/legislation/legislation-module";
 import { AlcoholModule } from "../modules/alcohol/alcohol-module";
+import { SettingsService } from "../modules/settings/settings-service";
+import { SettingsModule } from "../modules/settings/settings-module";
 
 function browserStorage(kind: "local" | "session"): Storage | null {
   try {
@@ -60,6 +62,9 @@ export async function bootstrap(root: HTMLElement): Promise<void> {
   const cinemometerModule = new CinemometerModule({ telemetry });
   const legislationModule = new LegislationModule({ telemetry });
   const alcoholModule = new AlcoholModule({ telemetry });
+  const settings = new SettingsService(localStorage);
+  settings.applyToDocument(document);
+  const settingsModule = new SettingsModule({ settings, telemetry });
   const vehicleModule = new VehicleModule({
     asf,
     telemetry,
@@ -98,6 +103,10 @@ export async function bootstrap(root: HTMLElement): Promise<void> {
       }
       if (module === "alcohol") {
         alcoholModule.mount(workspace);
+        return true;
+      }
+      if (module === "settings") {
+        settingsModule.mount(workspace);
         return true;
       }
       return false;
