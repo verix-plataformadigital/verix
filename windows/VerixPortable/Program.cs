@@ -40,13 +40,38 @@ internal static class Program
             MinimumSize = new Size(1100, 700);
             BackColor = Color.FromArgb(3, 8, 12);
 
-            userDataFolder = Path.Combine(AppContext.BaseDirectory, ".verix-data");
+            userDataFolder = ResolveUserDataFolder();
 
             webView.Dock = DockStyle.Fill;
             Controls.Add(webView);
 
             FormClosed += (_, _) => webView.Dispose();
             Shown += async (_, _) => await InitializeWebViewAsync();
+        }
+
+        private static string ResolveUserDataFolder()
+        {
+            var portablePath = Path.Combine(AppContext.BaseDirectory, ".verix-data");
+
+            try
+            {
+                Directory.CreateDirectory(portablePath);
+                using var probe = File.Open(
+                    Path.Combine(portablePath, ".write-test"),
+                    FileMode.OpenOrCreate,
+                    FileAccess.Write,
+                    FileShare.ReadWrite);
+                probe.SetLength(0);
+                File.Delete(Path.Combine(portablePath, ".write-test"));
+                return portablePath;
+            }
+            catch
+            {
+                var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                var fallback = Path.Combine(localAppData, "VERIX", "WebView2");
+                Directory.CreateDirectory(fallback);
+                return fallback;
+            }
         }
 
         private async Task InitializeWebViewAsync()
