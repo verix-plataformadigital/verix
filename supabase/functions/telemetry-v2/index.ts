@@ -328,12 +328,17 @@ Deno.serve(async (req: Request) => {
     return json({ ok: false, error: "origin_not_allowed" }, 403, req);
   }
 
-  const buildId = String(req.headers.get("x-verix-build-id") || "").trim().slice(0, 80);
-  if (!/^1\.5-sec-[0-9]{8}-[a-z0-9-]{1,20}$/i.test(buildId)) {
-    return json({ ok: false, error: "invalid_build" }, 400, req);
-  }
-  if (!(await buildEnabled(buildId))) {
-    return json({ ok: false, error: "build_revoked" }, 403, req);
+  // Compatibilidade: versões atuais do cliente ainda não enviam x-verix-build-id.
+  // Quando o header existe, validamo-lo; quando não existe, usamos appVersion
+  // no próprio evento e mantemos a telemetria operacional.
+  const buildIdHeader = String(req.headers.get("x-verix-build-id") || "").trim().slice(0, 80);
+  if (buildIdHeader) {
+    if (!/^1\.5-sec-[0-9]{8}-[a-z0-9-]{1,80}$/i.test(buildIdHeader)) {
+      return json({ ok: false, error: "invalid_build" }, 400, req);
+    }
+    if (!(await buildEnabled(buildIdHeader))) {
+      return json({ ok: false, error: "build_revoked" }, 403, req);
+    }
   }
 
   try {
