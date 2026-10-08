@@ -122,13 +122,9 @@ export class TelemetryService {
 
     this.flushBusy = true;
     try {
-      const batch = this.takeBatch();
-      if (batch.length === 0) {
-        return { ok: false, sent: 0, retryAfterMs: null };
-      }
-
+      const batch = this.queue.peek(this.batchSize);
       const body: TelemetryBatch = { events: batch };
-      const response = await this.send(body);
+      const response = await this.send(body, false);
 
       if (!response.ok) {
         return {
@@ -153,7 +149,7 @@ export class TelemetryService {
   flushBeacon(): number {
     if (this.flushBusy || this.queue.size === 0 || !this.sendBeaconImpl) return 0;
 
-    const batch = this.takeBatch();
+    const batch = this.takeBeaconBatch();
     if (batch.length === 0) return 0;
 
     const payload = new Blob(
@@ -168,7 +164,7 @@ export class TelemetryService {
     return removed;
   }
 
-  private takeBatch(): readonly TelemetryEvent[] {
+  private takeBeaconBatch(): readonly TelemetryEvent[] {
     const candidates = this.queue.peek(this.batchSize);
     const selected: TelemetryEvent[] = [];
 
@@ -178,10 +174,7 @@ export class TelemetryService {
         JSON.stringify({ events: next })
       ).byteLength;
 
-      if (bytes > MAX_TRANSPORT_BYTES) {
-        break;
-      }
-
+      if (bytes > MAX_BEACON_BYTES) break;
       selected.push(event);
     }
 
@@ -192,7 +185,7 @@ export class TelemetryService {
     this.local.set(this.queueKey, this.queue.serialize());
   }
 
-  private async send(batch: TelemetryBatch): Promise<
+  private async send(batch: TelemetryBatch, keepalive: boolean): Promise<
     { readonly ok: true; readonly retryAfterMs: null } |
     { readonly ok: false; readonly retryAfterMs: number | null }
   > {
@@ -210,7 +203,7 @@ export class TelemetryService {
         mode: "cors",
         credentials: "omit",
         cache: "no-store",
-        keepalive: true,
+        keepalive,
         signal: controller.signal
       });
 
