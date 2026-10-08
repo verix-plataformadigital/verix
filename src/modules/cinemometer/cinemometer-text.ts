@@ -3,17 +3,17 @@ export interface CinemometerTextInput {
   readonly deducedSpeed: number;
   readonly speedLimit: number;
   readonly mode: string;
-  readonly marca?: string | null;
-  readonly modelo?: string | null;
-  readonly serie?: string | null;
-  readonly ansr?: string | null;
-  readonly ipq?: string | null;
-  readonly dataipq?: string | null;
-  readonly certtipo?: string | null;
-  readonly cert?: string | null;
-  readonly operadorNumero?: string | null;
-  readonly operadorNome?: string | null;
-  readonly operadorPosto?: string | null;
+  readonly marca?: string | null | undefined;
+  readonly modelo?: string | null | undefined;
+  readonly serie?: string | null | undefined;
+  readonly ansr?: string | null | undefined;
+  readonly ipq?: string | null | undefined;
+  readonly dataipq?: string | null | undefined;
+  readonly certtipo?: string | null | undefined;
+  readonly cert?: string | null | undefined;
+  readonly operadorNumero?: string | null | undefined;
+  readonly operadorNome?: string | null | undefined;
+  readonly operadorPosto?: string | null | undefined;
 }
 
 export function buildCinemometerOperationalText(input: CinemometerTextInput): string {
