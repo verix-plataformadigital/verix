@@ -1667,6 +1667,22 @@ function submitConjunto(event) {
       throw erroComDiagASF(diag.asfMessage, diag);
     }
 
+    if (httpStatus === null) {
+      var lastAttempt = Array.isArray(diag.asfAttempts) && diag.asfAttempts.length
+        ? diag.asfAttempts[diag.asfAttempts.length - 1]
+        : null;
+      if (lastAttempt && lastAttempt.errorType) {
+        diag.asfErrorType = lastAttempt.errorType;
+        diag.asfMessage = lastAttempt.message
+          ? String(lastAttempt.message).slice(0, 500)
+          : 'Falha de comunicação com o relay VÉRIX';
+      } else if (!diag.asfErrorType) {
+        diag.asfErrorType = 'network';
+        diag.asfMessage = 'Falha de comunicação com o relay VÉRIX';
+      }
+      throw erroComDiagASF(diag.asfMessage, diag);
+    }
+
     if (httpStatus < 200 || httpStatus >= 300) {
       diag.asfErrorType = 'http_' + httpStatus;
       diag.asfMessage = 'Erro HTTP ' + httpStatus;
