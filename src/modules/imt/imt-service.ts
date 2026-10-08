@@ -35,6 +35,24 @@ export class ImtService {
 
 export function browserImtWindowAdapter(): ImtWindowAdapter {
   return {
-    open: (url) => Boolean(window.open(url, '_blank', 'noopener,noreferrer'))
+    open: (url) => {
+      // The V2 document sets Referrer-Policy: no-referrer. Do not pass the
+      // "noopener" feature here: browsers deliberately return null when it is
+      // requested, even if the new window opened successfully.
+      const opened = window.open(url, "_blank");
+      if (!opened) return false;
+
+      // Sever the opener synchronously before the external page finishes
+      // loading, retaining protection against reverse tabnabbing while keeping
+      // a meaningful return value for popup-blocking diagnostics.
+      try {
+        opened.opener = null;
+      } catch {
+        try { opened.close(); } catch { /* best-effort cleanup */ }
+        return false;
+      }
+
+      return true;
+    }
   };
 }

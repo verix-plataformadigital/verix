@@ -42,3 +42,10 @@
 - https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/performance
 - https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution
 - https://vite.dev/guide/build
+
+
+### Popup / janela externa RNSI — 2026-10-08
+- MDN documenta que `window.open(url, target, "noopener")` devolve `null` por especificação, mesmo quando a nova janela é aberta. Por isso, não se deve usar esse retorno para diagnosticar bloqueio de pop-up.
+- A aplicação V2 mantém `Referrer-Policy: no-referrer` no documento e o adaptador IMT abre a janela com retorno verificável, anulando imediatamente `opened.opener` antes de a página externa terminar de carregar.
+- MDN também assinala que os browsers modernos exigem ativação do utilizador para cada nova janela. A V2 mantém botões individuais de inspeção/livrete como caminho explícito de recuperação quando o browser/host bloquear uma das aberturas automáticas.
+- Referências: https://developer.mozilla.org/en-US/docs/Web/API/Window/open e https://developer.mozilla.org/en-US/docs/Web/Glossary/Transient_activation.

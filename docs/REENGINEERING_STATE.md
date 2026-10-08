@@ -223,9 +223,16 @@ Fonte externa: Diário da República, Código da Estrada consolidado.
 - A auditoria de segurança correu com sucesso em commits intermédios desta tranche.
 - Foi observado typecheck verde após a correção do contrato de matrícula.
 - A primeira execução de testes revelou expectativas legadas de ordem das chamadas, contrato do adaptador IMT e resultados V61; essas expectativas foram alinhadas e a coordenação foi ajustada para abrir RNSI primeiro.
-- O teste de `HomeModule` deve usar explicitamente o ambiente jsdom do Vitest.
+- O teste de `HomeModule` está configurado com `// @vitest-environment jsdom` conforme a documentação do Vitest.
 - O estado final só deve ser marcado como concluído quando a CI do HEAD final passar: typecheck, typecheck Edge, testes, auditoria estática, build V2, regras de segurança, ausência de source maps e build/publicação do host Windows.
 
 #### Estado de produção e limites
 - Produção continua isolada em `main`; não houve alteração a `asf-proxy-v1`, `telemetry-v2` de produção, schema Supabase ou admin de produção.
 - A nova página inicial e as alterações de orquestração são apenas parte da branch V2. A janela RNSI e o pacote Windows continuam a precisar de validação em equipamento operacional real.
+
+
+#### Correção de diagnóstico de pop-ups — validação externa
+- A auditoria de `browserImtWindowAdapter` encontrou um falso negativo de abertura: usar `noopener,noreferrer` como feature faz o retorno de `window.open` ser `null` por especificação, não apenas quando um popup é bloqueado.
+- O adaptador foi alterado para usar `window.open(url, "_blank")`, anular imediatamente `opened.opener` e devolver `false` apenas se não foi criada uma referência (ou se o isolamento do opener não pôde ser concluído).
+- A política `no-referrer` permanece no HTML V2. Foram acrescentados testes DOM para distinguir abertura permitida de pop-up bloqueado.
+- A pesquisa também confirmou a restrição de ativação do utilizador por janela; se o segundo canal RNSI for bloqueado, o caminho continua a ser o respetivo botão explícito, em vez de remover proteções do browser.
