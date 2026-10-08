@@ -15,6 +15,7 @@ import { AlcoholModule } from "../modules/alcohol/alcohol-module";
 import { SettingsService } from "../modules/settings/settings-service";
 import { SettingsModule } from "../modules/settings/settings-module";
 import { ToolsModule } from "../modules/tools/tools-module";
+import { ImtService, browserImtWindowAdapter } from "../modules/imt/imt-service";
 
 function browserStorage(kind: "local" | "session"): Storage | null {
   try {
@@ -67,8 +68,10 @@ export async function bootstrap(root: HTMLElement): Promise<void> {
   settings.applyToDocument(document);
   const settingsModule = new SettingsModule({ settings, telemetry });
   const toolsModule = new ToolsModule({ telemetry });
+  const imt = new ImtService(browserImtWindowAdapter());
   const vehicleModule = new VehicleModule({
     asf,
+    imt,
     telemetry,
     store,
     history
