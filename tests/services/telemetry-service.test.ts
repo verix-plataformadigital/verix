@@ -54,7 +54,9 @@ describe("TelemetryService", () => {
     await vi.waitFor(() => {
       expect(fetchImpl).toHaveBeenCalledTimes(1);
     });
-    expect(service.queueSize).toBe(0);
+    await vi.waitFor(() => {
+      expect(service.queueSize).toBe(0);
+    });
 
     const init = fetchImpl.mock.calls[0]?.[1];
     expect(init?.method).toBe("POST");
@@ -63,7 +65,7 @@ describe("TelemetryService", () => {
 
   it("não força flush imediato para eventos normais", async () => {
     const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
-      new Response("ok", { status: 204 })
+      new Response(null, { status: 204 })
     );
     const service = createService({ fetchImpl });
 
@@ -134,8 +136,8 @@ describe("TelemetryService", () => {
 
     service.track("app_open", null);
     const first = service.flush();
-    const second = await service.flush();
-    await expect(second).resolves.toEqual({ ok: true, sent: 1 });
+    const second = service.flush();
+    expect(second).toBe(first);
     release?.();
     await expect(first).resolves.toEqual({ ok: true, sent: 1 });
     expect(fetchImpl).toHaveBeenCalledTimes(1);
