@@ -120,7 +120,7 @@ internal static class Program
                     return;
                 }
 
-                if (string.Equals(uri.Host, AllowedHost, StringComparison.OrdinalIgnoreCase))
+                if (IsAllowedProductionUri(uri))
                 {
                     return;
                 }
@@ -157,8 +157,7 @@ internal static class Program
             try
             {
                 var uri = new Uri(e.Uri);
-                if (string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(uri.Host, AllowedHost, StringComparison.OrdinalIgnoreCase))
+                if (IsAllowedProductionUri(uri))
                 {
                     webView.CoreWebView2.Navigate(uri.ToString());
                     return;
