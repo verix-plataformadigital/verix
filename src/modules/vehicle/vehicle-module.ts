@@ -67,6 +67,21 @@ export class VehicleModule {
     section.className = "vehicle-module";
     section.setAttribute("aria-label", "Consulta de veículo");
 
+    const heading = document.createElement("div");
+    heading.className = "verix-workspace-heading";
+
+    const overline = document.createElement("span");
+    overline.className = "verix-overline";
+    overline.textContent = "CONSULTA OPERACIONAL";
+
+    const title = document.createElement("h2");
+    title.textContent = "Consulta de veículo";
+
+    const description = document.createElement("p");
+    description.textContent = "Seguro ASF e acesso direto aos canais IMT/RNSI do posto.";
+
+    heading.append(overline, title, description);
+
     const form = document.createElement("form");
     form.className = "vehicle-query-form";
 
@@ -140,7 +155,7 @@ export class VehicleModule {
       section.append(notice);
     }
 
-    section.append(form, this.renderResult(), this.renderImtActions());
+    section.append(heading, form, this.renderResult(), this.renderImtActions());
     this.root.replaceChildren(section);
   }
 
