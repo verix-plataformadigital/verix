@@ -23,6 +23,21 @@ describe("DefaultConnectivityService", () => {
     });
   });
 
+  it("usa o método configurado no probe do backend", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(new Response(null, { status: 204 }));
+    const service = new DefaultConnectivityService({
+      probeUrl: "https://backend.example/health",
+      probeMethod: "OPTIONS",
+      fetchImpl,
+      browserOnline: () => true
+    });
+
+    await service.probe();
+
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(fetchImpl.mock.calls[0]?.[1]?.method).toBe("OPTIONS");
+  });
+
   it("considera backend acessível quando o probe devolve HTTP 2xx", async () => {
     const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(new Response(null, { status: 204 }));
     const service = new DefaultConnectivityService({
