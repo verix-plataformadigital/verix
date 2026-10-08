@@ -1,0 +1,39 @@
+name: VÉRIX security build
+
+on:
+  push:
+    branches: [main, security-hardening]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  secure-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install --ignore-scripts
+
+      - name: Build secure release
+        run: npm run build:secure
+
+      - name: Verify release hygiene
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f dist/verix-app.html
+          test -f dist/build-manifest.json
+          ! find dist -type f -name '*.map' -print -quit | grep -q .
+          ! grep -RniE 'service[_-]?role|-----BEGIN (PRIVATE KEY|RSA PRIVATE KEY)|sk-[A-Za-z0-9_-]{20,}' dist
+          node -e "const m=require('./dist/build-manifest.json'); if(m.source_maps!==false) process.exit(1); if(!m.build_id) process.exit(1); console.log(m)"
