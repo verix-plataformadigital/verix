@@ -43,6 +43,37 @@ describe("TelemetryService", () => {
     expect(local.getItem("VERIX_T2_QUEUE")).toContain("vehicle_lookup");
   });
 
+  it("faz flush imediato para eventos críticos", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response("ok", { status: 204 })
+    );
+    const service = createService({ fetchImpl });
+
+    service.track("vehicle_lookup", "consulta");
+
+    await vi.waitFor(() => {
+      expect(fetchImpl).toHaveBeenCalledTimes(1);
+    });
+    expect(service.queueSize).toBe(0);
+
+    const init = fetchImpl.mock.calls[0]?.[1];
+    expect(init?.method).toBe("POST");
+    expect(init?.keepalive).toBe(false);
+  });
+
+  it("não força flush imediato para eventos normais", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response("ok", { status: 204 })
+    );
+    const service = createService({ fetchImpl });
+
+    service.track("module_open", "consulta");
+    await Promise.resolve();
+
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(service.queueSize).toBe(1);
+  });
+
   it("remove lote somente depois de resposta 2xx", async () => {
     const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
       new Response(JSON.stringify({ ok: true }), { status: 200 })
@@ -111,6 +142,7 @@ describe("TelemetryService", () => {
     const init = fetchImpl.mock.calls[0]?.[1];
     expect(String(init?.body)).toContain('"events"');
   });
+
   it("continua funcional quando o storage local recusa escrita", async () => {
     class FailingStorage {
       getItem(): string | null { return null; }
@@ -132,5 +164,4 @@ describe("TelemetryService", () => {
     const result = await service.flush();
     expect(result).toEqual({ ok: true, sent: 1 });
   });
-
 });
