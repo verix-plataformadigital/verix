@@ -3,8 +3,6 @@ import type { ConnectivityState } from "../../shared/types/connectivity";
 export type VerixModule =
   | "main"
   | "vehicle"
-  | "insurance"
-  | "imt"
   | "history"
   | "cinemometer"
   | "legislation"

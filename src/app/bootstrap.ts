@@ -1,5 +1,6 @@
 import { AppShell } from "./ui/app-shell";
 import { AppStore } from "./state/app-store";
+import { HomeModule } from "../modules/home/home-module";
 import { DefaultConnectivityService } from "../services/connectivity/connectivity.service";
 import { GateService } from "../services/security/gate-service";
 import { AsfService } from "../modules/insurance/asf-service";
@@ -94,10 +95,18 @@ export async function bootstrap(root: HTMLElement): Promise<void> {
     }
   });
 
+  const homeModule = new HomeModule({
+    onNavigate: (module) => store.setModule(module)
+  });
+
   const shell = new AppShell({
     root,
     store,
     moduleRenderer: (workspace, module) => {
+      if (module === "main") {
+        homeModule.mount(workspace);
+        return true;
+      }
       if (module === "vehicle") {
         vehicleModule.mount(workspace);
         return true;
