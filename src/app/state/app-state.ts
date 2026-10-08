@@ -9,7 +9,8 @@ export type VerixModule =
   | "cinemometer"
   | "legislation"
   | "alcohol"
-  | "settings";
+  | "settings"
+  | "tools";
 
 export interface AppState {
   readonly activeModule: VerixModule;
