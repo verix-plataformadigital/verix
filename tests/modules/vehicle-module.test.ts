@@ -217,6 +217,7 @@ describe("VehicleModule history preference", () => {
     expect(root.querySelector(".vehicle-result-idle")).not.toBeNull();
     expect(root.querySelector(".vehicle-result-no-record")).toBeNull();
     expect(root.querySelector<HTMLInputElement>("#vehicle-plate")?.value).toBe("");
+    expect(root.querySelector(".vehicle-local-notice")).toBeNull();
   });
 
   
