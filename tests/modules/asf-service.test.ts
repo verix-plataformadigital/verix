@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { AsfService } from "../../src/modules/insurance/asf-service";
+import type { GateService } from "../../src/services/security/gate-service";
 
 const insuredResponse = {
   data: {
@@ -24,13 +25,23 @@ const insuredResponse = {
   }
 };
 
+function createGate(): GateService {
+  return {
+    getToken: vi.fn().mockResolvedValue("v1.token"),
+    getIdentity: vi.fn().mockReturnValue({
+      installationId: "install-1",
+      sessionId: "session-1",
+      tabId: "tab-1",
+      buildId: "1.5-sec-20261008-a"
+    }),
+    clear: vi.fn()
+  } as unknown as GateService;
+}
+
 function request() {
   return {
     matricula: "12-AB-34",
-    date: "2026/10/08",
-    installationId: "install-1",
-    buildId: "1.5-sec-20261008-a",
-    clientToken: "token"
+    date: "2026/10/08"
   } as const;
 }
 
@@ -40,7 +51,8 @@ describe("ASF service adapter", () => {
       new Response(JSON.stringify(insuredResponse), { status: 200 })
     );
 
-    const service = new AsfService({ relayUrl: "https://example.invalid/asf", fetchImpl });
+    const gate = createGate();
+    const service = new AsfService({ relayUrl: "https://example.invalid/asf", fetchImpl, gate });
     const result = await service.query(request());
 
     expect(result.ok).toBe(true);
@@ -50,7 +62,7 @@ describe("ASF service adapter", () => {
     expect(url).toBe("https://example.invalid/asf");
     expect(init?.headers).toMatchObject({
       "X-Verix-Build-Id": "1.5-sec-20261008-a",
-      "X-Verix-Client-Token": "token"
+      "X-Verix-Client-Token": "v1.token"
     });
     expect(JSON.parse(String(init?.body))).toEqual({
       matricula: "12AB34",
@@ -87,7 +99,8 @@ describe("ASF service adapter", () => {
         errors: [{ message: "upstream failed" }]
       }), { status: 200 }));
 
-    const service = new AsfService({ relayUrl: "https://example.invalid/asf", fetchImpl });
+    const gate = createGate();
+    const service = new AsfService({ relayUrl: "https://example.invalid/asf", fetchImpl, gate });
     const noRecord = await service.query(request());
     const graphqlError = await service.query(request());
 
@@ -107,10 +120,12 @@ describe("ASF service adapter", () => {
       })
     );
 
+    const gate = createGate();
     const service = new AsfService({
       relayUrl: "https://example.invalid/asf",
       fetchImpl,
-      timeoutMs: 1
+      timeoutMs: 1,
+      gate
     });
 
     const result = await service.query(request());
@@ -123,9 +138,11 @@ describe("ASF service adapter", () => {
       new Response("limited", { status: 429, headers: { "Retry-After": "3" } })
     );
 
+    const gate = createGate();
     const service = new AsfService({
       relayUrl: "https://example.invalid/asf",
-      fetchImpl
+      fetchImpl,
+      gate
     });
 
     const result = await service.query(request());
@@ -136,6 +153,23 @@ describe("ASF service adapter", () => {
         expect(result.error.retryAfterMs).toBe(3000);
       }
     }
+  });
+
+  it("limpa o token em memória quando o relay recusa autorização", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response("denied", { status: 401 })
+    );
+    const gate = createGate();
+    const service = new AsfService({
+      relayUrl: "https://example.invalid/asf",
+      fetchImpl,
+      gate
+    });
+
+    const result = await service.query(request());
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error.kind).toBe("auth");
+    expect(gate.clear).toHaveBeenCalledTimes(1);
   });
 
   it("rejeita input antes de fazer pedido", async () => {
