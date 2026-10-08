@@ -79,3 +79,30 @@ describe("cinemómetro — regra V61 efetiva", () => {
     expect(operationalCodeForVehicle(light, "ligeiro_passageiros_sem", "fora_placas")).toBe("2860280111");
   });
 });
+
+
+describe("cinemómetro — EMA legal atual", () => {
+  it("distingue radar em movimento de perseguição", () => {
+    expect(emaForCinemometer("radar_movimento", "periodica")).toEqual([7, 7]);
+    expect(emaForCinemometer("perseguicao", "periodica")).toEqual([5, 5]);
+  });
+
+  it("aplica EMA absoluto até 100 km/h", () => {
+    expect(emaForCinemometer("radar_fixo", "periodica")).toEqual([5, 5]);
+    expect(
+      calculateDeducedSpeedForCinemometer(77, "radar_fixo", "periodica")
+    ).toBe(72);
+  });
+
+  it("aplica percentagem apenas acima de 100 km/h", () => {
+    expect(
+      calculateDeducedSpeedForCinemometer(120, "radar_movimento", "periodica")
+    ).toBe(111);
+  });
+
+  it("cobre explicitamente os tipos da Portaria 352/2023", () => {
+    expect(emaForCinemometer("aeronave", "periodica")).toEqual([10, 10]);
+    expect(emaForCinemometer("video_secao", "periodica")).toEqual([5, 5]);
+    expect(emaForCinemometer("tratamento_imagem", "periodica")).toEqual([5, 5]);
+  });
+});
