@@ -9,6 +9,16 @@ internal static class Program
     private const string AllowedHost = "verix-plataformadigital.github.io";
     private const string StartUrl = "https://verix-plataformadigital.github.io/verix/";
 
+    // External sites deliberately opened by VÉRIX. They are launched in the
+    // user's default browser, while every other external navigation is blocked.
+    private static readonly HashSet<string> ExternalAllowedHosts = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "www.consumidor.asf.com.pt",
+        "erru.imt-ip.pt",
+        "alvaras.inem.pt",
+        "location.wazept.com"
+    };
+
     [STAThread]
     private static void Main()
     {
@@ -104,11 +114,36 @@ internal static class Program
             try
             {
                 var uri = new Uri(e.Uri);
-                if (!string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
-                    !string.Equals(uri.Host, AllowedHost, StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
                 {
                     e.Cancel = true;
+                    return;
                 }
+
+                if (string.Equals(uri.Host, AllowedHost, StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+
+                if (ExternalAllowedHosts.Contains(uri.Host))
+                {
+                    e.Cancel = true;
+                    try
+                    {
+                        Process.Start(new ProcessStartInfo
+                        {
+                            FileName = uri.ToString(),
+                            UseShellExecute = true
+                        });
+                    }
+                    catch
+                    {
+                        // Keep navigation blocked if the default browser cannot be launched.
+                    }
+                    return;
+                }
+
+                e.Cancel = true;
             }
             catch
             {
@@ -122,10 +157,28 @@ internal static class Program
             try
             {
                 var uri = new Uri(e.Uri);
-                if (string.Equals(uri.Host, AllowedHost, StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(uri.Host, AllowedHost, StringComparison.OrdinalIgnoreCase))
                 {
                     webView.CoreWebView2.Navigate(uri.ToString());
+                    return;
+                }
+
+                if (string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) &&
+                    ExternalAllowedHosts.Contains(uri.Host))
+                {
+                    try
+                    {
+                        Process.Start(new ProcessStartInfo
+                        {
+                            FileName = uri.ToString(),
+                            UseShellExecute = true
+                        });
+                    }
+                    catch
+                    {
+                        // Ignore external-launch failures.
+                    }
                 }
             }
             catch
