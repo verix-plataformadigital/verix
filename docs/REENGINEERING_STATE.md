@@ -292,3 +292,10 @@ Fonte externa: Diário da República, Código da Estrada consolidado.
 - Quando o campo de data está vazio, a consulta passa agora a usar o mesmo dia local que o módulo mostra como fallback.
 - A data efetiva é partilhada entre o pedido ASF e o registo histórico, evitando pedido com data vazia e histórico sem data selecionada.
 - Teste de regressão verifica a consistência entre o campo inicial, o argumento ASF e a data persistida.
+
+
+#### Ações manuais IMT/RNSI com matrícula atual
+- Os botões INSPEÇÃO/LIVRETE leem agora os valores atuais do formulário, em vez de reutilizarem silenciosamente a última consulta submetida.
+- Matrículas vazias ou inválidas não abrem URL RNSI incompleta; a mensagem de validação é atualizada sem voltar a renderizar e perder o texto introduzido.
+- O fallback de cópia tolera browsers sem Clipboard API ou `document.execCommand` sem gerar rejeições não tratadas.
+- Testes cobrem valores atuais, bloqueio de matrícula vazia e preservação da introdução inválida.
