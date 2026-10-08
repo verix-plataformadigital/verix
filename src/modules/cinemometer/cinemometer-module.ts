@@ -300,7 +300,7 @@ export class CinemometerModule {
         mode: modeValue,
         vehicle: vehicleValue,
         enquadramento: regimeValue,
-        verificação: verificationValue,
+        verificacao: verificationValue,
         cinemometer_type: typeValue,
         recorded_speed: recordedSpeed,
         deduced_speed: deduced,
