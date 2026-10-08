@@ -146,10 +146,9 @@ export class VehicleModule {
     const submit = document.createElement("button");
     submit.type = "submit";
     submit.className = "vehicle-submit";
-    submit.textContent =
-      this.controller.snapshot.status === "loading"
-        ? "A CONSULTAR…"
-        : "CONSULTAR VEÍCULO";
+    const isLoading = this.controller.snapshot.status === "loading";
+    submit.disabled = isLoading;
+    submit.textContent = isLoading ? "A CONSULTAR…" : "CONSULTAR VEÍCULO";
 
     const clear = document.createElement("button");
     clear.type = "button";
@@ -225,6 +224,10 @@ export class VehicleModule {
       this.showLocalError("Introduza pelo menos uma matrícula válida.");
       return;
     }
+
+    // AppShell deliberately avoids remounting an already active module on store
+    // updates. Render the module's loading state locally before awaiting network.
+    this.render();
 
     const settled = await coordinated.value;
     if (operationGeneration !== this.operationGeneration) return;
