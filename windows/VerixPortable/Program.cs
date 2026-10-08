@@ -99,6 +99,11 @@ internal static class Program
                 settings.IsStatusBarEnabled = false;
                 settings.IsZoomControlEnabled = true;
                 settings.AreHostObjectsAllowed = false;
+                settings.AreBrowserAcceleratorKeysEnabled = false;
+                settings.IsGeneralAutofillEnabled = false;
+                settings.IsPasswordAutosaveEnabled = false;
+                settings.IsWebMessageEnabled = false;
+                settings.IsSwipeNavigationEnabled = false;
 
                 webView.CoreWebView2.NavigationStarting += OnNavigationStarting;
                 webView.CoreWebView2.NewWindowRequested += OnNewWindowRequested;
