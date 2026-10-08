@@ -29,8 +29,11 @@ jobs:
           node --version
           npm --version
 
+      - name: Resolve lockfile
+        run: npm install --package-lock-only --ignore-scripts --no-fund --no-audit
+
       - name: Install
-        run: npm install --no-fund --no-audit
+        run: npm ci --no-fund --no-audit
 
       - name: Typecheck
         run: npm run typecheck
