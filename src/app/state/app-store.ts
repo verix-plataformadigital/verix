@@ -31,6 +31,10 @@ export class AppStore {
     this.update({ connectivity });
   }
 
+  setBackendReachable(backendReachable: boolean | null): void {
+    this.update({ backendReachable });
+  }
+
   setQueryId(currentQueryId: string | null): void {
     this.update({ currentQueryId });
   }
