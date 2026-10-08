@@ -124,9 +124,7 @@ export class CinemometerModule {
     const type = this.selectField("TIPO DE CINEMÓMETRO", TYPES, "radar_fixo");
     const operator = this.options.profiles?.operatorSession();
     const verificationDefault =
-      operator?.modo && false
-        ? "primeira"
-        : this.options.profiles?.list()[0]?.verificacao ?? "periodica";
+      this.options.profiles?.list()[0]?.verificacao ?? "periodica";
     const verification = this.selectField(
       "VERIFICAÇÃO",
       [
