@@ -118,3 +118,19 @@ Ao abrir uma nova sessão, ler primeiro:
 - `verix-app.html`
 
 Depois continuar na branch `reengineering-v2` / PR #33.
+
+
+## Validação externa adicional — 2026-10-08
+
+### Cinemómetro V61
+A implementação V2 foi comparada com a versão consolidada do Código da Estrada disponível no Diário da República:
+- Art. 27.º — limites gerais de velocidade e escalões de coima.
+- Art. 28.º — limites especiais/sinalizados.
+- Art. 145.º — classificação de excesso de velocidade como grave.
+- Art. 146.º — classificação das situações muito graves.
+- Art. 147.º — inibição de conduzir.
+- Art. 148.º — subtração de pontos.
+
+Resultado: os thresholds já caracterizados no domínio V61 (incluindo a distinção entre ligeiros/motociclos e outros veículos e a zona de coexistência) não devem ser alterados sem nova evidência legal. A versão consolidada consultada indica como última alteração 2025-03-12. A implementação continua a usar o V61 observado no runtime legado como referência operacional e a legislação como validação externa.
+
+Fonte externa: Diário da República, Código da Estrada consolidado.
