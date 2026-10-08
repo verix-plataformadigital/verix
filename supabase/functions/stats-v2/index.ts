@@ -1,7 +1,6 @@
 declare const Deno: any;
 
-const ALLOWED_ORIGINS = new Set([
-  "https://verix.vxops.workers.dev",
+const ALLOWED_ORIGINS = new Set([,
   "https://verix-plataformadigital.github.io"
 ]);
 
@@ -23,10 +22,13 @@ function corsHeaders(req: Request) {
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-function json(data: unknown, status=200) {
+function json(data: unknown, status=200, req?: Request) {
   return new Response(JSON.stringify(data), {
     status,
-    headers:{"Content-Type":"application/json",...corsHeaders}
+    headers:{
+      "Content-Type":"application/json",
+      ...corsHeaders(req || new Request("https://verix-plataformadigital.github.io"))
+    }
   });
 }
 
@@ -450,36 +452,82 @@ async function resetState() {
 
 Deno.serve(async (req) => {
   if(req.method==="OPTIONS") {
-    return new Response(null,{status:204,headers:corsHeaders});
+    return new Response(null,{status:204,headers:corsHeaders(req)});
   }
 
   if(req.method!=="GET" && req.method!=="POST") {
-    return json({
-      ok:false,
-      error:"method_not_allowed"
-    },405);
+    return json({ok:false,error:"method_not_allowed"},405,req);
   }
 
   if(!(await verifyToken(req))) {
-    return json({
-      ok:false,
-      error:"unauthorized"
-    },401);
+    return json({ok:false,error:"unauthorized"},401,req);
   }
 
   try {
-    if(req.method==="POST") {
-      let body: any = {};
+    const url = new URL(req.url);
+    const detail = url.searchParams.get("detail") || "";
 
+    // Heavy diagnostics are explicitly lazy-loaded by the Admin UI.
+    if(req.method==="GET" && detail==="speed") {
+      const now = new Date().toISOString();
       try {
-        body = await req.json();
-      } catch {}
-
-      if(body?.action !== "reset_24h") {
+        return json({
+          ok:true,
+          detail:"speed",
+          generatedAt:now,
+          cinemometer:await loadCinemometerAnalytics24h(now)
+        },200,req);
+      } catch(error) {
         return json({
           ok:false,
-          error:"invalid_action"
-        },400);
+          error:"speed_detail_failed",
+          detail:String((error as Error)?.message||error)
+        },500,req);
+      }
+    }
+
+    if(req.method==="GET" && detail==="errors") {
+      const now = new Date().toISOString();
+      try {
+        return json({
+          ok:true,
+          detail:"errors",
+          generatedAt:now,
+          investigation:await loadErrorInvestigation24h(now)
+        },200,req);
+      } catch(error) {
+        return json({
+          ok:false,
+          error:"errors_detail_failed",
+          detail:String((error as Error)?.message||error)
+        },500,req);
+      }
+    }
+
+    if(req.method==="GET" && detail==="system") {
+      const now = new Date().toISOString();
+      try {
+        return json({
+          ok:true,
+          detail:"system",
+          generatedAt:now,
+          lifetime:await loadLifetime(now)
+        },200,req);
+      } catch(error) {
+        return json({
+          ok:false,
+          error:"system_detail_failed",
+          detail:String((error as Error)?.message||error)
+        },500,req);
+      }
+    }
+
+    if(req.method==="POST") {
+      let body: any = {};
+      try { body = await req.json(); } catch {}
+
+      if(body?.action !== "reset_24h") {
+        return json({ok:false,error:"invalid_action"},400,req);
       }
 
       const resetAt = await reset24h();
@@ -489,114 +537,76 @@ Deno.serve(async (req) => {
         ok:true,
         action:"reset_24h",
         reset_at:resetAt || new Date().toISOString()
-      },200);
+      },200,req);
     }
 
     const now = new Date().toISOString();
 
-    if (req.method === "GET" && cachedStats && (Date.now() - cachedStats.at) < STATS_CACHE_MS) {
-      return new Response(cachedStats.body, {
-        status: 200,
-        headers: {"Content-Type":"application/json", ...corsHeaders, "X-VÉRIX-Stats-Cache":"HIT"}
+    if(cachedStats && (Date.now()-cachedStats.at)<STATS_CACHE_MS) {
+      return new Response(cachedStats.body,{
+        status:200,
+        headers:{
+          "Content-Type":"application/json",
+          ...corsHeaders(req),
+          "X-VÉRIX-Stats-Cache":"HIT"
+        }
       });
     }
 
+    // Fast path: the consolidated analytics RPC already contains the
+    // dashboard, insurance, legislation, usage and most cinemometer data.
     const settled = await Promise.allSettled([
-      rpc("verix2_overview", {p_now:now}),
-      rpc("verix2_activity", {p_now:now}),
-      rpc("verix2_compare_24h", {p_now:now}),
-      rpc("verix2_menus", {p_now:now}),
-      rpc("verix2_legislation_top", {
-        p_now:now,
-        p_limit:15
-      }),
-      rpc("verix2_asf_diagnostics", {
-        p_now: now,
-        p_recent_limit: 25
-      }),
-      rpc("verix2_admin_analytics", {
-        p_now: now
-      }),
-      loadErrorInvestigation24h(now),
-      loadLifetime(now),
+      rpc("verix2_admin_analytics",{p_now:now}),
+      rpc("verix2_asf_diagnostics",{p_now:now,p_recent_limit:25}),
       resetState()
     ]);
 
-    const value = (i:number, fallback:any) =>
-      settled[i]?.status === "fulfilled" ? settled[i].value : fallback;
-
-    const errorText = (i:number) => {
-      const reason:any = settled[i]?.status === "rejected"
-        ? settled[i].reason
-        : null;
-      return reason ? String(reason?.message || reason) : null;
-    };
-
     const errors:any = {};
-    const names = ["overview","activity","compare","menus","legislation","diagnostics","analytics","investigation","lifetime","reset"];
+    const analytics = settled[0].status==="fulfilled" ? settled[0].value : {};
+    const diagnostics = settled[1].status==="fulfilled" ? settled[1].value : {};
+    const resetAt = settled[2].status==="fulfilled" ? settled[2].value : null;
 
-    for (let i=0;i<names.length;i++) {
-      const message = errorText(i);
-      if (message) errors[names[i]] = message;
+    for(const [i,name] of [[0,"analytics"],[1,"diagnostics"],[2,"reset"]] as const) {
+      if(settled[i].status==="rejected") {
+        const reason:any=settled[i].reason;
+        errors[name]=String(reason?.message||reason);
+      }
     }
 
-    const overview = value(0, null);
-    const activity = value(1, []);
-    const compare = value(2, []);
-    const menus = value(3, []);
-    const legislation = value(4, []);
-    let diagnostics = value(5, {});
-    const investigation = value(7, {});
-    const lifetime = value(8, {});
-    const resetAt = value(9, null);
-
-    try {
-      diagnostics = await enrichAsfDiagnostics(diagnostics, now);
-    } catch (enrichError) {
-      diagnostics = {
-        ...(diagnostics && typeof diagnostics === "object" ? diagnostics : {}),
-        enrichment_error: String((enrichError as Error)?.message || enrichError)
-      };
-    }
-
-    let cinemometer = {};
-    try {
-      cinemometer = await loadCinemometerAnalytics24h(now);
-    } catch (cinError) {
-      cinemometer = {error:String((cinError as Error)?.message || cinError)};
-    }
+    const analyticsObj = analytics && typeof analytics==="object"
+      ? analytics
+      : {};
 
     const payload = {
       ok:true,
       generatedAt:now,
-      reset24hAt:Array.isArray(resetAt)
-        ? (resetAt[0]?.reset_24h_at || null)
-        : resetAt,
-      overview:Array.isArray(overview)
-        ? (overview[0] || null)
-        : overview,
-      activity,
-      compare,
-      menus,
-      legislation,
-      diagnostics,
-      analytics: value(6, {}),
-      investigation,
-      lifetime,
-      cinemometer,
+      reset24hAt:resetAt || null,
+      overview:analyticsObj.overview || null,
+      analytics:analyticsObj,
+      diagnostics:diagnostics || {},
+      investigation:{},
+      lifetime:{},
+      cinemometer:{},
       errors
     };
-    
-    cachedStats = {at:Date.now(), body:JSON.stringify(payload)};
-    return json(payload,200);
+
+    const body=JSON.stringify(payload);
+    cachedStats={at:Date.now(),body};
+
+    return new Response(body,{
+      status:200,
+      headers:{
+        "Content-Type":"application/json",
+        ...corsHeaders(req),
+        "X-VÉRIX-Stats-Cache":"MISS"
+      }
+    });
 
   } catch(error) {
     return json({
       ok:false,
       error:"stats_v2_failed",
-      detail:String(
-        (error as Error)?.message || error
-      )
-    },500);
+      detail:String((error as Error)?.message||error)
+    },500,req);
   }
 });
