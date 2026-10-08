@@ -117,3 +117,43 @@ Para cada domínio:
 O legado deve ser desmontado por responsabilidade e por dependência, não por posição física no HTML.
 
 O número de blocos de script/style é evidência de acumulação histórica. A V2 deve substituir esta acumulação por módulos explícitos sem alterar o resultado operacional final.
+
+
+## Mapa de referências confirmado
+
+No blob de produção analisado, foram contadas as seguintes ocorrências e definições/reatribuições:
+
+| Função | Ocorrências | Definições/reatribuições |
+|---|---:|---:|
+| `abrirModulo` | 33 | 8 |
+| `filtrarLegislacao` | 12 | 4 |
+| `cinAtualizarLimite` | 13 | 4 |
+| `cinMontarTexto` | 17 | 6 |
+| `cinClassificarExcesso` | 9 | 4 |
+| `cinCodigoOperacional` | 9 | 4 |
+| `cinLimitePadrao` | 4 | 3 |
+| `cinAlternarListaCinemometros` | 10 | 3 |
+| `cinRecalcular` | 17 | 2 |
+
+Isto não significa que todas as implementações sejam necessárias. Significa que a V2 deve localizar a última cadeia efetiva e as extensões que dependem dela antes de apagar qualquer camada.
+
+### Função mais sensível: cinemómetro
+
+`cinRecalcular` é referenciado por múltiplos handlers/fluxos e existe uma substituição posterior via `window.cinRecalcular = function...`.
+
+A estratégia V2 será separar:
+- modelo de configuração;
+- cálculo puro;
+- classificação do excesso;
+- código/enquadramento;
+- renderização;
+- persistência dos perfis;
+- telemetria.
+
+O cálculo puro deverá ser testado antes de integrar DOM.
+
+### Navegação
+
+`abrirModulo` é usado diretamente em HTML via `onclick` e é posteriormente envolvido por extensões. Portanto, uma pesquisa apenas por imports não é suficiente para detetar dependências.
+
+A V2 terá um dispatcher tipado que substituirá progressivamente a dependência de globais, mas os handlers legacy continuarão até à regressão estar comprovadamente coberta.
