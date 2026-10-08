@@ -21,6 +21,14 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Update npm resolver
+        run: npm install --global npm@12.2.0
+
+      - name: Verify toolchain
+        run: |
+          node --version
+          npm --version
+
       - name: Install
         run: npm install --no-fund --no-audit
 
