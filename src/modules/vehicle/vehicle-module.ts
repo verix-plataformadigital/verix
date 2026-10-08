@@ -308,7 +308,7 @@ export class VehicleModule {
     return actions;
   }
 
-  private createImtButton(label: string, source: string): HTMLButtonElement {
+  private createImtButton(label: string, source: RnsiSource): HTMLButtonElement {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "vehicle-imt-button";
@@ -319,7 +319,7 @@ export class VehicleModule {
       );
 
       const targetUrl = buildRnsiUrl(
-        source as RnsiSource,
+        source,
         plate
       );
       const popup = window.open(targetUrl, "_blank", "noopener,noreferrer");
