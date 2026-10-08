@@ -58,7 +58,7 @@ END $$;
 create or replace function public.verix2_keep_seen_monotonic()
 returns trigger
 language plpgsql
-security definer
+security invoker
 set search_path = public
 as $$
 begin
