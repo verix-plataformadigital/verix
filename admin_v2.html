@@ -107,7 +107,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
 <body>
 <div id="loginScreen">
   <form class="login-card" id="loginForm">
-    <div class="logo">VÉRIX <b>//</b> ADMIN 1.4</div>
+    <div class="logo">VÉRIX <b>//</b> ADMIN 1.5</div>
     <div class="login-sub">Painel simples de utilização, resultados e estado do VÉRIX.</div>
     <input id="password" type="password" autocomplete="current-password" placeholder="Password">
     <button type="submit">ENTRAR</button>
@@ -266,7 +266,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
           <div class="panel"><div class="panel-head"><h3>QUANDO ACONTECEM?</h3><span>PIQUES DE 5 MINUTOS</span></div><div id="errorBursts" class="table-wrap"></div></div>
         </div>
         <div class="panel" style="margin-top:12px">
-          <div class="panel-head"><h3>LEITURA DOS ERROS RECENTES</h3><span>VERSÃO 1.4</span></div>
+          <div class="panel-head"><h3>LEITURA DOS ERROS RECENTES</h3><span>VERSÃO 1.5</span></div>
           <div class="panel-body" id="errorReading"></div>
         </div>
         <div class="grid g2" style="margin-top:12px">
@@ -493,23 +493,23 @@ function renderErrors(d){
  const total=(e.types||[]).reduce((s,x)=>s+Number(x.qty||0),0);
  $('errorCards').innerHTML=
   card('ERROS NAS 24 H',num(total),'Falhas classificadas.','red')+
-  card('ERROS DA 1.4',num(inv.app14_errors),'Na janela recente.','amber')+
-  card('INSTALAÇÕES AFETADAS',num(inv.app14_installations),'Onde apareceu um erro 1.4.')+
-  card('MATRÍCULAS AFETADAS',num(inv.app14_plates),'Quando a matrícula foi capturada.');
+  card('ERROS DA 1.5',num(inv.app15_errors),'Na janela recente.','amber')+
+  card('INSTALAÇÕES AFETADAS',num(inv.app15_installations),'Onde apareceu um erro 1.5.')+
+  card('MATRÍCULAS AFETADAS',num(inv.app15_plates),'Quando a matrícula foi capturada.');
  $('errorTypes').innerHTML=table(['TIPO','QUANTIDADE','ÚLTIMO REGISTO'],(e.types||[]).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'Desconhecido')+'</span>')+td('<strong>'+fmt(x.qty)+'</strong>')+td(datePT(x.last_at))+'</tr>'));
- const bursts=inv.app14_bursts_5m||[];$('errorBursts').innerHTML=table(['HORA','ERROS'],bursts.slice(0,12).map(x=>'<tr>'+td('<strong>'+datePT(x.start)+'</strong>')+td('<strong>'+fmt(x.count)+'</strong>')+'</tr>'));
+ const bursts=inv.app15_bursts_5m||[];$('errorBursts').innerHTML=table(['HORA','ERROS'],bursts.slice(0,12).map(x=>'<tr>'+td('<strong>'+datePT(x.start)+'</strong>')+td('<strong>'+fmt(x.count)+'</strong>')+'</tr>'));
  $('errorReading').innerHTML=buildErrorReading(d);
  $('errorInstallations').innerHTML=table(['INSTALAÇÃO','ERROS','QUERIES'],(e.installations||[]).slice(0,15).map(x=>'<tr>'+td('<strong>'+esc(x.installation_id||'—')+'</strong>')+td(fmt(x.qty))+td(fmt(x.queries))+'</tr>'));
  $('errorSignatures').innerHTML=table(['TIPO','QUANTIDADE','INSTALAÇÕES'],(e.signatures||[]).slice(0,15).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'—')+'</span>')+td(fmt(x.qty))+td(fmt(x.installs))+'</tr>'));
- const recent=inv.latest_app14||[];
+ const recent=inv.latest_app15||[];
  $('errorTechnical').innerHTML=recent.length?'<table class="table"><thead><tr><th>Hora</th><th>Browser</th><th>Transporte</th><th>Tipo</th><th>HTTP</th><th>ASF ms</th><th>Relay ms</th><th>Hash</th></tr></thead><tbody>'+recent.slice(0,15).map(x=>'<tr>'+td(datePT(x.occurred_at))+td(esc(x.browser||'—'))+td(esc(x.transport||'—'))+td(esc(x.error_type||'—'))+td(x.http_status==null?'—':fmt(x.http_status))+td(x.duration_ms==null?'—':fmt(x.duration_ms)+' ms')+td(x.relay_latency_ms==null?'—':fmt(x.relay_latency_ms)+' ms')+td(esc(x.response_hash||'—'))+'</tr>').join('')+'</tbody></table>':'<div class="empty">Sem incidentes recentes.</div>';
  function buildErrorReading(data){
-   const n=Number(inv.app14_errors||0),inst=Number(inv.app14_installations||0),hashes=Number(inv.app14_hashes||0);
+   const n=Number(inv.app15_errors||0),inst=Number(inv.app15_installations||0),hashes=Number(inv.app15_hashes||0);
    const types=(e.types||[]).slice().sort((a,b)=>Number(b.qty||0)-Number(a.qty||0));
    const top=types[0];
    let html='';
-   if(!n) html+='<div class="goodbox"><strong>Não existem erros 1.4 nas últimas 24 horas.</strong><br>A janela atual não mostra um incidente ativo.</div>';
-   else html+='<div class="warnbox"><strong>Existem '+fmt(n)+' falhas na versão 1.4 nas últimas 24 horas.</strong><br>Foram observadas em '+fmt(inst)+' instalações e '+fmt(hashes)+' assinaturas de resposta. Isto mostra concentração técnica; não determina sozinho a causa.</div>';
+   if(!n) html+='<div class="goodbox"><strong>Não existem erros 1.5 nas últimas 24 horas.</strong><br>A janela atual não mostra um incidente ativo.</div>';
+   else html+='<div class="warnbox"><strong>Existem '+fmt(n)+' falhas na versão 1.5 nas últimas 24 horas.</strong><br>Foram observadas em '+fmt(inst)+' instalações e '+fmt(hashes)+' assinaturas de resposta. Isto mostra concentração técnica; não determina sozinho a causa.</div>';
    if(top) html+='<div style="margin-top:10px" class="explain"><strong>Tipo mais frequente:</strong> '+esc(top.kind||'desconhecido')+' · '+fmt(top.qty)+' ocorrências.<br><strong>Como ler:</strong> devemos cruzar hora, instalação, browser e resposta antes de atribuir a origem do problema.</div>';
    return html;
  }
