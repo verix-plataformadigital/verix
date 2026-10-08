@@ -131,10 +131,13 @@ export class AppShell {
 
   private statusLabel(state: AppState): string {
     if (state.connectivity === "offline") return "SEM REDE";
-    if (state.connectivity === "backend-offline") return "BACKEND INDISPONÍVEL";
     if (state.connectivity === "timeout") return "TIMEOUT";
     if (state.connectivity === "network-error") return "ERRO DE REDE";
-    if (state.connectivity === "online") return "ONLINE";
+    if (state.backendReachable === false || state.connectivity === "backend-offline") {
+      return "BACKEND INDISPONÍVEL";
+    }
+    if (state.backendReachable === true) return "BACKEND ONLINE";
+    if (state.connectivity === "online") return "REDE DISPONÍVEL";
     return "A VERIFICAR";
   }
 }
