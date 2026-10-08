@@ -73,6 +73,7 @@ it('inclui o aparelho e a sessão do operador no evento de cálculo', () => {
       aparelho_marca: 'M',
       aparelho_modelo: 'X',
       aparelho_serie: '123',
+      verificacao: 'periodica',
       aparelho_configurado: true,
       operador_nome: 'Operador',
       operador_numero: '42',
