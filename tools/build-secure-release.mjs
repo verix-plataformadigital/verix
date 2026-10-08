@@ -75,6 +75,14 @@ function obfuscateHtml(html, label) {
     const trimmed = String(source || "").trim();
     if (!trimmed || /src\s*=\s*["']/i.test(open)) return full;
 
+    // Critical runtime blocks must remain executable. The heavy obfuscator
+    // can interfere with browser lifecycle/telemetry code in legacy hosts.
+    const idMatch = open.match(/\bid\s*=\s*["']([^"']+)["']/i);
+    const scriptId = idMatch ? String(idMatch[1]).toLowerCase() : "";
+    if (scriptId === "verix-telemetry-v2" || scriptId === "verix-security-runtime") {
+      return full;
+    }
+
     // Skip tiny bootstrappers / redirects — not worth the cost
     if (trimmed.length < 120) return full;
 
@@ -143,6 +151,25 @@ for (const f of ["verix-mobile.css", "verix-mobile.js"]) {
   if (fs.existsSync(src)) {
     fs.copyFileSync(src, path.join(OUTPUT_DIR, f));
   }
+}
+
+// Release-time runtime invariants. These critical blocks are intentionally
+// excluded from heavy obfuscation and must survive packaging unchanged enough
+// to expose their endpoint, heartbeat and security runtime markers.
+function verifyCriticalRuntime(outputPath) {
+  const html = fs.readFileSync(outputPath, "utf8");
+  const telemetry = html.match(/<script\\b[^>]*id=["']verix-telemetry-v2["'][^>]*>[\\s\\S]*?<\\/script>/i);
+  const security = html.match(/<script\\b[^>]*id=["']verix-security-runtime["'][^>]*>[\\s\\S]*?<\\/script>/i);
+  if (!telemetry) throw new Error("Critical telemetry runtime block missing from secure build");
+  if (!/telemetry-v2/i.test(telemetry[0])) throw new Error("Critical telemetry endpoint marker missing");
+  if (!/heartbeat/i.test(telemetry[0])) throw new Error("Critical telemetry heartbeat marker missing");
+  if (!security) throw new Error("Critical security runtime block missing from secure build");
+  return { telemetry_runtime: true, security_runtime: true };
+}
+
+const appOutput = path.join(OUTPUT_DIR, "verix-app.html");
+if (fs.existsSync(appOutput)) {
+  verifyCriticalRuntime(appOutput);
 }
 
 // Build manifest
