@@ -115,7 +115,27 @@ describe("ASF service adapter", () => {
 
     const result = await service.query(request());
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error.kind).toBe("transport");
+    if (!result.ok) expect(result.error.kind).toBe("timeout");
+  });
+
+  it("classifica 429 como rate limit e preserva Retry-After", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response("limited", { status: 429, headers: { "Retry-After": "3" } })
+    );
+
+    const service = new AsfService({
+      relayUrl: "https://example.invalid/asf",
+      fetchImpl
+    });
+
+    const result = await service.query(request());
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.kind).toBe("rate-limited");
+      if (result.error.kind === "rate-limited") {
+        expect(result.error.retryAfterMs).toBe(3000);
+      }
+    }
   });
 
   it("rejeita input antes de fazer pedido", async () => {
