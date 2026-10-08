@@ -5,7 +5,7 @@ import {
   favoriteKey,
   legacyFavoriteKey
 } from '../../src/modules/legislation/legislation-favorites';
-import type { LegislationItem } from '../../src/modules/legislation/legislation-data';
+import { LEGISLATION_CATEGORIES, type LegislationItem } from '../../src/modules/legislation/legislation-data';
 
 class MemoryStorage {
   value: string | null = null;
@@ -65,8 +65,18 @@ describe('LegislationFavorites', () => {
   it('does not collide when records share the same normalized legacy key', () => {
     const longPrefix = 'a'.repeat(600);
     const firstItem = { ...item, code: longPrefix, title: 'A', description: 'B' };
-    const secondItem = { ...otherItem, code: longPrefix, title: 'A', description: 'C' };
-    expect(legacyFavoriteKey(firstItem)).toBe(legacyFavoriteKey(secondItem));
-    expect(favoriteKey(firstItem)).not.toBe(favoriteKey(secondItem));
+    const second = { ...otherItem, code: longPrefix, title: 'A', description: 'C' };
+    expect(legacyFavoriteKey(firstItem)).toBe(legacyFavoriteKey(second));
+    expect(favoriteKey(firstItem)).not.toBe(favoriteKey(second));
+  });
+
+  it('counts a matching legacy key once and new favorites by catalog ID', () => {
+    const storage = new MemoryStorage();
+    const catalogItem = LEGISLATION_CATEGORIES[0]?.items[0];
+    expect(catalogItem).toBeDefined();
+    if (!catalogItem) return;
+    storage.value = JSON.stringify([legacyFavoriteKey(catalogItem), favoriteKey(catalogItem)]);
+    const favorites = new LegislationFavorites(storage);
+    expect(favorites.count()).toBe(1);
   });
 });
