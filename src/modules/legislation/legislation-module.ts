@@ -15,6 +15,7 @@ export class LegislationModule {
   private root: HTMLElement | null = null;
   private query = "";
   private openCategory: string | null = null;
+  private lastTrackedQuery = "";
 
   constructor(private readonly options: LegislationModuleOptions = {}) {}
 
@@ -61,9 +62,6 @@ export class LegislationModule {
     input.addEventListener("input", () => {
       this.query = input.value;
       this.openCategory = null;
-      this.options.telemetry?.track("legislation_search", "legislacao", {
-        queryLength: this.query.trim().length
-      });
       this.render();
       const next = this.root?.querySelector<HTMLInputElement>(".legislation-search");
       if (next) {
@@ -92,9 +90,13 @@ export class LegislationModule {
     const results = searchLegislation(LEGISLATION_CATEGORIES, this.query);
     if (this.query.trim()) {
       count.textContent = `${results.length} resultado${results.length === 1 ? "" : "s"} em ${LEGISLATION_ITEM_COUNT} registos`;
-      this.options.telemetry?.track("legislation_search", "legislacao", {
-        results: results.length
-      });
+      if (this.query.trim() !== this.lastTrackedQuery) {
+        this.lastTrackedQuery = this.query.trim();
+        this.options.telemetry?.track("legislation_search", "legislacao", {
+          queryLength: this.query.trim().length,
+          results: results.length
+        });
+      }
     } else {
       count.textContent = `${LEGISLATION_ITEM_COUNT} registos · ${LEGISLATION_CATEGORIES.length} categorias`;
     }
