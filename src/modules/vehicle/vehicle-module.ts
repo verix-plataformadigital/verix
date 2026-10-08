@@ -217,6 +217,15 @@ export class VehicleModule {
     }
 
     const settled = await coordinated.value;
+
+    const rnsiBlocked = [settled.imtInspection, settled.imtLivrete].some(
+      (channel) => channel.status === "fulfilled" && channel.value === false
+    );
+    if (rnsiBlocked) {
+      this.localNotice =
+        "Uma ou mais consultas RNSI foram bloqueadas pelo ambiente. Pode repetir pelos botões INSPEÇÃO / LIVRETE.";
+    }
+
     const result =
       settled.asf.status === "fulfilled"
         ? settled.asf.value
