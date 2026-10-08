@@ -85,7 +85,7 @@ describe("VehicleModule history preference", () => {
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(history.add).toHaveBeenCalledWith("12-AB-34", "", "q-test");
+    expect(history.add).toHaveBeenCalledWith("12AB34", "", "q-test");
     expect(history.updateInsurance).toHaveBeenCalledWith("q-test", "12AB34", "nao");
   });
 });
