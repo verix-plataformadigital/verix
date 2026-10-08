@@ -50,7 +50,6 @@ export class SettingsModule {
     ], this.options.settings.snapshot().profile, value => {
       const state = this.options.settings.setProfile(value as SettingsProfile);
       this.options.settings.applyToDocument(document);
-      this.options.telemetry?.track('module_open', 'definicoes', { action: 'profile_change', profile: state.profile });
       this.render();
     }));
 
@@ -92,7 +91,6 @@ export class SettingsModule {
     reset.addEventListener('click', () => {
       this.options.settings.reset();
       this.options.settings.applyToDocument(document);
-      this.options.telemetry?.track('module_open', 'definicoes', { action: 'reset_preferences' });
       this.render();
     });
 
