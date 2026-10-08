@@ -184,3 +184,25 @@ Fonte externa: Diário da República, Código da Estrada consolidado.
 - Foram adicionados concurrency aos workflows V2 e Security Audit para cancelar execuções obsoletas.
 - Houve um ciclo completo verde antes das alterações finais desta tranche: typecheck, testes, auditoria estática, build V2 e política de segurança.
 - Cada commit posterior gera nova validação; a cabeça atual só deve ser considerada concluída após o respetivo runner terminar verde.
+
+### Continuação — 2026-10-08 — cobertura operacional
+
+- Adicionados os módulos V2 `Álcool`, `Definições`, `Ferramentas` e `Informações`, mantendo dados locais e DOM nativo.
+- `Legislação` passou a preservar pesquisa, favoritos e cópia com dados extraídos diretamente do legado.
+- `Cinemómetro` passou a preservar perfis de aparelho, sessão do operador e texto operacional.
+- RNSI passou de URL conhecida no módulo para `ImtService`; o host Windows abre agora o RNSI numa janela WebView2 interna e restrita ao host/caminho autorizado.
+- O `stats-v2` passou a separar a versão 1.5 atual e a classificar `legacy_diagnostic` separadamente de falhas de transporte.
+- Foi adicionada validação TypeScript específica para Edge Functions locais, excluindo apenas a dependência remota Deno do cliente de telemetria.
+- O secure build agora falha se símbolos ASF críticos desaparecerem no artefacto final.
+
+### Estado de produção observado
+- Nas últimas 24 horas da última consulta à base havia 888 eventos V2 em 1.5 e 19 `vehicle_insurance_error` em 1.5.
+- `asf-proxy-v1` continua sem alterações entre `main` e `reengineering-v2`.
+- `telemetry-v2` de produção continua na versão 34.
+
+### Bloqueios antes do cutover
+- Validar a nova janela RNSI num PC real ligado à rede interna RNSI.
+- Validar o pacote Windows publicado e o comportamento de encerramento/retoma.
+- Executar regressão V2 ↔ legado nos fluxos críticos com casos reais/caracterizados.
+- Validar o contrato final de `stats-v2` e só então considerar publicação do novo admin.
+- Confirmar mobile em navegador e WebView2.
