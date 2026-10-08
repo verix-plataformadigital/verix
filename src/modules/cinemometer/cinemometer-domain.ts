@@ -1,6 +1,17 @@
 export type CinemometerMode = "fixo" | "movimento" | "perseguicao" | "media";
 export type VerificationType = "primeira" | "periodica";
 
+export type CinemometerType =
+  | "radar_fixo"
+  | "radar_movimento"
+  | "sensor_estatico"
+  | "lidar_fixo"
+  | "lidar_movimento"
+  | "perseguicao"
+  | "aeronave"
+  | "video_secao"
+  | "tratamento_imagem";
+
 export type VehicleType =
   | "ligeiro_passageiros_sem"
   | "ligeiro_passageiros_com"
@@ -110,14 +121,57 @@ export function defaultSpeedLimit(vehicle: VehicleType, regime: SpeedRegime): nu
 }
 
 /**
- * This reproduces the final effective V61 rule found in the legacy runtime.
- * Do not change without a new characterization comparison.
+ * Legacy V61 compatibility rule.
+ * Kept only for characterization/backward comparison with the old runtime.
+ * New V2 calculations must use emaForCinemometer().
  */
 export function ema(mode: CinemometerMode, verification: VerificationType): number {
   if (mode === "movimento" || mode === "perseguicao") {
     return verification === "primeira" ? 0.05 : 0.07;
   }
   return verification === "primeira" ? 0.03 : 0.05;
+}
+
+const ROAD_EMA_PERCENT: Record<CinemometerType, readonly [number, number]> = {
+  radar_fixo: [0.03, 0.05],
+  radar_movimento: [0.05, 0.07],
+  sensor_estatico: [0.03, 0.05],
+  lidar_fixo: [0.03, 0.05],
+  lidar_movimento: [0.05, 0.07],
+  perseguicao: [0.03, 0.05],
+  aeronave: [0.07, 0.10],
+  video_secao: [0.03, 0.05],
+  tratamento_imagem: [0.03, 0.05]
+};
+
+/**
+ * Current Portuguese legal-metrological road EMA, based on Portaria 352/2023.
+ * The first tuple item is the first-verification road value; the second is
+ * the periodic/extraordinary road value. At or below 100 km/h the applicable
+ * value is a fixed percentage of 1 km/h units; above 100 km/h it is applied
+ * as a percentage to the recorded speed.
+ */
+export function emaForCinemometer(
+  type: CinemometerType,
+  verification: VerificationType
+): number {
+  const values = ROAD_EMA_PERCENT[type];
+  return verification === "primeira" ? values[0] : values[1];
+}
+
+export function calculateDeducedSpeedForCinemometer(
+  recordedSpeed: number,
+  type: CinemometerType,
+  verification: VerificationType
+): number | null {
+  if (!Number.isFinite(recordedSpeed) || recordedSpeed <= 0) return null;
+
+  const error = emaForCinemometer(type, verification);
+  const deduction = recordedSpeed <= 100
+    ? Math.round(error * 100)
+    : recordedSpeed * error;
+
+  return roundDown(recordedSpeed - deduction);
 }
 
 export function roundDown(value: number): number {
