@@ -7,6 +7,7 @@ import {
   type VehicleTelemetryClient
 } from "./vehicle-query-controller";
 import type { HistoryRecord, HistoryService } from "../history/history-service";
+import { VehicleLookupOrchestrator } from "./vehicle-lookup-orchestrator";
 
 export interface VehicleModuleOptions {
   readonly asf: VehicleAsfClient;
@@ -22,6 +23,7 @@ export interface VehicleModuleOptions {
 
 export class VehicleModule {
   private readonly controller: VehicleQueryController;
+  private readonly orchestrator: VehicleLookupOrchestrator<boolean, ReturnType<VehicleQueryController["lookup"]>>;
   private root: HTMLElement | null = null;
   private lastPlate = "";
   private lastTrailer = "";
@@ -38,6 +40,33 @@ export class VehicleModule {
           options.history.add(request.plate, this.lastTrailer, queryId);
         }
       }
+    });
+
+    this.orchestrator = new VehicleLookupOrchestrator<boolean, Awaited<ReturnType<VehicleQueryController["lookup"]>>>({
+      newQueryId: () => this.options.telemetry.newQueryId(),
+      startImtInspection: async (plate, queryId) => {
+        const opened = this.options.imt.open("inspecao", plate);
+        this.options.telemetry.track("external_tool_open", "consulta", {
+          source: "rnsi-inspecao",
+          queryId,
+          opened
+        });
+        return opened;
+      },
+      startImtLivrete: async (plate, queryId) => {
+        const opened = this.options.imt.open("livrete", plate);
+        this.options.telemetry.track("external_tool_open", "consulta", {
+          source: "rnsi-livrete",
+          queryId,
+          opened
+        });
+        return opened;
+      },
+      queryAsf: (plate, queryId, asfDate) =>
+        this.controller.lookup(
+          { plate, date: asfDate },
+          queryId
+        )
     });
   }
 
@@ -173,10 +202,32 @@ export class VehicleModule {
     submit.disabled = true;
     submit.textContent = "A CONSULTAR…";
 
-    const result = await this.controller.lookup({
-      plate: normalizedPlate,
-      date: isoDateToAsfDate(isoDate)
-    });
+    const coordinated = this.orchestrator.execute(
+      {
+        vehiclePlate: normalizedPlate,
+        trailerPlate: normalizePlate(trailer),
+        asfDate: isoDateToAsfDate(isoDate)
+      }
+    );
+
+    if (!coordinated.ok) {
+      this.showLocalError("Introduza pelo menos uma matrícula válida.");
+      return;
+    }
+
+    const settled = await coordinated.value;
+    const result =
+      settled.asf.status === "fulfilled"
+        ? settled.asf.value
+        : ({
+            status: "error",
+            queryId: settled.queryId,
+            outcome: null,
+            error: {
+              kind: "network",
+              message: "Falha inesperada na coordenação da consulta."
+            }
+          } as const);
 
     if (result.queryId && (this.options.historyEnabled?.() ?? true)) {
       this.options.history.updateInsurance(
