@@ -1,14 +1,24 @@
 {
   "name": "verix-release-security",
   "private": true,
-  "version": "1.5.0",
-  "description": "VÉRIX production release hardening — keep repository PRIVATE",
+  "version": "2.0.0-alpha.1",
+  "description": "VÉRIX — reengenharia modular e release seguro",
+  "type": "module",
   "scripts": {
-    "build:secure": "node tools/build-secure-release.mjs",
-    "release": "npm run build:secure && echo '\n✓ dist/ ready. Publish ONLY the contents of dist/. Keep the repo private.'"
+    "dev": "vite --config vite.config.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "build:v2": "vite build --config vite.config.ts",
+    "build:legacy": "node tools/build-secure-release.mjs",
+    "build": "npm run build:legacy",
+    "release": "npm run build:legacy && echo '\n✓ dist/ ready. Publish ONLY the contents of dist/. Keep the repo private.'"
   },
   "devDependencies": {
-    "javascript-obfuscator": "5.9.0"
+    "javascript-obfuscator": "5.9.0",
+    "typescript": "7.0.2",
+    "vite": "8.3.3",
+    "vitest": "4.1.9"
   },
   "engines": {
     "node": ">=22 <23"
