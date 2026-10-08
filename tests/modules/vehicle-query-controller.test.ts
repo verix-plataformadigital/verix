@@ -32,7 +32,7 @@ function createController(
     asf: { query },
     telemetry: { newQueryId, track },
     store: { setBusy, setQueryId },
-    now: overrides.now
+    ...(overrides.now ? { now: overrides.now } : {})
   });
 
   return { controller, query, track, setBusy, setQueryId };
