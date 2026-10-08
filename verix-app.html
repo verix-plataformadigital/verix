@@ -1568,17 +1568,6 @@ function submitConjunto(event) {
     return encontrado ? { found: true, nodes: encontrado } : { found: false, nodes: [] };
   }
 
-  function asfValorUtilizavel(obj, key) {
-    if (!obj || typeof obj !== 'object') return false;
-    var v = obj[key];
-    if (v === undefined || v === null) return false;
-    if (typeof v === 'object') {
-      v = v.name || v.label || v.value || v.description || '';
-    }
-    return String(v).trim() !== '';
-  }
-
-
   function interpretarRespostaASF(json) {
     if (!json || typeof json !== 'object') {
       throw new Error('Resposta ASF inválida');
