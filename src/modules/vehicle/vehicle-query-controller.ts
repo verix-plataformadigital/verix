@@ -63,8 +63,11 @@ export class VehicleQueryController {
     return this.viewState;
   }
 
-  async lookup(request: VehicleQueryRequest): Promise<VehicleLookupViewState> {
-    const queryId = this.options.telemetry.newQueryId();
+  async lookup(
+    request: VehicleQueryRequest,
+    queryIdOverride?: string
+  ): Promise<VehicleLookupViewState> {
+    const queryId = queryIdOverride ?? this.options.telemetry.newQueryId();
     const sequence = ++this.sequence;
 
     this.viewState = {
