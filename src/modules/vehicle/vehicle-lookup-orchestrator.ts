@@ -1,4 +1,3 @@
-
 import type { Result } from "../../shared/types/result";
 
 export interface VehicleLookupRequest {
@@ -50,18 +49,27 @@ export class VehicleLookupOrchestrator<TImt, TAsf> {
       request.trailerPlate.trim() || request.vehiclePlate.trim();
     const queryId = queryIdOverride ?? this.dependencies.newQueryId();
 
-    const imtInspection = Promise.resolve(
-      this.dependencies.startImtInspection(inspectionPlate, queryId)
-    );
-    const imtLivrete = Promise.resolve(
-      this.dependencies.startImtLivrete(libretePlate, queryId)
-    );
+    const safeAsync = <T>(operation: () => Promise<T>): Promise<T> => {
+      try {
+        return Promise.resolve(operation());
+      } catch (error) {
+        return Promise.reject(error);
+      }
+    };
+
     const asf = safeAsync(() =>
       this.dependencies.queryAsf(
         inspectionPlate,
         queryId,
         request.asfDate
       )
+    );
+
+    const imtInspection = safeAsync(() =>
+      this.dependencies.startImtInspection(inspectionPlate, queryId)
+    );
+    const imtLivrete = safeAsync(() =>
+      this.dependencies.startImtLivrete(livretePlate, queryId)
     );
 
     return {
