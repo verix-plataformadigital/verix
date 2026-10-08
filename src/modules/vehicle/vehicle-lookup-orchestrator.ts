@@ -8,7 +8,7 @@ export interface VehicleLookupRequest {
 
 export interface VehicleLookupTargets {
   readonly inspectionPlate: string;
-  readonly libretePlate: string;
+  readonly livretePlate: string;
 }
 
 export interface VehicleLookupDependencies<TImt, TAsf> {
@@ -45,7 +45,7 @@ export class VehicleLookupOrchestrator<TImt, TAsf> {
 
     const inspectionPlate =
       request.vehiclePlate.trim() || request.trailerPlate.trim();
-    const libretePlate =
+    const livretePlate =
       request.trailerPlate.trim() || request.vehiclePlate.trim();
     const queryId = queryIdOverride ?? this.dependencies.newQueryId();
 
@@ -77,7 +77,7 @@ export class VehicleLookupOrchestrator<TImt, TAsf> {
       value: Promise.allSettled([imtInspection, imtLivrete, asf]).then(
         ([inspection, librete, insurance]) => ({
           queryId,
-          targets: { inspectionPlate, libretePlate },
+          targets: { inspectionPlate, livretePlate },
           imtInspection: inspection,
           imtLivrete: librete,
           asf: insurance
