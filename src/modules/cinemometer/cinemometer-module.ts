@@ -1,4 +1,6 @@
 import type { TelemetryService } from "../../services/telemetry/telemetry-service";
+import { CinemometerContextPanel } from "./cinemometer-context-panel";
+import type { CinemometerProfileService } from "./cinemometer-profile-service";
 import {
   calculateDeducedSpeedForCinemometer,
   classifyExcess,
@@ -14,6 +16,7 @@ import {
 
 export interface CinemometerModuleOptions {
   readonly telemetry: Pick<TelemetryService, "track">;
+  readonly profiles?: CinemometerProfileService;
 }
 
 const VEHICLES: readonly [VehicleType, string][] = [
@@ -69,8 +72,16 @@ const MODES: readonly [CinemometerMode, string][] = [
 
 export class CinemometerModule {
   private root: HTMLElement | null = null;
+  private readonly contextPanel: CinemometerContextPanel | null;
 
-  constructor(private readonly options: CinemometerModuleOptions) {}
+  constructor(private readonly options: CinemometerModuleOptions) {
+    this.contextPanel = options.profiles
+      ? new CinemometerContextPanel({
+          profiles: options.profiles,
+          telemetry: options.telemetry
+        })
+      : null;
+  }
 
   mount(root: HTMLElement): void {
     this.root = root;
@@ -100,28 +111,48 @@ export class CinemometerModule {
 
     head.append(kicker, title, note);
 
+    if (this.contextPanel) {
+      const contextRoot = document.createElement("div");
+      contextRoot.className = "cin-context-host";
+      this.contextPanel.mount(contextRoot);
+      section.append(contextRoot);
+    }
+
     const form = document.createElement("form");
     form.className = "cin-form";
 
     const type = this.selectField("TIPO DE CINEMÓMETRO", TYPES, "radar_fixo");
+    const operator = this.options.profiles?.operatorSession();
+    const verificationDefault =
+      operator?.modo && false
+        ? "primeira"
+        : this.options.profiles?.list()[0]?.verificacao ?? "periodica";
     const verification = this.selectField(
       "VERIFICAÇÃO",
       [
         ["primeira", "Primeira verificação"],
         ["periodica", "Verificação periódica / extraordinária"]
       ] as const,
-      "periodica"
+      verificationDefault
     );
-    const mode = this.selectField("MODO OPERACIONAL", MODES, "fixo");
+    const operatorMode =
+      operator?.modo && MODES.some(([value]) => value === operator.modo)
+        ? operator.modo
+        : "fixo";
+    const mode = this.selectField("MODO OPERACIONAL", MODES, operatorMode);
     const vehicle = this.selectField(
       "VEÍCULO",
       VEHICLES,
       "ligeiro_passageiros_sem"
     );
+    const operatorRegime =
+      operator?.regime && REGIMES.some(([value]) => value === operator.regime)
+        ? operator.regime as SpeedRegime
+        : "autoestrada";
     const regime = this.selectField(
       "ENQUADRAMENTO",
       REGIMES,
-      "autoestrada"
+      operatorRegime
     );
 
     const limit = document.createElement("label");
@@ -226,8 +257,9 @@ export class CinemometerModule {
         verificationValue
       );
 
-      this.options.telemetry.track("cinemometer_operation_start", "cinemometer");
-      this.options.telemetry.track("cinemometer_calculation", "cinemometer", {
+      const context = this.contextPanel?.snapshot();
+      this.options.telemetry.track("cinemometer_operation_start", "cinemometro");
+      this.options.telemetry.track("cinemometer_calculation", "cinemometro", {
         mode: modeValue,
         vehicle: vehicleValue,
         enquadramento: regimeValue,
@@ -236,7 +268,19 @@ export class CinemometerModule {
         recorded_speed: recordedSpeed,
         deduced_speed: deduced,
         limit: speedLimit,
-        excess
+        excess,
+        aparelho_marca: context?.profile?.marca ?? null,
+        aparelho_modelo: context?.profile?.modelo ?? null,
+        aparelho_serie: context?.profile?.serie ?? null,
+        aparelho_configurado: Boolean(context?.profile),
+        operador_nome: context?.operator?.nome ?? null,
+        operador_numero: context?.operator?.numero ?? null,
+        operador_posto: context?.operator?.posto ?? null,
+        operador_identificado: Boolean(
+          context?.operator?.nome ||
+          context?.operator?.numero ||
+          context?.operator?.posto
+        )
       });
 
       result.replaceChildren(
