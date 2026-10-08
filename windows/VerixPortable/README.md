@@ -7,7 +7,8 @@ Segurança:
 - Menus de contexto desativados.
 - Downloads cancelados.
 - Host objects não expostos à página.
-- Navegação limitada ao domínio de produção https://verix-plataformadigital.github.io/verix/.
+- Navegação interna limitada ao domínio de produção https://verix-plataformadigital.github.io/verix/.
+- Ligações para serviços externos oficiais (ASF, ERRU/IMT, INEM e Waze) são abertas no navegador predefinido; restantes destinos são bloqueados.
 - A autorização continua a ser feita pelo backend; o EXE não contém segredos de servidor.
 
 Compilação:
