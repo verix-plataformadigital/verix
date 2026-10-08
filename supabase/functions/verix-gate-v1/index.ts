@@ -29,9 +29,9 @@ async function hmacHex(value: string): Promise<string> {
     false,
     ["sign"]
   );
-  const bytes = new Uint8Array(
-    await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(value))
-  );
+  const bytes = new Uint8Array(await crypto.subtle.sign(
+    "HMAC", key, new TextEncoder().encode(value)
+  ));
   return [...bytes].map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
@@ -43,8 +43,9 @@ function legacyLocal(req: Request): boolean {
 
 function corsHeaders(req: Request): Record<string, string> {
   const origin = req.headers.get("origin") || "";
+  const opaqueLocal = !origin || origin === "null";
   return {
-    "Access-Control-Allow-Origin": ALLOWED_ORIGINS.has(origin) ? origin : "",
+    "Access-Control-Allow-Origin": opaqueLocal ? "*" : (ALLOWED_ORIGINS.has(origin) ? origin : ""),
     "Access-Control-Allow-Headers": "content-type",
     "Access-Control-Allow-Methods": "POST,OPTIONS",
     "Cache-Control": "no-store, max-age=0",
@@ -59,10 +60,7 @@ function corsHeaders(req: Request): Record<string, string> {
 function json(data: unknown, status: number, req: Request) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: {
-      ...corsHeaders(req),
-      "Content-Type": "application/json; charset=utf-8"
-    }
+    headers: { ...corsHeaders(req), "Content-Type": "application/json; charset=utf-8" }
   });
 }
 
@@ -112,12 +110,7 @@ Deno.serve(async (req: Request) => {
     const signature = await hmacHex(encoded);
     const token = "v1." + encoded + "." + signature;
 
-    return json({
-      ok: true,
-      token,
-      expires_in: exp - now,
-      build_id: buildId
-    }, 200, req);
+    return json({ ok: true, token, expires_in: exp - now, build_id: buildId }, 200, req);
   } catch (_) {
     return json({ ok: false, error: "gate_failed" }, 400, req);
   }
