@@ -23,7 +23,7 @@ On every push to `main` (or via manual trigger), the workflow `.github/workflows
 2. Under **Build and deployment → Source**, choose **GitHub Actions**
 3. Save
 
-After that, every push to `main` updates the live site with the protected version.
+After that, every push to `main` runs the secure build and integrity checks before the live site is updated.
 
 Live URL will be:
 `https://verix-plataformadigital.github.io/verix/`
@@ -45,16 +45,16 @@ All real authorization and sensitive logic must stay server-side:
 
 ## 4. What the secure build does
 
-- Control-flow flattening
-- String array + base64 encoding + shuffle/rotate/split
-- Self-defending code
-- Debug-protection interval
-- Console output disabled
-- Domain lock (only allowed hosts)
-- No source maps
-- Unique `build_id` for gate validation
+The release pipeline uses two profiles deliberately:
 
-Obfuscation increases reverse-engineering cost. It does **not** make JavaScript confidential.
+- **Standard scripts:** compacting, string-array transformations, domain lock and selected anti-debug protections.
+- **Critical legacy runtime:** conservative compatibility profile. Control-flow flattening, self-defending and debug-protection are disabled for the large operational script so that runtime semantics remain deterministic.
+- **Telemetry/security runtime:** excluded from heavy obfuscation and checked explicitly after packaging.
+- No source maps are published.
+- Every production build receives a unique `build_id`, injected into the client and bound to the short-lived signed gate token.
+- The Pages deployment is gated by release integrity checks before the artifact is published.
+
+Obfuscation increases reverse-engineering cost. It does **not** make JavaScript confidential. The real trust boundary remains the server-side gate, rate limiting and ASF relay.
 
 ## 5. Secrets — never in the client or repository
 
