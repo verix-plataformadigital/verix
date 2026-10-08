@@ -3,13 +3,6 @@ const ALLOWED_ORIGINS = new Set([
   "https://verix-plataformadigital.github.io"
 ]);
 
-function isLegacyLocal(req: Request): boolean {
-  const origin = req.headers.get("origin");
-  if (origin) return false;
-  const ua = req.headers.get("user-agent") || "";
-  return /Trident\//i.test(ua) || /MSIE\s/i.test(ua) || /MSHTA/i.test(ua);
-}
-
 function corsHeaders(req: Request) {
   const origin = req.headers.get("origin") || "";
   return {
@@ -32,6 +25,7 @@ const ASF_ORIGIN = "https://ext01.asf.com.pt";
 const ASF_PATH = "/api/src/";
 const MAX_BODY_BYTES = 16 * 1024;
 const UPSTREAM_TIMEOUT_MS = 15000;
+const ACTIVE_BUILD_ID = "1.5-sec-20261008-a";
 
 function json(data: unknown, status = 200, req?: Request, extraHeaders: Record<string, string> = {}) {
   return new Response(JSON.stringify(data), {
@@ -62,23 +56,6 @@ function validDate(value: unknown): string | null {
   const dt = new Date(Date.UTC(y, mo - 1, d));
   if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== mo - 1 || dt.getUTCDate() !== d) return null;
   return s;
-}
-
-async function buildEnabled(buildId: string): Promise<boolean> {
-  if (!SUPABASE_URL || !SERVICE_KEY) return false;
-  const q = new URLSearchParams({
-    select: "build_id,enabled",
-    build_id: "eq." + buildId,
-    enabled: "eq.true",
-    limit: "1"
-  });
-  const response = await fetch(
-    SUPABASE_URL + "/rest/v1/verix_build_registry?" + q.toString(),
-    { headers: { apikey: SERVICE_KEY, Authorization: "Bearer " + SERVICE_KEY } }
-  );
-  if (!response.ok) return false;
-  const rows = await response.json().catch(() => []);
-  return Array.isArray(rows) && rows.length === 1 && rows[0]?.enabled === true;
 }
 
 const GATE_SECRET =
@@ -166,11 +143,8 @@ Deno.serve(async (req: Request) => {
 
   try {
     const buildId = cleanText(req.headers.get("x-verix-build-id"), 80);
-    if (!/^1\.5-sec-[0-9]{8}-[a-z0-9-]{1,20}$/i.test(buildId)) {
-      return json({ ok: false, error: "invalid_build" }, 400, req);
-    }
-    if (!(await buildEnabled(buildId))) {
-      return json({ ok: false, error: "build_revoked" }, 403, req);
+    if (buildId !== ACTIVE_BUILD_ID) {
+      return json({ ok: false, error: "invalid_or_revoked_build" }, 403, req);
     }
 
     const token = cleanText(req.headers.get("x-verix-client-token"), 4096);
@@ -200,11 +174,11 @@ Deno.serve(async (req: Request) => {
     const date = validDate(body?.date);
 
     if (!/^[A-Z0-9]{6,8}$/.test(plate)) {
-      return json({ ok: false, error: "invalid_plate" }, 400);
+      return json({ ok: false, error: "invalid_plate" }, 400, req);
     }
 
     if (!date) {
-      return json({ ok: false, error: "invalid_date" }, 400);
+      return json({ ok: false, error: "invalid_date" }, 400, req);
     }
 
     const query =
