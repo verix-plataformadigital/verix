@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+
 import { describe, expect, it } from "vitest";
 import { HomeModule } from "../../src/modules/home/home-module";
 import { MODULES } from "../../src/app/state/module-registry";

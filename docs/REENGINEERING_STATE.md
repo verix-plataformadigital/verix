@@ -10,7 +10,7 @@ A produção atual permanece intocada. Esta branch é a área de engenharia da V
 
 ## Head atual
 
-Commit de referência desta sessão: `c84566831821822eac92186617b0bea3f06ad3c9`
+Head atual: consultar diretamente a branch `reengineering-v2` no GitHub antes de novas alterações; este documento evita fixar um SHA que fica obsoleto após cada checkpoint.
 
 ## Decisões técnicas atuais
 
@@ -206,3 +206,26 @@ Fonte externa: Diário da República, Código da Estrada consolidado.
 - Executar regressão V2 ↔ legado nos fluxos críticos com casos reais/caracterizados.
 - Validar o contrato final de `stats-v2` e só então considerar publicação do novo admin.
 - Confirmar mobile em navegador e WebView2.
+
+
+### Continuação da reengenharia — 2026-10-08, fim da sessão
+
+#### Correções verificáveis nesta tranche
+- Corrigida a nomenclatura `livretePlate` no coordenador de consultas e removido do teste um `recordLookup` que já não pertence ao contrato.
+- O serviço de consulta arranca os dois canais RNSI antes de iniciar a consulta ASF. Isto preserva a oportunidade de abrir janelas durante a ativação do formulário; continua a usar `Promise.allSettled` para isolar falhas entre canais.
+- Os testes do adaptador IMT verificam o contrato real: `ImtService.open(source, plate)` compõe e entrega ao adaptador a URL final.
+- A caracterização do cinemómetro foi atualizada para os resultados efetivos do domínio V61 (130 registados, 123 deduzidos, 120 de limite, excesso de 3). Não foram alteradas as regras de cálculo para satisfazer um teste desatualizado.
+- O typecheck de Edge Functions configura `moduleDetection: "force"`, evitando colisões de identificadores globais entre ficheiros `index.ts` independentes. O código das Edge Functions de produção não foi alterado.
+- A página inicial V2 foi extraída para `HomeModule`: atalhos gerados a partir do registo de módulos, CTA de consulta, navegação tipada e layout responsivo. Os textos são inseridos com `textContent`; não se introduz `innerHTML`.
+- O tipo de módulo deixou de incluir os IDs antigos `insurance` e `imt`, pois a consulta de veículo é o ponto de entrada integrado.
+
+#### Estado de validação
+- A auditoria de segurança correu com sucesso em commits intermédios desta tranche.
+- Foi observado typecheck verde após a correção do contrato de matrícula.
+- A primeira execução de testes revelou expectativas legadas de ordem das chamadas, contrato do adaptador IMT e resultados V61; essas expectativas foram alinhadas e a coordenação foi ajustada para abrir RNSI primeiro.
+- O teste de `HomeModule` deve usar explicitamente o ambiente jsdom do Vitest.
+- O estado final só deve ser marcado como concluído quando a CI do HEAD final passar: typecheck, typecheck Edge, testes, auditoria estática, build V2, regras de segurança, ausência de source maps e build/publicação do host Windows.
+
+#### Estado de produção e limites
+- Produção continua isolada em `main`; não houve alteração a `asf-proxy-v1`, `telemetry-v2` de produção, schema Supabase ou admin de produção.
+- A nova página inicial e as alterações de orquestração são apenas parte da branch V2. A janela RNSI e o pacote Windows continuam a precisar de validação em equipamento operacional real.
