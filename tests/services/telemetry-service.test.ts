@@ -109,4 +109,4 @@ describe("TelemetryService", () => {
     const init = fetchImpl.mock.calls[0]?.[1];
     expect(String(init?.body)).toContain('"events"');
   });
-}
+});
