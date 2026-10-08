@@ -18,6 +18,10 @@ describe("telemetry presence migration safeguards", () => {
     expect(occurrences(migration, "$guard$")).toBe(12);
   });
 
+  it("selects the analytics function by its exact signature", () => {
+    expect(migration).toContain("AND pg_get_function_identity_arguments(p.oid)='p_now timestamp with time zone'");
+  });
+
   it("rejects a rewrite that loses required online and insurance query predicates", () => {
     const doStart = migration.indexOf("DO $$");
     const triggerFunction = migration.indexOf("create or replace function public.verix2_keep_seen_monotonic()");

@@ -12,6 +12,7 @@ BEGIN
   JOIN pg_namespace n ON n.oid=p.pronamespace
   WHERE n.nspname='public'
     AND p.proname='verix2_admin_analytics'
+    AND pg_get_function_identity_arguments(p.oid)='p_now timestamp with time zone'
   LIMIT 1;
 
   IF d IS NULL THEN
