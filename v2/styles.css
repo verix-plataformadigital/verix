@@ -268,3 +268,11 @@ button{font:inherit}
 .cin-context h4{margin:0;padding:12px 14px 0}
 @media(max-width:900px){.cin-context-profile-controls{grid-template-columns:1fr 1fr}.cin-context-profile-select{grid-column:1/-1}.cin-context-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:600px){.cin-context-profile-controls{grid-template-columns:1fr}.cin-context-profile-select{grid-column:auto}.cin-context-grid{grid-template-columns:1fr}}
+
+
+.cin-copy-row{display:flex;gap:7px;margin-top:12px}
+.cin-copy-button{padding:9px 11px;border:1px solid rgba(112,211,202,.16);border-radius:8px;background:rgba(75,206,195,.05);color:#b9ebe5;font-size:8px;font-weight:800;letter-spacing:.07em;cursor:pointer}
+.cin-copy-button:hover{background:rgba(75,206,195,.09)}
+.cin-copy-button:disabled{opacity:.42;cursor:default}
+.cin-operational-text{display:block;width:100%;min-height:145px;margin-top:9px;padding:11px 12px;border:1px solid rgba(255,255,255,.06);border-radius:9px;background:#050b0f;color:#aebdc1;font:10px/1.6 ui-monospace,Consolas,monospace;resize:vertical;outline:none}
+@media(max-width:600px){.cin-copy-row{display:grid;grid-template-columns:1fr 1fr}.cin-copy-button{width:100%}}
