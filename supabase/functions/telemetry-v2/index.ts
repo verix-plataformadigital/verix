@@ -2,10 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 declare const Deno: any;
 
-const ALLOWED_ORIGINS = new Set([
-  "https://verix.vxops.workers.dev",
-  "https://verix-plataformadigital.github.io"
-]);
+
 
 function isLegacyLocal(req: Request): boolean {
   const origin = req.headers.get("origin");
@@ -56,7 +53,6 @@ const db = createClient(SUPABASE_URL, secretKey, {
 
 const ALLOWED_ORIGINS = new Set([
   "https://verix-plataformadigital.github.io",
-  "https://verix.vxops.workers.dev",
   "http://localhost",
   "http://127.0.0.1"
 ]);
