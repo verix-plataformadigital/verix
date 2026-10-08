@@ -305,23 +305,6 @@ async function consumeRate(key: string, limit: number): Promise<boolean> {
   return data === true;
 }
 
-async function buildEnabled(buildId: string): Promise<boolean> {
-  if (!SUPABASE_URL || !secretKey) return false;
-  const q = new URLSearchParams({
-    select: "build_id,enabled",
-    build_id: "eq." + buildId,
-    enabled: "eq.true",
-    limit: "1"
-  });
-  const response = await fetch(
-    SUPABASE_URL + "/rest/v1/verix_build_registry?" + q.toString(),
-    { headers: { apikey: secretKey, Authorization: "Bearer " + secretKey } }
-  );
-  if (!response.ok) return false;
-  const rows = await response.json().catch(() => []);
-  return Array.isArray(rows) && rows.length === 1 && rows[0]?.enabled === true;
-}
-
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders(req) });
   if (req.method !== "POST") return json({ ok: false, error: "method_not_allowed" }, 405, req);
@@ -334,19 +317,8 @@ Deno.serve(async (req: Request) => {
     return json({ ok: false, error: "origin_not_allowed" }, 403, req);
   }
 
-  // Compatibilidade: versões atuais do cliente ainda não enviam x-verix-build-id.
-  // Quando o header existe, validamo-lo; quando não existe, usamos appVersion
-  // no próprio evento e mantemos a telemetria operacional.
-  const buildIdHeader = String(req.headers.get("x-verix-build-id") || "").trim().slice(0, 80);
-  if (buildIdHeader) {
-    if (!/^1\.5-sec-[0-9]{8}-[a-z0-9-]{1,80}$/i.test(buildIdHeader)) {
-      return json({ ok: false, error: "invalid_build" }, 400, req);
-    }
-    if (!(await buildEnabled(buildIdHeader))) {
-      return json({ ok: false, error: "build_revoked" }, 403, req);
-    }
-  }
-
+  // O build ID é apenas metadado de correlação. A telemetria não depende dele
+  // para permanecer operacional quando uma build legítima é atualizada.
   try {
     const contentLength = Number(req.headers.get("content-length") || 0);
     if (Number.isFinite(contentLength) && contentLength > 1024 * 1024) {
@@ -375,6 +347,10 @@ Deno.serve(async (req: Request) => {
       const appVersion = cleanText(x?.appVersion, 40);
       const buildId = cleanText(x?.buildId || metadata.build_id, 60) || appVersion;
       if (!metadata.build_id) metadata.build_id = buildId;
+      // installation_id é a única identidade técnica obrigatória: a coluna é NOT NULL.
+      // session/tab são opcionais para permitir contabilização mesmo quando o browser
+      // perde uma dessas chaves entre refresh/restore.
+      if (!installationId) continue;
 
       // Data minimization: the plate is only needed for technical ASF error investigation.
       // Correlation is done with query_id for all other outcomes.
@@ -388,8 +364,8 @@ Deno.serve(async (req: Request) => {
       }
 
       if (event === "vehicle_lookup") {
-        // V2 only: a real query always has all these identifiers.
-        if (!installationId || !sessionId || !tabId || !queryId || !appVersion) continue;
+        // Uma consulta precisa de instalação, query e versão; sessão/tab podem faltar.
+        if (!queryId || !appVersion) continue;
 
         const d = x?.occurredAt ? new Date(x.occurredAt) : new Date();
         const now = Date.now();
