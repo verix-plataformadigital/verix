@@ -193,7 +193,7 @@ describe("VehicleModule history preference", () => {
     };
     const module = new VehicleModule({
       asf: { query } as unknown as AsfService,
-      imt: new ImtService({ open: vi.fn(() => true) }),
+      imt: new ImtService({ open: vi.fn(() => false) }),
       telemetry,
       store,
       history
@@ -217,6 +217,58 @@ describe("VehicleModule history preference", () => {
     expect(root.querySelector(".vehicle-result-idle")).not.toBeNull();
     expect(root.querySelector(".vehicle-result-no-record")).toBeNull();
     expect(root.querySelector<HTMLInputElement>("#vehicle-plate")?.value).toBe("");
+  });
+
+  
+  it("does not show an RNSI warning from a query completed after reopening history", async () => {
+    let resolveAsf: ((result: AsfServiceResult) => void) | undefined;
+    const query = vi.fn<(request: { matricula: string; date: string }) => Promise<AsfServiceResult>>(
+      () => new Promise((resolve) => { resolveAsf = resolve; })
+    );
+    const root = document.createElement("main");
+    const history = {
+      add: vi.fn(),
+      updateInsurance: vi.fn()
+    } as unknown as HistoryService;
+    const telemetry = {
+      newQueryId: vi.fn(() => "q-reopen-slow"),
+      track: vi.fn()
+    };
+    const module = new VehicleModule({
+      asf: { query } as unknown as AsfService,
+      imt: new ImtService({ open: vi.fn(() => false) }),
+      telemetry,
+      store: { setBusy: vi.fn(), setQueryId: vi.fn() },
+      history
+    });
+    module.mount(root);
+
+    const plate = root.querySelector<HTMLInputElement>("#vehicle-plate");
+    const form = root.querySelector<HTMLFormElement>(".vehicle-query-form");
+    if (!plate || !form) return;
+    plate.value = "88-ZZ-88";
+    form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    expect(root.querySelector(".vehicle-result-loading")).not.toBeNull();
+
+    module.reopen({
+      id: "q-history",
+      veiculo: "12AB34",
+      reboque: "",
+      data: "2026-10-08T19:00:00.000Z",
+      dataConsultaAsf: "2026/01/31",
+      seguro: "sim"
+    });
+    expect(root.querySelector<HTMLInputElement>("#vehicle-plate")?.value).toBe("12AB34");
+    expect(root.querySelector<HTMLInputElement>('input[type="date"]')?.value).toBe("2026-01-31");
+    expect(root.querySelector(".vehicle-result-idle")).not.toBeNull();
+
+    resolveAsf?.({ ok: true, value: { kind: "no-record" } });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(root.querySelector<HTMLInputElement>("#vehicle-plate")?.value).toBe("12AB34");
+    expect(root.querySelector(".vehicle-result-idle")).not.toBeNull();
+    expect(root.querySelector(".vehicle-local-notice")).toBeNull();
+    expect(history.updateInsurance).not.toHaveBeenCalled();
   });
 
 });
