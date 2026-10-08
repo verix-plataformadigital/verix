@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+
 import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_SETTINGS,
@@ -47,6 +49,16 @@ describe('SettingsService', () => {
       hud: false,
       transitions: false
     });
+  });
+
+  it('aplica a escala automática limitada aos limites operacionais do legado', () => {
+    const service = new SettingsService(new MemoryStorage());
+    service.update({ scale: 'auto' });
+
+    const body = document.body;
+    service.applyToDocument(document);
+
+    expect(body.style.zoom).toBe('0.820');
   });
 
   it('rejeita valores persistidos inválidos', () => {
