@@ -39,6 +39,7 @@ export async function bootstrap(root: HTMLElement): Promise<void> {
   const connectivity = new DefaultConnectivityService();
   const snapshot = await connectivity.probe();
   store.setConnectivity(snapshot.state);
+  store.setBackendReachable(snapshot.backendReachable);
 
   root.dataset.buildId = runtimeConfig.buildId;
   root.dataset.installationId = telemetry.installationId;
