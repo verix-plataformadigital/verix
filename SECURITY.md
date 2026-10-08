@@ -1,14 +1,12 @@
 # VÉRIX Security Policy
 
-## 1. Repository MUST be private
+## 1. Source repository confidentiality
 
-The VÉRIX source repository **must remain private**.
+The VÉRIX source repository **should remain private in the final production architecture**. While this repository is public, the complete clear-text source can be inspected and copied; obfuscation does not make it confidential.
 
 While the repository is public, anyone can download the full clear-text `verix-app.html` and `admin_v2.html`. Client-side obfuscation becomes almost useless if the original source is public.
 
-**Action required (do this now):**
-1. Go to the repository → **Settings** → **General** → **Danger Zone**
-2. Change visibility to **Private**
+**Temporary state:** the repository is currently public so GitHub Pages can serve the current production site on this account. The intended final architecture is a private source repository publishing only the obfuscated `dist/` output to a separate public production repository.
 
 ## 2. GitHub Pages (only production channel)
 
