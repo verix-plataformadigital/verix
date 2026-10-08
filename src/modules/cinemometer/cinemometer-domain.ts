@@ -182,26 +182,6 @@ export function classifyExcess(
   };
 }
 
-export function operationalCode(
-  classification: ExcessClassification,
-  regime: SpeedRegime
-): string {
-  const family = codeFamily(regime);
-  if (!family) return "—";
-  return CIN_CODES[vehicleGroupForCode(classification, regime)][family][classification.faixa];
-}
-
-// The final legacy code family is selected from the vehicle, not from the classification object.
-// Kept as an explicit helper to make accidental coupling visible.
-function vehicleGroupForCode(
-  classification: ExcessClassification,
-  _regime: SpeedRegime
-): VehicleGroup {
-  // classification alone cannot identify the vehicle family; this overload is intentionally
-  // replaced below by the vehicle-aware API.
-  return classification.faixa === "____" ? "light" : "other";
-}
-
 export function operationalCodeForVehicle(
   classification: ExcessClassification,
   vehicle: VehicleType,
