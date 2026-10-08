@@ -10,6 +10,14 @@ const RNSI_PATHS = {
   "rnsi-livrete": "consulta_livrete.php"
 } as const;
 
+export type RnsiSource = keyof typeof RNSI_PATHS;
+
+export function buildRnsiUrl(source: RnsiSource, plate: string): string {
+  const path = RNSI_PATHS[source];
+  const normalized = normalizePlate(plate);
+  return RNSI_BASE_URL + path + "?Matricula=" + encodeURIComponent(normalized);
+}
+
 export interface VehicleModuleOptions {
   readonly asf: AsfService;
   readonly telemetry: TelemetryService;
@@ -295,10 +303,10 @@ export class VehicleModule {
         source === "rnsi-livrete" ? this.lastTrailer || this.lastPlate : this.lastPlate
       );
 
-      const path = RNSI_PATHS[source as keyof typeof RNSI_PATHS];
-      const targetUrl = path
-        ? RNSI_BASE_URL + path + "?Matricula=" + encodeURIComponent(plate)
-        : RNSI_BASE_URL;
+      const targetUrl = buildRnsiUrl(
+        source as RnsiSource,
+        plate
+      );
       const popup = window.open(targetUrl, "_blank", "noopener,noreferrer");
       void copyText(plate);
 
