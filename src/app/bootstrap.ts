@@ -7,6 +7,8 @@ import { VehicleModule } from "../modules/vehicle/vehicle-module";
 import { TelemetryService } from "../services/telemetry/telemetry-service";
 import { TelemetryScheduler } from "../services/telemetry/telemetry-scheduler";
 import { runtimeConfig } from "../config/runtime-config";
+import { HistoryService } from "../modules/history/history-service";
+import { HistoryModule } from "../modules/history/history-module";
 
 function browserStorage(kind: "local" | "session"): Storage | null {
   try {
@@ -51,19 +53,35 @@ export async function bootstrap(root: HTMLElement): Promise<void> {
     gate
   });
 
+  const history = new HistoryService(localStorage);
   const vehicleModule = new VehicleModule({
     asf,
     telemetry,
-    store
+    store,
+    history
+  });
+
+  const historyModule = new HistoryModule({
+    history,
+    onReopen: (record) => {
+      store.setModule("vehicle");
+      vehicleModule.reopen(record);
+    }
   });
 
   const shell = new AppShell({
     root,
     store,
     moduleRenderer: (workspace, module) => {
-      if (module !== "vehicle") return false;
-      vehicleModule.mount(workspace);
-      return true;
+      if (module === "vehicle") {
+        vehicleModule.mount(workspace);
+        return true;
+      }
+      if (module === "history") {
+        historyModule.mount(workspace);
+        return true;
+      }
+      return false;
     }
   });
 
