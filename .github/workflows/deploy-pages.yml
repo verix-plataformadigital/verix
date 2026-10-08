@@ -1,4 +1,4 @@
-name: Deploy VÉRIX (Secure) to verix-site
+name: Deploy VÉRIX (Secure) to GitHub Pages
 
 on:
   push:
@@ -7,42 +7,49 @@ on:
 
 permissions:
   contents: read
+  pages: write
+  id-token: write
 
 concurrency:
-  group: "verix-site-deploy"
+  group: "pages"
   cancel-in-progress: false
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout source
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: "npm"
 
       - name: Install dependencies
-        run: npm install --no-fund --no-audit
+        run: npm ci || npm install
 
       - name: Build secure release
         env:
           VERIX_BUILD_ID: "1.5-sec-${{ github.run_number }}-${{ github.sha }}"
         run: npm run build:secure
 
-      - name: Ensure .nojekyll
+      - name: Ensure .nojekyll in dist
         run: touch dist/.nojekyll
 
-      - name: Deploy to verix-site
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          personal_token: ${{ secrets.VERIX_DEPLOY_TOKEN }}
-          external_repository: verix-plataformadigital/verix-site
-          publish_dir: ./dist
-          publish_branch: main
-          force_orphan: true
-          user_name: "verix-deploy"
-          user_email: "verix.plataformadigital@gmail.com"
-          commit_message: "deploy: VÉRIX secure build ${{ github.run_number }}"
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
