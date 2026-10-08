@@ -286,3 +286,9 @@ Fonte externa: Diário da República, Código da Estrada consolidado.
 - Ferramentas e Diário da República passaram de botões que chamavam `window.open()` para âncoras nativas com `target="_blank"` e `rel="noopener noreferrer"`.
 - A telemetria agora regista `requested: true`, não inventa um resultado de abertura que o cliente não consegue observar quando o host encaminha a URL para o navegador do sistema.
 - O adaptador IMT/RNSI mantém o seu helper separado, pois o percurso WebView2 interno do RNSI tem um contrato diferente.
+
+
+#### Fallback coerente da data ASF
+- Quando o campo de data está vazio, a consulta passa agora a usar o mesmo dia local que o módulo mostra como fallback.
+- A data efetiva é partilhada entre o pedido ASF e o registo histórico, evitando pedido com data vazia e histórico sem data selecionada.
+- Teste de regressão verifica a consistência entre o campo inicial, o argumento ASF e a data persistida.
