@@ -7,7 +7,7 @@ Segurança:
 - Menus de contexto desativados.
 - Downloads cancelados.
 - Host objects não expostos à página.
-- Navegação limitada a https://verix.vxops.workers.dev/.
+- Navegação limitada ao domínio de produção https://verix-plataformadigital.github.io/verix/.
 - A autorização continua a ser feita pelo backend; o EXE não contém segredos de servidor.
 
 Compilação:
