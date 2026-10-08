@@ -63,6 +63,7 @@ export async function bootstrap(root: HTMLElement): Promise<void> {
 
   const historyModule = new HistoryModule({
     history,
+    telemetry,
     onReopen: (record) => {
       store.setModule("vehicle");
       vehicleModule.reopen(record);
