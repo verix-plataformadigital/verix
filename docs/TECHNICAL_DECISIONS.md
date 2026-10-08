@@ -23,3 +23,8 @@ O ASF continua atrás de serviço/backend. A primeira camada migrada são contra
 ## Obfuscação
 
 Não será usada como fronteira de segurança. A proteção real permanece no backend, tokens, autorização, RLS, minimização de dados e ausência de segredos no cliente.
+
+
+## Tooling AST
+
+TypeScript 7.0 é usado como compilador/type-checker do produto. Não é usado como parser AST pelo tooling porque a versão 7.0 não expõe a API programática antiga. Para auditoria estática, a V2 usa `oxc-parser`, que suporta JavaScript e TypeScript e devolve AST compatível com ESTree/TS-ESTree. A dependência fica restrita ao tooling e não entra no bundle do produto.
