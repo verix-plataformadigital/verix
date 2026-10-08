@@ -43,7 +43,7 @@ export class TelemetryService {
   private readonly timeoutMs: number;
   private readonly identity;
   private readonly sendBeaconImpl: ((url: string, data: Blob) => boolean) | null;
-  private flushBusy = false;
+  private flushPromise: Promise<TelemetryFlushResult> | null = null;
 
   constructor(private readonly options: TelemetryServiceOptions) {
     this.local = new SafeStorage(options.localStorage ?? null);
@@ -126,31 +126,34 @@ export class TelemetryService {
     return item;
   }
 
-  async flush(): Promise<TelemetryFlushResult> {
-    if (this.flushBusy || this.queue.size === 0) {
-      return { ok: true, sent: 0 };
+  flush(): Promise<TelemetryFlushResult> {
+    if (this.flushPromise) return this.flushPromise;
+    if (this.queue.size === 0) return Promise.resolve({ ok: true, sent: 0 });
+
+    const run = this.performFlush();
+    this.flushPromise = run.finally(() => {
+      if (this.flushPromise === tracked) this.flushPromise = null;
+    });
+    const tracked = this.flushPromise;
+    return tracked;
+  }
+
+  private async performFlush(): Promise<TelemetryFlushResult> {
+    const batch = this.queue.peek(this.batchSize);
+    const body: TelemetryBatch = { events: batch };
+    const response = await this.send(body, false);
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        sent: 0,
+        retryAfterMs: response.retryAfterMs
+      };
     }
 
-    this.flushBusy = true;
-    try {
-      const batch = this.queue.peek(this.batchSize);
-      const body: TelemetryBatch = { events: batch };
-      const response = await this.send(body, false);
-
-      if (!response.ok) {
-        return {
-          ok: false,
-          sent: 0,
-          retryAfterMs: response.retryAfterMs
-        };
-      }
-
-      const removed = this.queue.acknowledge(batch.map((event) => event.eventId));
-      this.persist();
-      return { ok: true, sent: removed };
-    } finally {
-      this.flushBusy = false;
-    }
+    const removed = this.queue.acknowledge(batch.map((event) => event.eventId));
+    this.persist();
+    return { ok: true, sent: removed };
   }
 
   shouldFlushImmediately(event: TelemetryEventName): boolean {
