@@ -111,4 +111,26 @@ describe("TelemetryService", () => {
     const init = fetchImpl.mock.calls[0]?.[1];
     expect(String(init?.body)).toContain('"events"');
   });
+  it("continua funcional quando o storage local recusa escrita", async () => {
+    class FailingStorage {
+      getItem(): string | null { return null; }
+      setItem(): void { throw new Error("quota"); }
+      removeItem(): void { throw new Error("quota"); }
+    }
+
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response("ok", { status: 200 })
+    );
+    const service = createService({
+      localStorage: new FailingStorage(),
+      fetchImpl
+    });
+
+    service.track("module_open", "consulta");
+    expect(service.queueSize).toBe(1);
+
+    const result = await service.flush();
+    expect(result).toEqual({ ok: true, sent: 1 });
+  });
+
 });
