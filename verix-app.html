@@ -1159,14 +1159,6 @@ function submitConjunto(event) {
   function agoraASF() { return Date.now(); }
   function esperarASF(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
   // ASF helpers — kept independent from quota/rate-control code.
-  function formatarDataASF(date) {
-    date = date || new Date();
-    var dd = String(date.getDate()).padStart(2, '0');
-    var mm = String(date.getMonth() + 1).padStart(2, '0');
-    var yyyy = date.getFullYear();
-    return yyyy + '/' + mm + '/' + dd;
-  }
-
   function formatarDataPT(valor) {
     if (valor === undefined || valor === null || String(valor).trim() === '' || String(valor) === '—') return '—';
     var s = String(valor).trim();
@@ -1175,10 +1167,6 @@ function submitConjunto(event) {
     m = s.match(/^(\d{4})\/(\d{2})\/(\d{2})/);
     if (m) return m[3] + '/' + m[2] + '/' + m[1];
     return s;
-  }
-
-  function normalizarMatriculaExata(mat) {
-    return formatarMatriculaVeiculo(mat);
   }
 
   function formatarMatriculaDisplay(mat) {
@@ -1591,13 +1579,6 @@ function submitConjunto(event) {
     return String(v).trim() !== '';
   }
 
-  function asfNodeTemDados(node) {
-    var campos = ['entity','insurer','insuranceCompany','policy','policyNumber','startDate','validFrom','endDate','validTo','license','licenseNumber','code'];
-    for (var i = 0; i < campos.length; i++) {
-      if (asfValorUtilizavel(node, campos[i])) return true;
-    }
-    return false;
-  }
 
   function interpretarRespostaASF(json) {
     if (!json || typeof json !== 'object') {
