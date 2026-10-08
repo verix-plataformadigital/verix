@@ -77,6 +77,12 @@ Commit de referência desta sessão: `c84566831821822eac92186617b0bea3f06ad3c9`
 - A telemetria V2 legada está relativamente isolada e tornou-se o primeiro candidato a migração funcional para TypeScript.
 - A CI chegou a typecheck verde e 19/19 testes verdes antes de falhar no auditor AST; o auditor foi então corrigido para usar namespace import do TypeScript.
 
+## Descobertas adicionais
+
+- O primeiro domínio do cinemómetro V2 foi inicialmente extraído de uma camada V42/V47 mais antiga. A comparação direta com o fim efetivo do `verix-app.html` revelou uma camada V61 posterior; a implementação V2 foi corrigida para essa cadeia final.
+- A UI V47/V61 também substitui os identificadores de motociclos e máquina industrial. O domínio V2 usa agora os identificadores efetivos: `motociclo_mais50_sem`, `motociclo_mais50_com`, `motociclo_ate50` e `maquina_industrial`.
+- O teste de código operacional passou a exigir explicitamente o veículo, evitando uma assinatura impossível que tentava inferir o grupo apenas da classificação.
+
 ## Próxima sequência obrigatória
 
 1. Confirmar CI verde da fundação e obter o relatório integral da auditoria do runner.
