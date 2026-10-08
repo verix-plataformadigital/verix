@@ -238,7 +238,24 @@ function verifyCriticalRuntime(outputPath) {
   if (!security.includes("var BUILD_ID = '" + BUILD_ID + "'")) {
     throw new Error("Client BUILD_ID does not match release BUILD_ID");
   }
-  return { telemetry_runtime: true, security_runtime: true };
+
+  const missingCritical = CRITICAL_RUNTIME_NAMES.filter((name) => {
+    const pattern = new RegExp("\\bfunction\\s+" + name + "\\b|\\b" + name + "\\s*\\(", "m");
+    return !pattern.test(html);
+  });
+
+  if (missingCritical.length) {
+    throw new Error(
+      "Critical ASF runtime symbols missing after secure build: " +
+      missingCritical.join(", ")
+    );
+  }
+
+  return {
+    telemetry_runtime: true,
+    security_runtime: true,
+    critical_runtime_symbols: CRITICAL_RUNTIME_NAMES.length
+  };
 }
 function verifyJavaScriptSyntax(outputPath) {
   const html = fs.readFileSync(outputPath, "utf8");
