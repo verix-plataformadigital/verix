@@ -52,9 +52,30 @@ jobs:
             exit 1
           fi
 
+      - name: Prepare audit source snapshot
+        shell: bash
+        run: |
+          mkdir -p audit-source
+          cp verix-app.html audit-source/
+          cp verix-mobile.html audit-source/
+          cp verix-mobile.js audit-source/
+          cp verix-mobile.css audit-source/
+          cp admin_v2.html audit-source/
+          cp supabase/functions/telemetry-v2/index.ts audit-source/telemetry-v2.ts
+          cp supabase/functions/asf-proxy-v1/index.ts audit-source/asf-proxy-v1.ts
+          cp supabase/functions/verix-gate-v1/index.ts audit-source/verix-gate-v1.ts
+          cp package-lock.json audit-source/package-lock.json
+
       - name: Upload audit
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: verix-v2-audit
           path: audit-output/
           retention-days: 14
+
+      - name: Upload audit source snapshot
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: verix-v2-audit-source
+          path: audit-source/
+          retention-days: 7
