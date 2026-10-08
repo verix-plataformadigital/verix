@@ -128,6 +128,28 @@ describe("VehicleModule history preference", () => {
     expect(telemetry.newQueryId).toHaveBeenCalledTimes(1);
   });
 
+  it("uses one consistent fallback date when the ASF date control is empty", async () => {
+    const { root, history, asf } = createModule(true);
+    const plate = root.querySelector<HTMLInputElement>("#vehicle-plate");
+    const date = root.querySelector<HTMLInputElement>('input[type="date"]');
+    const form = root.querySelector<HTMLFormElement>(".vehicle-query-form");
+    if (!plate || !date || !form) return;
+
+    const defaultDate = date.value;
+    expect(defaultDate).toMatch(/^\\d{4}-\\d{2}-\\d{2}$/);
+    const expectedAsfDate = defaultDate.replaceAll("-", "/");
+    date.value = "";
+    plate.value = "12-AB-34";
+    form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(asf.query).toHaveBeenCalledWith({
+      matricula: "12AB34",
+      date: expectedAsfDate
+    });
+    expect(history.add).toHaveBeenCalledWith("12AB34", "", "q-test", expectedAsfDate);
+  });
+
   it("grava histórico quando a preferência está ligada", async () => {
     const { root, history } = createModule(true);
     const plate = root.querySelector<HTMLInputElement>("#vehicle-plate");
