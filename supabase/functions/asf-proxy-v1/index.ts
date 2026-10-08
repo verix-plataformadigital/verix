@@ -7,7 +7,7 @@ function isLegacyLocal(req: Request): boolean {
   const origin = req.headers.get("origin");
   if (origin) return false;
   const ua = req.headers.get("user-agent") || "";
-  return /Trident\\//i.test(ua) || /MSIE\\s/i.test(ua) || /MSHTA/i.test(ua);
+  return /Trident\//i.test(ua) || /MSIE\s/i.test(ua) || /MSHTA/i.test(ua);
 }
 
 function corsHeaders(req: Request) {
