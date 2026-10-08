@@ -8,6 +8,10 @@ const OUTPUT_DIR = path.join(ROOT, "dist");
 
 const BUILD_ID = process.env.VERIX_BUILD_ID || `1.5-sec-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-a`;
 
+if (!/^1\.5-sec-(?:\d{8}-[a-z0-9-]{1,20}|\d{1,8}-[a-f0-9]{7,64})$/i.test(String(BUILD_ID))) {
+  throw new Error("Invalid VERIX_BUILD_ID: " + BUILD_ID);
+}
+
 const DOMAIN_LOCK = [
   "verix-plataformadigital.github.io",
   "localhost",
@@ -151,7 +155,19 @@ function writeSecureFile(relativeSource, relativeOutput) {
     return null;
   }
 
-  const source = fs.readFileSync(inputPath, "utf8");
+  let source = fs.readFileSync(inputPath, "utf8");
+
+  // Inject the exact build identity into the client security runtime. The
+  // Pages workflow creates a new build ID on every release.
+  if (relativeSource === "verix-app.html") {
+    const safeBuildId = String(BUILD_ID).replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    source = source.replace(
+      /var BUILD_ID = ['"][^'"]+['"]/,
+      "var BUILD_ID = '" + safeBuildId + "'"
+    );
+    source = source.replace(/1\.5-sec-20261008-a/g, BUILD_ID);
+  }
+
   const { html, scriptCount } = obfuscateHtml(source, relativeSource);
   const outPath = path.join(OUTPUT_DIR, relativeOutput);
 
@@ -209,6 +225,13 @@ function verifyCriticalRuntime(outputPath) {
   if (!/telemetry-v2/i.test(telemetry[0])) throw new Error("Critical telemetry endpoint marker missing");
   if (!/heartbeat/i.test(telemetry[0])) throw new Error("Critical telemetry heartbeat marker missing");
   if (!security) throw new Error("Critical security runtime block missing from secure build");
+  const escapedExpectedBuild = String(BUILD_ID).replace(/[.*+?^${}()|[\\]\\\\]/g, "\\  if (!/heartbeat/i.test(telemetry[0])) throw new Error("Critical telemetry heartbeat marker missing");
+  if (!security) throw new Error("Critical security runtime block missing from secure build");
+  return { telemetry_runtime: true, security_runtime: true };");
+  const expectedBuild = new RegExp("var\\s+BUILD_ID\\s*=\\s*['\"]" + escapedExpectedBuild + "['\"]");
+  if (!expectedBuild.test(security[0])) {
+    throw new Error("Client BUILD_ID does not match release BUILD_ID");
+  }
   return { telemetry_runtime: true, security_runtime: true };
 }
 
