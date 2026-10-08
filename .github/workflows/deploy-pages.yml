@@ -34,6 +34,24 @@ jobs:
           VERIX_BUILD_ID: "1.5-sec-${{ github.run_number }}-${{ github.sha }}"
         run: npm run build:secure
 
+      - name: Verify secure build
+        shell: bash
+        run: |
+          test ! -f dist/verix-app.html.map
+          test ! -f dist/admin_v2.html.map
+          if find dist -type f -name '*.map' | grep -q .; then
+            echo "Source-map file found in dist"
+            exit 1
+          fi
+          if grep -R -n 'sourceMappingURL\|//# sourceURL' dist; then
+            echo "Source-map directive found in dist"
+            exit 1
+          fi
+          grep -q "verix-gate-v1" dist/verix-app.html
+          grep -q "X-Verix-Build-Id" dist/verix-app.html
+          grep -q "X-Verix-Client-Token" dist/verix-app.html
+          grep -q "verix-telemetry-v2" dist/verix-app.html
+
       - name: Ensure .nojekyll in dist
         run: touch dist/.nojekyll
 
