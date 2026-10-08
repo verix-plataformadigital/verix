@@ -38,7 +38,7 @@ export class VehicleModule {
       store: options.store,
       onQueryStarted: (queryId, request) => {
         if (options.historyEnabled?.() ?? true) {
-          options.history.add(request.plate, this.lastTrailer, queryId);
+          options.history.add(request.plate, this.lastTrailer, queryId, request.date);
         }
       }
     });
@@ -79,7 +79,9 @@ export class VehicleModule {
   reopen(record: HistoryRecord): void {
     this.lastPlate = record.veiculo;
     this.lastTrailer = record.reboque;
-    this.lastDate = this.isoDateFromHistory(record.data);
+    this.lastDate = record.dataConsultaAsf
+      ? record.dataConsultaAsf.replaceAll("/", "-")
+      : this.isoDateFromHistory(record.data);
     this.localNotice = "";
     this.render();
   }

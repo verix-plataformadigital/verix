@@ -65,4 +65,22 @@ describe("HistoryService", () => {
     expect(service.list()).toHaveLength(0);
     expect(s.values.has(HISTORY_KEY)).toBe(false);
   });
+
+  it("persists the selected ASF date and tolerates older records without it", () => {
+    const s = storage();
+    const service = new HistoryService(
+      s,
+      () => new Date("2026-10-08T19:00:00Z"),
+      () => "hist-date"
+    );
+
+    service.add("12AB34", "", "q-date", "2026/01/31");
+    const reloaded = new HistoryService(s);
+
+    expect(reloaded.list()[0]).toMatchObject({
+      id: "q-date",
+      dataConsultaAsf: "2026/01/31"
+    });
+  });
+
 });

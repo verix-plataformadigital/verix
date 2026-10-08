@@ -53,7 +53,7 @@ describe("VehicleModule history preference", () => {
     });
 
     module.mount(root);
-    return { root, history, asf };
+    return { root, history, asf, module };
   }
 
   it("não grava histórico quando a preferência está desligada", async () => {
@@ -131,14 +131,31 @@ describe("VehicleModule history preference", () => {
   it("grava histórico quando a preferência está ligada", async () => {
     const { root, history } = createModule(true);
     const plate = root.querySelector<HTMLInputElement>("#vehicle-plate");
+    const date = root.querySelector<HTMLInputElement>('input[type="date"]');
     const form = root.querySelector<HTMLFormElement>(".vehicle-query-form");
-    if (!plate || !form) return;
+    if (!plate || !date || !form) return;
 
     plate.value = "12-AB-34";
+    date.value = "2026-02-03";
     form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
     await new Promise((resolve) => setTimeout(resolve, 0));
 
-    expect(history.add).toHaveBeenCalledWith("12AB34", "", "q-test");
+    expect(history.add).toHaveBeenCalledWith("12AB34", "", "q-test", "2026/02/03");
     expect(history.updateInsurance).toHaveBeenCalledWith("q-test", "12AB34", "nao");
   });
+
+  it("reabre o histórico com a data ASF original, não com a data do registo", () => {
+    const { root, module } = createModule(false);
+    module.reopen({
+      id: "q-old-date",
+      veiculo: "12AB34",
+      reboque: "",
+      data: "2026-10-08T19:00:00.000Z",
+      dataConsultaAsf: "2026/01/31",
+      seguro: "sim"
+    });
+
+    expect(root.querySelector<HTMLInputElement>('input[type="date"]')?.value).toBe("2026-01-31");
+  });
+
 });

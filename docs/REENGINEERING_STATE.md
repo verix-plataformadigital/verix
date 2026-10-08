@@ -262,3 +262,9 @@ Fonte externa: Diário da República, Código da Estrada consolidado.
 - O allowlist de navegação exige HTTPS na porta 443 para ferramentas externas e HTTP na porta 80 para o host RNSI interno, além de validar nome do host e ausência de userinfo.
 - Os handlers de navegação externa usam a mesma função `IsAllowedExternalUri`; deixaram de aceitar URLs com portas arbitrárias só porque o nome do host corresponde.
 - O verificador estático exige estes controlos. Os endereços fixos do IMT/RNSI e o relay ASF não foram alterados.
+
+
+#### Data ASF preservada no histórico
+- O histórico local passou a guardar opcionalmente `dataConsultaAsf` em formato `YYYY/MM/DD`, para além do timestamp `data` que continua a representar quando a consulta foi registada.
+- Reabrir uma consulta usa a data ASF originalmente selecionada; registos antigos sem este campo continuam a usar o fallback histórico, sem quebrar a chave local V1.
+- Adicionados testes de persistência após reload e de reabertura com uma data diferente da data de execução.

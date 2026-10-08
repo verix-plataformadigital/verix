@@ -1,3 +1,5 @@
+import { normalizeAsfDate } from "../../shared/validators/vehicle";
+
 export const HISTORY_KEY = "VERIX_CONSULTAS_HISTORICO_V1";
 export const HISTORY_LIMIT = 100;
 
@@ -6,6 +8,7 @@ export interface HistoryRecord {
   readonly veiculo: string;
   readonly reboque: string;
   readonly data: string;
+  readonly dataConsultaAsf?: string;
   readonly seguro: "pendente" | "sim" | "nao" | "desconhecido";
   readonly seguroAtualizado?: string;
 }
@@ -36,16 +39,18 @@ export class HistoryService {
     return this.records;
   }
 
-  add(veiculo: string, reboque: string, queryId?: string | null): HistoryRecord | null {
+  add(veiculo: string, reboque: string, queryId?: string | null, dataConsultaAsf?: string | null): HistoryRecord | null {
     const v = veiculo.trim().toUpperCase();
     const r = reboque.trim().toUpperCase();
     if (!v && !r) return null;
 
+    const asfDate = normalizeAsfDate(dataConsultaAsf);
     const record: HistoryRecord = {
       id: queryId || `hist_${this.idFactory()}`,
       veiculo: v,
       reboque: r,
       data: this.now().toISOString(),
+      ...(asfDate ? { dataConsultaAsf: asfDate } : {}),
       seguro: "pendente"
     };
 
@@ -135,12 +140,14 @@ export class HistoryService {
         : "desconhecido";
 
     const seguroAtualizado = String(item.seguroAtualizado ?? "").trim();
+    const dataConsultaAsf = normalizeAsfDate(item.dataConsultaAsf);
 
     return {
       id,
       veiculo,
       reboque,
       data,
+      ...(dataConsultaAsf ? { dataConsultaAsf } : {}),
       seguro,
       ...(seguroAtualizado ? { seguroAtualizado } : {})
     };
