@@ -19316,33 +19316,26 @@ html body .toast-notification {
 
 <!-- TESTE VISUAL ISOLADO: nitidez IMT. NÃO PUBLICAR nem substituir o VÉRIX de produção. -->
 <style id="verix-visual-quality-test-final">
+  /* Teste isolado: retirar o zoom global e as etiquetas de diagnóstico. */
   html, body { zoom: 1 !important; }
 
   html body #veiculoFrame,
   html body #reboqueFrame {
     transform-origin: top left !important;
   }
-
-  .verix-imt-fit-debug {
-    position: absolute !important;
-    top: 4px !important;
-    left: 7px !important;
-    z-index: 99999 !important;
-    padding: 3px 6px !important;
-    border: 1px solid #e4b927 !important;
-    border-radius: 4px !important;
-    background: rgba(5, 18, 24, .92) !important;
-    color: #ffe27a !important;
-    font: 800 9px/1.2 Arial, sans-serif !important;
-    letter-spacing: .4px !important;
-    pointer-events: none !important;
-  }
 </style>
 <script id="verix-imt-adaptive-fit-final">
 (function () {
   'use strict';
 
-  /* Ajuste aplicado no fim do documento, depois dos estilos e scripts legados. */
+  /*
+    TESTE VISUAL:
+    - Inspeção técnica (#veiculoFrame): escala fixa de 68%, conforme pedido.
+    - Livrete/veículo (#reboqueFrame): escala adaptativa para a caixa disponível.
+    A origem IMT/RNSI é externa; por restrição cross-origin não medimos o DOM
+    interno e mantemos os URLs e os pedidos existentes.
+  */
+  var INSPECTION_SCALE = 0.68;
   var TARGET_WIDTH = 1100;
   var TARGET_HEIGHT = 650;
   var MIN_SCALE = 0.40;
@@ -19354,17 +19347,9 @@ html body .toast-notification {
     return Math.max(min, Math.min(max, value));
   }
 
-  function getBadge(frame) {
-    var panel = frame.closest('.panel') || frame.parentElement;
-    if (!panel) return null;
-    var badge = panel.querySelector('.verix-imt-fit-debug');
-    if (!badge) {
-      badge = document.createElement('div');
-      badge.className = 'verix-imt-fit-debug';
-      panel.style.setProperty('position', 'relative', 'important');
-      panel.appendChild(badge);
-    }
-    return badge;
+  function getScale(id, box) {
+    if (id === 'veiculoFrame') return INSPECTION_SCALE;
+    return clamp(Math.min(box.width / TARGET_WIDTH, box.height / TARGET_HEIGHT), MIN_SCALE, MAX_SCALE);
   }
 
   function fit(id) {
@@ -19374,17 +19359,7 @@ html body .toast-notification {
     var box = frame.parentElement.getBoundingClientRect();
     if (box.width < 100 || box.height < 100) return;
 
-    var scale = clamp(
-      Math.min(box.width / TARGET_WIDTH, box.height / TARGET_HEIGHT),
-      MIN_SCALE,
-      MAX_SCALE
-    );
-
-    /*
-      Usar dimensões maiores e transformar para caber na caixa expõe uma área
-      maior da página de origem. O estilo inline !important ganha às regras
-      antigas do documento que voltaram a aplicar scale(0.75).
-    */
+    var scale = getScale(id, box);
     frame.style.setProperty('width', (100 / scale).toFixed(3) + '%', 'important');
     frame.style.setProperty('height', (100 / scale).toFixed(3) + '%', 'important');
     frame.style.setProperty('transform', 'scale(' + scale.toFixed(4) + ')', 'important');
@@ -19392,9 +19367,6 @@ html body .toast-notification {
     frame.style.setProperty('right', 'auto', 'important');
     frame.style.setProperty('bottom', 'auto', 'important');
     frame.dataset.verixAdaptiveScale = scale.toFixed(3);
-
-    var badge = getBadge(frame);
-    if (badge) badge.textContent = 'AJUSTE IMT ATIVO · ' + Math.round(scale * 100) + '%';
   }
 
   function refresh() {
@@ -19409,7 +19381,6 @@ html body .toast-notification {
   }
 
   function start() {
-    /* Reaplica após a inicialização da versão legada e depois do primeiro paint. */
     refresh();
     window.addEventListener('load', refresh, { once: true });
     window.addEventListener('resize', scheduleRefresh, { passive: true });
@@ -19423,7 +19394,6 @@ html body .toast-notification {
       });
     }
 
-    /* Algumas rotinas legadas reescrevem o estilo ao concluir a consulta. */
     IDS.forEach(function (id) {
       var frame = document.getElementById(id);
       if (!frame) return;
