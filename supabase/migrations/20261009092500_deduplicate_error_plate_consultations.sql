@@ -6,25 +6,13 @@ DECLARE
   v_old_types text := $old$
   SELECT coalesce(metadata->'asfDiagnostic'->>'asfErrorType','unknown') kind,
          count(*) qty,
-         round(avg(CASE WHEN (metadata->'asfDiagnostic'->>'asfDurationMs')~'^[0-9]+(\\\\.[0-9]+)?$'
-           THEN (metadata->'asfDiagnostic'->>'asfDurationMs')::numeric END)) avg_ms,
-         count(DISTINCT metadata->'asfDiagnostic'->>'asfResponseHash') hash_qty,
-         max(occurred_at) last_at
-  FROM ev,b
-  WHERE event='vehicle_insurance_error' AND occurred_at>=b.s24
-  GROUP BY 1 ORDER BY qty DESC,kind
+         round(avg(CASE WHEN
 $old$;
   v_new_types text := $new$
   SELECT coalesce(metadata->'asfDiagnostic'->>'asfErrorType','unknown') kind,
          count(DISTINCT query_id) qty,
          count(*) event_qty,
-         round(avg(CASE WHEN (metadata->'asfDiagnostic'->>'asfDurationMs')~'^[0-9]+(\\\\.[0-9]+)?$'
-           THEN (metadata->'asfDiagnostic'->>'asfDurationMs')::numeric END)) avg_ms,
-         count(DISTINCT metadata->'asfDiagnostic'->>'asfResponseHash') hash_qty,
-         max(occurred_at) last_at
-  FROM ev,b
-  WHERE event='vehicle_insurance_error' AND occurred_at>=b.s24 AND query_id IS NOT NULL
-  GROUP BY 1 ORDER BY qty DESC,kind
+         round(avg(CASE WHEN
 $new$;
   v_old_bursts text := $old$
   SELECT date_trunc('minute',occurred_at) minute_key,count(*) qty,count(DISTINCT installation_id) installs
