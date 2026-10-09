@@ -59,7 +59,7 @@ assert.deepEqual(parseReceipt(JSON.stringify(validReceipt)), validReceipt);
 assert.equal(parseReceipt('{"ok":true}'), null, "HTTP 200 without an application receipt must not clear the queue");
 assert.equal(parseReceipt('not-json'), null, "malformed receipt must not clear the queue");
 
-const presenceMigration = fs.readFileSync("supabase/migrations/20261009052000_fix_browser_presence_kpi.sql", "utf8");
+const presenceMigration = fs.readFileSync("supabase/migrations/20261009045708_fix_browser_presence_kpi.sql", "utf8");
 assert.match(endpoint, /"session_close"/, "server must accept browser-close presence events");
 assert.match(telemetryScript, /push\('session_close', null\)/, "pagehide must emit a browser-close event");
 assert.match(telemetryScript, /navigator\.sendBeacon\([\s\S]*events: \[closingEvent\]/, "browser-close event must be sent immediately through Beacon");
