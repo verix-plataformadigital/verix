@@ -330,8 +330,11 @@ Deno.serve(async (req: Request) => {
     }
 
     const body = await req.json().catch(() => null);
+    const received = Array.isArray(body?.events) ? body.events.length : 0;
+    // Server cap protects the endpoint, but every excess event must be reported
+    // as rejected so the client never mistakes a truncated batch for full delivery.
     const input = Array.isArray(body?.events) ? body.events.slice(0, 100) : [];
-    if (!input.length) return json({ ok: true, accepted: 0, rejected: 0 });
+    if (!input.length) return json({ ok: true, accepted: 0, inserted: 0, duplicates: 0, rejected: received, received });
 
     const events: any[] = [];
 
@@ -407,11 +410,13 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    if (!events.length) return json({ ok: true, accepted: validEventCount, inserted: 0, duplicates: businessDuplicates, rejected: input.length - validEventCount, received: input.length });
-
-    // Count all accepted event envelopes before idempotency filters. The response
-    // can therefore account for every received event, including deduplicated ones.
+    // An event envelope is valid after schema/allowlist checks and required identity
+    // validation. This count is stable and independent of business deduplication.
     const validEventCount = events.length;
+    const rejectedCount = received - validEventCount;
+    if (!events.length) {
+      return json({ ok: true, accepted: 0, inserted: 0, duplicates: 0, rejected: received, received });
+    }
 
     // Impede nova duplicação do mesmo query_id. O índice SQL reforça isto,
     // mas filtramos antes do upsert para evitar conflitos que o PostgREST
@@ -462,7 +467,12 @@ Deno.serve(async (req: Request) => {
 
     const businessDuplicates = events.length - dedupedEvents.length;
     events.splice(0, events.length, ...dedupedEvents);
-    if (!events.length) return json({ ok: true, accepted: 0, rejected: input.length });
+    if (!events.length) {
+      return json({
+        ok: true, accepted: validEventCount, inserted: 0,
+        duplicates: businessDuplicates, rejected: rejectedCount, received
+      });
+    }
 
     const installations = new Map<string, any>();
     const sessions = new Map<string, any>();
@@ -543,8 +553,8 @@ Deno.serve(async (req: Request) => {
       inserted,
       duplicates: businessDuplicates + eventIdDuplicates,
       deduplicated: businessDuplicates,
-      rejected: input.length - validEventCount,
-      received: input.length
+      rejected: rejectedCount,
+      received
     });
   } catch (error) {
     console.error("telemetry_write_failed", error);
