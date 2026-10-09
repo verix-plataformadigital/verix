@@ -374,6 +374,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const events: any[] = [];
+    const insuranceNoCases: any[] = [];
 
     for (const x of input) {
       const event = cleanText(x?.event, 80);
@@ -387,6 +388,9 @@ Deno.serve(async (req: Request) => {
       const appVersion = cleanText(x?.appVersion, 40);
       const buildId = cleanText(x?.buildId || metadata.build_id, 60) || appVersion;
       if (!metadata.build_id) metadata.build_id = buildId;
+      const noInsurancePlate = event === "vehicle_insurance_no"
+        ? String(metadata.matriculaNormalizada || metadata.matricula || "").toUpperCase().replace(/[^A-Z0-9]/g, "")
+        : "";
       // installation_id é a única identidade técnica obrigatória: a coluna é NOT NULL.
       // session/tab são opcionais para permitir contabilização mesmo quando o browser
       // perde uma dessas chaves entre refresh/restore.
@@ -429,8 +433,18 @@ Deno.serve(async (req: Request) => {
         ? occurredAtDate.toISOString()
         : new Date().toISOString();
 
+      const eventId = cleanText(x?.eventId, 120) || crypto.randomUUID();
+      if (event === "vehicle_insurance_no" && /^[A-Z0-9]{6,8}$/.test(noInsurancePlate)) {
+        insuranceNoCases.push({
+          event_id: eventId,
+          matricula: noInsurancePlate,
+          occurred_at: occurredAt,
+          expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString()
+        });
+      }
+
       events.push({
-        event_id: cleanText(x?.eventId, 120) || crypto.randomUUID(),
+        event_id: eventId,
         installation_id: installationId,
         session_id: sessionId,
         tab_id: tabId,
@@ -515,6 +529,13 @@ Deno.serve(async (req: Request) => {
     const inserted = Number(receipt?.events_inserted);
     if (receipt?.ok !== true || !Number.isInteger(inserted) || inserted < 0 || inserted > events.length) {
       throw new Error("atomic_ingest:invalid_receipt");
+    }
+
+    if (insuranceNoCases.length) {
+      const { error: registryError } = await db
+        .from("verix_insurance_no_cases")
+        .upsert(insuranceNoCases, { onConflict: "event_id", ignoreDuplicates: true });
+      if (registryError) throw new Error("insurance_no_registry:" + registryError.message);
     }
 
     const duplicates = events.length - inserted;
