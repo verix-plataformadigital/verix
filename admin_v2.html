@@ -534,7 +534,7 @@ function renderDashboard(d){
  const users=Number(o['unique_'+currentPeriod]||0),lookups=Number(p.started||0),fin=Number(p.finals||0),insured=Number(p.insured||0),uninsured=Number(p.uninsured||0),errs=Number(p.errors||0),dec=insured+uninsured;
  const noRate=dec?100*uninsured/dec:null,errorRate=fin?100*errs/fin:null;
  $('dashCards').innerHTML=
-  card('ATIVOS AGORA',num(o.online_now),'Instalações com atividade recente.','green')+
+  card('ATIVOS AGORA',num(o.online_now),'Sessões VÉRIX com browser aberto.','green')+
   card('INSTALAÇÕES',num(users),'Instalações com atividade no período.','cyan')+
   card('CONSULTAS DE SEGURO',num(lookups),'Pedidos iniciados.','blue')+
   card('COM SEGURO',num(insured),pct(dec?100*insured/dec:null)+' das decisões.','green')+
