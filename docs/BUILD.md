@@ -28,13 +28,15 @@ A produção não publica source maps. O CI falha se encontrar:
 - `sourceMappingURL`;
 - `//# sourceURL`.
 
-## Dependências
+## Dependências reprodutíveis
 
-A pipeline gera/valida o lockfile e instala com `npm ci`. O lockfile deve ser versionado antes do primeiro release oficial V2.
+`package-lock.json` está versionado e é a fonte de verdade para as dependências transitivas. Os workflows de qualidade, responsividade e segurança usam `npm ci`; não devem gerar nem alterar o lockfile durante a CI.
+
+Quando `package.json` mudar, regenerar deliberadamente o lockfile com a versão de npm fixada no projeto, rever o diff e confirmar que o build/testes passam antes de submeter a alteração. Não usar `npm install` como substituto de `npm ci` nas pipelines de validação.
 
 ## Regra de cutover
 
-O build V2 não substitui o artifact de produção enquanto:
+O build V2 não substitui o artefacto de produção enquanto:
 - testes de regressão não passarem;
 - ASF/IMT não forem comparados;
 - telemetria/presença não forem validadas;
