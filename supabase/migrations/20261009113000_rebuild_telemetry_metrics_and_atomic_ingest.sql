@@ -65,7 +65,7 @@ overview AS (
   SELECT jsonb_build_object(
     'online_now',(SELECT count(DISTINCT installation_id) FROM (
       SELECT installation_id FROM public.verix2_events
-       WHERE event='heartbeat' AND created_at >= p_now-interval '5 minutes' AND created_at < p_now
+       WHERE created_at >= p_now-interval '5 minutes' AND created_at < p_now
     ) active5),
     'active_10m',(SELECT count(DISTINCT installation_id) FROM (
       SELECT installation_id FROM public.verix2_events
@@ -77,6 +77,9 @@ overview AS (
     'events_24h',count(*) FILTER(WHERE occurred_at >= b.s24),
     'events_7d',count(*) FILTER(WHERE occurred_at >= b.s7),
     'events_30d',count(*),
+    'actions_24h',count(*) FILTER(WHERE occurred_at >= b.s24 AND event<>'heartbeat'),
+    'actions_7d',count(*) FILTER(WHERE occurred_at >= b.s7 AND event<>'heartbeat'),
+    'actions_30d',count(*) FILTER(WHERE event<>'heartbeat'),
     'last_event_at',max(occurred_at)
   ) data
   FROM ev,b
@@ -143,10 +146,10 @@ ins_quality AS (
   SELECT jsonb_build_object(
     'latency_p50_ms',(SELECT round((percentile_cont(.5) WITHIN GROUP(
       ORDER BY (metadata->'asfDiagnostic'->>'asfDurationMs')::numeric))::numeric,0)
-      FROM finals,b WHERE occurred_at>=b.s24 AND (metadata->'asfDiagnostic'->>'asfDurationMs')~'^[0-9]+(\\.[0-9]+)?$'),
+      FROM finals,b WHERE occurred_at>=b.s24 AND final_type_count=1 AND (metadata->'asfDiagnostic'->>'asfDurationMs')~'^[0-9]+(\\.[0-9]+)?$'),
     'latency_p95_ms',(SELECT round((percentile_cont(.95) WITHIN GROUP(
       ORDER BY (metadata->'asfDiagnostic'->>'asfDurationMs')::numeric))::numeric,0)
-      FROM finals,b WHERE occurred_at>=b.s24 AND (metadata->'asfDiagnostic'->>'asfDurationMs')~'^[0-9]+(\\.[0-9]+)?$'),
+      FROM finals,b WHERE occurred_at>=b.s24 AND final_type_count=1 AND (metadata->'asfDiagnostic'->>'asfDurationMs')~'^[0-9]+(\\.[0-9]+)?$'),
     'known_plates_24h',(SELECT count(DISTINCT upper(regexp_replace(coalesce(metadata->'asfDiagnostic'->>'matricula',metadata->>'matricula',''),'[^A-Z0-9]','','g')))
       FROM finals,b WHERE occurred_at>=b.s24 AND coalesce(metadata->'asfDiagnostic'->>'matricula',metadata->>'matricula','')<>''),
     'known_plates_30d',(SELECT count(DISTINCT upper(regexp_replace(coalesce(metadata->'asfDiagnostic'->>'matricula',metadata->>'matricula',''),'[^A-Z0-9]','','g')))
@@ -163,7 +166,8 @@ retry AS (
 ),
 err_types AS (
   SELECT coalesce(metadata->'asfDiagnostic'->>'asfErrorType','unknown') kind,
-         count(*) qty,
+         count(DISTINCT query_id) qty,
+         count(*) raw_events,
          round(avg(CASE WHEN (metadata->'asfDiagnostic'->>'asfDurationMs')~'^[0-9]+(\\.[0-9]+)?$'
            THEN (metadata->'asfDiagnostic'->>'asfDurationMs')::numeric END)) avg_ms,
          count(DISTINCT metadata->'asfDiagnostic'->>'asfResponseHash') hash_qty,
@@ -178,7 +182,7 @@ err_bursts AS (
   GROUP BY 1 ORDER BY qty DESC,minute_key DESC LIMIT 15
 ),
 err_installs AS (
-  SELECT installation_id,count(*) qty,count(DISTINCT query_id) queries,max(occurred_at) last_at
+  SELECT installation_id,count(DISTINCT query_id) qty,count(*) raw_events,count(DISTINCT query_id) queries,max(occurred_at) last_at
   FROM ev,b WHERE event='vehicle_insurance_error' AND occurred_at>=b.s24
   GROUP BY 1 ORDER BY qty DESC,last_at DESC LIMIT 15
 ),
@@ -202,7 +206,7 @@ err_signatures AS (
          coalesce(NULLIF(metadata->'asfDiagnostic'->'asfGraphqlMessages'->>0,''),
                   NULLIF(metadata->'asfDiagnostic'->>'asfMessage',''),
                   NULLIF(metadata->>'asfUserMessage',''),'') message_text,
-         count(*) qty,count(DISTINCT query_id) queries,count(DISTINCT installation_id) installs
+         count(DISTINCT query_id) qty,count(*) raw_events,count(DISTINCT query_id) queries,count(DISTINCT installation_id) installs
   FROM ev,b
   WHERE event='vehicle_insurance_error' AND occurred_at>=b.s24
   GROUP BY 1,2,3 ORDER BY qty DESC,kind LIMIT 20
@@ -430,7 +434,12 @@ telemetry AS (
     'asf_diagnostic_coverage_30d',round((100.0*count(*) FILTER(WHERE event IN('vehicle_insurance_yes','vehicle_insurance_no','vehicle_insurance_error') AND metadata ? 'asfDiagnostic')/
       NULLIF(count(*) FILTER(WHERE event IN('vehicle_insurance_yes','vehicle_insurance_no','vehicle_insurance_error')),0))::numeric,1),
     'cin_detail_coverage_30d',round((100.0*count(*) FILTER(WHERE event IN('cinemometer_calculation','cinemometer_speed_entry') AND metadata ? 'cin')/
-      NULLIF(count(*) FILTER(WHERE event IN('cinemometer_calculation','cinemometer_speed_entry')),0))::numeric,1)
+      NULLIF(count(*) FILTER(WHERE event IN('cinemometer_calculation','cinemometer_speed_entry')),0))::numeric,1),
+    'query_events_missing_id_30d',count(*) FILTER(WHERE event IN('vehicle_lookup','vehicle_insurance_pending','vehicle_insurance_yes','vehicle_insurance_no','vehicle_insurance_error','imt_loaded') AND query_id IS NULL),
+    'query_outcomes_without_start_30d',(SELECT count(DISTINCT e.query_id) FROM ev e WHERE e.event IN('vehicle_insurance_pending','vehicle_insurance_yes','vehicle_insurance_no','vehicle_insurance_error','imt_loaded') AND e.query_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM ev s WHERE s.event='vehicle_lookup' AND s.query_id=e.query_id)),
+    'conflicting_final_queries_30d',(SELECT count(*) FROM final_counts WHERE final_type_count>1),
+    'duplicate_final_events_30d',(SELECT coalesce(sum(greatest(final_event_count-1,0)),0) FROM final_counts),
+    'imt_duplicate_query_source_groups_30d',(SELECT count(*) FROM (SELECT query_id,coalesce(metadata->>'source','') source FROM ev WHERE event='imt_loaded' AND query_id IS NOT NULL GROUP BY 1,2 HAVING count(*)>1) d)
   ) data FROM ev
 ),
 top_events AS (
