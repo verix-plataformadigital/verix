@@ -201,11 +201,25 @@ function sessionPattern(rows){
   };
 }
 
+async function resetBaselineStart(): Promise<string> {
+  const q=new URLSearchParams({select:"reset_all_at",singleton:"eq.true",limit:"1"});
+  const r=await fetch(supabaseUrl+"/rest/v1/verix2_dashboard_state?"+q.toString(),{headers:{apikey:serviceKey,Authorization:"Bearer "+serviceKey}});
+  const t=await r.text();
+  if(!r.ok) throw new Error("reset_baseline:"+t);
+  const rows=t?JSON.parse(t):[];
+  return rows?.[0]?.reset_all_at || "1970-01-01T00:00:00Z";
+}
+async function windowStartAfterReset(hours:number): Promise<string> {
+  const startAt=await resetBaselineStart();
+  const baseline=Date.parse(startAt);
+  const rolling=Date.now()-hours*60*60*1000;
+  return new Date(Math.max(rolling,Number.isFinite(baseline)?baseline:0)).toISOString();
+}
 async function loadErrorInvestigation24h(now:string){
   const qs = new URLSearchParams();
   qs.set("select","occurred_at,event,installation_id,query_id,app_version,browser,metadata");
   qs.set("event","eq.vehicle_insurance_error");
-  qs.set("occurred_at","gte."+new Date(Date.now()-24*60*60*1000).toISOString());
+  qs.set("occurred_at","gte."+await windowStartAfterReset(24));
   qs.set("order","occurred_at.asc");
   qs.set("limit","1000");
   const rr=await fetch(supabaseUrl+"/rest/v1/verix2_events?"+qs.toString(),{headers:{apikey:serviceKey,Authorization:"Bearer "+serviceKey}});
@@ -256,7 +270,7 @@ async function loadCinemometerAnalytics24h(now:string){
   const qs = new URLSearchParams();
   qs.set("select","occurred_at,event,session_id,installation_id,app_version,browser,metadata");
   qs.set("event","in.(cinemometer_speed_entry,cinemometer_calculation,cinemometer_copy_code,cinemometer_copy_text,cinemometer_copy_location,cinemometer_profile_select,cinemometer_profile_new,cinemometer_profile_duplicate,cinemometer_profile_delete,cinemometer_profile_save)");
-  qs.set("occurred_at","gte." + new Date(Date.now()-24*60*60*1000).toISOString());
+  qs.set("occurred_at","gte." + await windowStartAfterReset(24));
   qs.set("order","occurred_at.asc");
   qs.set("limit","5000");
   const rr=await fetch(supabaseUrl+"/rest/v1/verix2_events?"+qs.toString(),{headers:{apikey:serviceKey,Authorization:"Bearer "+serviceKey}});
@@ -323,13 +337,13 @@ let cachedStats: { at:number; body:string } | null = null;
 const STATS_CACHE_MS = 15000;
 
 async function reset24h() {
-  const result = await rpc("verix2_reset_24h", {});
+  const result = await rpc("verix2_reset_all_periods", {});
   return Array.isArray(result) ? result[0] : result;
 }
 
 async function resetState() {
   const r = await fetch(
-    `${supabaseUrl}/rest/v1/verix2_dashboard_state?select=reset_24h_at&singleton=eq.true&limit=1`,
+    `${supabaseUrl}/rest/v1/verix2_dashboard_state?select=reset_24h_at,reset_all_at&singleton=eq.true&limit=1`,
     {
       headers:{
         apikey:serviceKey,
@@ -346,7 +360,7 @@ async function resetState() {
 
   const rows = t ? JSON.parse(t) : [];
 
-  return rows?.[0]?.reset_24h_at || null;
+  return {reset_24h_at:rows?.[0]?.reset_24h_at||null,reset_all_at:rows?.[0]?.reset_all_at||null};
 }
 
 Deno.serve(async (req) => {
@@ -425,7 +439,7 @@ Deno.serve(async (req) => {
       let body: any = {};
       try { body = await req.json(); } catch {}
 
-      if(body?.action !== "reset_24h") {
+      if(body?.action !== "reset_all_periods") {
         return json({ok:false,error:"invalid_action"},400,req);
       }
 
@@ -434,7 +448,7 @@ Deno.serve(async (req) => {
 
       return json({
         ok:true,
-        action:"reset_24h",
+        action:"reset_all_periods",
         reset_at:resetAt || new Date().toISOString()
       },200,req);
     }
@@ -479,7 +493,8 @@ Deno.serve(async (req) => {
     const payload = {
       ok:true,
       generatedAt:now,
-      reset24hAt:resetAt || null,
+      reset24hAt:resetAt?.reset_24h_at || null,
+      resetAllAt:resetAt?.reset_all_at || null,
       overview:analyticsObj.overview || null,
       analytics:analyticsObj,
       diagnostics:diagnostics || {},
