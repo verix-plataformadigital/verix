@@ -117,6 +117,9 @@ assert.ok(errorPlateCountMigration.includes("p.plate_key ~ '^[A-Z0-9]{6,8}$'"), 
 assert.ok(endpoint.includes("function sanitizeErrorPlateMetadata("), "server must sanitize invalid error plate fragments before persistence");
 assert.ok(endpoint.includes('if (event === "vehicle_insurance_error") sanitizeErrorPlateMetadata(metadata);'), "server must apply plate validation to ASF error events");
 assert.ok(admin.includes("CONSULTAS','EVENTOS"), "Admin must distinguish consultation totals from raw event totals");
+assert.match(stats, /queryIds:new Set<string>\\(\\)/, "error time buckets must deduplicate repeated events by query ID");
+assert.match(stats, /event_count:bucket\\.events/, "error time buckets must expose raw event count separately");
+
 
 const hourlyMigration = fs.readFileSync("supabase/migrations/20261009051204_hourly_consultations_and_presence.sql", "utf8");
 assert.match(hourlyMigration, /generate_series\(0,23\)/, "hourly chart must include all 24 hours, including zero-activity hours");
