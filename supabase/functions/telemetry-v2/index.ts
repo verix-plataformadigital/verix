@@ -363,17 +363,31 @@ Deno.serve(async (req: Request) => {
         }
       }
 
+      // Apply one timestamp policy to every event. The queue may be offline for
+      // days; dropping an old vehicle_lookup while accepting its pending/result
+      // events creates orphan outcomes and false query totals. Match the 90-day
+      // database retention window and reject malformed/future timestamps.
+      const now = Date.now();
+      const occurredAtDate = x?.occurredAt ? new Date(x.occurredAt) : new Date();
+      const occurredAtMs = occurredAtDate.getTime();
+      const MAX_EVENT_AGE_MS = 90 * 24 * 60 * 60 * 1000;
+      if (!Number.isFinite(occurredAtMs) ||
+          occurredAtMs < now - MAX_EVENT_AGE_MS ||
+          occurredAtMs > now + 5 * 60 * 1000) continue;
+
       if (event === "vehicle_lookup") {
         // Uma consulta precisa de instalação, query e versão; sessão/tab podem faltar.
         if (!queryId || !appVersion) continue;
-
-        const d = x?.occurredAt ? new Date(x.occurredAt) : new Date();
-        const now = Date.now();
-        const ts = d.getTime();
-        if (!Number.isFinite(ts) || ts < now - 24 * 60 * 60 * 1000 || ts > now + 5 * 60 * 1000) continue;
-
         const installationKey = await hmacHex(`installation:${installationId}`);
         if (!(await consumeRate(`vehicle:${installationKey}`, 30))) continue;
+      }
+
+      if (event === "vehicle_insurance_pending" ||
+          event === "vehicle_insurance_yes" ||
+          event === "vehicle_insurance_no" ||
+          event === "vehicle_insurance_error") {
+        // Without a shared query ID these states cannot be correlated truthfully.
+        if (!queryId || !appVersion) continue;
       }
 
       if (event === "imt_loaded") {
@@ -384,10 +398,7 @@ Deno.serve(async (req: Request) => {
         if (!queryId || !appVersion) continue;
       }
 
-      const occurredAtDate = x?.occurredAt ? new Date(x.occurredAt) : new Date();
-      const occurredAt = Number.isFinite(occurredAtDate.getTime())
-        ? occurredAtDate.toISOString()
-        : new Date().toISOString();
+      const occurredAt = occurredAtDate.toISOString();
 
       events.push({
         event_id: cleanText(x?.eventId, 120) || crypto.randomUUID(),
@@ -442,7 +453,12 @@ Deno.serve(async (req: Request) => {
 
     const batchVehicle = new Set<string>();
     const batchImt = new Set<string>();
+    const seenEventIds = new Set<string>();
     const dedupedEvents = events.filter(e => {
+      // A retried offline batch must not insert the same event ID twice,
+      // including when duplicate IDs occur inside a single request.
+      if (!e.event_id || seenEventIds.has(e.event_id)) return false;
+      seenEventIds.add(e.event_id);
       if (e.event === "vehicle_lookup" && e.query_id) {
         if (existingVehicle.has(e.query_id) || batchVehicle.has(e.query_id)) return false;
         batchVehicle.add(e.query_id);
@@ -505,6 +521,14 @@ Deno.serve(async (req: Request) => {
       }
     }
 
+    // Persist the canonical event rows before advancing presence.
+    // This prevents a failed event write from leaving last_seen ahead of reality.
+    const { error: eventsError } = await db.from("verix2_events").upsert(events, {
+      onConflict: "event_id",
+      ignoreDuplicates: true
+    });
+    if (eventsError) throw new Error(`events:${eventsError.message}`);
+
     if (installations.size) {
       const { error } = await db.from("verix2_installations").upsert([...installations.values()], { onConflict: "installation_id" });
       if (error) throw new Error(`installations:${error.message}`);
@@ -514,12 +538,6 @@ Deno.serve(async (req: Request) => {
       const { error } = await db.from("verix2_sessions").upsert([...sessions.values()], { onConflict: "session_id" });
       if (error) throw new Error(`sessions:${error.message}`);
     }
-
-    const { error: eventsError } = await db.from("verix2_events").upsert(events, {
-      onConflict: "event_id",
-      ignoreDuplicates: true
-    });
-    if (eventsError) throw new Error(`events:${eventsError.message}`);
 
     return json({ ok: true, accepted: events.length, rejected: input.length - events.length });
   } catch (error) {
