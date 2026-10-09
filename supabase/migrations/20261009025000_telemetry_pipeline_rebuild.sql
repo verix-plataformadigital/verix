@@ -486,7 +486,7 @@ transitions AS (
 )
 SELECT jsonb_build_object(
  'bounds',jsonb_build_object('s24',(SELECT s24 FROM b),'s7',(SELECT s7 FROM b),'s30',(SELECT s30 FROM b),'end',(SELECT enow FROM b)),
- 'actions',jsonb_build_object('24h',(SELECT actions_24h FROM telemetry),'7d',(SELECT actions_7d FROM telemetry),'30d',(SELECT actions_30d FROM telemetry)),
+ 'actions',jsonb_build_object('24h',(SELECT data->'actions_24h' FROM telemetry),'7d',(SELECT data->'actions_7d' FROM telemetry),'30d',(SELECT data->'actions_30d' FROM telemetry)),
  'insurance',(SELECT data FROM insurance),
  'insurance_quality',(SELECT data FROM insurance_quality),
  'query_quality',(SELECT data FROM query_quality),
