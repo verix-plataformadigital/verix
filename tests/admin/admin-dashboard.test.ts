@@ -120,6 +120,18 @@ describe('Admin VÉRIX — melhorias da dashboard', () => {
     expect(doc.getElementById('plateErrorSearchCount')?.textContent).toContain('1 de 2');
   });
 
+  it('descreve corretamente o indicador diário para leitores de ecrã', () => {
+    const dom = dashboard();
+    const doc = dom.window.document as Document;
+    const win = dom.window;
+
+    win.monthlyChart('dashDaily', [{ day_key: '2026-10-09', lookups: 4 }], 'lookups');
+    win.monthlyChart('usageDaily', [{ day_key: '2026-10-09', users: 2 }], 'users');
+
+    expect(doc.querySelector('#dashDaily .chart-col')?.getAttribute('aria-label')).toBe('2026-10-09: 4 consultas');
+    expect(doc.querySelector('#usageDaily .chart-col')?.getAttribute('aria-label')).toBe('2026-10-09: 2 utilizadores');
+  });
+
   it('inclui navegação inferior para ecrãs pequenos e controlo de repetição', () => {
     expect(html).toContain('.nav{flex-direction:row;gap:4px;margin:0;overflow-x:auto;scrollbar-width:thin}');
     expect(html).toContain('id="retryLoadBtn"');
