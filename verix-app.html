@@ -7485,96 +7485,19 @@ document.addEventListener('keydown',e=>{
 <div id="wazeGpsModal" class="waze-gps-overlay" role="dialog" aria-modal="true" aria-labelledby="wazeGpsTitle"> <div class="waze-gps-modal"> <div class="waze-gps-head"> <div class="waze-gps-icon">⌖</div> <h3 id="wazeGpsTitle" class="waze-gps-head-title">Antes de abrir o WAZE</h3> </div> <div class="waze-gps-body"> <p><strong>Verifique se os serviços de localização do Windows se encontram ativos e autorizados.</strong></p> <p class="waze-gps-note">Os serviços de localização do Windows são necessários para o correto funcionamento da consulta através do WAZE.</p> </div> <div class="waze-gps-actions"> <button type="button" class="waze-gps-settings" onclick="abrirDefinicoesLocalizacao()">⚙ SERVIÇOS DE LOCALIZAÇÃO</button> <button type="button" class="waze-gps-cancel" onclick="fecharWazeGpsModal()">CANCELAR</button> <button type="button" class="waze-gps-confirm" onclick="confirmarWazeGps()">CONTINUAR PARA WAZE</button> </div> </div>
 </div> <script id="cin-v42-operational-overrides">
 
-const CIN_VEHICLE_LIMITS_V42={
- ligeiro_passageiros_sem:{coexistencia:20,local_geral:50,autoestrada:120,reservada:100,restante:90},
- ligeiro_passageiros_com:{coexistencia:20,local_geral:50,autoestrada:100,reservada:80,restante:70},
- ligeiro_mercadorias_sem:{coexistencia:20,local_geral:50,autoestrada:110,reservada:90,restante:80},
- ligeiro_mercadorias_com:{coexistencia:20,local_geral:50,autoestrada:90,reservada:80,restante:70},
- motociclo_sem:{coexistencia:20,local_geral:50,autoestrada:120,reservada:100,restante:90},
- motociclo_com:{coexistencia:20,local_geral:50,autoestrada:100,reservada:80,restante:70},
- triciclo:{coexistencia:20,local_geral:50,autoestrada:100,reservada:90,restante:80},
- ciclomotor:{coexistencia:20,local_geral:40,autoestrada:null,reservada:null,restante:45},
- pesado_passageiros_sem:{coexistencia:20,local_geral:50,autoestrada:100,reservada:90,restante:80},
- pesado_passageiros_com:{coexistencia:20,local_geral:50,autoestrada:90,reservada:90,restante:70},
- pesado_mercadorias_sem:{coexistencia:20,local_geral:50,autoestrada:90,reservada:80,restante:80},
- pesado_mercadorias_com:{coexistencia:20,local_geral:40,autoestrada:80,reservada:70,restante:70},
- trator:{coexistencia:20,local_geral:30,autoestrada:null,reservada:null,restante:40},
- maquina_agricola:{coexistencia:20,local_geral:20,autoestrada:null,reservada:null,restante:20},
- maquina_industrial_sem:{coexistencia:20,local_geral:30,autoestrada:null,reservada:null,restante:30},
- maquina_industrial_com:{coexistencia:20,local_geral:40,autoestrada:80,reservada:70,restante:70}
-};
 
-function cinGrupoVeiculoV42(){
- const v=document.getElementById('cinVeiculo')?.value||'ligeiro_passageiros_sem';
- return (v.startsWith('ligeiro_')||v.startsWith('motociclo_')||v==='triciclo')?'ligeiros':'pesados';
-}
 
-function cinLimitePadrao(){
- const v=document.getElementById('cinVeiculo')?.value||'ligeiro_passageiros_sem';
- const r=document.getElementById('cinRegime')?.value||'local_geral';
- if(r==='especial'||r==='personalizado')return null;
- return CIN_VEHICLE_LIMITS_V42[v]?.[r]??null;
-}
 
-function cinAtualizarLimite(){
- const l=document.getElementById('cinLimite');
- const fonte=document.getElementById('cinLimiteFonte');
- const label=document.getElementById('cinLimiteLabel');
- const r=document.getElementById('cinRegime')?.value||'local_geral';
- const v=document.getElementById('cinVeiculo')?.value||'ligeiro_passageiros_sem';
- if(!l)return;
- if(r==='especial'||r==='personalizado'){
- l.dataset.manual='1';
- if(r==='especial'){
- l.value=''; l.placeholder='Valor sinalizado';
- if(label)label.textContent='LIMITE SINALIZADO';
- if(fonte)fonte.textContent='Introduza o limite definido pela sinalização aplicável no local.';
- }else{
- l.value=''; l.placeholder='Introduzir valor';
- if(label)label.textContent='LIMITE PERSONALIZADO';
- if(fonte)fonte.textContent='Introduza o limite aplicável nesta sessão.';
- }
- l.focus();
- }else{
- const valor=cinLimitePadrao();
- if(label)label.textContent='LIMITE';
- if(fonte)fonte.textContent=valor==null?'Não aplicável para este veículo':'';
- if(l && l.dataset.manual!=='1')l.value=valor??'';
- l.placeholder=valor==null?'—':'km/h';
- }
- cinRecalcular();
-}
 
-function cinAtualizarRegime(){
- const l=document.getElementById('cinLimite');
- if(l)l.dataset.manual=(document.getElementById('cinRegime')?.value==='personalizado'||document.getElementById('cinRegime')?.value==='especial')?'1':'0';
- cinAtualizarLimite();
- try{cinGuardarSessaoOperador();}catch(e){}
-}
 
-function cinClassificarExcesso(excesso){
- const vGrupo=cinGrupoVeiculoV42();
- const r=document.getElementById('cinRegime')?.value||'local_geral';
- const outside=(r==='autoestrada'||r==='reservada'||r==='restante');
- const coexist=(r==='coexistencia');
- const ligeiro=(vGrupo==='ligeiros');
- const inside=!outside;
- let limGrave,limMuito,limTopo;
- if(ligeiro){limGrave=inside?20:30;limMuito=inside?40:60;limTopo=inside?60:80;}
- else{limGrave=inside?10:20;limMuito=inside?20:40;limTopo=inside?40:60;}
- if(excesso<=limGrave)return {gravidade:'Leve',coima:'60€ a 300€',pontos:'—',inibicao:'—',faixa:'leve'};
- if(excesso<=limMuito)return {gravidade:'Grave',coima:'120€ a 600€',pontos:coexist?'3':'2',inibicao:'1 mês a 1 ano',faixa:'grave'};
- if(excesso<=limTopo)return {gravidade:'Muito Grave',coima:'300€ a 1500€',pontos:coexist?'5':'4',inibicao:'2 meses a 2 anos',faixa:'muito'};
- return {gravidade:'Muito Grave',coima:'500€ a 2500€',pontos:coexist?'5':'4',inibicao:'2 meses a 2 anos',faixa:'topo'};
-}
 
-function cinCodigoOperacional(classificacao){
- const r=document.getElementById('cinRegime')?.value||'local_geral';
- const outside=(r==='autoestrada'||r==='reservada'||r==='restante');
- const faixa=classificacao?.faixa;
- if(!faixa)return '—';
- return outside?({leve:'1860270113',grave:'2860270114',muito:'3860270115',topo:'3860270116'})[faixa]:({leve:'1860270109',grave:'2860270110',muito:'3860270111',topo:'3860270112'})[faixa];
-}
+
+
+
+
+
+
+
 
 function cinAplicarEstadoLimiteV42(){
  const r=document.getElementById('cinRegime')?.value||'';
@@ -7647,17 +7570,6 @@ const _cinAplicarPerfilV41=cinAplicarPerfil;
 cinAplicarPerfil=function(p){_cinAplicarPerfilV41(p);cinAplicarEstadoLimiteV42();};
 
 /* Velocidade Personalizada: aviso explícito e nunca silencioso. */
-const _cinMontarTextoV41=cinMontarTexto;
-cinMontarTexto=function(){
- _cinMontarTextoV41();
- const r=document.getElementById('cinRegime')?.value;
- const a=document.getElementById('cinAviso');
- if(a && r==='personalizado' && document.getElementById('cinLimite')?.value){
- a.textContent='Limite personalizado definido para esta sessão. Confirme o enquadramento e a sinalização aplicável antes da emissão do auto.';
- }
-};
-
-/* Selects: atualização visual */
 document.addEventListener('change',e=>{
  if(e.target?.id==='cinVeiculo'||e.target?.id==='cinRegime'){
  cinAplicarEstadoLimiteV42();
@@ -7777,28 +7689,8 @@ setTimeout(()=>{try{cinAplicarEstadoLimiteV42();}catch(e){}},0);
 </style>
 <script id="cin-v47-matriz-real-script">
 (function(){
- const LIMITES={
- ciclomotor:{coexistencia:20,local_geral:40,autoestrada:null,reservada:null,restante:45},
- motociclo_mais50_sem:{coexistencia:20,local_geral:50,autoestrada:120,reservada:100,restante:90},
- motociclo_mais50_com:{coexistencia:20,local_geral:50,autoestrada:100,reservada:80,restante:70},
- motociclo_ate50:{coexistencia:20,local_geral:40,autoestrada:null,reservada:null,restante:60},
- triciclo:{coexistencia:20,local_geral:50,autoestrada:100,reservada:90,restante:80},
- ligeiro_passageiros_sem:{coexistencia:20,local_geral:50,autoestrada:120,reservada:100,restante:90},
- ligeiro_passageiros_com:{coexistencia:20,local_geral:50,autoestrada:100,reservada:80,restante:70},
- ligeiro_mercadorias_sem:{coexistencia:20,local_geral:50,autoestrada:110,reservada:90,restante:80},
- ligeiro_mercadorias_com:{coexistencia:20,local_geral:50,autoestrada:90,reservada:80,restante:70},
- pesado_passageiros_sem:{coexistencia:20,local_geral:50,autoestrada:100,reservada:90,restante:80},
- pesado_passageiros_com:{coexistencia:20,local_geral:50,autoestrada:90,reservada:90,restante:70},
- pesado_mercadorias_sem:{coexistencia:20,local_geral:50,autoestrada:90,reservada:80,restante:80},
- pesado_mercadorias_com:{coexistencia:20,local_geral:40,autoestrada:80,reservada:70,restante:70},
- trator:{coexistencia:20,local_geral:30,autoestrada:null,reservada:null,restante:40},
- maquina_agricola:{coexistencia:20,local_geral:20,autoestrada:null,reservada:null,restante:20},
- maquina_industrial:{coexistencia:20,local_geral:40,autoestrada:80,reservada:70,restante:70}
- };
- const LIGHT=new Set([
- 'motociclo_mais50_sem','motociclo_mais50_com','motociclo_ate50','triciclo',
- 'ligeiro_passageiros_sem','ligeiro_passageiros_com','ligeiro_mercadorias_sem','ligeiro_mercadorias_com'
- ]);
+ 
+ 
 
  function prepararSelectors(){
  const v=document.getElementById('cinVeiculo');
@@ -7807,7 +7699,7 @@ setTimeout(()=>{try{cinAplicarEstadoLimiteV42();}catch(e){}},0);
  v.innerHTML=`
  <optgroup label="AUTOMÓVEIS LIGEIROS"> <option value="ligeiro_passageiros_sem">Ligeiro passageiros / misto — sem reboque</option> <option value="ligeiro_passageiros_com">Ligeiro passageiros / misto — com reboque</option> <option value="ligeiro_mercadorias_sem">Ligeiro mercadorias — sem reboque</option> <option value="ligeiro_mercadorias_com">Ligeiro mercadorias — com reboque</option> </optgroup> <optgroup label="MOTOCICLOS / TRICICLOS"> <option value="motociclo_mais50_sem">Motociclo > 50 cm³ — sem carro lateral / reboque</option> <option value="motociclo_mais50_com">Motociclo > 50 cm³ — com carro lateral / reboque</option> <option value="motociclo_ate50">Motociclo ≤ 50 cm³</option> <option value="triciclo">Triciclo</option> </optgroup> <optgroup label="CICLOMOTORES / QUADRICICLOS"> <option value="ciclomotor">Ciclomotor / quadriciclo</option> </optgroup> <optgroup label="AUTOMÓVEIS PESADOS"> <option value="pesado_passageiros_sem">Pesado passageiros — sem reboque</option> <option value="pesado_passageiros_com">Pesado passageiros — com reboque</option> <option value="pesado_mercadorias_sem">Pesado mercadorias — sem reboque / semirreboque</option> <option value="pesado_mercadorias_com">Pesado mercadorias — com reboque</option> </optgroup> <optgroup label="AGRÍCOLAS / MÁQUINAS"> <option value="trator">Trator agrícola ou florestal</option> <option value="maquina_agricola">Máquina agrícola / motocultivador / tratocarro</option> <option value="maquina_industrial">Máquina industrial</option> </optgroup>`;
  v.dataset.v47='1';
- if(!LIMITES[v.value])v.value='ligeiro_passageiros_sem';
+ if(!v.value)v.value='ligeiro_passageiros_sem';
  }
  if(r && !r.dataset.v47){
  r.innerHTML=`
@@ -7835,50 +7727,9 @@ setTimeout(()=>{try{cinAplicarEstadoLimiteV42();}catch(e){}},0);
  else h.textContent='';
  }
 
- window.cinLimitePadrao=function(){
- prepararSelectors();
- const v=document.getElementById('cinVeiculo')?.value||'ligeiro_passageiros_sem';
- const r=document.getElementById('cinRegime')?.value||'local_geral';
- if(['local_placas','fora_placas','especial','personalizado'].includes(r))return null;
- if(r==='auto_placas')return 100;
- return LIMITES[v]?.[r]??null;
- };
+ 
 
- window.cinAtualizarLimite=function(){
- prepararSelectors();
- const l=document.getElementById('cinLimite');
- const fonte=document.getElementById('cinLimiteFonte');
- const label=document.getElementById('cinLimiteLabel');
- const r=document.getElementById('cinRegime')?.value||'local_geral';
- const v=document.getElementById('cinVeiculo')?.value||'ligeiro_passageiros_sem';
- if(!l){ajuda();return;}
- if(['local_placas','fora_placas','especial','personalizado'].includes(r)){
- l.dataset.manual='1';l.value='';l.placeholder='Introduzir valor';
- if(label)label.textContent=r==='personalizado'?'LIMITE PERSONALIZADO':'LIMITE SINALIZADO';
- if(fonte)fonte.textContent=r==='personalizado'?'Introduza o limite aplicável nesta sessão.':'Introduza o limite definido pela sinalização aplicável no local.';
- fonte?.classList.add('cin-v47-source-special');fonte?.classList.remove('cin-v47-source-auto');
- }else{
- const valor=LIMITES[v]?.[r];
- l.dataset.manual='0';
- if(label)label.textContent='LIMITE';
- if(r==='auto_placas'){
- l.value='100';l.placeholder='100';
- if(fonte)fonte.textContent='Referência operacional — confirme a sinalização';
- fonte?.classList.add('cin-v47-source-auto');
- }else if(valor==null){
- l.value='';l.placeholder='—';
- if(fonte)fonte.textContent='Não aplicável para este veículo';
- fonte?.classList.remove('cin-v47-source-auto');
- }else{
- l.value=String(valor);l.placeholder='km/h';
- if(fonte)fonte.textContent='Valor automático — tabela do art. 27.º CE';
- fonte?.classList.remove('cin-v47-source-auto');
- }
- fonte?.classList.remove('cin-v47-source-special');
- }
- ajuda();
- try{cinRecalcular()}catch(e){}
- };
+ 
 
  window.cinAtualizarRegime=function(){
  prepararSelectors();
@@ -7889,27 +7740,6 @@ setTimeout(()=>{try{cinAplicarEstadoLimiteV42();}catch(e){}},0);
  };
 
  /* Só substituímos o texto do operador. A classificação e os códigos existentes mantêm a lógica documental já presente. */
- const baseTexto=window.cinMontarTexto;
- if(typeof baseTexto==='function'){
- window.cinMontarTexto=function(){
- baseTexto();
- const ta=document.getElementById('cinTexto');
- if(!ta)return;
- const posto=(document.getElementById('cinSessaoOperadorPosto')?.value||'').trim();
- const no=(document.getElementById('cinSessaoOperadorNo')?.value||'').trim();
- const nome=(document.getElementById('cinSessaoOperadorNome')?.value||'').trim();
- if(!posto&&!no&&!nome)return;
- let operador='';
- if(posto)operador+=posto;
- if(no)operador+=(operador?' ':'')+'N.º '+no;
- if(nome)operador+=(operador?' - ':'')+nome;
- let t=ta.value||'';
- t=t.replace(/\s*Operador(?:\s+n\.º\s*[^.]+)?(?:\s+—\s*[^.]+)?(?:\s+—\s*[^.]+)?\.?\s*$/i,'');
- t=t.replace(/\s+$/,'')+' '+operador+'.';
- ta.value=t.replace(/\.\.+$/, '.');
- };
- }
-
  /* O operador é um dado de sessão; torna claro que POSTO significa o posto hierárquico (ex.: Cabo). */
  const postoInput=document.getElementById('cinSessaoOperadorPosto');
  if(postoInput)postoInput.placeholder='Ex.: Cabo';
@@ -9215,7 +9045,6 @@ body.theme-light .settings-diagnostic{background:#f5f8f9;color:#5b6e76;border-co
  const w=window.innerWidth||document.documentElement.clientWidth,h=window.innerHeight||document.documentElement.clientHeight;
  el.innerHTML='<strong>POSTO</strong> '+w+'×'+h+' px<br><strong>HISTÓRICO</strong> '+hist+' / 100 registos<br><strong>DADOS LOCAIS</strong> '+storage[0];
  }
- const originalReset=window.VÉRIXSettings&&window.VÉRIXSettings.reset;
  if(window.VÉRIXSettings){
  window.VÉRIXSettingsPrefs=function(){try{return Object.assign({theme:'dark',density:'compact',scale:'auto',hud:true,transitions:true,history:true,cinRadarCollapsed:true},JSON.parse(localStorage.getItem('VÉRIX_PREFS_V1')||'{}'));}catch(e){return null;}};
  window.VÉRIXSettings.setProfile=function(v){
@@ -11222,7 +11051,7 @@ body.cinemometro-page-active{
 }
 </style><script>
 (function(){
- function cinV44AtualizarRegimeVisual(){
+function cinV44AtualizarRegimeVisual(){
  const r=document.getElementById('cinRegime');
  const wrap=document.querySelector('label:has(#cinRegime)');
  const lim=document.getElementById('cinLimite');
@@ -11238,140 +11067,14 @@ body.cinemometro-page-active{
  else if(input) input.classList.remove('cin-limit-between');
  }
  }
-
- const _cinV44AtualizarLimite=window.cinAtualizarLimite;
- window.cinAtualizarLimite=function(){
- const r=document.getElementById('cinRegime')?.value||'local_geral';
- const l=document.getElementById('cinLimite');
- const fonte=document.getElementById('cinLimiteFonte');
- const label=document.getElementById('cinLimiteLabel');
- if(r==='auto_placas'){
- if(l){l.dataset.manual='0';l.value='100';l.placeholder='100';}
- if(label)label.textContent='LIMITE ENTRE PLACAS';
- if(fonte)fonte.textContent='O programa aplica o limite operacional definido para esta configuração.';
- try{cinRecalcular();}catch(e){}
- cinV44AtualizarRegimeVisual();
- return;
- }
- if(r==='local_placas'||r==='fora_placas'){
- if(l){l.dataset.manual='1';l.value='';l.placeholder='Valor sinalizado';}
- if(label)label.textContent='LIMITE ENTRE PLACAS';
- if(fonte)fonte.textContent='Introduza o limite definido pela sinalização aplicável no local.';
- try{cinRecalcular();}catch(e){}
- cinV44AtualizarRegimeVisual();
- return;
- }
- if(typeof _cinV44AtualizarLimite==='function') _cinV44AtualizarLimite();
- cinV44AtualizarRegimeVisual();
- };
-
- // Mantém o modo atual, mas reconhece Autoestrada entre placas como enquadramento fora de localidade.
- if(typeof window.cinClassificarExcesso==='function'){
- const _origClass=window.cinClassificarExcesso;
- window.cinClassificarExcesso=function(excesso){
- const r=document.getElementById('cinRegime')?.value||'local_geral';
- if(r==='auto_placas'){
- const vGrupo=typeof cinGrupoVeiculoV42==='function'?cinGrupoVeiculoV42():'ligeiros';
- const ligeiro=(vGrupo==='ligeiros');
- const limGrave=ligeiro?30:20, limMuito=ligeiro?60:40, limTopo=ligeiro?80:60;
- if(excesso<=limGrave)return {gravidade:'Leve',coima:'60€ a 300€',pontos:'—',inibicao:'—',faixa:'leve'};
- if(excesso<=limMuito)return {gravidade:'Grave',coima:'120€ a 600€',pontos:'2',inibicao:'1 mês a 1 ano',faixa:'grave'};
- if(excesso<=limTopo)return {gravidade:'Muito Grave',coima:'300€ a 1500€',pontos:'4',inibicao:'2 meses a 2 anos',faixa:'muito'};
- return {gravidade:'Muito Grave',coima:'500€ a 2500€',pontos:'4',inibicao:'2 meses a 2 anos',faixa:'topo'};
- }
- return _origClass(excesso);
- };
- }
- if(typeof window.cinCodigoOperacional==='function'){
- const _origCode=window.cinCodigoOperacional;
- window.cinCodigoOperacional=function(classificacao){
- const r=document.getElementById('cinRegime')?.value||'local_geral';
- if(r==='auto_placas')return ({leve:'1860270113',grave:'2860270114',muito:'3860270115',topo:'3860270116'})[classificacao?.faixa]||'—';
- return _origCode(classificacao);
- };
- }
-
- // Texto do auto: Posto + N.º + Nome. Ex.: Cabo N.º 2230453 - Luis Ferraz.
- const _origTexto=window.cinMontarTexto;
- if(typeof _origTexto==='function'){
- window.cinMontarTexto=function(){
- _origTexto();
- const ta=document.getElementById('cinTexto');
- if(!ta)return;
- let t=ta.value||'';
- const no=(document.getElementById('cinSessaoOperadorNo')?.value||'').trim();
- const nome=(document.getElementById('cinSessaoOperadorNome')?.value||'').trim();
- const posto=(document.getElementById('cinSessaoOperadorPosto')?.value||'').trim();
- const re=/Operador(?:\s+n\.º\s*[^—.]+)?(?:\s+—\s*[^.]+)?(?:\s+—\s*[^.]+)?\.?$/;
- const dados=[posto?posto+' N.º '+no:'',(!posto&&no)?'N.º '+no:'',nome?((posto||no)?' - ':'')+nome:''].filter(Boolean).join('').replace(/N\.º\s*-\s*/,'N.º ');
- if(dados){
- if(re.test(t)) t=t.replace(re,dados+'.');
- else t=t.replace(/\s*$/,'')+' '+dados+'.';
- }
- ta.value=t;
- };
- }
-
- document.addEventListener('change',function(e){
+document.addEventListener('change',function(e){
  if(e.target?.id==='cinRegime') setTimeout(cinV44AtualizarRegimeVisual,0);
  });
  setTimeout(function(){
  try{cinV44AtualizarRegimeVisual();}catch(e){}
  },0);
 })();
-</script>\n\n<!-- ===== v45 — ENTRE PLACAS + FORMATO OPERADOR ===== -->\n<script>
-(function(){
- // Entre placas: classifica pelo excesso relativamente ao limite sinalizado.
- // Os códigos abaixo são os que constam da ficha operacional M1 HP2 "Entre Placas" fornecida.
- const _v44Class=window.cinClassificarExcesso;
- window.cinClassificarExcesso=function(excesso){
- const r=document.getElementById('cinRegime')?.value||'local_geral';
- if(['local_placas','fora_placas','auto_placas'].includes(r)){
- const grupo=typeof cinGrupoVeiculoV42==='function'?cinGrupoVeiculoV42():'ligeiros';
- const ligeiro=grupo==='ligeiros';
- const limGrave=ligeiro?30:20;
- const limMuito=ligeiro?60:40;
- const limTopo=ligeiro?80:60;
- if(excesso<=limGrave)return {gravidade:'Leve',coima:'60€ a 300€',pontos:'—',inibicao:'—',faixa:'leve'};
- if(excesso<=limMuito)return {gravidade:'Grave',coima:'120€ a 600€',pontos:'2',inibicao:'1 mês a 1 ano',faixa:'grave'};
- if(excesso<=limTopo)return {gravidade:'Muito Grave',coima:'300€ a 1500€',pontos:'4',inibicao:'2 meses a 2 anos',faixa:'muito'};
- return {gravidade:'Muito Grave',coima:'500€ a 2500€',pontos:'4',inibicao:'2 meses a 2 anos',faixa:'topo'};
- }
- return typeof _v44Class==='function'?_v44Class(excesso):null;
- };
-
- const _v44Code=window.cinCodigoOperacional;
- window.cinCodigoOperacional=function(classificacao){
- const r=document.getElementById('cinRegime')?.value||'local_geral';
- if(['local_placas','fora_placas','auto_placas'].includes(r)){
- return ({leve:'1860280110',grave:'2860280111',muito:'3860280112',topo:'3860280113'})[classificacao?.faixa]||'—';
- }
- return typeof _v44Code==='function'?_v44Code(classificacao):'—';
- };
-
- // Formato do operador: "Cabo N.º 2230453 - Luis Ferraz."
- const _v44Texto=window.cinMontarTexto;
- window.cinMontarTexto=function(){
- if(typeof _v44Texto!=='function')return;
- _v44Texto();
- const ta=document.getElementById('cinTexto'); if(!ta)return;
- let t=ta.value||'';
- const no=(document.getElementById('cinSessaoOperadorNo')?.value||'').trim();
- const nome=(document.getElementById('cinSessaoOperadorNome')?.value||'').trim();
- const posto=(document.getElementById('cinSessaoOperadorPosto')?.value||'').trim();
- const partes=[];
- if(posto)partes.push(posto);
- if(no)partes.push('N.º '+no);
- let operador=partes.join(' ');
- if(nome)operador+=(operador?' - ':'')+nome;
- if(!operador)return;
- const re=/Operador(?:\s+n\.º\s*[^—.]+)?(?:\s+—\s*[^.]+)?(?:\s+—\s*[^.]+)?\.?$/;
- if(re.test(t))t=t.replace(re,operador+'.');
- else t=t.replace(/\s*$/,'')+' '+operador+'.';
- ta.value=t;
- };
-})();
-</script>
+</script>\n\n<!-- ===== v45 — ENTRE PLACAS + FORMATO OPERADOR ===== -->\n
 
 <style id="cin-v44-ajustes">\n/* Dropdown nativo: o menu aberto tem de continuar legível no Windows/Chromium. */\n.cin-session-operator-fields select{\n color-scheme:light!important;\n}\n.cin-session-operator-fields select option{\n background:#f2f5f7!important;\n color:#10232c!important;\n font-weight:700!important;\n}\n.cin-session-operator-fields select optgroup{\n background:#dce8ec!important;\n color:#164a63!important;\n font-weight:900!important;\n}\n.cin-session-operator-fields select option:checked{\n background:#176fba!important;\n color:#fff!important;\n}\n.cin-session-operator-fields select option[disabled]{\n color:#687b84!important;\n}\n.cin-regime-between{\n border-color:#b77c1b!important;\n box-shadow:0 0 0 1px rgba(224,165,43,.08), inset 0 0 15px rgba(224,165,43,.04);\n}\n.cin-regime-between select{\n border-color:#a77722!important;\n background:linear-gradient(180deg,#201a0b,#0d1216)!important;\n}\n\n/* Pequena etiqueta no limite automático quando é Autoestrada entre placas. */\n.cin-limit-between{\n color:#ffd36a!important;\n}\n</style>
 <script id="cin-v55-help-sync">
@@ -12053,11 +11756,6 @@ body.main-menu-active .rail{display:none!important;}
  if(nome==='cinemometro') setTimeout(aplicar,20);
  };
  }
- document.addEventListener('change',function(e){
- if(e.target && e.target.id==='cinRegime'){
- /* A escolha manual continua a ser respeitada depois da abertura. */
- }
- });
 })();
 </script> <style id="verix-css-batch-013">.consulta-history-bottom-wrap{
  position:fixed!important;
@@ -14436,19 +14134,7 @@ html body .main-menu-v74-shell::before{
  html body .tool{ transition:none !important; }
 }
 </style>  
-<script id="verix-fx-holo-scan-inject">
-(function(){
- function add(){
- if(document.querySelector('.verix-holo-scan')) return;
- var el=document.createElement('div');
- el.className='verix-holo-scan';
- el.setAttribute('aria-hidden','true');
- document.body.appendChild(el);
- }
- if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',add);
- else add();
-})();
-</script> <style id="verix-css-batch-015">/* Contador ASF — barra full-bleed, encaixada, efeito 3D */
+ <style id="verix-css-batch-015">/* Contador ASF — barra full-bleed, encaixada, efeito 3D */
 html body .insurance{
  position:relative!important;
  overflow:hidden!important;
@@ -15850,7 +15536,6 @@ html body .leg-intro-new{
  function ensureAlias(){
  try{
  if(window.VÉRIXSettings && !window.VERIXSettings) window.VERIXSettings = window.VÉRIXSettings;
- if(window.VERIXSettings && !window.VÉRIXSettings) window.VÉRIXSettings = window.VERIXSettings;
  }catch(e){}
  }
  ensureAlias();
@@ -15867,7 +15552,6 @@ html body .leg-intro-new{
  }
  function save(p){ try{ localStorage.setItem(KEY, JSON.stringify(p)); }catch(e){} }
 
- var origToggle = S.toggle;
  S.toggle = function(k, el){
  var p = load();
  if(!(k in p)) p[k]=true;
@@ -15879,7 +15563,6 @@ html body .leg-intro-new{
  if(sp) sp.textContent = p[k] ? 'ATIVO' : 'OFF';
  }
  applyAll(p);
- if(typeof origToggle === 'function'){ try{ /* already saved */ }catch(e){} }
  };
  S.setTheme = function(v){ var p=load(); p.theme=(v==='light'?'light':'dark'); save(p); applyAll(p); syncUI(p); };
  S.setDensity = function(v){ var p=load(); p.density=['compact','comfortable'].indexOf(v)>=0?v:'normal'; save(p); applyAll(p); syncUI(p); };
@@ -15900,7 +15583,6 @@ html body .leg-intro-new{
  if(lm) lm.textContent = (v||'escudo').toUpperCase();
  };
  S.refreshDiagnostic = function(){
- var el=document.getElementById('settingsDiagnosticBox') || document.querySelector('.settings-status-card:last-child div');
  var p=load();
  var msg='Tema: '+p.theme+' | Densidade: '+p.density+' | Escala: '+p.scale+
  ' | HUD: '+(p.hud?'on':'off')+' | Transições: '+(p.transitions?'on':'off')+
