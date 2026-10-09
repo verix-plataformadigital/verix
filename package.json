@@ -5,7 +5,8 @@
   "description": "VÉRIX production release hardening — keep repository PRIVATE",
   "scripts": {
     "build:secure": "node tools/build-secure-release.mjs",
-    "release": "npm run build:secure && echo '\n✓ dist/ ready. Publish ONLY the contents of dist/. Keep the repo private.'"
+    "release": "npm run build:secure && echo '\n✓ dist/ ready. Publish ONLY the contents of dist/. Keep the repo private.'",
+    "test:telemetry": "node --test supabase/functions/_shared/telemetry-analytics.test.mjs"
   },
   "devDependencies": {
     "javascript-obfuscator": "5.9.0"
