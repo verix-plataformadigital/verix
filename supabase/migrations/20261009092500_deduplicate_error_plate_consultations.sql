@@ -61,12 +61,70 @@ err_plates AS (
   FROM ev e
   CROSS JOIN b
   CROSS JOIN LATERAL (
-    SELECT coalesce(e.metadata->'asfDiagnostic'->>'matricula',e.metadata->>'matriculaNormalizada',e.metadata->>'matricula','') AS plate_raw,
-           regexp_replace(upper(coalesce(e.metadata->'asfDiagnostic'->>'matricula',e.metadata->>'matriculaNormalizada',e.metadata->>'matricula','')),'[^A-Z0-9]','','g') AS plate_key
+    SELECT c.raw AS plate_raw,
+           regexp_replace(upper(c.raw),'[^A-Z0-9]','','g') AS plate_key
+    FROM (VALUES
+      (1,e.metadata->'asfDiagnostic'->>'matricula'),
+      (2,e.metadata->>'matricula'),
+      (3,e.metadata->>'matriculaNormalizada')
+    ) AS c(priority,raw)
+    WHERE regexp_replace(upper(coalesce(c.raw,'')),'[^A-Z0-9]','','g') ~ '^[A-Z0-9]{6,8}
+  GROUP BY p.plate_key ORDER BY qty DESC,last_at DESC LIMIT 20
+),
+$new$;
+BEGIN
+  SELECT pg_get_functiondef('public.verix2_admin_analytics(timestamptz)'::regprocedure)
+  INTO v_definition;
+
+  IF position(v_old_types in v_definition)=0
+     OR position(v_old_bursts in v_definition)=0
+     OR position(v_old_installs in v_definition)=0
+     OR position(v_old_signatures in v_definition)=0
+     OR position(v_old_plates in v_definition)=0 THEN
+    RAISE EXCEPTION 'Expected VÉRIX admin analytics definition changed; refusing partial patch';
+  END IF;
+
+  v_definition := replace(v_definition, v_old_types, v_new_types);
+  v_definition := replace(v_definition, v_old_bursts, v_new_bursts);
+  v_definition := replace(v_definition, v_old_installs, v_new_installs);
+  v_definition := replace(v_definition, v_old_signatures, v_new_signatures);
+  v_definition := replace(v_definition, v_old_plates, v_new_plates);
+
+  EXECUTE v_definition;
+END
+$migration$;
+
+    ORDER BY c.priority
+    LIMIT 1
   ) p
   WHERE e.event='vehicle_insurance_error' AND e.occurred_at>=b.s24
     AND e.query_id IS NOT NULL
-    AND p.plate_key ~ '^[A-Z0-9]{6,8}$'
+    AND p.plate_key ~ '^[A-Z0-9]{6,8}
+  GROUP BY p.plate_key ORDER BY qty DESC,last_at DESC LIMIT 20
+),
+$new$;
+BEGIN
+  SELECT pg_get_functiondef('public.verix2_admin_analytics(timestamptz)'::regprocedure)
+  INTO v_definition;
+
+  IF position(v_old_types in v_definition)=0
+     OR position(v_old_bursts in v_definition)=0
+     OR position(v_old_installs in v_definition)=0
+     OR position(v_old_signatures in v_definition)=0
+     OR position(v_old_plates in v_definition)=0 THEN
+    RAISE EXCEPTION 'Expected VÉRIX admin analytics definition changed; refusing partial patch';
+  END IF;
+
+  v_definition := replace(v_definition, v_old_types, v_new_types);
+  v_definition := replace(v_definition, v_old_bursts, v_new_bursts);
+  v_definition := replace(v_definition, v_old_installs, v_new_installs);
+  v_definition := replace(v_definition, v_old_signatures, v_new_signatures);
+  v_definition := replace(v_definition, v_old_plates, v_new_plates);
+
+  EXECUTE v_definition;
+END
+$migration$;
+
   GROUP BY p.plate_key ORDER BY qty DESC,last_at DESC LIMIT 20
 ),
 $new$;
