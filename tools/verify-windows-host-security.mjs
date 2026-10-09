@@ -208,7 +208,8 @@ const requiredPackagerMarkers = [
   "Compress-Archive",
   "Expand-Archive",
   "Get-FileHash",
-  "VERIX-Windows-x64.zip.sha256",
+  "VERIX-Windows-x64.zip",
+  "$zipPath.sha256",
   "System.IO.File]::WriteAllText"
 ];
 for (const marker of requiredPackagerMarkers) {
