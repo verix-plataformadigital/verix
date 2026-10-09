@@ -279,7 +279,10 @@ function sanitizeErrorPlateMetadata(metadata: Record<string, unknown>): void {
   const candidates = [diag?.matricula, metadata.matriculaNormalizada, metadata.matricula];
   const validRaw = candidates
     .map(value => String(value ?? "").trim())
-    .find(value => /^[A-Z0-9]{6,8}$/.test(value.toUpperCase().replace(/[^A-Z0-9]/g, "")));
+    .find(value => {
+      const normalized = value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+      return /^(?:[A-Z]{2}[0-9]{4}|[0-9]{4}[A-Z]{2}|[0-9]{2}[A-Z]{2}[0-9]{2}|[A-Z]{2}[0-9]{2}[A-Z]{2})$/.test(normalized);
+    });
 
   if (!validRaw) {
     delete metadata.matricula;
@@ -289,8 +292,8 @@ function sanitizeErrorPlateMetadata(metadata: Record<string, unknown>): void {
   }
 
   const normalized = validRaw.toUpperCase().replace(/[^A-Z0-9]/g, "");
-  // Keep a usable display form and a stable normalized key; short/truncated
-  // fragments must never appear as vehicle registrations in Admin.
+  // Accept only complete Portuguese plate layouts; partial OCR/input fragments
+  // must never enter the stored error details as vehicle registrations.
   if (diag) diag.matricula = validRaw;
   else metadata.matricula = validRaw;
   metadata.matriculaNormalizada = normalized;
