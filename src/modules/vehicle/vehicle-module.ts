@@ -39,7 +39,15 @@ export class VehicleModule {
       store: options.store,
       onQueryStarted: (queryId, request) => {
         if (options.historyEnabled?.() ?? true) {
-          options.history.add(request.plate, this.lastTrailer, queryId, request.date);
+          // Preserve the operator's two fields separately. The ASF lookup may
+          // fall back to the trailer plate, but history must not label it as
+          // the vehicle.
+          options.history.add(
+            normalizePlate(this.lastPlate),
+            normalizePlate(this.lastTrailer),
+            queryId,
+            request.date
+          );
         }
       }
     });
@@ -196,10 +204,18 @@ export class VehicleModule {
     submit: HTMLButtonElement
   ): Promise<void> {
     const operationGeneration = ++this.operationGeneration;
-    const normalizedPlate = normalizePlate(plate);
-    if (!/^[A-Z0-9]{6,8}$/.test(normalizedPlate)) {
+    const rawPlate = String(plate ?? "").trim();
+    const rawTrailer = String(trailer ?? "").trim();
+    const normalizedPlate = normalizePlate(rawPlate);
+    const normalizedTrailer = normalizePlate(rawTrailer);
+    const validPlate = !rawPlate || /^[A-Z0-9]{6,8}$/.test(normalizedPlate);
+    const validTrailer = !rawTrailer || /^[A-Z0-9]{6,8}$/.test(normalizedTrailer);
+
+    if ((!rawPlate && !rawTrailer) || !validPlate || !validTrailer) {
       this.controller.reset();
-      this.showLocalError("Introduza uma matrícula válida.");
+      this.showLocalError(
+        "Introduza uma matrícula válida. Preencha o veículo ou reboque e confirme todas as matrículas indicadas."
+      );
       return;
     }
 
@@ -215,7 +231,7 @@ export class VehicleModule {
     const coordinated = this.orchestrator.execute(
       {
         vehiclePlate: normalizedPlate,
-        trailerPlate: normalizePlate(trailer),
+        trailerPlate: normalizedTrailer,
         asfDate: isoDateToAsfDate(effectiveIsoDate)
       }
     );
