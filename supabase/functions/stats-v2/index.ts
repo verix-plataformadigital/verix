@@ -282,17 +282,18 @@ async function loadCinemometerAnalytics24h(now:string){
   const measurementEvents=canonicalSpeedMeasurements(events);
   const speeds=measurementEvents.map((e:any)=>Number(cinSnapshotOf(e).velocidade_registada)).filter(Number.isFinite);
   const operatorMap=new Map<string,any>();
-  for(const row of calcEvents){
+  for(const row of measurementEvents){
     const c=cinSnapshotOf(row)||{};
-    const keyParts=[c.operador_numero,c.operador_nome,c.operador_posto].filter((v:any)=>v!==null&&v!==undefined&&String(v).trim()!=="");
-    const key=keyParts.length?keyParts.map(String).join("|"):"unidentified";
-    const cur=operatorMap.get(key)||{nome:c.operador_nome||null,numero:c.operador_numero||null,posto:c.operador_posto||null,identificado:c.operador_identificado===true||!!(c.operador_numero||c.operador_nome),sessions:new Set<string>(),calculations:0,last_seen:row.occurred_at};
+    const identified=c.operador_identificado===true||!!(c.operador_numero||c.operador_nome||c.operador_posto);
+    if(!identified) continue;
+    const key=[c.operador_numero||"",c.operador_nome||"",c.operador_posto||""].join("|");
+    const cur=operatorMap.get(key)||{nome:c.operador_nome||null,numero:c.operador_numero||null,posto:c.operador_posto||null,identificado:true,sessions:new Set<string>(),measurements:0,last_seen:row.occurred_at};
     if(row.session_id)cur.sessions.add(String(row.session_id));
-    cur.calculations++;
+    cur.measurements++;
     if(String(row.occurred_at)>String(cur.last_seen))cur.last_seen=row.occurred_at;
     operatorMap.set(key,cur);
   }
-  const operators=[...operatorMap.values()].map((x:any)=>({nome:x.nome,numero:x.numero,posto:x.posto,identificado:x.identificado,sessions:x.sessions.size,calculations:x.calculations,last_seen:x.last_seen})).sort((a,b)=>b.calculations-a.calculations);
+  const operators=[...operatorMap.values()].map((x:any)=>({nome:x.nome,numero:x.numero,posto:x.posto,identificado:x.identificado,sessions:x.sessions.size,measurements:x.measurements,last_seen:x.last_seen})).sort((a,b)=>b.measurements-a.measurements);
   const flags=new Map<string,number>();
   sessions.forEach(s=>s.flags.forEach(f=>flags.set(f,(flags.get(f)||0)+1)));
   const patternCounts=new Map<string,number>(); sessions.forEach(s=>patternCounts.set(s.pattern,(patternCounts.get(s.pattern)||0)+1));
