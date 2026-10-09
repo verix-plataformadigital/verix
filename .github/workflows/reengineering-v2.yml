@@ -94,9 +94,11 @@ jobs:
 
       - name: Browser regression — phone, tablet and desktop
         env:
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/verix-playwright/node_modules/playwright/index.mjs
           VERIX_V2_TEST_URL: http://127.0.0.1:4173/
-        run: node tests/browser/responsive-smoke.mjs
+        shell: bash
+        run: |
+          export PLAYWRIGHT_MODULE="$RUNNER_TEMP/verix-playwright/node_modules/playwright/index.mjs"
+          node tests/browser/responsive-smoke.mjs
 
       - name: Prepare audit source snapshot
         shell: bash
