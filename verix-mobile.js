@@ -62,6 +62,35 @@ if(window.visualViewport){
 document.documentElement.classList.add('vx-mobile-ready');
 document.body.classList.add('vx-mobile-mode');
 
+/* Verix keyboard dismiss: fechar o teclado ao iniciar uma consulta em telemóvel/tablet.
+   O ficheiro só ativa este adaptador em viewports móveis; não altera a lógica da consulta. */
+function dismissKeyboardOnConsult(event){
+  const target=event.target;
+  if(!target || typeof target.closest!=='function') return;
+  const button=target.closest('.command .searchbar .consult');
+  const form=button ? button.closest('form') :
+    (event.type==='submit' && target.matches && target.matches('.command .searchbar form') ? target : null);
+  if(!form) return;
+
+  const blurFields=()=>{
+    try{
+      form.querySelectorAll('input,textarea,select').forEach(field=>{
+        try{ field.blur(); }catch(_){}
+      });
+      const active=document.activeElement;
+      if(active && form.contains(active) && typeof active.blur==='function') active.blur();
+    }catch(_){}
+  };
+
+  // Blur synchronously during the user gesture, which is important on iOS/Android.
+  blurFields();
+  if(event.type!=='submit') setTimeout(blurFields,0);
+}
+
+document.addEventListener('pointerdown',dismissKeyboardOnConsult,true);
+document.addEventListener('click',dismissKeyboardOnConsult,true);
+document.addEventListener('submit',dismissKeyboardOnConsult,true);
+
 document.querySelectorAll('input,textarea,select').forEach(el=>{
   const hint=(el.placeholder+' '+el.name+' '+el.id+' '+el.getAttribute('aria-label')).toLowerCase();
   if(/matr[ií]cula|placa|ve[ií]culo|license|registration/.test(hint)){

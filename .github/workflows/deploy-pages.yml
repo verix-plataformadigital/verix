@@ -45,6 +45,7 @@ jobs:
           grep -q "Mobile/tablet consultation stack" dist/verix-mobile.css
           grep -q "section.panel.insurance" dist/verix-mobile.css
           grep -q "section.panel.verix-livrete-panel" dist/verix-mobile.css
+          grep -q "Verix keyboard dismiss" dist/verix-mobile.js
           grep -q ":has(#veiculoFrame:not(\\[src\\]))" dist/verix-mobile.css
           test -s dist/verix-mobile.html
           test -s dist/verix-mobile.css
