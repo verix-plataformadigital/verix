@@ -120,6 +120,10 @@ assert.ok(admin.includes("CONSULTAS','EVENTOS"), "Admin must distinguish consult
 assert.ok(stats.includes("queryIds:new Set<string>()"), "error time buckets must deduplicate repeated events by query ID");
 assert.ok(stats.includes("event_count:bucket.events"), "error time buckets must expose raw event count separately");
 
+assert.ok(stats.includes("error_queries_24h:new Set(rows.map"), "error total must count unique query IDs separately from event rows");
+assert.ok(stats.includes("current_version_error_events:currentVersionRows.length"), "version errors must expose raw events separately from distinct queries");
+assert.ok(stats.includes("latestErrorByQuery"), "error plate details must not repeat the same consultation");
+
 
 const hourlyMigration = fs.readFileSync("supabase/migrations/20261009051204_hourly_consultations_and_presence.sql", "utf8");
 assert.match(hourlyMigration, /generate_series\(0,23\)/, "hourly chart must include all 24 hours, including zero-activity hours");
