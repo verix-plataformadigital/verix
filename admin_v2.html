@@ -639,6 +639,7 @@ function renderErrors(d){
    if(top) html+='<div style="margin-top:10px" class="explain"><strong>Tipo mais frequente:</strong> '+esc(top.kind||'desconhecido')+' · '+fmt(top.qty)+' ocorrências.<br><strong>Como ler:</strong> devemos cruzar hora, instalação, browser e resposta antes de atribuir a origem do problema.</div>';
    return html;
  }
+ applyErrorSearch();
 }
 function renderSystem(d){
  const life=d.lifetime||{},tel=d.analytics?.telemetry||{},o=d.analytics?.overview||{};
@@ -659,7 +660,7 @@ function renderSystem(d){
 }
 
 function renderAll(d){latestData=d;renderDashboard(d);renderInsurance(d);renderSpeed(d);renderLegislation(d);renderUsage(d);renderErrors(d);renderSystem(d)}
-async async function loadDashboard(){
+async function loadDashboard(){
  if(dashboardBusy)return null;
  dashboardBusy=true;
  if(!latestData)renderLoadingState();
