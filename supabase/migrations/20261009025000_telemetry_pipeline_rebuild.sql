@@ -322,12 +322,12 @@ speed_measurements AS (
  SELECT * FROM (
   SELECT DISTINCT ON (installation_id,session_id,cin->>'operation_id',speed_val) s.*
   FROM speed_num s
-  WHERE s.event='cinemometer_calculation' AND s.speed_val IS NOT NULL AND nullif(s.cin->>'operation_id','') IS NOT NULL
+  WHERE s.event='cinemometer_calculation' AND s.speed_val IS NOT NULL AND nullif(s.cin->>'operation_id','') IS NOT NULL AND s.installation_id IS NOT NULL AND s.session_id IS NOT NULL
   ORDER BY installation_id,session_id,cin->>'operation_id',speed_val,occurred_at DESC
  ) operation_measurements
  UNION ALL
  SELECT s.* FROM speed_num s
- WHERE s.event='cinemometer_calculation' AND s.speed_val IS NOT NULL AND nullif(s.cin->>'operation_id','') IS NULL
+ WHERE s.event='cinemometer_calculation' AND s.speed_val IS NOT NULL AND (nullif(s.cin->>'operation_id','') IS NULL OR s.installation_id IS NULL OR s.session_id IS NULL)
 ),
 speed_dimensions AS (
  SELECT jsonb_build_object(
