@@ -1,5 +1,13 @@
 <!-- VÉRIX 1.5 — publicação limpa -->
-<!DOCTYPE html><html lang="pt"><head><link rel="stylesheet" href="./verix-mobile.css?v=9" media="(max-width:1199px)"><script defer src="./verix-mobile.js?v=9"></script>
+<!DOCTYPE html><html lang="pt"><head><script id="verix-fresh-mobile-assets">
+(function(){
+  'use strict';
+  /* Cache-bust CSS and JS on every document open; no reliance on browser cache. */
+  var openToken=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
+  document.write('<link rel="stylesheet" href="./verix-mobile.css?v=10&open='+openToken+'" media="(max-width:1199px)">');
+  document.write('<script defer src="./verix-mobile.js?v=10&open='+openToken+'"><'+'/script>');
+})();
+</script>
 <link rel="preconnect" href="https://onilkakbgpklxvxuxmks.supabase.co" crossorigin>
 <link rel="dns-prefetch" href="//onilkakbgpklxvxuxmks.supabase.co">
 
