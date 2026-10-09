@@ -31,7 +31,7 @@ const OBFUSCATOR_OPTIONS = {
   deadCodeInjection: false,
   debugProtection: false,
   debugProtectionInterval: 0,
-  disableConsoleOutput: false,
+  disableConsoleOutput: true,
   domainLock: DOMAIN_LOCK,
   domainLockRedirectUrl: "about:blank",
   identifierNamesGenerator: "hexadecimal",
