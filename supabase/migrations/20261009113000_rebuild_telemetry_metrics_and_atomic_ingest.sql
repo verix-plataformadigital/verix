@@ -1,5 +1,5 @@
 -- VÉRIX telemetry/statistics reconstruction (review before production deployment).
--- Uses true rolling 7d/30d periods; keeps reset_24h_at semantics for the explicit 24h reset.
+-- Keeps explicit 24h/global reset boundaries; query outcomes use start-cohort semantics.
 -- Query statistics are cohort-based: queries start only at vehicle_lookup, outcome counts
 -- are deduplicated by query_id, unresolved is split into pending vs incomplete, and
 -- contradictory terminal outcomes are reported separately.
@@ -16,8 +16,8 @@ WITH b AS (
       coalesce((SELECT reset_24h_at FROM public.verix2_dashboard_state WHERE singleton=true),
                '1970-01-01T00:00:00Z'::timestamptz)
     ) AS s24,
-    (p_now - interval '7 days') AS s7,
-    (p_now - interval '30 days') AS s30,
+    greatest(p_now - interval '7 days', public.verix2_all_start(p_now)) AS s7,
+    greatest(p_now - interval '30 days', public.verix2_all_start(p_now)) AS s30,
     p_now AS enow
 ),
 ev AS (
@@ -533,7 +533,7 @@ BEGIN
   INSERT INTO public.verix2_installations (
     installation_id, first_seen, last_seen, app_version, device_type, browser, os
   )
-  SELECT x.installation_id, x.first_seen, x.first_seen,
+  SELECT x.installation_id, LEAST(COALESCE(x.first_seen, v_now), v_now), LEAST(COALESCE(x.first_seen, v_now), v_now),
          x.app_version, x.device_type, x.browser, x.os
   FROM jsonb_to_recordset(p_installations) AS x(
     installation_id text, first_seen timestamptz, last_seen timestamptz,
@@ -550,7 +550,7 @@ BEGIN
   INSERT INTO public.verix2_sessions (
     session_id, installation_id, tab_id, started_at, last_seen
   )
-  SELECT x.session_id, x.installation_id, x.tab_id, x.started_at, x.started_at
+  SELECT x.session_id, x.installation_id, x.tab_id, LEAST(COALESCE(x.started_at, v_now), v_now), LEAST(COALESCE(x.started_at, v_now), v_now)
   FROM jsonb_to_recordset(p_sessions) AS x(
     session_id text, installation_id text, tab_id text,
     started_at timestamptz, last_seen timestamptz
