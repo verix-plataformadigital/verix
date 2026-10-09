@@ -113,7 +113,7 @@ assert.match(presenceMigration, /last_close IS NULL OR last_presence > last_clos
 assert.ok(admin.includes("Sessões VÉRIX com browser aberto."), "Ativos agora must describe browser sessions, not installations");
 assert.ok(errorPlateCountMigration.includes("count(DISTINCT e.query_id) qty"), "error plate totals must count unique consultation IDs");
 assert.ok(errorPlateCountMigration.includes("count(*) event_qty"), "raw error event volume must remain visible separately");
-assert.ok(errorPlateCountMigration.includes("p.plate_key ~ '^[A-Z0-9]{6,8}$'"), "error plate table must exclude partial/invalid plate fragments");
+assert.ok(errorPlateCountMigration.includes("^[A-Z]{2}[0-9]{4}|^[0-9]{4}[A-Z]{2}|^[0-9]{2}[A-Z]{2}[0-9]{2}|^[A-Z]{2}[0-9]{2}[A-Z]{2}$"), "error plate table must allow only complete Portuguese plate formats");
 assert.ok(endpoint.includes("function sanitizeErrorPlateMetadata("), "server must sanitize invalid error plate fragments before persistence");
 assert.ok(endpoint.includes('if (event === "vehicle_insurance_error") sanitizeErrorPlateMetadata(metadata);'), "server must apply plate validation to ASF error events");
 assert.ok(admin.includes("CONSULTAS','EVENTOS"), "Admin must distinguish consultation totals from raw event totals");
@@ -123,6 +123,10 @@ assert.ok(stats.includes("event_count:bucket.events"), "error time buckets must 
 assert.ok(stats.includes("error_queries_24h:new Set(rows.map"), "error total must count unique query IDs separately from event rows");
 assert.ok(stats.includes("current_version_error_events:currentVersionRows.length"), "version errors must expose raw events separately from distinct queries");
 assert.ok(stats.includes("latestErrorByQuery"), "error plate details must not repeat the same consultation");
+assert.ok(stats.includes("offset",String(page*pageSize)), "error investigation must page through all raw telemetry instead of truncating at 1,000 rows");
+assert.ok(stats.includes("validPortuguesePlate"), "error plate diagnostics must use complete Portuguese plate formats");
+assert.ok(endpoint.includes("^[A-Z]{2}[0-9]{4}"), "server must reject incomplete and malformed plate fragments");
+
 
 
 const hourlyMigration = fs.readFileSync("supabase/migrations/20261009051204_hourly_consultations_and_presence.sql", "utf8");
