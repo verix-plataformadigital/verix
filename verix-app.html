@@ -17146,7 +17146,7 @@ html body .leg-card-new .copy-all-new{
  - Sessão por abertura de separador.
  - Fila offline local separada da telemetria antiga.
  - Sem limpeza automática de localStorage.
- - Sem matrículas, nomes ou conteúdo operacional.
+ - Matrículas só são anexadas aos eventos ASF de resultado «sem registo» ou erro; os outros eventos continuam sem matrículas.
  - API pública compatível: window.VERIX_TELEMETRY.track/newQueryId/flush.
 */
 (function () {
@@ -17366,10 +17366,18 @@ html body .leg-card-new .copy-all-new{
 
   queue = readQueue();
 
-  function cleanMetadata(meta) {
+  function cleanMetadata(meta, event) {
     var m = meta && typeof meta === 'object' ? meta : {};
     var out = {};
     if (m.queryId) out.queryId = String(m.queryId).slice(0, 120);
+    // Minimização: matrícula só segue nos dois resultados que alimentam as listas ASF.
+    var normalizedPlate = '';
+    if (event === 'vehicle_insurance_no' || event === 'vehicle_insurance_error') {
+      var rawPlate = String(m.matricula || m.matriculaNormalizada || '').trim().toUpperCase().slice(0, 30);
+      normalizedPlate = String(m.matriculaNormalizada || rawPlate).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 30);
+      if (rawPlate) out.matricula = rawPlate;
+      if (normalizedPlate) out.matriculaNormalizada = normalizedPlate;
+    }
     if (m.source) out.source = String(m.source).slice(0, 80);
     if (m.itemId) out.itemId = String(m.itemId).slice(0, 120);
     if (m.itemLabel) out.itemLabel = String(m.itemLabel).slice(0, 180);
@@ -17400,7 +17408,7 @@ html body .leg-card-new .copy-all-new{
       var a = m.asfDiagnostic;
       out.asfDiagnostic = {
         queryId: a.queryId ? String(a.queryId).slice(0, 120) : null,
-        matricula: a.matricula ? String(a.matricula).slice(0, 30) : null,
+        matricula: a.matricula ? String(a.matricula).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 30) : (event === 'vehicle_insurance_error' ? normalizedPlate || null : null),
         asfHttpStatus: a.asfHttpStatus == null ? null : Number(a.asfHttpStatus),
         asfDurationMs: a.asfDurationMs == null ? null : Number(a.asfDurationMs),
         asfMethod: a.asfMethod ? String(a.asfMethod).slice(0, 20) : null,
@@ -17440,7 +17448,7 @@ html body .leg-card-new .copy-all-new{
       event: String(event),
       module: module ? String(module).slice(0, 50) : null,
       occurredAt: new Date().toISOString(),
-      metadata: cleanMetadata(meta)
+      metadata: cleanMetadata(meta, event)
     };
     queue.push(item);
 
@@ -17448,7 +17456,7 @@ html body .leg-card-new .copy-all-new{
 
     // Eventos críticos (arranque, presença e consulta) não ficam dependentes
     // de uma janela de flush posterior. Tentamos enviar logo.
-    if (event === 'app_open' || event === 'heartbeat' || event === 'vehicle_lookup') {
+    if (event === 'app_open' || event === 'heartbeat' || event === 'vehicle_lookup' || event === 'vehicle_insurance_no' || event === 'vehicle_insurance_error') {
       flushNow();
     } else if (queue.length >= BATCH_SIZE) {
       flush();
@@ -17651,6 +17659,20 @@ html body .leg-card-new .copy-all-new{
     } catch (_) {}
   }
 
+  function insurancePlateMetadata(value, asfDiagnostic) {
+    var raw = String(value || (asfDiagnostic && asfDiagnostic.matricula) || '').trim().toUpperCase().slice(0, 30);
+    var normalized = raw.replace(/[^A-Z0-9]/g, '').slice(0, 30);
+    var diagnostic = asfDiagnostic && typeof asfDiagnostic === 'object'
+      ? Object.assign({}, asfDiagnostic)
+      : null;
+    if (diagnostic && normalized) diagnostic.matricula = normalized;
+    return {
+      matricula: raw || null,
+      matriculaNormalizada: normalized || null,
+      asfDiagnostic: diagnostic
+    };
+  }
+
   function installWrappers() {
     wrap('abrirConsultaPrincipal', function () {
       push('module_open', 'consulta');
@@ -17731,11 +17753,16 @@ html body .leg-card-new .copy-all-new{
     });
 
     wrap('renderSeguroNaoEncontrado', function (_mat, queryId, asfDiagnostic) {
-      push('vehicle_insurance_no', 'consulta', { queryId: queryId || window.__VERIX_CURRENT_QUERY_ID || null, asfDiagnostic: asfDiagnostic || null });
+      var meta = insurancePlateMetadata(_mat, asfDiagnostic);
+      meta.queryId = queryId || window.__VERIX_CURRENT_QUERY_ID || null;
+      push('vehicle_insurance_no', 'consulta', meta);
     });
 
     wrap('mostrarSeguroErro', function (_msg, _mat, _diag, queryId, asfDiagnostic) {
-      push('vehicle_insurance_error', 'consulta', { queryId: queryId || window.__VERIX_CURRENT_QUERY_ID || null, asfDiagnostic: asfDiagnostic || null, asfUserMessage: _msg || null });
+      var meta = insurancePlateMetadata(_mat, asfDiagnostic);
+      meta.queryId = queryId || window.__VERIX_CURRENT_QUERY_ID || null;
+      meta.asfUserMessage = _msg || null;
+      push('vehicle_insurance_error', 'consulta', meta);
     });
 
     wrap('consultarSeguroASF', function (matricula) {
