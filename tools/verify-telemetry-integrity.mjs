@@ -69,7 +69,7 @@ assert.match(presenceMigration, /event IN \('app_open','heartbeat','session_clos
 assert.match(presenceMigration, /last_close IS NULL OR last_presence > last_close/, "a later close event must remove a session from the active count");
 assert.ok(admin.includes("Sessões VÉRIX com browser aberto."), "Ativos agora must describe browser sessions, not installations");
 
-const hourlyMigration = fs.readFileSync("supabase/migrations/20261009053000_hourly_consultations_and_presence.sql", "utf8");
+const hourlyMigration = fs.readFileSync("supabase/migrations/20261009051204_hourly_consultations_and_presence.sql", "utf8");
 assert.match(hourlyMigration, /generate_series\(0,23\)/, "hourly chart must include all 24 hours, including zero-activity hours");
 assert.match(hourlyMigration, /count\(DISTINCT e\.query_id\) FILTER/, "hourly consultation count must deduplicate query IDs");
 assert.match(hourlyMigration, /e\.event='vehicle_lookup'/, "hourly consultations must count actual lookup starts");
