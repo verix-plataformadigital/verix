@@ -1703,10 +1703,16 @@ function submitConjunto(event) {
     }
   }
 
+  function anunciarEstadoConsultaASF(mensagem) {
+    var el = document.getElementById('seguroResultAnnouncement');
+    if (el) el.textContent = String(mensagem || '');
+  }
+
   function mostrarSeguroLoading(matricula, extra) {
     var box = document.getElementById('seguroResult');
     if (!box) return;
     var matShow = formatarMatriculaDisplay(matricula || '');
+    anunciarEstadoConsultaASF('A consultar o serviço ASF para a matrícula ' + (matShow || 'indicada') + '.');
     box.innerHTML = ''
       + '<div class="asf-app asf-app-wait">'
       +   '<div class="asf-app-plate">'
@@ -1740,6 +1746,7 @@ function submitConjunto(event) {
     if (!box) return;
     n = n || {};
     var matShow = formatarMatriculaDisplay(matricula);
+    anunciarEstadoConsultaASF('Consulta ASF concluída: foi encontrado registo de seguro para a matrícula ' + (matShow || 'consultada') + '.');
     var entity = valorCampo(n, ['entity', 'insurer', 'insuranceCompany'], '—');
     var policy = valorCampo(n, ['policy', 'policyNumber'], '—');
     var ini = formatarDataPT(valorCampo(n, ['startDate', 'validFrom'], ''));
@@ -1783,6 +1790,7 @@ function submitConjunto(event) {
     var box = document.getElementById('seguroResult');
     if (!box) return;
     var matShow = formatarMatriculaDisplay(matricula);
+    anunciarEstadoConsultaASF('Consulta ASF concluída. Não foi encontrado registo de seguro para a matrícula ' + (matShow || 'consultada') + '; confirme pelos meios oficiais.');
     box.innerHTML = ''
       + '<div class="asf-app asf-app-no">'
       +   '<div class="asf-app-plate">'
@@ -1805,6 +1813,7 @@ function submitConjunto(event) {
     var box = document.getElementById('seguroResult');
     if (!box) return;
     var matShow = formatarMatriculaDisplay(matricula);
+    anunciarEstadoConsultaASF('Consulta ASF inconclusiva para a matrícula ' + (matShow || 'consultada') + '. Não interpretar como ausência de seguro.');
     box.innerHTML = ''
       + '<div class="asf-app asf-app-warn">'
       +   '<div class="asf-app-plate">'
@@ -6271,7 +6280,7 @@ html body #asfRateWidget .asf-rate-sub[data-window-state="ready"]{
 <button id="consultationBackBtn" class="consultation-back-btn" type="button" onclick="mostrarMenuPrincipal()" aria-label="Voltar">←</button>
 <div class="main"> <section class="panel"><div class="head red"><span class="head-title">INSPEÇÃO TÉCNICA</span><span class="head-tag">IMT</span></div><div class="panel-body"><div class="corner tl"></div><div class="corner br"></div><div class="scan"></div><div id="veiculoLoading" class="loading-overlay" style="display:none"><div class="spinner"></div>A CARREGAR CONSULTA<div><small>IMT • ACESSO À REDE RNSI</small></div></div><iframe id="veiculoFrame"></iframe></div></section> <section class="panel verix-livrete-panel"><div class="head green"><span class="head-title">LIVRETE / VEÍCULO</span><span class="head-tag">IMT</span></div><div class="panel-body"><div class="corner tl"></div><div class="corner br"></div><div class="scan"></div><div id="reboqueLoading" class="loading-overlay" style="display:none"><div class="spinner"></div>A CARREGAR CONSULTA<div><small>IMT • ACESSO À REDE RNSI</small></div></div><iframe id="reboqueFrame"></iframe></div></section> <section class="panel insurance"><div class="head red"><span class="head-title">SEGURO AUTO</span><span class="head-tag">ASF</span></div><div id="asfRateWidget" class="asf-rate-widget" aria-label="Controlo de consultas ASF">
 <div class="asf-rate-label"><span class="asf-rate-dot"></span><span>CANAL ASF</span></div><div class="asf-rate-center"><div class="asf-rate-main" id="asfRateUsage">SEM QUOTA LOCAL</div><div class="asf-rate-sub" id="asfRateWindowText" data-window-state="ready">PESQUISA DISPONÍVEL</div></div><div class="asf-rate-countdown" id="asfRateCountdown" data-state="ready" title="Sem limite local VÉRIX">LIVRE</div>
-</div><div id="seguroResult" class="insurance-body"><div class="asf-app asf-app-wait"><div class="asf-status-card wait"><div class="asf-status-glow"></div><div class="asf-status-icon"><span style="font-size:14px;letter-spacing:1px">ASF</span></div><div class="asf-status-title" style="font-size:16px">Seguro automóvel</div><div class="asf-status-sub">Introduza a matrícula e carregue em CONSULTAR</div></div><div class="asf-actions"><button type="button" class="aux-btn secondary" onclick="verificarSeguro()">Consulta oficial ASF</button></div></div></div></section> <div class="verix-livrete-warning" role="note" aria-label="Aviso sobre a situação do veículo"><span class="verix-warning-icon">⚠</span><span><strong>ATENÇÃO:</strong> Verifica Sempre a Situação do Veículo (Regular / Apreendido)</span></div>
+</div><div id="seguroResult" class="insurance-body"><div class="asf-app asf-app-wait"><div class="asf-status-card wait"><div class="asf-status-glow"></div><div class="asf-status-icon"><span style="font-size:14px;letter-spacing:1px">ASF</span></div><div class="asf-status-title" style="font-size:16px">Seguro automóvel</div><div class="asf-status-sub">Introduza a matrícula e carregue em CONSULTAR</div></div><div class="asf-actions"><button type="button" class="aux-btn secondary" onclick="verificarSeguro()">Consulta oficial ASF</button></div></div></div></section> <div id="seguroResultAnnouncement" role="status" aria-live="polite" aria-atomic="true" style="position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0"></div> <div class="verix-livrete-warning" role="note" aria-label="Aviso sobre a situação do veículo"><span class="verix-warning-icon">⚠</span><span><strong>ATENÇÃO:</strong> Verifica Sempre a Situação do Veículo (Regular / Apreendido)</span></div>
 </div>
 <div class="consulta-history-bottom-wrap"><button type="button" class="consulta-history-bottom" onclick="abrirHistorico()"><span class="consulta-history-bottom-icon">◷</span> HISTÓRICO DE CONSULTAS</button></div>
 <div class="bottom"><div class="bottom-left"></div><div class="bottom-right"><div class="credit"><strong></strong><br><br></div></div></div>
