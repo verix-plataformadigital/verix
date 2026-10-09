@@ -6,6 +6,8 @@ on:
       - "supabase/migrations/**"
       - "admin_v2.html"
       - "tools/verify-telemetry-integrity.mjs"
+      - "verix-app.html"
+      - "verix-app.html"
   push:
     branches:
       - "fix/telemetry-integrity-*"
