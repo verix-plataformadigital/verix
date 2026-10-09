@@ -737,7 +737,7 @@ function renderInsights(d){
  $('insightNotes').innerHTML='<div class="explain"><strong>Leitura responsável:</strong> estes indicadores descrevem eventos agregados no período e dependem da cobertura da telemetria. Uma média, concentração ou sequência observada não permite inferir causa nem identificar uma operação individual. Os padrões de Cinemómetro são heurísticas estatísticas, não prova de irregularidade.</div>';
 }
 function renderSystem(d){
- const life=d.lifetime||{},tel=d.analytics?.telemetry||{},o=d.analytics?.overview||{},quality=d.analytics?.query_quality||{};
+ const life=d.lifetime||{},tel=d.analytics?.telemetry||{},o=d.analytics?.overview||{},quality=d.analytics?.query_quality||{},sessionQuality=d.analytics?.usage?.sessions?.['30d']||{};
  const partial=Object.keys(d.errors||{}).length>0;
  $('systemCards').innerHTML=
   card('BACKEND',partial?'PARCIAL':'ONLINE',partial?'Alguns dados não ficaram disponíveis.':'Última atualização concluída.',partial?'amber':'green')+
@@ -757,7 +757,7 @@ function renderSystem(d){
  $('systemHistory').innerHTML=
   '<div class="goodbox"><strong>O histórico está preservado.</strong><br>Nenhum reset administrativo apaga eventos. O reset de 24 H apenas muda o ponto de comparação; as janelas de 7 e 30 dias são móveis.</div>'+
   '<div style="margin-top:10px" class="kpi-strip">'+metric('Instalações conhecidas',num(life.installations_total))+metric('Sessões técnicas',num(life.sessions_total))+metric('Primeiro evento',datePT(life.first_event_at))+metric('Último evento',datePT(life.last_event_at))+'</div>'+
-  '<div style="margin-top:10px" class="kpi-strip">'+metric('Inícios de consulta · 30 d',num(quality.started_queries_30d))+metric('Inícios inferidos',num(quality.inferred_starts_30d))+metric('Terminais órfãos',num(quality.orphan_terminal_queries_30d))+metric('Resultados contraditórios',num(quality.conflicting_terminal_queries_30d))+metric('Finais duplicados',num(quality.duplicate_terminal_events_30d))+'</div>'+
+  '<div style="margin-top:10px" class="kpi-strip">'+metric('Inícios de consulta · 30 d',num(quality.started_queries_30d))+metric('Inícios inferidos',num(quality.inferred_starts_30d))+metric('Terminais órfãos',num(quality.orphan_terminal_queries_30d))+metric('Resultados contraditórios',num(quality.conflicting_terminal_queries_30d))+metric('Finais duplicados',num(quality.duplicate_terminal_events_30d))+metric('Sessões com timestamps divergentes',num(sessionQuality.parent_timestamp_mismatch_30d))+'</div>'+
   ((quality.by_version||[]).length?'<div style="margin-top:10px">'+table(['VERSÃO','INÍCIOS','CONFIRMADOS','INFERIDOS','FINAIS VÁLIDOS','ERROS FINAIS','PENDENTES','CONFLITOS'],quality.by_version.map(v=>'<tr>'+td('<strong>'+esc(v.app_version||'Unknown')+'</strong>')+td(fmt(v.started))+td(fmt(v.confirmed_starts))+td(fmt(v.inferred_starts))+td(fmt(v.clean_finals))+td(fmt(v.clean_error_results))+td(fmt(v.pending))+td(fmt(v.conflicting))+'</tr>'))+'</div>':'');
  const rs=d.reset24hAt;$('reset24hStatus').textContent='Último reset: '+datePT(rs);
 }
