@@ -322,3 +322,34 @@ body.vx-mobile-mode .vx-full-mobile{width:100%!important;max-width:100%!importan
     transition-duration:.01ms!important;
   }
 }
+
+/* Mobile hotfix: keep the registration search and consultation workspace visible. */
+@media (max-width:767px){
+  body.vx-mobile-mode .command .searchbar{
+    display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
+    position:relative!important;
+    inset:auto!important;
+    transform:none!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    height:auto!important;
+    margin:8px 0 0!important;
+  }
+  body.vx-mobile-mode .command .searchbar form{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    width:100%!important;
+  }
+  body.vx-mobile-mode .main{
+    display:grid!important;
+    visibility:visible!important;
+    opacity:1!important;
+  }
+  body.vx-mobile-mode .main .panel{
+    visibility:visible!important;
+    opacity:1!important;
+  }
+}
