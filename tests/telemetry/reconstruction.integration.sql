@@ -18,6 +18,10 @@ VALUES
  ('q1-imt-inspection-1','A','q-insured','imt_loaded',now()-interval '117 minutes','1.5','{"source":"inspecao","resultConfirmed":true}',now()-interval '10 minutes'),
  ('q1-imt-inspection-2','A','q-insured','imt_loaded',now()-interval '116 minutes 50 seconds','1.5','{"source":"inspecao","resultConfirmed":true}',now()-interval '10 minutes'),
  ('q1-imt-livrete','A','q-insured','imt_loaded',now()-interval '116 minutes','1.5','{"source":"livrete","resultConfirmed":true}',now()-interval '10 minutes'),
+ ('q1-nav-ins-start','A','q-insured','imt_navigation_start',now()-interval '115 minutes','1.5','{"source":"inspecao","navigationOutcome":"started","durationMs":0}',now()-interval '10 minutes'),
+ ('q1-nav-ins-loaded','A','q-insured','imt_navigation_loaded',now()-interval '114 minutes','1.5','{"source":"inspecao","navigationOutcome":"cross_origin_unverified","durationMs":900}',now()-interval '10 minutes'),
+ ('q1-nav-liv-start','A','q-insured','imt_navigation_start',now()-interval '113 minutes','1.5','{"source":"livrete","navigationOutcome":"started","durationMs":0}',now()-interval '10 minutes'),
+ ('q1-nav-liv-error','A','q-insured','imt_navigation_error',now()-interval '112 minutes','1.5','{"source":"livrete","navigationOutcome":"timeout","durationMs":30000}',now()-interval '10 minutes'),
 
  ('q2-start','B','q-uninsured','vehicle_lookup',now()-interval '90 minutes','1.5','{}',now()-interval '10 minutes'),
  ('q2-pending','B','q-uninsured','vehicle_insurance_pending',now()-interval '89 minutes','1.5','{}',now()-interval '10 minutes'),
@@ -85,6 +89,23 @@ BEGIN
   END IF;
   IF (t->>'imt_duplicate_query_source_groups_30d')::int <> 1 THEN
     RAISE EXCEPTION 'IMT duplicate source groups counter failed: %', t;
+  END IF;
+  IF (t->>'imt_navigation_starts_30d')::int <> 2 OR
+     (t->>'imt_navigation_loaded_30d')::int <> 1 OR
+     (t->>'imt_navigation_errors_30d')::int <> 1 THEN
+    RAISE EXCEPTION 'IMT navigation lifecycle counters failed: %', t;
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM jsonb_array_elements(t->'imt_navigation_by_source_30d') x
+    WHERE x->>'source'='inspecao' AND (x->>'started')::int=1 AND (x->>'navigation_loaded')::int=1 AND (x->>'errors')::int=0
+  ) THEN
+    RAISE EXCEPTION 'inspection IMT source breakdown failed: %', t->'imt_navigation_by_source_30d';
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM jsonb_array_elements(t->'imt_navigation_by_source_30d') x
+    WHERE x->>'source'='livrete' AND (x->>'started')::int=1 AND (x->>'navigation_loaded')::int=0 AND (x->>'errors')::int=1
+  ) THEN
+    RAISE EXCEPTION 'livrete IMT source breakdown failed: %', t->'imt_navigation_by_source_30d';
   END IF;
   IF (a->'overview'->>'online_now')::int <> 1 THEN
     RAISE EXCEPTION 'active installations must use server receipt time, got %', a->'overview'->>'online_now';
