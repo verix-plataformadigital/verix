@@ -39,44 +39,32 @@ function operationScope(event) {
  * speed value and a short time window. Unmatched calculations remain valid
  * observations; a global preference for speed-entry events loses them.
  */
-export function canonicalSpeedMeasurements(events, pairingWindowMs = 3000) {
+export function canonicalSpeedMeasurements(events) {
   const rows = (Array.isArray(events) ? events : [])
-    .filter((event) => SPEED_EVENTS.has(event?.event) && speedOf(event) !== null)
+    .filter((event) => event?.event === "cinemometer_calculation" && speedOf(event) !== null)
     .map((event, index) => ({
       event,
       index,
       at: timestampOf(event),
       speed: speedOf(event),
-      scope: operationScope(event),
+      operationId: String(event?.metadata?.cin?.operation_id ?? "").trim(),
+      installationId: String(event?.installation_id ?? "").trim(),
+      sessionId: String(event?.session_id ?? "").trim(),
     }))
     .sort((a, b) => (a.at ?? 0) - (b.at ?? 0) || a.index - b.index);
 
-  const entries = rows.filter((row) => row.event.event === "cinemometer_speed_entry");
-  const calculations = rows.filter((row) => row.event.event === "cinemometer_calculation");
-  const pairedCalculations = new Set();
-  const usedEntries = new Set();
-
-  for (const calc of calculations) {
-    if (!calc.scope || calc.at === null) continue;
-    let nearest = null;
-    let nearestDistance = pairingWindowMs + 1;
-    for (let i = 0; i < entries.length; i += 1) {
-      const entry = entries[i];
-      if (usedEntries.has(i) || entry.scope !== calc.scope || entry.speed !== calc.speed || entry.at === null) continue;
-      const distance = Math.abs(entry.at - calc.at);
-      if (distance <= pairingWindowMs && distance < nearestDistance) {
-        nearest = i;
-        nearestDistance = distance;
-      }
-    }
-    if (nearest !== null) {
-      usedEntries.add(nearest);
-      pairedCalculations.add(calc.index);
-    }
-  }
-
+  // Repeated recalculations with the same stable operation ID and speed are
+  // one measurement. Without a complete stable scope, preserve each event
+  // rather than guessing that two separate operations are duplicates.
+  const seenOperations = new Set();
   return rows
-    .filter((row) => row.event.event === "cinemometer_speed_entry" || !pairedCalculations.has(row.index))
+    .filter((row) => {
+      if (!row.operationId || !row.installationId || !row.sessionId) return true;
+      const key = [row.installationId, row.sessionId, row.operationId, row.speed].join("|");
+      if (seenOperations.has(key)) return false;
+      seenOperations.add(key);
+      return true;
+    })
     .map((row) => row.event)
     .sort((a, b) => (timestampOf(a) ?? 0) - (timestampOf(b) ?? 0));
 }
