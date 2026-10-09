@@ -17544,7 +17544,7 @@ html body .leg-card-new .copy-all-new{
   function cinTelemetryNumber(id, min, max) {
     var raw = cinTelemetryField(id);
     if (raw == null) return null;
-    var value = Number(raw.replace(/\\s/g, '').replace(',', '.'));
+    var value = Number(raw.replace(/\s/g, '').replace(',', '.'));
     return Number.isFinite(value) && value >= min && value <= max ? value : null;
   }
 
