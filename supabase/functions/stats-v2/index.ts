@@ -202,30 +202,15 @@ function sessionPattern(rows){
 }
 
 async function loadErrorInvestigation24h(now:string){
-  const qs = new URLSearchParams();
-  qs.set("select","occurred_at,event,installation_id,query_id,app_version,browser,metadata");
-  qs.set("event","eq.vehicle_insurance_error");
-  qs.set("occurred_at","gte."+new Date(Date.now()-24*60*60*1000).toISOString());
-  qs.set("order","occurred_at.asc");
-  qs.set("limit","1000");
-  const rr=await fetch(supabaseUrl+"/rest/v1/verix2_events?"+qs.toString(),{headers:{apikey:serviceKey,Authorization:"Bearer "+serviceKey}});
-  const tt=await rr.text();
-  if(!rr.ok)throw new Error("error_investigation:"+tt);
-  const rows=tt?JSON.parse(tt):[];
-  const app15=rows.filter((e:any)=>String(e?.app_version||"")==="1.5");
-  const shortId=(v:any)=>{const s=String(v||"");return s.length>14?s.slice(0,8)+"…"+s.slice(-4):s;};
-  const byHash=new Map<string,number>(), byType=new Map<string,number>(), byInstall=new Map<string,number>(), bursts=new Map<string,number>();
-  for(const e of app15){
-    const a=e?.metadata?.asfDiagnostic||{}, hash=String(a.asfResponseHash||"sem-hash"), type=String(a.asfErrorType||"unknown"), inst=String(e?.installation_id||"unknown");
-    byHash.set(hash,(byHash.get(hash)||0)+1); byType.set(type,(byType.get(type)||0)+1); byInstall.set(inst,(byInstall.get(inst)||0)+1);
-    const t=new Date(e.occurred_at).getTime(); if(Number.isFinite(t)){const k=new Date(Math.floor(t/300000)*300000).toISOString();bursts.set(k,(bursts.get(k)||0)+1);}
-  }
-  const hashRows=[...byHash.entries()].map(([hash,count])=>({hash,count})).sort((a,b)=>b.count-a.count).slice(0,10);
-  const typeRows=[...byType.entries()].map(([type,count])=>({type,count})).sort((a,b)=>b.count-a.count);
-  const installRows=[...byInstall.entries()].map(([installation_id,count])=>({installation_id:shortId(installation_id),count})).sort((a,b)=>b.count-a.count).slice(0,10);
-  const burstRows=[...bursts.entries()].map(([start,count])=>({start,count})).sort((a,b)=>b.count-a.count).slice(0,12);
-  const recent=app15.slice(-12).reverse().map((e:any)=>{const a=e?.metadata?.asfDiagnostic||{};return {occurred_at:e?.occurred_at||null,installation_id:shortId(e?.installation_id),query_id:shortId(e?.query_id),browser:e?.browser||"Unknown",error_type:a.asfErrorType||"unknown",transport:a.asfTransport||null,relay_latency_ms:a.asfRelayLatencyMs??null,http_status:a.asfHttpStatus??null,duration_ms:a.asfDurationMs??null,response_hash:a.asfResponseHash||null,response_class:a.asfResponseClass||null,graphql_error_count:a.asfGraphqlErrorCount??null,response_bytes:a.asfResponseBytes??null,parse_path:a.asfParsePath||null,build_id:e?.metadata?.build_id||a.build_id||null};});
-  return {generated_at:now,errors_24h:rows.length,app15_errors:app15.length,app15_installations:new Set(app15.map((e:any)=>String(e?.installation_id||""))).size,app15_plates:new Set(app15.map((e:any)=>String(e?.metadata?.asfDiagnostic?.matricula||"")).filter(Boolean)).size,app15_hashes:byHash.size,app15_types:typeRows,app15_hashes_top:hashRows,app15_installations_top:installRows,app15_bursts_5m:burstRows,latest_app15:recent};
+  // Counts are aggregated in PostgreSQL, so a PostgREST 1,000-row cap cannot
+  // undercount a busy incident window. Only the recent diagnostic samples are limited.
+  const result = await rpc("verix2_error_investigation", {
+    p_now: now,
+    p_app_version: "1.5",
+    p_recent_limit: 25
+  });
+  if(!result || typeof result !== "object") throw new Error("error_investigation:invalid_response");
+  return result;
 }
 async function loadLifetime(now:string){
   async function resetAllAt(){
