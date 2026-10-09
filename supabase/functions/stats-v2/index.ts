@@ -223,6 +223,20 @@ async function windowStartAfterReset(hours:number): Promise<string> {
   const rolling=Date.now()-hours*60*60*1000;
   return new Date(Math.max(rolling,Number.isFinite(baseline)?baseline:0)).toISOString();
 }
+async function loadInsuranceNoCases(now:string){
+  const qs = new URLSearchParams();
+  qs.set("select","event_id,matricula,occurred_at,expires_at");
+  qs.set("expires_at","gt."+now);
+  qs.set("order","occurred_at.desc");
+  qs.set("limit","1000");
+  const response = await fetch(supabaseUrl+"/rest/v1/verix_insurance_no_cases?"+qs.toString(),{
+    headers:{apikey:serviceKey,Authorization:"Bearer "+serviceKey}
+  });
+  const text = await response.text();
+  if(!response.ok) throw new Error("insurance_no_cases:"+text);
+  return text ? JSON.parse(text) : [];
+}
+
 async function loadErrorInvestigation24h(now:string){
   const qs = new URLSearchParams();
   qs.set("select","occurred_at,event,installation_id,query_id,app_version,browser,metadata");
@@ -387,6 +401,17 @@ Deno.serve(async (req) => {
   try {
     const url = new URL(req.url);
     const detail = url.searchParams.get("detail") || "";
+
+    // This plate list is only served after the admin token has been validated.
+    if(req.method==="GET" && detail==="insurance-no-cases") {
+      const now = new Date().toISOString();
+      try {
+        const cases = await loadInsuranceNoCases(now);
+        return json({ok:true,detail:"insurance-no-cases",generatedAt:now,cases},200,req);
+      } catch(error) {
+        return json({ok:false,error:"insurance_no_cases_failed"},500,req);
+      }
+    }
 
     // Heavy diagnostics are explicitly lazy-loaded by the Admin UI.
     if(req.method==="GET" && detail==="speed") {

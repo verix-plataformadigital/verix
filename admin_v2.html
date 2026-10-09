@@ -275,6 +275,14 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
         </div>
 
         <div class="panel" style="margin-top:12px">
+          <div class="panel-head"><h3>MATRÍCULAS COM RESULTADO “SEM REGISTO”</h3><span>RETENÇÃO DE 90 DIAS</span></div>
+          <div class="panel-body">
+            <p>Lista de matrículas cujo resultado da consulta à ASF foi “sem registo”, com data e hora da consulta. O resultado, por si só, não confirma a ausência de seguro.</p>
+            <div id="insuranceNoCases" class="table-wrap"><div class="empty">A carregar lista…</div></div>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top:12px">
           <details>
             <summary class="detail-summary">Ver detalhes técnicos da ASF</summary>
             <div class="details-body" id="insuranceTechnical"></div>
@@ -412,7 +420,7 @@ const REFRESH_MS=30000;
 
 let currentPeriod='24h',currentPage='dashboard',latestData=null,refreshTimer=null,dashboardBusy=false;
 const detailCache={speed:false,errors:false,system:false};
-const detailBusy={speed:false,errors:false,system:false};
+const detailBusy={speed:false,errors:false,system:false,insurance:false};
 
 const $=id=>document.getElementById(id);
 const fmt=v=>v==null||v===''||!Number.isFinite(Number(v))?'—':Number(v).toLocaleString('pt-PT');
@@ -433,11 +441,11 @@ function renderLoadingState(){
  cardHosts.forEach(id=>{const host=$(id);if(host)host.innerHTML=Array.from({length:id==='dashCards'?7:4},()=>'<div class="skeleton skeleton-card" aria-hidden="true"></div>').join('')});
  ['dashDaily','usageDaily'].forEach(id=>{const host=$(id);if(host)host.innerHTML='<div class="skeleton-chart" aria-hidden="true">'+Array.from({length:24},(_,i)=>'<span class="skeleton-chart-bar" style="height:'+(18+(i*17)%70)+'%"></span>').join('')+'</div>'});
  ['dashHours','usageHours'].forEach(id=>{const host=$(id);if(host)host.innerHTML='<div class="skeleton-grid" aria-hidden="true">'+Array.from({length:12},()=>'<span class="skeleton skeleton-chip"></span>').join('')+'</div>'});
- const panels=['dashModules','dashReading','dashFun','insuranceSummary','insurancePerformance','insuranceCompare','insuranceErrors','insurancePlates','speedDistribution','speedPatterns','speedModes','speedLimits','speedCodes','speedSessions','legItems','legActivity','usageModules','usageTransitions','errorTypes','errorBursts','errorReading','errorInstallations','errorSignatures','errorTechnical','systemCoverage','systemHistory','performanceQuality','insightModules','insightLegislation','insightSpeedDistribution','insightHours','insightNotes'];
+ const panels=['dashModules','dashReading','dashFun','insuranceSummary','insurancePerformance','insuranceCompare','insuranceErrors','insurancePlates','insuranceNoCases','speedDistribution','speedPatterns','speedModes','speedLimits','speedCodes','speedSessions','legItems','legActivity','usageModules','usageTransitions','errorTypes','errorBursts','errorReading','errorInstallations','errorSignatures','errorTechnical','systemCoverage','systemHistory','performanceQuality','insightModules','insightLegislation','insightSpeedDistribution','insightHours','insightNotes'];
  panels.forEach(id=>{const host=$(id);if(host)host.innerHTML='<div class="skeleton skeleton-panel" aria-hidden="true"></div><div class="skeleton skeleton-panel" aria-hidden="true"></div>'});
 }
 function renderLoadFailure(){
- const hosts=['dashCards','insuranceCards','speedCards','legCards','usageCards','errorCards','systemCards','performanceCards','insightCards','dashDaily','usageDaily','dashHours','usageHours','dashModules','dashReading','dashFun','insuranceSummary','insurancePerformance','insuranceCompare','insuranceErrors','insurancePlates','speedDistribution','speedPatterns','speedModes','speedLimits','speedCodes','speedSessions','legItems','legActivity','usageModules','usageTransitions','errorTypes','errorBursts','errorReading','errorInstallations','errorSignatures','errorTechnical','systemCoverage','systemHistory','performanceQuality','insightModules','insightLegislation','insightSpeedDistribution','insightHours','insightNotes'];
+ const hosts=['dashCards','insuranceCards','speedCards','legCards','usageCards','errorCards','systemCards','performanceCards','insightCards','dashDaily','usageDaily','dashHours','usageHours','dashModules','dashReading','dashFun','insuranceSummary','insurancePerformance','insuranceCompare','insuranceErrors','insurancePlates','insuranceNoCases','speedDistribution','speedPatterns','speedModes','speedLimits','speedCodes','speedSessions','legItems','legActivity','usageModules','usageTransitions','errorTypes','errorBursts','errorReading','errorInstallations','errorSignatures','errorTechnical','systemCoverage','systemHistory','performanceQuality','insightModules','insightLegislation','insightSpeedDistribution','insightHours','insightNotes'];
  hosts.forEach(id=>{const host=$(id);if(host&&host.querySelector('.skeleton,.skeleton-chart,.skeleton-grid'))host.innerHTML='<div class="empty">Os dados ainda não estão disponíveis.</div>'});
 }
 function wireDashboardDrilldowns(){
@@ -511,15 +519,16 @@ function detailEndpoint(kind){
 }
 async function ensurePageDetail(page){
   if(!latestData || !token()) return;
-  const kind=page==='speed'?'speed':page==='errors'?'errors':page==='system'?'system':'';
-  if(!kind || detailCache[kind] || detailBusy[kind]) return;
+  const kind=page==='insurance'?'insurance':page==='speed'?'speed':page==='errors'?'errors':page==='system'?'system':'';
+  if(!kind || (kind!=='insurance' && detailCache[kind]) || detailBusy[kind]) return;
   detailBusy[kind]=true;
   try{
-    const d=await request(detailEndpoint(kind));
+    const d=await request(detailEndpoint(kind==='insurance'?'insurance-no-cases':kind));
+    if(kind==='insurance') renderInsuranceNoCases(d.cases||[]);
     if(kind==='speed') latestData={...latestData,cinemometer:d.cinemometer||{}};
     if(kind==='errors') latestData={...latestData,investigation:d.investigation||{}};
     if(kind==='system') latestData={...latestData,lifetime:d.lifetime||{}};
-    detailCache[kind]=true;
+    if(kind!=='insurance') detailCache[kind]=true;
     if(kind==='speed') renderSpeed(latestData);
     if(kind==='errors') renderErrors(latestData);
     if(kind==='system') renderSystem(latestData);
@@ -561,6 +570,16 @@ function renderDashboard(d){
   metric('Cinemómetro médio',speed.avg_24h==null?'—':fmt(speed.avg_24h)+' km/h')+
   metric('Primeiro evento registado',datePT(life.first_event_at))+
   metric('Último evento registado',datePT(life.last_event_at));
+}
+function renderInsuranceNoCases(cases){
+ const host=$('insuranceNoCases');
+ if(!host)return;
+ const rows=Array.isArray(cases)?cases:[];
+ if(!rows.length){
+  host.innerHTML='<div class="empty">Ainda não há matrículas registadas. A lista começa a ser preenchida com novas consultas após a publicação desta funcionalidade.</div>';
+  return;
+ }
+ host.innerHTML=table(['MATRÍCULA','DATA E HORA DA CONSULTA'],rows.map(x=>'<tr>'+td('<strong>'+esc(x.matricula||'—')+'</strong>')+td(datePT(x.occurred_at))+'</tr>'));
 }
 function renderInsurance(d){
  const p=period(),a=d.analytics||{},yes=Number(p.insured||0),no=Number(p.uninsured||0),err=Number(p.errors||0),started=Number(p.started||0),fin=Number(p.finals||0),dec=yes+no;
