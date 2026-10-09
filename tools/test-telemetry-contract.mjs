@@ -9,8 +9,8 @@ const admin = read("../admin_v2.html");
 
 assert.match(migration, /CREATE OR REPLACE FUNCTION public\.verix2_ingest_events\(p_events jsonb\)/);
 assert.match(migration, /CREATE OR REPLACE FUNCTION public\.verix2_telemetry_metrics_v3\(p_now timestamptz DEFAULT now\(\)\)/);
-assert.match(migration, /p_now - interval '7 days' AS s7/);
-assert.match(migration, /p_now - interval '30 days' AS s30/);
+assert.match(migration, /p_now - interval ''7 days'' AS s7/);
+assert.match(migration, /p_now - interval ''30 days'' AS s30/);
 assert.match(migration, /terminal_rollup AS/);
 assert.match(migration, /query_finals AS/);
 assert.match(migration, /speed_measurements AS/);
