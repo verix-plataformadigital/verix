@@ -170,6 +170,53 @@ describe("VehicleModule history preference", () => {
     expect(telemetry.newQueryId).toHaveBeenCalledTimes(1);
   });
 
+  it("accepts a trailer-only query and keeps both history fields distinct", async () => {
+    const { root, history, asf, imtOpen } = createModule(true);
+    const trailer = root.querySelector<HTMLInputElement>("#vehicle-trailer");
+    const date = root.querySelector<HTMLInputElement>('input[type="date"]');
+    const form = root.querySelector<HTMLFormElement>(".vehicle-query-form");
+    if (!trailer || !date || !form) return;
+
+    trailer.value = "VC-12-34";
+    const expectedAsfDate = date.value.replaceAll("-", "/");
+    form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(imtOpen).toHaveBeenCalledTimes(2);
+    expect(imtOpen).toHaveBeenNthCalledWith(
+      1,
+      "http://consultapsp.imtt.external.rnsi.local/veiculos/consulta_inspecao.php?Matricula=VC1234"
+    );
+    expect(imtOpen).toHaveBeenNthCalledWith(
+      2,
+      "http://consultapsp.imtt.external.rnsi.local/veiculos/consulta_livrete.php?Matricula=VC1234"
+    );
+    expect(asf.query).toHaveBeenCalledWith({
+      matricula: "VC1234",
+      date: expectedAsfDate
+    });
+    expect(history.add).toHaveBeenCalledWith("", "VC1234", "q-test", expectedAsfDate);
+    expect(history.updateInsurance).toHaveBeenCalledWith("q-test", "", "nao");
+  });
+
+  it("rejects a malformed optional trailer instead of querying an incomplete target", () => {
+    const { root, asf, imtOpen } = createModule(true);
+    const plate = root.querySelector<HTMLInputElement>("#vehicle-plate");
+    const trailer = root.querySelector<HTMLInputElement>("#vehicle-trailer");
+    const form = root.querySelector<HTMLFormElement>(".vehicle-query-form");
+    if (!plate || !trailer || !form) return;
+
+    plate.value = "12-AB-34";
+    trailer.value = "BAD";
+    form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+
+    expect(asf.query).not.toHaveBeenCalled();
+    expect(imtOpen).not.toHaveBeenCalled();
+    expect(root.querySelector(".vehicle-local-notice")?.textContent).toContain(
+      "Introduza uma matrícula válida"
+    );
+  });
+
   it("uses one consistent fallback date when the ASF date control is empty", async () => {
     const { root, history, asf } = createModule(true);
     const plate = root.querySelector<HTMLInputElement>("#vehicle-plate");
