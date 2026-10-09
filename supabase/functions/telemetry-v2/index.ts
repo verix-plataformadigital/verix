@@ -66,7 +66,8 @@ const allowedEvents = new Set([
   "app_open","heartbeat","vehicle_lookup",
   "vehicle_insurance_pending","vehicle_insurance_yes",
   "vehicle_insurance_no","vehicle_insurance_error",
-  "imt_loaded","module_open","history_open","history_reopen",
+  "imt_loaded","imt_navigation_start","imt_navigation_loaded","imt_navigation_error",
+  "module_open","history_open","history_reopen",
   "external_tool_open","alcohol_lookup",
   "cinemometer_operation_start","cinemometer_speed_entry","cinemometer_calculation",
   "cinemometer_copy_code","cinemometer_copy_text","cinemometer_copy_location",
@@ -99,6 +100,8 @@ function cleanMetadata(value: unknown): Record<string, unknown> {
 
   if (m.queryId) out.queryId = cleanText(m.queryId, 120);
   if (m.source) out.source = cleanText(m.source, 80);
+  if (m.navigationOutcome) out.navigationOutcome = cleanText(m.navigationOutcome, 50);
+  if (finiteNumber(m.durationMs) !== null && finiteNumber(m.durationMs)! >= 0) out.durationMs = Math.round(finiteNumber(m.durationMs)!);
   if (m.itemId) out.itemId = cleanText(m.itemId, 120);
   if (m.itemLabel) out.itemLabel = cleanText(m.itemLabel, 180);
   if (m.copyType) out.copyType = cleanText(m.copyType, 40);
@@ -330,8 +333,11 @@ Deno.serve(async (req: Request) => {
     }
 
     const body = await req.json().catch(() => null);
+    const received = Array.isArray(body?.events) ? body.events.length : 0;
+    // Server cap protects the endpoint, but every excess event must be reported
+    // as rejected so the client never mistakes a truncated batch for full delivery.
     const input = Array.isArray(body?.events) ? body.events.slice(0, 100) : [];
-    if (!input.length) return json({ ok: true, accepted: 0, rejected: 0 });
+    if (!input.length) return json({ ok: true, accepted: 0, inserted: 0, duplicates: 0, rejected: received, received });
 
     const events: any[] = [];
 
@@ -367,27 +373,37 @@ Deno.serve(async (req: Request) => {
         // Uma consulta precisa de instalação, query e versão; sessão/tab podem faltar.
         if (!queryId || !appVersion) continue;
 
-        const d = x?.occurredAt ? new Date(x.occurredAt) : new Date();
-        const now = Date.now();
-        const ts = d.getTime();
-        if (!Number.isFinite(ts) || ts < now - 24 * 60 * 60 * 1000 || ts > now + 5 * 60 * 1000) continue;
+        // Do not drop an old lookup independently of its pending/final events.
+        // Offline queues can legitimately arrive more than 24 hours later; those
+        // events must remain correlated by query_id. Client timestamps are bounded
+        // against the server clock below before storage.
 
-        const installationKey = await hmacHex(`installation:${installationId}`);
-        if (!(await consumeRate(`vehicle:${installationKey}`, 30))) continue;
       }
 
       if (event === "imt_loaded") {
+        // A confirmed record must explicitly state that IMT result evidence exists.
         if (!queryId || !appVersion || metadata.resultConfirmed !== true) continue;
+      }
+
+      if (event === "imt_navigation_start" || event === "imt_navigation_loaded" || event === "imt_navigation_error") {
+        if (!queryId || !appVersion) continue;
+        if (!["inspecao", "livrete"].includes(String(metadata.source || ""))) continue;
+        if (event === "imt_navigation_loaded" && !metadata.navigationOutcome) continue;
+        if (event === "imt_navigation_error" && !metadata.navigationOutcome) continue;
       }
 
       if (event === "vehicle_insurance_yes" || event === "vehicle_insurance_no" || event === "vehicle_insurance_error") {
         if (!queryId || !appVersion) continue;
       }
 
-      const occurredAtDate = x?.occurredAt ? new Date(x.occurredAt) : new Date();
-      const occurredAt = Number.isFinite(occurredAtDate.getTime())
-        ? occurredAtDate.toISOString()
-        : new Date().toISOString();
+      const receivedAt = new Date();
+      const occurredAtDate = x?.occurredAt ? new Date(x.occurredAt) : receivedAt;
+      const clientTime = occurredAtDate.getTime();
+      // Preserve valid historical occurrence times for offline replay, but never
+      // allow a fast/misconfigured client clock to push events into the future.
+      const occurredAt = !Number.isFinite(clientTime) || clientTime > receivedAt.getTime()
+        ? receivedAt.toISOString()
+        : occurredAtDate.toISOString();
 
       events.push({
         event_id: cleanText(x?.eventId, 120) || crypto.randomUUID(),
@@ -405,7 +421,13 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    if (!events.length) return json({ ok: true, accepted: 0, rejected: input.length });
+    // An event envelope is valid after schema/allowlist checks and required identity
+    // validation. This count is stable and independent of business deduplication.
+    const validEventCount = events.length;
+    const rejectedCount = received - validEventCount;
+    if (!events.length) {
+      return json({ ok: true, accepted: 0, inserted: 0, duplicates: 0, rejected: received, received });
+    }
 
     // Impede nova duplicação do mesmo query_id. O índice SQL reforça isto,
     // mas filtramos antes do upsert para evitar conflitos que o PostgREST
@@ -454,8 +476,14 @@ Deno.serve(async (req: Request) => {
       return true;
     });
 
+    const businessDuplicates = events.length - dedupedEvents.length;
     events.splice(0, events.length, ...dedupedEvents);
-    if (!events.length) return json({ ok: true, accepted: 0, rejected: input.length });
+    if (!events.length) {
+      return json({
+        ok: true, accepted: validEventCount, inserted: 0,
+        duplicates: businessDuplicates, rejected: rejectedCount, received
+      });
+    }
 
     const installations = new Map<string, any>();
     const sessions = new Map<string, any>();
@@ -505,23 +533,40 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    if (installations.size) {
-      const { error } = await db.from("verix2_installations").upsert([...installations.values()], { onConflict: "installation_id" });
-      if (error) throw new Error(`installations:${error.message}`);
+    // Persist the canonical event rows before advancing presence.
+    // This prevents a failed event write from leaving last_seen ahead of reality.
+    // Parent rows and event rows are persisted atomically by PostgreSQL. A successful
+    // HTTP response is returned only after the transaction has committed.
+    const { data: ingestion, error: ingestionError } = await db.rpc(
+      "verix2_ingest_telemetry",
+      {
+        p_events: events,
+        p_installations: [...installations.values()],
+        p_sessions: [...sessions.values()]
+      }
+    );
+    if (ingestionError) throw new Error(`ingest:${ingestionError.message}`);
+
+    const inserted = ingestion?.events_inserted;
+    if (
+      typeof inserted !== "number" ||
+      !Number.isSafeInteger(inserted) ||
+      inserted < 0 ||
+      inserted > events.length
+    ) {
+      throw new Error("ingest:invalid_response");
     }
 
-    if (sessions.size) {
-      const { error } = await db.from("verix2_sessions").upsert([...sessions.values()], { onConflict: "session_id" });
-      if (error) throw new Error(`sessions:${error.message}`);
-    }
-
-    const { error: eventsError } = await db.from("verix2_events").upsert(events, {
-      onConflict: "event_id",
-      ignoreDuplicates: true
+    const eventIdDuplicates = events.length - inserted;
+    return json({
+      ok: true,
+      accepted: validEventCount,
+      inserted,
+      duplicates: businessDuplicates + eventIdDuplicates,
+      deduplicated: businessDuplicates,
+      rejected: rejectedCount,
+      received
     });
-    if (eventsError) throw new Error(`events:${eventsError.message}`);
-
-    return json({ ok: true, accepted: events.length, rejected: input.length - events.length });
   } catch (error) {
     console.error("telemetry_write_failed", error);
     return json({ ok: false, error: "telemetry_write_failed" }, 500);
