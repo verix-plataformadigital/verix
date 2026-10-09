@@ -486,8 +486,7 @@ SELECT jsonb_build_object(
   'telemetry',(SELECT data FROM telemetry),
   'events',(SELECT data FROM top_events)
 );
-$function$
-
+$function$;
 
 -- Server-side activity timestamps fix client-clock skew for presence calculations.
 CREATE INDEX IF NOT EXISTS verix2_events_created_at_install_idx
