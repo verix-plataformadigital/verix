@@ -18,6 +18,7 @@ assert.match(migration, /SECURITY INVOKER/);
 assert.match(migration, /verix2_ingest_telemetry\(jsonb, jsonb, jsonb\)/);
 assert.match(migration, /WHERE event='vehicle_lookup' AND query_id IS NOT NULL/);
 assert.doesNotMatch(migration, /SELECT DISTINCT ON\(query_id\)/);
+assert.equal((migration.match(/NOT EXISTS\(SELECT 1 FROM public\.verix2_events lookup_event WHERE lookup_event\.event='vehicle_lookup' AND lookup_event\.query_id=fc\.query_id\)/g) || []).length, 3, "orphan finals must be checked against all recorded lookups, not only the 30-day analytics slice");
 for (const metric of ["'pending'","'incomplete'","'contradictory'","'duplicate_finals'","'orphan_finals'"]) assert.ok(migration.includes(metric), "missing SQL metric "+metric);
 for (const label of ["Incompletas","Contraditórias","Finais duplicados","Finais órfãos","INSTALAÇÕES"]) assert.ok(admin.includes(label), "missing Admin label "+label);
 console.log("PASS: atomic receipt, no direct multi-table writes, accurate query-state metrics, and Admin labels.");
