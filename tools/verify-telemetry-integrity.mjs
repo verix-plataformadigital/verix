@@ -113,7 +113,10 @@ assert.match(presenceMigration, /last_close IS NULL OR last_presence > last_clos
 assert.ok(admin.includes("Sessões VÉRIX com browser aberto."), "Ativos agora must describe browser sessions, not installations");
 assert.match(errorPlateCountMigration, /count\\(DISTINCT e\\.query_id\\) qty/, "error plate totals must count unique consultation IDs");
 assert.match(errorPlateCountMigration, /count\\(\\*\\) event_qty/, "raw error event volume must remain visible separately");
-assert.match(errorPlateCountMigration, /p\\.plate_key ~ '\\^\\[A-Z0-9\\]\\{6,8\\}\\\
+assert.ok(errorPlateCountMigration.includes("p.plate_key ~ '^[A-Z0-9]{6,8}$'"), "error plate table must exclude partial/invalid plate fragments");
+assert.match(endpoint, /function sanitizeErrorPlateMetadata\\(/, "server must sanitize invalid error plate fragments before persistence");
+assert.match(endpoint, /if \\(event === "vehicle_insurance_error"\\) sanitizeErrorPlateMetadata\\(metadata\\)/, "server must apply plate validation to ASF error events");
+assert.match(admin, /CONSULTAS','EVENTOS/, "Admin must distinguish consultation totals from raw event totals");
 
 const hourlyMigration = fs.readFileSync("supabase/migrations/20261009051204_hourly_consultations_and_presence.sql", "utf8");
 assert.match(hourlyMigration, /generate_series\(0,23\)/, "hourly chart must include all 24 hours, including zero-activity hours");
