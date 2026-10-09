@@ -114,8 +114,16 @@ for (const job of jobs) {
 
         if (viewport.width <= 1024) {
           assert(
-            viewportState.navDisplay === "flex",
-            job.name + " " + viewport.label + ": navigation did not switch to a horizontal row"
+            viewportState.nav.display === "flex",
+            job.name + " " + viewport.label + ": navigation did not switch to a horizontal row " + JSON.stringify({
+              viewportWidth: viewportState.viewportWidth,
+              bodyWidth: viewportState.bodyWidth,
+              bodyZoom: document.body.style.zoom,
+              computedBodyZoom: getComputedStyle(document.body).zoom,
+              media760: window.matchMedia("(max-width: 760px)").matches,
+              media1024: window.matchMedia("(max-width: 1024px)").matches,
+              nav: viewportState.nav
+            })
           );
         }
 

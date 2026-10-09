@@ -58,4 +58,11 @@ describe("V2 responsive contract", () => {
     expect(stylesheet).not.toContain("overflow-x: clip");
   });
 
+
+  it("keeps mobile navigation horizontal after density preference rules", () => {
+    expect(stylesheet).toContain("Density preferences change spacing only; they must not restore the legacy");
+    expect(stylesheet).toContain("body.ui-compact .verix-nav,\n  body.ui-normal .verix-nav,\n  body.ui-comfortable .verix-nav {\n    display: flex;");
+    expect(stylesheet).toContain("grid-template-columns: none;");
+  });
+
 });

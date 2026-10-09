@@ -584,3 +584,15 @@ body {
   width: 100%;
   max-width: 100%;
 }
+
+
+/* Density preferences change spacing only; they must not restore the legacy
+   multi-row navigation at mobile/tablet breakpoints. */
+@media (max-width: 1024px) {
+  body.ui-compact .verix-nav,
+  body.ui-normal .verix-nav,
+  body.ui-comfortable .verix-nav {
+    display: flex;
+    grid-template-columns: none;
+  }
+}
