@@ -320,3 +320,12 @@ Fonte externa: Diário da República, Código da Estrada consolidado.
 - Isto não é perda de qualidade no serviço IMT nem prova de compressão do conteúdo; é redução visual da página oficial no VÉRIX. Remover apenas o `scale(0.75)` sem alterar a composição faria a página fixa do IMT ficar cortada nos painéis estreitos, pelo que não é uma correção segura isoladamente.
 - Estratégia de publicação V2: manter as consultas RNSI fora de cartões redimensionados, em janela WebView2 autónoma de desktop; a janela inicia com `ZoomFactor = 1.0`. A verificação `verify-windows-host-security.mjs` agora protege este contrato.
 - Limite de validação: o acesso efetivo aos URLs `*.rnsi.local` só pode ser ensaiado num PC ligado à RNSI. Esta correção de código não substitui esse teste operacional, nem altera diretamente a produção `main`.
+
+
+## Consulta IMT/RNSI a partir de PCs externos — 2026-10-09
+
+- Objetivo operacional acrescentado: permitir utilização do VÉRIX em PCs fora da rede GNR mantendo as consultas oficiais de inspeção e características técnicas.
+- Investigação pública não identificou API pública documentada equivalente às duas páginas RNSI internas. O IMT Online disponibiliza pedidos documentais, mas não é equivalente à consulta operacional imediata.
+- Acesso externo exige decisão institucional: API/web service disponibilizado pelo IMT ou gateway de aplicação formalmente aprovada pela GNR/SGMAI e pelo IMT; como alternativa transitória, solução oficial de acesso remoto a dispositivo gerido.
+- Criado `docs/IMT_EXTERNAL_ACCESS.md` com opções, arquitetura, requisitos de segurança, fases, critérios de aceitação e referências oficiais.
+- Não foram expostos novos endpoints, não foi criado proxy, não foram alteradas credenciais nem a produção. A implementação funcional fica bloqueada até existir autorização, contrato de interface e ambiente de teste aprovados.

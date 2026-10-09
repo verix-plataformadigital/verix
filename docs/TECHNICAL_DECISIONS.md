@@ -32,3 +32,8 @@ TypeScript 7.0 é usado como compilador/type-checker do produto. Não é usado c
 ## IMT/RNSI legibilidade
 
 As páginas oficiais do IMT/RNSI devem ser apresentadas como HTML nativo, numa janela de dimensões de desktop e a `ZoomFactor = 1.0`. Não aplicar `transform: scale(...)`, `zoom` de CSS ou captura/reprodução como imagem aos documentos oficiais para os fazer caber em cartões estreitos. A versão legada reduzia os `iframe` IMT para `scale(0.75)`, comprometendo a legibilidade. A V2 evita esse compromisso abrindo as consultas numa janela WebView2 própria; a CI valida explicitamente a escala nativa.
+
+
+## Acesso externo à consulta IMT/RNSI
+
+O requisito de consulta a partir de PCs fora da rede interna está documentado em [IMT_EXTERNAL_ACCESS.md](./IMT_EXTERNAL_ACCESS.md). A regra arquitetural é não expor diretamente o host interno nem criar um proxy aberto: avançar apenas através de API oficial do IMT ou gateway institucional aprovada, com autenticação individual, autorização por operação, auditoria e conectividade autorizada. A implementação de produção fica bloqueada até confirmação formal do IMT e da GNR/SGMAI.
