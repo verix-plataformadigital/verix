@@ -31,7 +31,7 @@ assert.match(clientTransport, /return parseReceipt\(await response\.text\(\)\)/)
 assert.match(clientTransport, /queue = queue\.filter\(function \(item\)/);
 assert.match(clientTransport, /!acknowledged\[item\.eventId\]/);
 assert.match(clientTransport, /recordRejectedEvents\(batch, receipt\)/);
-const beaconStart = app.indexOf("function flushBeacon()", telemetryEnd);
+const beaconStart = app.indexOf("function flushBeacon()", scriptStart);
 const beaconEnd = app.indexOf("function rateLimited", beaconStart);
 assert.ok(beaconStart >= 0 && beaconEnd > beaconStart, "sendBeacon handler must exist");
 assert.doesNotMatch(app.slice(beaconStart, beaconEnd), /queue\.splice\(/, "sendBeacon must never dequeue without a server receipt");
