@@ -37,4 +37,26 @@ assert.ok(beaconStart >= 0 && beaconEnd > beaconStart, "sendBeacon handler must 
 assert.doesNotMatch(app.slice(beaconStart, beaconEnd), /queue\.splice\(/, "sendBeacon must never dequeue without a server receipt");
 assert.ok(app.includes("VERIX_T2_REJECTED_QUEUE"), "permanent rejections must have bounded non-sensitive local diagnostics");
 
+
+const scriptOpen = '<script id="verix-telemetry-v2">';
+const scriptStart = app.indexOf(scriptOpen);
+const scriptEnd = app.indexOf("</script>", scriptStart + scriptOpen.length);
+assert.ok(scriptStart >= 0 && scriptEnd > scriptStart, "production telemetry script must have clear boundaries");
+const telemetryScript = app.slice(scriptStart + scriptOpen.length, scriptEnd);
+assert.doesNotThrow(() => new Function(telemetryScript), "production telemetry script must parse as JavaScript");
+
+const parserMatch = clientTransport.match(/function parseReceipt\(text\) \{[\s\S]*?\n  \}/);
+assert.ok(parserMatch, "receipt parser must be independently testable");
+const parseReceipt = new Function("return (" + parserMatch[0] + ");")();
+const validReceipt = {
+  ok: true,
+  acknowledged_event_ids: ["e-inserted", "e-duplicate"],
+  rejected_event_ids: ["e-invalid", "e-rate-limited"],
+  retry_event_ids: ["e-rate-limited"],
+  rejection_reasons: { "e-invalid": "invalid_event", "e-rate-limited": "rate_limited" }
+};
+assert.deepEqual(parseReceipt(JSON.stringify(validReceipt)), validReceipt);
+assert.equal(parseReceipt('{"ok":true}'), null, "HTTP 200 without an application receipt must not clear the queue");
+assert.equal(parseReceipt('not-json'), null, "malformed receipt must not clear the queue");
+
 console.log("PASS: atomic ingest receipt, ID-based client acknowledgement, loss-safe beacon queue, query-quality metrics and Admin labels.");
