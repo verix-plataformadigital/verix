@@ -218,7 +218,7 @@ for (const f of ["verix-mobile.css", "verix-mobile.js"]) {
 // excluded from heavy obfuscation and must survive packaging unchanged enough
 // to expose their endpoint, heartbeat and security runtime markers.
 function extractInlineScript(html, id) {
-  const opener = new RegExp('<script[^>]*id=[\"\\\']' + id + '[\"\\\'][^>]*>', 'i');
+  const opener = new RegExp('<script[^>]*id=["\\']' + id + '["\\'][^>]*>', 'i');
   const match = html.match(opener);
   if (!match || match.index == null) return null;
   const contentStart = match.index + match[0].length;
@@ -286,8 +286,8 @@ const manifest = {
   files: results,
   notes: [
     "This dist/ folder is the ONLY version that should be published.",
-    "Never publish the clear-text source HTML files.",
-    "Keep the GitHub repository private.",
+    "Never publish the clear-text source HTML files as the production site artifact.",
+    "The source repository is public; obfuscation does not make the source confidential.",
     "Rotate VERIX_GATE_SECRET / VERIX_ADMIN_SECRET if a build is compromised."
   ]
 };
