@@ -1,0 +1,64 @@
+name: VERIX Responsive Browser Validation
+
+on:
+  push:
+    branches: ["reengineering-v2"]
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  responsive-browser:
+    name: Chromium and WebKit responsive regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+
+      - name: Resolve lockfile
+        run: |
+          npm install --global npm@12.2.0
+          npm install --package-lock-only --ignore-scripts --no-fund --no-audit
+
+      - name: Install V2 dependencies
+        run: npm ci --no-fund --no-audit
+
+      - name: Build V2 release bundle
+        run: npm run build:v2
+
+      - name: Install pinned Playwright runtime outside repository
+        run: npm install --prefix "$RUNNER_TEMP/verix-playwright" --no-save --no-package-lock --ignore-scripts --no-audit --no-fund playwright@1.64.0
+
+      - name: Install Chromium and WebKit
+        run: "$RUNNER_TEMP/verix-playwright/node_modules/.bin/playwright" install --with-deps chromium webkit
+
+      - name: Start built V2 preview
+        shell: bash
+        run: |
+          npx vite preview --config vite.config.ts --host 127.0.0.1 --port 4173 > "$RUNNER_TEMP/verix-preview.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/verix-preview.pid"
+          for attempt in {1..45}; do
+            if curl --fail --silent http://127.0.0.1:4173/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat "$RUNNER_TEMP/verix-preview.log"
+          echo "V2 preview did not start."
+          exit 1
+
+      - name: Run phone, tablet and desktop browser checks
+        env:
+          VERIX_V2_TEST_URL: "http://127.0.0.1:4173/"
+        shell: bash
+        run: |
+          export PLAYWRIGHT_MODULE="$RUNNER_TEMP/verix-playwright/node_modules/playwright/index.mjs"
+          node tests/browser/responsive-smoke.mjs

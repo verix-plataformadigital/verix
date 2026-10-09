@@ -71,35 +71,6 @@ jobs:
             exit 1
           fi
 
-      - name: Install pinned Playwright runtime outside the repository
-        run: npm install --prefix "$RUNNER_TEMP/verix-playwright" --no-save --no-package-lock --ignore-scripts --no-audit --no-fund playwright@1.64.0
-
-      - name: Install Chromium and WebKit for responsive browser checks
-        run: "$RUNNER_TEMP/verix-playwright/node_modules/.bin/playwright" install --with-deps chromium webkit
-
-      - name: Start built V2 preview
-        shell: bash
-        run: |
-          npx vite preview --config vite.config.ts --host 127.0.0.1 --port 4173 > "$RUNNER_TEMP/verix-preview.log" 2>&1 &
-          echo $! > "$RUNNER_TEMP/verix-preview.pid"
-          for attempt in {1..45}; do
-            if curl --fail --silent http://127.0.0.1:4173/ >/dev/null; then
-              exit 0
-            fi
-            sleep 1
-          done
-          cat "$RUNNER_TEMP/verix-preview.log"
-          echo "V2 preview did not start."
-          exit 1
-
-      - name: Browser regression — phone, tablet and desktop
-        env:
-          VERIX_V2_TEST_URL: http://127.0.0.1:4173/
-        shell: bash
-        run: |
-          export PLAYWRIGHT_MODULE="$RUNNER_TEMP/verix-playwright/node_modules/playwright/index.mjs"
-          node tests/browser/responsive-smoke.mjs
-
       - name: Prepare audit source snapshot
         shell: bash
         run: |
