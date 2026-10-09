@@ -43,4 +43,10 @@ describe("V2 responsive contract", () => {
     expect(stylesheet).toContain("width: 48px;");
   });
 
+
+  it("prevents the shell's implicit grid column from widening narrow viewports", () => {
+    expect(stylesheet).toContain(".verix-shell {\n  width: 100%;\n  grid-template-columns: minmax(0, 1fr);\n}");
+    expect(stylesheet).toContain(".verix-nav {\n  width: 100%;\n  max-width: 100%;\n}");
+  });
+
 });

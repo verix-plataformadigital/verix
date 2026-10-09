@@ -544,3 +544,21 @@ body.theme-light .verix-workspace textarea {
     transition: none !important;
   }
 }
+
+
+/* Keep the shell's implicit grid column bounded by the device viewport. */
+.verix-shell {
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.verix-layout,
+.verix-nav,
+.verix-workspace {
+  min-width: 0;
+}
+
+.verix-nav {
+  width: 100%;
+  max-width: 100%;
+}
