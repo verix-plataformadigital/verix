@@ -11,7 +11,7 @@ const pages = [
 ];
 
 assert.match(policy, /This is a request for responsible handling, not a technical access control/i);
-assert.match(policy, /does **not** replace the host-root/i);
+assert.ok(policy.includes("does **not** replace the host-root"), "crawler limitation must be documented");
 assert.match(policy, /não garante que os modelos ou rastreadores o cumpram/i);
 assert.match(robots, /User-agent: GPTBot/);
 assert.match(robots, /User-agent: OAI-SearchBot/);
