@@ -27,21 +27,23 @@ afterEach(() => {
 describe('Admin VÉRIX — melhorias da dashboard', () => {
   it('mostra skeletons no primeiro carregamento e um estado claro quando falha', () => {
     const dom = dashboard();
+    const doc = dom.window.document as Document;
     const win = dom.window;
 
     win.renderLoadingState();
-    expect(dom.window.document.querySelectorAll('#dashCards .skeleton-card')).toHaveLength(7);
-    expect(dom.window.document.querySelector('#errorTypes .skeleton-panel')).not.toBeNull();
+    expect(doc.querySelectorAll('#dashCards .skeleton-card')).toHaveLength(7);
+    expect(doc.querySelector('#errorTypes .skeleton-panel')).not.toBeNull();
 
     win.renderLoadFailure();
-    expect(dom.window.document.querySelector('#dashCards .skeleton-card')).toBeNull();
-    expect(dom.window.document.querySelector('#dashCards .empty')?.textContent).toContain('dados ainda não estão disponíveis');
+    expect(doc.querySelector('#dashCards .skeleton-card')).toBeNull();
+    expect(doc.querySelector('#dashCards .empty')?.textContent).toContain('dados ainda não estão disponíveis');
   });
 
   it('ordena tabelas por valores numéricos e atualiza o estado acessível', () => {
     const dom = dashboard();
+    const doc = dom.window.document as Document;
     const win = dom.window;
-    const host = dom.window.document.getElementById('errorTypes')!;
+    const host = doc.getElementById('errorTypes')!;
     host.innerHTML = win.table(['Tipo', 'Quantidade'], [
       '<tr><td>network</td><td>10</td></tr>',
       '<tr><td>http_null</td><td>2</td></tr>',
@@ -57,22 +59,24 @@ describe('Admin VÉRIX — melhorias da dashboard', () => {
 
   it('filtra as tabelas de erros sem alterar os dados de origem', () => {
     const dom = dashboard();
+    const doc = dom.window.document as Document;
     const win = dom.window;
-    dom.window.document.getElementById('errorTypes')!.innerHTML = win.table(['Tipo', 'Quantidade'], [
+    doc.getElementById('errorTypes')!.innerHTML = win.table(['Tipo', 'Quantidade'], [
       '<tr><td>http_null</td><td>3</td></tr>',
       '<tr><td>network</td><td>2</td></tr>',
     ]);
-    const search = dom.window.document.getElementById('errorSearch') as HTMLInputElement;
+    const search = doc.getElementById('errorSearch') as HTMLInputElement;
     search.value = 'HTTP_NULL';
     search.dispatchEvent(new dom.window.Event('input', { bubbles: true }));
 
-    const rows = Array.from(dom.window.document.querySelectorAll<HTMLTableRowElement>('#errorTypes tbody tr'));
+    const rows = Array.from(doc.querySelectorAll<HTMLTableRowElement>('#errorTypes tbody tr'));
     expect(rows.map((row) => row.hidden)).toEqual([false, true]);
-    expect(dom.window.document.getElementById('errorSearchCount')?.textContent).toContain('1 de 2');
+    expect(doc.getElementById('errorSearchCount')?.textContent).toContain('1 de 2');
   });
 
   it('permite abrir o módulo correspondente a partir dos KPI principais', () => {
     const dom = dashboard();
+    const doc = dom.window.document as Document;
     const win = dom.window;
     const payload = {
       generatedAt: '2026-10-09T02:00:00Z',
@@ -92,27 +96,28 @@ describe('Admin VÉRIX — melhorias da dashboard', () => {
     };
     win.renderAll(payload);
 
-    const uninsured = Array.from(dom.window.document.querySelectorAll<HTMLElement>('#dashCards .card'))
+    const uninsured = Array.from(doc.querySelectorAll<HTMLElement>('#dashCards .card'))
       .find((card) => card.querySelector('.label')?.textContent?.trim() === 'SEM REGISTO') as HTMLElement;
     expect(uninsured.dataset.drillPage).toBe('insurance');
     uninsured.click();
-    expect(dom.window.document.querySelector('[data-page="insurance"]')?.classList.contains('active')).toBe(true);
+    expect(doc.querySelector('[data-page="insurance"]')?.classList.contains('active')).toBe(true);
   });
 
   it('permite pesquisar matrículas na tabela de erros de seguro', () => {
     const dom = dashboard();
+    const doc = dom.window.document as Document;
     const win = dom.window;
-    dom.window.document.getElementById('insurancePlates')!.innerHTML = win.table(['Matrícula', 'Tipos'], [
+    doc.getElementById('insurancePlates')!.innerHTML = win.table(['Matrícula', 'Tipos'], [
       '<tr><td>AA11BB</td><td>network</td></tr>',
       '<tr><td>CC22DD</td><td>http_null</td></tr>',
     ]);
-    const search = dom.window.document.getElementById('plateErrorSearch') as HTMLInputElement;
+    const search = doc.getElementById('plateErrorSearch') as HTMLInputElement;
     search.value = 'aa11';
     search.dispatchEvent(new dom.window.Event('input', { bubbles: true }));
 
-    const rows = Array.from(dom.window.document.querySelectorAll<HTMLTableRowElement>('#insurancePlates tbody tr'));
+    const rows = Array.from(doc.querySelectorAll<HTMLTableRowElement>('#insurancePlates tbody tr'));
     expect(rows.map((row) => row.hidden)).toEqual([false, true]);
-    expect(dom.window.document.getElementById('plateErrorSearchCount')?.textContent).toContain('1 de 2');
+    expect(doc.getElementById('plateErrorSearchCount')?.textContent).toContain('1 de 2');
   });
 
   it('inclui navegação inferior para ecrãs pequenos e controlo de repetição', () => {
