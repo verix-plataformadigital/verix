@@ -545,7 +545,7 @@ function renderDashboard(d){
  const mods=(u.modules||[]).map(x=>({label:x.module,value:x.qty}));barList('dashModules',mods);
  const hours=u.hourly||[];hourGrid('dashHours',hours);
  monthlyChart('dashDaily',u.daily||[],'lookups');
- const peakHour=hours.slice().sort((x,y)=>Number(y.consultations||0)-Number(x.consultations||0))[0];
+ const peakHour=hours.filter(x=>Number(x.consultations||0)>0).sort((x,y)=>Number(y.consultations||0)-Number(x.consultations||0))[0];
  const peakDay=(u.daily||[]).slice().sort((x,y)=>Number(y.lookups||0)-Number(x.lookups||0))[0];
  const topModule=mods[0];
  $('heroInsight').innerHTML='<div class="k">LEITURA PRINCIPAL</div><div class="v">'+(errorRate!=null&&errorRate>8?'Existem erros a acompanhar.':errorRate!=null&&errorRate>3?'Há alguns erros a acompanhar.':'Não há erros relevantes observados nesta janela.')+'</div><div class="s">'+(peakHour?'Hora mais ativa: '+String(peakHour.hour_num).padStart(2,'0')+'h. ':'')+(topModule?'Módulo mais usado: '+esc(topModule.label)+'.':'')+'</div>';
@@ -709,7 +709,7 @@ function renderPerformance(d){
 function renderInsights(d){
  const a=d.analytics||{},u=a.usage||{},summary=a.speed?.summary||{},l=a.legislation||{};
  const modules=(u.modules||[]).slice().sort((x,y)=>Number(y.qty||0)-Number(x.qty||0));
- const hours=(u.hourly||[]).slice().sort((x,y)=>Number(y.consultations||0)-Number(x.consultations||0));
+ const hours=(u.hourly||[]).filter(x=>Number(x.consultations||0)>0).sort((x,y)=>Number(y.consultations||0)-Number(x.consultations||0));
  const days=(u.daily||[]).slice().sort((x,y)=>Number(y.lookups||0)-Number(x.lookups||0));
  const laws=(l.items||[]).slice().sort((x,y)=>Number(y.qty||0)-Number(x.qty||0));
  const topModule=modules[0],topHour=hours[0],topDay=days[0],topLaw=laws[0],c=d.cinemometer||{};
