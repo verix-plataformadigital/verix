@@ -72,13 +72,37 @@ for (const job of jobs) {
         await page.locator(".home-module").waitFor({ state: "visible", timeout: 10_000 });
 
         const viewportState = await page.evaluate(() => {
-          const nav = document.querySelector(".verix-nav");
+          const describe = (selector) => {
+            const element = document.querySelector(selector);
+            if (!element) return null;
+            const style = getComputedStyle(element);
+            const rect = element.getBoundingClientRect();
+            return {
+              width: Math.round(rect.width * 100) / 100,
+              left: Math.round(rect.left * 100) / 100,
+              right: Math.round(rect.right * 100) / 100,
+              clientWidth: element.clientWidth,
+              offsetWidth: element.offsetWidth,
+              scrollWidth: element.scrollWidth,
+              computedWidth: style.width,
+              minWidth: style.minWidth,
+              maxWidth: style.maxWidth,
+              display: style.display,
+              gridTemplateColumns: style.gridTemplateColumns,
+              overflowX: style.overflowX
+            };
+          };
           return {
+            viewportWidth: window.innerWidth,
             documentWidth: document.documentElement.scrollWidth,
             bodyWidth: document.body.scrollWidth,
-            navDisplay: getComputedStyle(nav).display,
-            navClientWidth: nav.clientWidth,
-            navScrollWidth: nav.scrollWidth
+            bodyClientWidth: document.body.clientWidth,
+            bodyOffsetWidth: document.body.offsetWidth,
+            root: describe("#app-root"),
+            shell: describe(".verix-shell"),
+            header: describe(".verix-header"),
+            layout: describe(".verix-layout"),
+            nav: describe(".verix-nav")
           };
         });
 

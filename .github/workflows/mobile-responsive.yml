@@ -63,3 +63,12 @@ jobs:
         run: |
           export PLAYWRIGHT_MODULE="$RUNNER_TEMP/verix-playwright/node_modules/playwright/index.mjs"
           node tests/browser/responsive-smoke.mjs
+
+      - name: Upload responsive failure screenshots and diagnostics
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: verix-responsive-failure-screenshots
+          path: ${{ runner.temp }}/verix-responsive-*.png
+          if-no-files-found: ignore
+          retention-days: 3

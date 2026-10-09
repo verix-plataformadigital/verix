@@ -49,4 +49,11 @@ describe("V2 responsive contract", () => {
     expect(stylesheet).toContain(".verix-nav {\n  width: 100%;\n  max-width: 100%;\n}");
   });
 
+
+  it("bounds root and shell containing blocks and clips page-level horizontal overflow", () => {
+    expect(stylesheet).toContain("Keep the shell and its containing blocks bounded by the device viewport.");
+    expect(stylesheet).toContain("#app-root {\n  display: block;\n  width: 100%;\n  max-width: 100%;\n  min-width: 0;\n  overflow-x: clip;\n}");
+    expect(stylesheet).toContain("  grid-template-columns: minmax(0, 1fr);\n  overflow-x: clip;\n}");
+  });
+
 });
