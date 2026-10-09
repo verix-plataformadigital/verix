@@ -436,7 +436,7 @@ function renderLoadFailure(){
  hosts.forEach(id=>{const host=$(id);if(host&&host.querySelector('.skeleton,.skeleton-chart,.skeleton-grid'))host.innerHTML='<div class="empty">Os dados ainda não estão disponíveis.</div>'});
 }
 function wireDashboardDrilldowns(){
- const routes={'ATIVOS AGORA':'usage','UTILIZADORES':'usage','CONSULTAS DE SEGURO':'insurance','COM SEGURO':'insurance','SEM REGISTO':'insurance','ERROS ASF':'errors','CINEMÓMETRO':'speed'};
+ const routes={'ATIVOS AGORA':'usage','INSTALAÇÕES NO PERÍODO':'usage','UTILIZADORES':'usage','CONSULTAS DE SEGURO':'insurance','COM SEGURO':'insurance','SEM REGISTO':'insurance','ERROS ASF':'errors','CINEMÓMETRO':'speed'};
  const host=$('dashCards');if(!host)return;
  host.querySelectorAll('.card').forEach(el=>{const label=el.querySelector('.label')?.textContent.trim();const page=routes[label];if(!page)return;el.dataset.drillPage=page;el.setAttribute('role','button');el.setAttribute('tabindex','0');el.setAttribute('aria-label','Ver detalhes: '+label);if(['CONSULTAS DE SEGURO','SEM REGISTO','ERROS ASF'].includes(label))el.classList.add('key-metric')});
 }
@@ -473,7 +473,7 @@ function applyPlateErrorSearch(){
  const empty=$('plateErrorSearchEmpty');if(empty)empty.classList.toggle('hidden',!(query&&rows.length>0&&matches===0));
 }
 function barList(id,rows,tone=''){const host=$(id);if(!host)return;if(!rows?.length){host.innerHTML='<div class="empty">Sem dados suficientes.</div>';return}const max=Math.max(1,...rows.map(x=>Number(x.value)||0));host.innerHTML=rows.slice(0,12).map(x=>'<div class="bar-row"><div class="bar-label" title="'+esc(x.label)+'">'+esc(x.label)+'</div><div class="track"><div class="fill '+tone+'" style="width:'+Math.max(2,(Number(x.value)||0)/max*100)+'%"></div></div><div class="num">'+fmt(x.value)+'</div></div>').join('')}
-function monthlyChart(id,rows,key){const host=$(id);if(!host)return;if(!rows?.length){host.innerHTML='<div class="empty" style="width:100%">Sem dados suficientes.</div>';return}const vals=rows.map(x=>Number(x[key]||0));const max=Math.max(1,...vals);host.setAttribute('role','group');host.setAttribute('aria-label','Atividade diária. Foca uma barra para consultar o dia e o valor.');host.innerHTML=rows.map(x=>{const label=String(x.day_key||'');const value=fmt(x[key]||0);const unit=key==='users'?'utilizadores':key==='lookups'?'consultas':key;return '<div class="chart-col" tabindex="0" role="img" aria-label="'+esc(label+': '+value+' '+unit)+'" title="'+esc(label+' · '+value+' '+unit)+'"><div class="chart-bar" aria-hidden="true" style="height:'+Math.max(3,(Number(x[key]||0)/max)*100)+'%"></div><div class="chart-label" aria-hidden="true">'+esc(label.slice(5))+'</div></div>'}).join('')}
+function monthlyChart(id,rows,key){const host=$(id);if(!host)return;if(!rows?.length){host.innerHTML='<div class="empty" style="width:100%">Sem dados suficientes.</div>';return}const vals=rows.map(x=>Number(x[key]||0));const max=Math.max(1,...vals);host.setAttribute('role','group');host.setAttribute('aria-label','Atividade diária. Foca uma barra para consultar o dia e o valor.');host.innerHTML=rows.map(x=>{const label=String(x.day_key||'');const value=fmt(x[key]||0);const unit=key==='users'?'instalações':key==='lookups'?'consultas':key;return '<div class="chart-col" tabindex="0" role="img" aria-label="'+esc(label+': '+value+' '+unit)+'" title="'+esc(label+' · '+value+' '+unit)+'"><div class="chart-bar" aria-hidden="true" style="height:'+Math.max(3,(Number(x[key]||0)/max)*100)+'%"></div><div class="chart-label" aria-hidden="true">'+esc(label.slice(5))+'</div></div>'}).join('')}
 function hourGrid(id,rows){const host=$(id);if(!host)return;if(!rows?.length){host.innerHTML='<div class="empty">Sem dados.</div>';return}const max=Math.max(1,...rows.map(x=>Number(x.actions||0)));host.innerHTML=rows.map(x=>{const hour=String(x.hour_num??'').padStart(2,'0')+'h';const actions=fmt(x.actions||0);return '<div class="hour" role="img" aria-label="'+esc(hour+': '+actions+' ações')+'" title="'+esc(hour+' · '+actions+' ações')+'" style="opacity:'+Math.max(.35,(Number(x.actions||0)/max))+'"><b>'+esc(hour)+'</b><span>'+actions+'</span></div>'}).join('')}
 function token(){return sessionStorage.getItem(TOKEN_KEY)||''}
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.remove('hidden');clearTimeout(window.__toastTimer);window.__toastTimer=setTimeout(()=>t.classList.add('hidden'),2200)}
@@ -526,11 +526,11 @@ async function ensurePageDetail(page){
 }
 function renderDashboard(d){
  const a=d.analytics||{},o=a.overview||{},p=period(),ret=a.retention||{},u=a.usage||{},s=u.sessions?.[currentPeriod]||{},speed=a.speed?.summary||{},life=d.lifetime||{},invest=d.investigation||{};
- const users=Number(o['unique_'+currentPeriod]||0),lookups=Number(p.started||0),fin=Number(p.finals||0),insured=Number(p.insured||0),uninsured=Number(p.uninsured||0),errs=Number(p.errors||0),dec=insured+uninsured;
+ const installations=Number(o['unique_'+currentPeriod]||0),lookups=Number(p.started||0),fin=Number(p.finals||0),insured=Number(p.insured||0),uninsured=Number(p.uninsured||0),errs=Number(p.errors||0),dec=insured+uninsured;
  const noRate=dec?100*uninsured/dec:null,errorRate=fin?100*errs/fin:null;
  $('dashCards').innerHTML=
   card('ATIVOS AGORA',num(o.online_now),'Instalações com atividade recente.','green')+
-  card('UTILIZADORES',num(users),'Instalações com atividade no período.','cyan')+
+  card('INSTALAÇÕES NO PERÍODO',num(installations),'Instalações com atividade registada no período.','cyan')+
   card('CONSULTAS DE SEGURO',num(lookups),'Pedidos iniciados.','blue')+
   card('COM SEGURO',num(insured),pct(dec?100*insured/dec:null)+' das decisões.','green')+
   card('SEM REGISTO',num(uninsured),pct(noRate)+' das decisões.','red')+
@@ -545,8 +545,8 @@ function renderDashboard(d){
  const topModule=mods[0];
  $('heroInsight').innerHTML='<div class="k">LEITURA PRINCIPAL</div><div class="v">'+(errorRate!=null&&errorRate>8?'Existem erros a acompanhar.':errorRate!=null&&errorRate>3?'Há alguns erros a acompanhar.':'Não há erros relevantes observados nesta janela.')+'</div><div class="s">'+(peakHour?'Hora mais ativa: '+String(peakHour.hour_num).padStart(2,'0')+'h. ':'')+(topModule?'Módulo mais usado: '+esc(topModule.label)+'.':'')+'</div>';
  $('dashReading').innerHTML=
-  metric('Novos utilizadores',num(ret[currentPeriod]?.new))+
-  metric('Utilizadores que regressaram',num(ret[currentPeriod]?.returning))+
+  metric('Novas instalações',num(ret[currentPeriod]?.new))+
+  metric('Instalações que regressaram',num(ret[currentPeriod]?.returning))+
   metric('Média de ações por sessão',num(s.avg_actions))+
   metric('Sessões com vários módulos',pct(s.multi_module_pct));
  $('dashFun').innerHTML=
@@ -628,10 +628,10 @@ function renderLegislation(d){
 function renderUsage(d){
  const a=d.analytics||{},o=a.overview||{},r=a.retention||{},u=a.usage||{},s=u.sessions?.[currentPeriod]||{};
  $('usageCards').innerHTML=
-  card('UTILIZADORES',num(o['unique_'+currentPeriod]),'Instalações com atividade.','cyan')+
+  card('INSTALAÇÕES',num(o['unique_'+currentPeriod]),'Instalações com atividade registada.','cyan')+
   card('NOVOS',num(r[currentPeriod]?.new),'Primeira aparição no período.')+
   card('QUE REGRESSARAM',num(r[currentPeriod]?.returning),'Já tinham aparecido antes.','green')+
-  card('AÇÕES REGISTADAS',num(o['events_'+currentPeriod]),'Eventos de utilização.');
+  card('EVENTOS DE ATIVIDADE',num(o['actions_'+currentPeriod]),'Exclui heartbeats e sinais de presença.');
  barList('usageModules',(u.modules||[]).map(x=>({label:x.module,value:x.qty})));
  hourGrid('usageHours',u.hourly||[]);
  monthlyChart('usageDaily',u.daily||[],'users');
@@ -642,23 +642,23 @@ function renderErrors(d){
  const total=(e.types||[]).reduce((s,x)=>s+Number(x.qty||0),0);
  $('errorCards').innerHTML=
   card('ERROS NAS 24 H',num(total),'Falhas classificadas.','red')+
-  card('ERROS DA 1.4',num(inv.app14_errors),'Na janela recente.','amber')+
-  card('INSTALAÇÕES AFETADAS',num(inv.app14_installations),'Onde apareceu um erro 1.4.')+
-  card('MATRÍCULAS AFETADAS',num(inv.app14_plates),'Quando a matrícula foi capturada.');
+  card('ERROS DA 1.5',num(inv.app15_errors),'Na janela recente.','amber')+
+  card('INSTALAÇÕES AFETADAS',num(inv.app15_installations),'Instalações com erros da versão 1.5.')+
+  card('MATRÍCULAS AFETADAS',num(inv.app15_plates),'Só quando existe evidência de diagnóstico.');
  $('errorTypes').innerHTML=table(['TIPO','QUANTIDADE','ÚLTIMO REGISTO'],(e.types||[]).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'Desconhecido')+'</span>')+td('<strong>'+fmt(x.qty)+'</strong>')+td(datePT(x.last_at))+'</tr>'));
  const bursts=inv.app14_bursts_5m||[];$('errorBursts').innerHTML=table(['HORA','ERROS'],bursts.slice(0,12).map(x=>'<tr>'+td('<strong>'+datePT(x.start)+'</strong>')+td('<strong>'+fmt(x.count)+'</strong>')+'</tr>'));
  $('errorReading').innerHTML=buildErrorReading(d);
  $('errorInstallations').innerHTML=table(['INSTALAÇÃO','ERROS','QUERIES'],(e.installations||[]).slice(0,15).map(x=>'<tr>'+td('<strong>'+esc(x.installation_id||'—')+'</strong>')+td(fmt(x.qty))+td(fmt(x.queries))+'</tr>'));
  $('errorSignatures').innerHTML=table(['TIPO','QUANTIDADE','INSTALAÇÕES'],(e.signatures||[]).slice(0,15).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'—')+'</span>')+td(fmt(x.qty))+td(fmt(x.installs))+'</tr>'));
- const recent=inv.latest_app14||[];
+ const recent=inv.latest_app15||[];
  $('errorTechnical').innerHTML=recent.length?'<table class="table"><thead><tr><th>Hora</th><th>Browser</th><th>Transporte</th><th>Tipo</th><th>HTTP</th><th>ASF ms</th><th>Relay ms</th><th>Hash</th></tr></thead><tbody>'+recent.slice(0,15).map(x=>'<tr>'+td(datePT(x.occurred_at))+td(esc(x.browser||'—'))+td(esc(x.transport||'—'))+td(esc(x.error_type||'—'))+td(x.http_status==null?'—':fmt(x.http_status))+td(x.duration_ms==null?'—':fmt(x.duration_ms)+' ms')+td(x.relay_latency_ms==null?'—':fmt(x.relay_latency_ms)+' ms')+td(esc(x.response_hash||'—'))+'</tr>').join('')+'</tbody></table>':'<div class="empty">Sem incidentes recentes.</div>';
  function buildErrorReading(data){
-   const n=Number(inv.app14_errors||0),inst=Number(inv.app14_installations||0),hashes=Number(inv.app14_hashes||0);
+   const n=Number(inv.app15_errors||0),inst=Number(inv.app15_installations||0),hashes=Number(inv.app15_hashes||0);
    const types=(e.types||[]).slice().sort((a,b)=>Number(b.qty||0)-Number(a.qty||0));
    const top=types[0];
    let html='';
-   if(!n) html+='<div class="goodbox"><strong>Não existem erros 1.4 nas últimas 24 horas.</strong><br>A janela atual não mostra um incidente ativo.</div>';
-   else html+='<div class="warnbox"><strong>Existem '+fmt(n)+' falhas na versão 1.4 nas últimas 24 horas.</strong><br>Foram observadas em '+fmt(inst)+' instalações e '+fmt(hashes)+' assinaturas de resposta. Isto mostra concentração técnica; não determina sozinho a causa.</div>';
+   if(!n) html+='<div class="goodbox"><strong>Não existem erros 1.5 nas últimas 24 horas.</strong><br>A janela atual não mostra um incidente ativo.</div>';
+   else html+='<div class="warnbox"><strong>Existem '+fmt(n)+' falhas na versão 1.5 nas últimas 24 horas.</strong><br>Foram observadas em '+fmt(inst)+' instalações e '+fmt(hashes)+' assinaturas de resposta. Isto mostra concentração técnica; não determina sozinho a causa.</div>';
    if(top) html+='<div style="margin-top:10px" class="explain"><strong>Tipo mais frequente:</strong> '+esc(top.kind||'desconhecido')+' · '+fmt(top.qty)+' ocorrências.<br><strong>Como ler:</strong> devemos cruzar hora, instalação, browser e resposta antes de atribuir a origem do problema.</div>';
    return html;
  }
@@ -704,7 +704,7 @@ function renderInsights(d){
  const avg=val(c,'speed_avg','avg_24h')??val(summary,'avg_24h','speed_avg');
  const median=val(c,'speed_p50','p50_24h')??val(summary,'p50_24h','speed_p50');
  $('insightCards').innerHTML=
-  card('MÓDULO MAIS USADO · 30 DIAS',topModule?esc(topModule.module||'—'):'—',topModule?fmt(topModule.qty)+' ações registadas.':'Sem dados suficientes.','cyan')+
+  card('MÓDULO MAIS USADO · 30 DIAS',topModule?esc(topModule.module||'—'):'—',topModule?fmt(topModule.qty)+' aberturas de módulo registadas.':'Sem dados suficientes.','cyan')+
   card('HORA MAIS ATIVA · 24 H',topHour?String(topHour.hour_num??'').padStart(2,'0')+'h':'—',topHour?fmt(topHour.actions)+' ações observadas.':'Sem dados suficientes.')+
   card('DIA COM MAIS CONSULTAS · 30 DIAS',topDay?esc(topDay.day_key||'—'):'—',topDay?fmt(topDay.lookups)+' consultas registadas.':'Sem dados suficientes.')+
   card('ITEM MAIS COPIADO · 30 DIAS',topLaw?esc(topLaw.item_label||topLaw.item_id||'—'):'—',topLaw?fmt(topLaw.qty)+' ações de cópia registadas.':'Sem dados suficientes.')+
