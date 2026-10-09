@@ -11572,18 +11572,7 @@ body.fixed-workspace-active .main.consultation-fixed-active .panel{min-height:0!
  setTimeout(sync,120);
 })();
 </script>
-\n<script id="v72-navigation-fix">
-(function(){
- // Histórico só existe dentro da área de Inspeções/Seguro.
- const oldOpen=window.abrirModulo;
- if(typeof oldOpen==='function'){
- window.abrirModulo=function(nome,el){
- document.getElementById('consultaHistoryTool')?.classList.remove('history-active');
- return oldOpen(nome,el);
- };
- }
-})();
-</script>
+\n
 <style id="v72-menu-arquitecture">\n\n.main-menu-screen{padding:34px 28px 30px!important;}\n@media(max-width:950px){\n .main-menu-grid-clean{grid-template-columns:repeat(2,minmax(0,1fr))!important;width:min(700px,100%);} \n .main-menu-radar,.main-menu-settings{grid-column:auto!important;}\n}\n@media(max-width:620px){\n .main-menu-grid-clean{grid-template-columns:1fr!important;}\n}\n</style>
 <script id="v74-main-menu-script">
 (function(){
@@ -11678,12 +11667,7 @@ body.main-menu-active .rail{display:none!important;}
  .main-menu-v74-title{font-size:21px}.main-menu-v74-grid-big .mm74-card{width:min(92vw,300px);height:138px}.main-menu-v74-grid-small .mm74-card{width:calc(50% - 7px);height:96px;}
 }
 </style>
-<script id="v76-history-cleanup">
-(function(){
- document.getElementById('consultaHistoryTool')?.remove();
- document.getElementById('historyRail')?.remove();
-})();
-</script> <style id="v76-historico-consulta-bottom">
+ <style id="v76-historico-consulta-bottom">
 
 .consulta-history-bottom-wrap{width:100%;display:flex;justify-content:center;align-items:center;margin:10px 0 8px;padding:0 16px;}
 .consulta-history-bottom{min-width:300px;height:46px;padding:0 28px;border:1px solid #e13b56;border-radius:8px;background:linear-gradient(180deg,#c8102e,#8f0c22);color:#fff;box-shadow:0 8px 24px rgba(200,16,46,.22),inset 0 1px 0 rgba(255,255,255,.12);font:900 11px/1 Arial,sans-serif;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:.16s;display:inline-flex;align-items:center;justify-content:center;gap:10px;}
