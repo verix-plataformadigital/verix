@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS public.verix_insurance_no_cases (
   matricula text NOT NULL CHECK (matricula ~ '^[A-Z0-9]{6,8}$'),
   occurred_at timestamptz NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
-  expires_at timestamptz NOT NULL
+  expires_at timestamptz NOT NULL DEFAULT (now() + interval '90 days')
 );
 COMMENT ON TABLE public.verix_insurance_no_cases IS
   'Restricted 90-day list of vehicle plates for which ASF returned no record. Not proof by itself that a vehicle has no insurance.';
