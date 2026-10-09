@@ -30,7 +30,8 @@ describe("atomic telemetry ingestion", () => {
     expect(sessionInsert).toBeGreaterThan(installationInsert);
     expect(eventInsert).toBeGreaterThan(sessionInsert);
     expect(migration).toContain("ON CONFLICT DO NOTHING");
-    expect(migration).toContain("GET DIAGNOSTICS v_events_inserted = ROW_COUNT;");
+    expect(migration).toContain("v_events_inserted := v_events_inserted + 1;");
+    expect(migration).toContain("v_written_events := v_written_events || jsonb_build_array(");
   });
 
   it("rolls back duplicate-only parent writes and rejects session identity collisions", () => {
