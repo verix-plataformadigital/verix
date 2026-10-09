@@ -3,7 +3,9 @@ import fs from "node:fs";
 const file = fs.readFileSync("windows/VerixPortable/Program.cs", "utf8");
 const project = fs.readFileSync("windows/VerixPortable/VerixPortable.csproj", "utf8");
 const workflow = fs.readFileSync(".github/workflows/reengineering-v2.yml", "utf8");
+const responsiveWorkflow = fs.readFileSync(".github/workflows/mobile-responsive.yml", "utf8");
 const windowsReleaseWorkflow = fs.readFileSync(".github/workflows/build-windows-release.yml", "utf8");
+const packager = fs.readFileSync("tools/package-windows-release.ps1", "utf8");
 const pagesWorkflow = fs.readFileSync(".github/workflows/deploy-pages.yml", "utf8");
 const secureReleaseWorkflow = fs.readFileSync(".github/workflows/secure-release.yml", "utf8");
 const launcher = fs.readFileSync("windows/VerixPortable/Run-V2-Local.cmd", "utf8");
@@ -191,8 +193,8 @@ for (const marker of requiredProjectMarkers) {
 const requiredWorkflowMarkers = [
   "npm ci --no-fund --no-audit",
   "npm run build:v2",
-  "node tools/verify-portable-package.mjs",
-  "dotnet publish"
+  "dotnet publish",
+  "pwsh -File tools/package-windows-release.ps1"
 ];
 for (const marker of requiredWorkflowMarkers) {
   if (!workflow.includes(marker)) {
@@ -200,19 +202,48 @@ for (const marker of requiredWorkflowMarkers) {
   }
 }
 
+const requiredPackagerMarkers = [
+  "tools/verify-portable-package.mjs",
+  "& node $verifierPath",
+  "Compress-Archive",
+  "Expand-Archive",
+  "Get-FileHash",
+  "VERIX-Windows-x64.zip.sha256",
+  "System.IO.File]::WriteAllText"
+];
+for (const marker of requiredPackagerMarkers) {
+  if (!packager.includes(marker)) {
+    throw new Error("Windows release packager is missing verification control: " + marker);
+  }
+}
+
 if (!launcher.includes("VERIX.exe") || !launcher.includes("--v2-local")) {
   throw new Error("Local V2 launcher must start VERIX.exe with --v2-local.");
 }
 
+for (const [label, source] of [
+  ["V2 quality workflow", workflow],
+  ["responsive browser workflow", responsiveWorkflow]
+]) {
+  if (!source.includes("workflow_call:")) {
+    throw new Error(label + " must support secure reuse by the tagged release workflow.");
+  }
+}
+
 const requiredWindowsReleaseMarkers = [
-  "npm ci --no-fund --no-audit",
-  "npm run build:v2",
-  "node tools/verify-portable-package.mjs",
-  "dotnet publish"
+  "uses: ./.github/workflows/reengineering-v2.yml",
+  "uses: ./.github/workflows/mobile-responsive.yml",
+  "needs:\n      - validate-v2\n      - validate-responsive",
+  "name: verix-windows-win-x64",
+  "sha256sum --check VERIX-Windows-x64.zip.sha256",
+  "if: startsWith(github.ref, 'refs/tags/verix-v')",
+  "contents: write",
+  "gh release create",
+  "gh release upload"
 ];
 for (const marker of requiredWindowsReleaseMarkers) {
   if (!windowsReleaseWorkflow.includes(marker)) {
-    throw new Error("Windows release workflow is missing: " + marker);
+    throw new Error("Windows release workflow is missing required release gate: " + marker);
   }
 }
 
