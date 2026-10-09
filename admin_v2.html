@@ -673,8 +673,8 @@ function renderErrors(d){
    else html+='<div class="warnbox"><strong>'+fmt(n)+' queries únicas com erro nas últimas 24 horas.</strong><br>Foram observadas em '+fmt(inst)+' instalações, com '+fmt(totalEvents)+' eventos e '+fmt(hashes)+' assinaturas técnicas. Isto mostra a dimensão observada, não determina sozinho a causa.</div>';
    if(top) html+='<div style="margin-top:10px" class="explain"><strong>Tipo mais frequente:</strong> '+esc(top.kind||'desconhecido')+' · '+fmt(top.qty)+' queries únicas ('+fmt(top.event_count??top.qty)+' eventos).<br><strong>Como ler:</strong> cruzar hora, versão, instalação, browser e resposta antes de atribuir a origem.</div>';
    const lowCoverageVersions=versions.filter(x=>x.diagnostic_pct!=null&&Number(x.diagnostic_pct)<50);
-   if(lowCoverageVersions.length) html+='<div class="warnbox" style="margin-top:10px"><strong>Cobertura técnica baixa em versões:</strong> '+lowCoverageVersions.map(x=>esc(x.app_version||'Unknown')+' ('+pct(x.diagnostic_pct)+')').join(', ')+'. Nestas versões, a telemetria não permite atribuir com confiança a causa de todos os erros.</div>';
-   if(versions.length) html+='<div style="margin-top:10px">'+table(['VERSÃO','QUERIES COM ERRO','INSTALAÇÕES','EVENTOS','COM DIAGNÓSTICO','COBERTURA'],versions.map(x=>'<tr>'+td('<strong>'+esc(x.app_version||'Unknown')+'</strong>')+td(fmt(x.error_queries))+td(fmt(x.installations))+td(fmt(x.event_count))+td(fmt(x.diagnosed_events))+td(pct(x.diagnostic_pct))+'</tr>'))+'</div>';
+   if(lowCoverageVersions.length) html+='<div class="warnbox" style="margin-top:10px"><strong>Cobertura técnica baixa em versões:</strong> '+lowCoverageVersions.map(x=>esc(x.app_version||'Unknown')+' / '+esc(x.telemetry_schema||'legacy')+' ('+pct(x.diagnostic_pct)+')').join(', ')+'. Nestas versões, a telemetria não permite atribuir com confiança a causa de todos os erros.</div>';
+   if(versions.length) html+='<div style="margin-top:10px">'+table(['VERSÃO','ESQUEMA','QUERIES COM ERRO','INSTALAÇÕES','EVENTOS','COM DIAGNÓSTICO','COBERTURA'],versions.map(x=>'<tr>'+td('<strong>'+esc(x.app_version||'Unknown')+'</strong>')+td(esc(x.telemetry_schema||'legacy'))+td(fmt(x.error_queries))+td(fmt(x.installations))+td(fmt(x.event_count))+td(fmt(x.diagnosed_events))+td(pct(x.diagnostic_pct))+'</tr>'))+'</div>';
    if(inv.sampled) html+='<p class="explain">Os detalhes técnicos estão limitados à amostra mais recente; os totais e a distribuição por versão acima são agregados no servidor.</p>';
    return html;
  }
@@ -744,21 +744,21 @@ function renderSystem(d){
   card('VERSÃO', '1.5','A versão apresentada aos utilizadores.','cyan')+
   card('EVENTOS TOTAIS',num(life.events_total),'Histórico observado.')+
   card('ÚLTIMO EVENTO',datePT(life.last_event_at),'Momento mais recente.','blue');
- const errorCoverageByVersion=new Map((d.analytics?.errors?.by_version||[]).map(v=>[v.app_version,v.diagnostic_pct]));
+ const errorCoverageByVersion=new Map((d.analytics?.errors?.by_version||[]).map(v=>[String(v.app_version||'Unknown')+'|'+String(v.telemetry_schema||'legacy'),v.diagnostic_pct]));
  const coverageRows=[
   '<tr>'+td('Dados do computador · geral')+td(pct(tel.client_coverage_30d))+td('Eventos com browser ou sistema operativo identificável nos últimos 30 dias.')+'</tr>',
   '<tr>'+td('Diagnóstico ASF · resultados')+td(pct(tel.asf_diagnostic_coverage_30d))+td('Resultados ASF com pelo menos um campo técnico útil, incluindo respostas positivas e negativas.')+'</tr>',
   '<tr>'+td('Cinemómetro · geral')+td(pct(tel.cin_detail_coverage_30d))+td('Eventos de cálculo/velocidade com velocidade registada.')+'</tr>'
  ];
  (tel.coverage_by_version||[]).forEach(v=>{
-  coverageRows.push('<tr>'+td('Cliente · '+esc(v.app_version||'Unknown'))+td(pct(v.client_coverage_pct))+td(fmt(v.event_count)+' eventos; '+fmt(v.actions)+' ações; ASF resultados '+pct(v.asf_diagnostic_coverage_pct)+'; erros ASF '+pct(errorCoverageByVersion.get(v.app_version))+'; Cinemómetro '+pct(v.cin_detail_coverage_pct)+'.')+'</tr>');
+  coverageRows.push('<tr>'+td('Cliente · '+esc(v.app_version||'Unknown')+' / '+esc(v.telemetry_schema||'legacy'))+td(pct(v.client_coverage_pct))+td(fmt(v.event_count)+' eventos; '+fmt(v.actions)+' ações; ASF resultados '+pct(v.asf_diagnostic_coverage_pct)+'; erros ASF '+pct(errorCoverageByVersion.get(String(v.app_version||'Unknown')+'|'+String(v.telemetry_schema||'legacy')))+'; Cinemómetro '+pct(v.cin_detail_coverage_pct)+'.')+'</tr>');
  });
  $('systemCoverage').innerHTML=table(['DADO','COBERTURA','O QUE SIGNIFICA'],coverageRows);
  $('systemHistory').innerHTML=
   '<div class="goodbox"><strong>O histórico está preservado.</strong><br>Nenhum reset administrativo apaga eventos. O reset de 24 H apenas muda o ponto de comparação; as janelas de 7 e 30 dias são móveis.</div>'+
   '<div style="margin-top:10px" class="kpi-strip">'+metric('Instalações conhecidas',num(life.installations_total))+metric('Sessões técnicas',num(life.sessions_total))+metric('Primeiro evento',datePT(life.first_event_at))+metric('Último evento',datePT(life.last_event_at))+'</div>'+
   '<div style="margin-top:10px" class="kpi-strip">'+metric('Inícios de consulta · 30 d',num(quality.started_queries_30d))+metric('Inícios inferidos',num(quality.inferred_starts_30d))+metric('Terminais órfãos',num(quality.orphan_terminal_queries_30d))+metric('Resultados contraditórios',num(quality.conflicting_terminal_queries_30d))+metric('Finais duplicados',num(quality.duplicate_terminal_events_30d))+metric('Sessões com timestamps divergentes',num(sessionQuality.parent_timestamp_mismatch_30d))+'</div>'+
-  ((quality.by_version||[]).length?'<div style="margin-top:10px">'+table(['VERSÃO','INÍCIOS','CONFIRMADOS','INFERIDOS','FINAIS VÁLIDOS','ERROS FINAIS','PENDENTES','CONFLITOS'],quality.by_version.map(v=>'<tr>'+td('<strong>'+esc(v.app_version||'Unknown')+'</strong>')+td(fmt(v.started))+td(fmt(v.confirmed_starts))+td(fmt(v.inferred_starts))+td(fmt(v.clean_finals))+td(fmt(v.clean_error_results))+td(fmt(v.pending))+td(fmt(v.conflicting))+'</tr>'))+'</div>':'');
+  ((quality.by_version||[]).length?'<div style="margin-top:10px">'+table(['VERSÃO','ESQUEMA','INÍCIOS','CONFIRMADOS','INFERIDOS','FINAIS VÁLIDOS','ERROS FINAIS','PENDENTES','CONFLITOS'],quality.by_version.map(v=>'<tr>'+td('<strong>'+esc(v.app_version||'Unknown')+'</strong>')+td(esc(v.telemetry_schema||'legacy'))+td(fmt(v.started))+td(fmt(v.confirmed_starts))+td(fmt(v.inferred_starts))+td(fmt(v.clean_finals))+td(fmt(v.clean_error_results))+td(fmt(v.pending))+td(fmt(v.conflicting))+'</tr>'))+'</div>':'');
  const rs=d.reset24hAt;$('reset24hStatus').textContent='Último reset: '+datePT(rs);
 }
 function renderAll(d){latestData=d;renderDashboard(d);renderInsurance(d);renderSpeed(d);renderLegislation(d);renderUsage(d);renderErrors(d);renderPerformance(d);renderInsights(d);renderSystem(d)}
