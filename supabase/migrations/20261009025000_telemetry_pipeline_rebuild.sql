@@ -203,7 +203,11 @@ query_events AS (
 q AS (
   SELECT query_id,
     coalesce(min(occurred_at) FILTER(WHERE event='vehicle_lookup'),min(occurred_at) FILTER(WHERE event='vehicle_insurance_pending')) first_at,
-    min(occurred_at) FILTER(WHERE event='vehicle_lookup') lookup_at
+    min(occurred_at) FILTER(WHERE event='vehicle_lookup') lookup_at,
+    coalesce(
+      (array_agg(app_version ORDER BY occurred_at,event_id) FILTER(WHERE event='vehicle_lookup'))[1],
+      (array_agg(app_version ORDER BY occurred_at,event_id) FILTER(WHERE event='vehicle_insurance_pending'))[1]
+    ) start_version
   FROM query_events WHERE event IN('vehicle_lookup','vehicle_insurance_pending') AND query_id IS NOT NULL
   GROUP BY query_id
 ),
@@ -285,7 +289,19 @@ query_quality AS (
   'orphan_terminal_queries_30d',(SELECT count(*) FROM terminal_rollup tr,b WHERE tr.last_at>=b.s30 AND NOT EXISTS(SELECT 1 FROM q WHERE q.query_id=tr.query_id)),
   'conflicting_terminal_queries_30d',(SELECT count(*) FROM q JOIN terminal_rollup tr USING(query_id),b WHERE q.first_at>=b.s30 AND tr.outcome_count>1),
   'duplicate_terminal_events_30d',(SELECT coalesce(sum(tr.terminal_event_count-1),0) FROM q JOIN terminal_rollup tr USING(query_id),b WHERE q.first_at>=b.s30 AND tr.terminal_event_count>1),
-  'out_of_order_final_queries_30d',(SELECT count(*) FROM q JOIN finals f USING(query_id),b WHERE q.first_at>=b.s30 AND f.occurred_at<q.first_at)
+  'out_of_order_final_queries_30d',(SELECT count(*) FROM q JOIN finals f USING(query_id),b WHERE q.first_at>=b.s30 AND f.occurred_at<q.first_at),
+  'by_version',coalesce((SELECT jsonb_agg(to_jsonb(x) ORDER BY x.started DESC) FROM(
+    SELECT coalesce(q.start_version,'Unknown') app_version,count(*) started,
+      count(*) FILTER(WHERE q.lookup_at IS NOT NULL) confirmed_starts,
+      count(*) FILTER(WHERE q.lookup_at IS NULL) inferred_starts,
+      count(*) FILTER(WHERE f.query_id IS NOT NULL) clean_finals,
+      count(*) FILTER(WHERE f.event='vehicle_insurance_error') clean_error_results,
+      count(*) FILTER(WHERE f.query_id IS NULL AND coalesce(tr.outcome_count,0)<=1) pending,
+      count(*) FILTER(WHERE tr.outcome_count>1) conflicting,
+      count(*) FILTER(WHERE f.query_id IS NULL AND tr.outcome_count=1 AND tr.last_at<q.first_at) out_of_order
+    FROM q CROSS JOIN b LEFT JOIN query_finals f ON f.query_id=q.query_id LEFT JOIN terminal_rollup tr ON tr.query_id=q.query_id
+    WHERE q.first_at>=b.s30 GROUP BY 1
+  ) x),'[]'::jsonb)
  ) data
 ),
 speed_data AS (
@@ -381,7 +397,8 @@ errors AS (
   'diagnostic_coverage_pct',(SELECT round((100.0*count(*) FILTER(WHERE metadata->'asfDiagnostic'->>'asfErrorType' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfHttpStatus' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfDurationMs' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfResponseHash' IS NOT NULL)/NULLIF(count(*),0))::numeric,1) FROM err_events),
   'by_version',coalesce((SELECT jsonb_agg(to_jsonb(x) ORDER BY x.error_queries DESC) FROM(
     SELECT coalesce(app_version,'Unknown') app_version,count(*) event_count,count(DISTINCT query_id) error_queries,count(DISTINCT installation_id) installations,
-      count(*) FILTER(WHERE metadata->'asfDiagnostic'->>'asfErrorType' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfHttpStatus' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfDurationMs' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfResponseHash' IS NOT NULL) diagnosed_events
+      count(*) FILTER(WHERE metadata->'asfDiagnostic'->>'asfErrorType' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfHttpStatus' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfDurationMs' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfResponseHash' IS NOT NULL) diagnosed_events,
+      round((100.0*count(*) FILTER(WHERE metadata->'asfDiagnostic'->>'asfErrorType' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfHttpStatus' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfDurationMs' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfResponseHash' IS NOT NULL)/NULLIF(count(*),0))::numeric,1) diagnostic_pct
     FROM err_events GROUP BY 1)x),'[]'::jsonb),
   'types',coalesce((SELECT jsonb_agg(to_jsonb(x) ORDER BY x.qty DESC) FROM err_types x),'[]'::jsonb),
   'bursts',coalesce((SELECT jsonb_agg(to_jsonb(x) ORDER BY x.qty DESC) FROM(SELECT * FROM err_bursts ORDER BY qty DESC,bucket_start DESC LIMIT 15)x),'[]'::jsonb),
