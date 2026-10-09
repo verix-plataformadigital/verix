@@ -354,6 +354,13 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
           <div class="panel"><div class="panel-head"><h3>ASSINATURAS REPETIDAS</h3><span>24 H</span></div><div id="errorSignatures" class="table-wrap"></div></div>
         </div>
         <div class="panel" style="margin-top:12px">
+          <div class="panel-head"><h3>MATRÍCULAS COM ERRO NA CONSULTA ASF</h3><span>24 H</span></div>
+          <div class="panel-body">
+            <p>Consultas ASF inconclusivas ou com falha em que a matrícula foi capturada. Um erro técnico não significa que o veículo não tenha seguro.</p>
+            <div id="errorPlates" class="table-wrap"><div class="empty">A carregar matrículas com erro…</div></div>
+          </div>
+        </div>
+        <div class="panel" style="margin-top:12px">
           <details>
             <summary class="detail-summary">Ver detalhe técnico dos incidentes</summary>
             <div class="details-body" id="errorTechnical"></div>
@@ -681,6 +688,8 @@ function renderErrors(d){
  $('errorReading').innerHTML=buildErrorReading(d);
  $('errorInstallations').innerHTML=table(['INSTALAÇÃO','ERROS','QUERIES'],(e.installations||[]).slice(0,15).map(x=>'<tr>'+td('<strong>'+esc(x.installation_id||'—')+'</strong>')+td(fmt(x.qty))+td(fmt(x.queries))+'</tr>'));
  $('errorSignatures').innerHTML=table(['TIPO','QUANTIDADE','INSTALAÇÕES'],(e.signatures||[]).slice(0,15).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'—')+'</span>')+td(fmt(x.qty))+td(fmt(x.installs))+'</tr>'));
+ const plateCases=inv.current_version_plate_cases||[];
+ $('errorPlates').innerHTML=plateCases.length?table(['MATRÍCULA','DATA E HORA','TIPO DE ERRO','BROWSER'],plateCases.map(x=>'<tr>'+td('<strong>'+esc(x.matricula||'—')+'</strong>')+td(datePT(x.occurred_at))+td('<span class="tag red">'+esc(x.error_type||'Desconhecido')+'</span>')+td(esc(x.browser||'—'))+'</tr>')):'<div class="empty">Não há matrículas válidas associadas a erros nas últimas 24 horas.</div>';
  const recent=inv.latest_current_version||[];
  $('errorTechnical').innerHTML=recent.length?'<table class="table"><thead><tr><th>Hora</th><th>Browser</th><th>Transporte</th><th>Tipo</th><th>HTTP</th><th>ASF ms</th><th>Relay ms</th><th>Hash</th></tr></thead><tbody>'+recent.slice(0,15).map(x=>'<tr>'+td(datePT(x.occurred_at))+td(esc(x.browser||'—'))+td(esc(x.transport||'—'))+td(esc(x.error_type||'—'))+td(x.http_status==null?'—':fmt(x.http_status))+td(x.duration_ms==null?'—':fmt(x.duration_ms)+' ms')+td(x.relay_latency_ms==null?'—':fmt(x.relay_latency_ms)+' ms')+td(esc(x.response_hash||'—'))+'</tr>').join('')+'</tbody></table>':'<div class="empty">Sem incidentes recentes.</div>';
  function buildErrorReading(data){

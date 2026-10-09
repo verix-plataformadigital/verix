@@ -30,6 +30,14 @@ assert.match(insuranceNoCasesMigration, /cron\.schedule/);
 assert.match(stats, /detail==="insurance-no-cases"/);
 assert.match(admin, /MATRÍCULAS COM RESULTADO “SEM REGISTO”/);
 assert.match(admin, /renderInsuranceNoCases/);
+assert.match(admin, /id="errorPlates"/, "Admin must expose a dedicated ASF error-plate list");
+assert.match(admin, /current_version_plate_cases\|\|\[\]/, "Admin must render actual error plate cases");
+assert.match(stats, /current_version_plate_cases:plateCases/, "stats must return error plate cases to Admin");
+assert.match(stats, /e\?\.metadata\?\.matriculaNormalizada\|\|e\?\.metadata\?\.matricula\|\|e\?\.metadata\?\.asfDiagnostic\?\.matricula/, "error analytics must read new and legacy plate metadata");
+assert.match(endpoint, /if \(event !== "vehicle_insurance_error"\) \{[\s\S]*?delete metadata\.matriculaNormalizada;/, "no-record events must not retain plate metadata in the general event stream");
+assert.match(endpoint, /insuranceNoCases\.push/, "valid no-record outcomes must enter the dedicated 90-day registry");
+assert.match(admin, /O resultado, por si só, não confirma a ausência de seguro/, "no-record list must warn that no record alone is not proof");
+assert.match(admin, /Um erro técnico não significa que o veículo não tenha seguro/, "error list must distinguish failures from insurance status");
 assert.match(endpoint, /p_installations:\s*\[\.\.\.installations\.values\(\)\]/);
 assert.match(endpoint, /p_sessions:\s*\[\.\.\.sessions\.values\(\)\]/);
 assert.doesNotMatch(endpoint, /db\.from\(["']verix2_(?:events|installations|sessions)["']\)\.upsert/);
@@ -60,6 +68,12 @@ const beaconEnd = app.indexOf("function rateLimited", beaconStart);
 assert.ok(beaconStart >= 0 && beaconEnd > beaconStart, "sendBeacon handler must exist");
 assert.doesNotMatch(app.slice(beaconStart, beaconEnd), /queue\.splice\(/, "sendBeacon must never dequeue without a server receipt");
 assert.ok(app.includes("VERIX_T2_REJECTED_QUEUE"), "permanent rejections must have bounded non-sensitive local diagnostics");
+assert.match(app, /function cleanMetadata\(meta, event\)/, "client metadata sanitizer must know which event is being sent");
+assert.match(app, /function insurancePlateMetadata\(value, asfDiagnostic\)/, "insurance outcome wrappers must normalize the plate");
+assert.match(app, /push\('vehicle_insurance_no', 'consulta', meta\)/, "no-record event must include plate metadata");
+assert.match(app, /push\('vehicle_insurance_error', 'consulta', meta\)/, "ASF error event must include plate metadata");
+assert.match(app, /event === 'vehicle_insurance_no' \|\| event === 'vehicle_insurance_error'/, "plate metadata must be limited to no-record/error events");
+assert.match(app, /event === 'vehicle_insurance_no' \|\| event === 'vehicle_insurance_error'\) \{\s*flushNow\(\)/, "insurance outcome events must be flushed immediately");
 
 
 const scriptOpen = '<script id="verix-telemetry-v2">';
