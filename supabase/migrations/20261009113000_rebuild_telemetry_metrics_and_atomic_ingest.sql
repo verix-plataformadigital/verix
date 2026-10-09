@@ -1,8 +1,6 @@
--- VÉRIX telemetry/statistics reconstruction (review before production deployment).
--- Keeps explicit 24h/global reset boundaries; query outcomes use start-cohort semantics.
--- Query statistics are cohort-based: queries start only at vehicle_lookup, outcome counts
--- are deduplicated by query_id, unresolved is split into pending vs incomplete, and
--- contradictory terminal outcomes are reported separately.
+-- VÉRIX telemetry/statistics reconstruction.
+-- Preserve reset boundaries and all historical events; only corrected calculations
+-- affect the metrics returned to Admin. Review and run in a disposable DB first.
 CREATE OR REPLACE FUNCTION public.verix2_admin_analytics(p_now timestamp with time zone DEFAULT now())
  RETURNS jsonb
  LANGUAGE sql
@@ -27,16 +25,14 @@ ev AS (
   WHERE e.occurred_at >= b.s30 AND e.occurred_at < b.enow
 ),
 q AS (
-  -- A query starts only when the client emits vehicle_lookup. A pending or
-  -- terminal event without that start is a coverage defect, not a new query.
+  -- A query starts only when the application emitted vehicle_lookup.
   SELECT query_id,min(occurred_at) AS first_at
   FROM ev
   WHERE event='vehicle_lookup' AND query_id IS NOT NULL
   GROUP BY query_id
 ),
 final_counts AS (
-  SELECT query_id,
-         count(*)::bigint AS final_event_count,
+  SELECT query_id,count(*)::bigint AS final_event_count,
          count(DISTINCT event)::integer AS final_type_count
   FROM ev
   WHERE event IN('vehicle_insurance_yes','vehicle_insurance_no','vehicle_insurance_error')
@@ -44,21 +40,17 @@ final_counts AS (
   GROUP BY query_id
 ),
 finals AS (
-  -- Keep one representative final row per query, while retaining diagnostics
-  -- to detect duplicate and contradictory final events rather than hiding them.
   SELECT DISTINCT ON(e.query_id)
     e.query_id,e.event,e.occurred_at,e.metadata,e.installation_id,e.app_version,e.browser,e.device_type,
     fc.final_event_count,fc.final_type_count
-  FROM ev e
-  JOIN final_counts fc ON fc.query_id=e.query_id
+  FROM ev e JOIN final_counts fc ON fc.query_id=e.query_id
   WHERE e.event IN('vehicle_insurance_yes','vehicle_insurance_no','vehicle_insurance_error')
     AND e.query_id IS NOT NULL
   ORDER BY e.query_id,e.occurred_at DESC,e.event_id DESC
 ),
 pending_events AS (
   SELECT query_id,count(*)::bigint AS pending_event_count
-  FROM ev
-  WHERE event='vehicle_insurance_pending' AND query_id IS NOT NULL
+  FROM ev WHERE event='vehicle_insurance_pending' AND query_id IS NOT NULL
   GROUP BY query_id
 ),
 overview AS (
@@ -69,7 +61,7 @@ overview AS (
     ) active5),
     'active_10m',(SELECT count(DISTINCT installation_id) FROM (
       SELECT installation_id FROM public.verix2_events
-       WHERE event='heartbeat' AND created_at >= p_now-interval '10 minutes' AND created_at < p_now
+       WHERE created_at >= p_now-interval '10 minutes' AND created_at < p_now
     ) active10),
     'unique_24h',count(DISTINCT installation_id) FILTER(WHERE occurred_at >= b.s24),
     'unique_7d',count(DISTINCT installation_id) FILTER(WHERE occurred_at >= b.s7),
@@ -87,17 +79,17 @@ overview AS (
 ret AS (
   SELECT jsonb_build_object(
     '24h',jsonb_build_object(
-      'unique',count(*) FILTER(WHERE last_seen>=b.s24 AND last_seen<b.enow),
-      'new',count(*) FILTER(WHERE first_seen>=b.s24 AND first_seen<b.enow),
-      'returning',count(*) FILTER(WHERE last_seen>=b.s24 AND last_seen<b.enow AND first_seen<b.s24)),
+      'unique',count(*) FILTER(WHERE last_seen>=b.s24),
+      'new',count(*) FILTER(WHERE first_seen>=b.s24),
+      'returning',count(*) FILTER(WHERE last_seen>=b.s24 AND first_seen<b.s24)),
     '7d',jsonb_build_object(
-      'unique',count(*) FILTER(WHERE last_seen>=b.s7 AND last_seen<b.enow),
-      'new',count(*) FILTER(WHERE first_seen>=b.s7 AND first_seen<b.enow),
-      'returning',count(*) FILTER(WHERE last_seen>=b.s7 AND last_seen<b.enow AND first_seen<b.s7)),
+      'unique',count(*) FILTER(WHERE last_seen>=b.s7),
+      'new',count(*) FILTER(WHERE first_seen>=b.s7),
+      'returning',count(*) FILTER(WHERE last_seen>=b.s7 AND first_seen<b.s7)),
     '30d',jsonb_build_object(
-      'unique',count(*) FILTER(WHERE last_seen>=b.s30 AND last_seen<b.enow),
-      'new',count(*) FILTER(WHERE first_seen>=b.s30 AND first_seen<b.enow),
-      'returning',count(*) FILTER(WHERE last_seen>=b.s30 AND last_seen<b.enow AND first_seen<b.s30))
+      'unique',count(*) FILTER(WHERE last_seen>=b.s30),
+      'new',count(*) FILTER(WHERE first_seen>=b.s30),
+      'returning',count(*) FILTER(WHERE last_seen>=b.s30 AND first_seen<b.s30))
   ) data
   FROM public.verix2_installations i,b
 ),
@@ -150,9 +142,9 @@ ins_quality AS (
     'latency_p95_ms',(SELECT round((percentile_cont(.95) WITHIN GROUP(
       ORDER BY (metadata->'asfDiagnostic'->>'asfDurationMs')::numeric))::numeric,0)
       FROM finals,b WHERE occurred_at>=b.s24 AND final_type_count=1 AND (metadata->'asfDiagnostic'->>'asfDurationMs')~'^[0-9]+(\\.[0-9]+)?$'),
-    'known_plates_24h',(SELECT count(DISTINCT upper(regexp_replace(coalesce(metadata->'asfDiagnostic'->>'matricula',metadata->>'matricula',''),'[^A-Z0-9]','','g')))
+    'known_plates_24h',(SELECT count(DISTINCT regexp_replace(upper(coalesce(metadata->'asfDiagnostic'->>'matricula',metadata->>'matricula','')),'[^A-Z0-9]','','g'))
       FROM finals,b WHERE occurred_at>=b.s24 AND coalesce(metadata->'asfDiagnostic'->>'matricula',metadata->>'matricula','')<>''),
-    'known_plates_30d',(SELECT count(DISTINCT upper(regexp_replace(coalesce(metadata->'asfDiagnostic'->>'matricula',metadata->>'matricula',''),'[^A-Z0-9]','','g')))
+    'known_plates_30d',(SELECT count(DISTINCT regexp_replace(upper(coalesce(metadata->'asfDiagnostic'->>'matricula',metadata->>'matricula','')),'[^A-Z0-9]','','g'))
       FROM finals WHERE coalesce(metadata->'asfDiagnostic'->>'matricula',metadata->>'matricula','')<>'')
   ) data
 ),
@@ -212,7 +204,7 @@ err_signatures AS (
   GROUP BY 1,2,3 ORDER BY qty DESC,kind LIMIT 20
 ),
 err_plates AS (
-  SELECT upper(regexp_replace(coalesce(metadata->'asfDiagnostic'->>'matricula',metadata->>'matricula',''),'[^A-Z0-9]','','g')) plate_key,
+  SELECT regexp_replace(upper(coalesce(metadata->'asfDiagnostic'->>'matricula',metadata->>'matricula','')),'[^A-Z0-9]','','g') plate_key,
          max(coalesce(metadata->'asfDiagnostic'->>'matricula',metadata->>'matricula')) plate,
          count(*) qty,max(occurred_at) last_at,
          array_agg(DISTINCT coalesce(metadata->'asfDiagnostic'->>'asfErrorType','unknown')) kinds
@@ -409,13 +401,13 @@ devices AS (
   SELECT jsonb_build_object(
     'browsers',coalesce((SELECT jsonb_agg(to_jsonb(x) ORDER BY x.qty DESC) FROM(
       SELECT coalesce(browser,'Unknown') value,count(DISTINCT installation_id) qty
-      FROM public.verix2_installations,b WHERE last_seen>=b.s30 AND last_seen<b.enow GROUP BY 1 ORDER BY qty DESC LIMIT 15)x),'[]'::jsonb),
+      FROM public.verix2_installations,b WHERE last_seen>=b.s30 GROUP BY 1 ORDER BY qty DESC LIMIT 15)x),'[]'::jsonb),
     'device_types',coalesce((SELECT jsonb_agg(to_jsonb(x) ORDER BY x.qty DESC) FROM(
       SELECT coalesce(device_type,'Unknown') value,count(*) qty
-      FROM public.verix2_installations,b WHERE last_seen>=b.s30 AND last_seen<b.enow GROUP BY 1 ORDER BY qty DESC LIMIT 10)x),'[]'::jsonb),
+      FROM public.verix2_installations,b WHERE last_seen>=b.s30 GROUP BY 1 ORDER BY qty DESC LIMIT 10)x),'[]'::jsonb),
     'os',coalesce((SELECT jsonb_agg(to_jsonb(x) ORDER BY x.qty DESC) FROM(
       SELECT coalesce(os,'Unknown') value,count(*) qty
-      FROM public.verix2_installations,b WHERE last_seen>=b.s30 AND last_seen<b.enow GROUP BY 1 ORDER BY qty DESC LIMIT 15)x),'[]'::jsonb)
+      FROM public.verix2_installations,b WHERE last_seen>=b.s30 GROUP BY 1 ORDER BY qty DESC LIMIT 15)x),'[]'::jsonb)
   ) data
 ),
 versions AS (
@@ -488,35 +480,7 @@ SELECT jsonb_build_object(
 );
 $function$;
 
--- Server-side activity timestamps fix client-clock skew for presence calculations.
-CREATE INDEX IF NOT EXISTS verix2_events_created_at_install_idx
-  ON public.verix2_events (created_at DESC, installation_id);
-
--- Reconcile presence timestamps against database receipt timestamps already persisted.
-UPDATE public.verix2_installations
-SET first_seen = LEAST(first_seen, now()),
-    last_seen = LEAST(last_seen, now())
-WHERE first_seen > now() OR last_seen > now();
-
-UPDATE public.verix2_sessions
-SET started_at = LEAST(started_at, now()),
-    last_seen = LEAST(last_seen, now())
-WHERE started_at > now() OR last_seen > now();
-
-UPDATE public.verix2_installations i
-SET last_seen = GREATEST(i.first_seen, COALESCE((
-  SELECT max(e.created_at) FROM public.verix2_events e
-  WHERE e.installation_id = i.installation_id
-), i.first_seen));
-
-UPDATE public.verix2_sessions s
-SET last_seen = GREATEST(s.started_at, COALESCE((
-  SELECT max(e.created_at) FROM public.verix2_events e
-  WHERE e.session_id = s.session_id
-), s.started_at));
-
--- Exact application-version error investigation. Aggregate in PostgreSQL so
--- PostgREST's row limit cannot silently truncate the counts shown in Admin.
+-- Exact, version-scoped error aggregation; sample details are limited, counts are not.
 CREATE OR REPLACE FUNCTION public.verix2_error_investigation(
   p_now timestamptz DEFAULT now(),
   p_app_version text DEFAULT '1.5',
@@ -528,18 +492,15 @@ SECURITY DEFINER
 SET search_path TO 'public', 'pg_catalog'
 AS $function$
 WITH bounds AS (
-  SELECT greatest(
-    p_now - interval '24 hours',
+  SELECT greatest(p_now - interval '24 hours',
     coalesce((SELECT reset_24h_at FROM public.verix2_dashboard_state WHERE singleton=true),
-             '1970-01-01T00:00:00Z'::timestamptz)
-  ) AS s24,
-  p_now AS enow
+             '1970-01-01T00:00:00Z'::timestamptz)) AS s24,
+    p_now AS enow
 ),
 all_errors AS (
   SELECT e.event_id,e.occurred_at,e.event,e.installation_id,e.query_id,e.app_version,e.browser,e.metadata
   FROM public.verix2_events e,bounds b
-  WHERE e.event='vehicle_insurance_error'
-    AND e.occurred_at>=b.s24 AND e.occurred_at<b.enow
+  WHERE e.event='vehicle_insurance_error' AND e.occurred_at>=b.s24 AND e.occurred_at<b.enow
 ),
 err AS (
   SELECT * FROM all_errors WHERE app_version=COALESCE(NULLIF(p_app_version,''),'1.5')
@@ -565,8 +526,7 @@ bursts AS (
   FROM err GROUP BY 1 ORDER BY count DESC,start DESC LIMIT 12
 ),
 recent AS (
-  SELECT e.*,
-         coalesce(e.metadata->'asfDiagnostic','{}'::jsonb) AS diagnostic
+  SELECT e.*,coalesce(e.metadata->'asfDiagnostic','{}'::jsonb) AS diagnostic
   FROM err e ORDER BY occurred_at DESC,event_id DESC
   LIMIT greatest(1,least(coalesce(p_recent_limit,12),50))
 )
@@ -575,9 +535,8 @@ SELECT jsonb_build_object(
   'errors_24h',(SELECT count(*) FROM all_errors),
   'app15_errors',(SELECT count(*) FROM err),
   'app15_installations',(SELECT count(DISTINCT installation_id) FROM err),
-  'app15_plates',(SELECT count(DISTINCT upper(regexp_replace(
-    coalesce(metadata->'asfDiagnostic'->>'matricula',metadata->>'matricula',''),'[^A-Z0-9]','','g'
-  ))) FROM err WHERE coalesce(metadata->'asfDiagnostic'->>'matricula',metadata->>'matricula','')<>''),
+  'app15_plates',(SELECT count(DISTINCT regexp_replace(upper(coalesce(metadata->'asfDiagnostic'->>'matricula',metadata->>'matricula','')),'[^A-Z0-9]','','g'))
+    FROM err WHERE coalesce(metadata->'asfDiagnostic'->>'matricula',metadata->>'matricula','')<>''),
   'app15_hashes',(SELECT count(DISTINCT coalesce(nullif(metadata->'asfDiagnostic'->>'asfResponseHash',''),'sem-hash')) FROM err),
   'app15_types',coalesce((SELECT jsonb_agg(to_jsonb(x) ORDER BY x.count DESC,x.type) FROM by_type x),'[]'::jsonb),
   'app15_hashes_top',coalesce((SELECT jsonb_agg(to_jsonb(x) ORDER BY x.count DESC,x.hash) FROM by_hash x),'[]'::jsonb),
@@ -594,478 +553,13 @@ SELECT jsonb_build_object(
       'browser',coalesce(browser,'Unknown'),
       'error_type',coalesce(diagnostic->>'asfErrorType','unknown'),
       'transport',diagnostic->>'asfTransport',
-      'relay_latency_ms',CASE WHEN (diagnostic->>'asfRelayLatencyMs')~'^[0-9]+(\\.[0-9]+)?
--- acknowledge only actually inserted rows, and update last_seen using server time.
-CREATE OR REPLACE FUNCTION public.verix2_ingest_telemetry(
-  p_events jsonb,
-  p_installations jsonb,
-  p_sessions jsonb
-)
-RETURNS jsonb
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path TO 'public', 'pg_catalog'
-AS $function$
-DECLARE
-  v_now timestamptz := clock_timestamp();
-  v_inserted integer := 0;
-BEGIN
-  IF jsonb_typeof(COALESCE(p_events, '[]'::jsonb)) <> 'array'
-     OR jsonb_typeof(COALESCE(p_installations, '[]'::jsonb)) <> 'array'
-     OR jsonb_typeof(COALESCE(p_sessions, '[]'::jsonb)) <> 'array' THEN
-    RAISE EXCEPTION 'telemetry_payload_must_be_arrays' USING ERRCODE='22023';
-  END IF;
-
-  INSERT INTO public.verix2_installations (
-    installation_id, first_seen, last_seen, app_version, device_type, browser, os
-  )
-  SELECT x.installation_id, LEAST(COALESCE(x.first_seen, v_now), v_now), LEAST(COALESCE(x.first_seen, v_now), v_now),
-         x.app_version, x.device_type, x.browser, x.os
-  FROM jsonb_to_recordset(p_installations) AS x(
-    installation_id text, first_seen timestamptz, last_seen timestamptz,
-    app_version text, device_type text, browser text, os text
-  )
-  WHERE x.installation_id IS NOT NULL
-  ON CONFLICT (installation_id) DO UPDATE SET
-    first_seen = LEAST(public.verix2_installations.first_seen, EXCLUDED.first_seen),
-    app_version = COALESCE(EXCLUDED.app_version, public.verix2_installations.app_version),
-    device_type = COALESCE(EXCLUDED.device_type, public.verix2_installations.device_type),
-    browser = COALESCE(EXCLUDED.browser, public.verix2_installations.browser),
-    os = COALESCE(EXCLUDED.os, public.verix2_installations.os);
-
-  INSERT INTO public.verix2_sessions (
-    session_id, installation_id, tab_id, started_at, last_seen
-  )
-  SELECT x.session_id, x.installation_id, x.tab_id, LEAST(COALESCE(x.started_at, v_now), v_now), LEAST(COALESCE(x.started_at, v_now), v_now)
-  FROM jsonb_to_recordset(p_sessions) AS x(
-    session_id text, installation_id text, tab_id text,
-    started_at timestamptz, last_seen timestamptz
-  )
-  WHERE x.session_id IS NOT NULL AND x.installation_id IS NOT NULL
-  ON CONFLICT (session_id) DO UPDATE SET
-    started_at = LEAST(public.verix2_sessions.started_at, EXCLUDED.started_at),
-    installation_id = EXCLUDED.installation_id,
-    tab_id = COALESCE(EXCLUDED.tab_id, public.verix2_sessions.tab_id);
-
-  WITH incoming AS (
-    SELECT *
-    FROM jsonb_to_recordset(COALESCE(p_events, '[]'::jsonb)) AS x(
-      event_id text, installation_id text, session_id text, tab_id text,
-      query_id text, event text, module text, occurred_at timestamptz,
-      app_version text, device_type text, browser text, metadata jsonb
-    )
-    WHERE x.event_id IS NOT NULL AND x.installation_id IS NOT NULL
-  ),
-  inserted AS (
-    INSERT INTO public.verix2_events (
-      event_id, installation_id, session_id, tab_id, query_id, event, module,
-      occurred_at, app_version, device_type, browser, metadata
-    )
-    SELECT event_id, installation_id, session_id, tab_id, query_id, event, module,
-           occurred_at, app_version, device_type, browser, COALESCE(metadata, '{}'::jsonb)
-    FROM incoming
-    ON CONFLICT (event_id) DO NOTHING
-    RETURNING installation_id, session_id
-  ),
-  touch_installations AS (
-    UPDATE public.verix2_installations i
-    SET last_seen = GREATEST(i.last_seen, v_now)
-    WHERE EXISTS (SELECT 1 FROM inserted e WHERE e.installation_id=i.installation_id)
-    RETURNING i.installation_id
-  ),
-  touch_sessions AS (
-    UPDATE public.verix2_sessions s
-    SET last_seen = GREATEST(s.last_seen, v_now)
-    WHERE EXISTS (SELECT 1 FROM inserted e WHERE e.session_id=s.session_id)
-    RETURNING s.session_id
-  )
-  SELECT count(*)::integer INTO v_inserted FROM inserted;
-
-  RETURN jsonb_build_object('events_inserted', v_inserted);
-END;
-$function$;
-
-REVOKE ALL ON FUNCTION public.verix2_ingest_telemetry(jsonb, jsonb, jsonb) FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.verix2_ingest_telemetry(jsonb, jsonb, jsonb) TO service_role;
- THEN (diagnostic->>'asfRelayLatencyMs')::numeric ELSE NULL END,
-      'http_status',CASE WHEN (diagnostic->>'asfHttpStatus')~'^[0-9]+
--- acknowledge only actually inserted rows, and update last_seen using server time.
-CREATE OR REPLACE FUNCTION public.verix2_ingest_telemetry(
-  p_events jsonb,
-  p_installations jsonb,
-  p_sessions jsonb
-)
-RETURNS jsonb
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path TO 'public', 'pg_catalog'
-AS $function$
-DECLARE
-  v_now timestamptz := clock_timestamp();
-  v_inserted integer := 0;
-BEGIN
-  IF jsonb_typeof(COALESCE(p_events, '[]'::jsonb)) <> 'array'
-     OR jsonb_typeof(COALESCE(p_installations, '[]'::jsonb)) <> 'array'
-     OR jsonb_typeof(COALESCE(p_sessions, '[]'::jsonb)) <> 'array' THEN
-    RAISE EXCEPTION 'telemetry_payload_must_be_arrays' USING ERRCODE='22023';
-  END IF;
-
-  INSERT INTO public.verix2_installations (
-    installation_id, first_seen, last_seen, app_version, device_type, browser, os
-  )
-  SELECT x.installation_id, LEAST(COALESCE(x.first_seen, v_now), v_now), LEAST(COALESCE(x.first_seen, v_now), v_now),
-         x.app_version, x.device_type, x.browser, x.os
-  FROM jsonb_to_recordset(p_installations) AS x(
-    installation_id text, first_seen timestamptz, last_seen timestamptz,
-    app_version text, device_type text, browser text, os text
-  )
-  WHERE x.installation_id IS NOT NULL
-  ON CONFLICT (installation_id) DO UPDATE SET
-    first_seen = LEAST(public.verix2_installations.first_seen, EXCLUDED.first_seen),
-    app_version = COALESCE(EXCLUDED.app_version, public.verix2_installations.app_version),
-    device_type = COALESCE(EXCLUDED.device_type, public.verix2_installations.device_type),
-    browser = COALESCE(EXCLUDED.browser, public.verix2_installations.browser),
-    os = COALESCE(EXCLUDED.os, public.verix2_installations.os);
-
-  INSERT INTO public.verix2_sessions (
-    session_id, installation_id, tab_id, started_at, last_seen
-  )
-  SELECT x.session_id, x.installation_id, x.tab_id, LEAST(COALESCE(x.started_at, v_now), v_now), LEAST(COALESCE(x.started_at, v_now), v_now)
-  FROM jsonb_to_recordset(p_sessions) AS x(
-    session_id text, installation_id text, tab_id text,
-    started_at timestamptz, last_seen timestamptz
-  )
-  WHERE x.session_id IS NOT NULL AND x.installation_id IS NOT NULL
-  ON CONFLICT (session_id) DO UPDATE SET
-    started_at = LEAST(public.verix2_sessions.started_at, EXCLUDED.started_at),
-    installation_id = EXCLUDED.installation_id,
-    tab_id = COALESCE(EXCLUDED.tab_id, public.verix2_sessions.tab_id);
-
-  WITH incoming AS (
-    SELECT *
-    FROM jsonb_to_recordset(COALESCE(p_events, '[]'::jsonb)) AS x(
-      event_id text, installation_id text, session_id text, tab_id text,
-      query_id text, event text, module text, occurred_at timestamptz,
-      app_version text, device_type text, browser text, metadata jsonb
-    )
-    WHERE x.event_id IS NOT NULL AND x.installation_id IS NOT NULL
-  ),
-  inserted AS (
-    INSERT INTO public.verix2_events (
-      event_id, installation_id, session_id, tab_id, query_id, event, module,
-      occurred_at, app_version, device_type, browser, metadata
-    )
-    SELECT event_id, installation_id, session_id, tab_id, query_id, event, module,
-           occurred_at, app_version, device_type, browser, COALESCE(metadata, '{}'::jsonb)
-    FROM incoming
-    ON CONFLICT (event_id) DO NOTHING
-    RETURNING installation_id, session_id
-  ),
-  touch_installations AS (
-    UPDATE public.verix2_installations i
-    SET last_seen = GREATEST(i.last_seen, v_now)
-    WHERE EXISTS (SELECT 1 FROM inserted e WHERE e.installation_id=i.installation_id)
-    RETURNING i.installation_id
-  ),
-  touch_sessions AS (
-    UPDATE public.verix2_sessions s
-    SET last_seen = GREATEST(s.last_seen, v_now)
-    WHERE EXISTS (SELECT 1 FROM inserted e WHERE e.session_id=s.session_id)
-    RETURNING s.session_id
-  )
-  SELECT count(*)::integer INTO v_inserted FROM inserted;
-
-  RETURN jsonb_build_object('events_inserted', v_inserted);
-END;
-$function$;
-
-REVOKE ALL ON FUNCTION public.verix2_ingest_telemetry(jsonb, jsonb, jsonb) FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.verix2_ingest_telemetry(jsonb, jsonb, jsonb) TO service_role;
- THEN (diagnostic->>'asfHttpStatus')::integer ELSE NULL END,
-      'duration_ms',CASE WHEN (diagnostic->>'asfDurationMs')~'^[0-9]+(\\.[0-9]+)?
--- acknowledge only actually inserted rows, and update last_seen using server time.
-CREATE OR REPLACE FUNCTION public.verix2_ingest_telemetry(
-  p_events jsonb,
-  p_installations jsonb,
-  p_sessions jsonb
-)
-RETURNS jsonb
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path TO 'public', 'pg_catalog'
-AS $function$
-DECLARE
-  v_now timestamptz := clock_timestamp();
-  v_inserted integer := 0;
-BEGIN
-  IF jsonb_typeof(COALESCE(p_events, '[]'::jsonb)) <> 'array'
-     OR jsonb_typeof(COALESCE(p_installations, '[]'::jsonb)) <> 'array'
-     OR jsonb_typeof(COALESCE(p_sessions, '[]'::jsonb)) <> 'array' THEN
-    RAISE EXCEPTION 'telemetry_payload_must_be_arrays' USING ERRCODE='22023';
-  END IF;
-
-  INSERT INTO public.verix2_installations (
-    installation_id, first_seen, last_seen, app_version, device_type, browser, os
-  )
-  SELECT x.installation_id, LEAST(COALESCE(x.first_seen, v_now), v_now), LEAST(COALESCE(x.first_seen, v_now), v_now),
-         x.app_version, x.device_type, x.browser, x.os
-  FROM jsonb_to_recordset(p_installations) AS x(
-    installation_id text, first_seen timestamptz, last_seen timestamptz,
-    app_version text, device_type text, browser text, os text
-  )
-  WHERE x.installation_id IS NOT NULL
-  ON CONFLICT (installation_id) DO UPDATE SET
-    first_seen = LEAST(public.verix2_installations.first_seen, EXCLUDED.first_seen),
-    app_version = COALESCE(EXCLUDED.app_version, public.verix2_installations.app_version),
-    device_type = COALESCE(EXCLUDED.device_type, public.verix2_installations.device_type),
-    browser = COALESCE(EXCLUDED.browser, public.verix2_installations.browser),
-    os = COALESCE(EXCLUDED.os, public.verix2_installations.os);
-
-  INSERT INTO public.verix2_sessions (
-    session_id, installation_id, tab_id, started_at, last_seen
-  )
-  SELECT x.session_id, x.installation_id, x.tab_id, LEAST(COALESCE(x.started_at, v_now), v_now), LEAST(COALESCE(x.started_at, v_now), v_now)
-  FROM jsonb_to_recordset(p_sessions) AS x(
-    session_id text, installation_id text, tab_id text,
-    started_at timestamptz, last_seen timestamptz
-  )
-  WHERE x.session_id IS NOT NULL AND x.installation_id IS NOT NULL
-  ON CONFLICT (session_id) DO UPDATE SET
-    started_at = LEAST(public.verix2_sessions.started_at, EXCLUDED.started_at),
-    installation_id = EXCLUDED.installation_id,
-    tab_id = COALESCE(EXCLUDED.tab_id, public.verix2_sessions.tab_id);
-
-  WITH incoming AS (
-    SELECT *
-    FROM jsonb_to_recordset(COALESCE(p_events, '[]'::jsonb)) AS x(
-      event_id text, installation_id text, session_id text, tab_id text,
-      query_id text, event text, module text, occurred_at timestamptz,
-      app_version text, device_type text, browser text, metadata jsonb
-    )
-    WHERE x.event_id IS NOT NULL AND x.installation_id IS NOT NULL
-  ),
-  inserted AS (
-    INSERT INTO public.verix2_events (
-      event_id, installation_id, session_id, tab_id, query_id, event, module,
-      occurred_at, app_version, device_type, browser, metadata
-    )
-    SELECT event_id, installation_id, session_id, tab_id, query_id, event, module,
-           occurred_at, app_version, device_type, browser, COALESCE(metadata, '{}'::jsonb)
-    FROM incoming
-    ON CONFLICT (event_id) DO NOTHING
-    RETURNING installation_id, session_id
-  ),
-  touch_installations AS (
-    UPDATE public.verix2_installations i
-    SET last_seen = GREATEST(i.last_seen, v_now)
-    WHERE EXISTS (SELECT 1 FROM inserted e WHERE e.installation_id=i.installation_id)
-    RETURNING i.installation_id
-  ),
-  touch_sessions AS (
-    UPDATE public.verix2_sessions s
-    SET last_seen = GREATEST(s.last_seen, v_now)
-    WHERE EXISTS (SELECT 1 FROM inserted e WHERE e.session_id=s.session_id)
-    RETURNING s.session_id
-  )
-  SELECT count(*)::integer INTO v_inserted FROM inserted;
-
-  RETURN jsonb_build_object('events_inserted', v_inserted);
-END;
-$function$;
-
-REVOKE ALL ON FUNCTION public.verix2_ingest_telemetry(jsonb, jsonb, jsonb) FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.verix2_ingest_telemetry(jsonb, jsonb, jsonb) TO service_role;
- THEN (diagnostic->>'asfDurationMs')::numeric ELSE NULL END,
+      'relay_latency_ms',CASE WHEN (diagnostic->>'asfRelayLatencyMs')~'^[0-9]+([.][0-9]+)?$' THEN (diagnostic->>'asfRelayLatencyMs')::numeric ELSE NULL END,
+      'http_status',CASE WHEN (diagnostic->>'asfHttpStatus')~'^[0-9]+$' THEN (diagnostic->>'asfHttpStatus')::integer ELSE NULL END,
+      'duration_ms',CASE WHEN (diagnostic->>'asfDurationMs')~'^[0-9]+([.][0-9]+)?$' THEN (diagnostic->>'asfDurationMs')::numeric ELSE NULL END,
       'response_hash',diagnostic->>'asfResponseHash',
       'response_class',diagnostic->>'asfResponseClass',
-      'graphql_error_count',CASE WHEN (diagnostic->>'asfGraphqlErrorCount')~'^[0-9]+
--- acknowledge only actually inserted rows, and update last_seen using server time.
-CREATE OR REPLACE FUNCTION public.verix2_ingest_telemetry(
-  p_events jsonb,
-  p_installations jsonb,
-  p_sessions jsonb
-)
-RETURNS jsonb
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path TO 'public', 'pg_catalog'
-AS $function$
-DECLARE
-  v_now timestamptz := clock_timestamp();
-  v_inserted integer := 0;
-BEGIN
-  IF jsonb_typeof(COALESCE(p_events, '[]'::jsonb)) <> 'array'
-     OR jsonb_typeof(COALESCE(p_installations, '[]'::jsonb)) <> 'array'
-     OR jsonb_typeof(COALESCE(p_sessions, '[]'::jsonb)) <> 'array' THEN
-    RAISE EXCEPTION 'telemetry_payload_must_be_arrays' USING ERRCODE='22023';
-  END IF;
-
-  INSERT INTO public.verix2_installations (
-    installation_id, first_seen, last_seen, app_version, device_type, browser, os
-  )
-  SELECT x.installation_id, LEAST(COALESCE(x.first_seen, v_now), v_now), LEAST(COALESCE(x.first_seen, v_now), v_now),
-         x.app_version, x.device_type, x.browser, x.os
-  FROM jsonb_to_recordset(p_installations) AS x(
-    installation_id text, first_seen timestamptz, last_seen timestamptz,
-    app_version text, device_type text, browser text, os text
-  )
-  WHERE x.installation_id IS NOT NULL
-  ON CONFLICT (installation_id) DO UPDATE SET
-    first_seen = LEAST(public.verix2_installations.first_seen, EXCLUDED.first_seen),
-    app_version = COALESCE(EXCLUDED.app_version, public.verix2_installations.app_version),
-    device_type = COALESCE(EXCLUDED.device_type, public.verix2_installations.device_type),
-    browser = COALESCE(EXCLUDED.browser, public.verix2_installations.browser),
-    os = COALESCE(EXCLUDED.os, public.verix2_installations.os);
-
-  INSERT INTO public.verix2_sessions (
-    session_id, installation_id, tab_id, started_at, last_seen
-  )
-  SELECT x.session_id, x.installation_id, x.tab_id, LEAST(COALESCE(x.started_at, v_now), v_now), LEAST(COALESCE(x.started_at, v_now), v_now)
-  FROM jsonb_to_recordset(p_sessions) AS x(
-    session_id text, installation_id text, tab_id text,
-    started_at timestamptz, last_seen timestamptz
-  )
-  WHERE x.session_id IS NOT NULL AND x.installation_id IS NOT NULL
-  ON CONFLICT (session_id) DO UPDATE SET
-    started_at = LEAST(public.verix2_sessions.started_at, EXCLUDED.started_at),
-    installation_id = EXCLUDED.installation_id,
-    tab_id = COALESCE(EXCLUDED.tab_id, public.verix2_sessions.tab_id);
-
-  WITH incoming AS (
-    SELECT *
-    FROM jsonb_to_recordset(COALESCE(p_events, '[]'::jsonb)) AS x(
-      event_id text, installation_id text, session_id text, tab_id text,
-      query_id text, event text, module text, occurred_at timestamptz,
-      app_version text, device_type text, browser text, metadata jsonb
-    )
-    WHERE x.event_id IS NOT NULL AND x.installation_id IS NOT NULL
-  ),
-  inserted AS (
-    INSERT INTO public.verix2_events (
-      event_id, installation_id, session_id, tab_id, query_id, event, module,
-      occurred_at, app_version, device_type, browser, metadata
-    )
-    SELECT event_id, installation_id, session_id, tab_id, query_id, event, module,
-           occurred_at, app_version, device_type, browser, COALESCE(metadata, '{}'::jsonb)
-    FROM incoming
-    ON CONFLICT (event_id) DO NOTHING
-    RETURNING installation_id, session_id
-  ),
-  touch_installations AS (
-    UPDATE public.verix2_installations i
-    SET last_seen = GREATEST(i.last_seen, v_now)
-    WHERE EXISTS (SELECT 1 FROM inserted e WHERE e.installation_id=i.installation_id)
-    RETURNING i.installation_id
-  ),
-  touch_sessions AS (
-    UPDATE public.verix2_sessions s
-    SET last_seen = GREATEST(s.last_seen, v_now)
-    WHERE EXISTS (SELECT 1 FROM inserted e WHERE e.session_id=s.session_id)
-    RETURNING s.session_id
-  )
-  SELECT count(*)::integer INTO v_inserted FROM inserted;
-
-  RETURN jsonb_build_object('events_inserted', v_inserted);
-END;
-$function$;
-
-REVOKE ALL ON FUNCTION public.verix2_ingest_telemetry(jsonb, jsonb, jsonb) FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.verix2_ingest_telemetry(jsonb, jsonb, jsonb) TO service_role;
- THEN (diagnostic->>'asfGraphqlErrorCount')::integer ELSE NULL END,
-      'response_bytes',CASE WHEN (diagnostic->>'asfResponseBytes')~'^[0-9]+
--- acknowledge only actually inserted rows, and update last_seen using server time.
-CREATE OR REPLACE FUNCTION public.verix2_ingest_telemetry(
-  p_events jsonb,
-  p_installations jsonb,
-  p_sessions jsonb
-)
-RETURNS jsonb
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path TO 'public', 'pg_catalog'
-AS $function$
-DECLARE
-  v_now timestamptz := clock_timestamp();
-  v_inserted integer := 0;
-BEGIN
-  IF jsonb_typeof(COALESCE(p_events, '[]'::jsonb)) <> 'array'
-     OR jsonb_typeof(COALESCE(p_installations, '[]'::jsonb)) <> 'array'
-     OR jsonb_typeof(COALESCE(p_sessions, '[]'::jsonb)) <> 'array' THEN
-    RAISE EXCEPTION 'telemetry_payload_must_be_arrays' USING ERRCODE='22023';
-  END IF;
-
-  INSERT INTO public.verix2_installations (
-    installation_id, first_seen, last_seen, app_version, device_type, browser, os
-  )
-  SELECT x.installation_id, LEAST(COALESCE(x.first_seen, v_now), v_now), LEAST(COALESCE(x.first_seen, v_now), v_now),
-         x.app_version, x.device_type, x.browser, x.os
-  FROM jsonb_to_recordset(p_installations) AS x(
-    installation_id text, first_seen timestamptz, last_seen timestamptz,
-    app_version text, device_type text, browser text, os text
-  )
-  WHERE x.installation_id IS NOT NULL
-  ON CONFLICT (installation_id) DO UPDATE SET
-    first_seen = LEAST(public.verix2_installations.first_seen, EXCLUDED.first_seen),
-    app_version = COALESCE(EXCLUDED.app_version, public.verix2_installations.app_version),
-    device_type = COALESCE(EXCLUDED.device_type, public.verix2_installations.device_type),
-    browser = COALESCE(EXCLUDED.browser, public.verix2_installations.browser),
-    os = COALESCE(EXCLUDED.os, public.verix2_installations.os);
-
-  INSERT INTO public.verix2_sessions (
-    session_id, installation_id, tab_id, started_at, last_seen
-  )
-  SELECT x.session_id, x.installation_id, x.tab_id, LEAST(COALESCE(x.started_at, v_now), v_now), LEAST(COALESCE(x.started_at, v_now), v_now)
-  FROM jsonb_to_recordset(p_sessions) AS x(
-    session_id text, installation_id text, tab_id text,
-    started_at timestamptz, last_seen timestamptz
-  )
-  WHERE x.session_id IS NOT NULL AND x.installation_id IS NOT NULL
-  ON CONFLICT (session_id) DO UPDATE SET
-    started_at = LEAST(public.verix2_sessions.started_at, EXCLUDED.started_at),
-    installation_id = EXCLUDED.installation_id,
-    tab_id = COALESCE(EXCLUDED.tab_id, public.verix2_sessions.tab_id);
-
-  WITH incoming AS (
-    SELECT *
-    FROM jsonb_to_recordset(COALESCE(p_events, '[]'::jsonb)) AS x(
-      event_id text, installation_id text, session_id text, tab_id text,
-      query_id text, event text, module text, occurred_at timestamptz,
-      app_version text, device_type text, browser text, metadata jsonb
-    )
-    WHERE x.event_id IS NOT NULL AND x.installation_id IS NOT NULL
-  ),
-  inserted AS (
-    INSERT INTO public.verix2_events (
-      event_id, installation_id, session_id, tab_id, query_id, event, module,
-      occurred_at, app_version, device_type, browser, metadata
-    )
-    SELECT event_id, installation_id, session_id, tab_id, query_id, event, module,
-           occurred_at, app_version, device_type, browser, COALESCE(metadata, '{}'::jsonb)
-    FROM incoming
-    ON CONFLICT (event_id) DO NOTHING
-    RETURNING installation_id, session_id
-  ),
-  touch_installations AS (
-    UPDATE public.verix2_installations i
-    SET last_seen = GREATEST(i.last_seen, v_now)
-    WHERE EXISTS (SELECT 1 FROM inserted e WHERE e.installation_id=i.installation_id)
-    RETURNING i.installation_id
-  ),
-  touch_sessions AS (
-    UPDATE public.verix2_sessions s
-    SET last_seen = GREATEST(s.last_seen, v_now)
-    WHERE EXISTS (SELECT 1 FROM inserted e WHERE e.session_id=s.session_id)
-    RETURNING s.session_id
-  )
-  SELECT count(*)::integer INTO v_inserted FROM inserted;
-
-  RETURN jsonb_build_object('events_inserted', v_inserted);
-END;
-$function$;
-
-REVOKE ALL ON FUNCTION public.verix2_ingest_telemetry(jsonb, jsonb, jsonb) FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.verix2_ingest_telemetry(jsonb, jsonb, jsonb) TO service_role;
- THEN (diagnostic->>'asfResponseBytes')::integer ELSE NULL END,
+      'graphql_error_count',CASE WHEN (diagnostic->>'asfGraphqlErrorCount')~'^[0-9]+$' THEN (diagnostic->>'asfGraphqlErrorCount')::integer ELSE NULL END,
+      'response_bytes',CASE WHEN (diagnostic->>'asfResponseBytes')~'^[0-9]+$' THEN (diagnostic->>'asfResponseBytes')::integer ELSE NULL END,
       'parse_path',diagnostic->>'asfParsePath',
       'build_id',coalesce(metadata->>'build_id',diagnostic->>'build_id')
     ) ORDER BY occurred_at DESC,event_id DESC)
@@ -1077,96 +571,104 @@ $function$;
 REVOKE ALL ON FUNCTION public.verix2_error_investigation(timestamptz,text,integer) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.verix2_error_investigation(timestamptz,text,integer) TO service_role;
 
--- Atomic, idempotent ingestion: establish FK parents before inserting child events,
--- acknowledge only actually inserted rows, and update last_seen using server time.
+-- Server-side timestamps are authoritative for active presence. The reset boundary
+-- stays intact and old event rows remain queryable.
+CREATE INDEX IF NOT EXISTS verix2_events_created_at_install_idx
+  ON public.verix2_events (created_at DESC, installation_id);
+
+UPDATE public.verix2_installations
+SET first_seen=LEAST(first_seen,now()),last_seen=LEAST(last_seen,now())
+WHERE first_seen>now() OR last_seen>now();
+UPDATE public.verix2_sessions
+SET started_at=LEAST(started_at,now()),last_seen=LEAST(last_seen,now())
+WHERE started_at>now() OR last_seen>now();
+UPDATE public.verix2_installations i
+SET last_seen=GREATEST(i.first_seen,COALESCE((
+  SELECT max(e.created_at) FROM public.verix2_events e WHERE e.installation_id=i.installation_id
+),i.first_seen));
+UPDATE public.verix2_sessions s
+SET last_seen=GREATEST(s.started_at,COALESCE((
+  SELECT max(e.created_at) FROM public.verix2_events e WHERE e.session_id=s.session_id
+),s.started_at));
+
+-- Atomic, idempotent ingestion: parent rows, events and presence updates share
+-- one transaction. Only events actually inserted advance server-side last_seen.
 CREATE OR REPLACE FUNCTION public.verix2_ingest_telemetry(
-  p_events jsonb,
-  p_installations jsonb,
-  p_sessions jsonb
+  p_events jsonb,p_installations jsonb,p_sessions jsonb
 )
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path TO 'public', 'pg_catalog'
+SET search_path TO 'public','pg_catalog'
 AS $function$
 DECLARE
   v_now timestamptz := clock_timestamp();
   v_inserted integer := 0;
 BEGIN
-  IF jsonb_typeof(COALESCE(p_events, '[]'::jsonb)) <> 'array'
-     OR jsonb_typeof(COALESCE(p_installations, '[]'::jsonb)) <> 'array'
-     OR jsonb_typeof(COALESCE(p_sessions, '[]'::jsonb)) <> 'array' THEN
+  IF jsonb_typeof(COALESCE(p_events,'[]'::jsonb))<>'array'
+     OR jsonb_typeof(COALESCE(p_installations,'[]'::jsonb))<>'array'
+     OR jsonb_typeof(COALESCE(p_sessions,'[]'::jsonb))<>'array' THEN
     RAISE EXCEPTION 'telemetry_payload_must_be_arrays' USING ERRCODE='22023';
   END IF;
 
-  INSERT INTO public.verix2_installations (
-    installation_id, first_seen, last_seen, app_version, device_type, browser, os
-  )
-  SELECT x.installation_id, LEAST(COALESCE(x.first_seen, v_now), v_now), LEAST(COALESCE(x.first_seen, v_now), v_now),
-         x.app_version, x.device_type, x.browser, x.os
+  INSERT INTO public.verix2_installations(installation_id,first_seen,last_seen,app_version,device_type,browser,os)
+  SELECT x.installation_id,LEAST(COALESCE(x.first_seen,v_now),v_now),LEAST(COALESCE(x.first_seen,v_now),v_now),
+         x.app_version,x.device_type,x.browser,x.os
   FROM jsonb_to_recordset(p_installations) AS x(
-    installation_id text, first_seen timestamptz, last_seen timestamptz,
-    app_version text, device_type text, browser text, os text
+    installation_id text,first_seen timestamptz,last_seen timestamptz,
+    app_version text,device_type text,browser text,os text
   )
   WHERE x.installation_id IS NOT NULL
-  ON CONFLICT (installation_id) DO UPDATE SET
-    first_seen = LEAST(public.verix2_installations.first_seen, EXCLUDED.first_seen),
-    app_version = COALESCE(EXCLUDED.app_version, public.verix2_installations.app_version),
-    device_type = COALESCE(EXCLUDED.device_type, public.verix2_installations.device_type),
-    browser = COALESCE(EXCLUDED.browser, public.verix2_installations.browser),
-    os = COALESCE(EXCLUDED.os, public.verix2_installations.os);
+  ON CONFLICT(installation_id) DO UPDATE SET
+    first_seen=LEAST(public.verix2_installations.first_seen,EXCLUDED.first_seen),
+    app_version=COALESCE(EXCLUDED.app_version,public.verix2_installations.app_version),
+    device_type=COALESCE(EXCLUDED.device_type,public.verix2_installations.device_type),
+    browser=COALESCE(EXCLUDED.browser,public.verix2_installations.browser),
+    os=COALESCE(EXCLUDED.os,public.verix2_installations.os);
 
-  INSERT INTO public.verix2_sessions (
-    session_id, installation_id, tab_id, started_at, last_seen
-  )
-  SELECT x.session_id, x.installation_id, x.tab_id, LEAST(COALESCE(x.started_at, v_now), v_now), LEAST(COALESCE(x.started_at, v_now), v_now)
+  INSERT INTO public.verix2_sessions(session_id,installation_id,tab_id,started_at,last_seen)
+  SELECT x.session_id,x.installation_id,x.tab_id,LEAST(COALESCE(x.started_at,v_now),v_now),LEAST(COALESCE(x.started_at,v_now),v_now)
   FROM jsonb_to_recordset(p_sessions) AS x(
-    session_id text, installation_id text, tab_id text,
-    started_at timestamptz, last_seen timestamptz
+    session_id text,installation_id text,tab_id text,started_at timestamptz,last_seen timestamptz
   )
   WHERE x.session_id IS NOT NULL AND x.installation_id IS NOT NULL
-  ON CONFLICT (session_id) DO UPDATE SET
-    started_at = LEAST(public.verix2_sessions.started_at, EXCLUDED.started_at),
-    installation_id = EXCLUDED.installation_id,
-    tab_id = COALESCE(EXCLUDED.tab_id, public.verix2_sessions.tab_id);
+  ON CONFLICT(session_id) DO UPDATE SET
+    started_at=LEAST(public.verix2_sessions.started_at,EXCLUDED.started_at),
+    tab_id=COALESCE(EXCLUDED.tab_id,public.verix2_sessions.tab_id);
 
   WITH incoming AS (
-    SELECT *
-    FROM jsonb_to_recordset(COALESCE(p_events, '[]'::jsonb)) AS x(
-      event_id text, installation_id text, session_id text, tab_id text,
-      query_id text, event text, module text, occurred_at timestamptz,
-      app_version text, device_type text, browser text, metadata jsonb
+    SELECT * FROM jsonb_to_recordset(COALESCE(p_events,'[]'::jsonb)) AS x(
+      event_id text,installation_id text,session_id text,tab_id text,query_id text,event text,module text,
+      occurred_at timestamptz,app_version text,device_type text,browser text,metadata jsonb
     )
     WHERE x.event_id IS NOT NULL AND x.installation_id IS NOT NULL
   ),
   inserted AS (
-    INSERT INTO public.verix2_events (
-      event_id, installation_id, session_id, tab_id, query_id, event, module,
-      occurred_at, app_version, device_type, browser, metadata
-    )
-    SELECT event_id, installation_id, session_id, tab_id, query_id, event, module,
-           occurred_at, app_version, device_type, browser, COALESCE(metadata, '{}'::jsonb)
+    INSERT INTO public.verix2_events(event_id,installation_id,session_id,tab_id,query_id,event,module,
+      occurred_at,app_version,device_type,browser,metadata)
+    SELECT event_id,installation_id,session_id,tab_id,query_id,event,module,occurred_at,app_version,device_type,browser,
+           COALESCE(metadata,'{}'::jsonb)
     FROM incoming
-    ON CONFLICT (event_id) DO NOTHING
-    RETURNING installation_id, session_id
+    ON CONFLICT(event_id) DO NOTHING
+    RETURNING installation_id,session_id
   ),
   touch_installations AS (
     UPDATE public.verix2_installations i
-    SET last_seen = GREATEST(i.last_seen, v_now)
-    WHERE EXISTS (SELECT 1 FROM inserted e WHERE e.installation_id=i.installation_id)
+    SET last_seen=GREATEST(i.last_seen,v_now)
+    WHERE EXISTS(SELECT 1 FROM inserted e WHERE e.installation_id=i.installation_id)
     RETURNING i.installation_id
   ),
   touch_sessions AS (
     UPDATE public.verix2_sessions s
-    SET last_seen = GREATEST(s.last_seen, v_now)
-    WHERE EXISTS (SELECT 1 FROM inserted e WHERE e.session_id=s.session_id)
+    SET last_seen=GREATEST(s.last_seen,v_now)
+    WHERE EXISTS(SELECT 1 FROM inserted e WHERE e.session_id=s.session_id)
     RETURNING s.session_id
   )
   SELECT count(*)::integer INTO v_inserted FROM inserted;
 
-  RETURN jsonb_build_object('events_inserted', v_inserted);
+  RETURN jsonb_build_object('events_inserted',v_inserted);
 END;
 $function$;
 
-REVOKE ALL ON FUNCTION public.verix2_ingest_telemetry(jsonb, jsonb, jsonb) FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.verix2_ingest_telemetry(jsonb, jsonb, jsonb) TO service_role;
+REVOKE ALL ON FUNCTION public.verix2_ingest_telemetry(jsonb,jsonb,jsonb) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.verix2_ingest_telemetry(jsonb,jsonb,jsonb) TO service_role;
