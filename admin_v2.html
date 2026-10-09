@@ -634,7 +634,7 @@ function renderUsage(d){
  $('usageCards').innerHTML=
   card('INSTALAÇÕES',num(o['unique_'+currentPeriod]),'Instalações com atividade.','cyan')+
   card('NOVOS',num(r[currentPeriod]?.new),'Primeira aparição no período.')+
-  card('QUE REGRESSARAM',num(r[currentPeriod]?.returning),'Já tinham aparecido antes.','green')+
+  card('INSTALAÇÕES QUE REGRESSARAM',num(r[currentPeriod]?.returning),'Já tinham aparecido antes.','green')+
   card('AÇÕES REGISTADAS',num(o['events_'+currentPeriod]),'Eventos de utilização.');
  barList('usageModules',(u.modules||[]).map(x=>({label:x.module,value:x.qty})));
  hourGrid('usageHours',u.hourly||[]);
@@ -731,7 +731,7 @@ function renderSystem(d){
  const life=d.lifetime||{},tel=d.analytics?.telemetry||{},o=d.analytics?.overview||{}; const partial=Object.keys(d.errors||{}).length>0;
  $('systemCards').innerHTML=
   card('BACKEND',partial?'PARCIAL':'ONLINE',partial?'Alguns dados não ficaram disponíveis.':'Última atualização concluída.',partial?'amber':'green')+
-  card('VERSÃO', '1.5','A versão apresentada aos instalações.','cyan')+
+  card('VERSÃO', '1.5','Versão da aplicação apresentada no painel.','cyan')+
   card('EVENTOS TOTAIS',num(life.events_total),'Histórico observado.')+
   card('ÚLTIMO EVENTO',datePT(life.last_event_at),'Momento mais recente.','blue');
  $('systemCoverage').innerHTML=table(['DADO','COBERTURA','O QUE SIGNIFICA'],[
