@@ -100,20 +100,6 @@ query_quality AS (
   FROM q
   LEFT JOIN final_counts fc ON fc.query_id=q.query_id
 ),
-query_quality AS (
-  SELECT q.query_id,q.first_at,
-         COALESCE(fc.final_event_count,0) AS final_event_count,
-         COALESCE(fc.final_type_count,0) AS final_type_count,
-         fc.event AS final_event,fc.occurred_at AS final_at,
-         CASE
-           WHEN fc.final_event_count=1 THEN 'valid'
-           WHEN COALESCE(fc.final_event_count,0)>1 AND COALESCE(fc.final_type_count,0)>1 THEN 'contradictory'
-           WHEN COALESCE(fc.final_event_count,0)>1 THEN 'duplicate_finals'
-           WHEN EXISTS (SELECT 1 FROM ev pe WHERE pe.query_id=q.query_id AND pe.event='vehicle_insurance_pending') THEN 'pending'
-           ELSE 'incomplete'
-         END AS outcome_state
-  FROM q LEFT JOIN final_counts fc ON fc.query_id=q.query_id
-),
 q_total AS (
   SELECT query_id,min(occurred_at) AS first_at
   FROM ev_total WHERE event='vehicle_lookup' AND query_id IS NOT NULL GROUP BY query_id
@@ -596,8 +582,8 @@ SELECT jsonb_build_object(
   'telemetry',(SELECT data FROM telemetry),
   'events',(SELECT data FROM top_events)
 );
-$function$;
-
+$function$
+;
 
 -- Activate the new baseline immediately; rows before this timestamp remain stored but are excluded from new metrics.
 SELECT public.verix2_reset_all_periods();
