@@ -23,7 +23,7 @@ jobs:
       - name: Install release tooling
         run: npm install --ignore-scripts --no-audit --no-fund
 
-      - name: Verify AI policy and server-side rate limits
+      - name: Verify AI policy and public release metadata
         run: node tools/verify-ai-security.mjs
 
       - name: Produce hardened build
