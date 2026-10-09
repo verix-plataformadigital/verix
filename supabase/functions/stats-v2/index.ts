@@ -487,12 +487,14 @@ Deno.serve(async (req) => {
     if(canonicalMetrics && typeof canonicalMetrics==="object") {
       if(canonicalMetrics.bounds) analyticsObj.bounds=canonicalMetrics.bounds;
       if(canonicalMetrics.insurance) analyticsObj.insurance=canonicalMetrics.insurance;
+      if(canonicalMetrics.insurance_quality) analyticsObj.insurance_quality=canonicalMetrics.insurance_quality;
       if(canonicalMetrics.query_quality) analyticsObj.query_quality=canonicalMetrics.query_quality;
       if(canonicalMetrics.errors) analyticsObj.errors=canonicalMetrics.errors;
       if(canonicalMetrics.telemetry) analyticsObj.telemetry=canonicalMetrics.telemetry;
       if(canonicalMetrics.speed_summary || canonicalMetrics.speed_distribution_24h) {
         analyticsObj.speed={...(analyticsObj.speed||{})};
         if(canonicalMetrics.speed_summary) analyticsObj.speed.summary=canonicalMetrics.speed_summary;
+        if(canonicalMetrics.speed_dimensions) analyticsObj.speed.dimensions=canonicalMetrics.speed_dimensions;
         if(canonicalMetrics.speed_distribution_24h) analyticsObj.speed.distribution_24h=canonicalMetrics.speed_distribution_24h;
       }
       analyticsObj.usage={...(analyticsObj.usage||{}),...(canonicalMetrics.usage||{})};
