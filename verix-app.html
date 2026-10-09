@@ -8060,32 +8060,47 @@ html body.cin-config-modal-open .cin-config-panel:not(.collapsed) .cin-config-fo
  .cin-config-foot-actions{width:100%;justify-content:flex-end;flex-wrap:wrap}
 }
 </style>
-<script id="cin-v83-modal-radar-config-js">
-(function(){
- function syncRadarListViewport(){
- const screen=document.querySelector('.cin-one-screen');
- const section=document.getElementById('cinOtherRadarsSection');
- if(!screen||!section)return;
- screen.classList.toggle('cin-list-expanded',!section.classList.contains('collapsed'));
+<script id="cin-v83-modal-radar-config-js">(function(){
+ 'use strict';
+ function syncRadarListViewport(shouldScroll){
+  const screen=document.querySelector('.cin-one-screen');
+  const section=document.getElementById('cinOtherRadarsSection');
+  const body=document.querySelector('.module-overlay.cinemometro-fullpage .module-body');
+  if(!section)return;
+  const collapsed=section.classList.contains('collapsed');
+  if(screen)screen.classList.toggle('cin-list-expanded',!collapsed);
+  if(body)body.classList.toggle('cin-radar-expanded',!collapsed);
+  if(collapsed){if(body)body.scrollTop=0;return;}
+  if(shouldScroll){
+   setTimeout(()=>{
+    const target=document.getElementById('cinOtherRadarsSection');
+    if(target)target.scrollIntoView({behavior:'smooth',block:'start'});
+    const search=document.getElementById('cinRadarSearch');
+    if(search)search.focus();
+   },80);
+  }
  }
- const oldToggle=window.cinAlternarListaCinemometros;
- if(typeof oldToggle==='function'){
- window.cinAlternarListaCinemometros=function(force){
- oldToggle(force);syncRadarListViewport();
- };
+ const originalToggle=window.cinAlternarListaCinemometros;
+ if(typeof originalToggle==='function'){
+  window.cinAlternarListaCinemometros=function(force){
+   const result=originalToggle.apply(this,arguments);
+   const section=document.getElementById('cinOtherRadarsSection');
+   syncRadarListViewport(section&&!section.classList.contains('collapsed'));
+   return result;
+  };
  }
  document.addEventListener('click',function(e){
- if(e.target?.closest('#cinCollapseRadarListBtn')) setTimeout(syncRadarListViewport,0);
+  if(e.target?.closest('#cinCollapseRadarListBtn'))setTimeout(()=>syncRadarListViewport(false),0);
  });
  document.addEventListener('keydown',function(e){
- const panel=document.getElementById('cinConfigPanel');
- if(panel && document.body.classList.contains('cin-config-modal-open') && e.key==='Escape'){
- e.preventDefault();e.stopImmediatePropagation();
- }
+  const panel=document.getElementById('cinConfigPanel');
+  if(panel&&document.body.classList.contains('cin-config-modal-open')&&e.key==='Escape'){
+   e.preventDefault();e.stopImmediatePropagation();
+  }
  },true);
- setTimeout(syncRadarListViewport,60);
-})();
-</script>  <style id="v84-menu-principal-header">
+ window.addEventListener('load',()=>setTimeout(()=>syncRadarListViewport(false),80));
+ setTimeout(()=>syncRadarListViewport(false),60);
+})();</script>  <style id="v84-menu-principal-header">
 
 .main-menu-v74-shell{justify-content:flex-start!important;padding:0 22px 20px!important;}
 .main-menu-v74-title{align-self:stretch!important;width:100%!important;box-sizing:border-box!important;text-align:left!important;margin:0!important;padding:13px 18px 11px!important;border:1px solid rgba(88,145,160,.38)!important;border-top:0!important;border-radius:0 0 8px 8px!important;background:linear-gradient(90deg,rgba(74,12,35,.78),rgba(5,44,51,.72),rgba(4,23,29,.82))!important;color:#eef6f8!important;font:950 24px/1 Arial,sans-serif!important;letter-spacing:1.8px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;text-shadow:0 0 14px rgba(110,210,225,.10)!important;}
@@ -8140,34 +8155,7 @@ html body.cinemometro-page-active{overflow:hidden!important;}
  background:linear-gradient(180deg,#071a22,#06151b)!important;
 }
 </style>
-<script id="v93-radar-expand-real-scroll-js">
-(function(){
- const old=window.cinAlternarListaCinemometros;
- if(typeof old!=='function') return;
- window.cinAlternarListaCinemometros=function(force){
- const section=document.getElementById('cinOtherRadarsSection');
- old(force);
- const collapsed=!!section?.classList.contains('collapsed');
- const body=document.querySelector('.module-overlay.cinemometro-fullpage .module-body');
- if(body) body.classList.toggle('cin-radar-expanded',!collapsed);
- if(!collapsed){
- setTimeout(()=>{
- const target=document.getElementById('cinOtherRadarsSection');
- if(target) target.scrollIntoView({behavior:'smooth',block:'start'});
- const search=document.getElementById('cinRadarSearch');
- if(search) search.focus();
- },80);
- }else if(body){
- body.scrollTop=0;
- }
- };
- window.addEventListener('load',()=>setTimeout(()=>{
- const section=document.getElementById('cinOtherRadarsSection');
- const body=document.querySelector('.module-overlay.cinemometro-fullpage .module-body');
- if(section&&body) body.classList.toggle('cin-radar-expanded',!section.classList.contains('collapsed'));
- },80));
-})();
-</script>           <style id="verix-css-batch-008">html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-one-screen.cin-radar-expanded .cin-config-dashboard{
+           <style id="verix-css-batch-008">html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-one-screen.cin-radar-expanded .cin-config-dashboard{
  height:auto!important;
  min-height:0!important;
  max-height:none!important;
