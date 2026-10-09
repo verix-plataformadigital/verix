@@ -38,7 +38,7 @@ assert.match(admin, /renderInsuranceNoCases/);
 assert.match(admin, /id="errorPlates"/, "Admin must expose a dedicated ASF error-plate list");
 assert.match(admin, /current_version_plate_cases\|\|\[\]/, "Admin must render actual error plate cases");
 assert.match(stats, /current_version_plate_cases:plateCases/, "stats must return error plate cases to Admin");
-assert.match(stats, /e\?\.metadata\?\.matriculaNormalizada\|\|e\?\.metadata\?\.matricula\|\|e\?\.metadata\?\.asfDiagnostic\?\.matricula/, "error analytics must read new and legacy plate metadata");
+assert.ok(stats.includes("const candidates=[e?.metadata?.asfDiagnostic?.matricula,e?.metadata?.matriculaNormalizada,e?.metadata?.matricula]"), "error analytics must prefer a valid plate from supported metadata fields");
 assert.match(endpoint, /if \(event !== "vehicle_insurance_error"\) \{[\s\S]*?delete metadata\.matriculaNormalizada;/, "no-record events must not retain plate metadata in the general event stream");
 assert.match(endpoint, /insuranceNoCases\.push/, "valid no-record outcomes must enter the dedicated 90-day registry");
 assert.match(admin, /O resultado, por si só, não confirma a ausência de seguro/, "no-record list must warn that no record alone is not proof");
