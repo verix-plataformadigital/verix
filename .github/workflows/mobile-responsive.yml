@@ -22,10 +22,16 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Resolve lockfile
+      - name: Use pinned npm resolver
+        run: npm install --global npm@12.2.0
+
+      - name: Verify committed lockfile
+        shell: bash
         run: |
-          npm install --global npm@12.2.0
-          npm install --package-lock-only --ignore-scripts --no-fund --no-audit
+          test -s package-lock.json || {
+            echo "package-lock.json must be versioned before running responsive CI."
+            exit 1
+          }
 
       - name: Install V2 dependencies
         run: npm ci --no-fund --no-audit
