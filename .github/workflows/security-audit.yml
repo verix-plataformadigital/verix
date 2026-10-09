@@ -28,6 +28,52 @@ jobs:
           VERIX_BUILD_ID: 1.5-sec-${{ github.run_number }}-${{ github.sha }}
         run: npm run build:secure
 
+      - name: Validate published HTML structure
+        shell: bash
+        run: |
+          python - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+
+          class Validator(HTMLParser):
+              VOID = {
+                  'area','base','br','col','embed','hr','img','input',
+                  'link','meta','param','source','track','wbr'
+              }
+              def __init__(self):
+                  super().__init__()
+                  self.stack = []
+                  self.errors = []
+
+              def handle_starttag(self, tag, attrs):
+                  tag = tag.lower()
+                  if tag not in self.VOID:
+                      self.stack.append(tag)
+
+              def handle_startendtag(self, tag, attrs):
+                  pass
+
+              def handle_endtag(self, tag):
+                  tag = tag.lower()
+                  if not self.stack or self.stack[-1] != tag:
+                      self.errors.append(
+                          f"unexpected closing </{tag}> at {self.getpos()}"
+                      )
+                  else:
+                      self.stack.pop()
+
+          for path in (Path("dist/verix-app.html"), Path("dist/admin_v2.html")):
+              if not path.is_file():
+                  raise SystemExit(f"Required published HTML file missing: {path}")
+              parser = Validator()
+              parser.feed(path.read_text(encoding="utf-8"))
+              if parser.errors:
+                  raise SystemExit(f"{path}:\\n" + "\\n".join(parser.errors[:20]))
+              if parser.stack:
+                  raise SystemExit(f"{path}: unclosed HTML tags: {parser.stack[-20:]}")
+              print(f"HTML structural validation: OK — {path}")
+          PY
+
       - name: Verify release does not contain source maps
         shell: bash
         run: |
