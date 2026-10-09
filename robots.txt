@@ -1,0 +1,13 @@
+# Advisory only: this is served under /verix/ on GitHub Pages,
+# not at the hostname root. See AI-ACCESS-POLICY.md for this limitation.
+User-agent: GPTBot
+Disallow: /
+
+User-agent: OAI-SearchBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: *
+Disallow:
