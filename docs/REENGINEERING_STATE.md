@@ -329,3 +329,11 @@ Fonte externa: Diário da República, Código da Estrada consolidado.
 - Acesso externo exige decisão institucional: API/web service disponibilizado pelo IMT ou gateway de aplicação formalmente aprovada pela GNR/SGMAI e pelo IMT; como alternativa transitória, solução oficial de acesso remoto a dispositivo gerido.
 - Criado `docs/IMT_EXTERNAL_ACCESS.md` com opções, arquitetura, requisitos de segurança, fases, critérios de aceitação e referências oficiais.
 - Não foram expostos novos endpoints, não foi criado proxy, não foram alteradas credenciais nem a produção. A implementação funcional fica bloqueada até existir autorização, contrato de interface e ambiente de teste aprovados.
+
+
+## Correção de destino IMT baseada nos links oficiais fornecidos — 2026-10-09
+
+- Comparação dos links oficiais usados pelo posto com o código V2 identificou uma divergência de hostname: links fornecidos usam `extranet.imtt.external.rnsi.local`, enquanto o URL builder V2 anterior usava `consultapsp.imtt.external.rnsi.local`.
+- As capturas mostram que o painel etiquetado como Livrete/Veículo estava a mostrar uma listagem de inspeções, ao passo que a página oficial `consulta_livrete.php` fornecida apresenta características técnicas. Isto torna a divergência um candidato plausível a causa funcional, mas não confirma sozinho a resposta de cada hostname.
+- Atualizados URL builder e testes para usar o hostname dos links fornecidos; acrescentado esse host à allowlist HTTP do host Windows, continuando restringido a porta 80 e caminho `/veiculos/`. O hostname anterior mantém-se temporariamente permitido por compatibilidade.
+- **Validação operacional pendente:** a consulta real só pode ser verificada em equipamento ligado à RNSI. Produção `main` não foi alterada e a mudança não deve ser publicada antes do ensaio comparativo.

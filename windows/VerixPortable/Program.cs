@@ -23,6 +23,7 @@ internal static class Program
 
     private static readonly HashSet<string> InternalHttpAllowedHosts = new(StringComparer.OrdinalIgnoreCase)
     {
+        "extranet.imtt.external.rnsi.local",
         "consultapsp.imtt.external.rnsi.local"
     };
 

@@ -49,6 +49,7 @@ const requiredFileMarkers = [
   "NewWindowRequested",
   "DownloadStarting",
   "IsUserInitiated",
+  "extranet.imtt.external.rnsi.local",
   "consultapsp.imtt.external.rnsi.local",
   "SetVirtualHostNameToFolderMapping",
   "CoreWebView2HostResourceAccessKind.DenyCors",

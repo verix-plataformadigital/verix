@@ -2,7 +2,7 @@ import { normalizePlate } from "../../shared/validators/vehicle";
 import type { ImtSource } from "./imt-contract";
 
 export const IMT_RNSI_BASE_URL =
-  "http://consultapsp.imtt.external.rnsi.local/veiculos/";
+  "http://extranet.imtt.external.rnsi.local/veiculos/";
 
 const IMT_RNSI_PATHS: Record<ImtSource, string> = {
   inspecao: "consulta_inspecao.php",

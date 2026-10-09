@@ -12,10 +12,10 @@ describe('ImtService', () => {
 
     expect(operation.sequence).toBe(1);
     expect(operation.inspectionUrl).toBe(
-      'http://consultapsp.imtt.external.rnsi.local/veiculos/consulta_inspecao.php?Matricula=12AB34'
+      'http://extranet.imtt.external.rnsi.local/veiculos/consulta_inspecao.php?Matricula=12AB34'
     );
     expect(operation.livreteUrl).toBe(
-      'http://consultapsp.imtt.external.rnsi.local/veiculos/consulta_livrete.php?Matricula=VC1234'
+      'http://extranet.imtt.external.rnsi.local/veiculos/consulta_livrete.php?Matricula=VC1234'
     );
     expect(open).not.toHaveBeenCalled();
   });
@@ -32,7 +32,7 @@ describe('ImtService', () => {
 
     expect(service.open('inspecao', '12-AB-34')).toBe(true);
     expect(open).toHaveBeenCalledWith(
-      'http://consultapsp.imtt.external.rnsi.local/veiculos/consulta_inspecao.php?Matricula=12AB34'
+      'http://extranet.imtt.external.rnsi.local/veiculos/consulta_inspecao.php?Matricula=12AB34'
     );
   });
 
@@ -50,9 +50,9 @@ describe('browser IMT window adapter', () => {
 
     try {
       const adapter = browserImtWindowAdapter();
-      expect(adapter.open('http://consultapsp.imtt.external.rnsi.local/veiculos/consulta_inspecao.php?Matricula=12AB34')).toBe(true);
+      expect(adapter.open('http://extranet.imtt.external.rnsi.local/veiculos/consulta_inspecao.php?Matricula=12AB34')).toBe(true);
       expect(open).toHaveBeenCalledWith(
-        'http://consultapsp.imtt.external.rnsi.local/veiculos/consulta_inspecao.php?Matricula=12AB34',
+        'http://extranet.imtt.external.rnsi.local/veiculos/consulta_inspecao.php?Matricula=12AB34',
         '_blank'
       );
       expect(openedWindow.opener).toBeNull();
@@ -65,7 +65,7 @@ describe('browser IMT window adapter', () => {
     const open = vi.spyOn(window, 'open').mockReturnValue(null);
 
     try {
-      expect(browserImtWindowAdapter().open('http://consultapsp.imtt.external.rnsi.local/veiculos/consulta_livrete.php?Matricula=VC1234')).toBe(false);
+      expect(browserImtWindowAdapter().open('http://extranet.imtt.external.rnsi.local/veiculos/consulta_livrete.php?Matricula=VC1234')).toBe(false);
     } finally {
       open.mockRestore();
     }
