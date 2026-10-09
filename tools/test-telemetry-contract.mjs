@@ -30,4 +30,12 @@ assert.match(admin, /coverage_by_version/);
 assert.match(admin, /sampled/);
 assert.doesNotMatch(admin, /app14_/);
 
+const edgeAllowBlock = ingest.match(/const allowedEvents = new Set\\(\\[([\\s\\S]*?)\\]\\);/);
+const sqlAllowBlock = migration.match(/event IN\\(([\\s\\S]*?)\\);/);
+assert.ok(edgeAllowBlock, "Edge event allowlist must exist");
+assert.ok(sqlAllowBlock, "Database event allowlist must exist");
+const edgeEvents = [...edgeAllowBlock[1].matchAll(/"([^"]+)"/g)].map((match) => match[1]).sort();
+const sqlEvents = [...sqlAllowBlock[1].matchAll(/'([^']+)'/g)].map((match) => match[1]).sort();
+assert.deepEqual(sqlEvents, edgeEvents, "Edge and database allowlists must match exactly");
+
 console.log("Telemetry contract checks passed.");
