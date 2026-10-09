@@ -358,6 +358,11 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
           <div class="panel"><div class="panel-head"><h3>VOLUME E CONCLUSÃO</h3><span>PERÍODO SELECIONADO</span></div><div class="panel-body" id="performanceQuality"></div></div>
         </div>
         <div class="panel" style="margin-top:12px">
+          <div class="panel-head"><h3>IMT — NAVEGAÇÃO DOS IFRAMES</h3><span>ÚLTIMOS 30 DIAS</span></div>
+          <div class="panel-body"><div class="explain">Uma navegação do iframe não prova que o conteúdo IMT produziu um resultado válido. O cruzamento abaixo separa inícios, navegações observadas e falhas por fonte (inspeção/livrete); não interpreta uma navegação cross-origin como resultado confirmado.</div></div>
+          <div id="imtNavigationMetrics" class="table-wrap"></div>
+        </div>
+        <div class="panel" style="margin-top:12px">
           <div class="panel-head"><h3>COMPARAÇÃO TEMPORAL</h3><span>24 H · 7 DIAS · 30 DIAS</span></div>
           <div id="insuranceCompare" class="table-wrap"></div>
         </div>
@@ -724,7 +729,12 @@ function renderPerformance(d){
   metric('Consultas sem evento de início',num(quality.query_outcomes_without_start_30d))+
   metric('Consultas com resultados contraditórios',num(quality.conflicting_final_queries_30d))+
   metric('Eventos finais duplicados',num(quality.duplicate_final_events_30d))+
-  metric('Grupos IMT repetidos',num(quality.imt_duplicate_query_source_groups_30d));
+  metric('Grupos IMT repetidos',num(quality.imt_duplicate_query_source_groups_30d))+
+  metric('Inícios de navegação IMT · 30 d',num(quality.imt_navigation_starts_30d))+
+  metric('Navegações IMT observadas · 30 d',num(quality.imt_navigation_loaded_30d))+
+  metric('Falhas de navegação IMT · 30 d',num(quality.imt_navigation_errors_30d));
+ const nav=(quality.imt_navigation_by_source_30d||[]).map(x=>'<tr>'+td(esc(x.source||'—'))+td(fmt(x.queries))+td(fmt(x.started))+td(fmt(x.navigation_loaded))+td(fmt(x.errors))+'</tr>');
+ $('imtNavigationMetrics').innerHTML=table(['FONTE','CONSULTAS DISTINTAS','INÍCIOS','NAVEGAÇÕES OBSERVADAS','FALHAS'],nav);
 }
 function renderInsights(d){
  const a=d.analytics||{},u=a.usage||{},summary=a.speed?.summary||{},l=a.legislation||{};
