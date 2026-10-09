@@ -6,6 +6,7 @@ const migration = fs.readFileSync("supabase/migrations/20261009034000_repair_tel
 const admin = fs.readFileSync("admin_v2.html", "utf8");
 const stats = fs.readFileSync("supabase/functions/stats-v2/index.ts", "utf8");
 const insuranceNoCasesMigration = fs.readFileSync("supabase/migrations/20261009080000_insurance_no_cases.sql", "utf8");
+const errorPlateCountMigration = fs.readFileSync("supabase/migrations/20261009092500_deduplicate_error_plate_consultations.sql", "utf8");
 const packageConfig = JSON.parse(fs.readFileSync("package.json", "utf8"));
 const currentAppVersion = packageConfig.version.split(".").slice(0, 2).join(".");
 assert.ok(stats.includes('const CURRENT_APP_VERSION = "' + currentAppVersion + '"'), "stats current version must match package.json major.minor");
@@ -110,6 +111,28 @@ assert.match(presenceMigration, /last_presence >= p_now-interval '90 seconds'/, 
 assert.match(presenceMigration, /event IN \('app_open','heartbeat','session_close'\)/, "online presence must use lifecycle events only");
 assert.match(presenceMigration, /last_close IS NULL OR last_presence > last_close/, "a later close event must remove a session from the active count");
 assert.ok(admin.includes("Sessões VÉRIX com browser aberto."), "Ativos agora must describe browser sessions, not installations");
+assert.match(errorPlateCountMigration, /count\\(DISTINCT e\\.query_id\\) qty/, "error plate totals must count unique consultation IDs");
+assert.match(errorPlateCountMigration, /count\\(\\*\\) event_qty/, "raw error event volume must remain visible separately");
+assert.match(errorPlateCountMigration, /p\\.plate_key ~ '\\^\\[A-Z0-9\\]\\{6,8\\}\\\
+
+const hourlyMigration = fs.readFileSync("supabase/migrations/20261009051204_hourly_consultations_and_presence.sql", "utf8");
+assert.match(hourlyMigration, /generate_series\(0,23\)/, "hourly chart must include all 24 hours, including zero-activity hours");
+assert.match(hourlyMigration, /count\(DISTINCT e\.query_id\) FILTER/, "hourly consultation count must deduplicate query IDs");
+assert.match(hourlyMigration, /e\.event='vehicle_lookup'/, "hourly consultations must count actual lookup starts");
+assert.match(hourlyMigration, /count\(DISTINCT e\.installation_id\) FILTER/, "hourly presence must count distinct installations");
+assert.match(hourlyMigration, /e\.event IN \('app_open','heartbeat'\)/, "hourly presence must use app-open/heartbeat events");
+assert.ok(admin.includes("CONSULTAS E ONLINE POR HORA"), "dashboard must describe the updated hourly metrics");
+assert.ok(admin.includes("CONSULTAS E PRESENÇA POR HORA"), "usage page must describe the updated hourly metrics");
+assert.match(admin, /Number\(x\.consultations\|\|0\)/, "hour chart must use consultation count");
+assert.match(admin, /fmt\(x\.users\|\|0\)/, "hour chart must show online installations");
+assert.match(admin, /Hora com mais consultas/, "dashboard insight must refer to consultations, not generic actions");
+
+console.log("PASS: atomic telemetry ingest, loss-safe beacon queue, browser presence KPI, hourly query deduplication, 24-hour presence chart, and Admin labels.");
+/, "error plate table must exclude partial/invalid plate fragments");
+assert.match(endpoint, /function sanitizeErrorPlateMetadata\\(/, "server must sanitize invalid error plate fragments before persistence");
+assert.match(endpoint, /if \\(event === "vehicle_insurance_error"\\) sanitizeErrorPlateMetadata\\(metadata\\)/, "server must apply plate validation to ASF error events");
+assert.ok(admin.includes("CONSULTAS","EVENTOS"), "Admin must distinguish consultation totals from raw event totals");
+
 
 const hourlyMigration = fs.readFileSync("supabase/migrations/20261009051204_hourly_consultations_and_presence.sql", "utf8");
 assert.match(hourlyMigration, /generate_series\(0,23\)/, "hourly chart must include all 24 hours, including zero-activity hours");
