@@ -179,20 +179,23 @@ for (const job of jobs) {
             await navButton.getAttribute("aria-current") === "page",
             job.name + " " + viewport.label + ": " + module.id + " navigation state was not updated"
           );
-          completedModuleChecks++;
-        }
 
-        if (viewport.width <= 390) {
-          const scrollRegion = page.locator(".tools-table-wrap");
-          assert(await scrollRegion.count() === 1, job.name + " " + viewport.label + ": road table wrapper missing");
-          const dimensions = await scrollRegion.evaluate((element) => ({
-            clientWidth: element.clientWidth,
-            scrollWidth: element.scrollWidth
-          }));
-          assert(
-            dimensions.scrollWidth > dimensions.clientWidth,
-            job.name + " " + viewport.label + ": road table should scroll inside its own region " + JSON.stringify(dimensions)
-          );
+          // Check table scrolling while its owning module is mounted. The
+          // application intentionally unmounts the previous module on navigation.
+          if (viewport.width <= 390 && module.id === "tools") {
+            const scrollRegion = page.locator(".tools-table-wrap");
+            assert(await scrollRegion.count() === 1, job.name + " " + viewport.label + ": road table wrapper missing");
+            const dimensions = await scrollRegion.evaluate((element) => ({
+              clientWidth: element.clientWidth,
+              scrollWidth: element.scrollWidth
+            }));
+            assert(
+              dimensions.scrollWidth > dimensions.clientWidth,
+              job.name + " " + viewport.label + ": road table should scroll inside its own region " + JSON.stringify(dimensions)
+            );
+          }
+
+          completedModuleChecks++;
         }
 
         assert(pageErrors.length === 0, job.name + " " + viewport.label + ": browser errors: " + pageErrors.join(" | "));
