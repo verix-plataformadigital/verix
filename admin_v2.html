@@ -96,6 +96,7 @@ button{cursor:pointer}
 details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:pointer;padding:11px 14px;font-size:10px;font-weight:900;color:#596c73}.detail-summary::-webkit-details-marker{display:none}.detail-summary:after{content:'+';float:right;color:#97a5aa;font-size:16px}.details-body{padding:0 14px 14px;color:#617278;font-size:9px;line-height:1.5}
 
 .empty{padding:20px;text-align:center;color:#89979d;font-size:10px}
+.period-bounds{padding:6px 18px 0;color:var(--muted);font-size:10px;line-height:1.45}
 .load-notice{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px;padding:11px 13px;border:1px solid #c8dce1;border-radius:10px;background:#f2fbfc;color:#30545d;font-size:11px;line-height:1.45}
 .load-notice.error{border-color:#efc2cb;background:#fff2f4;color:#8d3041}
 .load-notice.warning{border-color:#efd9a8;background:#fff9eb;color:#795b1e}
@@ -209,6 +210,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
           <button id="logoutBtn" type="button">SAIR</button>
         </div>
       </header>
+      <div id="periodBounds" class="period-bounds" role="status" aria-live="polite"></div>
       <div id="loadNotice" class="load-notice hidden" role="status" aria-live="polite">
         <span id="loadNoticeText"></span>
         <button id="retryLoadBtn" type="button">TENTAR NOVAMENTE</button>
@@ -421,6 +423,19 @@ function table(headers,rows){if(!rows.length)return '<div class="empty">Não há
 function td(v){return '<td>'+v+'</td>'}
 function metric(label,value){return '<div class="mini"><b>'+esc(label)+'</b><span>'+value+'</span></div>'}
 function period(){return latestData?.analytics?.insurance?.[currentPeriod]||{}}
+function renderPeriodBounds(d){
+ const bounds=d?.analytics?.bounds||{};
+ const key=currentPeriod==='24h'?'s24':currentPeriod==='7d'?'s7':'s30';
+ const start=bounds[key],end=bounds.end||d?.generatedAt;
+ const host=$('periodBounds');if(!host)return;
+ if(!start||!end){host.textContent='A janela temporal efetiva ainda não foi devolvida pelo backend.';return}
+ const nominalDays=currentPeriod==='24h'?1:currentPeriod==='7d'?7:30;
+ const nominalStart=Date.parse(end)-nominalDays*24*60*60*1000;
+ const actualStart=Date.parse(start);
+ const shortened=Number.isFinite(actualStart)&&Number.isFinite(nominalStart)&&actualStart>nominalStart+60000;
+ const boundary=currentPeriod==='24h'?'reset das 24 horas':'reset global';
+ host.textContent='Janela efetiva: '+datePT(start)+' — '+datePT(end)+(shortened?' · encurtada pelo último '+boundary+'.':'.');
+}
 function setLoadNotice(message,visible=false,kind='warning'){const box=$('loadNotice'),label=$('loadNoticeText');if(!box||!label)return;label.textContent=message||'';box.classList.toggle('hidden',!visible);box.classList.toggle('error',kind==='error');box.classList.toggle('warning',kind==='warning')}
 function renderLoadingState(){
  if(latestData)return;
@@ -541,9 +556,15 @@ function renderDashboard(d){
  const hours=u.hourly||[];hourGrid('dashHours',hours);
  monthlyChart('dashDaily',u.daily||[],'lookups');
  const peakHour=hours.slice().sort((x,y)=>Number(y.actions||0)-Number(x.actions||0))[0];
+ const conflicts=Number(p.conflicting_final||0),incomplete=Number(p.incomplete||0),duplicateFinals=Number(p.duplicate_final_events||0);
+ const qualityFlags=[];
+ if(conflicts)qualityFlags.push(fmt(conflicts)+' consulta(s) com resultados contraditórios');
+ if(incomplete)qualityFlags.push(fmt(incomplete)+' consulta(s) incompletas');
+ if(duplicateFinals)qualityFlags.push(fmt(duplicateFinals)+' eventos finais repetidos');
+ const qualityText=qualityFlags.length?'Qualidade de dados: '+qualityFlags.join(', ')+'.':(errorRate!=null&&errorRate>8?'Existem erros técnicos a acompanhar.':errorRate!=null&&errorRate>3?'Há alguns erros técnicos a acompanhar.':'Não foram detetados problemas de integridade nas consultas desta janela.');
  const peakDay=(u.daily||[]).slice().sort((x,y)=>Number(y.lookups||0)-Number(x.lookups||0))[0];
  const topModule=mods[0];
- $('heroInsight').innerHTML='<div class="k">LEITURA PRINCIPAL</div><div class="v">'+(errorRate!=null&&errorRate>8?'Existem erros a acompanhar.':errorRate!=null&&errorRate>3?'Há alguns erros a acompanhar.':'Não há erros relevantes observados nesta janela.')+'</div><div class="s">'+(peakHour?'Hora mais ativa: '+String(peakHour.hour_num).padStart(2,'0')+'h. ':'')+(topModule?'Módulo mais usado: '+esc(topModule.label)+'.':'')+'</div>';
+ $('heroInsight').innerHTML='<div class="k">LEITURA PRINCIPAL</div><div class="v">'+esc(qualityText)+'</div><div class="s">'+(peakHour?'Hora mais ativa: '+String(peakHour.hour_num).padStart(2,'0')+'h. ':'')+(topModule?'Módulo mais usado: '+esc(topModule.label)+'.':'')+'</div>';
  $('dashReading').innerHTML=
   metric('Novas instalações',num(ret[currentPeriod]?.new))+
   metric('Instalações que regressaram',num(ret[currentPeriod]?.returning))+
@@ -573,6 +594,9 @@ function renderInsurance(d){
   metric('Erros',num(err))+
   metric('Taxa de erro',pct(errorRate))+
   metric('Pendentes',num(p.pending))+
+  metric('Incompletas',num(p.incomplete))+
+  metric('Resultados contraditórios',num(p.conflicting_final))+
+  metric('Eventos finais repetidos',num(p.duplicate_final_events))+
   metric('Resultados conhecidos',pct(started?100*fin/started:null))+
   '</div>';
  const q=a.insurance_quality||{};const diag=d.diagnostics?.quality_24h||{};
@@ -692,6 +716,9 @@ function renderPerformance(d){
   metric('Taxa de conclusão',pct(completionRate))+
   metric('Pendentes',num(p.pending))+
   metric('Erros finais',num(p.errors))+
+  metric('Incompletas no período',num(p.incomplete))+
+  metric('Resultados contraditórios no período',num(p.conflicting_final))+
+  metric('Eventos finais repetidos no período',num(p.duplicate_final_events))+
   metric('Cobertura ASF',pct(coverage))+
   metric('Eventos críticos sem query_id',num(quality.query_events_missing_id_30d))+
   metric('Consultas sem evento de início',num(quality.query_outcomes_without_start_30d))+
@@ -743,7 +770,7 @@ function renderSystem(d){
  const rs=d.reset24hAt;$('reset24hStatus').textContent='Último reset: '+datePT(rs);
 }
 
-function renderAll(d){latestData=d;renderDashboard(d);renderInsurance(d);renderSpeed(d);renderLegislation(d);renderUsage(d);renderErrors(d);renderPerformance(d);renderInsights(d);renderSystem(d)}
+function renderAll(d){latestData=d;renderPeriodBounds(d);renderDashboard(d);renderInsurance(d);renderSpeed(d);renderLegislation(d);renderUsage(d);renderErrors(d);renderPerformance(d);renderInsights(d);renderSystem(d)}
 async function loadDashboard(){
  if(dashboardBusy)return null;
  dashboardBusy=true;
