@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { JSDOM } from 'jsdom';
+const { JSDOM } = require('jsdom') as { JSDOM: new (...args: any[]) => any };
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const html = readFileSync(resolve(process.cwd(), 'admin_v2.html'), 'utf8');
-const openDoms: JSDOM[] = [];
+const openDoms: any[] = [];
 
-function dashboard(): JSDOM {
+function dashboard(): any {
   const dom = new JSDOM(html, {
     url: 'https://verix.test/admin',
     runScripts: 'dangerously',
@@ -24,7 +24,7 @@ afterEach(() => {
 describe('Admin VÉRIX — melhorias da dashboard', () => {
   it('mostra skeletons no primeiro carregamento e um estado claro quando falha', () => {
     const dom = dashboard();
-    const win = dom.window as unknown as Window & Record<string, any>;
+    const win = dom.window;
 
     win.renderLoadingState();
     expect(dom.window.document.querySelectorAll('#dashCards .skeleton-card')).toHaveLength(7);
@@ -37,7 +37,7 @@ describe('Admin VÉRIX — melhorias da dashboard', () => {
 
   it('ordena tabelas por valores numéricos e atualiza o estado acessível', () => {
     const dom = dashboard();
-    const win = dom.window as unknown as Window & Record<string, any>;
+    const win = dom.window;
     const host = dom.window.document.getElementById('errorTypes')!;
     host.innerHTML = win.table(['Tipo', 'Quantidade'], [
       '<tr><td>network</td><td>10</td></tr>',
@@ -47,14 +47,14 @@ describe('Admin VÉRIX — melhorias da dashboard', () => {
     const quantityHeader = host.querySelectorAll('th')[1] as HTMLElement;
     quantityHeader.click();
 
-    const quantities = Array.from(host.querySelectorAll('tbody tr')).map((row) => row.cells[1].textContent);
+    const quantities = Array.from(host.querySelectorAll<HTMLTableRowElement>('tbody tr')).map((row) => row.cells[1]?.textContent);
     expect(quantities).toEqual(['2', '10']);
     expect(quantityHeader.getAttribute('aria-sort')).toBe('ascending');
   });
 
   it('filtra as tabelas de erros sem alterar os dados de origem', () => {
     const dom = dashboard();
-    const win = dom.window as unknown as Window & Record<string, any>;
+    const win = dom.window;
     dom.window.document.getElementById('errorTypes')!.innerHTML = win.table(['Tipo', 'Quantidade'], [
       '<tr><td>http_null</td><td>3</td></tr>',
       '<tr><td>network</td><td>2</td></tr>',
@@ -63,14 +63,14 @@ describe('Admin VÉRIX — melhorias da dashboard', () => {
     search.value = 'HTTP_NULL';
     search.dispatchEvent(new dom.window.Event('input', { bubbles: true }));
 
-    const rows = Array.from(dom.window.document.querySelectorAll('#errorTypes tbody tr')) as HTMLTableRowElement[];
+    const rows = Array.from(dom.window.document.querySelectorAll<HTMLTableRowElement>('#errorTypes tbody tr'));
     expect(rows.map((row) => row.hidden)).toEqual([false, true]);
     expect(dom.window.document.getElementById('errorSearchCount')?.textContent).toContain('1 de 2');
   });
 
   it('permite abrir o módulo correspondente a partir dos KPI principais', () => {
     const dom = dashboard();
-    const win = dom.window as unknown as Window & Record<string, any>;
+    const win = dom.window;
     const payload = {
       generatedAt: '2026-10-09T02:00:00Z',
       analytics: {
@@ -89,7 +89,7 @@ describe('Admin VÉRIX — melhorias da dashboard', () => {
     };
     win.renderAll(payload);
 
-    const uninsured = Array.from(dom.window.document.querySelectorAll('#dashCards .card'))
+    const uninsured = Array.from(dom.window.document.querySelectorAll<HTMLElement>('#dashCards .card'))
       .find((card) => card.querySelector('.label')?.textContent?.trim() === 'SEM REGISTO') as HTMLElement;
     expect(uninsured.dataset.drillPage).toBe('insurance');
     uninsured.click();
