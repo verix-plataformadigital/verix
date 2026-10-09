@@ -17417,10 +17417,10 @@ html body .leg-card-new .copy-all-new{
   }
 
   function push(event, module, meta) {
-    if (!event) return;
+    if (!event) return null;
     refreshClientInfo();
 
-    queue.push({
+    var item = {
       eventId: uid('e'),
       buildId: window.VERIX_BUILD_ID || '1.5-sec-20261008-a',
       installationId: installationId,
@@ -17433,7 +17433,8 @@ html body .leg-card-new .copy-all-new{
       module: module ? String(module).slice(0, 50) : null,
       occurredAt: new Date().toISOString(),
       metadata: cleanMetadata(meta)
-    });
+    };
+    queue.push(item);
 
     saveQueue();
 
@@ -17444,6 +17445,7 @@ html body .leg-card-new .copy-all-new{
     } else if (queue.length >= BATCH_SIZE) {
       flush();
     }
+    return item;
   }
 
   function parseReceipt(text) {
@@ -17844,6 +17846,18 @@ html body .leg-card-new .copy-all-new{
     });
 
     window.addEventListener('pagehide', function () {
+      // Send an explicit close signal so the admin KPI drops this tab immediately
+      // when the browser delivers pagehide. Keep the event in the durable queue
+      // until a normal server receipt confirms acceptance.
+      var closingEvent = push('session_close', null);
+      try {
+        if (closingEvent && navigator.sendBeacon) {
+          navigator.sendBeacon(
+            ENDPOINT,
+            new Blob([JSON.stringify({ events: [closingEvent] })], { type: 'text/plain;charset=UTF-8' })
+          );
+        }
+      } catch (_) {}
       flushBeacon();
     });
 
