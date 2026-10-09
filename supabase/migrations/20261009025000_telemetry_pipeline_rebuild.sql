@@ -424,30 +424,41 @@ telemetry AS (
     FROM ev GROUP BY 1)x),'[]'::jsonb)
  ) data FROM ev,b
 ),
-session_rows AS (
- SELECT s.session_id,s.started_at,greatest(s.started_at,least(s.last_seen,p_now)) last_seen,
+session_base AS (
+ SELECT s.session_id,s.started_at,s.last_seen parent_last_seen,
+  min(e.occurred_at) event_first_at,max(e.occurred_at) event_last_at,
+  count(e.event) event_count,
   count(e.event) FILTER(WHERE e.event<>'heartbeat') actions,
   count(DISTINCT e.module) FILTER(WHERE e.event='module_open' AND e.module IS NOT NULL) modules
  FROM public.verix2_sessions s LEFT JOIN ev e ON e.session_id=s.session_id
  GROUP BY s.session_id,s.started_at,s.last_seen
 ),
+session_rows AS (
+ SELECT *,
+  least(p_now,started_at,coalesce(event_first_at,started_at)) duration_start,
+  greatest(least(p_now,started_at,coalesce(event_first_at,started_at)),least(coalesce(event_last_at,parent_last_seen),p_now)) duration_end,
+  (event_count>1 AND (parent_last_seen=started_at OR event_last_at>parent_last_seen OR event_first_at<started_at)) parent_timestamp_mismatch
+ FROM session_base
+),
 sessions AS (
  SELECT jsonb_build_object(
   '24h',jsonb_build_object(
    'sessions',count(*) FILTER(WHERE started_at>=b.s24),
-   'median_minutes',round((percentile_cont(.5) WITHIN GROUP(ORDER BY extract(epoch FROM(last_seen-started_at))/60) FILTER(WHERE started_at>=b.s24))::numeric,1),
-   'p95_minutes',round((percentile_cont(.95) WITHIN GROUP(ORDER BY extract(epoch FROM(last_seen-started_at))/60) FILTER(WHERE started_at>=b.s24))::numeric,1),
+   'median_minutes',round((percentile_cont(.5) WITHIN GROUP(ORDER BY extract(epoch FROM(duration_end-duration_start))/60) FILTER(WHERE started_at>=b.s24))::numeric,1),
+   'p95_minutes',round((percentile_cont(.95) WITHIN GROUP(ORDER BY extract(epoch FROM(duration_end-duration_start))/60) FILTER(WHERE started_at>=b.s24))::numeric,1),
    'avg_actions',round((avg(actions) FILTER(WHERE started_at>=b.s24))::numeric,1),
    'multi_module_pct',round((100.0*count(*) FILTER(WHERE started_at>=b.s24 AND modules>=2)/NULLIF(count(*) FILTER(WHERE started_at>=b.s24),0))::numeric,1),
-   'power_sessions',count(*) FILTER(WHERE started_at>=b.s24 AND actions>=10)
+   'power_sessions',count(*) FILTER(WHERE started_at>=b.s24 AND actions>=10),
+   'parent_timestamp_mismatch_24h',count(*) FILTER(WHERE started_at>=b.s24 AND parent_timestamp_mismatch)
   ),
   '30d',jsonb_build_object(
    'sessions',count(*) FILTER(WHERE started_at>=b.s30),
-   'median_minutes',round((percentile_cont(.5) WITHIN GROUP(ORDER BY extract(epoch FROM(last_seen-started_at))/60) FILTER(WHERE started_at>=b.s30))::numeric,1),
-   'p95_minutes',round((percentile_cont(.95) WITHIN GROUP(ORDER BY extract(epoch FROM(last_seen-started_at))/60) FILTER(WHERE started_at>=b.s30))::numeric,1),
+   'median_minutes',round((percentile_cont(.5) WITHIN GROUP(ORDER BY extract(epoch FROM(duration_end-duration_start))/60) FILTER(WHERE started_at>=b.s30))::numeric,1),
+   'p95_minutes',round((percentile_cont(.95) WITHIN GROUP(ORDER BY extract(epoch FROM(duration_end-duration_start))/60) FILTER(WHERE started_at>=b.s30))::numeric,1),
    'avg_actions',round((avg(actions) FILTER(WHERE started_at>=b.s30))::numeric,1),
    'multi_module_pct',round((100.0*count(*) FILTER(WHERE started_at>=b.s30 AND modules>=2)/NULLIF(count(*) FILTER(WHERE started_at>=b.s30),0))::numeric,1),
-   'power_sessions',count(*) FILTER(WHERE started_at>=b.s30 AND actions>=10)
+   'power_sessions',count(*) FILTER(WHERE started_at>=b.s30 AND actions>=10),
+   'parent_timestamp_mismatch_30d',count(*) FILTER(WHERE started_at>=b.s30 AND parent_timestamp_mismatch)
   )
  ) data FROM session_rows,b
 ),
