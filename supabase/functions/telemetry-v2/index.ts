@@ -271,6 +271,31 @@ function cleanMetadata(value: unknown): Record<string, unknown> {
   return out;
 }
 
+function sanitizeErrorPlateMetadata(metadata: Record<string, unknown>): void {
+  const diagnostic = metadata.asfDiagnostic;
+  const diag = diagnostic && typeof diagnostic === "object" && !Array.isArray(diagnostic)
+    ? diagnostic as Record<string, unknown>
+    : null;
+  const candidates = [diag?.matricula, metadata.matriculaNormalizada, metadata.matricula];
+  const validRaw = candidates
+    .map(value => String(value ?? "").trim())
+    .find(value => /^[A-Z0-9]{6,8}$/.test(value.toUpperCase().replace(/[^A-Z0-9]/g, "")));
+
+  if (!validRaw) {
+    delete metadata.matricula;
+    delete metadata.matriculaNormalizada;
+    if (diag) delete diag.matricula;
+    return;
+  }
+
+  const normalized = validRaw.toUpperCase().replace(/[^A-Z0-9]/g, "");
+  // Keep a usable display form and a stable normalized key; short/truncated
+  // fragments must never appear as vehicle registrations in Admin.
+  if (diag) diag.matricula = validRaw;
+  else metadata.matricula = validRaw;
+  metadata.matriculaNormalizada = normalized;
+}
+
 function clientIp(req: Request): string {
   const cf = req.headers.get("cf-connecting-ip");
   if (cf) return cf.trim();
@@ -406,6 +431,10 @@ Deno.serve(async (req: Request) => {
           delete diag.matricula;
         }
       }
+      // Don't persist partial OCR/input fragments such as "O", "89" or "177ZN"
+      // as a vehicle registration. The error itself remains recorded; only the
+      // unusable plate field is removed.
+      if (event === "vehicle_insurance_error") sanitizeErrorPlateMetadata(metadata);
 
       if (event === "vehicle_lookup") {
         // Uma consulta precisa de instalação, query e versão; sessão/tab podem faltar.
