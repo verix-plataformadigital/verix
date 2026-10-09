@@ -369,7 +369,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
         <div class="page-head"><div><h2>Insights e curiosidades</h2><p>Padrões observados nos dados disponíveis, sem inferir causas ou comportamentos individuais.</p></div></div>
         <div class="grid g3" id="insightCards"></div>
         <div class="grid g2" style="margin-top:12px">
-          <div class="panel"><div class="panel-head"><h3>MÓDULOS MAIS USADOS</h3><span>PERÍODO AGREGADO</span></div><div class="panel-body"><div id="insightModules" class="bar-list"></div></div></div>
+          <div class="panel"><div class="panel-head"><h3>MÓDULOS MAIS USADOS</h3><span>ÚLTIMOS 30 DIAS</span></div><div class="panel-body"><div id="insightModules" class="bar-list"></div></div></div>
           <div class="panel"><div class="panel-head"><h3>HORAS COM MAIS MOVIMENTO</h3><span>AÇÕES OBSERVADAS</span></div><div class="panel-body"><div id="insightHours" class="hour-grid"></div></div></div>
         </div>
         <div class="grid g2" style="margin-top:12px">
@@ -704,12 +704,12 @@ function renderInsights(d){
  const avg=val(c,'speed_avg','avg_24h')??val(summary,'avg_24h','speed_avg');
  const median=val(c,'speed_p50','p50_24h')??val(summary,'p50_24h','speed_p50');
  $('insightCards').innerHTML=
-  card('MÓDULO MAIS USADO',topModule?esc(topModule.module||'—'):'—',topModule?fmt(topModule.qty)+' ações registadas.':'Sem dados suficientes.','cyan')+
-  card('HORA MAIS ATIVA',topHour?String(topHour.hour_num??'').padStart(2,'0')+'h':'—',topHour?fmt(topHour.actions)+' ações observadas.':'Sem dados suficientes.')+
-  card('DIA COM MAIS CONSULTAS',topDay?esc(topDay.day_key||'—'):'—',topDay?fmt(topDay.lookups)+' consultas registadas.':'Sem dados suficientes.')+
-  card('ITEM MAIS COPIADO',topLaw?esc(topLaw.item_label||topLaw.item_id||'—'):'—',topLaw?fmt(topLaw.qty)+' ações de cópia registadas.':'Sem dados suficientes.')+
-  card('VELOCIDADE MÉDIA',avg==null?'—':fmt(avg)+' km/h','Média dos valores disponíveis.')+
-  card('VELOCIDADE MEDIANA',median==null?'—':fmt(median)+' km/h','Mediana dos valores disponíveis.','blue');
+  card('MÓDULO MAIS USADO · 30 DIAS',topModule?esc(topModule.module||'—'):'—',topModule?fmt(topModule.qty)+' ações registadas.':'Sem dados suficientes.','cyan')+
+  card('HORA MAIS ATIVA · 24 H',topHour?String(topHour.hour_num??'').padStart(2,'0')+'h':'—',topHour?fmt(topHour.actions)+' ações observadas.':'Sem dados suficientes.')+
+  card('DIA COM MAIS CONSULTAS · 30 DIAS',topDay?esc(topDay.day_key||'—'):'—',topDay?fmt(topDay.lookups)+' consultas registadas.':'Sem dados suficientes.')+
+  card('ITEM MAIS COPIADO · 30 DIAS',topLaw?esc(topLaw.item_label||topLaw.item_id||'—'):'—',topLaw?fmt(topLaw.qty)+' ações de cópia registadas.':'Sem dados suficientes.')+
+  card('VELOCIDADE MÉDIA · 24 H',avg==null?'—':fmt(avg)+' km/h','Média dos valores disponíveis.')+
+  card('VELOCIDADE MEDIANA · 24 H',median==null?'—':fmt(median)+' km/h','Mediana dos valores disponíveis.','blue');
  barList('insightModules',modules.map(x=>({label:x.module||'—',value:x.qty})));
  hourGrid('insightHours',u.hourly||[]);
  $('insightLegislation').innerHTML=table(['ITEM','CÓPIAS','CÓDIGO','DESCRIÇÃO'],laws.slice(0,12).map(x=>'<tr>'+td('<strong>'+esc(x.item_label||x.item_id||'—')+'</strong>')+td(fmt(x.qty))+td(fmt(x.code_qty))+td(fmt(x.desc_qty))+'</tr>'));
