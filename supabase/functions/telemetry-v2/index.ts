@@ -109,6 +109,7 @@ function cleanMetadata(value: unknown): Record<string, unknown> {
   if (m.profile_id) out.profile_id = cleanText(m.profile_id, 120);
   if (m.operation_id) out.operation_id = cleanText(m.operation_id, 120);
   if (m.build_id) out.build_id = cleanText(m.build_id, 60);
+  if (m.telemetry_schema) out.telemetry_schema = cleanText(m.telemetry_schema, 10);
 
   if (m.cin && typeof m.cin === "object" && !Array.isArray(m.cin)) {
     const c = m.cin as Record<string, unknown>;
