@@ -38,7 +38,7 @@ A produção não publica source maps. O CI falha se encontrar:
 
 ## Dependências reprodutíveis
 
-`package-lock.json` está versionado e é a fonte de verdade para as dependências transitivas. Os workflows de qualidade, responsividade e segurança usam `npm ci`; não devem gerar nem alterar o lockfile durante a CI.
+`package-lock.json` está versionado e é a fonte de verdade para as dependências transitivas. Os workflows de qualidade, responsividade, segurança e publicação (GitHub Pages e Windows) usam `npm ci` com a versão de npm fixada; não devem gerar nem alterar o lockfile durante a CI.
 
 Quando `package.json` mudar, regenerar deliberadamente o lockfile com a versão de npm fixada no projeto, rever o diff e confirmar que o build/testes passam antes de submeter a alteração. Não usar `npm install` como substituto de `npm ci` nas pipelines de validação.
 

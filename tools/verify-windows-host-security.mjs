@@ -3,6 +3,9 @@ import fs from "node:fs";
 const file = fs.readFileSync("windows/VerixPortable/Program.cs", "utf8");
 const project = fs.readFileSync("windows/VerixPortable/VerixPortable.csproj", "utf8");
 const workflow = fs.readFileSync(".github/workflows/reengineering-v2.yml", "utf8");
+const windowsReleaseWorkflow = fs.readFileSync(".github/workflows/build-windows-release.yml", "utf8");
+const pagesWorkflow = fs.readFileSync(".github/workflows/deploy-pages.yml", "utf8");
+const secureReleaseWorkflow = fs.readFileSync(".github/workflows/secure-release.yml", "utf8");
 const launcher = fs.readFileSync("windows/VerixPortable/Run-V2-Local.cmd", "utf8");
 
 function methodBody(signature) {
@@ -195,6 +198,32 @@ for (const marker of requiredWorkflowMarkers) {
 
 if (!launcher.includes("VERIX.exe") || !launcher.includes("--v2-local")) {
   throw new Error("Local V2 launcher must start VERIX.exe with --v2-local.");
+}
+
+const requiredWindowsReleaseMarkers = [
+  "npm ci --no-fund --no-audit",
+  "npm run build:v2",
+  "node tools/verify-portable-package.mjs",
+  "dotnet publish"
+];
+for (const marker of requiredWindowsReleaseMarkers) {
+  if (!windowsReleaseWorkflow.includes(marker)) {
+    throw new Error("Windows release workflow is missing: " + marker);
+  }
+}
+
+for (const [label, source] of [
+  ["GitHub Pages deploy", pagesWorkflow],
+  ["manual secure release", secureReleaseWorkflow]
+]) {
+  for (const marker of ["npm install --global npm@12.2.0", "npm ci --no-fund --no-audit", "package-lock.json"]) {
+    if (!source.includes(marker)) {
+      throw new Error(label + " is missing reproducible dependency control: " + marker);
+    }
+  }
+  if (source.includes("run: npm install --no-fund --no-audit")) {
+    throw new Error(label + " still resolves dependencies with non-reproducible npm install.");
+  }
 }
 
 const forbidden = [

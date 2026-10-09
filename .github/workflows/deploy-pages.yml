@@ -26,8 +26,20 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Use pinned npm resolver
+        run: npm install --global npm@12.2.0
+
+      - name: Verify committed lockfile
+        shell: bash
+        run: |
+          test -s package-lock.json || {
+            echo "package-lock.json must be versioned; release builds cannot resolve dependencies dynamically."
+            exit 1
+          }
+          node -e "const p=require('./package-lock.json'); if(p.name!=='verix-release-security'||p.lockfileVersion!==3) process.exit(1)"
+
       - name: Install dependencies
-        run: npm install --no-fund --no-audit
+        run: npm ci --no-fund --no-audit
 
       - name: Build secure release
         env:
