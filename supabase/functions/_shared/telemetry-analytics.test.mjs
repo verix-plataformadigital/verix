@@ -12,7 +12,7 @@ const event = (eventName, at, extra = {}) => ({
   event_id: extra.event_id ?? `id-${eventName}-${at}`,
   occurred_at: at,
   installation_id: extra.installation_id ?? "install-a",
-  session_id: extra.session_id ?? "session-a",
+  session_id: Object.hasOwn(extra, "session_id") ? extra.session_id : "session-a",
   query_id: extra.query_id,
   app_version: extra.app_version ?? "1.5",
   browser: extra.browser ?? "Chrome",
