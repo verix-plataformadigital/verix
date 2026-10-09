@@ -263,7 +263,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
         <div class="grid g2" style="margin-top:12px">
           <div class="panel"><div class="panel-head"><h3>PROBLEMAS MAIS FREQUENTES</h3><span>ÚLTIMAS 24 H</span></div><div class="panel-body"><div id="insuranceErrors" class="bar-list"></div></div></div>
           <div class="panel">
-            <div class="panel-head"><h3>MATRÍCULAS COM ERROS</h3><span>APENAS QUANDO DISPONÍVEL</span></div>
+            <div class="panel-head"><h3>MATRÍCULAS COM ERROS</h3><span>CONSULTAS DISTINTAS</span></div>
             <div class="error-tools" style="margin:10px 12px 0">
               <label for="plateErrorSearch">Pesquisar matrículas</label>
               <input id="plateErrorSearch" type="search" placeholder="Matrícula ou tipo de erro…" autocomplete="off" aria-controls="insurancePlates">
@@ -614,7 +614,7 @@ function renderInsurance(d){
  /* As métricas de latência são renderizadas na página Desempenho. */
  $('insuranceCompare').innerHTML=table(['PERÍODO','CONSULTAS','RESULTADOS','COM SEGURO','SEM REGISTO','ERROS'],['24h','7d','30d','total'].map(k=>{const x=a.insurance?.[k]||{};const label=k==='total'?'HISTÓRICO TOTAL':k.toUpperCase();return '<tr>'+td('<strong>'+label+'</strong>')+td(fmt(x.started))+td(fmt(x.finals))+td(fmt(x.insured))+td(fmt(x.uninsured))+td(fmt(x.errors))+'</tr>'}));
  const types=a.errors?.types||[];barList('insuranceErrors',types.map(x=>({label:x.kind,value:x.qty})),'red');
- const plates=a.errors?.plates||[];$('insurancePlates').innerHTML=table(['MATRÍCULA','ERROS','ÚLTIMO','TIPOS'],plates.slice(0,20).map(x=>'<tr>'+td('<strong>'+esc(x.plate||x.plate_key||'—')+'</strong>')+td(fmt(x.qty))+td(datePT(x.last_at))+td(esc((x.kinds||[]).join(', ')||'—'))+'</tr>'));
+ const plates=a.errors?.plates||[];$('insurancePlates').innerHTML=table(['MATRÍCULA','CONSULTAS','EVENTOS','ÚLTIMO','TIPOS'],plates.slice(0,20).map(x=>'<tr>'+td('<strong>'+esc(x.plate||x.plate_key||'—')+'</strong>')+td(fmt(x.qty))+td(fmt(x.event_qty??x.qty))+td(datePT(x.last_at))+td(esc((x.kinds||[]).join(', ')||'—'))+'</tr>'));
  applyPlateErrorSearch();
  const sig=a.errors?.signatures||[];$('insuranceTechnical').innerHTML=
   '<div class="kpi-strip">'+metric('Assinaturas repetidas',num(sig.length))+metric('P50 ASF',q.latency_p50_ms==null?'—':fmt(q.latency_p50_ms)+' ms')+metric('P95 ASF',q.latency_p95_ms==null?'—':fmt(q.latency_p95_ms)+' ms')+metric('Pendentes',num(p.pending))+'</div>'+
@@ -683,11 +683,11 @@ function renderErrors(d){
   card('ERROS DA VERSÃO '+versionLabel,num(inv.current_version_errors),'Na janela recente.','amber')+
   card('INSTALAÇÕES AFETADAS',num(inv.current_version_installations),'Onde apareceu um erro nesta versão.')+
   card('MATRÍCULAS AFETADAS',num(inv.current_version_plates),'Quando a matrícula foi capturada.');
- $('errorTypes').innerHTML=table(['TIPO','QUANTIDADE','ÚLTIMO REGISTO'],(e.types||[]).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'Desconhecido')+'</span>')+td('<strong>'+fmt(x.qty)+'</strong>')+td(datePT(x.last_at))+'</tr>'));
- const bursts=inv.current_version_bursts_5m||[];$('errorBursts').innerHTML=table(['HORA','ERROS'],bursts.slice(0,12).map(x=>'<tr>'+td('<strong>'+datePT(x.start)+'</strong>')+td('<strong>'+fmt(x.count)+'</strong>')+'</tr>'));
+ $('errorTypes').innerHTML=table(['TIPO','CONSULTAS','EVENTOS','ÚLTIMO REGISTO'],(e.types||[]).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'Desconhecido')+'</span>')+td('<strong>'+fmt(x.qty)+'</strong>')+td(fmt(x.event_qty??x.qty))+td(datePT(x.last_at))+'</tr>'));
+ const bursts=inv.current_version_bursts_5m||[];$('errorBursts').innerHTML=table(['HORA','CONSULTAS','EVENTOS'],bursts.slice(0,12).map(x=>'<tr>'+td('<strong>'+datePT(x.start)+'</strong>')+td('<strong>'+fmt(x.qty??x.count)+'</strong>')+td(fmt(x.event_qty??x.count))+'</tr>'));
  $('errorReading').innerHTML=buildErrorReading(d);
- $('errorInstallations').innerHTML=table(['INSTALAÇÃO','ERROS','QUERIES'],(e.installations||[]).slice(0,15).map(x=>'<tr>'+td('<strong>'+esc(x.installation_id||'—')+'</strong>')+td(fmt(x.qty))+td(fmt(x.queries))+'</tr>'));
- $('errorSignatures').innerHTML=table(['TIPO','QUANTIDADE','INSTALAÇÕES'],(e.signatures||[]).slice(0,15).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'—')+'</span>')+td(fmt(x.qty))+td(fmt(x.installs))+'</tr>'));
+ $('errorInstallations').innerHTML=table(['INSTALAÇÃO','CONSULTAS','EVENTOS'],(e.installations||[]).slice(0,15).map(x=>'<tr>'+td('<strong>'+esc(x.installation_id||'—')+'</strong>')+td(fmt(x.qty))+td(fmt(x.event_qty??x.qty))+'</tr>'));
+ $('errorSignatures').innerHTML=table(['TIPO','CONSULTAS','EVENTOS','INSTALAÇÕES'],(e.signatures||[]).slice(0,15).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'—')+'</span>')+td(fmt(x.qty))+td(fmt(x.event_qty??x.qty))+td(fmt(x.installs))+'</tr>'));
  const plateCases=inv.current_version_plate_cases||[];
  $('errorPlates').innerHTML=plateCases.length?table(['MATRÍCULA','DATA E HORA','TIPO DE ERRO','BROWSER'],plateCases.map(x=>'<tr>'+td('<strong>'+esc(x.matricula||'—')+'</strong>')+td(datePT(x.occurred_at))+td('<span class="tag red">'+esc(x.error_type||'Desconhecido')+'</span>')+td(esc(x.browser||'—'))+'</tr>')):'<div class="empty">Não há matrículas válidas associadas a erros nas últimas 24 horas.</div>';
  const recent=inv.latest_current_version||[];
