@@ -266,6 +266,17 @@ if (fs.existsSync(appOutput)) {
   verifyJavaScriptSyntax(appOutput);
 }
 
+// The admin panel is shipped in the same secure Pages artifact. Parse its
+// inline JavaScript at release time as well so syntax regressions are caught
+// before they can break the deployed dashboard.
+const adminOutput = path.join(OUTPUT_DIR, "admin_v2.html");
+if (fs.existsSync(adminOutput)) {
+  const adminScriptsChecked = verifyJavaScriptSyntax(adminOutput);
+  if (adminScriptsChecked === 0) {
+    throw new Error("Admin panel does not contain any validated inline JavaScript");
+  }
+}
+
 // Build manifest
 const manifest = {
   build_id: BUILD_ID,
