@@ -194,7 +194,12 @@ const requiredWorkflowMarkers = [
   "npm ci --no-fund --no-audit",
   "npm run build:v2",
   "dotnet publish",
-  "pwsh -File tools/package-windows-release.ps1"
+  "pwsh -File tools/package-windows-release.ps1",
+  "verify-windows-release-artifact:",
+  "actions/download-artifact",
+  "sha256sum --check VERIX-Windows-x64.zip.sha256",
+  "unzip -t \"$zip\"",
+  "node tools/verify-portable-package.mjs \"$extracted\""
 ];
 for (const marker of requiredWorkflowMarkers) {
   if (!workflow.includes(marker)) {
@@ -232,7 +237,7 @@ for (const [label, source] of [
 }
 
 const requiredWindowsReleaseMarkers = [
-  "uses: ./.github/workflows/reengineering-v2.yml",
+  "uses: ./.github/workflows/reengineering-v2.yml\n    permissions:\n      contents: read\n      actions: read",
   "uses: ./.github/workflows/mobile-responsive.yml",
   "needs:\n      - validate-v2\n      - validate-responsive",
   "name: verix-windows-win-x64",
