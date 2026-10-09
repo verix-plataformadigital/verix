@@ -21,14 +21,16 @@ const DOMAIN_LOCK = [
 
 /** Shared strong but safe obfuscation options */
 const OBFUSCATOR_OPTIONS = {
+  // Perfil conservador: evita multiplicar o tamanho e o custo de execução
+  // do JavaScript legado, mantendo o bloqueio por domínio e nomes locais.
   target: "browser-no-eval",
   compact: true,
   simplify: true,
-  controlFlowFlattening: true,
-  controlFlowFlatteningThreshold: 0.6,
-  deadCodeInjection: false,          // keep false — can break large single-file apps
-  debugProtection: true,
-  debugProtectionInterval: 2000,
+  controlFlowFlattening: false,
+  controlFlowFlatteningThreshold: 0,
+  deadCodeInjection: false,
+  debugProtection: false,
+  debugProtectionInterval: 0,
   disableConsoleOutput: true,
   domainLock: DOMAIN_LOCK,
   domainLockRedirectUrl: "about:blank",
@@ -56,19 +58,9 @@ const OBFUSCATOR_OPTIONS = {
     "^requestAnimationFrame$",
     "^cancelAnimationFrame$"
   ],
-  selfDefending: true,
+  selfDefending: false,
   sourceMap: false,
-  stringArray: true,
-  stringArrayCallsTransform: true,
-  stringArrayEncoding: ["base64"],
-  stringArrayIndexShift: true,
-  stringArrayRotate: true,
-  stringArrayShuffle: true,
-  stringArrayThreshold: 0.85,
-  transformObjectKeys: false,
-  unicodeEscapeSequence: false,
-  splitStrings: true,
-  splitStringsChunkLength: 8
+  stringArray: false
 };
 
 
@@ -91,21 +83,7 @@ const CRITICAL_RUNTIME_NAMES = [
 
 const COMPATIBILITY_OPTIONS = {
   ...OBFUSCATOR_OPTIONS,
-  // The main VÉRIX runtime is a large legacy single-file application.
-  // Keep semantics deterministic: no control-flow rewriting, anti-debug
-  // runtime, or self-defending wrapper in this critical block.
-  controlFlowFlattening: false,
-  controlFlowFlatteningThreshold: 0,
-  debugProtection: false,
-  debugProtectionInterval: 0,
-  selfDefending: false,
-  stringArray: true,
-  stringArrayCallsTransform: false,
-  stringArrayIndexShift: false,
-  stringArrayRotate: false,
-  stringArrayShuffle: false,
-  stringArrayThreshold: 0.5,
-  splitStrings: false,
+  // As rotinas de consulta ASF são críticas: preservar os nomes públicos.
   reservedNames: [
     ...OBFUSCATOR_OPTIONS.reservedNames,
     ...CRITICAL_RUNTIME_NAMES.map(name => "^" + name + "$")
@@ -156,6 +134,7 @@ function writeSecureFile(relativeSource, relativeOutput) {
   }
 
   let source = fs.readFileSync(inputPath, "utf8");
+  const source_size_bytes = Buffer.byteLength(source, "utf8");
 
   // Inject the exact build identity into the client security runtime. The
   // Pages workflow creates a new build ID on every release.
@@ -180,7 +159,9 @@ function writeSecureFile(relativeSource, relativeOutput) {
     output: path.join("dist", relativeOutput).replace(/\\/g, "/"),
     sha256,
     script_blocks_obfuscated: scriptCount,
-    size_bytes: Buffer.byteLength(html, "utf8")
+    source_size_bytes,
+    size_bytes: Buffer.byteLength(html, "utf8"),
+    size_growth_ratio: Number((Buffer.byteLength(html, "utf8") / Math.max(1, source_size_bytes)).toFixed(3))
   };
 }
 
@@ -266,6 +247,16 @@ if (fs.existsSync(appOutput)) {
   verifyJavaScriptSyntax(appOutput);
 }
 
+// Prevent the release pipeline from reintroducing large obfuscation bloat.
+const MAX_SIZE_GROWTH_RATIO = 1.25;
+for (const result of results) {
+  if (result.source_size_bytes && result.size_growth_ratio > MAX_SIZE_GROWTH_RATIO) {
+    throw new Error(
+      `Release size growth exceeded ${MAX_SIZE_GROWTH_RATIO}x for ${result.source}: ${result.size_growth_ratio}x`
+    );
+  }
+}
+
 // The admin panel is shipped in the same secure Pages artifact. Parse its
 // inline JavaScript at release time as well so syntax regressions are caught
 // before they can break the deployed dashboard.
@@ -319,6 +310,9 @@ console.log(JSON.stringify({
   files: results.map(r => ({
     output: r.output,
     scripts: r.script_blocks_obfuscated ?? 0,
+    source_bytes: r.source_size_bytes ?? null,
+    output_bytes: r.size_bytes ?? null,
+    growth_ratio: r.size_growth_ratio ?? null,
     sha256: r.sha256?.slice(0, 16) + "…"
   })),
   output_dir: "dist/"
