@@ -247,6 +247,16 @@ if (fs.existsSync(appOutput)) {
   verifyJavaScriptSyntax(appOutput);
 }
 
+// Prevent the release pipeline from reintroducing large obfuscation bloat.
+const MAX_SIZE_GROWTH_RATIO = 1.25;
+for (const result of results) {
+  if (result.source_size_bytes && result.size_growth_ratio > MAX_SIZE_GROWTH_RATIO) {
+    throw new Error(
+      `Release size growth exceeded ${MAX_SIZE_GROWTH_RATIO}x for ${result.source}: ${result.size_growth_ratio}x`
+    );
+  }
+}
+
 // The admin panel is shipped in the same secure Pages artifact. Parse its
 // inline JavaScript at release time as well so syntax regressions are caught
 // before they can break the deployed dashboard.
