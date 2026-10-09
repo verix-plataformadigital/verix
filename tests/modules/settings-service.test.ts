@@ -74,7 +74,7 @@ describe('SettingsService', () => {
         Object.defineProperty(document.documentElement, 'clientWidth', { configurable: true, value: viewport.width });
         Object.defineProperty(document.documentElement, 'clientHeight', { configurable: true, value: viewport.height });
         service.applyToDocument(document);
-        expect(body.style.zoom, `${viewport.width}x${viewport.height}`).toBe('1.000');
+        expect(body.style.zoom, `${viewport.width}x${viewport.height}`).toBe('1');
       }
     } finally {
       Object.defineProperty(window, 'innerWidth', { configurable: true, value: oldInnerWidth });
@@ -102,7 +102,7 @@ describe('SettingsService', () => {
       Object.defineProperty(document.documentElement, 'clientWidth', { configurable: true, value: 1440 });
       Object.defineProperty(document.documentElement, 'clientHeight', { configurable: true, value: 900 });
       service.applyToDocument(document);
-      expect(body.style.zoom).toBe('0.900');
+      expect(body.style.zoom).toBe('0.9');
     } finally {
       Object.defineProperty(window, 'innerWidth', { configurable: true, value: oldInnerWidth });
       Object.defineProperty(window, 'innerHeight', { configurable: true, value: oldInnerHeight });
