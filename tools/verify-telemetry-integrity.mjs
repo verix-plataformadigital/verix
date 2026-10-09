@@ -77,7 +77,7 @@ assert.match(hourlyMigration, /count\(DISTINCT e\.installation_id\) FILTER/, "ho
 assert.match(hourlyMigration, /e\.event IN \('app_open','heartbeat'\)/, "hourly presence must use app-open/heartbeat events");
 assert.ok(admin.includes("CONSULTAS E ONLINE POR HORA"), "dashboard must describe the updated hourly metrics");
 assert.ok(admin.includes("CONSULTAS E PRESENÇA POR HORA"), "usage page must describe the updated hourly metrics");
-assert.match(admin, /fmt\(x\.consultations\|\|0\)/, "hour chart must show consultation count");
+assert.match(admin, /Number\(x\.consultations\|\|0\)/, "hour chart must use consultation count");
 assert.match(admin, /fmt\(x\.users\|\|0\)/, "hour chart must show online installations");
 assert.match(admin, /Hora com mais consultas/, "dashboard insight must refer to consultations, not generic actions");
 
