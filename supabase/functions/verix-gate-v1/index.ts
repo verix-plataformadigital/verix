@@ -4,6 +4,13 @@ const GATE_SECRET =
   Deno.env.get("VERIX_GATE_SECRET") ||
   Deno.env.get("VERIX_ADMIN_SECRET") ||
   "";
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
+const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+const MAX_GATE_BODY_BYTES = 8192;
+const GATE_SOURCE_LIMIT = 120;
+const GATE_SOURCE_WINDOW_SECONDS = 600;
+const GATE_INSTALL_LIMIT = 24;
+const GATE_INSTALL_WINDOW_SECONDS = 600;
 
 const ALLOWED_ORIGINS = new Set([
   "https://verix.vxops.workers.dev",
@@ -57,11 +64,39 @@ function corsHeaders(req: Request): Record<string, string> {
   };
 }
 
-function json(data: unknown, status: number, req: Request) {
+function json(data: unknown, status: number, req: Request, extraHeaders: Record<string, string> = {}) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...corsHeaders(req), "Content-Type": "application/json; charset=utf-8" }
+    headers: { ...corsHeaders(req), "Content-Type": "application/json; charset=utf-8", ...extraHeaders }
   });
+}
+
+function requestSourceIp(req: Request): string | null {
+  const forwarded = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  const candidate = forwarded || req.headers.get("cf-connecting-ip")?.trim() || req.headers.get("x-real-ip")?.trim() || "";
+  if (!candidate || candidate.length > 64 || /[\\s,]/.test(candidate)) return null;
+  return candidate.toLowerCase();
+}
+
+async function consumeRateLimit(key: string, limit: number, windowSeconds: number): Promise<boolean> {
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/verix2_consume_rate_limit`, {
+    method: "POST",
+    headers: {
+      apikey: SERVICE_KEY,
+      Authorization: `Bearer ${SERVICE_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ p_key: key, p_limit: limit, p_window_seconds: windowSeconds })
+  });
+  const text = await response.text();
+  if (!response.ok) {
+    console.error("verix_gate_rate_limit_store_failed", response.status);
+    throw new Error("rate_limit_store_unavailable");
+  }
+  let allowed: unknown;
+  try { allowed = JSON.parse(text); } catch { allowed = null; }
+  if (typeof allowed !== "boolean") throw new Error("rate_limit_store_invalid_receipt");
+  return allowed;
 }
 
 Deno.serve(async (req: Request) => {
@@ -71,7 +106,7 @@ Deno.serve(async (req: Request) => {
   if (req.method !== "POST") {
     return json({ ok: false, error: "method_not_allowed" }, 405, req);
   }
-  if (!GATE_SECRET) {
+  if (!GATE_SECRET || !SUPABASE_URL || !SERVICE_KEY) {
     return json({ ok: false, error: "gate_not_configured" }, 503, req);
   }
 
@@ -80,7 +115,30 @@ Deno.serve(async (req: Request) => {
     return json({ ok: false, error: "origin_not_allowed" }, 403, req);
   }
 
+  // Apply a source-level quota before parsing/generating a token. If the
+  // gateway doesn't provide an IP, the per-installation quota still applies.
+  const sourceIp = requestSourceIp(req);
+  if (sourceIp) {
+    try {
+      const sourceKey = "gate-source:" + await hmacHex("ip:" + sourceIp);
+      const sourceAllowed = await consumeRateLimit(
+        sourceKey, GATE_SOURCE_LIMIT, GATE_SOURCE_WINDOW_SECONDS
+      );
+      if (!sourceAllowed) {
+        return json({ ok: false, error: "rate_limited" }, 429, req, {
+          "Retry-After": String(GATE_SOURCE_WINDOW_SECONDS)
+        });
+      }
+    } catch (_) {
+      return json({ ok: false, error: "rate_limit_unavailable" }, 503, req);
+    }
+  }
+
   try {
+    const contentLength = Number(req.headers.get("content-length") || 0);
+    if (Number.isFinite(contentLength) && contentLength > MAX_GATE_BODY_BYTES) {
+      return json({ ok: false, error: "payload_too_large" }, 413, req);
+    }
     const body = await req.json().catch(() => null);
     const buildId = cleanText(body?.build_id, 80);
     const installationId = cleanText(body?.installation_id, 120);
@@ -92,6 +150,20 @@ Deno.serve(async (req: Request) => {
     }
     if (!installationId || !sessionId || !tabId) {
       return json({ ok: false, error: "invalid_client_identity" }, 400, req);
+    }
+
+    try {
+      const installKey = "gate-install:" + await hmacHex("installation:" + installationId);
+      const installAllowed = await consumeRateLimit(
+        installKey, GATE_INSTALL_LIMIT, GATE_INSTALL_WINDOW_SECONDS
+      );
+      if (!installAllowed) {
+        return json({ ok: false, error: "rate_limited" }, 429, req, {
+          "Retry-After": String(GATE_INSTALL_WINDOW_SECONDS)
+        });
+      }
+    } catch (_) {
+      return json({ ok: false, error: "rate_limit_unavailable" }, 503, req);
     }
 
     const now = Math.floor(Date.now() / 1000);
