@@ -367,13 +367,11 @@ Deno.serve(async (req: Request) => {
         // Uma consulta precisa de instalação, query e versão; sessão/tab podem faltar.
         if (!queryId || !appVersion) continue;
 
-        const d = x?.occurredAt ? new Date(x.occurredAt) : new Date();
-        const now = Date.now();
-        const ts = d.getTime();
-        if (!Number.isFinite(ts) || ts < now - 24 * 60 * 60 * 1000 || ts > now + 5 * 60 * 1000) continue;
+        // Do not drop an old lookup independently of its pending/final events.
+        // Offline queues can legitimately arrive more than 24 hours later; those
+        // events must remain correlated by query_id. Client timestamps are bounded
+        // against the server clock below before storage.
 
-        const installationKey = await hmacHex(`installation:${installationId}`);
-        if (!(await consumeRate(`vehicle:${installationKey}`, 30))) continue;
       }
 
       if (event === "imt_loaded") {
@@ -384,10 +382,14 @@ Deno.serve(async (req: Request) => {
         if (!queryId || !appVersion) continue;
       }
 
-      const occurredAtDate = x?.occurredAt ? new Date(x.occurredAt) : new Date();
-      const occurredAt = Number.isFinite(occurredAtDate.getTime())
-        ? occurredAtDate.toISOString()
-        : new Date().toISOString();
+      const receivedAt = new Date();
+      const occurredAtDate = x?.occurredAt ? new Date(x.occurredAt) : receivedAt;
+      const clientTime = occurredAtDate.getTime();
+      // Preserve valid historical occurrence times for offline replay, but never
+      // allow a fast/misconfigured client clock to push events into the future.
+      const occurredAt = !Number.isFinite(clientTime) || clientTime > receivedAt.getTime()
+        ? receivedAt.toISOString()
+        : occurredAtDate.toISOString();
 
       events.push({
         event_id: cleanText(x?.eventId, 120) || crypto.randomUUID(),
