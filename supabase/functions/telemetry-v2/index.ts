@@ -63,7 +63,7 @@ const ALLOWED_ORIGINS = new Set([
 ]);
 
 const allowedEvents = new Set([
-  "app_open","heartbeat","vehicle_lookup",
+  "app_open","heartbeat","session_close","vehicle_lookup",
   "vehicle_insurance_pending","vehicle_insurance_yes",
   "vehicle_insurance_no","vehicle_insurance_error",
   "imt_loaded","module_open","history_open","history_reopen",
