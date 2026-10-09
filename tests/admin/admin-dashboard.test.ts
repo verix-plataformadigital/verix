@@ -99,6 +99,22 @@ describe('Admin VÉRIX — melhorias da dashboard', () => {
     expect(dom.window.document.querySelector('[data-page="insurance"]')?.classList.contains('active')).toBe(true);
   });
 
+  it('permite pesquisar matrículas na tabela de erros de seguro', () => {
+    const dom = dashboard();
+    const win = dom.window;
+    dom.window.document.getElementById('insurancePlates')!.innerHTML = win.table(['Matrícula', 'Tipos'], [
+      '<tr><td>AA11BB</td><td>network</td></tr>',
+      '<tr><td>CC22DD</td><td>http_null</td></tr>',
+    ]);
+    const search = dom.window.document.getElementById('plateErrorSearch') as HTMLInputElement;
+    search.value = 'aa11';
+    search.dispatchEvent(new dom.window.Event('input', { bubbles: true }));
+
+    const rows = Array.from(dom.window.document.querySelectorAll<HTMLTableRowElement>('#insurancePlates tbody tr'));
+    expect(rows.map((row) => row.hidden)).toEqual([false, true]);
+    expect(dom.window.document.getElementById('plateErrorSearchCount')?.textContent).toContain('1 de 2');
+  });
+
   it('inclui navegação inferior para ecrãs pequenos e controlo de repetição', () => {
     expect(html).toContain('.nav{flex-direction:row;gap:4px;margin:0;overflow-x:auto;scrollbar-width:thin}');
     expect(html).toContain('id="retryLoadBtn"');
