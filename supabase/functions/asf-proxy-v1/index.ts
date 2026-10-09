@@ -26,6 +26,10 @@ const ASF_ORIGIN = "https://ext01.asf.com.pt";
 const ASF_PATH = "/api/src/";
 const MAX_BODY_BYTES = 16 * 1024;
 const UPSTREAM_TIMEOUT_MS = 15000;
+const INSTALLATION_QUERY_LIMIT = 6;
+const INSTALLATION_QUERY_WINDOW_SECONDS = 60;
+const SOURCE_QUERY_LIMIT = 600;
+const SOURCE_QUERY_WINDOW_SECONDS = 60;
 
 function json(data: unknown, status = 200, req?: Request, extraHeaders: Record<string, string> = {}) {
   return new Response(JSON.stringify(data), {
@@ -62,6 +66,39 @@ const GATE_SECRET =
   Deno.env.get("VERIX_GATE_SECRET") ||
   Deno.env.get("VERIX_ADMIN_SECRET") ||
   "";
+
+function requestSourceIp(req: Request): string | null {
+  // Supabase's gateway forwards the connecting IP in x-forwarded-for.
+  // If unavailable, the installation-level limit below still applies.
+  const forwarded = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  const candidate = forwarded || req.headers.get("cf-connecting-ip")?.trim() || req.headers.get("x-real-ip")?.trim() || "";
+  if (!candidate || candidate.length > 64 || /[\\s,]/.test(candidate)) return null;
+  return candidate.toLowerCase();
+}
+
+async function consumeRateLimit(key: string, limit: number, windowSeconds: number): Promise<boolean> {
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/verix2_consume_rate_limit`, {
+    method: "POST",
+    headers: {
+      apikey: SERVICE_KEY,
+      Authorization: `Bearer ${SERVICE_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ p_key: key, p_limit: limit, p_window_seconds: windowSeconds })
+  });
+  const text = await response.text();
+  if (!response.ok) {
+    console.error("verix_asf_rate_limit_store_failed", response.status);
+    throw new Error("rate_limit_store_unavailable");
+  }
+  let allowed: unknown;
+  try { allowed = JSON.parse(text); } catch { allowed = null; }
+  if (typeof allowed !== "boolean") {
+    console.error("verix_asf_rate_limit_invalid_receipt");
+    throw new Error("rate_limit_store_invalid_receipt");
+  }
+  return allowed;
+}
 
 async function hmacHex(value: string): Promise<string> {
   const key = await crypto.subtle.importKey(
@@ -137,7 +174,7 @@ Deno.serve(async (req: Request) => {
 
   const origin = req.headers.get("origin") || "";
 
-  if (!SUPABASE_URL || !SERVICE_KEY) {
+  if (!SUPABASE_URL || !SERVICE_KEY || !GATE_SECRET) {
     return json({ ok: false, error: "proxy_not_configured" }, 503, req);
   }
 
@@ -179,6 +216,36 @@ Deno.serve(async (req: Request) => {
 
     if (!date) {
       return json({ ok: false, error: "invalid_date" }, 400, req);
+    }
+
+    // Enforce query quotas server-side. The database stores only keyed HMACs,
+    // not raw installation IDs or source IP addresses. Fail closed if the
+    // shared rate-limit store is unavailable instead of calling ASF unbounded.
+    try {
+      const sourceIp = requestSourceIp(req);
+      if (sourceIp) {
+        const sourceKey = "asf-source:" + await hmacHex("ip:" + sourceIp);
+        const sourceAllowed = await consumeRateLimit(
+          sourceKey, SOURCE_QUERY_LIMIT, SOURCE_QUERY_WINDOW_SECONDS
+        );
+        if (!sourceAllowed) {
+          return json({ ok: false, error: "rate_limited", retry_after_seconds: SOURCE_QUERY_WINDOW_SECONDS }, 429, req, {
+            "Retry-After": String(SOURCE_QUERY_WINDOW_SECONDS)
+          });
+        }
+      }
+
+      const installationKey = "asf-install:" + await hmacHex("installation:" + installationId);
+      const installationAllowed = await consumeRateLimit(
+        installationKey, INSTALLATION_QUERY_LIMIT, INSTALLATION_QUERY_WINDOW_SECONDS
+      );
+      if (!installationAllowed) {
+        return json({ ok: false, error: "rate_limited", retry_after_seconds: INSTALLATION_QUERY_WINDOW_SECONDS }, 429, req, {
+          "Retry-After": String(INSTALLATION_QUERY_WINDOW_SECONDS)
+        });
+      }
+    } catch (_) {
+      return json({ ok: false, error: "rate_limit_unavailable" }, 503, req);
     }
 
     const query =
