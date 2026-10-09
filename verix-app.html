@@ -8704,39 +8704,24 @@ html body.fixed-workspace-active:not(.cinemometro-page-active) .time{
  }
  }
 
- window.copiarLegislacaoDescricao=function(texto,btn){
+ function copiarTextoLegislacao(texto,btn){
  const valor=String(texto||'').trim();
  if(!valor)return;
  const sucesso=()=>showLegCopyFeedback(btn,'✓ COPIADO');
- if(navigator.clipboard && window.isSecureContext){
- navigator.clipboard.writeText(valor).then(sucesso).catch(()=>fallback());
- }else fallback();
  function fallback(){
- const area=document.createElement('textarea');
- area.value=valor;area.style.position='fixed';area.style.left='-9999px';area.style.top='0';
- document.body.appendChild(area);area.focus();area.select();
- try{document.execCommand('copy');sucesso();}catch(e){}
- area.remove();
+  const area=document.createElement('textarea');
+  area.value=valor;area.style.position='fixed';area.style.left='-9999px';area.style.top='0';
+  document.body.appendChild(area);area.focus();area.select();
+  try{document.execCommand('copy');sucesso();}catch(e){}
+  area.remove();
  }
- };
-
+ if(navigator.clipboard && window.isSecureContext){
+  navigator.clipboard.writeText(valor).then(sucesso).catch(fallback);
+ }else fallback();
+ }
+ window.copiarLegislacaoDescricao=copiarTextoLegislacao;
+ window.copiarLegislacao=copiarTextoLegislacao;
  
- window.copiarLegislacao=function(texto,btn){
- const valor=String(texto||'').trim();
- if(!valor)return;
- const sucesso=()=>showLegCopyFeedback(btn,'✓ COPIADO');
- if(navigator.clipboard && window.isSecureContext){
- navigator.clipboard.writeText(valor).then(sucesso).catch(()=>fallback());
- }else fallback();
- function fallback(){
- const area=document.createElement('textarea');
- area.value=valor;area.style.position='fixed';area.style.left='-9999px';area.style.top='0';
- document.body.appendChild(area);area.focus();area.select();
- try{document.execCommand('copy');sucesso();}catch(e){}
- area.remove();
- }
- };
-
  const oldFilter=window.filtrarLegislacao;
  if(typeof oldFilter==='function'){
  window.filtrarLegislacao=function(valor){
@@ -11077,32 +11062,7 @@ document.addEventListener('change',function(e){
 </script>\n\n<!-- ===== v45 — ENTRE PLACAS + FORMATO OPERADOR ===== -->\n
 
 <style id="cin-v44-ajustes">\n/* Dropdown nativo: o menu aberto tem de continuar legível no Windows/Chromium. */\n.cin-session-operator-fields select{\n color-scheme:light!important;\n}\n.cin-session-operator-fields select option{\n background:#f2f5f7!important;\n color:#10232c!important;\n font-weight:700!important;\n}\n.cin-session-operator-fields select optgroup{\n background:#dce8ec!important;\n color:#164a63!important;\n font-weight:900!important;\n}\n.cin-session-operator-fields select option:checked{\n background:#176fba!important;\n color:#fff!important;\n}\n.cin-session-operator-fields select option[disabled]{\n color:#687b84!important;\n}\n.cin-regime-between{\n border-color:#b77c1b!important;\n box-shadow:0 0 0 1px rgba(224,165,43,.08), inset 0 0 15px rgba(224,165,43,.04);\n}\n.cin-regime-between select{\n border-color:#a77722!important;\n background:linear-gradient(180deg,#201a0b,#0d1216)!important;\n}\n\n/* Pequena etiqueta no limite automático quando é Autoestrada entre placas. */\n.cin-limit-between{\n color:#ffd36a!important;\n}\n</style>
-<script id="cin-v55-help-sync">
-(function(){
- function cinV55SyncLimitHelp(){
- const r=document.getElementById('cinRegime');
- const fonte=document.getElementById('cinLimiteFonte');
- if(!r||!fonte)return;
- const map={
- coexistencia:'',
- local_geral:'',
- restante:'',
- reservada:'',
- autoestrada:'',
- local_placas:'Introduza o limite definido pela sinalização aplicável no local.',
- fora_placas:'Introduza o limite definido pela sinalização aplicável no local.',
- auto_placas:'O programa aplica o limite operacional definido para esta configuração.',
- especial:'Introduza o limite definido pela sinalização aplicável no local.',
- personalizado:'Introduza o limite aplicável nesta sessão.'
- };
- fonte.textContent=map[r.value]||'O programa calcula automaticamente o limite quando aplicável.';
- }
- document.addEventListener('change',e=>{
- if(e.target?.id==='cinRegime'||e.target?.id==='cinVeiculo')setTimeout(cinV55SyncLimitHelp,0);
- });
- setTimeout(cinV55SyncLimitHelp,100);
-})();
-</script> <style id="cin-v55-top-config-help">
+ <style id="cin-v55-top-config-help">
 
 .cin-one-screen{
  display:grid!important;
