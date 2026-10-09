@@ -86,15 +86,17 @@ jobs:
                   else:
                       self.stack.pop()
 
-          path = Path("dist/verix-app.html")
-          parser = Validator()
-          parser.feed(path.read_text(encoding="utf-8"))
+          for path in (Path("dist/verix-app.html"), Path("dist/admin_v2.html")):
+              if not path.is_file():
+                  raise SystemExit(f"Required published HTML file missing: {path}")
+              parser = Validator()
+              parser.feed(path.read_text(encoding="utf-8"))
 
-          if parser.errors:
-              raise SystemExit("\n".join(parser.errors[:20]))
-          if parser.stack:
-              raise SystemExit(f"Unclosed HTML tags: {parser.stack[-20:]}")
-          print("HTML structural validation: OK")
+              if parser.errors:
+                  raise SystemExit(f"{path}:\n" + "\n".join(parser.errors[:20]))
+              if parser.stack:
+                  raise SystemExit(f"{path}: unclosed HTML tags: {parser.stack[-20:]}")
+              print(f"HTML structural validation: OK — {path}")
           PY
 
       - name: Ensure .nojekyll in dist
