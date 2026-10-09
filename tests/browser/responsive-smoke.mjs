@@ -110,10 +110,13 @@ for (const job of jobs) {
           };
         });
 
+        const visualBodyWidth = viewportState.bodyWidth *
+          (Number.parseFloat(viewportState.computedBodyZoom) || 1);
         assert(
           viewportState.documentWidth <= viewport.width + 1 &&
-          viewportState.bodyWidth <= viewport.width + 1,
-          job.name + " " + viewport.label + ": horizontal page overflow " + JSON.stringify(viewportState)
+          visualBodyWidth <= viewport.width + 1,
+          job.name + " " + viewport.label + ": horizontal page overflow after CSS zoom " +
+            JSON.stringify({ ...viewportState, visualBodyWidth })
         );
 
         if (viewport.width <= 1024) {
@@ -167,13 +170,20 @@ for (const job of jobs) {
           await navButton.click();
           await page.locator(module.selector).waitFor({ state: "visible", timeout: 5_000 });
 
-          const state = await page.evaluate(() => ({
-            documentWidth: document.documentElement.scrollWidth,
-            bodyWidth: document.body.scrollWidth
-          }));
+          const state = await page.evaluate(() => {
+            const bodyWidth = document.body.scrollWidth;
+            const zoom = Number.parseFloat(getComputedStyle(document.body).zoom) || 1;
+            return {
+              documentWidth: document.documentElement.scrollWidth,
+              bodyWidth,
+              zoom,
+              visualBodyWidth: bodyWidth * zoom
+            };
+          });
           assert(
-            state.documentWidth <= viewport.width + 1 && state.bodyWidth <= viewport.width + 1,
-            job.name + " " + viewport.label + " after " + module.id + ": page overflow " + JSON.stringify(state)
+            state.documentWidth <= viewport.width + 1 && state.visualBodyWidth <= viewport.width + 1,
+            job.name + " " + viewport.label + " after " + module.id +
+              ": page overflow after CSS zoom " + JSON.stringify(state)
           );
           assert(
             await navButton.getAttribute("aria-current") === "page",
