@@ -5,6 +5,7 @@ const endpoint = fs.readFileSync("supabase/functions/telemetry-v2/index.ts", "ut
 const migration = fs.readFileSync("supabase/migrations/20261009034000_repair_telemetry_integrity_and_query_metrics.sql", "utf8");
 const admin = fs.readFileSync("admin_v2.html", "utf8");
 const stats = fs.readFileSync("supabase/functions/stats-v2/index.ts", "utf8");
+const insuranceNoCasesMigration = fs.readFileSync("supabase/migrations/20261009080000_insurance_no_cases.sql", "utf8");
 const packageConfig = JSON.parse(fs.readFileSync("package.json", "utf8"));
 const currentAppVersion = packageConfig.version.split(".").slice(0, 2).join(".");
 assert.ok(stats.includes('const CURRENT_APP_VERSION = "' + currentAppVersion + '"'), "stats current version must match package.json major.minor");
@@ -20,6 +21,15 @@ assert.match(admin, /d\.current_app_version/);
 
 assert.match(endpoint, /db\.rpc\(\s*["']verix2_ingest_telemetry["']/);
 assert.match(endpoint, /p_events:\s*events/);
+assert.match(endpoint, /insuranceNoCases\.push/);
+assert.match(endpoint, /\.from\("verix_insurance_no_cases"\)[\s\S]*?ignoreDuplicates:\s*true/);
+assert.match(insuranceNoCasesMigration, /ENABLE ROW LEVEL SECURITY/);
+assert.match(insuranceNoCasesMigration, /REVOKE ALL ON TABLE public\.verix_insurance_no_cases FROM PUBLIC, anon, authenticated/);
+assert.match(insuranceNoCasesMigration, /interval '90 days'/);
+assert.match(insuranceNoCasesMigration, /cron\.schedule/);
+assert.match(stats, /detail==="insurance-no-cases"/);
+assert.match(admin, /MATRÍCULAS COM RESULTADO “SEM REGISTO”/);
+assert.match(admin, /renderInsuranceNoCases/);
 assert.match(endpoint, /p_installations:\s*\[\.\.\.installations\.values\(\)\]/);
 assert.match(endpoint, /p_sessions:\s*\[\.\.\.sessions\.values\(\)\]/);
 assert.doesNotMatch(endpoint, /db\.from\(["']verix2_(?:events|installations|sessions)["']\)\.upsert/);
