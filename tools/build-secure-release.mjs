@@ -226,7 +226,7 @@ for (const f of ["index.html", "verix-mobile.html"]) {
 // Publish the current release identity for uncached browser entry-point checks.
 fs.writeFileSync(
   path.join(OUTPUT_DIR, "version.json"),
-  JSON.stringify({ buildId: BUILD_ID, generatedAt: new Date().toISOString() }) + "\\n",
+  JSON.stringify({ buildId: BUILD_ID, generatedAt: new Date().toISOString() }) + "\n",
   "utf8"
 );
 
