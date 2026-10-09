@@ -137,8 +137,7 @@ assert.match(admin, /Number\(x\.consultations\|\|0\)/, "hour chart must use cons
 assert.match(admin, /fmt\(x\.users\|\|0\)/, "hour chart must show online installations");
 assert.match(admin, /Hora com mais consultas/, "dashboard insight must refer to consultations, not generic actions");
 
-console.log("PASS: atomic telemetry ingest, loss-safe beacon queue, browser presence KPI, hourly query deduplication, 24-hour presence chart, and Admin labels.");
-/, "error plate table must exclude partial/invalid plate fragments");
+console.log("PASS: atomic telemetry ingest, loss-safe beacon queue, browser presence KPI, hourly query deduplication, 24-hour presence chart, and Admin labels.");/, "error plate table must exclude partial/invalid plate fragments");
 assert.match(endpoint, /function sanitizeErrorPlateMetadata\\(/, "server must sanitize invalid error plate fragments before persistence");
 assert.match(endpoint, /if \\(event === "vehicle_insurance_error"\\) sanitizeErrorPlateMetadata\\(metadata\\)/, "server must apply plate validation to ASF error events");
 assert.ok(admin.includes("CONSULTAS","EVENTOS"), "Admin must distinguish consultation totals from raw event totals");
