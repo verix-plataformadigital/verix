@@ -62,6 +62,10 @@ jobs:
           grep -q "X-Verix-Build-Id" dist/verix-app.html
           grep -q "X-Verix-Client-Token" dist/verix-app.html
           grep -q "verix-telemetry-v2" dist/verix-app.html
+          grep -q 'name="verix-ai-policy"' dist/verix-app.html
+          grep -q 'name="verix-ai-policy"' dist/admin_v2.html
+          test -s dist/AI-ACCESS-POLICY.md
+          test -s dist/robots.txt
 
       - name: Validate HTML structure
         shell: bash
