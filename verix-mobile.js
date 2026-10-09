@@ -100,7 +100,7 @@ function normalizeMobileLayout(){
         const rects=children.map(c=>c.getBoundingClientRect());
         const firstRow=rects.filter(x=>x.top < (rects[0]?.bottom||0) && x.bottom > (rects[0]?.top||0));
         const wide=firstRow.length>=2 && firstRow.reduce((n,x)=>n+x.width,0)>vw*.72;
-        if(wide || /repeat\\(|minmax|\\b1fr\\b/.test(cols)){
+        if(wide || /repeat\(|minmax|\b1fr\b/.test(cols)){
           el.style.gridTemplateColumns='minmax(0,1fr)';
           el.style.gridTemplateRows='none';
         }
