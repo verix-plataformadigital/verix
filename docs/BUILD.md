@@ -14,7 +14,7 @@ O build V2 produz `dist-v2/`.
 
 A pipeline Windows constrói estes assets antes de publicar o host WebView2. O pacote final contém `VERIX.exe`, `Run-V2-Local.cmd` e `v2-assets/`. O script `tools/package-windows-release.ps1` valida a pasta publicada, cria `VERIX-Windows-x64.zip`, extrai o ZIP numa pasta temporária e volta a validar o conteúdo distribuível. Também gera `VERIX-Windows-x64.zip.sha256` com SHA-256 em formato verificável por ferramentas Linux.
 
-A CI de reengenharia valida este ZIP em cada alteração da branch V2. Ao publicar uma tag `verix-v*`, o workflow Windows publica o ZIP e o checksum nas GitHub Releases. Uma execução manual numa branch normal gera apenas um artefacto da execução; não cria uma release pública.
+A CI de reengenharia valida este ZIP em cada alteração da branch V2. O workflow de release usa os workflows de qualidade V2 e responsividade como workflows reutilizáveis; assim, uma tag `verix-v*` só publica o ZIP depois de passarem a tipagem, testes unitários, auditoria estática/de segurança, integração da ingestão de telemetria com PostgreSQL, build/empacotamento Windows e regressões responsivas em Chromium e WebKit. O artefacto Windows é transferido da mesma execução, e o checksum é verificado antes da publicação. Uma execução manual numa branch normal executa as validações e gera o artefacto, mas não cria uma release pública.
 
 Para ensaio controlado:
 - abrir `VERIX.exe` mantém o arranque do site de produção;
