@@ -23,6 +23,9 @@ jobs:
       - name: Install release tooling
         run: npm install --ignore-scripts --no-audit --no-fund
 
+      - name: Test telemetry analytics invariants
+        run: npm run test:telemetry
+
       - name: Produce hardened build
         env:
           VERIX_BUILD_ID: 1.5-sec-${{ github.run_number }}-${{ github.sha }}
