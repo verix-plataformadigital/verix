@@ -62,29 +62,32 @@ if(window.visualViewport){
 document.documentElement.classList.add('vx-mobile-ready');
 document.body.classList.add('vx-mobile-mode');
 
-/* Verix keyboard dismiss: fechar o teclado ao iniciar uma consulta em telemóvel/tablet.
-   O ficheiro só ativa este adaptador em viewports móveis; não altera a lógica da consulta. */
+/* Dismiss the mobile keyboard when a vehicle consultation starts.
+   Broad matching is intentional: the consultation button markup varies by module. */
 function dismissKeyboardOnConsult(event){
   const target=event.target;
   if(!target || typeof target.closest!=='function') return;
-  const button=target.closest('.command .searchbar .consult');
-  const form=button ? button.closest('form') :
-    (event.type==='submit' && target.matches && target.matches('.command .searchbar form') ? target : null);
+  const button=target.closest('button,input[type="submit"],input[type="button"],[role="button"],.consult');
+  const label=labelOf(button).toLowerCase();
+  const isConsultButton=!!button && (/consultar|consult|pesquisar|pesquisa/.test(label) ||
+    button.matches('.command .searchbar .consult'));
+  const form=event.type==='submit' && target.matches && target.matches('form')
+    ? target
+    : (isConsultButton ? (button.closest('form') || button.closest('.command') || button.closest('.searchbar') || document) : null);
   if(!form) return;
 
-  const blurFields=()=>{
+  const blurActive=()=>{
     try{
-      form.querySelectorAll('input,textarea,select').forEach(field=>{
-        try{ field.blur(); }catch(_){}
-      });
       const active=document.activeElement;
-      if(active && form.contains(active) && typeof active.blur==='function') active.blur();
+      if(active && /INPUT|TEXTAREA|SELECT/.test(active.tagName) && typeof active.blur==='function') active.blur();
+      if(form.querySelectorAll) form.querySelectorAll('input,textarea,select').forEach(field=>{
+        if(typeof field.blur==='function') field.blur();
+      });
     }catch(_){}
   };
-
-  // Blur synchronously during the user gesture, which is important on iOS/Android.
-  blurFields();
-  if(event.type!=='submit') setTimeout(blurFields,0);
+  blurActive();
+  // Some Android keyboards reopen when the page's submit handler moves focus.
+  [0,80,220,450].forEach(delay=>setTimeout(blurActive,delay));
 }
 
 document.addEventListener('pointerdown',dismissKeyboardOnConsult,true);
