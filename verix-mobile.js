@@ -226,16 +226,18 @@ if(nav){
 }else{
   const b=document.createElement('button');
   b.type='button';
-  b.innerHTML='<span class="vx-icon">⌂</span>Topo';
-  b.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+  b.innerHTML='<span class="vx-icon">⌕</span>Matrícula';
+  b.addEventListener('click',()=>{
+    const input=document.getElementById('MatriculaVeiculo');
+    if(input){
+      input.scrollIntoView({block:'center',behavior:'smooth'});
+      setTimeout(()=>input.focus({preventScroll:true}),180);
+    }else{
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+  });
   bar.appendChild(b);
 }
-
-const home=document.createElement('button');
-home.type='button';
-home.innerHTML='<span class="vx-icon">↑</span>Topo';
-home.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
-bar.appendChild(home);
 
 document.addEventListener('focusin',e=>{
   const el=e.target;
