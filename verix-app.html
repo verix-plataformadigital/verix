@@ -6274,7 +6274,11 @@ html body #asfRateWidget .asf-rate-sub[data-window-state="ready"]{
       <div class="verix-asf-notice-grid">
         <section class="verix-asf-notice-card verix-asf-notice-card-info" aria-labelledby="verixNoticeInfoTitle">
           <h2 id="verixNoticeInfoTitle" class="verix-asf-notice-card-title">INFORMAÇÃO IMPORTANTE</h2>
-          <p><strong>Consultas ASF normalizadas.</strong> O limitador de pesquisas de seguros por minuto foi removido. A disponibilidade continua dependente dos serviços externos ASF/RNSI.</p>
+          <div class="verix-asf-service-status" role="status" aria-label="Consultas automáticas ASF normalizadas">
+            <span class="verix-asf-service-status-title">SERVIÇO ASF NORMALIZADO</span>
+            <span class="verix-asf-service-status-detail">Limite de pesquisas de seguros por minuto removido.</span>
+          </div>
+          <p class="verix-asf-card-external-note">Nota: a disponibilidade continua dependente dos serviços externos ASF/RNSI.</p>
           <h3 class="verix-asf-notice-card-subtitle">PROTEÇÃO DO CÓDIGO</h3>
           <p>Não é autorizada a cópia, extração, reprodução ou reutilização, total ou parcial, do código-fonte do VÉRIX sem autorização expressa dos responsáveis pelo desenvolvimento.</p>
           <p class="verix-asf-notice-card-note">Utilize a plataforma de forma responsável. Evite pedidos automatizados ou repetitivos que possam comprometer a disponibilidade do serviço.</p>
@@ -7324,6 +7328,34 @@ html body .asf-operational-result .asf-note{
   border:1px solid rgba(255,79,104,.48);
   background:linear-gradient(155deg,rgba(116,24,43,.36),rgba(48,13,23,.32));
   box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 10px 26px rgba(64,5,20,.12);
+}
+.verix-asf-service-status{
+  margin:0 0 12px;
+  padding:14px 12px;
+  border:1px solid rgba(255,112,134,.72);
+  border-radius:11px;
+  background:linear-gradient(145deg,rgba(139,28,52,.62),rgba(76,17,31,.54));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 0 22px rgba(255,61,92,.09);
+  text-align:center;
+}
+.verix-asf-service-status-title{
+  display:block;
+  color:#ffbdc7;
+  font:950 clamp(13px,1.6vw,16px)/1.35 Arial,sans-serif;
+  letter-spacing:.65px;
+  text-transform:uppercase;
+  text-shadow:0 1px 12px rgba(255,65,92,.16);
+}
+.verix-asf-service-status-detail{
+  display:block;
+  margin-top:6px;
+  color:#fff0f2;
+  font:800 12px/1.5 Arial,sans-serif;
+}
+.verix-asf-notice-card p.verix-asf-card-external-note{
+  margin:0 0 10px;
+  color:#c9afb4;
+  font:500 10px/1.55 Arial,sans-serif;
 }
 .verix-asf-notice-card-thanks{
   display:flex;
