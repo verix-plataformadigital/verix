@@ -33,6 +33,8 @@ CREATE UNIQUE INDEX verix2_imt_confirmed_query_uq
   WHERE event = 'imt_loaded' AND query_id IS NOT NULL
     AND metadata ->> 'resultConfirmed' = 'true';
 
+-- Seed the currently deployed trigger body. The migration under test must repair its
+-- invalid OLD.first_seen access for verix2_sessions before updating session presence.
 CREATE OR REPLACE FUNCTION public.verix2_keep_seen_monotonic()
 RETURNS trigger LANGUAGE plpgsql SET search_path = public AS $function$
 BEGIN

@@ -21,6 +21,14 @@ describe("atomic telemetry ingestion", () => {
     expect(endpoint).not.toContain('db.from("verix2_sessions").upsert([...sessions.values()]');
   });
 
+  it("branches shared monotonic trigger fields by table row shape", () => {
+    expect(migration).toContain("IF TG_TABLE_NAME = 'verix2_installations' THEN");
+    expect(migration).toContain("ELSIF TG_TABLE_NAME = 'verix2_sessions' THEN");
+    expect(migration).toContain("NEW.first_seen := OLD.first_seen;");
+    expect(migration).toContain("NEW.started_at := OLD.started_at;");
+    expect(migration).toContain("NEW.last_seen := OLD.last_seen;");
+  });
+
   it("creates foreign-key parents before events inside the same function", () => {
     expect(migration).toContain("SECURITY INVOKER");
     const installationInsert = migration.indexOf("INSERT INTO public.verix2_installations AS current_installation");

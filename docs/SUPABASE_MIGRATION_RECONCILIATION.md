@@ -62,3 +62,9 @@ A migração de presença foi reforçada para lançar uma exceção caso as subs
 4. Testar a RPC numa base descartável: ingestão com instalação/sessão nova, evento que falha por violação de integridade e confirmação de rollback de todas as escritas.\n5. Só depois aprovar um plano explícito de reconciliação para produção.
 
 Até concluir estes passos, não executar `supabase db reset --linked`, não marcar versões como aplicadas manualmente e não fazer `db push` para tentar ocultar a deriva. Esta branch não alterou a base de produção.
+
+
+## Defeito do trigger partilhado, encontrado por teste real
+
+O primeiro teste PostgreSQL revelou que `verix2_keep_seen_monotonic()` lia sempre `OLD.first_seen`, mesmo quando disparado em `verix2_sessions`, tabela que usa `started_at`. Isso provocava erro ao atualizar `last_seen` de sessões. A função é agora escrita para distinguir `TG_TABLE_NAME` e preservar o campo correto em cada tabela. As duas migrações locais de presença/ingestão definem a versão corrigida; a suite PostgreSQL começa deliberadamente com a implementação defeituosa para provar que a migração a substitui. Nenhuma função foi publicada em produção.
+

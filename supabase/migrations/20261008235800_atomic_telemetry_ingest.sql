@@ -1,3 +1,36 @@
+CREATE OR REPLACE FUNCTION public.verix2_keep_seen_monotonic()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY INVOKER
+SET search_path = pg_catalog, public
+AS $function$
+BEGIN
+  IF OLD.last_seen IS NOT NULL
+     AND (NEW.last_seen IS NULL OR NEW.last_seen < OLD.last_seen) THEN
+    NEW.last_seen := OLD.last_seen;
+  END IF;
+
+  -- These tables have different row shapes: installations use first_seen,
+  -- while sessions use started_at. Never dereference a column that is absent
+  -- from the triggering table's OLD/NEW record.
+  IF TG_TABLE_NAME = 'verix2_installations' THEN
+    IF OLD.first_seen IS NOT NULL
+       AND (NEW.first_seen IS NULL OR NEW.first_seen > OLD.first_seen) THEN
+      NEW.first_seen := OLD.first_seen;
+    END IF;
+  ELSIF TG_TABLE_NAME = 'verix2_sessions' THEN
+    IF OLD.started_at IS NOT NULL
+       AND (NEW.started_at IS NULL OR NEW.started_at > OLD.started_at) THEN
+      NEW.started_at := OLD.started_at;
+    END IF;
+  ELSE
+    RAISE EXCEPTION 'verix2_keep_seen_monotonic used on unsupported table: %', TG_TABLE_NAME;
+  END IF;
+
+  RETURN NEW;
+END;
+$function$;
+
 -- Atomic write path for VÉRIX V2 telemetry.
 -- verix2_events has immediate foreign keys to verix2_installations and
 -- verix2_sessions. A single RPC inserts FK parents first, writes events, and
