@@ -50,36 +50,9 @@ jobs:
       - name: Publish portable host
         run: dotnet publish windows/VerixPortable/VerixPortable.csproj -c Release -r win-x64 --self-contained true --no-restore /p:PublishSingleFile=true
 
-      - name: Verify V2-inclusive portable package
-        run: node tools/verify-portable-package.mjs "windows/VerixPortable/bin/Release/net10.0-windows/win-x64/publish"
-
-      - name: Create downloadable ZIP and SHA-256 checksum
+      - name: Package and verify downloadable Windows ZIP
         shell: pwsh
-        run: |
-          $publish = Join-Path $PWD "windows/VerixPortable/bin/Release/net10.0-windows/win-x64/publish"
-          $releaseDir = Join-Path $PWD "release-assets"
-          $verifyDir = Join-Path $env:RUNNER_TEMP "verix-release-package-check"
-          $zipPath = Join-Path $releaseDir "VERIX-Windows-x64.zip"
-
-          if (!(Test-Path (Join-Path $publish "VERIX.exe"))) {
-            throw "VERIX.exe is missing from the publish directory."
-          }
-
-          New-Item -ItemType Directory -Path $releaseDir -Force | Out-Null
-          if (Test-Path $verifyDir) { Remove-Item $verifyDir -Recurse -Force }
-          Compress-Archive -Path (Join-Path $publish "*") -DestinationPath $zipPath -CompressionLevel Optimal -Force
-          Expand-Archive -LiteralPath $zipPath -DestinationPath $verifyDir -Force
-
-          # Verify the archive itself, not only the pre-archive publish directory.
-          node tools/verify-portable-package.mjs $verifyDir
-          if ($LASTEXITCODE -ne 0) {
-            throw "The packaged ZIP did not pass portable-package verification."
-          }
-
-          node -e "const fs=require('node:fs'); const {createHash}=require('node:crypto'); const file='release-assets/VERIX-Windows-x64.zip'; const hash=createHash('sha256').update(fs.readFileSync(file)).digest('hex'); fs.writeFileSync(file+'.sha256', hash+'  VERIX-Windows-x64.zip\\n', 'utf8'); console.log('SHA-256: '+hash);"
-          if ($LASTEXITCODE -ne 0) {
-            throw "Could not generate the ZIP SHA-256 checksum."
-          }
+        run: pwsh -File tools/package-windows-release.ps1 -PublishDirectory "windows/VerixPortable/bin/Release/net10.0-windows/win-x64/publish" -OutputDirectory "release-assets"
 
       - name: Upload Windows release candidate
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
