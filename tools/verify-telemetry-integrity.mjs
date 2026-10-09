@@ -4,6 +4,19 @@ import fs from "node:fs";
 const endpoint = fs.readFileSync("supabase/functions/telemetry-v2/index.ts", "utf8");
 const migration = fs.readFileSync("supabase/migrations/20261009034000_repair_telemetry_integrity_and_query_metrics.sql", "utf8");
 const admin = fs.readFileSync("admin_v2.html", "utf8");
+const stats = fs.readFileSync("supabase/functions/stats-v2/index.ts", "utf8");
+const packageConfig = JSON.parse(fs.readFileSync("package.json", "utf8"));
+const currentAppVersion = packageConfig.version.split(".").slice(0, 2).join(".");
+assert.ok(stats.includes('const CURRENT_APP_VERSION = "' + currentAppVersion + '"'), "stats current version must match package.json major.minor");
+assert.match(stats, /canonicalAppVersion\(e\?\.app_version\)===CURRENT_APP_VERSION/);
+assert.match(stats, /current_version_errors:currentVersionRows\.length/);
+assert.match(stats, /current_app_version:CURRENT_APP_VERSION/);
+assert.doesNotMatch(stats, /app14|["\']1\.4["\']/i, "stats must not hard-code the obsolete version filter");
+assert.doesNotMatch(admin, /VERSÃO 1\.4|ERROS DA 1\.4|app14|versão 1\.4/i, "Admin must not display or consume obsolete 1.4 error metrics");
+assert.match(admin, /inv\.current_version_errors/);
+assert.match(admin, /inv\.current_version_installations/);
+assert.match(admin, /inv\.current_version_plates/);
+assert.match(admin, /d\.current_app_version/);
 
 assert.match(endpoint, /db\.rpc\(\s*["']verix2_ingest_telemetry["']/);
 assert.match(endpoint, /p_events:\s*events/);
@@ -23,6 +36,7 @@ for (const metric of ["'pending'","'incomplete'","'contradictory'","'duplicate_f
 for (const label of ["Incompletas","Contraditórias","Finais duplicados","Finais órfãos","INSTALAÇÕES"]) assert.ok(admin.includes(label), "missing Admin label "+label);
 
 const app = fs.readFileSync("verix-app.html", "utf8");
+assert.doesNotMatch(app, /\b(?:APP_VERSION|appVersion|app_version)\s*[:=]\s*["\']1\.4(?:\.\d+)?["\']/i, "production runtime must not advertise the obsolete app version");
 const telemetryStart = app.indexOf("function parseReceipt(text)");
 const telemetryEnd = app.indexOf("function rateLimited", telemetryStart);
 assert.ok(telemetryStart >= 0 && telemetryEnd > telemetryStart, "production telemetry client must expose its receipt pipeline");
