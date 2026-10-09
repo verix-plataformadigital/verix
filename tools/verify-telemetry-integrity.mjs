@@ -6,11 +6,12 @@ const migration = fs.readFileSync("supabase/migrations/20261009034000_repair_tel
 const admin = fs.readFileSync("admin_v2.html", "utf8");
 const stats = fs.readFileSync("supabase/functions/stats-v2/index.ts", "utf8");
 const insuranceNoCasesMigration = fs.readFileSync("supabase/migrations/20261009080000_insurance_no_cases.sql", "utf8");
+const errorPlateCountMigration = fs.readFileSync("supabase/migrations/20261009092500_deduplicate_error_plate_consultations.sql", "utf8");
 const packageConfig = JSON.parse(fs.readFileSync("package.json", "utf8"));
 const currentAppVersion = packageConfig.version.split(".").slice(0, 2).join(".");
 assert.ok(stats.includes('const CURRENT_APP_VERSION = "' + currentAppVersion + '"'), "stats current version must match package.json major.minor");
 assert.match(stats, /canonicalAppVersion\(e\?\.app_version\)===CURRENT_APP_VERSION/);
-assert.match(stats, /current_version_errors:currentVersionRows\.length/);
+assert.match(stats, /current_version_errors:new Set\(currentVersionRows\.map/);
 assert.match(stats, /current_app_version:CURRENT_APP_VERSION/);
 assert.doesNotMatch(stats, /app14|["\']1\.4["\']/i, "stats must not hard-code the obsolete version filter");
 assert.doesNotMatch(admin, /VERSÃO 1\.4|ERROS DA 1\.4|app14|versão 1\.4/i, "Admin must not display or consume obsolete 1.4 error metrics");
@@ -37,7 +38,7 @@ assert.match(admin, /renderInsuranceNoCases/);
 assert.match(admin, /id="errorPlates"/, "Admin must expose a dedicated ASF error-plate list");
 assert.match(admin, /current_version_plate_cases\|\|\[\]/, "Admin must render actual error plate cases");
 assert.match(stats, /current_version_plate_cases:plateCases/, "stats must return error plate cases to Admin");
-assert.match(stats, /e\?\.metadata\?\.matriculaNormalizada\|\|e\?\.metadata\?\.matricula\|\|e\?\.metadata\?\.asfDiagnostic\?\.matricula/, "error analytics must read new and legacy plate metadata");
+assert.ok(stats.includes("const candidates=[e?.metadata?.asfDiagnostic?.matricula,e?.metadata?.matriculaNormalizada,e?.metadata?.matricula]"), "error analytics must prefer a valid plate from supported metadata fields");
 assert.match(endpoint, /if \(event !== "vehicle_insurance_error"\) \{[\s\S]*?delete metadata\.matriculaNormalizada;/, "no-record events must not retain plate metadata in the general event stream");
 assert.match(endpoint, /insuranceNoCases\.push/, "valid no-record outcomes must enter the dedicated 90-day registry");
 assert.match(admin, /O resultado, por si só, não confirma a ausência de seguro/, "no-record list must warn that no record alone is not proof");
@@ -110,6 +111,23 @@ assert.match(presenceMigration, /last_presence >= p_now-interval '90 seconds'/, 
 assert.match(presenceMigration, /event IN \('app_open','heartbeat','session_close'\)/, "online presence must use lifecycle events only");
 assert.match(presenceMigration, /last_close IS NULL OR last_presence > last_close/, "a later close event must remove a session from the active count");
 assert.ok(admin.includes("Sessões VÉRIX com browser aberto."), "Ativos agora must describe browser sessions, not installations");
+assert.ok(errorPlateCountMigration.includes("count(DISTINCT e.query_id) qty"), "error plate totals must count unique consultation IDs");
+assert.ok(errorPlateCountMigration.includes("count(*) event_qty"), "raw error event volume must remain visible separately");
+assert.ok(errorPlateCountMigration.includes("^(?:[A-Z]{2}[0-9]{4}|[0-9]{4}[A-Z]{2}|[0-9]{2}[A-Z]{2}[0-9]{2}|[A-Z]{2}[0-9]{2}[A-Z]{2})$"), "error plate table must allow only complete Portuguese plate formats");
+assert.ok(endpoint.includes("function sanitizeErrorPlateMetadata("), "server must sanitize invalid error plate fragments before persistence");
+assert.ok(endpoint.includes('if (event === "vehicle_insurance_error") sanitizeErrorPlateMetadata(metadata);'), "server must apply plate validation to ASF error events");
+assert.ok(admin.includes("CONSULTAS','EVENTOS"), "Admin must distinguish consultation totals from raw event totals");
+assert.ok(stats.includes("queryIds:new Set<string>()"), "error time buckets must deduplicate repeated events by query ID");
+assert.ok(stats.includes("event_count:b.events"), "error time buckets must expose raw event count separately");
+
+assert.ok(stats.includes("error_queries_24h:new Set(rows.map"), "error total must count unique query IDs separately from event rows");
+assert.ok(stats.includes("current_version_error_events:currentVersionRows.length"), "version errors must expose raw events separately from distinct queries");
+assert.ok(stats.includes("latestErrorByQuery"), "error plate details must not repeat the same consultation");
+assert.ok(stats.includes('qs.set("offset",String(page*pageSize))'), "error investigation must page through all raw telemetry instead of truncating at 1,000 rows");
+assert.ok(stats.includes("validPortuguesePlate"), "error plate diagnostics must use complete Portuguese plate formats");
+assert.ok(endpoint.includes("^(?:[A-Z]{2}[0-9]{4}|[0-9]{4}[A-Z]{2}"), "server must reject incomplete and malformed plate fragments");
+
+
 
 const hourlyMigration = fs.readFileSync("supabase/migrations/20261009051204_hourly_consultations_and_presence.sql", "utf8");
 assert.match(hourlyMigration, /generate_series\(0,23\)/, "hourly chart must include all 24 hours, including zero-activity hours");
