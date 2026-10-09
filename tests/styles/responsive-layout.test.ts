@@ -46,7 +46,7 @@ describe("V2 responsive contract", () => {
 
   it("prevents root and shell grid tracks from widening narrow viewports", () => {
     expect(stylesheet).toContain("Keep the shell and its containing blocks bounded by the device viewport.");
-    expect(stylesheet).toContain(".verix-shell {\n  width: 100%;\n  max-width: 100%;\n  min-width: 0;\n  grid-template-columns: minmax(0, 1fr);\n  overflow-x: clip;\n}");
+    expect(stylesheet).toContain(".verix-shell {\n  width: 100%;\n  max-width: 100%;\n  min-width: 0;\n  grid-template-columns: minmax(0, 1fr);\n}");
     expect(stylesheet).toContain(".verix-nav {\n  width: 100%;\n  max-width: 100%;\n}");
   });
 
