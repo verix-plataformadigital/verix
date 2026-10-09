@@ -436,7 +436,7 @@ function renderLoadFailure(){
  hosts.forEach(id=>{const host=$(id);if(host&&host.querySelector('.skeleton,.skeleton-chart,.skeleton-grid'))host.innerHTML='<div class="empty">Os dados ainda não estão disponíveis.</div>'});
 }
 function wireDashboardDrilldowns(){
- const routes={'ATIVOS AGORA':'usage','UTILIZADORES':'usage','CONSULTAS DE SEGURO':'insurance','COM SEGURO':'insurance','SEM REGISTO':'insurance','ERROS ASF':'errors','CINEMÓMETRO':'speed'};
+ const routes={'ATIVOS AGORA':'usage','INSTALAÇÕES':'usage','CONSULTAS DE SEGURO':'insurance','COM SEGURO':'insurance','SEM REGISTO':'insurance','ERROS ASF · COORTE':'insurance','CINEMÓMETRO':'speed'};
  const host=$('dashCards');if(!host)return;
  host.querySelectorAll('.card').forEach(el=>{const label=el.querySelector('.label')?.textContent.trim();const page=routes[label];if(!page)return;el.dataset.drillPage=page;el.setAttribute('role','button');el.setAttribute('tabindex','0');el.setAttribute('aria-label','Ver detalhes: '+label);if(['CONSULTAS DE SEGURO','SEM REGISTO','ERROS ASF'].includes(label))el.classList.add('key-metric')});
 }
@@ -527,7 +527,7 @@ async function ensurePageDetail(page){
 function renderDashboard(d){
  const a=d.analytics||{},o=a.overview||{},p=period(),ret=a.retention||{},u=a.usage||{},s=u.sessions?.[currentPeriod]||{},speed=a.speed?.summary||{},life=d.lifetime||{},invest=d.investigation||{};
  const users=Number(o['unique_'+currentPeriod]||0),lookups=Number(p.started||0),fin=Number(p.finals||0),insured=Number(p.insured||0),uninsured=Number(p.uninsured||0),errs=Number(p.errors||0),dec=insured+uninsured;
- const noRate=dec?100*uninsured/dec:null,errorRate=fin?100*errs/fin:null;
+ const noRate=dec?100*uninsured/dec:null,errorRate=fin?100*errs/fin:null,diagnosticCoverage=a.telemetry?.asf_diagnostic_coverage_30d;
  $('dashCards').innerHTML=
   card('ATIVOS AGORA',num(o.online_now),'Instalações com atividade recente.','green')+
   card('INSTALAÇÕES',num(users),'IDs de instalação observados; não representam pessoas únicas.','cyan')+
@@ -543,7 +543,9 @@ function renderDashboard(d){
  const peakHour=hours.slice().sort((x,y)=>Number(y.actions||0)-Number(x.actions||0))[0];
  const peakDay=(u.daily||[]).slice().sort((x,y)=>Number(y.lookups||0)-Number(x.lookups||0))[0];
  const topModule=mods[0];
- $('heroInsight').innerHTML='<div class="k">LEITURA PRINCIPAL</div><div class="v">'+(errorRate!=null&&errorRate>8?'Existem erros a acompanhar.':errorRate!=null&&errorRate>3?'Há alguns erros a acompanhar.':'Não há erros relevantes observados nesta janela.')+'</div><div class="s">'+(peakHour?'Hora mais ativa: '+String(peakHour.hour_num).padStart(2,'0')+'h. ':'')+(topModule?'Módulo mais usado: '+esc(topModule.label)+'.':'')+'</div>';
+ const heroMessage=fin===0?'Dados insuficientes para avaliar a taxa de erro nesta janela.':errorRate!=null&&errorRate>8?'Existem erros a acompanhar.':errorRate!=null&&errorRate>3?'Há alguns erros a acompanhar.':'Taxa de erro observada abaixo do limiar de atenção nesta janela.';
+ const heroCaveat=diagnosticCoverage!=null&&diagnosticCoverage<80?'Cobertura do diagnóstico ASF (30 d): '+pct(diagnosticCoverage)+'. ':'';
+ $('heroInsight').innerHTML='<div class="k">LEITURA PRINCIPAL</div><div class="v">'+heroMessage+'</div><div class="s">'+heroCaveat+(peakHour?'Hora mais ativa: '+String(peakHour.hour_num).padStart(2,'0')+'h. ':'')+(topModule?'Módulo mais usado: '+esc(topModule.label)+'.':'')+'</div>';
  $('dashReading').innerHTML=
   metric('Novas instalações',num(ret[currentPeriod]?.new))+
   metric('Instalações recorrentes',num(ret[currentPeriod]?.returning))+
