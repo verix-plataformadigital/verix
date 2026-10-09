@@ -592,13 +592,23 @@ function renderInsurance(d){
   '<p>Os detalhes técnicos servem para investigação. Não são apresentados como diagnóstico de causa sem evidência suficiente.</p>';
 }
 function renderSpeed(d){
- const c=d.cinemometer||{},a=d.analytics||{},s=Object.keys(c).length?c:(a.speed?.summary||{});
- const calc=Number(s.calculations||s.calculations_24h||0),sessions=Number(s.sessions||0),compat=Number(s.sessions_compatible||0),atyp=Number(s.sessions_atypical||0),p50=s.speed_p50??s.p50_24h,avg=s.speed_avg??s.avg_24h,min=s.speed_min??s.min_24h,max=s.speed_max??s.max_24h;
+ const c=d.cinemometer||{},a=d.analytics||{},summary=a.speed?.summary||{},s=Object.assign({},summary,c);
+ s.calculations=summary.calculations_24h??c.calculations??0;
+ s.speed_entries=summary.speed_entries_24h??c.speed_entries??0;
+ s.measurements=summary.measurements_24h??c.measurements??0;
+ s.avg_speed=summary.avg_24h??c.avg_speed??null;
+ s.speed_p50=summary.p50_24h??c.speed_p50??null;
+ s.speed_min=summary.min_24h??c.speed_min??null;
+ s.speed_max=summary.max_24h??c.speed_max??null;
+ const calc=Number(s.calculations||0),sessions=Number(s.sessions||0),compat=Number(s.sessions_compatible||0),atyp=Number(s.sessions_atypical||0),p50=s.speed_p50,avg=s.avg_speed,min=s.speed_min,max=s.speed_max;
  $('speedCards').innerHTML=
   card('CÁLCULOS',num(calc),'Eventos de cálculo brutos nas últimas 24 horas.','cyan')+
-  card('VELOCIDADE MÉDIA',avg==null?'—':fmt(avg)+' km/h','Média das velocidades disponíveis.')+
-  card('VELOCIDADE MEDIANA',p50==null?'—':fmt(p50)+' km/h','Valor central.','blue')+
-  card('MÍNIMO / MÁXIMO',min==null?'—':fmt(min)+' / '+fmt(max)+' km/h','Valores observados.');
+  card('ENTRADAS DE VELOCIDADE',num(s.speed_entries),'Eventos de entrada; podem não ter sido calculados.')+
+  card('MEDIÇÕES CALCULADAS',num(s.measurements),'Cálculos únicos por operação e velocidade.','green')+
+  card('VELOCIDADE MÉDIA',avg==null?'—':fmt(avg)+' km/h','Média das medições calculadas.')+
+  card('VELOCIDADE MEDIANA',p50==null?'—':fmt(p50)+' km/h','Valor central das medições calculadas.','blue')+
+  card('VELOCIDADE DEDUZIDA · MEDIANA',s.deduced_p50_24h==null?'—':fmt(s.deduced_p50_24h)+' km/h','Resultado do cálculo registado na telemetria.')+
+  card('MÍNIMO / MÁXIMO',min==null?'—':fmt(min)+' / '+fmt(max)+' km/h','Valores das medições calculadas.');
  const dist=(a.speed?.distribution_24h||[]).length?(a.speed.distribution_24h):[];
  if(dist.length){const mx=Math.max(1,...dist.map(x=>Number(x.qty)||0));$('speedDistribution').innerHTML=dist.map(x=>'<div class="bar-row" style="margin-bottom:8px"><div class="bar-label">'+esc(x.bucket_start+'–'+(Number(x.bucket_start)+9)+' km/h')+'</div><div class="track"><div class="fill" style="width:'+Math.max(2,Number(x.qty)/mx*100)+'%"></div></div><div class="num">'+fmt(x.qty)+'</div></div>').join('')}else $('speedDistribution').innerHTML='<div class="empty">Ainda não existe detalhe suficiente para desenhar a distribuição.</div>';
  const flags=c.flag_counts||{},pattern=c.pattern_counts||{};
