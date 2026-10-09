@@ -436,7 +436,7 @@ function renderLoadFailure(){
  hosts.forEach(id=>{const host=$(id);if(host&&host.querySelector('.skeleton,.skeleton-chart,.skeleton-grid'))host.innerHTML='<div class="empty">Os dados ainda não estão disponíveis.</div>'});
 }
 function wireDashboardDrilldowns(){
- const routes={'ATIVOS AGORA':'usage','INSTALAÇÕES':'usage','CONSULTAS DE SEGURO':'insurance','COM SEGURO':'insurance','SEM REGISTO':'insurance','ERROS ASF · COORTE':'insurance','CINEMÓMETRO':'speed'};
+ const routes={'ATIVOS AGORA':'usage','INSTALAÇÕES':'usage','CONSULTAS DE SEGURO':'insurance','COM SEGURO':'insurance','SEM REGISTO':'insurance','ERROS ASF · COORTE':'errors','CINEMÓMETRO':'speed'};
  const host=$('dashCards');if(!host)return;
  host.querySelectorAll('.card').forEach(el=>{const label=el.querySelector('.label')?.textContent.trim();const page=routes[label];if(!page)return;el.dataset.drillPage=page;el.setAttribute('role','button');el.setAttribute('tabindex','0');el.setAttribute('aria-label','Ver detalhes: '+label);if(['CONSULTAS DE SEGURO','SEM REGISTO','ERROS ASF'].includes(label))el.classList.add('key-metric')});
 }
