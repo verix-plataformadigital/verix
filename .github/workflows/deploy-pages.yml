@@ -118,6 +118,8 @@ jobs:
           path: dist
 
   deploy:
+    # workflow_dispatch can be started from any branch. Never let a PR branch publish to production Pages.
+    if: github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
     environment:

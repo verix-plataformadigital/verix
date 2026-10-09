@@ -215,6 +215,10 @@ for (const marker of requiredWindowsReleaseMarkers) {
   }
 }
 
+if (!/^  deploy:\s*\n    # workflow_dispatch can be started from any branch\. Never let a PR branch publish to production Pages\.\s*\n    if: github\.ref == 'refs\\/heads\\/main'\s*\n    needs: build/m.test(pagesWorkflow)) {
+  throw new Error("GitHub Pages production deploy must be restricted to refs/heads/main.");
+}
+
 for (const [label, source] of [
   ["GitHub Pages deploy", pagesWorkflow],
   ["manual secure release", secureReleaseWorkflow]
