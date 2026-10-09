@@ -184,7 +184,7 @@ function sessionPattern(rows){
       nome:latest?.operador_nome||null,
       numero:latest?.operador_numero||null,
       posto:latest?.operador_posto||null,
-      identificado:latest?.operador_identificado===true
+      identificado:latest?.operador_identificado===true||!!(latest?.operador_numero||latest?.operador_nome||latest?.operador_posto)
     },
     aparelho:{
       marca:latest?.aparelho_marca||null,
@@ -247,7 +247,7 @@ async function loadLifetime(now:string){
 }
 async function loadCinemometerAnalytics24h(now:string){
   const qs = new URLSearchParams();
-  qs.set("select","occurred_at,event,session_id,installation_id,app_version,browser,metadata");
+  qs.set("select","event_id,occurred_at,event,session_id,installation_id,app_version,browser,metadata");
   qs.set("event","in.(cinemometer_speed_entry,cinemometer_calculation,cinemometer_copy_code,cinemometer_copy_text,cinemometer_copy_location,cinemometer_profile_select,cinemometer_profile_new,cinemometer_profile_duplicate,cinemometer_profile_delete,cinemometer_profile_save)");
   qs.set("and","(occurred_at.gte."+new Date(Date.now()-24*60*60*1000).toISOString()+",occurred_at.lt."+now+")");
   qs.set("order","occurred_at.desc");
@@ -258,7 +258,7 @@ async function loadCinemometerAnalytics24h(now:string){
   const events=tt?JSON.parse(tt):[];
   events.sort((a:any,b:any)=>String(a.occurred_at||"").localeCompare(String(b.occurred_at||"")));
   const range=rr.headers.get("content-range")||"";
-  const rangeMatch=range.match(/\\/(\\d+)$/);
+  const rangeMatch=range.match(/\/(\d+)$/);
   const totalEventCount=rangeMatch?Number(rangeMatch[1]):events.length;
   const groups=groupCinemometerEvents(events);
   const sessions=groups.map((group:any)=>{
