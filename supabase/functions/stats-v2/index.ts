@@ -206,7 +206,7 @@ async function loadErrorInvestigation24h(now:string){
   const qs = new URLSearchParams();
   qs.set("select","occurred_at,event,event_id,installation_id,query_id,app_version,browser,metadata");
   qs.set("event","eq.vehicle_insurance_error");
-  qs.set("occurred_at","gte."+new Date(Date.now()-24*60*60*1000).toISOString());
+  qs.set("and","(occurred_at.gte."+new Date(Date.now()-24*60*60*1000).toISOString()+",occurred_at.lt."+now+")");
   qs.set("order","occurred_at.desc");
   qs.set("limit","1000");
   const rr=await fetch(supabaseUrl+"/rest/v1/verix2_events?"+qs.toString(),{
@@ -249,13 +249,16 @@ async function loadCinemometerAnalytics24h(now:string){
   const qs = new URLSearchParams();
   qs.set("select","occurred_at,event,session_id,installation_id,app_version,browser,metadata");
   qs.set("event","in.(cinemometer_speed_entry,cinemometer_calculation,cinemometer_copy_code,cinemometer_copy_text,cinemometer_copy_location,cinemometer_profile_select,cinemometer_profile_new,cinemometer_profile_duplicate,cinemometer_profile_delete,cinemometer_profile_save)");
-  qs.set("occurred_at","gte." + new Date(Date.now()-24*60*60*1000).toISOString());
+  qs.set("and","(occurred_at.gte."+new Date(Date.now()-24*60*60*1000).toISOString()+",occurred_at.lt."+now+")");
   qs.set("order","occurred_at.asc");
   qs.set("limit","5000");
   const rr=await fetch(supabaseUrl+"/rest/v1/verix2_events?"+qs.toString(),{headers:{apikey:serviceKey,Authorization:"Bearer "+serviceKey}});
   const tt=await rr.text();
   if(!rr.ok)throw new Error("cin_analytics:"+tt);
   const events=tt?JSON.parse(tt):[];
+  const range=rr.headers.get("content-range")||"";
+  const rangeMatch=range.match(/\\/(\\d+)$/);
+  const totalEventCount=rangeMatch?Number(rangeMatch[1]):events.length;
   const groups=groupCinemometerEvents(events);
   const sessions=groups.map((group:any)=>{
     const rows=group.events as any[];
@@ -295,6 +298,9 @@ async function loadCinemometerAnalytics24h(now:string){
   return {
     generated_at:now,
     events:events.length,
+    total_events:totalEventCount,
+    sample_count:events.length,
+    sampled:totalEventCount>events.length,
     sessions:sessions.length,
     calculations:calcEvents.length,
     speed_entries:speedEntries.length,
