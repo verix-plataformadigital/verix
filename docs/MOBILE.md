@@ -12,7 +12,7 @@ Uma aplicação VÉRIX única para desktop, tablets e telemóveis. Não criar HT
 - As tabelas de zonas/vias e álcool têm áreas de scroll horizontal dedicadas, sem exigir scroll horizontal da página inteira.
 - A região da tabela de zonas/vias é focável pelo teclado e tem um nome acessível.
 - Os campos de edição em ecrãs pequenos usam texto de 16 px para evitar o zoom automático típico do Safari iOS ao focar inputs.
-- Controlos usados frequentemente em touch têm alvos de pelo menos 44 px.
+- Controlos usados frequentemente em touch têm alvos de pelo menos 48 px.
 - São respeitadas as áreas seguras do ecrã, o viewport dinâmico dvh e a preferência de sistema para reduzir animações.
 - Os utilizadores continuam a poder ampliar a página com zoom do browser; não desativar o zoom através de user-scalable=no ou maximum-scale=1.
 

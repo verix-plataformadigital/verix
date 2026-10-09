@@ -35,4 +35,12 @@ describe("V2 responsive contract", () => {
     expect(stylesheet).toContain(":focus-visible");
     expect(stylesheet).toContain("@media (prefers-reduced-motion: reduce)");
   });
+
+  it("keeps phone home/district grids readable and uses generous touch targets", () => {
+    expect(stylesheet).toContain(".home-module-grid { grid-template-columns: minmax(0, 1fr); }");
+    expect(stylesheet).toContain(".tools-district-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }");
+    expect(stylesheet).toContain("min-height: 48px;");
+    expect(stylesheet).toContain("width: 48px;");
+  });
+
 });

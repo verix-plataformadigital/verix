@@ -502,13 +502,16 @@ body.theme-light .verix-workspace textarea {
   .history-insurance-v2 { justify-self: end; text-align: right; }
   .vehicle-value { align-items: flex-start; flex-direction: column; gap: 4px; }
   .information-grid { grid-template-columns: minmax(0, 1fr); }
+  .home-module-grid { grid-template-columns: minmax(0, 1fr); }
+  .tools-district-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
   .tools-table { min-width: 560px; }
   .alcohol-table-wrap {
     max-width: 100%; max-height: min(470px, 58dvh); overscroll-behavior: contain;
   }
   .alcohol-table { min-width: 480px; }
   .cin-operational-text { font-size: 12px; }
-  .home-primary-action, .cin-context-toggle { min-height: 44px; }
+  .home-primary-action, .cin-context-toggle { min-height: 48px; }
 }
 
 @media (max-width: 390px) {
@@ -529,8 +532,8 @@ body.theme-light .verix-workspace textarea {
     .cin-copy-button, .history-clear, .home-primary-action, .home-module-card,
     .tools-external-button, .legislation-clear, .legislation-favorites-toggle,
     .legislation-copy-all, .settings-reset, .information-source
-  ) { min-height: 44px; }
-  .legislation-favorite { width: 44px; height: 44px; }
+  ) { min-height: 48px; }
+  .legislation-favorite { width: 48px; height: 48px; }
   .settings-toggle input { width: 22px; height: 22px; }
 }
 
