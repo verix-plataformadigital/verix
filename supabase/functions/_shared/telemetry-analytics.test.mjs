@@ -23,13 +23,15 @@ test("canonical speed metrics remove only a paired calculation/entry duplicate",
   const rows = [
     event("cinemometer_calculation", "2026-10-09T10:00:01Z", { metadata: { cin: { operation_id: "op-1", velocidade_registada: 88 } } }),
     event("cinemometer_speed_entry", "2026-10-09T10:00:02Z", { metadata: { cin: { operation_id: "op-1", velocidade_registada: 88 } } }),
+    event("cinemometer_calculation", "2026-10-09T10:00:03Z", { metadata: { cin: { operation_id: "op-1", velocidade_registada: 88 } } }),
     event("cinemometer_calculation", "2026-10-09T10:00:10Z", { metadata: { cin: { operation_id: "op-2", velocidade_registada: 92 } } }),
     event("cinemometer_calculation", "2026-10-09T10:00:20Z", { metadata: { cin: { operation_id: "op-3", velocidade_registada: 100 } } }),
   ];
   const result = canonicalSpeedMeasurements(rows);
   assert.equal(result.length, 3);
   assert.deepEqual(result.map((row) => row.metadata.cin.velocidade_registada), [88, 92, 100]);
-  assert.equal(result.filter((row) => row.event === "cinemometer_speed_entry").length, 1);
+  assert.equal(result.filter((row) => row.event === "cinemometer_calculation").length, 3);
+  assert.equal(result.filter((row) => row.event === "cinemometer_speed_entry").length, 0);
 });
 
 test("Cinemómetro groups are scoped by installation, session and operation", () => {
