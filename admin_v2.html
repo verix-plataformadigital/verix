@@ -263,7 +263,16 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
 
         <div class="grid g2" style="margin-top:12px">
           <div class="panel"><div class="panel-head"><h3>PROBLEMAS MAIS FREQUENTES</h3><span>ÚLTIMAS 24 H</span></div><div class="panel-body"><div id="insuranceErrors" class="bar-list"></div></div></div>
-          <div class="panel"><div class="panel-head"><h3>MATRÍCULAS COM ERROS</h3><span>APENAS QUANDO DISPONÍVEL</span></div><div id="insurancePlates" class="table-wrap"></div></div>
+          <div class="panel">
+            <div class="panel-head"><h3>MATRÍCULAS COM ERROS</h3><span>APENAS QUANDO DISPONÍVEL</span></div>
+            <div class="error-tools" style="margin:10px 12px 0">
+              <label for="plateErrorSearch">Pesquisar matrículas</label>
+              <input id="plateErrorSearch" type="search" placeholder="Matrícula ou tipo de erro…" autocomplete="off" aria-controls="insurancePlates">
+              <span id="plateErrorSearchCount" aria-live="polite">A preparar pesquisa…</span>
+            </div>
+            <div id="plateErrorSearchEmpty" class="empty error-search-empty hidden" role="status">Não foram encontradas matrículas com esses termos.</div>
+            <div id="insurancePlates" class="table-wrap"></div>
+          </div>
         </div>
 
         <div class="panel" style="margin-top:12px">
@@ -320,7 +329,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
         <div class="page-head"><div><h2>Erros</h2><p>Aqui interessa perceber o problema, a frequência e onde aparece.</p></div></div>
         <div class="error-tools">
           <label for="errorSearch">Pesquisar nos erros</label>
-          <input id="errorSearch" type="search" placeholder="Tipo, instalação, assinatura…" autocomplete="off" aria-controls="errorTypes errorBursts errorInstallations errorSignatures">
+          <input id="errorSearch" type="search" placeholder="Tipo, instalação, assinatura…" autocomplete="off" aria-controls="errorTypes errorBursts errorInstallations errorSignatures errorTechnical">
           <span id="errorSearchCount" aria-live="polite">A preparar pesquisa…</span>
         </div>
         <div id="errorSearchEmpty" class="empty error-search-empty hidden" role="status">Não foram encontrados resultados. Experimenta outros termos.</div>
@@ -430,6 +439,13 @@ function applyErrorSearch(){
  rows.forEach(row=>{const hit=!query||row.textContent.toLocaleLowerCase('pt-PT').includes(query);row.hidden=!hit;if(hit)matches++});
  const count=$('errorSearchCount');if(count)count.textContent=query?matches+' de '+rows.length+' linhas correspondem.':rows.length+' linhas nas tabelas de erros.';
  const empty=$('errorSearchEmpty');if(empty)empty.classList.toggle('hidden',!(query&&rows.length>0&&matches===0));
+}
+function applyPlateErrorSearch(){
+ const input=$('plateErrorSearch');if(!input)return;const query=input.value.trim().toLocaleLowerCase('pt-PT');
+ const rows=Array.from(document.querySelectorAll('#insurancePlates .table tbody tr'));let matches=0;
+ rows.forEach(row=>{const hit=!query||row.textContent.toLocaleLowerCase('pt-PT').includes(query);row.hidden=!hit;if(hit)matches++});
+ const count=$('plateErrorSearchCount');if(count)count.textContent=query?matches+' de '+rows.length+' linhas correspondem.':rows.length+' matrículas com erro.';
+ const empty=$('plateErrorSearchEmpty');if(empty)empty.classList.toggle('hidden',!(query&&rows.length>0&&matches===0));
 }
 function barList(id,rows,tone=''){const host=$(id);if(!host)return;if(!rows?.length){host.innerHTML='<div class="empty">Sem dados suficientes.</div>';return}const max=Math.max(1,...rows.map(x=>Number(x.value)||0));host.innerHTML=rows.slice(0,12).map(x=>'<div class="bar-row"><div class="bar-label" title="'+esc(x.label)+'">'+esc(x.label)+'</div><div class="track"><div class="fill '+tone+'" style="width:'+Math.max(2,(Number(x.value)||0)/max*100)+'%"></div></div><div class="num">'+fmt(x.value)+'</div></div>').join('')}
 function monthlyChart(id,rows,key){const host=$(id);if(!host)return;if(!rows?.length){host.innerHTML='<div class="empty" style="width:100%">Sem dados suficientes.</div>';return}const vals=rows.map(x=>Number(x[key]||0));const max=Math.max(1,...vals);host.setAttribute('role','group');host.setAttribute('aria-label','Atividade diária. Foca uma barra para consultar o dia e o valor.');host.innerHTML=rows.map(x=>{const label=String(x.day_key||'');const value=fmt(x[key]||0);return '<div class="chart-col" tabindex="0" role="img" aria-label="'+esc(label+': '+value+' consultas')+'" title="'+esc(label+' · '+value)+'"><div class="chart-bar" aria-hidden="true" style="height:'+Math.max(3,(Number(x[key]||0)/max)*100)+'%"></div><div class="chart-label" aria-hidden="true">'+esc(label.slice(5))+'</div></div>'}).join('')}
@@ -541,6 +557,7 @@ function renderInsurance(d){
  $('insuranceCompare').innerHTML=table(['PERÍODO','CONSULTAS','RESULTADOS','COM SEGURO','SEM REGISTO','ERROS'],['24h','7d','30d'].map(k=>{const x=a.insurance?.[k]||{};return '<tr>'+td('<strong>'+k.toUpperCase()+'</strong>')+td(fmt(x.started))+td(fmt(x.finals))+td(fmt(x.insured))+td(fmt(x.uninsured))+td(fmt(x.errors))+'</tr>'}));
  const types=a.errors?.types||[];barList('insuranceErrors',types.map(x=>({label:x.kind,value:x.qty})),'red');
  const plates=a.errors?.plates||[];$('insurancePlates').innerHTML=table(['MATRÍCULA','ERROS','ÚLTIMO','TIPOS'],plates.slice(0,20).map(x=>'<tr>'+td('<strong>'+esc(x.plate||x.plate_key||'—')+'</strong>')+td(fmt(x.qty))+td(datePT(x.last_at))+td(esc((x.kinds||[]).join(', ')||'—'))+'</tr>'));
+ applyPlateErrorSearch();
  const sig=a.errors?.signatures||[];$('insuranceTechnical').innerHTML=
   '<div class="kpi-strip">'+metric('Assinaturas repetidas',num(sig.length))+metric('P50 ASF',q.latency_p50_ms==null?'—':fmt(q.latency_p50_ms)+' ms')+metric('P95 ASF',q.latency_p95_ms==null?'—':fmt(q.latency_p95_ms)+' ms')+metric('Pendentes',num(p.pending))+'</div>'+
   '<p>Os detalhes técnicos servem para investigação. Não são apresentados como diagnóstico de causa sem evidência suficiente.</p>';
@@ -682,6 +699,7 @@ $('dashCards').addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')re
 document.addEventListener('click',e=>{const th=e.target.closest('table.sortable th[data-sort-col]');if(th)sortTable(th)});
 document.addEventListener('keydown',e=>{const th=e.target.closest('table.sortable th[data-sort-col]');if(th&&(e.key==='Enter'||e.key===' ')){e.preventDefault();sortTable(th)}});
 $('errorSearch').addEventListener('input',applyErrorSearch);
+$('plateErrorSearch').addEventListener('input',applyPlateErrorSearch);
 $('retryLoadBtn').addEventListener('click',()=>loadDashboard().then(d=>{if(d)toast('Dados atualizados.')}));
 document.querySelectorAll('#periods button').forEach(b=>b.addEventListener('click',()=>{currentPeriod=b.dataset.period;document.querySelectorAll('#periods button').forEach(x=>x.classList.toggle('active',x===b));if(latestData)renderAll(latestData)}));
 $('refreshBtn').addEventListener('click',()=>loadDashboard().then(d=>{if(d)toast('Dados atualizados.')}));$('logoutBtn').addEventListener('click',logout);$('reset24hBtn').addEventListener('click',reset24h);
