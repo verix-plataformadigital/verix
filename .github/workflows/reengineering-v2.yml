@@ -1,6 +1,7 @@
 name: VÉRIX 2 Reengineering CI
 
 on:
+  workflow_call:
   pull_request:
     branches: ["main"]
   workflow_dispatch:
