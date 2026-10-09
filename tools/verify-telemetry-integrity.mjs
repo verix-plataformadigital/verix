@@ -118,7 +118,7 @@ assert.ok(endpoint.includes("function sanitizeErrorPlateMetadata("), "server mus
 assert.ok(endpoint.includes('if (event === "vehicle_insurance_error") sanitizeErrorPlateMetadata(metadata);'), "server must apply plate validation to ASF error events");
 assert.ok(admin.includes("CONSULTAS','EVENTOS"), "Admin must distinguish consultation totals from raw event totals");
 assert.ok(stats.includes("queryIds:new Set<string>()"), "error time buckets must deduplicate repeated events by query ID");
-assert.ok(stats.includes("event_count:bucket.events"), "error time buckets must expose raw event count separately");
+assert.ok(stats.includes("event_count:b.events"), "error time buckets must expose raw event count separately");
 
 assert.ok(stats.includes("error_queries_24h:new Set(rows.map"), "error total must count unique query IDs separately from event rows");
 assert.ok(stats.includes("current_version_error_events:currentVersionRows.length"), "version errors must expose raw events separately from distinct queries");
