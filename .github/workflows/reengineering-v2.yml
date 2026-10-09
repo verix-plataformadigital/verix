@@ -100,6 +100,58 @@ jobs:
           retention-days: 7
 
 
+  telemetry-ingest-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: verix_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd "pg_isready -U postgres -d verix_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install --yes postgresql-client
+
+      - name: Verify PostgreSQL readiness
+        env:
+          PGPASSWORD: postgres
+        run: |
+          for attempt in {1..30}; do
+            if pg_isready -h 127.0.0.1 -p 5432 -U postgres -d verix_test; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "PostgreSQL service did not become ready."
+          exit 1
+
+      - name: Create disposable V2 telemetry schema
+        env:
+          PGPASSWORD: postgres
+        run: psql -h 127.0.0.1 -p 5432 -U postgres -d verix_test -v ON_ERROR_STOP=1 -f tests/database/atomic-telemetry-ingest.setup.sql
+
+      - name: Apply atomic ingestion migration to disposable database
+        env:
+          PGPASSWORD: postgres
+        run: psql -h 127.0.0.1 -p 5432 -U postgres -d verix_test -v ON_ERROR_STOP=1 -f supabase/migrations/20261008235800_atomic_telemetry_ingest.sql
+
+      - name: Test atomic ingestion and rollback behavior
+        env:
+          PGPASSWORD: postgres
+        run: psql -h 127.0.0.1 -p 5432 -U postgres -d verix_test -v ON_ERROR_STOP=1 -f tests/database/atomic-telemetry-ingest.integration.sql
+
   windows:
     runs-on: windows-latest
     steps:
