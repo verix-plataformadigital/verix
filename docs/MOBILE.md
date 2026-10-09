@@ -18,7 +18,7 @@ Uma aplicação VÉRIX única para desktop, tablets e telemóveis. Não criar HT
 
 ## Matriz de validação manual obrigatória
 
-Os testes automatizados verificam contratos e estrutura, mas não substituem testes visuais em navegadores reais. Antes de declarar a tranche mobile aprovada, verificar pelo menos:
+A CI executa testes de browser sobre o build produzido com Chromium e WebKit, em viewports de telemóvel, tablet e desktop, verificando navegação entre módulos, overflow horizontal global, dimensões de toque e tamanho dos campos. Estes motores não substituem a validação manual em dispositivos Android/iOS físicos; diferenças de Safari iOS, teclado virtual, safe-area, clipboard e WebView2 continuam pendentes de teste em equipamento real. Antes de declarar a tranche mobile aprovada, verificar pelo menos:
 
 | Ambiente / viewport CSS aproximado | Verificações |
 |---|---|
