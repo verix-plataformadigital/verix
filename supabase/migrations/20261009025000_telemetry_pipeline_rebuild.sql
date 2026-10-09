@@ -428,7 +428,305 @@ telemetry AS (
   'actions_7d',count(*) FILTER(WHERE occurred_at>=b.s7 AND event<>'heartbeat'),
   'client_coverage_30d',round((100.0*count(*) FILTER(WHERE event IN('app_open','heartbeat','module_open','vehicle_lookup','vehicle_insurance_pending','cinemometer_calculation','cinemometer_speed_entry','vehicle_insurance_yes','vehicle_insurance_no','vehicle_insurance_error') AND (metadata->'client'->>'browser' IS NOT NULL OR metadata->'client'->>'osPlatform' IS NOT NULL))/NULLIF(count(*) FILTER(WHERE event IN('app_open','heartbeat','module_open','vehicle_lookup','vehicle_insurance_pending','cinemometer_calculation','cinemometer_speed_entry','vehicle_insurance_yes','vehicle_insurance_no','vehicle_insurance_error')),0))::numeric,1),
   'asf_diagnostic_coverage_30d',round((100.0*count(*) FILTER(WHERE event IN('vehicle_insurance_yes','vehicle_insurance_no','vehicle_insurance_error') AND (metadata->'asfDiagnostic'->>'asfErrorType' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfHttpStatus' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfDurationMs' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfResponseHash' IS NOT NULL))/NULLIF(count(*) FILTER(WHERE event IN('vehicle_insurance_yes','vehicle_insurance_no','vehicle_insurance_error')),0))::numeric,1),
-  'cin_detail_coverage_30d',round((100.0*count(*) FILTER(WHERE event IN('cinemometer_calculation','cinemometer_speed_entry') AND (metadata->'cin'->>'velocidade_registada') ~ '^[0-9]+([.][0-9]+)?/NULLIF(count(*) FILTER(WHERE event IN('cinemometer_calculation','cinemometer_speed_entry')),0))::numeric,1),
+  'cin_detail_coverage_30d',round((100.0*count(*) FILTER(WHERE event IN('cinemometer_calculation','cinemometer_speed_entry') AND (metadata->'cin'->>'velocidade_registada') ~ '^[0-9]+([.][0-9]+)?
+  'coverage_by_version',coalesce((SELECT jsonb_agg(to_jsonb(x) ORDER BY x.app_version) FROM(
+    SELECT coalesce(app_version,'Unknown') app_version,coalesce(metadata->>'telemetry_schema','legacy') telemetry_schema,count(*) event_count,count(*) FILTER(WHERE event='heartbeat') heartbeats,count(*) FILTER(WHERE event<>'heartbeat') actions,
+      round((100.0*count(*) FILTER(WHERE event IN('app_open','heartbeat','module_open','vehicle_lookup','vehicle_insurance_pending','cinemometer_calculation','cinemometer_speed_entry','vehicle_insurance_yes','vehicle_insurance_no','vehicle_insurance_error') AND (metadata->'client'->>'browser' IS NOT NULL OR metadata->'client'->>'osPlatform' IS NOT NULL))/NULLIF(count(*) FILTER(WHERE event IN('app_open','heartbeat','module_open','vehicle_lookup','vehicle_insurance_pending','cinemometer_calculation','cinemometer_speed_entry','vehicle_insurance_yes','vehicle_insurance_no','vehicle_insurance_error')),0))::numeric,1) client_coverage_pct,
+      round((100.0*count(*) FILTER(WHERE event IN('vehicle_insurance_yes','vehicle_insurance_no','vehicle_insurance_error') AND (metadata->'asfDiagnostic'->>'asfErrorType' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfHttpStatus' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfDurationMs' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfResponseHash' IS NOT NULL))/NULLIF(count(*) FILTER(WHERE event IN('vehicle_insurance_yes','vehicle_insurance_no','vehicle_insurance_error')),0))::numeric,1) asf_diagnostic_coverage_pct,
+      round((100.0*count(*) FILTER(WHERE event IN('cinemometer_calculation','cinemometer_speed_entry') AND metadata->'cin'->>'velocidade_registada' IS NOT NULL)/NULLIF(count(*) FILTER(WHERE event IN('cinemometer_calculation','cinemometer_speed_entry')),0))::numeric,1) cin_detail_coverage_pct
+    FROM ev GROUP BY 1,2)x),'[]'::jsonb)
+ ) data FROM ev,b
+),
+session_base AS (
+ SELECT s.session_id,s.started_at,s.last_seen parent_last_seen,
+  min(e.occurred_at) event_first_at,max(e.occurred_at) event_last_at,
+  count(e.event) event_count,
+  count(e.event) FILTER(WHERE e.event<>'heartbeat') actions,
+  count(DISTINCT e.module) FILTER(WHERE e.event='module_open' AND e.module IS NOT NULL) modules
+ FROM public.verix2_sessions s LEFT JOIN ev e ON e.session_id=s.session_id
+ GROUP BY s.session_id,s.started_at,s.last_seen
+),
+session_rows AS (
+ SELECT *,
+  least(p_now,started_at,coalesce(event_first_at,started_at)) duration_start,
+  greatest(least(p_now,started_at,coalesce(event_first_at,started_at)),least(coalesce(event_last_at,parent_last_seen),p_now)) duration_end,
+  (event_count>1 AND (parent_last_seen=started_at OR event_last_at>parent_last_seen OR event_first_at<started_at)) parent_timestamp_mismatch
+ FROM session_base
+),
+sessions AS (
+ SELECT jsonb_build_object(
+  '24h',jsonb_build_object(
+   'sessions',count(*) FILTER(WHERE started_at>=b.s24),
+   'median_minutes',round((percentile_cont(.5) WITHIN GROUP(ORDER BY extract(epoch FROM(duration_end-duration_start))/60) FILTER(WHERE started_at>=b.s24))::numeric,1),
+   'p95_minutes',round((percentile_cont(.95) WITHIN GROUP(ORDER BY extract(epoch FROM(duration_end-duration_start))/60) FILTER(WHERE started_at>=b.s24))::numeric,1),
+   'avg_actions',round((avg(actions) FILTER(WHERE started_at>=b.s24))::numeric,1),
+   'multi_module_pct',round((100.0*count(*) FILTER(WHERE started_at>=b.s24 AND modules>=2)/NULLIF(count(*) FILTER(WHERE started_at>=b.s24),0))::numeric,1),
+   'power_sessions',count(*) FILTER(WHERE started_at>=b.s24 AND actions>=10),
+   'parent_timestamp_mismatch_24h',count(*) FILTER(WHERE started_at>=b.s24 AND parent_timestamp_mismatch)
+  ),
+  '30d',jsonb_build_object(
+   'sessions',count(*) FILTER(WHERE started_at>=b.s30),
+   'median_minutes',round((percentile_cont(.5) WITHIN GROUP(ORDER BY extract(epoch FROM(duration_end-duration_start))/60) FILTER(WHERE started_at>=b.s30))::numeric,1),
+   'p95_minutes',round((percentile_cont(.95) WITHIN GROUP(ORDER BY extract(epoch FROM(duration_end-duration_start))/60) FILTER(WHERE started_at>=b.s30))::numeric,1),
+   'avg_actions',round((avg(actions) FILTER(WHERE started_at>=b.s30))::numeric,1),
+   'multi_module_pct',round((100.0*count(*) FILTER(WHERE started_at>=b.s30 AND modules>=2)/NULLIF(count(*) FILTER(WHERE started_at>=b.s30),0))::numeric,1),
+   'power_sessions',count(*) FILTER(WHERE started_at>=b.s30 AND actions>=10),
+   'parent_timestamp_mismatch_30d',count(*) FILTER(WHERE started_at>=b.s30 AND parent_timestamp_mismatch)
+  )
+ ) data FROM session_rows,b
+),
+daily AS (
+ SELECT coalesce(jsonb_agg(to_jsonb(x) ORDER BY x.day_key),'[]'::jsonb) data FROM(
+  SELECT (occurred_at AT TIME ZONE 'Europe/Lisbon')::date day_key,count(DISTINCT installation_id) installations,count(DISTINCT installation_id) users,
+   count(*) FILTER(WHERE event='app_open') opens,count(*) FILTER(WHERE event='vehicle_lookup') lookups,
+   count(*) FILTER(WHERE event='vehicle_insurance_error') asf_errors,count(*) FILTER(WHERE event='cinemometer_calculation') speed_calcs,
+   count(*) FILTER(WHERE event='legislation_copy') leg_copies
+  FROM ev GROUP BY 1 ORDER BY 1)x
+),
+hourly AS (
+ SELECT coalesce(jsonb_agg(to_jsonb(x) ORDER BY x.hour_num),'[]'::jsonb) data FROM(
+  SELECT extract(hour FROM occurred_at AT TIME ZONE 'Europe/Lisbon')::int hour_num,
+   count(*) FILTER(WHERE event<>'heartbeat') actions,count(DISTINCT installation_id) installations,count(DISTINCT installation_id) users
+  FROM ev,b WHERE occurred_at>=b.s24 GROUP BY 1 ORDER BY actions DESC,hour_num
+ )x
+),
+modules AS (
+ SELECT coalesce(jsonb_agg(to_jsonb(x) ORDER BY x.qty DESC),'[]'::jsonb) data FROM(
+  SELECT module,count(*) qty FROM ev WHERE event='module_open' AND module IS NOT NULL GROUP BY module
+ )x
+),
+module_activity AS (
+ SELECT coalesce(jsonb_agg(to_jsonb(x) ORDER BY x.qty DESC),'[]'::jsonb) data FROM(
+  SELECT module,count(*) qty FROM ev WHERE event<>'heartbeat' AND module IS NOT NULL GROUP BY module
+ )x
+),
+transitions AS (
+ SELECT coalesce(jsonb_agg(to_jsonb(x) ORDER BY x.qty DESC),'[]'::jsonb) data FROM(
+  SELECT previous_module from_module,module to_module,count(*) qty FROM(
+   SELECT session_id,module,lag(module) OVER(PARTITION BY session_id ORDER BY occurred_at,event_id) previous_module
+   FROM ev WHERE event='module_open' AND session_id IS NOT NULL AND module IS NOT NULL
+  ) sequence WHERE previous_module IS NOT NULL AND previous_module<>module GROUP BY 1,2 ORDER BY qty DESC LIMIT 20
+ )x
+)
+SELECT jsonb_build_object(
+ 'bounds',jsonb_build_object('s24',(SELECT s24 FROM b),'s7',(SELECT s7 FROM b),'s30',(SELECT s30 FROM b),'end',(SELECT enow FROM b)),
+ 'actions',jsonb_build_object('24h',(SELECT data->'actions_24h' FROM telemetry),'7d',(SELECT data->'actions_7d' FROM telemetry),'30d',(SELECT data->'actions_30d' FROM telemetry)),
+ 'insurance',(SELECT data FROM insurance),
+ 'insurance_quality',(SELECT data FROM insurance_quality),
+ 'query_quality',(SELECT data FROM query_quality),
+ 'speed_summary',(SELECT data FROM speed_summary),
+ 'speed_dimensions',(SELECT data FROM speed_dimensions),
+ 'speed_distribution_24h',(SELECT data FROM speed_distribution),
+ 'errors',(SELECT data FROM errors),
+ 'telemetry',(SELECT data FROM telemetry),
+ 'sessions',(SELECT data FROM sessions),
+ 'usage',jsonb_build_object('daily',(SELECT data FROM daily),'hourly',(SELECT data FROM hourly),'modules',(SELECT data FROM modules),'module_activity',(SELECT data FROM module_activity),'transitions',(SELECT data FROM transitions))
+)
+$metrics$;
+
+REVOKE ALL ON FUNCTION public.verix2_telemetry_metrics_v3(timestamptz) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.verix2_telemetry_metrics_v3(timestamptz) TO service_role;
+COMMENT ON FUNCTION public.verix2_telemetry_metrics_v3(timestamptz) IS
+'Canonical telemetry metrics v3: rolling windows, query cohorts, version-aware diagnostic coverage, deduplicated speed measurements, heartbeat-excluded actions, and installation/session semantics.';
+
+)/NULLIF(count(*) FILTER(WHERE event IN('cinemometer_calculation','cinemometer_speed_entry')),0))::numeric,1),
+  'coverage_by_version',coalesce((SELECT jsonb_agg(to_jsonb(x) ORDER BY x.app_version) FROM(
+    SELECT coalesce(app_version,'Unknown') app_version,coalesce(metadata->>'telemetry_schema','legacy') telemetry_schema,count(*) event_count,count(*) FILTER(WHERE event='heartbeat') heartbeats,count(*) FILTER(WHERE event<>'heartbeat') actions,
+      round((100.0*count(*) FILTER(WHERE event IN('app_open','heartbeat','module_open','vehicle_lookup','vehicle_insurance_pending','cinemometer_calculation','cinemometer_speed_entry','vehicle_insurance_yes','vehicle_insurance_no','vehicle_insurance_error') AND (metadata->'client'->>'browser' IS NOT NULL OR metadata->'client'->>'osPlatform' IS NOT NULL))/NULLIF(count(*) FILTER(WHERE event IN('app_open','heartbeat','module_open','vehicle_lookup','vehicle_insurance_pending','cinemometer_calculation','cinemometer_speed_entry','vehicle_insurance_yes','vehicle_insurance_no','vehicle_insurance_error')),0))::numeric,1) client_coverage_pct,
+      round((100.0*count(*) FILTER(WHERE event IN('vehicle_insurance_yes','vehicle_insurance_no','vehicle_insurance_error') AND (metadata->'asfDiagnostic'->>'asfErrorType' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfHttpStatus' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfDurationMs' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfResponseHash' IS NOT NULL))/NULLIF(count(*) FILTER(WHERE event IN('vehicle_insurance_yes','vehicle_insurance_no','vehicle_insurance_error')),0))::numeric,1) asf_diagnostic_coverage_pct,
+      round((100.0*count(*) FILTER(WHERE event IN('cinemometer_calculation','cinemometer_speed_entry') AND (metadata->'cin'->>'velocidade_registada') ~ '^[0-9]+([.][0-9]+)?/NULLIF(count(*) FILTER(WHERE event IN('cinemometer_calculation','cinemometer_speed_entry')),0))::numeric,1) cin_detail_coverage_pct
+    FROM ev GROUP BY 1,2)x),'[]'::jsonb)
+ ) data FROM ev,b
+),
+session_base AS (
+ SELECT s.session_id,s.started_at,s.last_seen parent_last_seen,
+  min(e.occurred_at) event_first_at,max(e.occurred_at) event_last_at,
+  count(e.event) event_count,
+  count(e.event) FILTER(WHERE e.event<>'heartbeat') actions,
+  count(DISTINCT e.module) FILTER(WHERE e.event='module_open' AND e.module IS NOT NULL) modules
+ FROM public.verix2_sessions s LEFT JOIN ev e ON e.session_id=s.session_id
+ GROUP BY s.session_id,s.started_at,s.last_seen
+),
+session_rows AS (
+ SELECT *,
+  least(p_now,started_at,coalesce(event_first_at,started_at)) duration_start,
+  greatest(least(p_now,started_at,coalesce(event_first_at,started_at)),least(coalesce(event_last_at,parent_last_seen),p_now)) duration_end,
+  (event_count>1 AND (parent_last_seen=started_at OR event_last_at>parent_last_seen OR event_first_at<started_at)) parent_timestamp_mismatch
+ FROM session_base
+),
+sessions AS (
+ SELECT jsonb_build_object(
+  '24h',jsonb_build_object(
+   'sessions',count(*) FILTER(WHERE started_at>=b.s24),
+   'median_minutes',round((percentile_cont(.5) WITHIN GROUP(ORDER BY extract(epoch FROM(duration_end-duration_start))/60) FILTER(WHERE started_at>=b.s24))::numeric,1),
+   'p95_minutes',round((percentile_cont(.95) WITHIN GROUP(ORDER BY extract(epoch FROM(duration_end-duration_start))/60) FILTER(WHERE started_at>=b.s24))::numeric,1),
+   'avg_actions',round((avg(actions) FILTER(WHERE started_at>=b.s24))::numeric,1),
+   'multi_module_pct',round((100.0*count(*) FILTER(WHERE started_at>=b.s24 AND modules>=2)/NULLIF(count(*) FILTER(WHERE started_at>=b.s24),0))::numeric,1),
+   'power_sessions',count(*) FILTER(WHERE started_at>=b.s24 AND actions>=10),
+   'parent_timestamp_mismatch_24h',count(*) FILTER(WHERE started_at>=b.s24 AND parent_timestamp_mismatch)
+  ),
+  '30d',jsonb_build_object(
+   'sessions',count(*) FILTER(WHERE started_at>=b.s30),
+   'median_minutes',round((percentile_cont(.5) WITHIN GROUP(ORDER BY extract(epoch FROM(duration_end-duration_start))/60) FILTER(WHERE started_at>=b.s30))::numeric,1),
+   'p95_minutes',round((percentile_cont(.95) WITHIN GROUP(ORDER BY extract(epoch FROM(duration_end-duration_start))/60) FILTER(WHERE started_at>=b.s30))::numeric,1),
+   'avg_actions',round((avg(actions) FILTER(WHERE started_at>=b.s30))::numeric,1),
+   'multi_module_pct',round((100.0*count(*) FILTER(WHERE started_at>=b.s30 AND modules>=2)/NULLIF(count(*) FILTER(WHERE started_at>=b.s30),0))::numeric,1),
+   'power_sessions',count(*) FILTER(WHERE started_at>=b.s30 AND actions>=10),
+   'parent_timestamp_mismatch_30d',count(*) FILTER(WHERE started_at>=b.s30 AND parent_timestamp_mismatch)
+  )
+ ) data FROM session_rows,b
+),
+daily AS (
+ SELECT coalesce(jsonb_agg(to_jsonb(x) ORDER BY x.day_key),'[]'::jsonb) data FROM(
+  SELECT (occurred_at AT TIME ZONE 'Europe/Lisbon')::date day_key,count(DISTINCT installation_id) installations,count(DISTINCT installation_id) users,
+   count(*) FILTER(WHERE event='app_open') opens,count(*) FILTER(WHERE event='vehicle_lookup') lookups,
+   count(*) FILTER(WHERE event='vehicle_insurance_error') asf_errors,count(*) FILTER(WHERE event='cinemometer_calculation') speed_calcs,
+   count(*) FILTER(WHERE event='legislation_copy') leg_copies
+  FROM ev GROUP BY 1 ORDER BY 1)x
+),
+hourly AS (
+ SELECT coalesce(jsonb_agg(to_jsonb(x) ORDER BY x.hour_num),'[]'::jsonb) data FROM(
+  SELECT extract(hour FROM occurred_at AT TIME ZONE 'Europe/Lisbon')::int hour_num,
+   count(*) FILTER(WHERE event<>'heartbeat') actions,count(DISTINCT installation_id) installations,count(DISTINCT installation_id) users
+  FROM ev,b WHERE occurred_at>=b.s24 GROUP BY 1 ORDER BY actions DESC,hour_num
+ )x
+),
+modules AS (
+ SELECT coalesce(jsonb_agg(to_jsonb(x) ORDER BY x.qty DESC),'[]'::jsonb) data FROM(
+  SELECT module,count(*) qty FROM ev WHERE event='module_open' AND module IS NOT NULL GROUP BY module
+ )x
+),
+module_activity AS (
+ SELECT coalesce(jsonb_agg(to_jsonb(x) ORDER BY x.qty DESC),'[]'::jsonb) data FROM(
+  SELECT module,count(*) qty FROM ev WHERE event<>'heartbeat' AND module IS NOT NULL GROUP BY module
+ )x
+),
+transitions AS (
+ SELECT coalesce(jsonb_agg(to_jsonb(x) ORDER BY x.qty DESC),'[]'::jsonb) data FROM(
+  SELECT previous_module from_module,module to_module,count(*) qty FROM(
+   SELECT session_id,module,lag(module) OVER(PARTITION BY session_id ORDER BY occurred_at,event_id) previous_module
+   FROM ev WHERE event='module_open' AND session_id IS NOT NULL AND module IS NOT NULL
+  ) sequence WHERE previous_module IS NOT NULL AND previous_module<>module GROUP BY 1,2 ORDER BY qty DESC LIMIT 20
+ )x
+)
+SELECT jsonb_build_object(
+ 'bounds',jsonb_build_object('s24',(SELECT s24 FROM b),'s7',(SELECT s7 FROM b),'s30',(SELECT s30 FROM b),'end',(SELECT enow FROM b)),
+ 'actions',jsonb_build_object('24h',(SELECT data->'actions_24h' FROM telemetry),'7d',(SELECT data->'actions_7d' FROM telemetry),'30d',(SELECT data->'actions_30d' FROM telemetry)),
+ 'insurance',(SELECT data FROM insurance),
+ 'insurance_quality',(SELECT data FROM insurance_quality),
+ 'query_quality',(SELECT data FROM query_quality),
+ 'speed_summary',(SELECT data FROM speed_summary),
+ 'speed_dimensions',(SELECT data FROM speed_dimensions),
+ 'speed_distribution_24h',(SELECT data FROM speed_distribution),
+ 'errors',(SELECT data FROM errors),
+ 'telemetry',(SELECT data FROM telemetry),
+ 'sessions',(SELECT data FROM sessions),
+ 'usage',jsonb_build_object('daily',(SELECT data FROM daily),'hourly',(SELECT data FROM hourly),'modules',(SELECT data FROM modules),'module_activity',(SELECT data FROM module_activity),'transitions',(SELECT data FROM transitions))
+)
+$metrics$;
+
+REVOKE ALL ON FUNCTION public.verix2_telemetry_metrics_v3(timestamptz) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.verix2_telemetry_metrics_v3(timestamptz) TO service_role;
+COMMENT ON FUNCTION public.verix2_telemetry_metrics_v3(timestamptz) IS
+'Canonical telemetry metrics v3: rolling windows, query cohorts, version-aware diagnostic coverage, deduplicated speed measurements, heartbeat-excluded actions, and installation/session semantics.';
+
+)/NULLIF(count(*) FILTER(WHERE event IN('cinemometer_calculation','cinemometer_speed_entry')),0))::numeric,1) cin_detail_coverage_pct
+    FROM ev GROUP BY 1,2)x),'[]'::jsonb)
+ ) data FROM ev,b
+),
+session_base AS (
+ SELECT s.session_id,s.started_at,s.last_seen parent_last_seen,
+  min(e.occurred_at) event_first_at,max(e.occurred_at) event_last_at,
+  count(e.event) event_count,
+  count(e.event) FILTER(WHERE e.event<>'heartbeat') actions,
+  count(DISTINCT e.module) FILTER(WHERE e.event='module_open' AND e.module IS NOT NULL) modules
+ FROM public.verix2_sessions s LEFT JOIN ev e ON e.session_id=s.session_id
+ GROUP BY s.session_id,s.started_at,s.last_seen
+),
+session_rows AS (
+ SELECT *,
+  least(p_now,started_at,coalesce(event_first_at,started_at)) duration_start,
+  greatest(least(p_now,started_at,coalesce(event_first_at,started_at)),least(coalesce(event_last_at,parent_last_seen),p_now)) duration_end,
+  (event_count>1 AND (parent_last_seen=started_at OR event_last_at>parent_last_seen OR event_first_at<started_at)) parent_timestamp_mismatch
+ FROM session_base
+),
+sessions AS (
+ SELECT jsonb_build_object(
+  '24h',jsonb_build_object(
+   'sessions',count(*) FILTER(WHERE started_at>=b.s24),
+   'median_minutes',round((percentile_cont(.5) WITHIN GROUP(ORDER BY extract(epoch FROM(duration_end-duration_start))/60) FILTER(WHERE started_at>=b.s24))::numeric,1),
+   'p95_minutes',round((percentile_cont(.95) WITHIN GROUP(ORDER BY extract(epoch FROM(duration_end-duration_start))/60) FILTER(WHERE started_at>=b.s24))::numeric,1),
+   'avg_actions',round((avg(actions) FILTER(WHERE started_at>=b.s24))::numeric,1),
+   'multi_module_pct',round((100.0*count(*) FILTER(WHERE started_at>=b.s24 AND modules>=2)/NULLIF(count(*) FILTER(WHERE started_at>=b.s24),0))::numeric,1),
+   'power_sessions',count(*) FILTER(WHERE started_at>=b.s24 AND actions>=10),
+   'parent_timestamp_mismatch_24h',count(*) FILTER(WHERE started_at>=b.s24 AND parent_timestamp_mismatch)
+  ),
+  '30d',jsonb_build_object(
+   'sessions',count(*) FILTER(WHERE started_at>=b.s30),
+   'median_minutes',round((percentile_cont(.5) WITHIN GROUP(ORDER BY extract(epoch FROM(duration_end-duration_start))/60) FILTER(WHERE started_at>=b.s30))::numeric,1),
+   'p95_minutes',round((percentile_cont(.95) WITHIN GROUP(ORDER BY extract(epoch FROM(duration_end-duration_start))/60) FILTER(WHERE started_at>=b.s30))::numeric,1),
+   'avg_actions',round((avg(actions) FILTER(WHERE started_at>=b.s30))::numeric,1),
+   'multi_module_pct',round((100.0*count(*) FILTER(WHERE started_at>=b.s30 AND modules>=2)/NULLIF(count(*) FILTER(WHERE started_at>=b.s30),0))::numeric,1),
+   'power_sessions',count(*) FILTER(WHERE started_at>=b.s30 AND actions>=10),
+   'parent_timestamp_mismatch_30d',count(*) FILTER(WHERE started_at>=b.s30 AND parent_timestamp_mismatch)
+  )
+ ) data FROM session_rows,b
+),
+daily AS (
+ SELECT coalesce(jsonb_agg(to_jsonb(x) ORDER BY x.day_key),'[]'::jsonb) data FROM(
+  SELECT (occurred_at AT TIME ZONE 'Europe/Lisbon')::date day_key,count(DISTINCT installation_id) installations,count(DISTINCT installation_id) users,
+   count(*) FILTER(WHERE event='app_open') opens,count(*) FILTER(WHERE event='vehicle_lookup') lookups,
+   count(*) FILTER(WHERE event='vehicle_insurance_error') asf_errors,count(*) FILTER(WHERE event='cinemometer_calculation') speed_calcs,
+   count(*) FILTER(WHERE event='legislation_copy') leg_copies
+  FROM ev GROUP BY 1 ORDER BY 1)x
+),
+hourly AS (
+ SELECT coalesce(jsonb_agg(to_jsonb(x) ORDER BY x.hour_num),'[]'::jsonb) data FROM(
+  SELECT extract(hour FROM occurred_at AT TIME ZONE 'Europe/Lisbon')::int hour_num,
+   count(*) FILTER(WHERE event<>'heartbeat') actions,count(DISTINCT installation_id) installations,count(DISTINCT installation_id) users
+  FROM ev,b WHERE occurred_at>=b.s24 GROUP BY 1 ORDER BY actions DESC,hour_num
+ )x
+),
+modules AS (
+ SELECT coalesce(jsonb_agg(to_jsonb(x) ORDER BY x.qty DESC),'[]'::jsonb) data FROM(
+  SELECT module,count(*) qty FROM ev WHERE event='module_open' AND module IS NOT NULL GROUP BY module
+ )x
+),
+module_activity AS (
+ SELECT coalesce(jsonb_agg(to_jsonb(x) ORDER BY x.qty DESC),'[]'::jsonb) data FROM(
+  SELECT module,count(*) qty FROM ev WHERE event<>'heartbeat' AND module IS NOT NULL GROUP BY module
+ )x
+),
+transitions AS (
+ SELECT coalesce(jsonb_agg(to_jsonb(x) ORDER BY x.qty DESC),'[]'::jsonb) data FROM(
+  SELECT previous_module from_module,module to_module,count(*) qty FROM(
+   SELECT session_id,module,lag(module) OVER(PARTITION BY session_id ORDER BY occurred_at,event_id) previous_module
+   FROM ev WHERE event='module_open' AND session_id IS NOT NULL AND module IS NOT NULL
+  ) sequence WHERE previous_module IS NOT NULL AND previous_module<>module GROUP BY 1,2 ORDER BY qty DESC LIMIT 20
+ )x
+)
+SELECT jsonb_build_object(
+ 'bounds',jsonb_build_object('s24',(SELECT s24 FROM b),'s7',(SELECT s7 FROM b),'s30',(SELECT s30 FROM b),'end',(SELECT enow FROM b)),
+ 'actions',jsonb_build_object('24h',(SELECT data->'actions_24h' FROM telemetry),'7d',(SELECT data->'actions_7d' FROM telemetry),'30d',(SELECT data->'actions_30d' FROM telemetry)),
+ 'insurance',(SELECT data FROM insurance),
+ 'insurance_quality',(SELECT data FROM insurance_quality),
+ 'query_quality',(SELECT data FROM query_quality),
+ 'speed_summary',(SELECT data FROM speed_summary),
+ 'speed_dimensions',(SELECT data FROM speed_dimensions),
+ 'speed_distribution_24h',(SELECT data FROM speed_distribution),
+ 'errors',(SELECT data FROM errors),
+ 'telemetry',(SELECT data FROM telemetry),
+ 'sessions',(SELECT data FROM sessions),
+ 'usage',jsonb_build_object('daily',(SELECT data FROM daily),'hourly',(SELECT data FROM hourly),'modules',(SELECT data FROM modules),'module_activity',(SELECT data FROM module_activity),'transitions',(SELECT data FROM transitions))
+)
+$metrics$;
+
+REVOKE ALL ON FUNCTION public.verix2_telemetry_metrics_v3(timestamptz) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.verix2_telemetry_metrics_v3(timestamptz) TO service_role;
+COMMENT ON FUNCTION public.verix2_telemetry_metrics_v3(timestamptz) IS
+'Canonical telemetry metrics v3: rolling windows, query cohorts, version-aware diagnostic coverage, deduplicated speed measurements, heartbeat-excluded actions, and installation/session semantics.';
+
+)/NULLIF(count(*) FILTER(WHERE event IN('cinemometer_calculation','cinemometer_speed_entry')),0))::numeric,1),
   'coverage_by_version',coalesce((SELECT jsonb_agg(to_jsonb(x) ORDER BY x.app_version) FROM(
     SELECT coalesce(app_version,'Unknown') app_version,coalesce(metadata->>'telemetry_schema','legacy') telemetry_schema,count(*) event_count,count(*) FILTER(WHERE event='heartbeat') heartbeats,count(*) FILTER(WHERE event<>'heartbeat') actions,
       round((100.0*count(*) FILTER(WHERE event IN('app_open','heartbeat','module_open','vehicle_lookup','vehicle_insurance_pending','cinemometer_calculation','cinemometer_speed_entry','vehicle_insurance_yes','vehicle_insurance_no','vehicle_insurance_error') AND (metadata->'client'->>'browser' IS NOT NULL OR metadata->'client'->>'osPlatform' IS NOT NULL))/NULLIF(count(*) FILTER(WHERE event IN('app_open','heartbeat','module_open','vehicle_lookup','vehicle_insurance_pending','cinemometer_calculation','cinemometer_speed_entry','vehicle_insurance_yes','vehicle_insurance_no','vehicle_insurance_error')),0))::numeric,1) client_coverage_pct,
