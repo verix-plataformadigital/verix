@@ -207,7 +207,11 @@ q AS (
     coalesce(
       (array_agg(app_version ORDER BY occurred_at,event_id) FILTER(WHERE event='vehicle_lookup'))[1],
       (array_agg(app_version ORDER BY occurred_at,event_id) FILTER(WHERE event='vehicle_insurance_pending'))[1]
-    ) start_version
+    ) start_version,
+    coalesce(
+      (array_agg(metadata->>'telemetry_schema' ORDER BY occurred_at,event_id) FILTER(WHERE event='vehicle_lookup'))[1],
+      (array_agg(metadata->>'telemetry_schema' ORDER BY occurred_at,event_id) FILTER(WHERE event='vehicle_insurance_pending'))[1]
+    ) start_telemetry_schema
   FROM query_events WHERE event IN('vehicle_lookup','vehicle_insurance_pending') AND query_id IS NOT NULL
   GROUP BY query_id
 ),
@@ -291,7 +295,7 @@ query_quality AS (
   'duplicate_terminal_events_30d',(SELECT coalesce(sum(tr.terminal_event_count-1),0) FROM q JOIN terminal_rollup tr USING(query_id),b WHERE q.first_at>=b.s30 AND tr.terminal_event_count>1),
   'out_of_order_final_queries_30d',(SELECT count(*) FROM q JOIN finals f USING(query_id),b WHERE q.first_at>=b.s30 AND f.occurred_at<q.first_at),
   'by_version',coalesce((SELECT jsonb_agg(to_jsonb(x) ORDER BY x.started DESC) FROM(
-    SELECT coalesce(q.start_version,'Unknown') app_version,count(*) started,
+    SELECT coalesce(q.start_version,'Unknown') app_version,coalesce(q.start_telemetry_schema,'legacy') telemetry_schema,count(*) started,
       count(*) FILTER(WHERE q.lookup_at IS NOT NULL) confirmed_starts,
       count(*) FILTER(WHERE q.lookup_at IS NULL) inferred_starts,
       count(*) FILTER(WHERE f.query_id IS NOT NULL) clean_finals,
@@ -300,7 +304,7 @@ query_quality AS (
       count(*) FILTER(WHERE tr.outcome_count>1) conflicting,
       count(*) FILTER(WHERE f.query_id IS NULL AND tr.outcome_count=1 AND tr.last_at<q.first_at) out_of_order
     FROM q CROSS JOIN b LEFT JOIN query_finals f ON f.query_id=q.query_id LEFT JOIN terminal_rollup tr ON tr.query_id=q.query_id
-    WHERE q.first_at>=b.s30 GROUP BY 1
+    WHERE q.first_at>=b.s30 GROUP BY 1,2
   ) x),'[]'::jsonb)
  ) data
 ),
@@ -396,10 +400,10 @@ errors AS (
   'signature_count',(SELECT count(*) FROM err_signatures),
   'diagnostic_coverage_pct',(SELECT round((100.0*count(*) FILTER(WHERE metadata->'asfDiagnostic'->>'asfErrorType' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfHttpStatus' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfDurationMs' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfResponseHash' IS NOT NULL)/NULLIF(count(*),0))::numeric,1) FROM err_events),
   'by_version',coalesce((SELECT jsonb_agg(to_jsonb(x) ORDER BY x.error_queries DESC) FROM(
-    SELECT coalesce(app_version,'Unknown') app_version,count(*) event_count,count(DISTINCT query_id) error_queries,count(DISTINCT installation_id) installations,
+    SELECT coalesce(app_version,'Unknown') app_version,coalesce(metadata->>'telemetry_schema','legacy') telemetry_schema,count(*) event_count,count(DISTINCT query_id) error_queries,count(DISTINCT installation_id) installations,
       count(*) FILTER(WHERE metadata->'asfDiagnostic'->>'asfErrorType' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfHttpStatus' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfDurationMs' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfResponseHash' IS NOT NULL) diagnosed_events,
       round((100.0*count(*) FILTER(WHERE metadata->'asfDiagnostic'->>'asfErrorType' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfHttpStatus' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfDurationMs' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfResponseHash' IS NOT NULL)/NULLIF(count(*),0))::numeric,1) diagnostic_pct
-    FROM err_events GROUP BY 1)x),'[]'::jsonb),
+    FROM err_events GROUP BY 1,2)x),'[]'::jsonb),
   'types',coalesce((SELECT jsonb_agg(to_jsonb(x) ORDER BY x.qty DESC) FROM err_types x),'[]'::jsonb),
   'bursts',coalesce((SELECT jsonb_agg(to_jsonb(x) ORDER BY x.qty DESC) FROM(SELECT * FROM err_bursts ORDER BY qty DESC,bucket_start DESC LIMIT 15)x),'[]'::jsonb),
   'installations',coalesce((SELECT jsonb_agg(to_jsonb(x) ORDER BY x.qty DESC) FROM(SELECT * FROM err_installs ORDER BY qty DESC,last_at DESC LIMIT 15)x),'[]'::jsonb),
@@ -417,11 +421,11 @@ telemetry AS (
   'asf_diagnostic_coverage_30d',round((100.0*count(*) FILTER(WHERE event IN('vehicle_insurance_yes','vehicle_insurance_no','vehicle_insurance_error') AND (metadata->'asfDiagnostic'->>'asfErrorType' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfHttpStatus' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfDurationMs' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfResponseHash' IS NOT NULL))/NULLIF(count(*) FILTER(WHERE event IN('vehicle_insurance_yes','vehicle_insurance_no','vehicle_insurance_error')),0))::numeric,1),
   'cin_detail_coverage_30d',round((100.0*count(*) FILTER(WHERE event IN('cinemometer_calculation','cinemometer_speed_entry') AND metadata->'cin'->>'velocidade_registada' IS NOT NULL)/NULLIF(count(*) FILTER(WHERE event IN('cinemometer_calculation','cinemometer_speed_entry')),0))::numeric,1),
   'coverage_by_version',coalesce((SELECT jsonb_agg(to_jsonb(x) ORDER BY x.app_version) FROM(
-    SELECT coalesce(app_version,'Unknown') app_version,count(*) event_count,count(*) FILTER(WHERE event='heartbeat') heartbeats,count(*) FILTER(WHERE event<>'heartbeat') actions,
+    SELECT coalesce(app_version,'Unknown') app_version,coalesce(metadata->>'telemetry_schema','legacy') telemetry_schema,count(*) event_count,count(*) FILTER(WHERE event='heartbeat') heartbeats,count(*) FILTER(WHERE event<>'heartbeat') actions,
       round((100.0*count(*) FILTER(WHERE event IN('app_open','heartbeat','module_open','vehicle_lookup','vehicle_insurance_pending','cinemometer_calculation','cinemometer_speed_entry','vehicle_insurance_yes','vehicle_insurance_no','vehicle_insurance_error') AND (metadata->'client'->>'browser' IS NOT NULL OR metadata->'client'->>'osPlatform' IS NOT NULL))/NULLIF(count(*) FILTER(WHERE event IN('app_open','heartbeat','module_open','vehicle_lookup','vehicle_insurance_pending','cinemometer_calculation','cinemometer_speed_entry','vehicle_insurance_yes','vehicle_insurance_no','vehicle_insurance_error')),0))::numeric,1) client_coverage_pct,
       round((100.0*count(*) FILTER(WHERE event IN('vehicle_insurance_yes','vehicle_insurance_no','vehicle_insurance_error') AND (metadata->'asfDiagnostic'->>'asfErrorType' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfHttpStatus' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfDurationMs' IS NOT NULL OR metadata->'asfDiagnostic'->>'asfResponseHash' IS NOT NULL))/NULLIF(count(*) FILTER(WHERE event IN('vehicle_insurance_yes','vehicle_insurance_no','vehicle_insurance_error')),0))::numeric,1) asf_diagnostic_coverage_pct,
       round((100.0*count(*) FILTER(WHERE event IN('cinemometer_calculation','cinemometer_speed_entry') AND metadata->'cin'->>'velocidade_registada' IS NOT NULL)/NULLIF(count(*) FILTER(WHERE event IN('cinemometer_calculation','cinemometer_speed_entry')),0))::numeric,1) cin_detail_coverage_pct
-    FROM ev GROUP BY 1)x),'[]'::jsonb)
+    FROM ev GROUP BY 1,2)x),'[]'::jsonb)
  ) data FROM ev,b
 ),
 session_base AS (
