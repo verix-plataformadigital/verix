@@ -320,6 +320,10 @@ internal static class Program
 
             await view.EnsureCoreWebView2Async(webEnvironment);
 
+            // Render official IMT/RNSI HTML at native page scale in its own desktop window.
+            // Do not downscale the source through a dashboard iframe transform.
+            view.ZoomFactor = 1.0;
+
             var settings = view.CoreWebView2.Settings;
             settings.AreDevToolsEnabled = false;
             settings.AreDefaultContextMenusEnabled = false;

@@ -169,6 +169,9 @@ const protectedSettings = [
 ];
 
 requireMarkers("main WebView settings", "private async Task InitializeWebViewAsync()", protectedSettings);
+requireMarkers("RNSI native-scale rendering", "private async Task<(Form Form, CoreWebView2 CoreWebView2)> CreateRnsiWindowAsync(", [
+  "view.ZoomFactor = 1.0;"
+]);
 requireMarkers("RNSI WebView settings", "private async Task<(Form Form, CoreWebView2 CoreWebView2)> CreateRnsiWindowAsync(", protectedSettings);
 
 const requiredProjectMarkers = [

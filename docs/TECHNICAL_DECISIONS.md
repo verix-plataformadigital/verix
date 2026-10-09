@@ -28,3 +28,7 @@ Não será usada como fronteira de segurança. A proteção real permanece no ba
 ## Tooling AST
 
 TypeScript 7.0 é usado como compilador/type-checker do produto. Não é usado como parser AST pelo tooling porque a versão 7.0 não expõe a API programática antiga. Para auditoria estática, a V2 usa `oxc-parser`, que suporta JavaScript e TypeScript e devolve AST compatível com ESTree/TS-ESTree. A dependência fica restrita ao tooling e não entra no bundle do produto.
+
+## IMT/RNSI legibilidade
+
+As páginas oficiais do IMT/RNSI devem ser apresentadas como HTML nativo, numa janela de dimensões de desktop e a `ZoomFactor = 1.0`. Não aplicar `transform: scale(...)`, `zoom` de CSS ou captura/reprodução como imagem aos documentos oficiais para os fazer caber em cartões estreitos. A versão legada reduzia os `iframe` IMT para `scale(0.75)`, comprometendo a legibilidade. A V2 evita esse compromisso abrindo as consultas numa janela WebView2 própria; a CI valida explicitamente a escala nativa.

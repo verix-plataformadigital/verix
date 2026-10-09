@@ -313,3 +313,10 @@ Fonte externa: Diário da República, Código da Estrada consolidado.
 
 
 - O controlo de recolha da ficha operacional é uma preferência exclusivamente local. Não é emitido um evento de telemetria novo porque a allowlist do endpoint de produção não o aceita; o backend de produção permanece inalterado.
+
+## Diagnóstico de legibilidade IMT — 2026-10-09
+
+- Causa comprovada no `verix-app.html` legado: `#veiculoFrame` e `#reboqueFrame` são alargados a 133,3333% e reduzidos por `transform: scale(0.75)` para encaixar o documento oficial nos painéis simultâneos. O comentário no próprio CSS confirma que a redução foi introduzida para mostrar a página inteira. A escala automática do `body` também pode contribuir em alguns tamanhos de ecrã.
+- Isto não é perda de qualidade no serviço IMT nem prova de compressão do conteúdo; é redução visual da página oficial no VÉRIX. Remover apenas o `scale(0.75)` sem alterar a composição faria a página fixa do IMT ficar cortada nos painéis estreitos, pelo que não é uma correção segura isoladamente.
+- Estratégia de publicação V2: manter as consultas RNSI fora de cartões redimensionados, em janela WebView2 autónoma de desktop; a janela inicia com `ZoomFactor = 1.0`. A verificação `verify-windows-host-security.mjs` agora protege este contrato.
+- Limite de validação: o acesso efetivo aos URLs `*.rnsi.local` só pode ser ensaiado num PC ligado à RNSI. Esta correção de código não substitui esse teste operacional, nem altera diretamente a produção `main`.
