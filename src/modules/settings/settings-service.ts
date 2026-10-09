@@ -109,7 +109,12 @@ export class SettingsService {
         doc.documentElement.clientHeight || 0,
         (doc.defaultView?.innerHeight || 0)
       );
-      const zoom = Math.max(0.82, Math.min(1.08, Math.min(width / 1600, height / 900)));
+      // Responsive CSS must see the real mobile/tablet viewport. Applying
+      // desktop auto-zoom here makes a 320px phone behave like a ~390px layout
+      // and shrinks the controls, defeating the responsive breakpoints.
+      const zoom = width <= 1024
+        ? 1
+        : Math.max(0.82, Math.min(1.08, Math.min(width / 1600, height / 900)));
       body.style.zoom = zoom.toFixed(3);
     } else {
       body.style.zoom = `${Number(this.settings.scale) / 100}`;

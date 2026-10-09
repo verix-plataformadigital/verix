@@ -51,14 +51,65 @@ describe('SettingsService', () => {
     });
   });
 
-  it('aplica a escala automática limitada aos limites operacionais do legado', () => {
+  it('uses the full CSS viewport for mobile and tablet auto scale', () => {
     const service = new SettingsService(new MemoryStorage());
     service.update({ scale: 'auto' });
 
     const body = document.body;
-    service.applyToDocument(document);
+    const oldZoom = body.style.zoom;
+    const oldInnerWidth = window.innerWidth;
+    const oldInnerHeight = window.innerHeight;
+    const oldClientWidth = document.documentElement.clientWidth;
+    const oldClientHeight = document.documentElement.clientHeight;
 
-    expect(body.style.zoom).toBe('0.82');
+    try {
+      for (const viewport of [
+        { width: 320, height: 568 },
+        { width: 390, height: 844 },
+        { width: 768, height: 1024 },
+        { width: 1024, height: 768 }
+      ]) {
+        Object.defineProperty(window, 'innerWidth', { configurable: true, value: viewport.width });
+        Object.defineProperty(window, 'innerHeight', { configurable: true, value: viewport.height });
+        Object.defineProperty(document.documentElement, 'clientWidth', { configurable: true, value: viewport.width });
+        Object.defineProperty(document.documentElement, 'clientHeight', { configurable: true, value: viewport.height });
+        service.applyToDocument(document);
+        expect(body.style.zoom, `${viewport.width}x${viewport.height}`).toBe('1.000');
+      }
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: oldInnerWidth });
+      Object.defineProperty(window, 'innerHeight', { configurable: true, value: oldInnerHeight });
+      Object.defineProperty(document.documentElement, 'clientWidth', { configurable: true, value: oldClientWidth });
+      Object.defineProperty(document.documentElement, 'clientHeight', { configurable: true, value: oldClientHeight });
+      body.style.zoom = oldZoom;
+    }
+  });
+
+  it('retains automatic downscaling on larger desktop viewports', () => {
+    const service = new SettingsService(new MemoryStorage());
+    service.update({ scale: 'auto' });
+
+    const body = document.body;
+    const oldZoom = body.style.zoom;
+    const oldInnerWidth = window.innerWidth;
+    const oldInnerHeight = window.innerHeight;
+    const oldClientWidth = document.documentElement.clientWidth;
+    const oldClientHeight = document.documentElement.clientHeight;
+
+    try {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1440 });
+      Object.defineProperty(window, 'innerHeight', { configurable: true, value: 900 });
+      Object.defineProperty(document.documentElement, 'clientWidth', { configurable: true, value: 1440 });
+      Object.defineProperty(document.documentElement, 'clientHeight', { configurable: true, value: 900 });
+      service.applyToDocument(document);
+      expect(body.style.zoom).toBe('0.900');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: oldInnerWidth });
+      Object.defineProperty(window, 'innerHeight', { configurable: true, value: oldInnerHeight });
+      Object.defineProperty(document.documentElement, 'clientWidth', { configurable: true, value: oldClientWidth });
+      Object.defineProperty(document.documentElement, 'clientHeight', { configurable: true, value: oldClientHeight });
+      body.style.zoom = oldZoom;
+    }
   });
 
   it('rejeita valores persistidos inválidos', () => {
