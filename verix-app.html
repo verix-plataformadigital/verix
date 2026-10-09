@@ -17373,8 +17373,11 @@ html body .leg-card-new .copy-all-new{
       state.rejected = (Number(state.rejected) || 0) + ack.rejected;
       state.lastAcknowledgedAt = new Date().toISOString();
       if (ack.rejected > 0) {
-        state.lastRejectedEvents = batch.filter(function (_, i) { return i >= ack.accepted; })
-          .slice(0, 10).map(function (e) { return String(e && e.event || 'unknown').slice(0, 80); });
+        // The endpoint returns aggregate counts, not per-event rejection IDs.
+        // Keep the event-name sample explicitly labelled as batch context, not
+        // as a claim that these exact events were the rejected ones.
+        state.lastBatchEventTypes = batch.slice(0, 10)
+          .map(function (e) { return String(e && e.event || 'unknown').slice(0, 80); });
       }
       storageSet(localStore, key, JSON.stringify(state));
     } catch (_) {}
