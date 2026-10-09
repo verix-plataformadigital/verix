@@ -332,17 +332,52 @@ Deno.serve(async (req: Request) => {
     const body = await req.json().catch(() => null);
     const received = Array.isArray(body?.events) ? body.events : [];
     const input = received.slice(0, 100);
-    // Oversized batches are explicitly accounted for rather than silently lost.
+    // The browser acknowledges events by stable event ID, never by HTTP status alone.
     let rejected = received.length - input.length;
+    const rejectedEventIds: string[] = [];
+    const retryEventIds: string[] = [];
+    const rejectionReasons: Record<string, string> = Object.create(null);
+    const rejectedIdSet = new Set<string>();
+    const retryIdSet = new Set<string>();
+    function rejectEvent(x: any, reason: string, retryable = false) {
+      rejected += 1;
+      const id = cleanText(x?.eventId, 120);
+      if (!id) return;
+      if (!rejectedIdSet.has(id)) {
+        rejectedIdSet.add(id);
+        rejectedEventIds.push(id);
+      }
+      rejectionReasons[id] = reason;
+      if (retryable && !retryIdSet.has(id)) {
+        retryIdSet.add(id);
+        retryEventIds.push(id);
+      }
+    }
+    // Reject oversized tail entries explicitly; the normal client batch is 25.
+    for (const x of received.slice(100, 1100)) {
+      const id = cleanText(x?.eventId, 120);
+      if (id && !rejectedIdSet.has(id)) {
+        rejectedIdSet.add(id);
+        rejectedEventIds.push(id);
+        rejectionReasons[id] = "batch_too_large";
+      }
+    }
     if (!input.length) {
-      return json({ ok: true, accepted: 0, inserted: 0, duplicates: 0, rejected, received: received.length });
+      return json({
+        ok: true, accepted: 0, inserted: 0, duplicates: 0, rejected,
+        received: received.length, considered: 0,
+        acknowledged_event_ids: [],
+        rejected_event_ids: rejectedEventIds,
+        retry_event_ids: retryEventIds,
+        rejection_reasons: rejectionReasons
+      });
     }
 
     const events: any[] = [];
 
     for (const x of input) {
       const event = cleanText(x?.event, 80);
-      if (!event || !allowedEvents.has(event)) { rejected += 1; continue; }
+      if (!event || !allowedEvents.has(event)) { rejectEvent(x, "invalid_event"); continue; }
 
       const metadata = cleanMetadata(x?.metadata);
       const installationId = cleanText(x?.installationId, 120);
@@ -355,7 +390,7 @@ Deno.serve(async (req: Request) => {
       // installation_id é a única identidade técnica obrigatória: a coluna é NOT NULL.
       // session/tab são opcionais para permitir contabilização mesmo quando o browser
       // perde uma dessas chaves entre refresh/restore.
-      if (!installationId) { rejected += 1; continue; }
+      if (!installationId) { rejectEvent(x, "missing_installation_id"); continue; }
 
       // Data minimization: the plate is only needed for technical ASF error investigation.
       // Correlation is done with query_id for all other outcomes.
@@ -370,23 +405,23 @@ Deno.serve(async (req: Request) => {
 
       if (event === "vehicle_lookup") {
         // Uma consulta precisa de instalação, query e versão; sessão/tab podem faltar.
-        if (!queryId || !appVersion) { rejected += 1; continue; }
+        if (!queryId || !appVersion) { rejectEvent(x, "missing_query_id_or_version"); continue; }
 
         const d = x?.occurredAt ? new Date(x.occurredAt) : new Date();
         const now = Date.now();
         const ts = d.getTime();
-        if (!Number.isFinite(ts) || ts < now - 24 * 60 * 60 * 1000 || ts > now + 5 * 60 * 1000) { rejected += 1; continue; }
+        if (!Number.isFinite(ts) || ts < now - 24 * 60 * 60 * 1000 || ts > now + 5 * 60 * 1000) { rejectEvent(x, "invalid_or_stale_timestamp"); continue; }
 
         const installationKey = await hmacHex(`installation:${installationId}`);
-        if (!(await consumeRate(`vehicle:${installationKey}`, 30))) { rejected += 1; continue; }
+        if (!(await consumeRate(`vehicle:${installationKey}`, 30))) { rejectEvent(x, "rate_limited", true); continue; }
       }
 
       if (event === "imt_loaded") {
-        if (!queryId || !appVersion || metadata.resultConfirmed !== true) { rejected += 1; continue; }
+        if (!queryId || !appVersion || metadata.resultConfirmed !== true) { rejectEvent(x, "unconfirmed_imt_result"); continue; }
       }
 
       if (event === "vehicle_insurance_yes" || event === "vehicle_insurance_no" || event === "vehicle_insurance_error") {
-        if (!queryId || !appVersion) { rejected += 1; continue; }
+        if (!queryId || !appVersion) { rejectEvent(x, "missing_query_id_or_version"); continue; }
       }
 
       const occurredAtDate = x?.occurredAt ? new Date(x.occurredAt) : new Date();
@@ -413,7 +448,11 @@ Deno.serve(async (req: Request) => {
     if (!events.length) {
       return json({
         ok: true, accepted: 0, inserted: 0, duplicates: 0,
-        rejected, received: received.length
+        rejected, received: received.length, considered: 0,
+        acknowledged_event_ids: [],
+        rejected_event_ids: rejectedEventIds,
+        retry_event_ids: retryEventIds,
+        rejection_reasons: rejectionReasons
       });
     }
 
@@ -486,7 +525,13 @@ Deno.serve(async (req: Request) => {
       duplicates,
       rejected,
       received: received.length,
-      considered: events.length
+      considered: events.length,
+      // Every valid submitted ID is now represented by an insert or an
+      // existing id/query unique-key row after this RPC committed successfully.
+      acknowledged_event_ids: events.map((event: any) => event.event_id),
+      rejected_event_ids: rejectedEventIds,
+      retry_event_ids: retryEventIds,
+      rejection_reasons: rejectionReasons
     });
   } catch (error) {
     console.error("telemetry_write_failed", error);
