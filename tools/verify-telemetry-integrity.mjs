@@ -68,12 +68,12 @@ const beaconEnd = app.indexOf("function rateLimited", beaconStart);
 assert.ok(beaconStart >= 0 && beaconEnd > beaconStart, "sendBeacon handler must exist");
 assert.doesNotMatch(app.slice(beaconStart, beaconEnd), /queue\.splice\(/, "sendBeacon must never dequeue without a server receipt");
 assert.ok(app.includes("VERIX_T2_REJECTED_QUEUE"), "permanent rejections must have bounded non-sensitive local diagnostics");
-assert.match(telemetryScript, /function cleanMetadata\(meta, event\)/, "client metadata sanitizer must know which event is being sent");
-assert.match(telemetryScript, /function insurancePlateMetadata\(value, asfDiagnostic\)/, "insurance outcome wrappers must normalize the plate");
-assert.match(telemetryScript, /push\('vehicle_insurance_no', 'consulta', meta\)/, "no-record event must include plate metadata");
-assert.match(telemetryScript, /push\('vehicle_insurance_error', 'consulta', meta\)/, "ASF error event must include plate metadata");
-assert.match(telemetryScript, /event === 'vehicle_insurance_no' \|\| event === 'vehicle_insurance_error'/, "plate metadata must be limited to no-record/error events");
-assert.match(telemetryScript, /event === 'vehicle_insurance_no' \|\| event === 'vehicle_insurance_error'\) \{\s*flushNow\(\)/, "insurance outcome events must be flushed immediately");
+assert.match(app, /function cleanMetadata\(meta, event\)/, "client metadata sanitizer must know which event is being sent");
+assert.match(app, /function insurancePlateMetadata\(value, asfDiagnostic\)/, "insurance outcome wrappers must normalize the plate");
+assert.match(app, /push\('vehicle_insurance_no', 'consulta', meta\)/, "no-record event must include plate metadata");
+assert.match(app, /push\('vehicle_insurance_error', 'consulta', meta\)/, "ASF error event must include plate metadata");
+assert.match(app, /event === 'vehicle_insurance_no' \|\| event === 'vehicle_insurance_error'/, "plate metadata must be limited to no-record/error events");
+assert.match(app, /event === 'vehicle_insurance_no' \|\| event === 'vehicle_insurance_error'\) \{\s*flushNow\(\)/, "insurance outcome events must be flushed immediately");
 
 
 const scriptOpen = '<script id="verix-telemetry-v2">';
