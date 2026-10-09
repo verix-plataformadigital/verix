@@ -577,7 +577,7 @@ const MODULES = {
  },
  definicoes: {
  title:'DEFINIÇÕES', sub:'VÉRIX // PREFERÊNCIAS LOCAIS',
- html:`<div class="info-strip">Personalize a apresentação da consola. As alterações ficam guardadas neste equipamento e não alteram os dados das consultas externas.</div> <div class="settings-command-hero"> <div class="settings-hero-kicker"><span class="settings-pulse"></span> PERFIL OPERACIONAL // CONTROLO DE INTERFACE</div> <div class="settings-hero-main"><div><h3>CONFIGURAÇÃO DA CONSOLA</h3><p>Ajusta a apresentação da aplicação ao operador e ao ecrã, mantendo o posto de trabalho limpo e legível.</p></div><div class="settings-live-chip"><strong id="settingsLiveMode">ESCUDO</strong><span>PERFIL ATIVO</span></div></div> </div> <div class="settings-section-title futurista">INTERFACE / PERFIL VISUAL</div> <div class="settings-grid"> <div class="setting-card"><div class="setting-card-head"><div class="setting-card-icon">◐</div><div><strong>Tema da interface</strong><span>Altera o aspeto de toda a consola.</span></div></div><select class="setting-select wide" id="settingTheme" onchange="VERIXSettings.setTheme(this.value)"><option value="dark">Modo operacional escuro</option><option value="light">Modo claro</option></select></div> <div class="setting-card"><div class="setting-card-head"><div class="setting-card-icon">▤</div><div><strong>Densidade</strong><span>Mais conteúdo por ecrã ou mais espaço.</span></div></div><select class="setting-select wide" id="settingDensity" onchange="VERIXSettings.setDensity(this.value)"><option value="compact">Compacta</option><option value="normal">Normal</option><option value="comfortable">Conforto</option></select></div> <div class="setting-card"><div class="setting-card-head"><div class="setting-card-icon">⛶</div><div><strong>Ajuste ao ecrã</strong><span>Adapta automaticamente a escala disponível.</span></div></div><select class="setting-select wide" id="settingScale" onchange="VERIXSettings.setScale(this.value)"><option value="auto">Automático</option><option value="80">80%</option><option value="90">90%</option><option value="100">100%</option><option value="110">110%</option><option value="120">120%</option></select></div> </div> <div class="settings-section-title futurista">EFEITOS / COMPORTAMENTO</div> <div class="settings-grid settings-grid-effects"> <div class="setting-card effect-card"><div class="setting-card-head"><div class="setting-card-icon">⌁</div><div><strong>Animações HUD</strong><span>Varrimento, brilho e atividade visual.</span></div></div><div id="settingHud" class="toggle on" onclick="VERIXSettings.toggle('hud',this)"><span>ATIVO</span></div></div> <div class="setting-card effect-card"><div class="setting-card-head"><div class="setting-card-icon">↝</div><div><strong>Transições de janelas</strong><span>Entrada e saída suave dos módulos.</span></div></div><div id="settingTransitions" class="toggle on" onclick="VERIXSettings.toggle('transitions',this)"><span>ATIVO</span></div></div> <div class="setting-card effect-card"><div class="setting-card-head"><div class="setting-card-icon">▣</div><div><strong>Guardar histórico</strong><span>Regista localmente as últimas 100 consultas.</span></div></div><div id="settingHistory" class="toggle on" onclick="VERIXSettings.toggle('history',this)"><span>ATIVO</span></div></div> <div class="setting-card effect-card"><div class="setting-card-head"><div class="setting-card-icon">⌃</div><div><strong>Lista de cinemómetros recolhida</strong><span>Ao abrir o módulo, a lista de aparelhos guardados fica recolhida por defeito.</span></div></div><div id="settingCinRadarCollapsed" class="toggle on" onclick="VERIXSettings.toggle('cinRadarCollapsed',this)"><span>ATIVO</span></div></div> </div> <div class="settings-section-title futurista">ESTADO DO SISTEMA</div> <div class="settings-status-grid"> <div class="settings-status-card"><span class="ss-label">VERSÃO</span><strong>1.3</strong><small>RELEASE ATUAL</small></div> <div class="settings-status-card"><span class="ss-label">ESCALA</span><strong id="settingsScaleStatus">AUTO</strong><small>ADAPTAÇÃO AO ECRÃ</small></div> </div> <div class="settings-section-title futurista">PERFIL OPERACIONAL</div> <div class="settings-profile-grid"> <div class="setting-card profile-card"> <div class="setting-card-head"><div class="setting-card-icon">◈</div><div><strong>Perfil de utilização</strong><span>Aplica de uma vez um conjunto de definições adequado ao modo de trabalho.</span></div></div> <select class="setting-select wide" id="settingProfile" onchange="VERIXSettings.setProfile(this.value)"> <option value="escudo">Escudo — equilíbrio operacional</option> <option value="fiscalizacao">Fiscalização — máximo conteúdo</option> <option value="leitura">Leitura — maior conforto</option> <option value="posto">Posto — ecrã pequeno</option> </select> <div class="profile-hint" id="settingProfileHint">Compacto · Auto · HUD ativo · Transições ativas</div> </div> <div class="setting-card profile-card"> <div class="setting-card-head"><div class="setting-card-icon">⛶</div><div><strong>Área de trabalho</strong><span>Controlos rápidos para adaptar a consola ao posto.</span></div></div> <div class="settings-quick-actions"> <button type="button" onclick="toggleFullscreen()">⛶ ECRÃ INTEIRO</button> <button type="button" onclick="abrirHistorico()">◷ HISTÓRICO</button> <button type="button" onclick="limparHistorico()">⌫ LIMPAR HISTÓRICO</button> </div> </div> <div class="setting-card profile-card"> <div class="setting-card-head"><div class="setting-card-icon">⌁</div><div><strong>Diagnóstico local</strong><span>Informação deste equipamento, sem comunicação externa.</span></div></div> <div class="settings-diagnostic" id="settingsDiagnostic">A verificar estado local…</div> <button type="button" class="settings-diagnostic-btn" onclick="VERIXSettings.refreshDiagnostic()">ATUALIZAR DIAGNÓSTICO</button> </div> </div> <div class="settings-section-title futurista">ESTADO DO SISTEMA</div> <div class="settings-status-grid"> <div class="settings-status-card"><span class="ss-label">VERSÃO</span><strong>1.3</strong><small>RELEASE ATUAL</small></div> <div class="settings-status-card"><span class="ss-label">PERFIL</span><strong id="settingsProfileStatus">ESCUDO</strong><small id="settingsProfileStatusSub">EQUILÍBRIO OPERACIONAL</small></div> </div> <div class="settings-actions settings-actions-main"> <button type="button" class="aux-btn" onclick="VERIXSettings.reset()">REPOR PREFERÊNCIAS</button> </div> <div class="settings-cache-refresh-card"> <div class="settings-cache-refresh-copy"> <div class="settings-cache-refresh-icon">↻</div> <div><strong>ATUALIZAÇÃO FORÇADA DA APLICAÇÃO</strong><span>Ignora a URL em cache do navegador e volta a carregar o ficheiro atual com um identificador novo. Útil depois de publicar uma versão nova do VÉRIX.</span></div> </div> <button type="button" class="settings-cache-refresh-btn" onclick="VERIXForceFreshLoad()">CARREGAR NOVOS DADOS</button> </div> <div class="settings-factory-reset"> <div class="settings-factory-reset-copy"> <div class="settings-factory-reset-icon">⚠</div> <div><strong>REPOSIÇÃO DE FÁBRICA</strong><span>Apaga todos os dados guardados localmente nesta consola: favoritos, histórico, cinemómetros, sessão do operador, preferências e restantes dados locais.</span></div> </div> <button type="button" class="settings-factory-reset-btn" onclick="VERIXSettings.factoryReset()">APAGAR TODOS OS DADOS</button> </div>`
+ html:`<div class="info-strip">Personalize a apresentação da consola. As alterações ficam guardadas neste equipamento e não alteram os dados das consultas externas.</div> <div class="settings-command-hero"> <div class="settings-hero-kicker"><span class="settings-pulse"></span> PERFIL OPERACIONAL // CONTROLO DE INTERFACE</div> <div class="settings-hero-main"><div><h3>CONFIGURAÇÃO DA CONSOLA</h3><p>Ajusta a apresentação da aplicação ao operador e ao ecrã, mantendo o posto de trabalho limpo e legível.</p></div><div class="settings-live-chip"><strong id="settingsLiveMode">ESCUDO</strong><span>PERFIL ATIVO</span></div></div> </div> <div class="settings-section-title futurista">INTERFACE / PERFIL VISUAL</div> <div class="settings-grid"> <div class="setting-card"><div class="setting-card-head"><div class="setting-card-icon">◐</div><div><strong>Tema da interface</strong><span>Altera o aspeto de toda a consola.</span></div></div><select class="setting-select wide" id="settingTheme" onchange="VERIXSettings.setTheme(this.value)"><option value="dark">Modo operacional escuro</option><option value="light">Modo claro</option></select></div> <div class="setting-card"><div class="setting-card-head"><div class="setting-card-icon">▤</div><div><strong>Densidade</strong><span>Mais conteúdo por ecrã ou mais espaço.</span></div></div><select class="setting-select wide" id="settingDensity" onchange="VERIXSettings.setDensity(this.value)"><option value="compact">Compacta</option><option value="normal">Normal</option><option value="comfortable">Conforto</option></select></div> <div class="setting-card"><div class="setting-card-head"><div class="setting-card-icon">⛶</div><div><strong>Ajuste ao ecrã</strong><span>Adapta automaticamente a escala disponível.</span></div></div><select class="setting-select wide" id="settingScale" onchange="VERIXSettings.setScale(this.value)"><option value="auto">Automático</option><option value="80">80%</option><option value="90">90%</option><option value="100">100%</option><option value="110">110%</option><option value="120">120%</option></select></div> </div> <div class="settings-section-title futurista">EFEITOS / COMPORTAMENTO</div> <div class="settings-grid settings-grid-effects"> <div class="setting-card effect-card"><div class="setting-card-head"><div class="setting-card-icon">⌁</div><div><strong>Animações HUD</strong><span>Varrimento, brilho e atividade visual.</span></div></div><div id="settingHud" class="toggle on" onclick="VERIXSettings.toggle('hud',this)"><span>ATIVO</span></div></div> <div class="setting-card effect-card"><div class="setting-card-head"><div class="setting-card-icon">↝</div><div><strong>Transições de janelas</strong><span>Entrada e saída suave dos módulos.</span></div></div><div id="settingTransitions" class="toggle on" onclick="VERIXSettings.toggle('transitions',this)"><span>ATIVO</span></div></div> <div class="setting-card effect-card"><div class="setting-card-head"><div class="setting-card-icon">▣</div><div><strong>Guardar histórico</strong><span>Regista localmente as últimas 100 consultas.</span></div></div><div id="settingHistory" class="toggle on" onclick="VERIXSettings.toggle('history',this)"><span>ATIVO</span></div></div> <div class="setting-card effect-card"><div class="setting-card-head"><div class="setting-card-icon">⌃</div><div><strong>Lista de cinemómetros recolhida</strong><span>Ao abrir o módulo, a lista de aparelhos guardados fica recolhida por defeito.</span></div></div><div id="settingCinRadarCollapsed" class="toggle on" onclick="VERIXSettings.toggle('cinRadarCollapsed',this)"><span>ATIVO</span></div></div> </div> <div class="settings-section-title futurista">ESTADO DO SISTEMA</div> <div class="settings-status-grid"> <div class="settings-status-card"><span class="ss-label">VERSÃO</span><strong>1.5</strong><small>RELEASE ATUAL</small></div> <div class="settings-status-card"><span class="ss-label">ESCALA</span><strong id="settingsScaleStatus">AUTO</strong><small>ADAPTAÇÃO AO ECRÃ</small></div> </div> <div class="settings-section-title futurista">PERFIL OPERACIONAL</div> <div class="settings-profile-grid"> <div class="setting-card profile-card"> <div class="setting-card-head"><div class="setting-card-icon">◈</div><div><strong>Perfil de utilização</strong><span>Aplica de uma vez um conjunto de definições adequado ao modo de trabalho.</span></div></div> <select class="setting-select wide" id="settingProfile" onchange="VERIXSettings.setProfile(this.value)"> <option value="escudo">Escudo — equilíbrio operacional</option> <option value="fiscalizacao">Fiscalização — máximo conteúdo</option> <option value="leitura">Leitura — maior conforto</option> <option value="posto">Posto — ecrã pequeno</option> </select> <div class="profile-hint" id="settingProfileHint">Compacto · Auto · HUD ativo · Transições ativas</div> </div> <div class="setting-card profile-card"> <div class="setting-card-head"><div class="setting-card-icon">⛶</div><div><strong>Área de trabalho</strong><span>Controlos rápidos para adaptar a consola ao posto.</span></div></div> <div class="settings-quick-actions"> <button type="button" onclick="toggleFullscreen()">⛶ ECRÃ INTEIRO</button> <button type="button" onclick="abrirHistorico()">◷ HISTÓRICO</button> <button type="button" onclick="limparHistorico()">⌫ LIMPAR HISTÓRICO</button> </div> </div> <div class="setting-card profile-card"> <div class="setting-card-head"><div class="setting-card-icon">⌁</div><div><strong>Diagnóstico local</strong><span>Informação deste equipamento, sem comunicação externa.</span></div></div> <div class="settings-diagnostic" id="settingsDiagnostic">A verificar estado local…</div> <button type="button" class="settings-diagnostic-btn" onclick="VERIXSettings.refreshDiagnostic()">ATUALIZAR DIAGNÓSTICO</button> </div> </div> <div class="settings-section-title futurista">ESTADO DO SISTEMA</div> <div class="settings-status-grid"> <div class="settings-status-card"><span class="ss-label">VERSÃO</span><strong>1.5</strong><small>RELEASE ATUAL</small></div> <div class="settings-status-card"><span class="ss-label">PERFIL</span><strong id="settingsProfileStatus">ESCUDO</strong><small id="settingsProfileStatusSub">EQUILÍBRIO OPERACIONAL</small></div> </div> <div class="settings-actions settings-actions-main"> <button type="button" class="aux-btn" onclick="VERIXSettings.reset()">REPOR PREFERÊNCIAS</button> </div> <div class="settings-cache-refresh-card"> <div class="settings-cache-refresh-copy"> <div class="settings-cache-refresh-icon">↻</div> <div><strong>ATUALIZAÇÃO FORÇADA DA APLICAÇÃO</strong><span>Ignora a URL em cache do navegador e volta a carregar o ficheiro atual com um identificador novo. Útil depois de publicar uma versão nova do VÉRIX.</span></div> </div> <button type="button" class="settings-cache-refresh-btn" onclick="VERIXForceFreshLoad()">CARREGAR NOVOS DADOS</button> </div> <div class="settings-factory-reset"> <div class="settings-factory-reset-copy"> <div class="settings-factory-reset-icon">⚠</div> <div><strong>REPOSIÇÃO DE FÁBRICA</strong><span>Apaga todos os dados guardados localmente nesta consola: favoritos, histórico, cinemómetros, sessão do operador, preferências e restantes dados locais.</span></div> </div> <button type="button" class="settings-factory-reset-btn" onclick="VERIXSettings.factoryReset()">APAGAR TODOS OS DADOS</button> </div>`
  },
  ajuda: {
  title:'AJUDA', sub:'MANUAL OPERACIONAL // ATALHOS // SUPORTE',
@@ -6057,6 +6057,132 @@ html body #asfRateWidget .asf-rate-sub[data-window-state="ready"]{
   }catch(_){}
 })();
 </script>
+<script id="verix-settings-controller">(function(){
+ 'use strict';
+ const KEY='VÉRIX_PREFS_V1';
+ const DEFAULTS={theme:'dark',density:'compact',scale:'auto',hud:true,transitions:true,history:true,cinRadarCollapsed:true,profile:'escudo'};
+ const PROFILES={
+  escudo:{label:'ESCUDO',title:'ESCUDO',subtitle:'EQUILÍBRIO OPERACIONAL',density:'compact',scale:'auto',hud:true,transitions:true,hint:'Compacto · Auto · HUD ativo · Transições ativas'},
+  fiscalizacao:{label:'FISCALIZAÇÃO',title:'FISCALIZAÇÃO',subtitle:'MÁXIMO CONTEÚDO',density:'compact',scale:'90',hud:true,transitions:false,hint:'Compacto · 90% · HUD ativo · Transições reduzidas'},
+  leitura:{label:'LEITURA',title:'LEITURA',subtitle:'MAIOR CONFORTO',density:'comfortable',scale:'100',hud:false,transitions:true,hint:'Conforto · 100% · HUD reduzido · Transições ativas'},
+  posto:{label:'POSTO',title:'POSTO',subtitle:'ECRÃ PEQUENO',density:'compact',scale:'80',hud:false,transitions:false,hint:'Compacto · 80% · HUD reduzido · Transições reduzidas'}
+ };
+ const SCALE_VALUES=['auto','80','90','100','110','120'];
+ let prefs=load();
+ function load(){
+  try{
+   const saved=JSON.parse(localStorage.getItem(KEY)||'{}');
+   const p=Object.assign({},DEFAULTS,saved&&typeof saved==='object'?saved:{});
+   p.theme=p.theme==='light'?'light':'dark';
+   p.density=['compact','normal','comfortable'].includes(p.density)?p.density:'compact';
+   p.scale=SCALE_VALUES.includes(String(p.scale))?String(p.scale):'auto';
+   ['hud','transitions','history','cinRadarCollapsed'].forEach(k=>p[k]=p[k]!==false);
+   p.profile=PROFILES[p.profile]?p.profile:inferProfile(p);
+   return p;
+  }catch(_){return Object.assign({},DEFAULTS);}
+ }
+ function save(){try{localStorage.setItem(KEY,JSON.stringify(prefs));}catch(_){}}
+ function inferProfile(p){
+  if(p.density==='comfortable')return 'leitura';
+  if(String(p.scale)==='80')return 'posto';
+  if(String(p.scale)==='90')return 'fiscalizacao';
+  return 'escudo';
+ }
+ function applyScale(){
+  try{
+   if(prefs.scale==='auto'){
+    const w=Math.max(document.documentElement.clientWidth||0,window.innerWidth||0);
+    const h=Math.max(document.documentElement.clientHeight||0,window.innerHeight||0);
+    const z=Math.max(.82,Math.min(1.08,Math.min(w/1600,h/900)));
+    document.body.style.zoom=z.toFixed(3);
+   }else if(['80','90','100','110','120'].includes(prefs.scale)){
+    document.body.style.zoom=(parseInt(prefs.scale,10)/100).toFixed(2);
+   }else document.body.style.zoom='';
+  }catch(_){document.body.style.zoom='';}
+ }
+ function apply(){
+  if(!document.body)return;
+  document.body.classList.toggle('theme-light',prefs.theme==='light');
+  document.body.classList.toggle('ui-compact',prefs.density==='compact');
+  document.body.classList.toggle('ui-comfortable',prefs.density==='comfortable');
+  document.body.classList.toggle('ui-normal',prefs.density==='normal');
+  ['80','90','100','110','120'].forEach(v=>document.body.classList.toggle('ui-scale-'+v,prefs.scale===v));
+  document.body.classList.toggle('ui-scale-auto',prefs.scale==='auto');
+  document.body.classList.toggle('no-hud',!prefs.hud);
+  document.body.classList.toggle('no-transitions',!prefs.transitions);
+  document.body.classList.toggle('history-disabled',!prefs.history);
+  try{localStorage.setItem('VÉRIX_CIN_RADAR_COLLAPSED_PREF',prefs.cinRadarCollapsed?'1':'0');}catch(_){}
+  applyScale();
+ }
+ function syncUI(){
+  const setValue=(id,value)=>{const el=document.getElementById(id);if(el)el.value=value;};
+  setValue('settingTheme',prefs.theme);
+  setValue('settingDensity',prefs.density);
+  setValue('settingScale',prefs.scale);
+  setValue('settingProfile',prefs.profile);
+  const sc=document.getElementById('settingsScaleStatus');if(sc)sc.textContent=prefs.scale==='auto'?'AUTO':prefs.scale+'%';
+  const live=document.getElementById('settingsLiveMode');if(live)live.textContent=PROFILES[prefs.profile].label;
+  const hint=document.getElementById('settingProfileHint');if(hint)hint.textContent=PROFILES[prefs.profile].hint;
+  const title=document.getElementById('settingsProfileStatus');if(title)title.textContent=PROFILES[prefs.profile].title;
+  const subtitle=document.getElementById('settingsProfileStatusSub');if(subtitle)subtitle.textContent=PROFILES[prefs.profile].subtitle;
+  [['settingHud','hud'],['settingTransitions','transitions'],['settingHistory','history'],['settingCinRadarCollapsed','cinRadarCollapsed']].forEach(([id,key])=>{
+   const el=document.getElementById(id);if(!el)return;
+   el.classList.toggle('on',!!prefs[key]);
+   const label=el.querySelector('span');if(label)label.textContent=prefs[key]?'ATIVO':'DESATIVADO';
+  });
+ }
+ function renderDiagnostic(){
+  const el=document.getElementById('settingsDiagnostic');if(!el)return;
+  let hist=0,storageStatus='LOCALSTORAGE BLOQUEADO';
+  try{
+   const data=JSON.parse(localStorage.getItem('VÉRIX_CONSULTAS_HISTORICO_V1')||'[]');
+   hist=Array.isArray(data)?data.length:0;
+  }catch(_){}
+  try{
+   const probe='__verix_settings_probe__';
+   localStorage.setItem(probe,'1');localStorage.removeItem(probe);
+   storageStatus='LOCALSTORAGE OK';
+  }catch(_){}
+  const w=window.innerWidth||document.documentElement.clientWidth||0;
+  const h=window.innerHeight||document.documentElement.clientHeight||0;
+  el.textContent='POSTO '+w+'×'+h+' px · HISTÓRICO '+hist+' / 100 registos · DADOS LOCAIS '+storageStatus;
+ }
+ function notify(message){if(typeof window.mostrarToast==='function')window.mostrarToast(message);}
+ function refresh(){syncUI();renderDiagnostic();notify('Diagnóstico local atualizado.');}
+ function setProfile(value){
+  const key=PROFILES[value]?value:'escudo',profile=PROFILES[key];
+  prefs=Object.assign({},prefs,{profile:key,density:profile.density,scale:profile.scale,hud:profile.hud,transitions:profile.transitions});
+  save();apply();syncUI();renderDiagnostic();
+ }
+ function setTheme(value){prefs.theme=value==='light'?'light':'dark';save();apply();syncUI();}
+ function setDensity(value){prefs.density=['compact','normal','comfortable'].includes(value)?value:'normal';prefs.profile=inferProfile(prefs);save();apply();syncUI();}
+ function setScale(value){prefs.scale=SCALE_VALUES.includes(String(value))?String(value):'auto';prefs.profile=inferProfile(prefs);save();apply();syncUI();}
+ function toggle(key){
+  if(!['hud','transitions','history','cinRadarCollapsed'].includes(key))return;
+  prefs[key]=!prefs[key];save();apply();syncUI();
+ }
+ function reset(){
+  prefs=Object.assign({},DEFAULTS);save();apply();syncUI();renderDiagnostic();notify('Preferências repostas.');
+ }
+ function factoryReset(){window.VÉRIXFactoryResetModal?.open();}
+ window.VÉRIXSettings=window.VERIXSettings={setTheme,setDensity,setScale,toggle,setProfile,reset,factoryReset,refreshDiagnostic:refresh};
+ if(typeof window.abrirHistorico==='function'&&!window.__verixHistoryPreferenceGuard){
+  const openHistory=window.abrirHistorico;
+  window.__verixHistoryPreferenceGuard=true;
+  window.abrirHistorico=function(){
+   if(load().history===false){notify('Histórico desativado nas definições.');return;}
+   return openHistory.apply(this,arguments);
+  };
+ }
+ function initialize(){prefs=load();apply();syncUI();renderDiagnostic();}
+ initialize();
+ window.addEventListener('resize',function(){if(prefs.scale==='auto')applyScale();renderDiagnostic();});
+ document.addEventListener('DOMContentLoaded',initialize,{once:true});
+ // The settings screen is injected into the module overlay on demand.
+ document.addEventListener('click',function(){
+  setTimeout(function(){if(document.getElementById('settingTheme')){syncUI();renderDiagnostic();}},100);
+ },true);
+})();</script>
 </head><body>
 <script id="verix-splash-clock">(function(){try{window.__verixSplashStarted=performance.now();}catch(e){window.__verixSplashStarted=Date.now();}})();</script>
 <div id="opsBootOverlay" aria-hidden="false">
@@ -8915,65 +9041,7 @@ html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-n
 </style>
 
 
-<script id="v193-settings-runtime">
-(function(){
- 'use strict';
- const KEY='VÉRIX_PREFS_V1';
- const defaults={theme:'dark',density:'compact',scale:'auto',hud:true,transitions:true,history:true,cinRadarCollapsed:true};
- const safeLoad=()=>{try{return Object.assign({},defaults,JSON.parse(localStorage.getItem(KEY)||'{}'));}catch(_){return {...defaults};}};
- const safeSave=p=>{try{localStorage.setItem(KEY,JSON.stringify(p));}catch(_){} };
- const prefs=safeLoad();
- function applyAutoScale(){
- try{
- if(prefs.scale!=='auto'){document.body.style.zoom='';return;}
- var w=Math.max(document.documentElement.clientWidth||0,window.innerWidth||0);
- var h=Math.max(document.documentElement.clientHeight||0,window.innerHeight||0);
- var targetW=1600,targetH=900;
- var z=Math.min(w/targetW,h/targetH);
- z=Math.max(0.82,Math.min(1.08,z));
- document.body.style.zoom=z.toFixed(3);
- }catch(_){document.body.style.zoom='';}
- }
- function apply(){
- document.body.classList.toggle('theme-light',prefs.theme==='light');
- document.body.classList.toggle('ui-compact',prefs.density==='compact');
- document.body.classList.toggle('ui-comfortable',prefs.density==='comfortable');
- ['80','90','100','110','120'].forEach(function(v){document.body.classList.toggle('ui-scale-'+v,prefs.scale===v);});
- document.body.classList.toggle('ui-scale-auto',prefs.scale==='auto');
- applyAutoScale();
- document.body.classList.toggle('no-hud',!prefs.hud);
- document.body.classList.toggle('no-transitions',!prefs.transitions);
- document.body.classList.toggle('history-disabled',!prefs.history);
- }
- function setToggle(id,on){const el=document.getElementById(id);if(el)el.classList.toggle('on',!!on);}
- function syncFields(){
- const a=document.getElementById('settingTheme');if(a)a.value=prefs.theme;
- const b=document.getElementById('settingDensity');if(b)b.value=prefs.density;
- const c=document.getElementById('settingScale');if(c)c.value=prefs.scale;
- const sc=document.getElementById('settingsScaleStatus');if(sc)sc.textContent=prefs.scale==='auto'?'AUTO':prefs.scale+'%';
- const lm=document.getElementById('settingsLiveMode');if(lm)lm.textContent=prefs.theme==='light'?'CLARO':'ESCUDO';
- setToggle('settingHud',prefs.hud);setToggle('settingTransitions',prefs.transitions);setToggle('settingHistory',prefs.history);setToggle('settingCinRadarCollapsed',prefs.cinRadarCollapsed);
- [['settingHud',prefs.hud],['settingTransitions',prefs.transitions],['settingHistory',prefs.history],['settingCinRadarCollapsed',prefs.cinRadarCollapsed]].forEach(function(x){const e=document.getElementById(x[0]);if(e&&e.querySelector('span'))e.querySelector('span').textContent=x[1]?'ATIVO':'DESATIVADO';});
- }
- window.VÉRIXSettings=window.VERIXSettings={
- setTheme(v){prefs.theme=v==='light'?'light':'dark';safeSave(prefs);apply();syncFields();},
- setDensity(v){prefs.density=['compact','comfortable'].includes(v)?v:'normal';safeSave(prefs);apply();syncFields();},
- setScale(v){prefs.scale=['auto','80','90','100','110','120'].includes(String(v))?String(v):'auto';safeSave(prefs);apply();syncFields();},
- toggle(k,el){if(!(k in prefs))return;prefs[k]=!prefs[k];if(el)el.classList.toggle('on',prefs[k]);safeSave(prefs);apply();},
- reset(){Object.assign(prefs,defaults);safeSave(prefs);apply();syncFields();mostrarToast&&mostrarToast('Preferências repostas.');},
- factoryReset(){
- window.VÉRIXFactoryResetModal?.open();
- }
- };
- apply();
- window.addEventListener('resize',function(){ if(prefs.scale==='auto') applyAutoScale(); });
- document.addEventListener('click',function(e){
- const card=e.target.closest?.('.module-card');
- if(card&&document.body.classList.contains('ui-transitions')) card.classList.add('module-card-pulse');
- });
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',syncFields);else syncFields();
-})();
-</script> <style id="verix-css-batch-010">.bottom-right .credit{position:relative;}
+ <style id="verix-css-batch-010">.bottom-right .credit{position:relative;}
 .settings-section-title{margin:20px 0 8px;padding:8px 10px;border-left:2px solid #38d895;background:linear-gradient(90deg,rgba(0,139,85,.12),transparent);color:#8ca3ab;font:900 8px/1 Arial,sans-serif;letter-spacing:1.4px}
 .setting-select{min-width:150px;height:36px;padding:0 10px;border:1px solid #49616a;border-radius:7px;background:#0e1b22;color:#eef3f5;font:800 10px Arial,sans-serif;outline:none}
 .setting-select:focus{border-color:#39cf91;box-shadow:0 0 0 2px rgba(57,207,145,.12)}
@@ -9008,47 +9076,7 @@ body.theme-light .settings-diagnostic{background:#f5f8f9;color:#5b6e76;border-co
 @media(max-width:1000px){.settings-profile-grid{grid-template-columns:1fr 1fr}.settings-profile-grid .profile-card:last-child{grid-column:1/-1}}
 @media(max-width:700px){.settings-profile-grid{grid-template-columns:1fr}}
 </style>
-<script id="v195-settings-operational-runtime">
-(function(){
- const profileNames={escudo:['ESCUDO','EQUILÍBRIO OPERACIONAL','compact','auto',true,true],fiscalizacao:['FISCALIZAÇÃO','MÁXIMO CONTEÚDO','compact','90',true,false],leitura:['LEITURA','MAIOR CONFORTO','comfortable','100',false,true],posto:['POSTO','ECRÃ PEQUENO','compact','80',false,false]};
- const hints={escudo:'Compacto · Auto · HUD ativo · Transições ativas',fiscalizacao:'Compacto · 90% · HUD ativo · Transições reduzidas',leitura:'Conforto · 100% · HUD reduzido · Transições ativas',posto:'Compacto · 80% · HUD reduzido · Transições reduzidas'};
- function syncProfile(){
- const p=window.VÉRIXSettingsPrefs&&window.VÉRIXSettingsPrefs();
- const sel=document.getElementById('settingProfile');
- if(!sel)return;
- let key='escudo';
- if(p){if(p.density==='comfortable')key='leitura';else if(p.scale==='80')key='posto';else if(p.scale==='90')key='fiscalizacao';}
- sel.value=key;
- const h=document.getElementById('settingProfileHint');if(h)h.textContent=hints[key];
- const st=document.getElementById('settingsProfileStatus'), ss=document.getElementById('settingsProfileStatusSub');
- if(st)st.textContent=profileNames[key][0]; if(ss)ss.textContent=profileNames[key][1];
- }
- function diagnostic(){
- const el=document.getElementById('settingsDiagnostic');if(!el)return;
- let hist=0;try{const x=JSON.parse(localStorage.getItem('VÉRIX_CONSULTAS_HISTORICO_V1')||'[]');hist=Array.isArray(x)?x.length:0;}catch(e){}
- const storage=[];try{storage.push('LOCALSTORAGE OK')}catch(e){storage.push('LOCALSTORAGE BLOQUEADO')}
- const w=window.innerWidth||document.documentElement.clientWidth,h=window.innerHeight||document.documentElement.clientHeight;
- el.innerHTML='<strong>POSTO</strong> '+w+'×'+h+' px<br><strong>HISTÓRICO</strong> '+hist+' / 100 registos<br><strong>DADOS LOCAIS</strong> '+storage[0];
- }
- if(window.VÉRIXSettings){
- window.VÉRIXSettingsPrefs=function(){try{return Object.assign({theme:'dark',density:'compact',scale:'auto',hud:true,transitions:true,history:true,cinRadarCollapsed:true},JSON.parse(localStorage.getItem('VÉRIX_PREFS_V1')||'{}'));}catch(e){return null;}};
- window.VÉRIXSettings.setProfile=function(v){
- const x=profileNames[v]||profileNames.escudo;
- this.setDensity(x[2]);this.setScale(x[3]);
- const p=window.VÉRIXSettingsPrefs()||{};
- if(p.hud!==x[4])this.toggle('hud',document.getElementById('settingHud'));
- const p2=window.VÉRIXSettingsPrefs()||{};
- if(p2.transitions!==x[5])this.toggle('transitions',document.getElementById('settingTransitions'));
- setTimeout(function(){syncProfile();diagnostic();},30);
- };
- window.VÉRIXSettings.refreshDiagnostic=function(){diagnostic();if(typeof mostrarToast==='function')mostrarToast('Diagnóstico local atualizado.');};
- const r=window.VÉRIXSettings.reset;
- window.VÉRIXSettings.reset=function(){r();setTimeout(function(){syncProfile();diagnostic();},30);};
- }
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){syncProfile();diagnostic();});else setTimeout(function(){syncProfile();diagnostic();},30);
- window.addEventListener('resize',diagnostic);
-})();
-</script>
+
 <style id="v197-factory-reset">
 .settings-factory-reset{margin-top:10px;padding:11px 12px;display:flex;align-items:center;justify-content:space-between;gap:14px;border:1px solid rgba(184,71,76,.48);border-radius:9px;background:linear-gradient(90deg,rgba(92,24,29,.20),rgba(35,12,16,.10));box-shadow:inset 0 0 18px rgba(145,35,45,.045)}
 .settings-factory-reset-copy{display:flex;align-items:center;gap:10px;min-width:0}.settings-factory-reset-icon{width:29px;height:29px;flex:0 0 29px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(219,91,96,.52);border-radius:7px;background:rgba(130,32,39,.16);color:#f08b8f;font:900 15px/1 Arial}.settings-factory-reset-copy strong{display:block;color:#ef9a9d;font:950 8px/1 Arial,sans-serif;letter-spacing:.9px}.settings-factory-reset-copy span{display:block;margin-top:4px;color:#8d777a;font:700 6.5px/1.35 Arial,sans-serif;max-width:850px}
@@ -15475,144 +15503,7 @@ html body .leg-intro-new{
  margin-bottom:8px!important;
 }
 </style>
-<script id="verix-settings-fix-js">
-(function(){
- function ensureAlias(){
- try{
- if(window.VÉRIXSettings && !window.VERIXSettings) window.VERIXSettings = window.VÉRIXSettings;
- }catch(e){}
- }
- ensureAlias();
-
- /* Reforçar apply: histórico + cinemómetro + classes */
- function enhance(){
- ensureAlias();
- var S = window.VERIXSettings || window.VÉRIXSettings;
- if(!S) return;
- var KEY='VÉRIX_PREFS_V1';
- function load(){
- try{ return Object.assign({theme:'dark',density:'compact',scale:'auto',hud:true,transitions:true,history:true,cinRadarCollapsed:true}, JSON.parse(localStorage.getItem(KEY)||'{}')); }
- catch(e){ return {theme:'dark',density:'compact',scale:'auto',hud:true,transitions:true,history:true,cinRadarCollapsed:true}; }
- }
- function save(p){ try{ localStorage.setItem(KEY, JSON.stringify(p)); }catch(e){} }
-
- S.toggle = function(k, el){
- var p = load();
- if(!(k in p)) p[k]=true;
- p[k] = !p[k];
- save(p);
- if(el){
- el.classList.toggle('on', p[k]);
- var sp = el.querySelector('span');
- if(sp) sp.textContent = p[k] ? 'ATIVO' : 'OFF';
- }
- applyAll(p);
- };
- S.setTheme = function(v){ var p=load(); p.theme=(v==='light'?'light':'dark'); save(p); applyAll(p); syncUI(p); };
- S.setDensity = function(v){ var p=load(); p.density=['compact','comfortable'].indexOf(v)>=0?v:'normal'; save(p); applyAll(p); syncUI(p); };
- S.setScale = function(v){ var p=load(); p.scale=['auto','80','90','100','110','120'].indexOf(String(v))>=0?String(v):'auto'; save(p); applyAll(p); syncUI(p); };
- S.setProfile = function(v){
- var profiles={
- escudo:{density:'compact',scale:'auto',hud:true,transitions:true},
- fiscalizacao:{density:'compact',scale:'90',hud:true,transitions:false},
- leitura:{density:'comfortable',scale:'100',hud:false,transitions:true},
- posto:{density:'compact',scale:'80',hud:false,transitions:false}
- };
- var p=load();
- var pr=profiles[v]||profiles.escudo;
- Object.keys(pr).forEach(function(k){ p[k]=pr[k]; });
- p.profile=v;
- save(p); applyAll(p); syncUI(p);
- var lm=document.getElementById('settingsLiveMode');
- if(lm) lm.textContent = (v||'escudo').toUpperCase();
- };
- S.refreshDiagnostic = function(){
- var p=load();
- var msg='Tema: '+p.theme+' | Densidade: '+p.density+' | Escala: '+p.scale+
- ' | HUD: '+(p.hud?'on':'off')+' | Transições: '+(p.transitions?'on':'off')+
- ' | Histórico: '+(p.history?'on':'off')+' | Cin.recolhido: '+(p.cinRadarCollapsed?'on':'off');
- try{
- var box=document.querySelector('[onclick*="refreshDiagnostic"]');
- var parent=box && box.parentElement;
- var info=parent && parent.querySelector('div');
- if(info && info!==box) info.textContent=msg;
- else if(typeof mostrarToast==='function') mostrarToast(msg);
- else alert(msg);
- }catch(e){ if(typeof mostrarToast==='function') mostrarToast(msg); }
- };
- S.reset = function(){
- var d={theme:'dark',density:'compact',scale:'auto',hud:true,transitions:true,history:true,cinRadarCollapsed:true,profile:'escudo'};
- save(d); applyAll(d); syncUI(d);
- if(typeof mostrarToast==='function') mostrarToast('Preferências repostas.');
- };
-
- function applyAll(p){
- p=p||load();
- document.body.classList.toggle('theme-light', p.theme==='light');
- document.body.classList.toggle('ui-compact', p.density==='compact');
- document.body.classList.toggle('ui-comfortable', p.density==='comfortable');
- document.body.classList.toggle('ui-normal', p.density==='normal');
- ['80','90','100','110','120'].forEach(function(v){ document.body.classList.toggle('ui-scale-'+v, p.scale===v); });
- document.body.classList.toggle('ui-scale-auto', p.scale==='auto');
- if(p.scale==='auto'){
- try{
- var w=Math.max(document.documentElement.clientWidth||0, window.innerWidth||0);
- var h=Math.max(document.documentElement.clientHeight||0, window.innerHeight||0);
- var z=Math.min(w/1600, h/900); z=Math.max(0.82, Math.min(1.08, z));
- document.body.style.zoom=z.toFixed(3);
- }catch(e){ document.body.style.zoom=''; }
- } else if(['80','90','100','110','120'].indexOf(p.scale)>=0){
- document.body.style.zoom = (parseInt(p.scale,10)/100).toFixed(2);
- } else document.body.style.zoom='';
- document.body.classList.toggle('no-hud', !p.hud);
- document.body.classList.toggle('no-transitions', !p.transitions);
- document.body.classList.toggle('history-disabled', !p.history);
- try{ localStorage.setItem('VÉRIX_CIN_RADAR_COLLAPSED_PREF', p.cinRadarCollapsed ? '1' : '0'); }catch(e){}
- }
- function syncUI(p){
- p=p||load();
- var a=document.getElementById('settingTheme'); if(a) a.value=p.theme;
- var b=document.getElementById('settingDensity'); if(b) b.value=p.density;
- var s=document.getElementById('settingScale'); if(s) s.value=p.scale;
- var sc=document.getElementById('settingsScaleStatus'); if(sc) sc.textContent=p.scale==='auto'?'AUTO':p.scale+'%';
- [['settingHud',p.hud],['settingTransitions',p.transitions],['settingHistory',p.history],['settingCinRadarCollapsed',p.cinRadarCollapsed]].forEach(function(x){
- var e=document.getElementById(x[0]); if(!e) return;
- e.classList.toggle('on', !!x[1]);
- var sp=e.querySelector('span'); if(sp) sp.textContent=x[1]?'ATIVO':'OFF';
- });
- }
-
- window.VERIXSettings = S;
- window.VÉRIXSettings = S;
- applyAll(load());
- syncUI(load());
- }
-
- /* Bloquear histórico se desativado */
- var _abrirHistorico = window.abrirHistorico;
- if(typeof _abrirHistorico === 'function'){
- window.abrirHistorico = function(){
- try{
- var p=JSON.parse(localStorage.getItem('VÉRIX_PREFS_V1')||'{}');
- if(p.history===false){ if(typeof mostrarToast==='function') mostrarToast('Histórico desativado nas definições.'); return; }
- }catch(e){}
- return _abrirHistorico.apply(this, arguments);
- };
- }
-
- if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', enhance);
- else enhance();
- setTimeout(enhance, 300);
- setTimeout(enhance, 1000);
-
- /* Ao abrir módulo definições, resync */
- document.addEventListener('click', function(){ setTimeout(function(){
- try{
- if(document.getElementById('settingTheme')) enhance();
- }catch(e){}
- }, 100); }, true);
-})();
-</script> <style id="verix-settings-fix-css">
+ <style id="verix-settings-fix-css">
 /* Densidade */
 html body.ui-compact .panel .head{padding-top:8px!important;padding-bottom:8px!important}
 html body.ui-compact .rail-item{min-height:42px!important;padding:6px 8px!important}
