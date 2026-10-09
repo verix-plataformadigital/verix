@@ -473,73 +473,22 @@ Deno.serve(async (req: Request) => {
     events.splice(0, events.length, ...dedupedEvents);
     if (!events.length) return json({ ok: true, accepted: 0, rejected: input.length });
 
-    const installations = new Map<string, any>();
-    const sessions = new Map<string, any>();
-
-    for (const e of events) {
-      if (e.installation_id) {
-        const existing = installations.get(e.installation_id);
-        if (!existing) {
-          const client = e.metadata?.client && typeof e.metadata.client === "object"
-            ? e.metadata.client as Record<string, unknown>
-            : {};
-          installations.set(e.installation_id, {
-            installation_id: e.installation_id,
-            first_seen: e.occurred_at,
-            last_seen: e.occurred_at,
-            app_version: e.app_version,
-            device_type: e.device_type,
-            browser: e.browser,
-            os: cleanText(client.osPlatform, 40)
-          });
-        } else {
-          if (e.occurred_at < existing.first_seen) existing.first_seen = e.occurred_at;
-          if (e.occurred_at > existing.last_seen) existing.last_seen = e.occurred_at;
-          if (e.app_version) existing.app_version = e.app_version;
-          if (e.device_type) existing.device_type = e.device_type;
-          if (e.browser) existing.browser = e.browser;
-          const client = e.metadata?.client && typeof e.metadata.client === "object"
-            ? e.metadata.client as Record<string, unknown>
-            : {};
-          const clientOs = cleanText(client.osPlatform, 40);
-          if (clientOs) existing.os = clientOs;
-        }
-      }
-      if (e.session_id && e.installation_id) {
-        const existing = sessions.get(e.session_id);
-        if (!existing) {
-          sessions.set(e.session_id, {
-            session_id: e.session_id,
-            installation_id: e.installation_id,
-            tab_id: e.tab_id,
-            started_at: e.occurred_at,
-            last_seen: e.occurred_at
-          });
-        } else if (e.occurred_at > existing.last_seen) {
-          existing.last_seen = e.occurred_at;
-        }
-      }
-    }
-
-    // Persist the canonical event rows before advancing presence.
-    // This prevents a failed event write from leaving last_seen ahead of reality.
-    const { error: eventsError } = await db.from("verix2_events").upsert(events, {
-      onConflict: "event_id",
-      ignoreDuplicates: true
+    // One database transaction writes parent records, event rows and presence.
+    // The RPC also applies database-level uniqueness rules to concurrent retries.
+    const { data: ingestResult, error: ingestError } = await db.rpc("verix2_ingest_events", {
+      p_events: events
     });
-    if (eventsError) throw new Error(`events:${eventsError.message}`);
-
-    if (installations.size) {
-      const { error } = await db.from("verix2_installations").upsert([...installations.values()], { onConflict: "installation_id" });
-      if (error) throw new Error(`installations:${error.message}`);
-    }
-
-    if (sessions.size) {
-      const { error } = await db.from("verix2_sessions").upsert([...sessions.values()], { onConflict: "session_id" });
-      if (error) throw new Error(`sessions:${error.message}`);
-    }
-
-    return json({ ok: true, accepted: events.length, rejected: input.length - events.length });
+    if (ingestError) throw new Error(`ingest:${ingestError.message}`);
+    const result = Array.isArray(ingestResult) ? ingestResult[0] : ingestResult;
+    const accepted = Number(result?.accepted ?? 0);
+    const rejected = Number(result?.rejected ?? Math.max(0, input.length - accepted));
+    return json({
+      ok: true,
+      accepted,
+      rejected,
+      received: Number(result?.received ?? input.length),
+      valid: Number(result?.valid ?? events.length)
+    });
   } catch (error) {
     console.error("telemetry_write_failed", error);
     return json({ ok: false, error: "telemetry_write_failed" }, 500);
