@@ -1,10 +1,9 @@
 name: VÉRIX 2 Reengineering CI
 
 on:
-  push:
-    branches: ["reengineering-v2"]
   pull_request:
     branches: ["main"]
+  workflow_dispatch:
 
 permissions:
   contents: read
