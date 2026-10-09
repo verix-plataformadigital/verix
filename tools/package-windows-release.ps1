@@ -44,6 +44,7 @@ try {
     }
 
     Compress-Archive -Path (Join-Path $publishPath "*") -DestinationPath $zipPath -CompressionLevel Optimal
+    New-Item -ItemType Directory -Path $verifyPath -Force | Out-Null
     Expand-Archive -LiteralPath $zipPath -DestinationPath $verifyPath
 
     # Validate the extracted archive too: the deliverable, not merely the source
