@@ -265,16 +265,17 @@ async function loadErrorInvestigation24h(now:string){
   const rows=tt?JSON.parse(tt):[];
   const currentVersionRows=rows.filter((e:any)=>canonicalAppVersion(e?.app_version)===CURRENT_APP_VERSION);
   const shortId=(v:any)=>{const s=String(v||"");return s.length>14?s.slice(0,8)+"…"+s.slice(-4):s;};
-  const byHash=new Map<string,number>(), byType=new Map<string,number>(), byInstall=new Map<string,number>(), bursts=new Map<string,number>();
+  const byHash=new Map<string,number>(), byType=new Map<string,number>(), byInstall=new Map<string,number>();
+  const bursts=new Map<string,{queryIds:Set<string>;events:number}>();
   for(const e of currentVersionRows){
     const a=e?.metadata?.asfDiagnostic||{}, hash=String(a.asfResponseHash||"sem-hash"), type=String(a.asfErrorType||"unknown"), inst=String(e?.installation_id||"unknown");
     byHash.set(hash,(byHash.get(hash)||0)+1); byType.set(type,(byType.get(type)||0)+1); byInstall.set(inst,(byInstall.get(inst)||0)+1);
-    const t=new Date(e.occurred_at).getTime(); if(Number.isFinite(t)){const k=new Date(Math.floor(t/300000)*300000).toISOString();bursts.set(k,(bursts.get(k)||0)+1);}
+    const t=new Date(e.occurred_at).getTime(); if(Number.isFinite(t)){const k=new Date(Math.floor(t/300000)*300000).toISOString();let bucket=bursts.get(k);if(!bucket){bucket={queryIds:new Set<string>(),events:0};bursts.set(k,bucket);}bucket.events++;if(e?.query_id)bucket.queryIds.add(String(e.query_id));}
   }
   const hashRows=[...byHash.entries()].map(([hash,count])=>({hash,count})).sort((a,b)=>b.count-a.count).slice(0,10);
   const typeRows=[...byType.entries()].map(([type,count])=>({type,count})).sort((a,b)=>b.count-a.count);
   const installRows=[...byInstall.entries()].map(([installation_id,count])=>({installation_id:shortId(installation_id),count})).sort((a,b)=>b.count-a.count).slice(0,10);
-  const burstRows=[...bursts.entries()].map(([start,count])=>({start,count})).sort((a,b)=>b.count-a.count).slice(0,12);
+  const burstRows=[...bursts.entries()].map(([start,bucket])=>({start,count:bucket.queryIds.size,event_count:bucket.events})).sort((a,b)=>b.count-a.count||b.event_count-a.event_count).slice(0,12);
   const plateOf=(e:any)=>String(e?.metadata?.matriculaNormalizada||e?.metadata?.matricula||e?.metadata?.asfDiagnostic?.matricula||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
   const plateCases=currentVersionRows.map((e:any)=>{
     const plate=plateOf(e),a=e?.metadata?.asfDiagnostic||{};
