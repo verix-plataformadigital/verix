@@ -405,7 +405,11 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    if (!events.length) return json({ ok: true, accepted: 0, rejected: input.length });
+    if (!events.length) return json({ ok: true, accepted: validEventCount, inserted: 0, duplicates: businessDuplicates, rejected: input.length - validEventCount, received: input.length });
+
+    // Count all accepted event envelopes before idempotency filters. The response
+    // can therefore account for every received event, including deduplicated ones.
+    const validEventCount = events.length;
 
     // Impede nova duplicação do mesmo query_id. O índice SQL reforça isto,
     // mas filtramos antes do upsert para evitar conflitos que o PostgREST
@@ -454,6 +458,7 @@ Deno.serve(async (req: Request) => {
       return true;
     });
 
+    const businessDuplicates = events.length - dedupedEvents.length;
     events.splice(0, events.length, ...dedupedEvents);
     if (!events.length) return json({ ok: true, accepted: 0, rejected: input.length });
 
@@ -505,23 +510,40 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    if (installations.size) {
-      const { error } = await db.from("verix2_installations").upsert([...installations.values()], { onConflict: "installation_id" });
-      if (error) throw new Error(`installations:${error.message}`);
+    // Persist the canonical event rows before advancing presence.
+    // This prevents a failed event write from leaving last_seen ahead of reality.
+    // Parent rows and event rows are persisted atomically by PostgreSQL. A successful
+    // HTTP response is returned only after the transaction has committed.
+    const { data: ingestion, error: ingestionError } = await db.rpc(
+      "verix2_ingest_telemetry",
+      {
+        p_events: events,
+        p_installations: [...installations.values()],
+        p_sessions: [...sessions.values()]
+      }
+    );
+    if (ingestionError) throw new Error(`ingest:${ingestionError.message}`);
+
+    const inserted = ingestion?.events_inserted;
+    if (
+      typeof inserted !== "number" ||
+      !Number.isSafeInteger(inserted) ||
+      inserted < 0 ||
+      inserted > events.length
+    ) {
+      throw new Error("ingest:invalid_response");
     }
 
-    if (sessions.size) {
-      const { error } = await db.from("verix2_sessions").upsert([...sessions.values()], { onConflict: "session_id" });
-      if (error) throw new Error(`sessions:${error.message}`);
-    }
-
-    const { error: eventsError } = await db.from("verix2_events").upsert(events, {
-      onConflict: "event_id",
-      ignoreDuplicates: true
+    const eventIdDuplicates = events.length - inserted;
+    return json({
+      ok: true,
+      accepted: validEventCount,
+      inserted,
+      duplicates: businessDuplicates + eventIdDuplicates,
+      deduplicated: businessDuplicates,
+      rejected: input.length - validEventCount,
+      received: input.length
     });
-    if (eventsError) throw new Error(`events:${eventsError.message}`);
-
-    return json({ ok: true, accepted: events.length, rejected: input.length - events.length });
   } catch (error) {
     console.error("telemetry_write_failed", error);
     return json({ ok: false, error: "telemetry_write_failed" }, 500);
