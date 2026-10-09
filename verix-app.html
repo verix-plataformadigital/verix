@@ -17275,6 +17275,7 @@ html body .leg-card-new .copy-all-new{
       out.cin = {
         operation_id: c.operation_id ? String(c.operation_id).slice(0, 120) : null,
         velocidade_registada: cleanNum(c.velocidade_registada),
+        velocidade_deduzida: cleanNum(c.velocidade_deduzida),
         limite: cleanNum(c.limite),
         modo: c.modo ? String(c.modo).slice(0, 40) : null,
         veiculo: c.veiculo ? String(c.veiculo).slice(0, 40) : null,
@@ -17566,6 +17567,7 @@ html body .leg-card-new .copy-all-new{
     return {
       operation_id: window.__VERIX_CIN_OPERATION_ID,
       velocidade_registada: speed,
+      velocidade_deduzida: cinTelemetryNumber('cinDeducida', 0, 400),
       limite: limit,
       modo: mode,
       veiculo: vehicle,
