@@ -2,43 +2,41 @@
 
 Ferramenta operacional de consulta e apoio à fiscalização rodoviária.
 
-## Execução
+## Publicação
 
-A produção é servida pelo GitHub Pages e é construída exclusivamente pela pipeline segura. O ficheiro-fonte operacional é `verix-app.html`; o artefacto publicável é gerado em `dist/`.
+O workflow `.github/workflows/deploy-pages.yml` constrói a aplicação e publica apenas o artefacto gerado em `dist/`.
 
-Para uso portátil Windows, utilizar o projecto em `windows/VerixPortable/`.
+`main` → build seguro → verificações de integridade → `dist/` → GitHub Pages.
 
-## Componentes
+Não editar `dist/` manualmente: é uma pasta gerada, não a fonte de verdade.
 
-| Componente | Função |
+## Componentes principais
+
+| Caminho | Responsabilidade |
 |---|---|
-| `verix-app.html` | Aplicação operacional principal |
-| `index.html` | Bootstrap/roteamento de entrada |
-| `verix-mobile.html` | Compatibilidade de entrada móvel |
-| `verix-mobile.js/css` | Camada responsiva |
-| `admin_v2.html` | Consola administrativa |
-| `supabase/functions/telemetry-v2` | Telemetria e presença |
-| `supabase/functions/verix-gate-v1` | Emissão de tokens de cliente |
-| `supabase/functions/asf-proxy-v1` | Relay servidor-servidor para ASF |
-| `supabase/functions/admin-auth-v2` | Autenticação do painel |
-| `supabase/functions/stats-v2` | Métricas e dashboard |
-| `supabase/functions/hourly-history-v2` | Histórico horário |
-| `tools/build-secure-release.mjs` | Build de produção |
-| `windows/VerixPortable/` | Host WebView2 |
+| `verix-app.html` | Aplicação operacional |
+| `index.html`, `verix-mobile.*` | Entrada e adaptação a ecrãs pequenos |
+| `admin_v2.html` | Painel administrativo |
+| `supabase/functions/` | Autenticação, ASF, telemetria e estatísticas no servidor |
+| `supabase/migrations/` | Alterações ao esquema e às funções da base de dados |
+| `tools/build-secure-release.mjs` | Geração e validação do build |
+| `windows/VerixPortable/` | Host Windows baseado em WebView2 |
 
-## Desenvolvimento e publicação
+## Build local
 
-1. Alterar os ficheiros-fonte.
-2. Nunca editar `dist/` manualmente.
-3. `deploy-pages.yml` executa o build, verifica integridade e publica o artefacto.
-4. `security-audit.yml` valida o build em PRs e execuções manuais.
-5. Funções Supabase são publicadas separadamente para o projecto associado.
+Requer Node.js 22, indicado em `.nvmrc`.
 
-## Regras de estabilidade
+```sh
+npm install --no-fund --no-audit
+npm run build:secure
+```
 
-O runtime operacional é um monólito legado grande. Não devem ser introduzidas transformações de obfuscação de controlo de fluxo no bloco crítico. Alterações de telemetria, ASF ou autenticação devem preservar as interfaces existentes e ser validadas ponta a ponta.
+O comando gera `dist/` e valida os blocos críticos e a sintaxe JavaScript. Não publica o site; a publicação oficial é executada pelo GitHub Actions.
 
-## Arquitectura
+## Regras essenciais
 
-Ver `ARCHITECTURE.md` para o mapa da árvore e as regras de manutenção.
-Ver `SECURITY.md` para o modelo de segurança e publicação.
+- Nunca guardar segredos no HTML, JavaScript do cliente ou repositório.
+- Alterações a ASF, autenticação ou telemetria têm de preservar os contratos do cliente e do servidor.
+- O repositório é público: a ofuscação não torna o código-fonte confidencial.
+
+Detalhes de arquitetura: [ARCHITECTURE.md](ARCHITECTURE.md). Segurança e resposta a incidentes: [SECURITY.md](SECURITY.md).

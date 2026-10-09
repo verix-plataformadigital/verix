@@ -287,7 +287,7 @@ const manifest = {
   notes: [
     "This dist/ folder is the ONLY version that should be published.",
     "Never publish the clear-text source HTML files.",
-    "Keep the GitHub repository private.",
+    "The source repository is public; obfuscation does not make the source confidential.",
     "Rotate VERIX_GATE_SECRET / VERIX_ADMIN_SECRET if a build is compromised."
   ]
 };
