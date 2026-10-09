@@ -76,9 +76,10 @@ jobs:
             throw "The packaged ZIP did not pass portable-package verification."
           }
 
-          $hash = (Get-FileHash -LiteralPath $zipPath -Algorithm SHA256).Hash.ToLowerInvariant()
-          Set-Content -LiteralPath "$zipPath.sha256" -Value "$hash  VERIX-Windows-x64.zip" -Encoding ascii
-          Write-Host "SHA-256: $hash"
+          node -e "const fs=require('node:fs'); const {createHash}=require('node:crypto'); const file='release-assets/VERIX-Windows-x64.zip'; const hash=createHash('sha256').update(fs.readFileSync(file)).digest('hex'); fs.writeFileSync(file+'.sha256', hash+'  VERIX-Windows-x64.zip\\n', 'utf8'); console.log('SHA-256: '+hash);"
+          if ($LASTEXITCODE -ne 0) {
+            throw "Could not generate the ZIP SHA-256 checksum."
+          }
 
       - name: Upload Windows release candidate
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
