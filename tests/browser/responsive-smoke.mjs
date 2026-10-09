@@ -102,7 +102,11 @@ for (const job of jobs) {
             shell: describe(".verix-shell"),
             header: describe(".verix-header"),
             layout: describe(".verix-layout"),
-            nav: describe(".verix-nav")
+            nav: describe(".verix-nav"),
+            bodyZoom: document.body.style.zoom,
+            computedBodyZoom: getComputedStyle(document.body).zoom,
+            media760: window.matchMedia("(max-width: 760px)").matches,
+            media1024: window.matchMedia("(max-width: 1024px)").matches
           };
         });
 
@@ -118,10 +122,10 @@ for (const job of jobs) {
             job.name + " " + viewport.label + ": navigation did not switch to a horizontal row " + JSON.stringify({
               viewportWidth: viewportState.viewportWidth,
               bodyWidth: viewportState.bodyWidth,
-              bodyZoom: document.body.style.zoom,
-              computedBodyZoom: getComputedStyle(document.body).zoom,
-              media760: window.matchMedia("(max-width: 760px)").matches,
-              media1024: window.matchMedia("(max-width: 1024px)").matches,
+              bodyZoom: viewportState.bodyZoom,
+              computedBodyZoom: viewportState.computedBodyZoom,
+              media760: viewportState.media760,
+              media1024: viewportState.media1024,
               nav: viewportState.nav
             })
           );
