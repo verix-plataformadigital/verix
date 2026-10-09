@@ -68,7 +68,13 @@ err_plates AS (
       (2,e.metadata->>'matricula'),
       (3,e.metadata->>'matriculaNormalizada')
     ) AS c(priority,raw)
-    WHERE regexp_replace(upper(coalesce(c.raw,'')),'[^A-Z0-9]','','g') ~ '^[A-Z0-9]{6,8}
+    WHERE regexp_replace(upper(coalesce(c.raw,'')),'[^A-Z0-9]','','g') ~ '^[A-Z0-9]{6,8}$'
+    ORDER BY c.priority
+    LIMIT 1
+  ) p
+  WHERE e.event='vehicle_insurance_error' AND e.occurred_at>=b.s24
+    AND e.query_id IS NOT NULL
+    AND p.plate_key ~ '^[A-Z0-9]{6,8}$'
   GROUP BY p.plate_key ORDER BY qty DESC,last_at DESC LIMIT 20
 ),
 $new$;
