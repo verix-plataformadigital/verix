@@ -28,6 +28,10 @@ assert.match(insuranceNoCasesMigration, /REVOKE ALL ON TABLE public\.verix_insur
 assert.match(insuranceNoCasesMigration, /interval '90 days'/);
 assert.match(insuranceNoCasesMigration, /cron\.schedule/);
 assert.match(stats, /detail==="insurance-no-cases"/);
+assert.match(stats, /const pageSize = 1000;/, "90-day no-record list must paginate past PostgREST's default row cap");
+assert.match(stats, /qs\.set\("offset",String\(page\*pageSize\)\)/, "no-record list must advance through complete result pages");
+assert.match(stats, /if\(pageRows\.length<pageSize\) return cases;/, "no-record list must stop only after a short final page");
+assert.match(stats, /insurance_no_cases_page_limit/, "an unexpectedly huge list must fail explicitly instead of silently truncating");
 assert.match(admin, /MATRÍCULAS COM RESULTADO “SEM REGISTO”/);
 assert.match(admin, /renderInsuranceNoCases/);
 assert.match(admin, /id="errorPlates"/, "Admin must expose a dedicated ASF error-plate list");

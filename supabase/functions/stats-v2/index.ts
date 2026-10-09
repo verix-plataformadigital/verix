@@ -224,17 +224,32 @@ async function windowStartAfterReset(hours:number): Promise<string> {
   return new Date(Math.max(rolling,Number.isFinite(baseline)?baseline:0)).toISOString();
 }
 async function loadInsuranceNoCases(now:string){
-  const qs = new URLSearchParams();
-  qs.set("select","event_id,matricula,occurred_at,expires_at");
-  qs.set("expires_at","gt."+now);
-  qs.set("order","occurred_at.desc");
-  qs.set("limit","1000");
-  const response = await fetch(supabaseUrl+"/rest/v1/verix_insurance_no_cases?"+qs.toString(),{
-    headers:{apikey:serviceKey,Authorization:"Bearer "+serviceKey}
-  });
-  const text = await response.text();
-  if(!response.ok) throw new Error("insurance_no_cases:"+text);
-  return text ? JSON.parse(text) : [];
+  // PostgREST can cap an individual response at 1,000 rows. Page until the
+  // complete unexpired 90-day register has been read, rather than silently
+  // showing only the most recent 1,000 consultations.
+  const pageSize = 1000;
+  const maxPages = 100;
+  const cases:any[] = [];
+  for(let page=0; page<maxPages; page++){
+    const qs = new URLSearchParams();
+    qs.set("select","event_id,matricula,occurred_at,expires_at");
+    qs.set("expires_at","gt."+now);
+    qs.set("order","occurred_at.desc,event_id.desc");
+    qs.set("limit",String(pageSize));
+    qs.set("offset",String(page*pageSize));
+    const response = await fetch(supabaseUrl+"/rest/v1/verix_insurance_no_cases?"+qs.toString(),{
+      headers:{apikey:serviceKey,Authorization:"Bearer "+serviceKey}
+    });
+    const text = await response.text();
+    if(!response.ok) throw new Error("insurance_no_cases:"+text);
+    const pageRows:any[] = text ? JSON.parse(text) : [];
+    if(!Array.isArray(pageRows)) throw new Error("insurance_no_cases:invalid_page");
+    cases.push(...pageRows);
+    if(pageRows.length<pageSize) return cases;
+  }
+  // Never report a truncated list as complete if an unusually large register
+  // exceeds the explicit safety bound.
+  throw new Error("insurance_no_cases_page_limit");
 }
 
 async function loadErrorInvestigation24h(now:string){
