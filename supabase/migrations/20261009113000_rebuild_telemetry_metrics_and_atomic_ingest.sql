@@ -547,7 +547,8 @@ err AS (
 ),
 by_type AS (
   SELECT coalesce(metadata->'asfDiagnostic'->>'asfErrorType','unknown') AS type,
-         count(*)::bigint AS count
+         count(DISTINCT query_id)::bigint AS count,
+         count(*)::bigint AS raw_events
   FROM err GROUP BY 1 ORDER BY count DESC,type
 ),
 by_hash AS (
