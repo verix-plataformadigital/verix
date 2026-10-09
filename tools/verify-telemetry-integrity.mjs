@@ -133,7 +133,7 @@ assert.ok(admin.includes("RESULTADO DO ERRO"), "Admin must show the result/messa
 assert.ok(admin.includes("ensurePageDetail('errors',true)"), "Admin must provide a way to retry loading error details");
 assert.ok(admin.includes("if(!d?.investigation||!Array.isArray(cases))"), "Admin must not cache a response that omitted the error-plate list");
 
-const errorPlateHelperMatch = stats.match(/function buildErrorPlateCases\(rows,plateOf,validPortuguesePlate,shortId\) \{[\s\S]*?\n\}/);
+const errorPlateHelperMatch = stats.match(/function buildErrorPlateCases\(rows,plateOf,validPortuguesePlate,shortId\)\{[\s\S]*?\n\}/);
 assert.ok(errorPlateHelperMatch, "error plate aggregation must remain independently testable");
 const buildErrorPlateCases = new Function("return (" + errorPlateHelperMatch[0] + ");")();
 const normalizeFixturePlate = value => String(value ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "");
