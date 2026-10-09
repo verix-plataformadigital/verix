@@ -132,6 +132,42 @@ assert.ok(admin.includes("inv.error_plate_cases_24h||inv.current_version_plate_c
 assert.ok(admin.includes("RESULTADO DO ERRO"), "Admin must show the result/message associated with each error plate");
 assert.ok(admin.includes("ensurePageDetail('errors',true)"), "Admin must provide a way to retry loading error details");
 assert.ok(admin.includes("if(!d?.investigation||!Array.isArray(cases))"), "Admin must not cache a response that omitted the error-plate list");
+
+const errorPlateHelperMatch = stats.match(/function buildErrorPlateCases\(rows,plateOf,validPortuguesePlate,shortId\) \{[\s\S]*?\n\}/);
+assert.ok(errorPlateHelperMatch, "error plate aggregation must remain independently testable");
+const buildErrorPlateCases = new Function("return (" + errorPlateHelperMatch[0] + ");")();
+const normalizeFixturePlate = value => String(value ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+const validFixturePlate = value => /^(?:[A-Z]{2}[0-9]{4}|[0-9]{4}[A-Z]{2}|[0-9]{2}[A-Z]{2}[0-9]{2}|[A-Z]{2}[0-9]{2}[A-Z]{2})$/.test(normalizeFixturePlate(value));
+const plateOfFixture = event => {
+  const candidates = [event?.metadata?.asfDiagnostic?.matricula,event?.metadata?.matriculaNormalizada,event?.metadata?.matricula];
+  const valid = candidates.find(validFixturePlate);
+  return valid ? normalizeFixturePlate(valid) : "";
+};
+const shortFixtureId = value => String(value || "");
+const errorPlateFixture = [
+  {
+    event_id:"event-valid-older-build", query_id:"q-retried", app_version:"1.4",
+    occurred_at:"2026-10-09T08:05:00.000Z", browser:"Chrome",
+    metadata:{asfDiagnostic:{matricula:"87-XG-87",asfErrorType:"http_null",asfHttpStatus:null,asfMessage:"Falha de comunicação"}}
+  },
+  {
+    event_id:"event-invalid-retry", query_id:"q-retried", app_version:"1.5",
+    occurred_at:"2026-10-09T08:06:00.000Z", browser:"Chrome",
+    metadata:{asfDiagnostic:{matricula:"O",asfErrorType:"http_400",asfHttpStatus:400,asfMessage:"HTTP 400"}}
+  },
+  {
+    event_id:"event-another-build", query_id:"q-other", app_version:"1.3",
+    occurred_at:"2026-10-09T08:07:00.000Z", browser:"Edge",
+    metadata:{asfDiagnostic:{matricula:"83-DD-42",asfErrorType:"http_400",asfHttpStatus:400,asfMessage:"HTTP 400"}}
+  }
+];
+const errorPlateFixtureResult = buildErrorPlateCases(errorPlateFixture,plateOfFixture,validFixturePlate,shortFixtureId);
+assert.equal(errorPlateFixtureResult.length,2,"valid error plates from every app version should be shown once per query");
+const retriedPlate = errorPlateFixtureResult.find(item => item.query_id === "q-retried");
+assert.equal(retriedPlate?.matricula,"87XG87","later partial OCR/error events must not hide an earlier valid plate");
+assert.equal(retriedPlate?.error_type,"http_null","the shown error must belong to the event that actually captured the valid plate");
+assert.equal(retriedPlate?.error_message,"Falha de comunicação","the technical error outcome must be preserved with the plate");
+
 assert.ok(stats.includes('qs.set("offset",String(page*pageSize))'), "error investigation must page through all raw telemetry instead of truncating at 1,000 rows");
 assert.ok(stats.includes("validPortuguesePlate"), "error plate diagnostics must use complete Portuguese plate formats");
 assert.ok(endpoint.includes("^(?:[A-Z]{2}[0-9]{4}|[0-9]{4}[A-Z]{2}"), "server must reject incomplete and malformed plate fragments");
