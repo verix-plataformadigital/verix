@@ -33,7 +33,8 @@ Esta matriz define o que tem de ser comprovado antes do cutover. Compilar não c
 | Build | sem source maps e com CSP/security markers | CI | Sim |
 | Windows | build + publish win-x64 | CI Windows | Sim |
 | Windows/RNSI | janela interna funciona na rede RNSI real | Ainda não validado em posto | Sim |
-| Mobile | layout e fluxos principais sem regressões | Ainda não validado em ambiente real | Sim |
+| Mobile/tablet | 320/360/390 px; retrato/paisagem; 768/1024 px; navegação touch, formulários e scroll local das tabelas | Contratos CSS/DOM adicionados; browsers/dispositivos reais ainda pendentes | Sim |
+| Responsive/acessibilidade | Alvos touch ≥44 px, foco visível, zoom do browser e redução de movimento | Regras CSS + testes de contrato; inspeção visual manual pendente | Sim |
 
 ## Regra de aceitação
 

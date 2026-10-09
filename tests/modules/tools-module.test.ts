@@ -28,4 +28,20 @@ describe("ToolsModule external destinations", () => {
       requested: true
     });
   });
+
+  it("keeps the road-zone table in a keyboard-scrollable responsive region", () => {
+    const root = document.createElement("main");
+    new ToolsModule().mount(root);
+
+    const table = root.querySelector<HTMLTableElement>(".tools-table");
+    const wrapper = root.querySelector<HTMLDivElement>(".tools-table-wrap");
+
+    expect(table).not.toBeNull();
+    expect(wrapper).not.toBeNull();
+    expect(wrapper?.contains(table)).toBe(true);
+    expect(wrapper?.tabIndex).toBe(0);
+    expect(wrapper?.getAttribute("role")).toBe("region");
+    expect(wrapper?.getAttribute("aria-label")).toContain("deslocamento horizontal");
+  });
+
 });

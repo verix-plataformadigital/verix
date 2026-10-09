@@ -407,3 +407,137 @@ body.theme-light .verix-workspace textarea {
   body.ui-comfortable .verix-nav-item { gap: 5px; margin: 0; padding: 11px 7px; }
   body.ui-comfortable .verix-nav-label { font-size: 10px; }
 }
+
+
+/* Responsive hardening: phone, tablet, touch and virtual-keyboard behaviour. */
+.verix-shell,
+.verix-layout,
+.verix-workspace { min-width: 0; }
+
+.verix-workspace {
+  overflow-wrap: anywhere;
+  scroll-padding-block: 1rem;
+}
+
+.verix-workspace :is(img, svg, canvas, video, iframe) { max-width: 100%; }
+
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid #70d3ca;
+  outline-offset: 3px;
+}
+
+.tools-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 1024px) {
+  .verix-shell { grid-template-rows: auto minmax(0, 1fr); }
+  .verix-layout { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+  .verix-nav {
+    display: flex; flex-wrap: nowrap; gap: 6px; max-width: 100%;
+    overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch; scrollbar-width: thin;
+    padding: 10px 12px; border-right: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, .06);
+    touch-action: pan-x;
+  }
+  .verix-nav-item {
+    flex: 0 0 auto; width: auto; min-height: 44px;
+    margin: 0; padding: 10px 12px; white-space: nowrap;
+  }
+  .verix-nav-item.is-active { transform: none; }
+  .verix-nav-label { font-size: 10px; letter-spacing: .04em; }
+  .verix-workspace { min-height: 0; padding: clamp(18px, 3vw, 32px); }
+  .vehicle-query-form, .cin-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .information-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tools-district-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .home-module-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tools-search { min-width: 0; max-width: 100%; }
+}
+
+@media (max-width: 760px) {
+  .verix-header {
+    min-height: 58px; height: auto; flex-wrap: wrap; gap: 8px; padding: 10px 12px;
+  }
+  .verix-status {
+    max-width: 55vw; white-space: normal; text-align: right; line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+  .verix-nav { gap: 4px; padding: 8px 10px; scroll-snap-type: x proximity; }
+  .verix-nav-item {
+    flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    min-height: 52px; padding: 7px 9px; scroll-snap-align: start;
+  }
+  .verix-nav-icon { display: block; width: auto; font-size: 15px; line-height: 1; }
+  .verix-nav-label { font-size: 8px; letter-spacing: .02em; }
+  .verix-workspace { padding: 18px 14px; overflow: visible; }
+  .verix-workspace h1 { font-size: clamp(23px, 6vw, 28px); line-height: 1.12; }
+  .verix-placeholder {
+    display: grid; align-items: start; justify-content: stretch; gap: 12px;
+    min-height: 0; padding: 18px;
+  }
+  .verix-badge { margin: 0; }
+  .vehicle-query-form, .cin-form {
+    grid-template-columns: minmax(0, 1fr); padding: 14px;
+  }
+  .vehicle-query-actions, .cin-actions {
+    grid-column: auto; display: grid; grid-template-columns: minmax(0, 1fr);
+  }
+  .vehicle-field input, .cin-field input, .cin-field select,
+  .cin-context-field input, .cin-context-field select, .cin-context-profile-select,
+  .settings-control select, .tools-search, .alcohol-search, .legislation-search,
+  .verix-workspace textarea {
+    min-width: 0; max-width: 100%; font-size: 16px;
+  }
+  .history-module-head { flex-wrap: wrap; align-items: flex-start; }
+  .history-module-controls { flex-wrap: wrap; }
+  .history-row-v2 {
+    grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 12px;
+  }
+  .history-index-v2 { display: none; }
+  .history-plates-v2 { min-width: 0; overflow-wrap: anywhere; }
+  .history-insurance-v2 { justify-self: end; text-align: right; }
+  .vehicle-value { align-items: flex-start; flex-direction: column; gap: 4px; }
+  .information-grid { grid-template-columns: minmax(0, 1fr); }
+  .tools-table { min-width: 560px; }
+  .alcohol-table-wrap {
+    max-width: 100%; max-height: min(470px, 58dvh); overscroll-behavior: contain;
+  }
+  .alcohol-table { min-width: 480px; }
+  .cin-operational-text { font-size: 12px; }
+  .home-primary-action, .cin-context-toggle { min-height: 44px; }
+}
+
+@media (max-width: 390px) {
+  .verix-header { padding: 8px 10px; }
+  .verix-brand { gap: 8px; }
+  .verix-mark { width: 30px; height: 30px; }
+  .verix-status { letter-spacing: .04em; }
+  .verix-workspace { padding: 16px 12px; }
+  .vehicle-query-form, .cin-form { padding: 12px; }
+  .home-primary-card, .vehicle-result, .cin-result-card-v2 { padding: 15px; }
+  .history-row-v2 { padding: 10px; }
+}
+
+@media (pointer: coarse) {
+  :is(
+    .verix-nav-item, .vehicle-submit, .vehicle-clear, .vehicle-imt-button,
+    .cin-submit, .cin-reset, .cin-context-toggle, .cin-context-button,
+    .cin-copy-button, .history-clear, .home-primary-action, .home-module-card,
+    .tools-external-button, .legislation-clear, .legislation-favorites-toggle,
+    .legislation-copy-all, .settings-reset, .information-source
+  ) { min-height: 44px; }
+  .legislation-favorite { width: 44px; height: 44px; }
+  .settings-toggle input { width: 22px; height: 22px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    scroll-behavior: auto !important;
+    transition: none !important;
+  }
+}

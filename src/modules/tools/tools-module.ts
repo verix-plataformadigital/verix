@@ -134,7 +134,15 @@ export class ToolsModule {
       tbody.append(tr);
     }
     table.append(thead, tbody);
-    box.append(head, table);
+
+    const tableWrap = document.createElement('div');
+    tableWrap.className = 'tools-table-wrap';
+    tableWrap.tabIndex = 0;
+    tableWrap.setAttribute('role', 'region');
+    tableWrap.setAttribute('aria-label', 'Tabela de zonas e vias; deslocamento horizontal');
+    tableWrap.append(table);
+
+    box.append(head, tableWrap);
     return box;
   }
 
