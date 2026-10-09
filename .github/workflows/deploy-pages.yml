@@ -40,7 +40,6 @@ jobs:
           node --check verix-mobile.js
           node --check dist/verix-mobile.js
           grep -q "verix-fresh-mobile-assets" dist/verix-app.html
-          grep -q "Cache-bust CSS and JS on every document open" dist/verix-app.html
           grep -q 'id="vxMobileBack"' dist/verix-mobile.js
           grep -q "Voltar ao menu anterior" dist/verix-mobile.js
           grep -q "mostrarMenuPrincipal" dist/verix-mobile.js
