@@ -570,7 +570,7 @@ function renderInsurance(d){
   card('COM SEGURO',num(yes),pct(dec?100*yes/dec:null)+' das decisões.','green')+
   card('SEM REGISTO',num(no),pct(noRate)+' das decisões.','red');
  $('insuranceSummary').innerHTML=
-  '<div class="explain"><strong>Como ler:</strong> os resultados são atribuídos à coorte de consultas iniciadas no período. “Sem registo” significa consulta concluída sem registo encontrado; erros técnicos ficam separados. Inícios inferidos provêm de eventos pendentes sem evento de início confirmado.</div>'+
+  '<div class="explain"><strong>Como ler:</strong> os resultados são atribuídos à coorte de consultas iniciadas no período. “Sem registo” significa consulta concluída sem registo encontrado; erros técnicos ficam separados. Inícios inferidos provêm de eventos pendentes sem evento de início confirmado. “Eventos terminais na janela” inclui também terminais sem início observado; esses casos são contabilizados separadamente como órfãos.</div>'+
   '<div class="kpi-strip" style="margin-top:10px">'+
   metric('Erros',num(err))+
   metric('Taxa de erro',pct(errorRate))+
@@ -579,7 +579,7 @@ function renderInsurance(d){
   metric('Inícios inferidos',num(p.inferred_starts))+
   metric('Resultados contraditórios',num(p.conflicting_final))+
   metric('Terminais sem início observado',num(p.orphan_terminal))+
-  metric('Resultados concluídos na janela',num(p.completed_in_window))+
+  metric('Eventos terminais na janela',num(p.completed_in_window))+
   '</div>';
  const q=a.insurance_quality||{};const diag=d.diagnostics?.quality_24h||{};
  /* As métricas de latência são renderizadas na página Desempenho. */
