@@ -56,13 +56,18 @@ for (const assetName of assetNames) {
   requireFile(assetPath, "Referenced V2 asset");
 }
 
-const files = walkFiles(assetsRoot);
+const files = walkFiles(publishDirectory);
 const sourceMaps = files.filter(filePath => filePath.toLowerCase().endsWith(".map"));
 if (sourceMaps.length > 0) {
   fail("Source maps must not be included in the Windows package: " + sourceMaps.join(", "));
 }
 
+const debugSymbols = files.filter(filePath => filePath.toLowerCase().endsWith(".pdb"));
+if (debugSymbols.length > 0) {
+  fail("Debug symbol files must not be included in the Windows package: " + debugSymbols.join(", "));
+}
+
 console.log(
   "Portable V2 package verified: executable, local launcher, entry point, " +
-  assetNames.length + " referenced JS/CSS assets; no source maps."
+  assetNames.length + " referenced JS/CSS assets; no source maps or debug symbols."
 );
