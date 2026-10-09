@@ -467,6 +467,17 @@ let imtQuerySequence = 0;
   let loadCheckTimer = null;
   let loadStartedAt = Date.now();
 
+  try {
+    if (window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.track === 'function') {
+      window.VERIX_TELEMETRY.track('imt_navigation_start', 'consulta', {
+        queryId,
+        source: sourceName,
+        navigationOutcome: 'started',
+        durationMs: 0
+      });
+    }
+  } catch (_) {}
+
   const terminou = () => {
     if (concluida) return;
     concluida = true;
