@@ -169,6 +169,22 @@ BEGIN
       started_at = LEAST(current_session.started_at, EXCLUDED.started_at),
       tab_id = COALESCE(EXCLUDED.tab_id, current_session.tab_id);
 
+    -- Re-check after the upsert: a concurrent transaction may have inserted
+    -- this session ID after the pre-check. A mismatch aborts the full RPC.
+    IF EXISTS (
+      SELECT 1
+      FROM jsonb_to_recordset(p_sessions) AS session_row(
+        session_id text,
+        installation_id text
+      )
+      JOIN public.verix2_sessions AS stored_session
+        ON stored_session.session_id = session_row.session_id
+      WHERE stored_session.installation_id IS DISTINCT FROM session_row.installation_id
+    ) THEN
+      RAISE EXCEPTION 'telemetry session ID conflicts with its stored installation ID after upsert'
+        USING ERRCODE = '23503';
+    END IF;
+
     -- Capture only rows accepted by every unique index, including the
     -- partial unique indexes on query_id which can race between requests.
     FOR v_written_event IN

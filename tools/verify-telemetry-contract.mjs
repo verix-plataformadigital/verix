@@ -94,9 +94,9 @@ const sessionInsert = ingestMigrationSource.indexOf(
 const eventInsert = ingestMigrationSource.indexOf(
   "INSERT INTO public.verix2_events ("
 );
-const executableGrant = ingestMigrationSource.includes(
-  "GRANT EXECUTE ON FUNCTION public.verix2_ingest_telemetry(jsonb, jsonb, jsonb)\\n  TO service_role;"
-);
+const executableGrant =
+  ingestMigrationSource.includes("GRANT EXECUTE ON FUNCTION public.verix2_ingest_telemetry(jsonb, jsonb, jsonb)") &&
+  ingestMigrationSource.includes("TO service_role;");
 const invokerOnly = ingestMigrationSource.includes("SECURITY INVOKER");
 const conflictSafe = ingestMigrationSource.includes("ON CONFLICT DO NOTHING");
 

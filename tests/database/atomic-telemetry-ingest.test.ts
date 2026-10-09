@@ -40,6 +40,14 @@ describe("atomic telemetry ingestion", () => {
     expect(migration).toContain("WHEN SQLSTATE 'PZ001' THEN");
     expect(migration).toContain("telemetry session ID maps to multiple installation IDs in the batch");
     expect(migration).toContain("telemetry session ID conflicts with its stored installation ID");
+    const sessionInsert = migration.indexOf("INSERT INTO public.verix2_sessions AS current_session");
+    const postUpsertIdentityGuard = migration.indexOf(
+      "telemetry session ID conflicts with its stored installation ID after upsert",
+      sessionInsert
+    );
+    const eventInsert = migration.indexOf("INSERT INTO public.verix2_events (");
+    expect(postUpsertIdentityGuard).toBeGreaterThan(sessionInsert);
+    expect(eventInsert).toBeGreaterThan(postUpsertIdentityGuard);
   });
 
   it("grants execution only to service_role", () => {
