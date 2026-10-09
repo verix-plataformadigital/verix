@@ -260,7 +260,9 @@ async function loadCinemometerAnalytics24h(now:string){
   const range=rr.headers.get("content-range")||"";
   const rangeMatch=range.match(/\/(\d+)$/);
   const totalEventCount=rangeMatch?Number(rangeMatch[1]):events.length;
-  const groups=groupCinemometerEvents(events);
+  const measurementEvents=canonicalSpeedMeasurements(events);
+  const measurementEventIds=new Set(measurementEvents.map((event:any)=>String(event.event_id||'')));
+  const groups=groupCinemometerEvents(events).filter((group:any)=>group.events.some((event:any)=>measurementEventIds.has(String(event.event_id||''))));
   const sessions=groups.map((group:any)=>{
     const rows=group.events as any[];
     const calculationRows=rows.filter((e:any)=>e.event==="cinemometer_calculation" && cinSnapshotOf(e)?.velocidade_registada!=null);
@@ -279,7 +281,6 @@ async function loadCinemometerAnalytics24h(now:string){
   }).sort((a:any,b:any)=>String(b.last_seen||"").localeCompare(String(a.last_seen||"")));
   const speedEntries=events.filter((e:any)=>e.event==="cinemometer_speed_entry" && cinSnapshotOf(e)?.velocidade_registada!=null);
   const calcEvents=events.filter((e:any)=>e.event==="cinemometer_calculation" && cinSnapshotOf(e)?.velocidade_registada!=null);
-  const measurementEvents=canonicalSpeedMeasurements(events);
   const speeds=measurementEvents.map((e:any)=>Number(cinSnapshotOf(e).velocidade_registada)).filter(Number.isFinite);
   const operatorMap=new Map<string,any>();
   for(const row of measurementEvents){
