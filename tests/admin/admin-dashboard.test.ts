@@ -1,7 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest';
-const { JSDOM } = require('jsdom') as { JSDOM: new (...args: any[]) => any };
+import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+
+const require = createRequire(import.meta.url);
+const { JSDOM } = require('jsdom') as { JSDOM: new (...args: any[]) => any };
 
 const html = readFileSync(resolve(process.cwd(), 'admin_v2.html'), 'utf8');
 const openDoms: any[] = [];
