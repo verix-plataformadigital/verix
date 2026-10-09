@@ -436,7 +436,7 @@ function renderLoadFailure(){
  hosts.forEach(id=>{const host=$(id);if(host&&host.querySelector('.skeleton,.skeleton-chart,.skeleton-grid'))host.innerHTML='<div class="empty">Os dados ainda não estão disponíveis.</div>'});
 }
 function wireDashboardDrilldowns(){
- const routes={'ATIVOS AGORA':'usage','INSTALAÇÕES NO PERÍODO':'usage','UTILIZADORES':'usage','CONSULTAS DE SEGURO':'insurance','COM SEGURO':'insurance','SEM REGISTO':'insurance','ERROS ASF':'errors','CINEMÓMETRO':'speed'};
+ const routes={'ATIVOS AGORA':'usage','INSTALAÇÕES NO PERÍODO':'usage','CONSULTAS DE SEGURO':'insurance','COM SEGURO':'insurance','SEM REGISTO':'insurance','ERROS ASF':'errors','CINEMÓMETRO':'speed'};
  const host=$('dashCards');if(!host)return;
  host.querySelectorAll('.card').forEach(el=>{const label=el.querySelector('.label')?.textContent.trim();const page=routes[label];if(!page)return;el.dataset.drillPage=page;el.setAttribute('role','button');el.setAttribute('tabindex','0');el.setAttribute('aria-label','Ver detalhes: '+label);if(['CONSULTAS DE SEGURO','SEM REGISTO','ERROS ASF'].includes(label))el.classList.add('key-metric')});
 }
@@ -654,7 +654,7 @@ function renderErrors(d){
  $('errorTechnical').innerHTML=recent.length?'<table class="table"><thead><tr><th>Hora</th><th>Browser</th><th>Transporte</th><th>Tipo</th><th>HTTP</th><th>ASF ms</th><th>Relay ms</th><th>Hash</th></tr></thead><tbody>'+recent.slice(0,15).map(x=>'<tr>'+td(datePT(x.occurred_at))+td(esc(x.browser||'—'))+td(esc(x.transport||'—'))+td(esc(x.error_type||'—'))+td(x.http_status==null?'—':fmt(x.http_status))+td(x.duration_ms==null?'—':fmt(x.duration_ms)+' ms')+td(x.relay_latency_ms==null?'—':fmt(x.relay_latency_ms)+' ms')+td(esc(x.response_hash||'—'))+'</tr>').join('')+'</tbody></table>':'<div class="empty">Sem incidentes recentes.</div>';
  function buildErrorReading(data){
    const n=Number(inv.app15_errors||0),inst=Number(inv.app15_installations||0),hashes=Number(inv.app15_hashes||0);
-   const types=(e.types||[]).slice().sort((a,b)=>Number(b.qty||0)-Number(a.qty||0));
+   const types=(inv.app15_types||[]).map(x=>({kind:x.type,qty:x.count,raw_events:x.raw_events})).sort((a,b)=>Number(b.qty||0)-Number(a.qty||0));
    const top=types[0];
    let html='';
    if(!n) html+='<div class="goodbox"><strong>Não existem erros 1.5 nas últimas 24 horas.</strong><br>A janela atual não mostra um incidente ativo.</div>';
