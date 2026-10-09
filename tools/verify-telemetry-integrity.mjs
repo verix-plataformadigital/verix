@@ -21,4 +21,20 @@ assert.doesNotMatch(migration, /SELECT DISTINCT ON\(query_id\)/);
 assert.equal((migration.match(/NOT EXISTS\(SELECT 1 FROM public\.verix2_events lookup_event WHERE lookup_event\.event='vehicle_lookup' AND lookup_event\.query_id=fc\.query_id\)/g) || []).length, 3, "orphan finals must be checked against all recorded lookups, not only the 30-day analytics slice");
 for (const metric of ["'pending'","'incomplete'","'contradictory'","'duplicate_finals'","'orphan_finals'"]) assert.ok(migration.includes(metric), "missing SQL metric "+metric);
 for (const label of ["Incompletas","Contraditórias","Finais duplicados","Finais órfãos","INSTALAÇÕES"]) assert.ok(admin.includes(label), "missing Admin label "+label);
-console.log("PASS: atomic receipt, no direct multi-table writes, accurate query-state metrics, and Admin labels.");
+
+const app = fs.readFileSync("verix-app.html", "utf8");
+const telemetryStart = app.indexOf("function parseReceipt(text)");
+const telemetryEnd = app.indexOf("function rateLimited", telemetryStart);
+assert.ok(telemetryStart >= 0 && telemetryEnd > telemetryStart, "production telemetry client must expose its receipt pipeline");
+const clientTransport = app.slice(telemetryStart, telemetryEnd);
+assert.match(clientTransport, /return parseReceipt\(await response\.text\(\)\)/);
+assert.match(clientTransport, /queue = queue\.filter\(function \(item\)/);
+assert.match(clientTransport, /!acknowledged\[item\.eventId\]/);
+assert.match(clientTransport, /recordRejectedEvents\(batch, receipt\)/);
+const beaconStart = app.indexOf("function flushBeacon()", telemetryEnd);
+const beaconEnd = app.indexOf("function rateLimited", beaconStart);
+assert.ok(beaconStart >= 0 && beaconEnd > beaconStart, "sendBeacon handler must exist");
+assert.doesNotMatch(app.slice(beaconStart, beaconEnd), /queue\.splice\(/, "sendBeacon must never dequeue without a server receipt");
+assert.ok(app.includes("VERIX_T2_REJECTED_QUEUE"), "permanent rejections must have bounded non-sensitive local diagnostics");
+
+console.log("PASS: atomic ingest receipt, ID-based client acknowledgement, loss-safe beacon queue, query-quality metrics and Admin labels.");
