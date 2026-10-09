@@ -476,18 +476,19 @@ Deno.serve(async (req: Request) => {
     // One database transaction writes parent records, event rows and presence.
     // The RPC also applies database-level uniqueness rules to concurrent retries.
     const { data: ingestResult, error: ingestError } = await db.rpc("verix2_ingest_events", {
-      p_events: events
+      p_events: dedupedEvents
     });
     if (ingestError) throw new Error(`ingest:${ingestError.message}`);
     const result = Array.isArray(ingestResult) ? ingestResult[0] : ingestResult;
     const accepted = Number(result?.accepted ?? 0);
-    const rejected = Number(result?.rejected ?? Math.max(0, input.length - accepted));
+    const rejected = Math.max(0, input.length - accepted);
     return json({
       ok: true,
       accepted,
       rejected,
-      received: Number(result?.received ?? input.length),
-      valid: Number(result?.valid ?? events.length)
+      received: input.length,
+      submitted_to_db: dedupedEvents.length,
+      valid: Number(result?.valid ?? dedupedEvents.length)
     });
   } catch (error) {
     console.error("telemetry_write_failed", error);
