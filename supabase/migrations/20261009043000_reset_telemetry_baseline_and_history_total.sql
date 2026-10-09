@@ -596,7 +596,7 @@ SELECT jsonb_build_object(
   'telemetry',(SELECT data FROM telemetry),
   'events',(SELECT data FROM top_events)
 );
-$function$
+$function$;
 
 
 -- Activate the new baseline immediately; rows before this timestamp remain stored but are excluded from new metrics.
