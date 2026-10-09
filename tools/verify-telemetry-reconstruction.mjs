@@ -47,8 +47,9 @@ assert.ok(ingest.includes('inserted,') && ingest.includes('duplicates:'), 'inser
 assert.ok(ingest.includes('clientTime > receivedAt.getTime()'), 'future client timestamps are clamped');
 assert.ok(!ingest.includes('ts < now - 24 * 60 * 60 * 1000'), 'offline lookup starts are not selectively dropped by age');
 
-assert.ok(stats.includes('String(e?.app_version||"")==="1.5"'), 'error investigation targets active app version 1.5');
-assert.ok(stats.includes('latest_app15') && stats.includes('app15_errors'), 'error investigation field names match app 1.5');
+assert.ok(stats.includes('rpc("verix2_error_investigation"'), 'error investigation uses complete SQL aggregation');
+assert.ok(stats.includes('p_app_version: "1.5"'), 'error investigation targets active app version 1.5');
+assert.ok(migration.includes("'app15_errors',(SELECT count(*) FROM err)"), 'version-specific error event count is SQL-aggregated');
 
 assert.ok(migration.includes("WHERE event='vehicle_lookup' AND query_id IS NOT NULL"), 'query cohort starts only at lookup-start events');
 assert.ok(migration.includes("'conflicting_final'"), 'contradictory terminal outcomes have an explicit state');
