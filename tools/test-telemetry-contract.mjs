@@ -6,6 +6,7 @@ const migration = read("../supabase/migrations/20261009025000_telemetry_pipeline
 const ingest = read("../supabase/functions/telemetry-v2/index.ts");
 const stats = read("../supabase/functions/stats-v2/index.ts");
 const admin = read("../admin_v2.html");
+const app = read("../verix-app.html");
 
 assert.match(migration, /CREATE OR REPLACE FUNCTION public\.verix2_ingest_events\(p_events jsonb\)/);
 assert.match(migration, /CREATE OR REPLACE FUNCTION public\.verix2_telemetry_metrics_v3\(p_now timestamptz DEFAULT now\(\)\)/);
@@ -36,6 +37,11 @@ assert.match(admin, /sessionQuality\.parent_timestamp_mismatch_30d/);
 assert.match(admin, /coverage_by_version/);
 assert.match(admin, /sampled/);
 assert.doesNotMatch(admin, /app14_/);
+assert.match(app, /telemetry_schema: '3'/);
+assert.match(app, /function cinTelemetrySnapshot\(\)/);
+assert.match(app, /velocidade_registada: speed/);
+assert.match(ingest, /out\.telemetry_schema = cleanText\(m\.telemetry_schema, 10\)/);
+assert.match(migration, /metadata->>'telemetry_schema','legacy'/);
 
 const edgeAllowBlock = ingest.match(/const allowedEvents = new Set\(\[([\s\S]*?)\]\););
 const sqlAllowBlock = migration.match(/event IN\(([\s\S]*?)\);/);
