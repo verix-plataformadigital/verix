@@ -66,7 +66,8 @@ const allowedEvents = new Set([
   "app_open","heartbeat","vehicle_lookup",
   "vehicle_insurance_pending","vehicle_insurance_yes",
   "vehicle_insurance_no","vehicle_insurance_error",
-  "imt_loaded","module_open","history_open","history_reopen",
+  "imt_loaded","imt_navigation_start","imt_navigation_loaded","imt_navigation_error",
+  "module_open","history_open","history_reopen",
   "external_tool_open","alcohol_lookup",
   "cinemometer_operation_start","cinemometer_speed_entry","cinemometer_calculation",
   "cinemometer_copy_code","cinemometer_copy_text","cinemometer_copy_location",
@@ -99,6 +100,8 @@ function cleanMetadata(value: unknown): Record<string, unknown> {
 
   if (m.queryId) out.queryId = cleanText(m.queryId, 120);
   if (m.source) out.source = cleanText(m.source, 80);
+  if (m.navigationOutcome) out.navigationOutcome = cleanText(m.navigationOutcome, 50);
+  if (finiteNumber(m.durationMs) !== null && finiteNumber(m.durationMs)! >= 0) out.durationMs = Math.round(finiteNumber(m.durationMs)!);
   if (m.itemId) out.itemId = cleanText(m.itemId, 120);
   if (m.itemLabel) out.itemLabel = cleanText(m.itemLabel, 180);
   if (m.copyType) out.copyType = cleanText(m.copyType, 40);
@@ -378,7 +381,15 @@ Deno.serve(async (req: Request) => {
       }
 
       if (event === "imt_loaded") {
+        // A confirmed record must explicitly state that IMT result evidence exists.
         if (!queryId || !appVersion || metadata.resultConfirmed !== true) continue;
+      }
+
+      if (event === "imt_navigation_start" || event === "imt_navigation_loaded" || event === "imt_navigation_error") {
+        if (!queryId || !appVersion) continue;
+        if (!["inspecao", "livrete"].includes(String(metadata.source || ""))) continue;
+        if (event === "imt_navigation_loaded" && !metadata.navigationOutcome) continue;
+        if (event === "imt_navigation_error" && !metadata.navigationOutcome) continue;
       }
 
       if (event === "vehicle_insurance_yes" || event === "vehicle_insurance_no" || event === "vehicle_insurance_error") {
