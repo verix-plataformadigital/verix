@@ -17341,6 +17341,45 @@ html body .leg-card-new .copy-all-new{
     }
   }
 
+  // HTTP 2xx não prova que todos os eventos foram gravados. Exigimos uma
+  // confirmação JSON que contabilize a totalidade do lote, incluindo rejeições.
+  function parseAcknowledgement(status, raw, expected) {
+    if (!(status >= 200 && status < 300)) return false;
+    var data;
+    try { data = JSON.parse(String(raw || '')); } catch (_) { return false; }
+    if (!data || data.ok !== true) return false;
+    var accepted = Number(data.accepted), rejected = Number(data.rejected);
+    if (!Number.isSafeInteger(accepted) || !Number.isSafeInteger(rejected) ||
+        accepted < 0 || rejected < 0 || accepted + rejected !== expected) return false;
+    var inserted = data.inserted == null ? null : Number(data.inserted);
+    var duplicates = data.duplicates == null ? null : Number(data.duplicates);
+    return {
+      ok: true, accepted: accepted, rejected: rejected,
+      inserted: Number.isSafeInteger(inserted) && inserted >= 0 ? inserted : null,
+      duplicates: Number.isSafeInteger(duplicates) && duplicates >= 0 ? duplicates : null,
+      received: expected
+    };
+  }
+
+  function recordAcknowledgement(ack, batch) {
+    try {
+      var key = 'VERIX_T2_DELIVERY_STATS';
+      var state = {};
+      try { state = JSON.parse(storageGet(localStore, key) || '{}') || {}; } catch (_) {}
+      state.batches = (Number(state.batches) || 0) + 1;
+      state.acknowledged = (Number(state.acknowledged) || 0) + ack.accepted;
+      state.inserted = (Number(state.inserted) || 0) + (ack.inserted == null ? 0 : ack.inserted);
+      state.duplicates = (Number(state.duplicates) || 0) + (ack.duplicates == null ? 0 : ack.duplicates);
+      state.rejected = (Number(state.rejected) || 0) + ack.rejected;
+      state.lastAcknowledgedAt = new Date().toISOString();
+      if (ack.rejected > 0) {
+        state.lastRejectedEvents = batch.filter(function (_, i) { return i >= ack.accepted; })
+          .slice(0, 10).map(function (e) { return String(e && e.event || 'unknown').slice(0, 80); });
+      }
+      storageSet(localStore, key, JSON.stringify(state));
+    } catch (_) {}
+  }
+
   async function sendViaFetch(batch) {
     var controller = typeof AbortController === 'function' ? new AbortController() : null;
     var timer = controller ? setTimeout(function () { controller.abort(); }, TIMEOUT_MS) : null;
@@ -17349,7 +17388,6 @@ html body .leg-card-new .copy-all-new{
       var response = await fetch(ENDPOINT, {
         method: 'POST',
         // text/plain é CORS-safelisted: a telemetria não precisa de preflight.
-        // O Edge Function lê o corpo como JSON independentemente do content-type.
         headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
         body: JSON.stringify({ events: batch }),
         mode: 'cors',
@@ -17358,7 +17396,7 @@ html body .leg-card-new .copy-all-new{
         keepalive: true,
         signal: controller ? controller.signal : undefined
       });
-      return response.ok;
+      return parseAcknowledgement(response.status, await response.text(), batch.length);
     } catch (_) {
       return false;
     } finally {
@@ -17377,13 +17415,13 @@ html body .leg-card-new .copy-all-new{
           if (done) return;
           done = true;
           try { xhr.abort(); } catch (_) {}
-          resolve(!!ok);
+          resolve(ok || false);
         };
         xhr.open('POST', ENDPOINT, true);
         xhr.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
         xhr.timeout = TIMEOUT_MS;
         xhr.onreadystatechange = function () {
-          if (xhr.readyState === 4) finish(xhr.status >= 200 && xhr.status < 300);
+          if (xhr.readyState === 4) finish(parseAcknowledgement(xhr.status, xhr.responseText, batch.length));
         };
         xhr.onerror = function () { finish(false); };
         xhr.ontimeout = function () { finish(false); };
@@ -17418,7 +17456,7 @@ html body .leg-card-new .copy-all-new{
         xhr.setRequestHeader('Content-Type', 'text/plain; charset=UTF-8');
         xhr.send(JSON.stringify({ events: batch }));
         var status = Number(xhr.Status || 0);
-        resolve(status >= 200 && status < 300);
+        resolve(parseAcknowledgement(status, String(xhr.ResponseText || ''), batch.length));
       } catch (_) {
         resolve(false);
       }
@@ -17427,12 +17465,13 @@ html body .leg-card-new .copy-all-new{
 
   async function send(batch) {
     if (typeof fetch === 'function') {
-      var ok = await sendViaFetch(batch);
-      if (ok) return true;
+      var ack = await sendViaFetch(batch);
+      if (ack && ack.ok) return ack;
     }
-    var xhrOk = await sendViaXhr(batch);
-    if (xhrOk) return true;
-    return await sendViaActiveX(batch);
+    var xhrAck = await sendViaXhr(batch);
+    if (xhrAck && xhrAck.ok) return xhrAck;
+    var activeXAck = await sendViaActiveX(batch);
+    return activeXAck && activeXAck.ok ? activeXAck : false;
   }
 
   function schedule(delay) {
@@ -17450,16 +17489,18 @@ html body .leg-card-new .copy-all-new{
     var batch = queue.slice(0, BATCH_SIZE);
 
     try {
-      var ok = await send(batch);
+      var ack = await send(batch);
 
-      if (ok) {
+      if (ack && ack.ok) {
+        recordAcknowledgement(ack, batch);
         queue.splice(0, batch.length);
         saveQueue();
         retryStep = 0;
         if (queue.length) schedule(50);
       } else {
+        var retryDelay = [2000, 5000, 15000, 30000, 60000][Math.min(retryStep, 4)];
         retryStep = Math.min(retryStep + 1, 4);
-        schedule([2000, 5000, 15000, 30000, 60000][retryStep]);
+        schedule(retryDelay);
       }
     } finally {
       flushBusy = false;
@@ -17479,8 +17520,9 @@ html body .leg-card-new .copy-all-new{
     if (!queue.length || flushBusy) return false;
     var batch = queue.slice(0, Math.min(BATCH_SIZE, 10));
     if (!sendBeacon(batch)) return false;
-    queue.splice(0, batch.length);
-    saveQueue();
+    // sendBeacon returns no server response. Keep the durable queue until a later
+    // fetch/XHR/ActiveX request receives a JSON acknowledgement. Stable event IDs
+    // make a replay after pagehide idempotent at the database.
     return true;
   }
 
