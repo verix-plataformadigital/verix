@@ -264,6 +264,18 @@ insurance AS (
   )
  ) data
 ),
+insurance_quality AS (
+ SELECT jsonb_build_object(
+  'latency_p50_ms',(SELECT round((percentile_cont(.5) WITHIN GROUP(ORDER BY (metadata->'asfDiagnostic'->>'asfDurationMs')::numeric))::numeric,0)
+    FROM query_finals,b WHERE occurred_at>=b.s24 AND (metadata->'asfDiagnostic'->>'asfDurationMs') ~ '^[0-9]+([.][0-9]+)?$'),
+  'latency_p95_ms',(SELECT round((percentile_cont(.95) WITHIN GROUP(ORDER BY (metadata->'asfDiagnostic'->>'asfDurationMs')::numeric))::numeric,0)
+    FROM query_finals,b WHERE occurred_at>=b.s24 AND (metadata->'asfDiagnostic'->>'asfDurationMs') ~ '^[0-9]+([.][0-9]+)?$'),
+  'known_plates_24h',(SELECT count(DISTINCT upper(regexp_replace(coalesce(metadata->'asfDiagnostic'->>'matricula',metadata->>'matricula',''),'[^A-Z0-9]','','g')))
+    FROM query_finals,b WHERE occurred_at>=b.s24 AND coalesce(metadata->'asfDiagnostic'->>'matricula',metadata->>'matricula','')<>''),
+  'known_plates_30d',(SELECT count(DISTINCT upper(regexp_replace(coalesce(metadata->'asfDiagnostic'->>'matricula',metadata->>'matricula',''),'[^A-Z0-9]','','g')))
+    FROM query_finals,b WHERE occurred_at>=b.s30 AND coalesce(metadata->'asfDiagnostic'->>'matricula',metadata->>'matricula','')<>'')
+ ) data
+),
 query_quality AS (
  SELECT jsonb_build_object(
   'started_queries_30d',(SELECT count(*) FROM q,b WHERE q.first_at>=b.s30),
@@ -291,6 +303,16 @@ speed_measurements AS (
    AND EXISTS(SELECT 1 FROM speed_num e WHERE e.event='cinemometer_speed_entry' AND e.installation_id=s.installation_id
     AND e.session_id=s.session_id AND e.cin->>'operation_id'=s.cin->>'operation_id' AND e.speed_val=s.speed_val
     AND abs(extract(epoch FROM(e.occurred_at-s.occurred_at)))<=3))
+),
+speed_dimensions AS (
+ SELECT jsonb_build_object(
+  'modo',coalesce((SELECT jsonb_agg(to_jsonb(x) ORDER BY x.qty DESC) FROM(
+    SELECT coalesce(cin->>'modo','sem dado') value,count(*) qty FROM speed_measurements,b WHERE occurred_at>=b.s30 GROUP BY 1)x),'[]'::jsonb),
+  'limite',coalesce((SELECT jsonb_agg(to_jsonb(x) ORDER BY x.qty DESC) FROM(
+    SELECT coalesce(cin->>'limite','sem dado') value,count(*) qty FROM speed_measurements,b WHERE occurred_at>=b.s30 GROUP BY 1)x),'[]'::jsonb),
+  'codigo',coalesce((SELECT jsonb_agg(to_jsonb(x) ORDER BY x.qty DESC) FROM(
+    SELECT coalesce(cin->>'codigo','sem dado') value,count(*) qty FROM speed_measurements,b WHERE occurred_at>=b.s30 GROUP BY 1)x),'[]'::jsonb)
+ ) data
 ),
 speed_summary AS (
  SELECT jsonb_build_object(
@@ -449,8 +471,10 @@ SELECT jsonb_build_object(
  'bounds',jsonb_build_object('s24',(SELECT s24 FROM bounds),'s7',(SELECT s7 FROM bounds),'s30',(SELECT s30 FROM bounds),'end',(SELECT enow FROM bounds)),
  'actions',jsonb_build_object('24h',(SELECT actions_24h FROM telemetry),'7d',(SELECT actions_7d FROM telemetry),'30d',(SELECT actions_30d FROM telemetry)),
  'insurance',(SELECT data FROM insurance),
+ 'insurance_quality',(SELECT data FROM insurance_quality),
  'query_quality',(SELECT data FROM query_quality),
  'speed_summary',(SELECT data FROM speed_summary),
+ 'speed_dimensions',(SELECT data FROM speed_dimensions),
  'speed_distribution_24h',(SELECT data FROM speed_distribution),
  'errors',(SELECT data FROM errors),
  'telemetry',(SELECT data FROM telemetry),
