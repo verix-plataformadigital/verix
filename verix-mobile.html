@@ -15,11 +15,20 @@
 </head>
 <body style="margin:0;background:#010407">
 <script>
-(function(){
+(async function(){
   'use strict';
-  /* O modo mobile é agora nativo no próprio verix-app.html.
-     Esta página existe apenas como entrada compatível para links antigos. */
-  window.location.replace('./verix-app.html?_verix='+Date.now()+'&_mobile=1');
+  try{
+    const response=await fetch('./version.json?_='+Date.now(),{
+      cache:'no-store',
+      headers:{'Cache-Control':'no-cache, no-store, max-age=0'}
+    });
+    if(!response.ok) throw new Error('Release manifest unavailable');
+    const release=await response.json();
+    if(!release || typeof release.buildId!=='string' || !release.buildId) throw new Error('Invalid release manifest');
+    window.location.replace('./verix-app.html?_verix='+encodeURIComponent(release.buildId)+'&_mobile=1');
+  }catch(_){
+    window.location.replace('./verix-app.html?_verix='+Date.now()+'&_mobile=1');
+  }
 })();
 </script>
 <noscript>

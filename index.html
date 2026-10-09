@@ -20,22 +20,29 @@ html,body{margin:0;width:100%;height:100%;background:#010407;overflow:hidden}
 </head>
 <body>
 <script>
-(function(){
+(async function(){
   'use strict';
-
   const ua=navigator.userAgent||'';
   const coarse=window.matchMedia && window.matchMedia('(pointer:coarse)').matches;
   const narrow=window.innerWidth<=1199;
   const mobileUA=/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(ua);
-
-  /* No telemóvel/tablet entra automaticamente na interface mobile.
-     Desktop continua a abrir a versão principal exatamente como antes. */
   const isMobile=mobileUA || coarse || narrow;
-  const target=isMobile
-    ? './verix-mobile.html?_verix='+Date.now()+'&_auto=1'
-    : './verix-app.html?_verix='+Date.now();
-
-  window.location.replace(target);
+  const fallback=isMobile?'./verix-mobile.html':'./verix-app.html';
+  try{
+    // Always ask GitHub Pages for the current deployment manifest; never trust a cached copy.
+    const response=await fetch('./version.json?_='+Date.now(),{
+      cache:'no-store',
+      headers:{'Cache-Control':'no-cache, no-store, max-age=0'}
+    });
+    if(!response.ok) throw new Error('Release manifest unavailable');
+    const release=await response.json();
+    if(!release || typeof release.buildId!=='string' || !release.buildId) throw new Error('Invalid release manifest');
+    const target=isMobile?'./verix-mobile.html':'./verix-app.html';
+    window.location.replace(target+'?_verix='+encodeURIComponent(release.buildId)+(isMobile?'&_auto=1':''));
+  }catch(_){
+    // Keep the app reachable if the manifest is temporarily unavailable.
+    window.location.replace(fallback+'?_verix='+Date.now()+(isMobile?'&_auto=1':''));
+  }
 })();
 </script>
 <noscript>

@@ -175,6 +175,15 @@ function writeSecureFile(relativeSource, relativeOutput) {
     source = source.replace(/1\.5-sec-20261008-a/g, BUILD_ID);
   }
 
+  // Give the external mobile assets a release-specific URL on every build.
+  // This prevents a browser from reusing a previous CSS/JS copy after deployment.
+  if (relativeSource === "verix-app.html") {
+    source = source.replace(
+      /(\.\/verix-mobile\.(?:css|js)\?v=)\d+/g,
+      "$1" + encodeURIComponent(String(BUILD_ID))
+    );
+  }
+
   source = addAiAccessNotice(source);
   const { html, scriptCount } = obfuscateHtml(source, relativeSource);
   const outPath = path.join(OUTPUT_DIR, relativeOutput);
@@ -213,6 +222,13 @@ for (const f of ["index.html", "verix-mobile.html"]) {
     results.push({ source: f, output: `dist/${f}`, note: "copied (bootstrap)" });
   }
 }
+
+// Publish the current release identity for uncached browser entry-point checks.
+fs.writeFileSync(
+  path.join(OUTPUT_DIR, "version.json"),
+  JSON.stringify({ buildId: BUILD_ID, generatedAt: new Date().toISOString() }) + "\\n",
+  "utf8"
+);
 
 // Publish the responsible-use notice and crawler preferences with the static release.
 for (const file of ["AI-ACCESS-POLICY.md", "robots.txt"]) {

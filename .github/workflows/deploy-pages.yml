@@ -52,6 +52,10 @@ jobs:
           test -s dist/verix-mobile.html
           test -s dist/verix-mobile.css
           test -s dist/verix-mobile.js
+          node -e "const v=JSON.parse(require('fs').readFileSync('dist/version.json','utf8')); if(typeof v.buildId!=='string'||!v.buildId) process.exit(1)"
+          grep -q "version.json?_=" dist/index.html
+          grep -q "cache:'no-store'" dist/index.html
+          grep -q "version.json?_=" dist/verix-mobile.html
           grep -q "./verix-mobile.html" dist/index.html
           grep -q "./verix-app.html" dist/verix-mobile.html
 
