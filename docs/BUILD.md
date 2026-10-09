@@ -12,13 +12,15 @@ Comandos V2:
 
 O build V2 produz `dist-v2/`.
 
-A pipeline Windows constrói primeiro estes assets e copia-os para `publish/v2-assets/`. O artefacto inclui `VERIX.exe`, `Run-V2-Local.cmd` e a pasta `v2-assets/`; a validação do pacote confirma que o HTML aponta para ficheiros JS/CSS presentes.
+A pipeline Windows constrói estes assets antes de publicar o host WebView2. O pacote final contém `VERIX.exe`, `Run-V2-Local.cmd` e `v2-assets/`. O script `tools/package-windows-release.ps1` valida a pasta publicada, cria `VERIX-Windows-x64.zip`, extrai o ZIP numa pasta temporária e volta a validar o conteúdo distribuível. Também gera `VERIX-Windows-x64.zip.sha256` com SHA-256 em formato verificável por ferramentas Linux.
+
+A CI de reengenharia valida este ZIP em cada alteração da branch V2. Ao publicar uma tag `verix-v*`, o workflow Windows publica o ZIP e o checksum nas GitHub Releases. Uma execução manual numa branch normal gera apenas um artefacto da execução; não cria uma release pública.
 
 Para ensaio controlado:
-- abrir `VERIX.exe) mantém o site de produção atual;
-- abrir `Run-V2-Local.cmd` abre os assets V2 do próprio pacote.
+- abrir `VERIX.exe` mantém o arranque do site de produção;
+- abrir `Run-V2-Local.cmd` abre os assets V2 incluídos no próprio pacote.
 
-O segundo modo não faz cutover nem modifica `main`/produção. O runtime WebView2 continua a ser um pré-requisito do equipamento.
+O modo V2 local não faz cutover nem modifica `main`/produção. O Microsoft Edge WebView2 Runtime continua a ser um pré-requisito do equipamento.
 
 ## Produção atual
 
