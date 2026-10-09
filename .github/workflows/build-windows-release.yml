@@ -15,6 +15,7 @@ jobs:
     uses: ./.github/workflows/reengineering-v2.yml
     permissions:
       contents: read
+      actions: read
 
   validate-responsive:
     name: Validate phone, tablet and desktop browsers
