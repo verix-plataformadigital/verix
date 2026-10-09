@@ -6,6 +6,7 @@ const workflow = fs.readFileSync(".github/workflows/reengineering-v2.yml", "utf8
 const responsiveWorkflow = fs.readFileSync(".github/workflows/mobile-responsive.yml", "utf8");
 const windowsReleaseWorkflow = fs.readFileSync(".github/workflows/build-windows-release.yml", "utf8");
 const packager = fs.readFileSync("tools/package-windows-release.ps1", "utf8");
+const portableVerifier = fs.readFileSync("tools/verify-portable-package.mjs", "utf8");
 const pagesWorkflow = fs.readFileSync(".github/workflows/deploy-pages.yml", "utf8");
 const secureReleaseWorkflow = fs.readFileSync(".github/workflows/secure-release.yml", "utf8");
 const launcher = fs.readFileSync("windows/VerixPortable/Run-V2-Local.cmd", "utf8");
@@ -215,8 +216,20 @@ const requiredPackagerMarkers = [
   "Get-FileHash",
   "VERIX-Windows-x64.zip",
   "$zipPath.sha256",
+  'Extension -ine ".pdb"',
   "System.IO.File]::WriteAllText"
 ];
+const requiredPortableVerifierMarkers = [
+  'endsWith(".map")',
+  'endsWith(".pdb")',
+  "Source maps must not be included",
+  "Debug symbol files must not be included"
+];
+for (const marker of requiredPortableVerifierMarkers) {
+  if (!portableVerifier.includes(marker)) {
+    throw new Error("Portable package verifier is missing release hygiene control: " + marker);
+  }
+}
 for (const marker of requiredPackagerMarkers) {
   if (!packager.includes(marker)) {
     throw new Error("Windows release packager is missing verification control: " + marker);
