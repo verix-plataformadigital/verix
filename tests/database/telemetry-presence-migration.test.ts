@@ -24,7 +24,7 @@ describe("telemetry presence migration safeguards", () => {
 
   it("rejects a rewrite that loses required online and insurance query predicates", () => {
     const doStart = migration.indexOf("DO $$");
-    const triggerFunction = migration.indexOf("create or replace function public.verix2_keep_seen_monotonic()");
+    const triggerFunction = migration.toLowerCase().indexOf("create or replace function public.verix2_keep_seen_monotonic()");
     expect(doStart).toBeGreaterThanOrEqual(0);
     expect(triggerFunction).toBeGreaterThan(doStart);
 
