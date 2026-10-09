@@ -31,5 +31,5 @@ jobs:
       - name: Verify telemetry integrity contract
         run: node tools/verify-telemetry-integrity.mjs
       - name: Live production ingestion smoke test
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/fix/telemetry-integrity-live-smoke-')
+        if: (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/fix/telemetry-integrity-live-smoke-')) || (github.event_name == 'pull_request' && startsWith(github.head_ref, 'fix/telemetry-integrity-live-smoke-'))
         run: node tools/smoke-production-telemetry.mjs
