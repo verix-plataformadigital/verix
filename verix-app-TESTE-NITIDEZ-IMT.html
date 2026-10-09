@@ -6233,11 +6233,10 @@ html body #asfRateWidget .asf-rate-sub[data-window-state="ready"]{
 
 <!-- TESTE VISUAL ISOLADO: nitidez IMT. NÃO PUBLICAR nem substituir o VÉRIX de produção. -->
 <style id="verix-visual-quality-test">
-  /* Desativa só o zoom global automático/manual que pode reduzir a nitidez. */
+  /* O teste não altera a escala global da consola. */
   html, body { zoom: 1 !important; }
 
-  /* IMT a 100%: remove a redução para 75% e repõe o tamanho real do iframe.
-     A página original pode exigir scroll vertical/horizontal dentro do painel. */
+  /* O tamanho, a escala e a origem do iframe são ajustados por JS ao espaço disponível. */
   html body #veiculoFrame,
   html body #reboqueFrame {
     width: 100% !important;
@@ -6246,6 +6245,72 @@ html body #asfRateWidget .asf-rate-sub[data-window-state="ready"]{
     transform-origin: top left !important;
   }
 </style>
+<script id="verix-imt-adaptive-fit">
+(function () {
+  'use strict';
+
+  /*
+    O IMT/RNSI está noutro domínio e o browser impede medir o seu DOM.
+    Por isso, ajustamos o iframe à caixa disponível usando uma área de
+    referência de 1100 x 650 píxeis. O conteúdo interno conserva a sua
+    escala própria e o iframe é escalado proporcionalmente para caber.
+  */
+  var TARGET_WIDTH = 1100;
+  var TARGET_HEIGHT = 650;
+  var MIN_SCALE = 0.42;
+  var MAX_SCALE = 0.95;
+  var FRAME_IDS = ['veiculoFrame', 'reboqueFrame'];
+  var observer = null;
+
+  function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+  }
+
+  function fitFrame(id) {
+    var frame = document.getElementById(id);
+    if (!frame || !frame.parentElement) return;
+
+    var box = frame.parentElement.getBoundingClientRect();
+    if (box.width < 100 || box.height < 100) return;
+
+    var scaleX = box.width / TARGET_WIDTH;
+    var scaleY = box.height / TARGET_HEIGHT;
+    var scale = clamp(Math.min(scaleX, scaleY), MIN_SCALE, MAX_SCALE);
+
+    frame.style.setProperty('width', (100 / scale).toFixed(3) + '%', 'important');
+    frame.style.setProperty('height', (100 / scale).toFixed(3) + '%', 'important');
+    frame.style.setProperty('transform', 'scale(' + scale.toFixed(4) + ')', 'important');
+    frame.style.setProperty('transform-origin', 'top left', 'important');
+    frame.dataset.verixAdaptiveScale = scale.toFixed(3);
+  }
+
+  function refresh() {
+    FRAME_IDS.forEach(fitFrame);
+  }
+
+  function start() {
+    refresh();
+
+    if ('ResizeObserver' in window) {
+      observer = new ResizeObserver(refresh);
+      FRAME_IDS.forEach(function (id) {
+        var frame = document.getElementById(id);
+        if (frame && frame.parentElement) observer.observe(frame.parentElement);
+      });
+    }
+
+    window.addEventListener('resize', refresh, { passive: true });
+    window.addEventListener('orientationchange', refresh, { passive: true });
+    window.addEventListener('load', refresh, { once: true });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start, { once: true });
+  } else {
+    start();
+  }
+})();
+</script>
 
 </head><body>
 <script id="verix-splash-clock">(function(){try{window.__verixSplashStarted=performance.now();}catch(e){window.__verixSplashStarted=Date.now();}})();</script>
