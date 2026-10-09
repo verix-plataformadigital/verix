@@ -25,7 +25,7 @@ jobs:
           node-version: 22
 
       - name: Install release tooling
-        run: npm install --ignore-scripts --no-audit --no-fund
+        run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Produce hardened build
         env:
@@ -41,7 +41,7 @@ jobs:
             echo "Source-map file found in dist"
             exit 1
           fi
-          if grep -R -n 'sourceMappingURL\|//# sourceURL' dist; then
+          if grep -R -n 'sourceMappingURL\\|//# sourceURL' dist; then
             echo "Source-map directive found in dist"
             exit 1
           fi
