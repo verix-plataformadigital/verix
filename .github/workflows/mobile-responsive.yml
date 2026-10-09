@@ -38,7 +38,9 @@ jobs:
         run: npm install --prefix "$RUNNER_TEMP/verix-playwright" --no-save --no-package-lock --ignore-scripts --no-audit --no-fund playwright@1.64.0
 
       - name: Install Chromium and WebKit
-        run: "$RUNNER_TEMP/verix-playwright/node_modules/.bin/playwright" install --with-deps chromium webkit
+        shell: bash
+        run: |
+          "$RUNNER_TEMP/verix-playwright/node_modules/.bin/playwright" install --with-deps chromium webkit
 
       - name: Start built V2 preview
         shell: bash
