@@ -2962,13 +2962,27 @@ body:after{z-index:2!important}
 @media(max-width:1100px){.leg-category-grid-expanded{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:800px){.module-window{width:min(96vw,760px)}.leg-category-grid-expanded{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.leg-category-grid-expanded{grid-template-columns:1fr}}
-/* 10.11 — IMT: vista total da página dentro da janela.
- O conteúdo RNSI/IMT é externo; por isso não tentamos aceder ao DOM cross-origin.
- O próprio iframe é reduzido para mostrar o enquadramento integral. */
-#veiculoFrame, #reboqueFrame {
- width: 133.3333% !important;
- height: 133.3333% !important;
- transform: scale(0.75);
+/* IMT — escala e enquadramento visual aprovados no teste de nitidez. */
+#veiculoFrame {
+ left: 0 !important;
+ right: auto !important;
+ top: -109.0909px !important;
+ bottom: auto !important;
+ width: 101.0101% !important;
+ height: calc(101.0101% + 109.0909px) !important;
+ zoom: 0.99;
+ transform: none;
+ transform-origin: top left;
+}
+#reboqueFrame {
+ left: -23.1481% !important;
+ right: auto !important;
+ top: -129.6296px !important;
+ bottom: auto !important;
+ width: 138.8889% !important;
+ height: calc(115.7407% + 129.6296px) !important;
+ zoom: 0.864;
+ transform: none;
  transform-origin: top left;
 }
 /* ===== 10.13 — RODAPÉ, VERSÃO E AVISO OPERACIONAL ===== */
@@ -15417,7 +15431,6 @@ html body .panel{
  transition:transform .3s cubic-bezier(.16,1,.3,1), box-shadow .3s ease, border-color .25s ease !important;
 }
 html body .panel:hover{
- transform:translateY(-4px) scale(1.008);
  box-shadow:
  0 28px 60px rgba(0,0,0,.55),
  0 0 40px rgba(0,240,255,.1),
@@ -15426,6 +15439,7 @@ html body .panel:hover{
 html body .head.red,
 html body .head.green{
  position:relative;
+ z-index:3;
  overflow:hidden;
 }
 html body .head.red::after,
@@ -15434,8 +15448,7 @@ html body .head.green::after{
  position:absolute; inset:0;
  background:linear-gradient(105deg, transparent 40%, rgba(255,255,255,.18) 50%, transparent 60%);
  background-size:200% 100%;
- animation:verixHeadShine 4.5s ease-in-out infinite;
- pointer-events:none;
+pointer-events:none;
 }
 @keyframes verixHeadShine{
  0%{ background-position:120% 0; opacity:0; }
@@ -15974,41 +15987,18 @@ html body .panel{
  0 0 0 1px rgba(0,240,255,.15),
  inset 0 0 60px rgba(0,240,255,.03) !important;
 }
-html body .panel:nth-child(1){ animation:v007PanelFloat1 9s ease-in-out infinite !important; }
-html body .panel:nth-child(2){ animation:v007PanelFloat2 10s ease-in-out infinite !important; }
-html body .panel:nth-child(3){ animation:v007PanelFloat3 8s ease-in-out infinite !important; }
-@keyframes v007PanelFloat1{
- 0%,100%{ transform:translateY(0) rotateY(0deg); }
- 50%{ transform:translateY(-5px) rotateY(1.2deg); }
-}
-@keyframes v007PanelFloat2{
- 0%,100%{ transform:translateY(0) rotateY(0deg); }
- 50%{ transform:translateY(-4px) rotateY(-1deg); }
-}
-@keyframes v007PanelFloat3{
- 0%,100%{ transform:translateY(0) rotateY(0deg); }
- 50%{ transform:translateY(-6px) rotateY(1.5deg); }
-}
 html body .panel:hover{
- transform:translateY(-10px) scale(1.015) rotateX(2deg) !important;
  box-shadow:
  0 36px 80px rgba(0,0,0,.6),
  0 0 50px rgba(0,240,255,.18),
  0 0 100px rgba(0,229,160,.06),
  inset 0 0 80px rgba(0,240,255,.05) !important;
- animation:none !important;
 }
 html body .head.red::after,
 html body .head.green::after{
- animation:verixHeadShine 2.8s ease-in-out infinite !important;
  opacity:.9 !important;
 }
-html body .scan{
- opacity:.4 !important;
- height:3px !important;
- box-shadow:0 0 28px rgba(0,240,255,1), 0 0 8px #fff, 0 0 40px rgba(0,229,160,.5) !important;
- animation:verixScan 2.2s linear infinite !important;
-}
+html body .scan{ display:none!important; animation:none!important; }
 html body .corner{
  animation:verixCornerBlink 1.8s ease-in-out infinite !important;
  box-shadow:0 0 14px rgba(0,240,255,.8) !important;
