@@ -12,6 +12,14 @@ Comandos V2:
 
 O build V2 produz `dist-v2/`.
 
+A pipeline Windows constrói primeiro estes assets e copia-os para `publish/v2-assets/`. O artefacto inclui `VERIX.exe`, `Run-V2-Local.cmd` e a pasta `v2-assets/`; a validação do pacote confirma que o HTML aponta para ficheiros JS/CSS presentes.
+
+Para ensaio controlado:
+- abrir `VERIX.exe) mantém o site de produção atual;
+- abrir `Run-V2-Local.cmd` abre os assets V2 do próprio pacote.
+
+O segundo modo não faz cutover nem modifica `main`/produção. O runtime WebView2 continua a ser um pré-requisito do equipamento.
+
 ## Produção atual
 
 O caminho legado continua disponível:

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Security.Cryptography;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 
@@ -8,6 +9,8 @@ internal static class Program
 {
     private const string AllowedHost = "verix-plataformadigital.github.io";
     private const string StartUrl = "https://verix-plataformadigital.github.io/verix/";
+    private const string LocalV2StartUrl = "https://verix-plataformadigital.github.io/index.html";
+    private static bool LocalV2Mode { get; set; }
 
     private static readonly HashSet<string> ExternalAllowedHosts = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -24,8 +27,9 @@ internal static class Program
     };
 
     [STAThread]
-    private static void Main()
+    private static void Main(string[] args)
     {
+        LocalV2Mode = args.Any(arg => string.Equals(arg, "--v2-local", StringComparison.OrdinalIgnoreCase));
         ApplicationConfiguration.Initialize();
         Application.Run(new VerixMainForm());
     }
@@ -39,7 +43,7 @@ internal static class Program
 
         public VerixMainForm()
         {
-            Text = "VÉRIX — Plataforma Digital";
+            Text = LocalV2Mode ? "VÉRIX V2 — Execução local (teste)" : "VÉRIX — Plataforma Digital";
             Width = 1440;
             Height = 900;
             StartPosition = FormStartPosition.CenterScreen;
@@ -115,6 +119,35 @@ internal static class Program
                 settings.IsWebMessageEnabled = false;
                 settings.IsSwipeNavigationEnabled = false;
 
+                var startUrl = StartUrl;
+                if (LocalV2Mode)
+                {
+                    var localAssetsPath = Path.Combine(AppContext.BaseDirectory, "v2-assets");
+                    var localEntryPoint = Path.Combine(localAssetsPath, "index.html");
+                    if (!File.Exists(localEntryPoint))
+                    {
+                        throw new FileNotFoundException(
+                            "Os recursos da V2 local não foram encontrados. Confirma que o pacote inclui a pasta v2-assets.",
+                            localEntryPoint
+                        );
+                    }
+
+                    // This mapping exists only inside this WebView2 instance. Reusing the already
+                    // allowlisted Pages origin preserves the backend CORS contract and legacy
+                    // same-origin storage compatibility; navigation is restricted below to the
+                    // local entry point and its app shell.
+                    webView.CoreWebView2.SetVirtualHostNameToFolderMapping(
+                        AllowedHost,
+                        localAssetsPath,
+                        CoreWebView2HostResourceAccessKind.DenyCors
+                    );
+
+                    var entryPointHash = Convert.ToHexString(
+                        SHA256.HashData(File.ReadAllBytes(localEntryPoint))
+                    ).ToLowerInvariant();
+                    startUrl = LocalV2StartUrl + "?build=" + entryPointHash;
+                }
+
                 webView.CoreWebView2.NavigationStarting += OnNavigationStarting;
                 webView.CoreWebView2.FrameNavigationStarting += OnFrameNavigationStarting;
                 webView.CoreWebView2.NewWindowRequested += OnNewWindowRequested;
@@ -134,7 +167,7 @@ internal static class Program
                     );
                 };
 
-                webView.CoreWebView2.Navigate(StartUrl);
+                webView.CoreWebView2.Navigate(startUrl);
             }
             catch (Exception ex)
             {
@@ -157,7 +190,7 @@ internal static class Program
             {
                 var uri = new Uri(e.Uri);
 
-                if (IsAllowedProductionUri(uri))
+                if (IsAllowedPrimaryUri(uri))
                 {
                     return;
                 }
@@ -194,7 +227,7 @@ internal static class Program
                 // restricted to the same trusted production origin so an iframe
                 // cannot turn an otherwise safe top-level page into a new network
                 // surface.
-                if (IsAllowedProductionUri(uri))
+                if (IsAllowedPrimaryUri(uri))
                 {
                     return;
                 }
@@ -219,7 +252,7 @@ internal static class Program
             {
                 var uri = new Uri(e.Uri);
 
-                if (IsAllowedProductionUri(uri))
+                if (IsAllowedPrimaryUri(uri))
                 {
                     e.Handled = true;
                     webView.CoreWebView2.Navigate(uri.ToString());
@@ -355,6 +388,23 @@ internal static class Program
                 string.Equals(uri.Host, AllowedHost, StringComparison.OrdinalIgnoreCase) &&
                 (uri.Port == -1 || uri.Port == 443) &&
                 uri.AbsolutePath.StartsWith("/verix/", StringComparison.OrdinalIgnoreCase) &&
+                string.IsNullOrEmpty(uri.UserInfo);
+        }
+
+        private static bool IsAllowedPrimaryUri(Uri uri)
+        {
+            return LocalV2Mode
+                ? IsAllowedV2LocalUri(uri)
+                : IsAllowedProductionUri(uri);
+        }
+
+        private static bool IsAllowedV2LocalUri(Uri uri)
+        {
+            return uri.Scheme == Uri.UriSchemeHttps &&
+                string.Equals(uri.Host, AllowedHost, StringComparison.OrdinalIgnoreCase) &&
+                (uri.Port == -1 || uri.Port == 443) &&
+                (uri.AbsolutePath == "/" ||
+                    string.Equals(uri.AbsolutePath, "/index.html", StringComparison.OrdinalIgnoreCase)) &&
                 string.IsNullOrEmpty(uri.UserInfo);
         }
 

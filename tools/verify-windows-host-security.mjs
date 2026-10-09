@@ -1,6 +1,9 @@
 import fs from "node:fs";
 
 const file = fs.readFileSync("windows/VerixPortable/Program.cs", "utf8");
+const project = fs.readFileSync("windows/VerixPortable/VerixPortable.csproj", "utf8");
+const workflow = fs.readFileSync(".github/workflows/reengineering-v2.yml", "utf8");
+const launcher = fs.readFileSync("windows/VerixPortable/Run-V2-Local.cmd", "utf8");
 
 function methodBody(signature) {
   const start = file.indexOf(signature);
@@ -44,6 +47,10 @@ const requiredFileMarkers = [
   "DownloadStarting",
   "IsUserInitiated",
   "consultapsp.imtt.external.rnsi.local",
+  "SetVirtualHostNameToFolderMapping",
+  "CoreWebView2HostResourceAccessKind.DenyCors",
+  "v2-assets",
+  "--v2-local",
   "AreDevToolsEnabled = false",
   "AreHostObjectsAllowed = false",
   "IsWebMessageEnabled = false",
@@ -83,21 +90,46 @@ requireMarkers("internal RNSI origin", "private static bool IsAllowedInternalRns
   "string.IsNullOrEmpty(uri.UserInfo)"
 ]);
 
+requireMarkers("local V2 origin", "private static bool IsAllowedV2LocalUri(Uri uri)", [
+  "uri.Scheme == Uri.UriSchemeHttps",
+  "string.Equals(uri.Host, AllowedHost, StringComparison.OrdinalIgnoreCase)",
+  "uri.Port == -1 || uri.Port == 443",
+  'uri.AbsolutePath == "/"',
+  'uri.AbsolutePath, "/index.html"',
+  "string.IsNullOrEmpty(uri.UserInfo)"
+]);
+
+requireMarkers("primary origin selection", "private static bool IsAllowedPrimaryUri(Uri uri)", [
+  "LocalV2Mode",
+  "IsAllowedV2LocalUri(uri)",
+  "IsAllowedProductionUri(uri)"
+]);
+
+requireMarkers("local V2 asset mapping", "private async Task InitializeWebViewAsync()", [
+  "if (LocalV2Mode)",
+  'Path.Combine(AppContext.BaseDirectory, "v2-assets")',
+  "File.Exists(localEntryPoint)",
+  "SetVirtualHostNameToFolderMapping",
+  "CoreWebView2HostResourceAccessKind.DenyCors",
+  "SHA256.HashData",
+  "LocalV2StartUrl"
+]);
+
 requireMarkers("top-level navigation", "private void OnNavigationStarting(", [
-  "IsAllowedProductionUri(uri)",
+  "IsAllowedPrimaryUri(uri)",
   "IsAllowedExternalUri(uri)",
   "IsAllowedInternalRnsUri(uri)",
   "e.Cancel = true"
 ]);
 
 requireMarkers("main WebView frame navigation", "private void OnFrameNavigationStarting(", [
-  "IsAllowedProductionUri(uri)",
+  "IsAllowedPrimaryUri(uri)",
   "e.Cancel = true"
 ]);
 
 requireMarkers("new-window navigation", "private async void OnNewWindowRequested(", [
   "!e.IsUserInitiated",
-  "IsAllowedProductionUri(uri)",
+  "IsAllowedPrimaryUri(uri)",
   "IsAllowedInternalRnsUri(uri)",
   "IsAllowedExternalUri(uri)",
   "e.Handled = true"
@@ -135,6 +167,35 @@ const protectedSettings = [
 
 requireMarkers("main WebView settings", "private async Task InitializeWebViewAsync()", protectedSettings);
 requireMarkers("RNSI WebView settings", "private async Task<(Form Form, CoreWebView2 CoreWebView2)> CreateRnsiWindowAsync(", protectedSettings);
+
+const requiredProjectMarkers = [
+  'Content Include="$(V2AssetsRoot)**\\*"',
+  "CopyToPublishDirectory",
+  "ValidateV2AssetsForPublish",
+  "Run-V2-Local.cmd",
+  "v2-assets\\%(RecursiveDir)"
+];
+for (const marker of requiredProjectMarkers) {
+  if (!project.includes(marker)) {
+    throw new Error("Missing portable asset packaging control: " + marker);
+  }
+}
+
+const requiredWorkflowMarkers = [
+  "npm ci --no-fund --no-audit",
+  "npm run build:v2",
+  "node tools/verify-portable-package.mjs",
+  "dotnet publish"
+];
+for (const marker of requiredWorkflowMarkers) {
+  if (!workflow.includes(marker)) {
+    throw new Error("Missing Windows CI packaging control: " + marker);
+  }
+}
+
+if (!launcher.includes("VERIX.exe") || !launcher.includes("--v2-local")) {
+  throw new Error("Local V2 launcher must start VERIX.exe with --v2-local.");
+}
 
 const forbidden = [
   "--disable-web-security",

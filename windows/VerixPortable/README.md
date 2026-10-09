@@ -11,14 +11,21 @@ Segurança:
 - Ligações para serviços externos oficiais (ASF, ERRU/IMT, INEM e Waze) são abertas no navegador predefinido; restantes destinos são bloqueados.
 - A autorização continua a ser feita pelo backend; o EXE não contém segredos de servidor.
 
-Compilação:
-dotnet publish .\VerixPortable.csproj -c Release -r win-x64 --self-contained true
+Compilação a partir da raiz do repositório:
+```powershell
+npm ci
+npm run build:v2
+dotnet restore .\windows\VerixPortable\VerixPortable.csproj
+dotnet publish .\windows\VerixPortable\VerixPortable.csproj -c Release -r win-x64 --self-contained true --no-restore
+```
 
-O Microsoft Edge WebView2 Runtime deve existir no PC ou ser distribuído através do mecanismo Fixed Version apropriado para uma release totalmente portátil.
+O Microsoft Edge WebView2 Runtime tem de existir no PC; o executável .NET é self-contained, mas isso não inclui o runtime do WebView2.
 
+## Modos de execução
 
-## V2 local package
+- `VERIX.exe`: mantém o arranque de produção em `https://verix-plataformadigital.github.io/verix/`.
+- `Run-V2-Local.cmd`: abre a V2 compilada e incluída em `v2-assets\`, sem substituir o arranque de produção.
 
-A futura release portátil da V2 poderá incluir a pasta `dist-v2` junto ao executável e servir os assets locais através de WebView2 virtual host mapping. Isto evita `file://` e fornece uma origem HTTPS local apropriada para `localStorage`, IndexedDB e APIs de secure context.
+O modo local só é ativado pelo argumento `--v2-local`. O host verifica que `v2-assets\index.html` existe, usa `SetVirtualHostNameToFolderMapping` em vez de `file://`, limita a navegação principal à entrada local e continua a bloquear novas janelas não iniciadas pelo utilizador, downloads, frames externos e destinos fora das allowlists.
 
-Esta capacidade ainda não é o modo predefinido. A produção continua a abrir o site HTTPS oficial até a V2 passar a validação funcional completa.
+A V2 local usa, apenas dentro da instância WebView2, a origem já autorizada pelo backend para evitar alterar a política CORS de produção. A navegação fica limitada à raiz/entrada `index.html` mapeada; os assets são servidos do pacote local. O hash do HTML é acrescentado ao URL para evitar reutilizar uma entrada HTML em cache após atualizar o pacote.
