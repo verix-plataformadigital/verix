@@ -65,35 +65,68 @@ if (rejectedByBackend.length) {
   );
 }
 
-const eventPersistence = endpointSource.indexOf(
-  'const { error: eventsError } = await db.from("verix2_events").upsert(events'
+const ingestMigrationPath = path.join(
+  root,
+  "supabase/migrations/20261008235800_atomic_telemetry_ingest.sql"
 );
-const installationPersistence = endpointSource.indexOf(
-  'await db.from("verix2_installations").upsert([...installations.values()]'
+const ingestMigrationSource = fs.readFileSync(ingestMigrationPath, "utf8");
+
+const ingestionRpcMatch = endpointSource.match(
+  /db\.rpc\(\s*["']verix2_ingest_telemetry["']\s*,\s*\{/
 );
-const sessionPersistence = endpointSource.indexOf(
-  'await db.from("verix2_sessions").upsert([...sessions.values()]'
+const ingestionRpc = ingestionRpcMatch?.index ?? -1;
+const eventsArgument = endpointSource.indexOf("p_events: events", ingestionRpc);
+const installationsArgument = endpointSource.indexOf("p_installations: [...installations.values()]", ingestionRpc);
+const sessionsArgument = endpointSource.indexOf("p_sessions: [...sessions.values()]", ingestionRpc);
+const directTableWrites = [
+  'db.from("verix2_events").upsert(events',
+  'db.from("verix2_installations").upsert([...installations.values()]',
+  'db.from("verix2_sessions").upsert([...sessions.values()]'
+];
+const directWriteRemains = directTableWrites.some((marker) => endpointSource.includes(marker));
+
+const installationInsert = ingestMigrationSource.indexOf(
+  "INSERT INTO public.verix2_installations AS current_installation"
 );
+const sessionInsert = ingestMigrationSource.indexOf(
+  "INSERT INTO public.verix2_sessions AS current_session"
+);
+const eventInsert = ingestMigrationSource.indexOf(
+  "INSERT INTO public.verix2_events ("
+);
+const executableGrant = ingestMigrationSource.includes(
+  "GRANT EXECUTE ON FUNCTION public.verix2_ingest_telemetry(jsonb, jsonb, jsonb)\\n  TO service_role;"
+);
+const invokerOnly = ingestMigrationSource.includes("SECURITY INVOKER");
+const conflictSafe = ingestMigrationSource.includes("ON CONFLICT DO NOTHING");
 
 if (
-  eventPersistence < 0 ||
-  installationPersistence < 0 ||
-  sessionPersistence < 0
+  ingestionRpc < 0 ||
+  eventsArgument < ingestionRpc ||
+  installationsArgument < ingestionRpc ||
+  sessionsArgument < ingestionRpc ||
+  directWriteRemains
 ) {
   console.error(
-    "Telemetry persistence invariant missing: events, installations, and sessions must all be persisted."
+    "Telemetry ingestion contract failed: the endpoint must use one verix2_ingest_telemetry RPC for all three arrays."
   );
   process.exitCode = 1;
-} else if (
-  eventPersistence >= installationPersistence ||
-  eventPersistence >= sessionPersistence
+}
+
+if (
+  installationInsert < 0 ||
+  sessionInsert < installationInsert ||
+  eventInsert < sessionInsert ||
+  !executableGrant ||
+  !invokerOnly ||
+  !conflictSafe
 ) {
   console.error(
-    "Telemetry persistence invariant failed: canonical events must be written before installation/session presence is advanced."
+    "Telemetry ingestion migration failed: it must write FK parents before events in one invoker-rights RPC and grant execution to service_role only."
   );
   process.exitCode = 1;
 } else {
   console.log(
-    "Telemetry persistence order passed: canonical events are written before installation/session presence."
+    "Telemetry ingestion transaction passed: installations and sessions precede events inside one invoker-rights RPC."
   );
 }

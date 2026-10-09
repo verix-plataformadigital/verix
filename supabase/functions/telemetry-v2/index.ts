@@ -496,25 +496,30 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    // Persist the canonical event rows before advancing presence.
-    // This prevents a failed event write from leaving last_seen ahead of reality.
-    const { error: eventsError } = await db.from("verix2_events").upsert(events, {
-      onConflict: "event_id",
-      ignoreDuplicates: true
-    });
-    if (eventsError) throw new Error(`events:${eventsError.message}`);
+    // One RPC makes parent rows and events atomic. The database writes
+    // installation/session parents before events to satisfy foreign keys,
+    // then advances last_seen only from events it actually inserted.
+    const { data: ingestion, error: ingestionError } = await db.rpc(
+      "verix2_ingest_telemetry",
+      {
+        p_events: events,
+        p_installations: [...installations.values()],
+        p_sessions: [...sessions.values()]
+      }
+    );
+    if (ingestionError) throw new Error(`ingest:${ingestionError.message}`);
 
-    if (installations.size) {
-      const { error } = await db.from("verix2_installations").upsert([...installations.values()], { onConflict: "installation_id" });
-      if (error) throw new Error(`installations:${error.message}`);
+    const accepted = ingestion?.events_inserted;
+    if (
+      typeof accepted !== "number" ||
+      !Number.isSafeInteger(accepted) ||
+      accepted < 0 ||
+      accepted > events.length
+    ) {
+      throw new Error("ingest:invalid_response");
     }
 
-    if (sessions.size) {
-      const { error } = await db.from("verix2_sessions").upsert([...sessions.values()], { onConflict: "session_id" });
-      if (error) throw new Error(`sessions:${error.message}`);
-    }
-
-    return json({ ok: true, accepted: events.length, rejected: input.length - events.length });
+    return json({ ok: true, accepted, rejected: input.length - accepted });
   } catch (error) {
     console.error("telemetry_write_failed", error);
     return json({ ok: false, error: "telemetry_write_failed" }, 500);

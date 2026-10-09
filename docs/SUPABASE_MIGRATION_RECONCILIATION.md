@@ -1,12 +1,12 @@
 # Reconciliação das migrações Supabase do VÉRIX
 
-**Estado observado:** 8 de outubro de 2026, aproximadamente 23:41 UTC  
+**Estado observado:** leitura do catálogo remoto em 8 de outubro de 2026 (UTC)  
 **Projeto remoto:** `verix-telemetria` (`onilkakbgpklxvxuxmks`)  
 **Escopo desta nota:** inspeção de catálogo e histórico em modo de leitura. Não foram aplicadas migrações nem alterados dados de produção.
 
 ## Resultado principal
 
-O histórico remoto devolveu **17 migrações aplicadas**. A branch contém seis ficheiros SQL com nomes de versão normalizados. Cinco correspondem a versões aplicadas; um ficheiro de hardening da presença, `20261008232530_harden_telemetry_presence.sql`, não consta no histórico remoto, embora a função e os triggers que ele define já existam no catálogo atual.
+O histórico remoto devolveu **17 migrações aplicadas**. A branch tem agora sete ficheiros SQL com nomes de versão normalizados. Cinco correspondem a versões aplicadas; `20261008232530_harden_telemetry_presence.sql` não consta no histórico remoto, embora a função e os triggers que ele define já existam no catálogo atual. A nova `20261008235800_atomic_telemetry_ingest.sql` ainda não está aplicada nem registada em produção.
 
 Doze versões do histórico remoto continuam sem o respetivo ficheiro SQL nesta branch. As branches antigas e o histórico de commits consultados não forneceram uma cópia autoritativa desses corpos SQL. O estado atual das tabelas permite descrever parte do resultado, mas **não permite reconstruir com segurança o SQL original** nem provar todos os efeitos e a ordem histórica.
 
@@ -50,15 +50,15 @@ Estes são factos do catálogo no momento da leitura. **Não são o SQL original
 
 ## Risco de deriva do histórico
 
-A migração local `20261008232530_harden_telemetry_presence.sql` não aparece entre as 17 versões remotas aplicadas, mas as alterações principais que descreve já estão presentes no catálogo. Isto indica uma diferença entre histórico de migrações e estado efetivo da base, que tem de ser reconciliada antes de se assumir uma reprodução limpa.
+As migrações locais `20261008232530_harden_telemetry_presence.sql` e `20261008235800_atomic_telemetry_ingest.sql` não aparecem entre as 17 versões remotas aplicadas. A primeira descreve alterações de presença já visíveis no catálogo; a segunda é nova e não foi implantada. Isto mantém a diferença entre histórico de migrações e estado efetivo da base, que tem de ser reconciliada antes de se assumir uma reprodução limpa.
 
-A migração foi ainda reforçada para lançar uma exceção caso as substituições literais não resultem numa definição de `verix2_admin_analytics` que contenha os predicados essenciais de presença e consulta. O catálogo atual satisfaz esses predicados. Esta verificação evita que um `replace()` sem correspondência passe silenciosamente, mas não recupera o histórico em falta.
+A migração de presença foi reforçada para lançar uma exceção caso as substituições literais não resultem numa definição de `verix2_admin_analytics` que contenha os predicados essenciais de presença e consulta, e agora seleciona a função pela assinatura exata. A nova migração de ingestão acrescenta uma única RPC transacional: primeiro cria/atualiza instalações e sessões e depois grava eventos, satisfazendo as chaves estrangeiras; uma falha reverte a transação completa. O endpoint V2 já foi alterado para usar esta RPC, mas não foi publicada nem aplicada à base remota.
 
 ## Próximos passos seguros
 
 1. Recuperar os doze corpos SQL originais através de backups, histórico do SQL Editor, pipelines ou artefactos de deployment fiáveis. Não preencher esses ficheiros com SQL inferido a partir do estado final.
 2. Rever a diferença entre o histórico remoto e o catálogo atual, incluindo a migração de presença que não está registada como aplicada.
 3. Reproduzir a cadeia completa numa base local descartável e comparar o resultado com o catálogo remoto.
-4. Só depois aprovar um plano explícito de reconciliação para produção.
+4. Testar a RPC numa base descartável: ingestão com instalação/sessão nova, evento que falha por violação de integridade e confirmação de rollback de todas as escritas.\n5. Só depois aprovar um plano explícito de reconciliação para produção.
 
 Até concluir estes passos, não executar `supabase db reset --linked`, não marcar versões como aplicadas manualmente e não fazer `db push` para tentar ocultar a deriva. Esta branch não alterou a base de produção.
