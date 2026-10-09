@@ -34,6 +34,17 @@ jobs:
           VERIX_BUILD_ID: "1.5-sec-${{ github.run_number }}-${{ github.sha }}"
         run: npm run build:secure
 
+      - name: Validate mobile adapter and assets
+        shell: bash
+        run: |
+          node --check verix-mobile.js
+          node --check dist/verix-mobile.js
+          test -s dist/verix-mobile.html
+          test -s dist/verix-mobile.css
+          test -s dist/verix-mobile.js
+          grep -q "./verix-mobile.html" dist/index.html
+          grep -q "./verix-app.html" dist/verix-mobile.html
+
       - name: Verify secure build
         shell: bash
         run: |
