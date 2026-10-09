@@ -22,10 +22,9 @@ if (!(Test-Path -LiteralPath $verifierPath -PathType Leaf)) {
     throw "Portable package verifier is missing: $verifierPath"
 }
 
-# Validate the raw publish directory before creating any downloadable archive.
-& node $verifierPath $publishPath
-if ($LASTEXITCODE -ne 0) {
-    throw "The Windows publish directory failed portable-package verification."
+$executablePath = Join-Path $publishPath "VERIX.exe"
+if (!(Test-Path -LiteralPath $executablePath -PathType Leaf)) {
+    throw "Portable Windows executable is missing: $executablePath"
 }
 
 New-Item -ItemType Directory -Path $outputPath -Force | Out-Null
@@ -33,6 +32,7 @@ $zipPath = Join-Path $outputPath "VERIX-Windows-x64.zip"
 $checksumPath = "$zipPath.sha256"
 
 $tempRoot = if ($env:RUNNER_TEMP) { $env:RUNNER_TEMP } else { [System.IO.Path]::GetTempPath() }
+$stagePath = Join-Path $tempRoot ("verix-release-package-stage-" + [Guid]::NewGuid().ToString("N"))
 $verifyPath = Join-Path $tempRoot ("verix-release-package-check-" + [Guid]::NewGuid().ToString("N"))
 
 try {
@@ -43,12 +43,31 @@ try {
         Remove-Item -LiteralPath $checksumPath -Force
     }
 
-    Compress-Archive -Path (Join-Path $publishPath "*") -DestinationPath $zipPath -CompressionLevel Optimal
+    # Build a clean staging directory. PDB files are debug symbols, not runtime
+    # dependencies, and must never be shipped in the downloadable package.
+    New-Item -ItemType Directory -Path $stagePath -Force | Out-Null
+    Get-ChildItem -LiteralPath $publishPath -Force -Recurse -File |
+        Where-Object { $_.Extension -ine ".pdb" } |
+        ForEach-Object {
+            $relativePath = [System.IO.Path]::GetRelativePath($publishPath, $_.FullName)
+            $stagedFile = Join-Path $stagePath $relativePath
+            $stagedParent = Split-Path -Parent $stagedFile
+            New-Item -ItemType Directory -Path $stagedParent -Force | Out-Null
+            Copy-Item -LiteralPath $_.FullName -Destination $stagedFile -Force
+        }
+
+    # Validate the exact staged payload that will be zipped.
+    & node $verifierPath $stagePath
+    if ($LASTEXITCODE -ne 0) {
+        throw "The staged Windows package failed portable-package verification."
+    }
+
+    Compress-Archive -Path (Join-Path $stagePath "*") -DestinationPath $zipPath -CompressionLevel Optimal
     New-Item -ItemType Directory -Path $verifyPath -Force | Out-Null
     Expand-Archive -LiteralPath $zipPath -DestinationPath $verifyPath
 
-    # Validate the extracted archive too: the deliverable, not merely the source
-    # publish directory, must contain the executable, launcher and every V2 asset.
+    # Validate the extracted archive too: this checks the actual deliverable,
+    # including required files and the absence of debug symbols/source maps.
     & node $verifierPath $verifyPath
     if ($LASTEXITCODE -ne 0) {
         throw "The generated Windows ZIP failed portable-package verification."
@@ -67,7 +86,9 @@ try {
     Write-Host "SHA-256: $hash"
 }
 finally {
-    if (Test-Path -LiteralPath $verifyPath) {
-        Remove-Item -LiteralPath $verifyPath -Recurse -Force
+    foreach ($temporaryPath in @($verifyPath, $stagePath)) {
+        if (Test-Path -LiteralPath $temporaryPath) {
+            Remove-Item -LiteralPath $temporaryPath -Recurse -Force
+        }
     }
 }
