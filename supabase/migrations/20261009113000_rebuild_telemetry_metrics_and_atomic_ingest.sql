@@ -427,11 +427,23 @@ telemetry AS (
       NULLIF(count(*) FILTER(WHERE event IN('vehicle_insurance_yes','vehicle_insurance_no','vehicle_insurance_error')),0))::numeric,1),
     'cin_detail_coverage_30d',round((100.0*count(*) FILTER(WHERE event IN('cinemometer_calculation','cinemometer_speed_entry') AND metadata ? 'cin')/
       NULLIF(count(*) FILTER(WHERE event IN('cinemometer_calculation','cinemometer_speed_entry')),0))::numeric,1),
-    'query_events_missing_id_30d',count(*) FILTER(WHERE event IN('vehicle_lookup','vehicle_insurance_pending','vehicle_insurance_yes','vehicle_insurance_no','vehicle_insurance_error','imt_loaded') AND query_id IS NULL),
-    'query_outcomes_without_start_30d',(SELECT count(DISTINCT e.query_id) FROM ev e WHERE e.event IN('vehicle_insurance_pending','vehicle_insurance_yes','vehicle_insurance_no','vehicle_insurance_error','imt_loaded') AND e.query_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM ev s WHERE s.event='vehicle_lookup' AND s.query_id=e.query_id)),
+    'query_events_missing_id_30d',count(*) FILTER(WHERE event IN('vehicle_lookup','vehicle_insurance_pending','vehicle_insurance_yes','vehicle_insurance_no','vehicle_insurance_error','imt_loaded','imt_navigation_start','imt_navigation_loaded','imt_navigation_error') AND query_id IS NULL),
+    'query_outcomes_without_start_30d',(SELECT count(DISTINCT e.query_id) FROM ev e WHERE e.event IN('vehicle_insurance_pending','vehicle_insurance_yes','vehicle_insurance_no','vehicle_insurance_error','imt_loaded','imt_navigation_start','imt_navigation_loaded','imt_navigation_error') AND e.query_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM ev s WHERE s.event='vehicle_lookup' AND s.query_id=e.query_id)),
     'conflicting_final_queries_30d',(SELECT count(*) FROM final_counts WHERE final_type_count>1),
     'duplicate_final_events_30d',(SELECT coalesce(sum(greatest(final_event_count-1,0)),0) FROM final_counts),
-    'imt_duplicate_query_source_groups_30d',(SELECT count(*) FROM (SELECT query_id,coalesce(metadata->>'source','') source FROM ev WHERE event='imt_loaded' AND query_id IS NOT NULL GROUP BY 1,2 HAVING count(*)>1) d)
+    'imt_duplicate_query_source_groups_30d',(SELECT count(*) FROM (SELECT query_id,coalesce(metadata->>'source','') source FROM ev WHERE event='imt_loaded' AND query_id IS NOT NULL GROUP BY 1,2 HAVING count(*)>1) d),
+    'imt_navigation_starts_30d',count(*) FILTER(WHERE event='imt_navigation_start'),
+    'imt_navigation_loaded_30d',count(*) FILTER(WHERE event='imt_navigation_loaded'),
+    'imt_navigation_errors_30d',count(*) FILTER(WHERE event='imt_navigation_error'),
+    'imt_navigation_by_source_30d',(SELECT coalesce(jsonb_agg(to_jsonb(x) ORDER BY x.source),'[]'::jsonb) FROM (
+      SELECT coalesce(metadata->>'source','(sem fonte)') AS source,
+             count(*) FILTER(WHERE event='imt_navigation_start')::bigint AS started,
+             count(*) FILTER(WHERE event='imt_navigation_loaded')::bigint AS navigation_loaded,
+             count(*) FILTER(WHERE event='imt_navigation_error')::bigint AS errors,
+             count(DISTINCT query_id) FILTER(WHERE event='imt_navigation_start')::bigint AS queries
+      FROM ev WHERE event IN('imt_navigation_start','imt_navigation_loaded','imt_navigation_error')
+      GROUP BY 1
+    ) x)
   ) data FROM ev
 ),
 top_events AS (
