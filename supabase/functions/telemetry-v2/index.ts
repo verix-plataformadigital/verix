@@ -330,14 +330,54 @@ Deno.serve(async (req: Request) => {
     }
 
     const body = await req.json().catch(() => null);
-    const input = Array.isArray(body?.events) ? body.events.slice(0, 100) : [];
-    if (!input.length) return json({ ok: true, accepted: 0, rejected: 0 });
+    const received = Array.isArray(body?.events) ? body.events : [];
+    const input = received.slice(0, 100);
+    // The browser acknowledges events by stable event ID, never by HTTP status alone.
+    let rejected = received.length - input.length;
+    const rejectedEventIds: string[] = [];
+    const retryEventIds: string[] = [];
+    const rejectionReasons: Record<string, string> = Object.create(null);
+    const rejectedIdSet = new Set<string>();
+    const retryIdSet = new Set<string>();
+    function rejectEvent(x: any, reason: string, retryable = false) {
+      rejected += 1;
+      const id = cleanText(x?.eventId, 120);
+      if (!id) return;
+      if (!rejectedIdSet.has(id)) {
+        rejectedIdSet.add(id);
+        rejectedEventIds.push(id);
+      }
+      rejectionReasons[id] = reason;
+      if (retryable && !retryIdSet.has(id)) {
+        retryIdSet.add(id);
+        retryEventIds.push(id);
+      }
+    }
+    // Reject oversized tail entries explicitly; the normal client batch is 25.
+    for (const x of received.slice(100, 1100)) {
+      const id = cleanText(x?.eventId, 120);
+      if (id && !rejectedIdSet.has(id)) {
+        rejectedIdSet.add(id);
+        rejectedEventIds.push(id);
+        rejectionReasons[id] = "batch_too_large";
+      }
+    }
+    if (!input.length) {
+      return json({
+        ok: true, accepted: 0, inserted: 0, duplicates: 0, rejected,
+        received: received.length, considered: 0,
+        acknowledged_event_ids: [],
+        rejected_event_ids: rejectedEventIds,
+        retry_event_ids: retryEventIds,
+        rejection_reasons: rejectionReasons
+      });
+    }
 
     const events: any[] = [];
 
     for (const x of input) {
       const event = cleanText(x?.event, 80);
-      if (!event || !allowedEvents.has(event)) continue;
+      if (!event || !allowedEvents.has(event)) { rejectEvent(x, "invalid_event"); continue; }
 
       const metadata = cleanMetadata(x?.metadata);
       const installationId = cleanText(x?.installationId, 120);
@@ -350,7 +390,7 @@ Deno.serve(async (req: Request) => {
       // installation_id é a única identidade técnica obrigatória: a coluna é NOT NULL.
       // session/tab são opcionais para permitir contabilização mesmo quando o browser
       // perde uma dessas chaves entre refresh/restore.
-      if (!installationId) continue;
+      if (!installationId) { rejectEvent(x, "missing_installation_id"); continue; }
 
       // Data minimization: the plate is only needed for technical ASF error investigation.
       // Correlation is done with query_id for all other outcomes.
@@ -365,23 +405,23 @@ Deno.serve(async (req: Request) => {
 
       if (event === "vehicle_lookup") {
         // Uma consulta precisa de instalação, query e versão; sessão/tab podem faltar.
-        if (!queryId || !appVersion) continue;
+        if (!queryId || !appVersion) { rejectEvent(x, "missing_query_id_or_version"); continue; }
 
         const d = x?.occurredAt ? new Date(x.occurredAt) : new Date();
         const now = Date.now();
         const ts = d.getTime();
-        if (!Number.isFinite(ts) || ts < now - 24 * 60 * 60 * 1000 || ts > now + 5 * 60 * 1000) continue;
+        if (!Number.isFinite(ts) || ts < now - 24 * 60 * 60 * 1000 || ts > now + 5 * 60 * 1000) { rejectEvent(x, "invalid_or_stale_timestamp"); continue; }
 
         const installationKey = await hmacHex(`installation:${installationId}`);
-        if (!(await consumeRate(`vehicle:${installationKey}`, 30))) continue;
+        if (!(await consumeRate(`vehicle:${installationKey}`, 30))) { rejectEvent(x, "rate_limited", true); continue; }
       }
 
       if (event === "imt_loaded") {
-        if (!queryId || !appVersion || metadata.resultConfirmed !== true) continue;
+        if (!queryId || !appVersion || metadata.resultConfirmed !== true) { rejectEvent(x, "unconfirmed_imt_result"); continue; }
       }
 
       if (event === "vehicle_insurance_yes" || event === "vehicle_insurance_no" || event === "vehicle_insurance_error") {
-        if (!queryId || !appVersion) continue;
+        if (!queryId || !appVersion) { rejectEvent(x, "missing_query_id_or_version"); continue; }
       }
 
       const occurredAtDate = x?.occurredAt ? new Date(x.occurredAt) : new Date();
@@ -405,93 +445,48 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    if (!events.length) return json({ ok: true, accepted: 0, rejected: input.length });
-
-    // Impede nova duplicação do mesmo query_id. O índice SQL reforça isto,
-    // mas filtramos antes do upsert para evitar conflitos que o PostgREST
-    // não consegue tratar com onConflict=event_id.
-    const lookupIds = [...new Set(events
-      .filter(e => e.event === "vehicle_lookup" && e.query_id)
-      .map(e => e.query_id))];
-    const imtIds = [...new Set(events
-      .filter(e => e.event === "imt_loaded" && e.query_id)
-      .map(e => e.query_id))];
-    const existingVehicle = new Set<string>();
-    const existingImt = new Set<string>();
-
-    if (lookupIds.length) {
-      const { data, error } = await db
-        .from("verix2_events")
-        .select("query_id")
-        .eq("event", "vehicle_lookup")
-        .in("query_id", lookupIds);
-      if (error) throw new Error(`lookup_dedupe:${error.message}`);
-      for (const row of (data || [])) if (row?.query_id) existingVehicle.add(String(row.query_id));
+    if (!events.length) {
+      return json({
+        ok: true, accepted: 0, inserted: 0, duplicates: 0,
+        rejected, received: received.length, considered: 0,
+        acknowledged_event_ids: [],
+        rejected_event_ids: rejectedEventIds,
+        retry_event_ids: retryEventIds,
+        rejection_reasons: rejectionReasons
+      });
     }
-
-    if (imtIds.length) {
-      const { data, error } = await db
-        .from("verix2_events")
-        .select("query_id")
-        .eq("event", "imt_loaded")
-        .eq("metadata->>resultConfirmed", "true")
-        .in("query_id", imtIds);
-      if (error) throw new Error(`imt_dedupe:${error.message}`);
-      for (const row of (data || [])) if (row?.query_id) existingImt.add(String(row.query_id));
-    }
-
-    const batchVehicle = new Set<string>();
-    const batchImt = new Set<string>();
-    const dedupedEvents = events.filter(e => {
-      if (e.event === "vehicle_lookup" && e.query_id) {
-        if (existingVehicle.has(e.query_id) || batchVehicle.has(e.query_id)) return false;
-        batchVehicle.add(e.query_id);
-      }
-      if (e.event === "imt_loaded" && e.query_id && e.metadata?.resultConfirmed === true) {
-        if (existingImt.has(e.query_id) || batchImt.has(e.query_id)) return false;
-        batchImt.add(e.query_id);
-      }
-      return true;
-    });
-
-    events.splice(0, events.length, ...dedupedEvents);
-    if (!events.length) return json({ ok: true, accepted: 0, rejected: input.length });
 
     const installations = new Map<string, any>();
     const sessions = new Map<string, any>();
 
     for (const e of events) {
-      if (e.installation_id) {
-        const existing = installations.get(e.installation_id);
-        if (!existing) {
-          const client = e.metadata?.client && typeof e.metadata.client === "object"
-            ? e.metadata.client as Record<string, unknown>
-            : {};
-          installations.set(e.installation_id, {
-            installation_id: e.installation_id,
-            first_seen: e.occurred_at,
-            last_seen: e.occurred_at,
-            app_version: e.app_version,
-            device_type: e.device_type,
-            browser: e.browser,
-            os: cleanText(client.osPlatform, 40)
-          });
-        } else {
-          if (e.occurred_at < existing.first_seen) existing.first_seen = e.occurred_at;
-          if (e.occurred_at > existing.last_seen) existing.last_seen = e.occurred_at;
-          if (e.app_version) existing.app_version = e.app_version;
-          if (e.device_type) existing.device_type = e.device_type;
-          if (e.browser) existing.browser = e.browser;
-          const client = e.metadata?.client && typeof e.metadata.client === "object"
-            ? e.metadata.client as Record<string, unknown>
-            : {};
-          const clientOs = cleanText(client.osPlatform, 40);
-          if (clientOs) existing.os = clientOs;
-        }
+      const client = e.metadata?.client && typeof e.metadata.client === "object"
+        ? e.metadata.client as Record<string, unknown>
+        : {};
+      const existingInstallation = installations.get(e.installation_id);
+      if (!existingInstallation) {
+        installations.set(e.installation_id, {
+          installation_id: e.installation_id,
+          first_seen: e.occurred_at,
+          last_seen: e.occurred_at,
+          app_version: e.app_version,
+          device_type: e.device_type,
+          browser: e.browser,
+          os: cleanText(client.osPlatform, 40)
+        });
+      } else {
+        if (e.occurred_at < existingInstallation.first_seen) existingInstallation.first_seen = e.occurred_at;
+        if (e.occurred_at > existingInstallation.last_seen) existingInstallation.last_seen = e.occurred_at;
+        if (e.app_version) existingInstallation.app_version = e.app_version;
+        if (e.device_type) existingInstallation.device_type = e.device_type;
+        if (e.browser) existingInstallation.browser = e.browser;
+        const clientOs = cleanText(client.osPlatform, 40);
+        if (clientOs) existingInstallation.os = clientOs;
       }
-      if (e.session_id && e.installation_id) {
-        const existing = sessions.get(e.session_id);
-        if (!existing) {
+
+      if (e.session_id) {
+        const existingSession = sessions.get(e.session_id);
+        if (!existingSession) {
           sessions.set(e.session_id, {
             session_id: e.session_id,
             installation_id: e.installation_id,
@@ -499,29 +494,45 @@ Deno.serve(async (req: Request) => {
             started_at: e.occurred_at,
             last_seen: e.occurred_at
           });
-        } else if (e.occurred_at > existing.last_seen) {
-          existing.last_seen = e.occurred_at;
+        } else {
+          if (e.occurred_at < existingSession.started_at) existingSession.started_at = e.occurred_at;
+          if (e.occurred_at > existingSession.last_seen) existingSession.last_seen = e.occurred_at;
+          if (e.tab_id) existingSession.tab_id = e.tab_id;
         }
       }
     }
 
-    if (installations.size) {
-      const { error } = await db.from("verix2_installations").upsert([...installations.values()], { onConflict: "installation_id" });
-      if (error) throw new Error(`installations:${error.message}`);
-    }
-
-    if (sessions.size) {
-      const { error } = await db.from("verix2_sessions").upsert([...sessions.values()], { onConflict: "session_id" });
-      if (error) throw new Error(`sessions:${error.message}`);
-    }
-
-    const { error: eventsError } = await db.from("verix2_events").upsert(events, {
-      onConflict: "event_id",
-      ignoreDuplicates: true
+    // One PostgreSQL RPC commits parent rows and events in the same transaction.
+    // INSERT ... RETURNING supplies the real inserted count; unique indexes settle races.
+    const { data: ingestData, error: ingestError } = await db.rpc("verix2_ingest_telemetry", {
+      p_events: events,
+      p_installations: [...installations.values()],
+      p_sessions: [...sessions.values()]
     });
-    if (eventsError) throw new Error(`events:${eventsError.message}`);
+    if (ingestError) throw new Error(`atomic_ingest:${ingestError.message}`);
 
-    return json({ ok: true, accepted: events.length, rejected: input.length - events.length });
+    const receipt = Array.isArray(ingestData) ? ingestData[0] : ingestData;
+    const inserted = Number(receipt?.events_inserted);
+    if (receipt?.ok !== true || !Number.isInteger(inserted) || inserted < 0 || inserted > events.length) {
+      throw new Error("atomic_ingest:invalid_receipt");
+    }
+
+    const duplicates = events.length - inserted;
+    return json({
+      ok: true,
+      accepted: inserted,
+      inserted,
+      duplicates,
+      rejected,
+      received: received.length,
+      considered: events.length,
+      // Every valid submitted ID is now represented by an insert or an
+      // existing id/query unique-key row after this RPC committed successfully.
+      acknowledged_event_ids: events.map((event: any) => event.event_id),
+      rejected_event_ids: rejectedEventIds,
+      retry_event_ids: retryEventIds,
+      rejection_reasons: rejectionReasons
+    });
   } catch (error) {
     console.error("telemetry_write_failed", error);
     return json({ ok: false, error: "telemetry_write_failed" }, 500);

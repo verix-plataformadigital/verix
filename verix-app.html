@@ -13757,7 +13757,7 @@ body.theme-light .system-factory-modal{background:rgba(12,25,29,.48)}body.theme-
 function open(){m.classList.add('open');m.setAttribute('aria-hidden','false');setTimeout(()=>m.querySelector('.system-factory-btn')?.focus(),20)}
 function close(){m.classList.remove('open','final');m.setAttribute('aria-hidden','true');m.querySelector('.system-factory-body').innerHTML=originalBody;m.querySelector('.system-factory-foot').innerHTML=originalFoot}
 function confirmReset(){m.classList.add('final');m.querySelector('.system-factory-body').innerHTML='<div class="system-factory-warning"><strong>CONFIRMAÇÃO FINAL</strong><br><br>Todos os dados locais serão eliminados definitivamente e a consola será reiniciada.</div><div class="system-factory-question">Confirmar a reposição de fábrica?</div>';m.querySelector('.system-factory-foot').innerHTML='<button type="button" class="system-factory-btn" onclick="VÉRIXFactoryResetModal.close()">CANCELAR</button><button type="button" class="system-factory-btn danger" onclick="VÉRIXFactoryResetModal.execute()">CONFIRMAR REPOSIÇÃO</button>'}
-function execute(){try{['VÉRIX_CINEMETROS_LISTA_RECOLHIDA_V1','VÉRIX_CINEMETROS_V2','VÉRIX_CINEMETRO_OPERADOR_V2','VÉRIX_PREFS_V1','VÉRIX_CONSULTAS_HISTORICO_V1','APP_TELEMETRY_QUEUE_V1','APP_TELEMETRY_INSTALL_V1','VERIX_T2_QUEUE','VERIX_T2_INSTALL_ID'].forEach(function(k){try{localStorage.removeItem(k);}catch(e){}});['APP_TELEMETRY_TAB_V1','APP_TELEMETRY_SESSION_START_V1','VERIX_T2_SESSION_ID','VERIX_T2_TAB_ID'].forEach(function(k){try{sessionStorage.removeItem(k);}catch(e){}});localStorage.setItem('VÉRIX_FACTORY_RESET_PENDING','1');localStorage.setItem('VÉRIX_CINEMOMETROS_V2','[]')}catch(e){}window.location.reload()}
+function execute(){try{['VÉRIX_CINEMETROS_LISTA_RECOLHIDA_V1','VÉRIX_CINEMETROS_V2','VÉRIX_CINEMETRO_OPERADOR_V2','VÉRIX_PREFS_V1','VÉRIX_CONSULTAS_HISTORICO_V1','APP_TELEMETRY_QUEUE_V1','APP_TELEMETRY_INSTALL_V1','VERIX_T2_QUEUE','VERIX_T2_REJECTED_QUEUE','VERIX_T2_INSTALL_ID'].forEach(function(k){try{localStorage.removeItem(k);}catch(e){}});['APP_TELEMETRY_TAB_V1','APP_TELEMETRY_SESSION_START_V1','VERIX_T2_SESSION_ID','VERIX_T2_TAB_ID'].forEach(function(k){try{sessionStorage.removeItem(k);}catch(e){}});localStorage.setItem('VÉRIX_FACTORY_RESET_PENDING','1');localStorage.setItem('VÉRIX_CINEMOMETROS_V2','[]')}catch(e){}window.location.reload()}
 window.VÉRIXFactoryResetModal={open,close,confirm:confirmReset,execute};m.addEventListener('click',e=>{if(e.target===m)close()});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&m.classList.contains('open'))close()});})();
 </script>           
 <!-- VÉRIX telemetry fix V172: vehicle events use exposed telemetry API. --> <style id="verix-css-batch-014">html body .main-menu-v74-shell .verix-contact-strip{
@@ -17064,7 +17064,9 @@ html body .leg-card-new .copy-all-new{
   var SESSION_KEY = 'VERIX_T2_SESSION_ID';
   var TAB_KEY = 'VERIX_T2_TAB_ID';
   var QUEUE_KEY = 'VERIX_T2_QUEUE';
+  var REJECTED_QUEUE_KEY = 'VERIX_T2_REJECTED_QUEUE';
   var MAX_QUEUE = 300;
+  var MAX_REJECTED_QUEUE = 50;
   var BATCH_SIZE = 25;
   var FLUSH_MS = 15000;
   var HEARTBEAT_MS = 45000;
@@ -17241,6 +17243,33 @@ html body .leg-card-new .copy-all-new{
     } catch (_) {}
   }
 
+  function recordRejectedEvents(batch, receipt) {
+    var rejectedIds = Object.create(null);
+    var retryIds = Object.create(null);
+    var reasons = receipt && receipt.rejection_reasons || {};
+    (receipt && receipt.rejected_event_ids || []).forEach(function (id) { rejectedIds[id] = true; });
+    (receipt && receipt.retry_event_ids || []).forEach(function (id) { retryIds[id] = true; });
+    var records = [];
+    try {
+      var stored = JSON.parse(storageGet(localStore, REJECTED_QUEUE_KEY) || '[]');
+      if (Array.isArray(stored)) records = stored;
+    } catch (_) {}
+    batch.forEach(function (item) {
+      var id = item && item.eventId;
+      if (id && rejectedIds[id] && !retryIds[id]) {
+        // Keep only a minimal diagnostic. Never copy metadata, plates or payloads.
+        records.push({
+          eventId: String(id).slice(0, 120),
+          event: String(item.event || '').slice(0, 80),
+          occurredAt: String(item.occurredAt || '').slice(0, 40),
+          reason: String(reasons[id] || 'rejected_by_server').slice(0, 80),
+          recordedAt: new Date().toISOString()
+        });
+      }
+    });
+    storageSet(localStore, REJECTED_QUEUE_KEY, JSON.stringify(records.slice(-MAX_REJECTED_QUEUE)));
+  }
+
   queue = readQueue();
 
   function cleanMetadata(meta) {
@@ -17331,6 +17360,19 @@ html body .leg-card-new .copy-all-new{
     }
   }
 
+  function parseReceipt(text) {
+    try {
+      var data = JSON.parse(String(text || ''));
+      if (!data || data.ok !== true ||
+          !Array.isArray(data.acknowledged_event_ids) ||
+          !Array.isArray(data.rejected_event_ids) ||
+          !Array.isArray(data.retry_event_ids)) return null;
+      return data;
+    } catch (_) {
+      return null;
+    }
+  }
+
   async function sendViaFetch(batch) {
     var controller = typeof AbortController === 'function' ? new AbortController() : null;
     var timer = controller ? setTimeout(function () { controller.abort(); }, TIMEOUT_MS) : null;
@@ -17338,8 +17380,6 @@ html body .leg-card-new .copy-all-new{
     try {
       var response = await fetch(ENDPOINT, {
         method: 'POST',
-        // text/plain é CORS-safelisted: a telemetria não precisa de preflight.
-        // O Edge Function lê o corpo como JSON independentemente do content-type.
         headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
         body: JSON.stringify({ events: batch }),
         mode: 'cors',
@@ -17348,9 +17388,10 @@ html body .leg-card-new .copy-all-new{
         keepalive: true,
         signal: controller ? controller.signal : undefined
       });
-      return response.ok;
+      if (!response.ok) return null;
+      return parseReceipt(await response.text());
     } catch (_) {
-      return false;
+      return null;
     } finally {
       if (timer) clearTimeout(timer);
     }
@@ -17360,26 +17401,28 @@ html body .leg-card-new .copy-all-new{
     return new Promise(function (resolve) {
       try {
         var X = window.XMLHttpRequest;
-        if (typeof X !== 'function') return resolve(false);
+        if (typeof X !== 'function') return resolve(null);
         var xhr = new X();
         var done = false;
-        var finish = function (ok) {
+        var finish = function (receipt) {
           if (done) return;
           done = true;
           try { xhr.abort(); } catch (_) {}
-          resolve(!!ok);
+          resolve(receipt || null);
         };
         xhr.open('POST', ENDPOINT, true);
         xhr.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
         xhr.timeout = TIMEOUT_MS;
         xhr.onreadystatechange = function () {
-          if (xhr.readyState === 4) finish(xhr.status >= 200 && xhr.status < 300);
+          if (xhr.readyState === 4) {
+            finish(xhr.status >= 200 && xhr.status < 300 ? parseReceipt(xhr.responseText) : null);
+          }
         };
-        xhr.onerror = function () { finish(false); };
-        xhr.ontimeout = function () { finish(false); };
+        xhr.onerror = function () { finish(null); };
+        xhr.ontimeout = function () { finish(null); };
         xhr.send(JSON.stringify({ events: batch }));
       } catch (_) {
-        resolve(false);
+        resolve(null);
       }
     });
   }
@@ -17388,7 +17431,8 @@ html body .leg-card-new .copy-all-new{
     try {
       if (!navigator.sendBeacon) return false;
       var payload = JSON.stringify({ events: batch });
-      // text/plain mantém a chamada como "simple request" sem preflight.
+      // O browser apenas confirma que aceitou a transmissão; não existe recibo.
+      // Por isso a fila local nunca é removida com base no sendBeacon.
       return navigator.sendBeacon(
         ENDPOINT,
         new Blob([payload], { type: 'text/plain;charset=UTF-8' })
@@ -17401,27 +17445,27 @@ html body .leg-card-new .copy-all-new{
   function sendViaActiveX(batch) {
     return new Promise(function (resolve) {
       try {
-        if (typeof ActiveXObject === 'undefined') return resolve(false);
+        if (typeof ActiveXObject === 'undefined') return resolve(null);
         var xhr = new ActiveXObject('WinHttp.WinHttpRequest.5.1');
         xhr.open('POST', ENDPOINT, false);
         xhr.setTimeouts(3000, 3000, TIMEOUT_MS, TIMEOUT_MS);
         xhr.setRequestHeader('Content-Type', 'text/plain; charset=UTF-8');
         xhr.send(JSON.stringify({ events: batch }));
         var status = Number(xhr.Status || 0);
-        resolve(status >= 200 && status < 300);
+        resolve(status >= 200 && status < 300 ? parseReceipt(xhr.ResponseText || xhr.responseText) : null);
       } catch (_) {
-        resolve(false);
+        resolve(null);
       }
     });
   }
 
   async function send(batch) {
     if (typeof fetch === 'function') {
-      var ok = await sendViaFetch(batch);
-      if (ok) return true;
+      var receipt = await sendViaFetch(batch);
+      if (receipt) return receipt;
     }
-    var xhrOk = await sendViaXhr(batch);
-    if (xhrOk) return true;
+    var xhrReceipt = await sendViaXhr(batch);
+    if (xhrReceipt) return xhrReceipt;
     return await sendViaActiveX(batch);
   }
 
@@ -17440,13 +17484,23 @@ html body .leg-card-new .copy-all-new{
     var batch = queue.slice(0, BATCH_SIZE);
 
     try {
-      var ok = await send(batch);
-
-      if (ok) {
-        queue.splice(0, batch.length);
+      var receipt = await send(batch);
+      if (receipt && receipt.ok === true) {
+        var acknowledged = Object.create(null);
+        var retryIds = Object.create(null);
+        (receipt.acknowledged_event_ids || []).forEach(function (id) { acknowledged[id] = true; });
+        (receipt.retry_event_ids || []).forEach(function (id) { retryIds[id] = true; });
+        (receipt.rejected_event_ids || []).forEach(function (id) {
+          if (!retryIds[id]) acknowledged[id] = true;
+        });
+        Object.keys(retryIds).forEach(function (id) { delete acknowledged[id]; });
+        recordRejectedEvents(batch, receipt);
+        queue = queue.filter(function (item) {
+          return !!item && !acknowledged[item.eventId];
+        });
         saveQueue();
         retryStep = 0;
-        if (queue.length) schedule(50);
+        if (queue.length) schedule(Object.keys(retryIds).length ? 2000 : 50);
       } else {
         retryStep = Math.min(retryStep + 1, 4);
         schedule([2000, 5000, 15000, 30000, 60000][retryStep]);
@@ -17469,8 +17523,8 @@ html body .leg-card-new .copy-all-new{
     if (!queue.length || flushBusy) return false;
     var batch = queue.slice(0, Math.min(BATCH_SIZE, 10));
     if (!sendBeacon(batch)) return false;
-    queue.splice(0, batch.length);
-    saveQueue();
+    // Keep the durable copy until fetch/XHR returns an application receipt.
+    // The server's idempotency keys make a resend safe.
     return true;
   }
 
@@ -17736,6 +17790,12 @@ html body .leg-card-new .copy-all-new{
       flush();
     },
     queueSize: function () { return queue.length; },
+    rejectedQueueSize: function () {
+      try {
+        var stored = JSON.parse(storageGet(localStore, REJECTED_QUEUE_KEY) || '[]');
+        return Array.isArray(stored) ? stored.length : 0;
+      } catch (_) { return 0; }
+    },
     flush: flush,
     endpoint: ENDPOINT
   };

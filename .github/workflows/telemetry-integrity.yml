@@ -1,0 +1,30 @@
+name: Telemetry Integrity
+on:
+  pull_request:
+    paths:
+      - "supabase/functions/telemetry-v2/index.ts"
+      - "supabase/migrations/**"
+      - "admin_v2.html"
+      - "tools/verify-telemetry-integrity.mjs"
+      - "verix-app.html"
+  push:
+    branches:
+      - "fix/telemetry-integrity-*"
+    paths:
+      - "supabase/functions/telemetry-v2/index.ts"
+      - "supabase/migrations/**"
+      - "admin_v2.html"
+      - "tools/verify-telemetry-integrity.mjs"
+      - "verix-app.html"
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify telemetry integrity contract
+        run: node tools/verify-telemetry-integrity.mjs
