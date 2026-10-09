@@ -677,12 +677,14 @@ function renderErrors(d){
  const appVersion=String(inv.current_app_version||d.current_app_version||"");
  const versionLabel=appVersion?esc(appVersion):"ATUAL";
  const versionPhrase=appVersion?"na versão "+esc(appVersion):"na versão atual";
- const total=(e.types||[]).reduce((s,x)=>s+Number(x.qty||0),0);
+ const total=Number(inv.error_queries_24h ?? (e.types||[]).reduce((s,x)=>s+Number(x.qty||0),0));
  $('errorCards').innerHTML=
-  card('ERROS NAS 24 H',num(total),'Falhas classificadas.','red')+
-  card('ERROS DA VERSÃO '+versionLabel,num(inv.current_version_errors),'Na janela recente.','amber')+
-  card('INSTALAÇÕES AFETADAS',num(inv.current_version_installations),'Onde apareceu um erro nesta versão.')+
-  card('MATRÍCULAS AFETADAS',num(inv.current_version_plates),'Quando a matrícula foi capturada.');
+  card('CONSULTAS COM ERRO NAS 24 H',num(total),'Consultas distintas em todas as versões.','red')+
+  card('EVENTOS DE ERRO NAS 24 H',num(inv.errors_24h),'Eventos técnicos brutos; podem repetir.','amber')+
+  card('CONSULTAS COM ERRO DA VERSÃO '+versionLabel,num(inv.current_version_errors),'Consultas distintas da versão atual.')+
+  card('EVENTOS DE ERRO DA VERSÃO '+versionLabel,num(inv.current_version_error_events),'Eventos técnicos brutos da versão atual.')+
+  card('INSTALAÇÕES AFETADAS',num(inv.current_version_installations),'Onde apareceu uma consulta com erro nesta versão.')+
+  card('MATRÍCULAS VÁLIDAS AFETADAS',num(inv.current_version_plates),'Matrículas com formato válido capturadas nos erros.');
  $('errorTypes').innerHTML=table(['TIPO','CONSULTAS','EVENTOS','ÚLTIMO REGISTO'],(e.types||[]).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'Desconhecido')+'</span>')+td('<strong>'+fmt(x.qty)+'</strong>')+td(fmt(x.event_qty??x.qty))+td(datePT(x.last_at))+'</tr>'));
  const bursts=inv.current_version_bursts_5m||[];$('errorBursts').innerHTML=table(['HORA','CONSULTAS','EVENTOS'],bursts.slice(0,12).map(x=>'<tr>'+td('<strong>'+datePT(x.start)+'</strong>')+td('<strong>'+fmt(x.count)+'</strong>')+td(fmt(x.event_count??x.count))+'</tr>'));
  $('errorReading').innerHTML=buildErrorReading(d);
