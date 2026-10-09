@@ -446,6 +446,19 @@ let imtQuerySequence = 0;
   const queryId = window.__VERIX_CURRENT_QUERY_ID || null;
   const sourceName = source || (frameId === 'reboqueFrame' ? 'livrete' : 'inspecao');
   const requestSequence = Number(sequence || imtQuerySequence || 0);
+  const trackNavigation = (eventName, outcome) => {
+    if (requestSequence !== imtQuerySequence) return;
+    try {
+      if (window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.track === 'function') {
+        window.VERIX_TELEMETRY.track(eventName, 'consulta', {
+          queryId,
+          source: sourceName,
+          navigationOutcome: outcome,
+          durationMs: Math.max(0, Date.now() - loadStartedAt)
+        });
+      }
+    } catch (_) {}
+  };
 
   mostrarLoading(frameId, overlayId);
   clearTimeout(imtTimers[frameId]);
@@ -485,12 +498,18 @@ let imtQuerySequence = 0;
         loadCheckTimer = setTimeout(verificarCarga, 250);
         return;
       }
-      if (requestSequence === imtQuerySequence) mostrarErroRedeIMT(frameId, overlayId);
+      if (requestSequence === imtQuerySequence) {
+        trackNavigation('imt_navigation_error', 'about_blank');
+        mostrarErroRedeIMT(frameId, overlayId);
+      }
       concluida = true;
       clearTimeout(imtTimers[frameId]);
       return;
     }
 
+    if (requestSequence === imtQuerySequence) {
+      trackNavigation('imt_navigation_loaded', sameOrigin ? 'same_origin_navigated' : 'cross_origin_unverified');
+    }
     terminou();
   };
 
@@ -507,6 +526,7 @@ let imtQuerySequence = 0;
     concluida = true;
     clearTimeout(imtTimers[frameId]);
     if (requestSequence === imtQuerySequence) {
+      trackNavigation('imt_navigation_error', 'frame_error');
       mostrarErroRedeIMT(frameId, overlayId);
     }
   };
@@ -515,6 +535,7 @@ let imtQuerySequence = 0;
     if (concluida) return;
     concluida = true;
     if (requestSequence === imtQuerySequence) {
+      trackNavigation('imt_navigation_error', 'timeout');
       mostrarErroRedeIMT(frameId, overlayId);
     }
   }, IMT_TIMEOUT_MS);
@@ -526,6 +547,7 @@ let imtQuerySequence = 0;
     concluida = true;
     clearTimeout(imtTimers[frameId]);
     if (requestSequence === imtQuerySequence) {
+      trackNavigation('imt_navigation_error', 'navigation_exception');
       mostrarErroRedeIMT(frameId, overlayId);
     }
   }
@@ -990,13 +1012,7 @@ function submitConjunto(event) {
    console.error('[ASF] Falha ao iniciar consulta:', e);
  }
 
- // Uma matrícula pesquisada = 1 resultado IMT no Admin,
- // independentemente de serem carregados os dois endpoints (inspeção + livrete).
- try {
-   if (window.VERIX_TELEMETRY && typeof window.VERIX_TELEMETRY.track === 'function') {
-     window.VERIX_TELEMETRY.track('imt_loaded', 'consulta', { queryId: window.__VERIX_CURRENT_QUERY_ID });
-   }
- } catch (_) {}
+ // A navegação dos iframes é instrumentada separadamente; não implica resultado IMT confirmado.
 
  ultimaMatriculaPesquisada = placaInspecao;
  ultimaMatriculaInspecao = placaInspecao;
@@ -17258,6 +17274,8 @@ html body .leg-card-new .copy-all-new{
     var out = {};
     if (m.queryId) out.queryId = String(m.queryId).slice(0, 120);
     if (m.source) out.source = String(m.source).slice(0, 80);
+    if (m.navigationOutcome) out.navigationOutcome = String(m.navigationOutcome).slice(0, 50);
+    if (typeof m.durationMs === 'number' && Number.isFinite(m.durationMs) && m.durationMs >= 0) out.durationMs = Math.round(m.durationMs);
     if (m.itemId) out.itemId = String(m.itemId).slice(0, 120);
     if (m.itemLabel) out.itemLabel = String(m.itemLabel).slice(0, 180);
     if (m.copyType) out.copyType = String(m.copyType).slice(0, 40);
