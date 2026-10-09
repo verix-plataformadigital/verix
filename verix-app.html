@@ -17349,7 +17349,7 @@ html body .leg-card-new .copy-all-new{
       event: String(event),
       module: module ? String(module).slice(0, 50) : null,
       occurredAt: new Date().toISOString(),
-      metadata: cleanMetadata(meta)
+      metadata: Object.assign(cleanMetadata(meta), { telemetry_schema: '3' })
     });
 
     saveQueue();
