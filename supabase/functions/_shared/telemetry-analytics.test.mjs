@@ -65,7 +65,7 @@ test("insurance results are cohort-based and invalid/orphan finals are surfaced"
   ];
   const result = summarizeQueryLifecycle(rows, {
     "24h": { start: "2026-10-08T00:00:00Z", end: "2026-10-09T00:00:00Z" },
-  }).24h;
+  })["24h"];
   assert.equal(result.started, 4);
   assert.equal(result.confirmed_starts, 3);
   assert.equal(result.inferred_starts, 1);
@@ -100,5 +100,5 @@ test("error summaries are version-aware and disclose when detail is sampled", ()
   assert.equal(result.unique_queries_in_sample, 2);
   assert.deepEqual(result.by_version.map((row) => row.app_version), ["1.5", "1.4"]);
   assert.equal(result.by_type.find((row) => row.type === "http_503").count, 2);
-  assert.ok(result.recent_errors[0].installation_id.length < "install-1234567890123456".length);
+  assert.ok(result.recent_errors.some((row) => row.installation_id === "install-…3456"));
 });
