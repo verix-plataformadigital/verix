@@ -456,7 +456,7 @@ insurance AS (
       'contradictory',(SELECT count(*) FROM query_quality WHERE first_at>=b.s24 AND outcome_state='contradictory'),
       'duplicate_finals',(SELECT count(*) FROM query_quality WHERE first_at>=b.s24 AND outcome_state='duplicate_finals'),
       'multi_final',(SELECT count(*) FROM query_quality WHERE first_at>=b.s24 AND final_event_count>1),
-      'orphan_finals',(SELECT count(*) FROM final_counts fc WHERE fc.occurred_at>=b.s24 AND NOT EXISTS(SELECT 1 FROM q WHERE q.query_id=fc.query_id))
+      'orphan_finals',(SELECT count(*) FROM final_counts fc WHERE fc.occurred_at>=b.s24 AND NOT EXISTS(SELECT 1 FROM public.verix2_events lookup_event WHERE lookup_event.event='vehicle_lookup' AND lookup_event.query_id=fc.query_id))
     ),
     '7d',jsonb_build_object(
       'started',(SELECT count(*) FROM q WHERE first_at>=b.s7),
@@ -469,7 +469,7 @@ insurance AS (
       'contradictory',(SELECT count(*) FROM query_quality WHERE first_at>=b.s7 AND outcome_state='contradictory'),
       'duplicate_finals',(SELECT count(*) FROM query_quality WHERE first_at>=b.s7 AND outcome_state='duplicate_finals'),
       'multi_final',(SELECT count(*) FROM query_quality WHERE first_at>=b.s7 AND final_event_count>1),
-      'orphan_finals',(SELECT count(*) FROM final_counts fc WHERE fc.occurred_at>=b.s7 AND NOT EXISTS(SELECT 1 FROM q WHERE q.query_id=fc.query_id))
+      'orphan_finals',(SELECT count(*) FROM final_counts fc WHERE fc.occurred_at>=b.s7 AND NOT EXISTS(SELECT 1 FROM public.verix2_events lookup_event WHERE lookup_event.event='vehicle_lookup' AND lookup_event.query_id=fc.query_id))
     ),
     '30d',jsonb_build_object(
       'started',(SELECT count(*) FROM q),
@@ -482,7 +482,7 @@ insurance AS (
       'contradictory',(SELECT count(*) FROM query_quality WHERE outcome_state='contradictory'),
       'duplicate_finals',(SELECT count(*) FROM query_quality WHERE outcome_state='duplicate_finals'),
       'multi_final',(SELECT count(*) FROM query_quality WHERE final_event_count>1),
-      'orphan_finals',(SELECT count(*) FROM final_counts fc WHERE NOT EXISTS(SELECT 1 FROM q WHERE q.query_id=fc.query_id))
+      'orphan_finals',(SELECT count(*) FROM final_counts fc WHERE NOT EXISTS(SELECT 1 FROM public.verix2_events lookup_event WHERE lookup_event.event='vehicle_lookup' AND lookup_event.query_id=fc.query_id))
     )
   ) data
   FROM b
