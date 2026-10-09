@@ -59,4 +59,14 @@ assert.deepEqual(parseReceipt(JSON.stringify(validReceipt)), validReceipt);
 assert.equal(parseReceipt('{"ok":true}'), null, "HTTP 200 without an application receipt must not clear the queue");
 assert.equal(parseReceipt('not-json'), null, "malformed receipt must not clear the queue");
 
-console.log("PASS: atomic ingest receipt, ID-based client acknowledgement, loss-safe beacon queue, query-quality metrics and Admin labels.");
+const presenceMigration = fs.readFileSync("supabase/migrations/20261009052000_fix_browser_presence_kpi.sql", "utf8");
+assert.match(endpoint, /"session_close"/, "server must accept browser-close presence events");
+assert.match(telemetryScript, /push\('session_close', null\)/, "pagehide must emit a browser-close event");
+assert.match(telemetryScript, /navigator\.sendBeacon\([\s\S]*events: \[closingEvent\]/, "browser-close event must be sent immediately through Beacon");
+assert.match(presenceMigration, /'online_now',\(SELECT count\(\*\)/, "online_now must count sessions, not installations");
+assert.match(presenceMigration, /last_presence >= p_now-interval '90 seconds'/, "online presence must expire after the heartbeat lease");
+assert.match(presenceMigration, /event IN \('app_open','heartbeat','session_close'\)/, "online presence must use lifecycle events only");
+assert.match(presenceMigration, /last_close IS NULL OR last_presence > last_close/, "a later close event must remove a session from the active count");
+assert.ok(admin.includes("Sessões VÉRIX com browser aberto."), "Ativos agora must describe browser sessions, not installations");
+
+console.log("PASS: atomic telemetry ingest, loss-safe beacon queue, lifecycle-aware open-browser KPI, session lease, query-quality metrics, and Admin labels.");
