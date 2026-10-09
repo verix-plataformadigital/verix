@@ -566,7 +566,6 @@ body {
   max-width: 100%;
   min-width: 0;
   grid-template-columns: minmax(0, 1fr);
-  overflow-x: clip;
 }
 
 .verix-layout {
@@ -574,7 +573,6 @@ body {
   max-width: 100%;
   min-width: 0;
   grid-template-columns: minmax(0, 1fr);
-  overflow-x: clip;
 }
 
 .verix-nav,
