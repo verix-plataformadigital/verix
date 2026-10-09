@@ -576,8 +576,8 @@ SELECT jsonb_build_object(
   'app15_errors',(SELECT count(*) FROM err),
   'app15_installations',(SELECT count(DISTINCT installation_id) FROM err),
   'app15_plates',(SELECT count(DISTINCT upper(regexp_replace(
-    coalesce(diagnostic->>'matricula',metadata->>'matricula',''),'[^A-Z0-9]','','g'
-  ))) FROM recent WHERE coalesce(diagnostic->>'matricula',metadata->>'matricula','')<>''),
+    coalesce(metadata->'asfDiagnostic'->>'matricula',metadata->>'matricula',''),'[^A-Z0-9]','','g'
+  ))) FROM err WHERE coalesce(metadata->'asfDiagnostic'->>'matricula',metadata->>'matricula','')<>''),
   'app15_hashes',(SELECT count(DISTINCT coalesce(nullif(metadata->'asfDiagnostic'->>'asfResponseHash',''),'sem-hash')) FROM err),
   'app15_types',coalesce((SELECT jsonb_agg(to_jsonb(x) ORDER BY x.count DESC,x.type) FROM by_type x),'[]'::jsonb),
   'app15_hashes_top',coalesce((SELECT jsonb_agg(to_jsonb(x) ORDER BY x.count DESC,x.hash) FROM by_hash x),'[]'::jsonb),
