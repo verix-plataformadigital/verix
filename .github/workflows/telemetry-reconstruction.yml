@@ -1,6 +1,8 @@
 name: Telemetry Reconstruction Regression
 
 on:
+  push:
+    branches: [telemetry-reconstruction]
   pull_request:
     branches: [main]
     paths:
