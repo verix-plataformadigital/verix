@@ -145,13 +145,18 @@ export function summarizeQueryLifecycle(events, windows) {
     );
     const startRows = lookups.length ? lookups : pendingEvents;
     const startAt = startRows.length ? Math.min(...startRows.map(timestampOf)) : null;
-    const final = finalRows.length ? finalRows[finalRows.length - 1] : null;
+    const rawFinal = finalRows.length ? finalRows[finalRows.length - 1] : null;
+    const terminalAt = rawFinal ? timestampOf(rawFinal) : null;
+    const outOfOrderFinal = terminalAt !== null && startAt !== null && terminalAt < startAt;
+    const final = rawFinal && !outOfOrderFinal ? rawFinal : null;
     return {
       query_id,
       start_at: startAt,
       start_source: lookups.length ? "vehicle_lookup" : pendingEvents.length ? "inferred_from_pending" : null,
       final_event: final?.event ?? null,
       final_at: final ? timestampOf(final) : null,
+      terminal_at: terminalAt,
+      out_of_order_final: outOfOrderFinal,
       terminal_event_count: terminalRows.length,
       conflicting,
       has_start: starts.length > 0,
@@ -177,11 +182,12 @@ export function summarizeQueryLifecycle(events, windows) {
       insured: cleanFinals.filter((query) => query.final_event === "vehicle_insurance_yes").length,
       uninsured: cleanFinals.filter((query) => query.final_event === "vehicle_insurance_no").length,
       errors: cleanFinals.filter((query) => query.final_event === "vehicle_insurance_error").length,
-      pending: cohort.filter((query) => query.terminal_event_count === 0).length,
+      pending: cohort.filter((query) => !query.final_event && !query.conflicting).length,
       conflicting_finals: cohort.filter((query) => query.conflicting).length,
       duplicate_terminal_events: cohort.reduce((sum, query) => sum + Math.max(0, query.terminal_event_count - 1), 0),
-      orphan_terminal_queries: queries.filter((query) => !query.has_start && query.final_at !== null && query.final_at >= start && query.final_at < end).length,
+      orphan_terminal_queries: queries.filter((query) => !query.has_start && query.terminal_at !== null && query.terminal_at >= start && query.terminal_at < end).length,
       completed_in_window: queries.filter((query) => query.final_at !== null && query.final_at >= start && query.final_at < end && !query.conflicting).length,
+      out_of_order_final_queries: cohort.filter((query) => query.out_of_order_final).length,
     };
   }
   return result;
