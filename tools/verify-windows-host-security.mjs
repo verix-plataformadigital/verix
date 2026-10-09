@@ -220,7 +220,7 @@ const deployGuard = [
   "    # workflow_dispatch can be started from any branch. Never let a PR branch publish to production Pages.",
   "    if: github.ref == 'refs/heads/main'",
   "    needs: build"
-].join("\\n");
+].join("\n");
 if (!pagesWorkflow.includes(deployGuard)) {
   throw new Error("GitHub Pages production deploy must be restricted to refs/heads/main.");
 }
