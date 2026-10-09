@@ -17092,6 +17092,7 @@ html body .leg-card-new .copy-all-new{
   var retryStep = 0;
   var lastAction = Object.create(null);
   var legSearchTimer = null;
+  var cinEntryTimer = null;
 
   function uid(prefix) {
     try {
@@ -17262,6 +17263,28 @@ html body .leg-card-new .copy-all-new{
     if (m.itemLabel) out.itemLabel = String(m.itemLabel).slice(0, 180);
     if (m.copyType) out.copyType = String(m.copyType).slice(0, 40);
     if (m.asfUserMessage) out.asfUserMessage = String(m.asfUserMessage).slice(0, 500);
+    // Cinemómetro: guardar apenas campos operacionais não identificativos.
+    // Nunca incluir matrícula, nome/número do operador ou número de série do aparelho.
+    if (m.cin && typeof m.cin === 'object') {
+      var c = m.cin;
+      function cleanNum(value) {
+        if (value == null || String(value).trim() === '') return null;
+        var n = Number(value);
+        return Number.isFinite(n) ? n : null;
+      }
+      out.cin = {
+        operation_id: c.operation_id ? String(c.operation_id).slice(0, 120) : null,
+        velocidade_registada: cleanNum(c.velocidade_registada),
+        velocidade_deduzida: cleanNum(c.velocidade_deduzida),
+        limite: cleanNum(c.limite),
+        modo: c.modo ? String(c.modo).slice(0, 40) : null,
+        veiculo: c.veiculo ? String(c.veiculo).slice(0, 40) : null,
+        regime: c.regime ? String(c.regime).slice(0, 40) : null,
+        gravidade: c.gravidade ? String(c.gravidade).slice(0, 40) : null,
+        codigo: c.codigo ? String(c.codigo).slice(0, 100) : null,
+        excesso: cleanNum(c.excesso)
+      };
+    }
     // Contexto técnico do cliente para diagnosticar diferenças entre browser/OS/rede.
     out.client = {
       browser: browserName(),
@@ -17327,7 +17350,7 @@ html body .leg-card-new .copy-all-new{
       event: String(event),
       module: module ? String(module).slice(0, 50) : null,
       occurredAt: new Date().toISOString(),
-      metadata: cleanMetadata(meta)
+      metadata: Object.assign(cleanMetadata(meta), { telemetry_schema: '3' })
     });
 
     saveQueue();
@@ -17511,6 +17534,50 @@ html body .leg-card-new .copy-all-new{
     } catch (_) {}
   }
 
+  function cinTelemetryField(id) {
+    var el = document.getElementById(id);
+    if (!el) return null;
+    var raw = typeof el.value !== 'undefined' ? el.value : el.textContent;
+    var value = String(raw == null ? '' : raw).trim();
+    return value ? value.slice(0, 100) : null;
+  }
+
+  function cinTelemetryNumber(id, min, max) {
+    var raw = cinTelemetryField(id);
+    if (raw == null) return null;
+    var value = Number(raw.replace(/\s/g, '').replace(',', '.'));
+    return Number.isFinite(value) && value >= min && value <= max ? value : null;
+  }
+
+  function cinTelemetrySnapshot() {
+    var speed = cinTelemetryNumber('cinRegistada', 0, 400);
+    var limit = cinTelemetryNumber('cinLimite', 0, 300);
+    var mode = cinTelemetryField('cinSessaoModo');
+    var vehicle = cinTelemetryField('cinVeiculo');
+    var regime = cinTelemetryField('cinRegime');
+    var fingerprint = [speed, limit, mode || '', vehicle || '', regime || ''].join('|');
+    var now = Date.now();
+    if (!window.__VERIX_CIN_OPERATION_ID ||
+        window.__VERIX_CIN_FINGERPRINT !== fingerprint ||
+        now - Number(window.__VERIX_CIN_OPERATION_AT || 0) > 300000) {
+      window.__VERIX_CIN_OPERATION_ID = uid('cin');
+      window.__VERIX_CIN_FINGERPRINT = fingerprint;
+    }
+    window.__VERIX_CIN_OPERATION_AT = now;
+    return {
+      operation_id: window.__VERIX_CIN_OPERATION_ID,
+      velocidade_registada: speed,
+      velocidade_deduzida: cinTelemetryNumber('cinDeducida', 0, 400),
+      limite: limit,
+      modo: mode,
+      veiculo: vehicle,
+      regime: regime,
+      gravidade: cinTelemetryField('cinGravidade'),
+      codigo: cinTelemetryField('cinCodigo'),
+      excesso: cinTelemetryNumber('cinExcesso', -400, 400)
+    };
+  }
+
   function installWrappers() {
     wrap('abrirConsultaPrincipal', function () {
       push('module_open', 'consulta');
@@ -17582,7 +17649,10 @@ html body .leg-card-new .copy-all-new{
 
     wrap('cinRecalcular', function () {
       if (rateLimited('cin_recalculate', 3000)) {
-        push('cinemometer_calculation', 'cinemometro');
+        // Capturar depois do cálculo síncrono, para ler o resultado atualizado.
+        setTimeout(function () {
+          push('cinemometer_calculation', 'cinemometro', { cin: cinTelemetrySnapshot() });
+        }, 0);
       }
     });
 
@@ -17678,10 +17748,13 @@ html body .leg-card-new .copy-all-new{
       }
 
       if (ev.target && ev.target.id === 'cinRegistada') {
-        var value = String(ev.target.value || '').trim();
-        if (value && rateLimited('cin_speed_entry', 2000)) {
-          push('cinemometer_speed_entry', 'cinemometro');
-        }
+        clearTimeout(cinEntryTimer);
+        cinEntryTimer = setTimeout(function () {
+          var snapshot = cinTelemetrySnapshot();
+          if (snapshot.velocidade_registada !== null) {
+            push('cinemometer_speed_entry', 'cinemometro', { cin: snapshot });
+          }
+        }, 700);
       }
     }, true);
 

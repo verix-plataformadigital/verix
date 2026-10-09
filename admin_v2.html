@@ -436,7 +436,7 @@ function renderLoadFailure(){
  hosts.forEach(id=>{const host=$(id);if(host&&host.querySelector('.skeleton,.skeleton-chart,.skeleton-grid'))host.innerHTML='<div class="empty">Os dados ainda não estão disponíveis.</div>'});
 }
 function wireDashboardDrilldowns(){
- const routes={'ATIVOS AGORA':'usage','UTILIZADORES':'usage','CONSULTAS DE SEGURO':'insurance','COM SEGURO':'insurance','SEM REGISTO':'insurance','ERROS ASF':'errors','CINEMÓMETRO':'speed'};
+ const routes={'ATIVOS AGORA':'usage','INSTALAÇÕES':'usage','CONSULTAS DE SEGURO':'insurance','COM SEGURO':'insurance','SEM REGISTO':'insurance','ERROS ASF · COORTE':'errors','CINEMÓMETRO':'speed'};
  const host=$('dashCards');if(!host)return;
  host.querySelectorAll('.card').forEach(el=>{const label=el.querySelector('.label')?.textContent.trim();const page=routes[label];if(!page)return;el.dataset.drillPage=page;el.setAttribute('role','button');el.setAttribute('tabindex','0');el.setAttribute('aria-label','Ver detalhes: '+label);if(['CONSULTAS DE SEGURO','SEM REGISTO','ERROS ASF'].includes(label))el.classList.add('key-metric')});
 }
@@ -473,7 +473,7 @@ function applyPlateErrorSearch(){
  const empty=$('plateErrorSearchEmpty');if(empty)empty.classList.toggle('hidden',!(query&&rows.length>0&&matches===0));
 }
 function barList(id,rows,tone=''){const host=$(id);if(!host)return;if(!rows?.length){host.innerHTML='<div class="empty">Sem dados suficientes.</div>';return}const max=Math.max(1,...rows.map(x=>Number(x.value)||0));host.innerHTML=rows.slice(0,12).map(x=>'<div class="bar-row"><div class="bar-label" title="'+esc(x.label)+'">'+esc(x.label)+'</div><div class="track"><div class="fill '+tone+'" style="width:'+Math.max(2,(Number(x.value)||0)/max*100)+'%"></div></div><div class="num">'+fmt(x.value)+'</div></div>').join('')}
-function monthlyChart(id,rows,key){const host=$(id);if(!host)return;if(!rows?.length){host.innerHTML='<div class="empty" style="width:100%">Sem dados suficientes.</div>';return}const vals=rows.map(x=>Number(x[key]||0));const max=Math.max(1,...vals);host.setAttribute('role','group');host.setAttribute('aria-label','Atividade diária. Foca uma barra para consultar o dia e o valor.');host.innerHTML=rows.map(x=>{const label=String(x.day_key||'');const value=fmt(x[key]||0);const unit=key==='users'?'utilizadores':key==='lookups'?'consultas':key;return '<div class="chart-col" tabindex="0" role="img" aria-label="'+esc(label+': '+value+' '+unit)+'" title="'+esc(label+' · '+value+' '+unit)+'"><div class="chart-bar" aria-hidden="true" style="height:'+Math.max(3,(Number(x[key]||0)/max)*100)+'%"></div><div class="chart-label" aria-hidden="true">'+esc(label.slice(5))+'</div></div>'}).join('')}
+function monthlyChart(id,rows,key){const host=$(id);if(!host)return;if(!rows?.length){host.innerHTML='<div class="empty" style="width:100%">Sem dados suficientes.</div>';return}const vals=rows.map(x=>Number(x[key]||0));const max=Math.max(1,...vals);host.setAttribute('role','group');host.setAttribute('aria-label','Atividade diária. Foca uma barra para consultar o dia e o valor.');host.innerHTML=rows.map(x=>{const label=String(x.day_key||'');const value=fmt(x[key]||0);const unit=key==='users'?'instalações':key==='lookups'?'consultas':key;return '<div class="chart-col" tabindex="0" role="img" aria-label="'+esc(label+': '+value+' '+unit)+'" title="'+esc(label+' · '+value+' '+unit)+'"><div class="chart-bar" aria-hidden="true" style="height:'+Math.max(3,(Number(x[key]||0)/max)*100)+'%"></div><div class="chart-label" aria-hidden="true">'+esc(label.slice(5))+'</div></div>'}).join('')}
 function hourGrid(id,rows){const host=$(id);if(!host)return;if(!rows?.length){host.innerHTML='<div class="empty">Sem dados.</div>';return}const max=Math.max(1,...rows.map(x=>Number(x.actions||0)));host.innerHTML=rows.map(x=>{const hour=String(x.hour_num??'').padStart(2,'0')+'h';const actions=fmt(x.actions||0);return '<div class="hour" role="img" aria-label="'+esc(hour+': '+actions+' ações')+'" title="'+esc(hour+' · '+actions+' ações')+'" style="opacity:'+Math.max(.35,(Number(x.actions||0)/max))+'"><b>'+esc(hour)+'</b><span>'+actions+'</span></div>'}).join('')}
 function token(){return sessionStorage.getItem(TOKEN_KEY)||''}
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.remove('hidden');clearTimeout(window.__toastTimer);window.__toastTimer=setTimeout(()=>t.classList.add('hidden'),2200)}
@@ -527,14 +527,14 @@ async function ensurePageDetail(page){
 function renderDashboard(d){
  const a=d.analytics||{},o=a.overview||{},p=period(),ret=a.retention||{},u=a.usage||{},s=u.sessions?.[currentPeriod]||{},speed=a.speed?.summary||{},life=d.lifetime||{},invest=d.investigation||{};
  const users=Number(o['unique_'+currentPeriod]||0),lookups=Number(p.started||0),fin=Number(p.finals||0),insured=Number(p.insured||0),uninsured=Number(p.uninsured||0),errs=Number(p.errors||0),dec=insured+uninsured;
- const noRate=dec?100*uninsured/dec:null,errorRate=fin?100*errs/fin:null;
+ const noRate=dec?100*uninsured/dec:null,errorRate=fin?100*errs/fin:null,diagnosticCoverage=a.telemetry?.asf_diagnostic_coverage_30d;
  $('dashCards').innerHTML=
   card('ATIVOS AGORA',num(o.online_now),'Instalações com atividade recente.','green')+
-  card('UTILIZADORES',num(users),'Instalações com atividade no período.','cyan')+
+  card('INSTALAÇÕES',num(users),'IDs de instalação observados; não representam pessoas únicas.','cyan')+
   card('CONSULTAS DE SEGURO',num(lookups),'Pedidos iniciados.','blue')+
   card('COM SEGURO',num(insured),pct(dec?100*insured/dec:null)+' das decisões.','green')+
   card('SEM REGISTO',num(uninsured),pct(noRate)+' das decisões.','red')+
-  card('ERROS ASF',num(errs),pct(errorRate)+' dos resultados finais.','amber')+
+  card('ERROS ASF · COORTE',num(errs),pct(errorRate)+' dos resultados das consultas iniciadas no período.','amber')+
   card('CINEMÓMETRO',num(speed.calculations_24h),'Cálculos nas últimas 24 H.','');
  wireDashboardDrilldowns();
  const mods=(u.modules||[]).map(x=>({label:x.module,value:x.qty}));barList('dashModules',mods);
@@ -543,10 +543,12 @@ function renderDashboard(d){
  const peakHour=hours.slice().sort((x,y)=>Number(y.actions||0)-Number(x.actions||0))[0];
  const peakDay=(u.daily||[]).slice().sort((x,y)=>Number(y.lookups||0)-Number(x.lookups||0))[0];
  const topModule=mods[0];
- $('heroInsight').innerHTML='<div class="k">LEITURA PRINCIPAL</div><div class="v">'+(errorRate!=null&&errorRate>8?'Existem erros a acompanhar.':errorRate!=null&&errorRate>3?'Há alguns erros a acompanhar.':'Não há erros relevantes observados nesta janela.')+'</div><div class="s">'+(peakHour?'Hora mais ativa: '+String(peakHour.hour_num).padStart(2,'0')+'h. ':'')+(topModule?'Módulo mais usado: '+esc(topModule.label)+'.':'')+'</div>';
+ const heroMessage=fin===0?'Dados insuficientes para avaliar a taxa de erro nesta janela.':errorRate!=null&&errorRate>8?'Existem erros a acompanhar.':errorRate!=null&&errorRate>3?'Há alguns erros a acompanhar.':'Taxa de erro observada abaixo do limiar de atenção nesta janela.';
+ const heroCaveat=diagnosticCoverage!=null&&diagnosticCoverage<80?'Cobertura do diagnóstico ASF (30 d): '+pct(diagnosticCoverage)+'. ':'';
+ $('heroInsight').innerHTML='<div class="k">LEITURA PRINCIPAL</div><div class="v">'+heroMessage+'</div><div class="s">'+heroCaveat+(peakHour?'Hora mais ativa: '+String(peakHour.hour_num).padStart(2,'0')+'h. ':'')+(topModule?'Módulo mais usado: '+esc(topModule.label)+'.':'')+'</div>';
  $('dashReading').innerHTML=
-  metric('Novos utilizadores',num(ret[currentPeriod]?.new))+
-  metric('Utilizadores que regressaram',num(ret[currentPeriod]?.returning))+
+  metric('Novas instalações',num(ret[currentPeriod]?.new))+
+  metric('Instalações recorrentes',num(ret[currentPeriod]?.returning))+
   metric('Média de ações por sessão',num(s.avg_actions))+
   metric('Sessões com vários módulos',pct(s.multi_module_pct));
  $('dashFun').innerHTML=
@@ -568,12 +570,16 @@ function renderInsurance(d){
   card('COM SEGURO',num(yes),pct(dec?100*yes/dec:null)+' das decisões.','green')+
   card('SEM REGISTO',num(no),pct(noRate)+' das decisões.','red');
  $('insuranceSummary').innerHTML=
-  '<div class="explain"><strong>Como ler:</strong> “Sem registo” significa que a consulta foi concluída mas não foi encontrado registo para a situação consultada. Um erro técnico fica separado e não entra aqui.</div>'+
+  '<div class="explain"><strong>Como ler:</strong> os resultados são atribuídos à coorte de consultas iniciadas no período. “Sem registo” significa consulta concluída sem registo encontrado; erros técnicos ficam separados. Inícios inferidos provêm de eventos pendentes sem evento de início confirmado. “Eventos terminais na janela” inclui também terminais sem início observado; esses casos são contabilizados separadamente como órfãos.</div>'+
   '<div class="kpi-strip" style="margin-top:10px">'+
   metric('Erros',num(err))+
   metric('Taxa de erro',pct(errorRate))+
   metric('Pendentes',num(p.pending))+
   metric('Resultados conhecidos',pct(started?100*fin/started:null))+
+  metric('Inícios inferidos',num(p.inferred_starts))+
+  metric('Resultados contraditórios',num(p.conflicting_final))+
+  metric('Terminais sem início observado',num(p.orphan_terminal))+
+  metric('Eventos terminais na janela',num(p.completed_in_window))+
   '</div>';
  const q=a.insurance_quality||{};const diag=d.diagnostics?.quality_24h||{};
  /* As métricas de latência são renderizadas na página Desempenho. */
@@ -586,18 +592,29 @@ function renderInsurance(d){
   '<p>Os detalhes técnicos servem para investigação. Não são apresentados como diagnóstico de causa sem evidência suficiente.</p>';
 }
 function renderSpeed(d){
- const c=d.cinemometer||{},a=d.analytics||{},s=c||a.speed?.summary||{};
- const calc=Number(s.calculations||s.calculations_24h||0),sessions=Number(s.sessions||0),compat=Number(s.sessions_compatible||0),atyp=Number(s.sessions_atypical||0),p50=s.speed_p50??s.p50_24h,avg=s.speed_avg??s.avg_24h,min=s.speed_min??s.min_24h,max=s.speed_max??s.max_24h;
+ const c=d.cinemometer||{},a=d.analytics||{},summary=a.speed?.summary||{},s=Object.assign({},summary,c);
+ s.calculations=summary.calculations_24h??c.calculations??0;
+ s.speed_entries=summary.speed_entries_24h??c.speed_entries??0;
+ s.measurements=summary.measurements_24h??c.measurements??0;
+ s.avg_speed=summary.avg_24h??c.avg_speed??null;
+ s.speed_p50=summary.p50_24h??c.speed_p50??null;
+ s.speed_min=summary.min_24h??c.speed_min??null;
+ s.speed_max=summary.max_24h??c.speed_max??null;
+ const calc=Number(s.calculations||0),sessions=Number(s.sessions||0),compat=Number(s.sessions_compatible||0),atyp=Number(s.sessions_atypical||0),p50=s.speed_p50,avg=s.avg_speed,min=s.speed_min,max=s.speed_max;
  $('speedCards').innerHTML=
-  card('CÁLCULOS',num(calc),'Últimas 24 horas.','cyan')+
-  card('VELOCIDADE MÉDIA',avg==null?'—':fmt(avg)+' km/h','Média das velocidades disponíveis.')+
-  card('VELOCIDADE MEDIANA',p50==null?'—':fmt(p50)+' km/h','Valor central.','blue')+
-  card('MÍNIMO / MÁXIMO',min==null?'—':fmt(min)+' / '+fmt(max)+' km/h','Valores observados.');
+  card('CÁLCULOS',num(calc),'Eventos de cálculo brutos nas últimas 24 horas.','cyan')+
+  card('ENTRADAS DE VELOCIDADE',num(s.speed_entries),'Eventos de entrada; podem não ter sido calculados.')+
+  card('MEDIÇÕES CALCULADAS',num(s.measurements),'Cálculos únicos por operação e velocidade.','green')+
+  card('VELOCIDADE MÉDIA',avg==null?'—':fmt(avg)+' km/h','Média das medições calculadas.')+
+  card('VELOCIDADE MEDIANA',p50==null?'—':fmt(p50)+' km/h','Valor central das medições calculadas.','blue')+
+  card('VELOCIDADE DEDUZIDA · MEDIANA',s.deduced_p50_24h==null?'—':fmt(s.deduced_p50_24h)+' km/h','Resultado do cálculo registado na telemetria.')+
+  card('MÍNIMO / MÁXIMO',min==null?'—':fmt(min)+' / '+fmt(max)+' km/h','Valores das medições calculadas.');
  const dist=(a.speed?.distribution_24h||[]).length?(a.speed.distribution_24h):[];
  if(dist.length){const mx=Math.max(1,...dist.map(x=>Number(x.qty)||0));$('speedDistribution').innerHTML=dist.map(x=>'<div class="bar-row" style="margin-bottom:8px"><div class="bar-label">'+esc(x.bucket_start+'–'+(Number(x.bucket_start)+9)+' km/h')+'</div><div class="track"><div class="fill" style="width:'+Math.max(2,Number(x.qty)/mx*100)+'%"></div></div><div class="num">'+fmt(x.qty)+'</div></div>').join('')}else $('speedDistribution').innerHTML='<div class="empty">Ainda não existe detalhe suficiente para desenhar a distribuição.</div>';
  const flags=c.flag_counts||{},pattern=c.pattern_counts||{};
- $('speedPatterns').innerHTML=
-  metric('Sessões',num(sessions))+
+ const sampleNotice=c.sampled?'<div class="warnbox" style="margin-bottom:10px">A análise detalhada usa '+fmt(c.sample_count)+' de '+fmt(c.total_events)+' eventos disponíveis nas últimas 24 horas; as métricas indicam quando a amostra está truncada.</div>':'';
+ $('speedPatterns').innerHTML=sampleNotice+
+  metric('Operações / grupos',num(sessions))+
   metric('Para revisão',num(atyp))+
   metric('Compatíveis com utilização operacional',num(compat))+
   metric('Sessões com dados insuficientes',num(pattern.dados_insuficientes))+
@@ -608,10 +625,11 @@ function renderSpeed(d){
  barList('speedLimits',(dims.limite||[]).map(x=>({label:x.value||'—',value:x.qty})));
  barList('speedCodes',(dims.codigo||[]).map(x=>({label:x.value||'—',value:x.qty})));
  const ss=Array.isArray(c.recent_sessions)?c.recent_sessions:[];
- $('speedSessions').innerHTML=table(['INÍCIO','DURAÇÃO','CÁLCULOS','VELOCIDADES','LEITURA'],ss.slice(0,30).map(x=>{
+ $('speedSessions').innerHTML=table(['INÍCIO','AGRUPAMENTO','DURAÇÃO','MEDIÇÕES','VELOCIDADES','LEITURA'],ss.slice(0,30).map(x=>{
    const mins=x.duration_min==null?'—':Number(x.duration_min).toFixed(1).replace('.',',')+' min';
    const read=x.pattern==='padrao_atipico_a_rever'?'<span class="tag red">PARA REVER</span>':x.pattern==='compativel_com_uso_operacional'?'<span class="tag">COMPATÍVEL (HEURÍSTICA)</span>':'<span class="tag amber">POUCOS DADOS</span>';
-   return '<tr>'+td(datePT(x.first_seen))+td(mins)+td(fmt(x.calculations))+td(x.min_speed==null?'—':fmt(x.min_speed)+'–'+fmt(x.max_speed)+' km/h')+td(read)+'</tr>';
+   const basis=x.grouping_basis==='operation'?'Operação':x.grouping_basis==='session'?'Sessão (sem ID de operação)':'Evento isolado';
+   return '<tr>'+td(datePT(x.first_seen))+td(esc(basis))+td(mins)+td(fmt(x.calculations))+td(x.min_speed==null?'—':fmt(x.min_speed)+'–'+fmt(x.max_speed)+' km/h')+td(read)+'</tr>';
  })).slice(0,40000);
 }
 function renderLegislation(d){
@@ -628,38 +646,46 @@ function renderLegislation(d){
 function renderUsage(d){
  const a=d.analytics||{},o=a.overview||{},r=a.retention||{},u=a.usage||{},s=u.sessions?.[currentPeriod]||{};
  $('usageCards').innerHTML=
-  card('UTILIZADORES',num(o['unique_'+currentPeriod]),'Instalações com atividade.','cyan')+
-  card('NOVOS',num(r[currentPeriod]?.new),'Primeira aparição no período.')+
-  card('QUE REGRESSARAM',num(r[currentPeriod]?.returning),'Já tinham aparecido antes.','green')+
-  card('AÇÕES REGISTADAS',num(o['events_'+currentPeriod]),'Eventos de utilização.');
+  card('INSTALAÇÕES',num(o['unique_'+currentPeriod]),'IDs de instalação com atividade; não são pessoas únicas.','cyan')+
+  card('NOVAS INSTALAÇÕES',num(r[currentPeriod]?.new),'Primeira aparição da instalação no período.')+
+  card('INSTALAÇÕES RECORRENTES',num(r[currentPeriod]?.returning),'Instalações vistas antes do período.','green')+
+  card('AÇÕES REGISTADAS',num(o['actions_'+currentPeriod]??o['events_'+currentPeriod]),'Eventos sem heartbeats de presença.');
  barList('usageModules',(u.modules||[]).map(x=>({label:x.module,value:x.qty})));
  hourGrid('usageHours',u.hourly||[]);
  monthlyChart('usageDaily',u.daily||[],'users');
  $('usageTransitions').innerHTML=table(['DE','PARA','VEZES'],(u.transitions||[]).slice(0,20).map(x=>'<tr>'+td('<strong>'+esc(x.from_module||'—')+'</strong>')+td(esc(x.to_module||'—'))+td(fmt(x.qty))+'</tr>'));
 }
 function renderErrors(d){
- const e=d.analytics?.errors||{},inv=d.investigation||{},q=period(),te=d.analytics?.telemetry||{};
- const total=(e.types||[]).reduce((s,x)=>s+Number(x.qty||0),0);
+ const e=d.analytics?.errors||{},inv=d.investigation||{};
+ const totalQueries=Number(e.affected_queries??(e.types||[]).reduce((sum,x)=>sum+Number(x.qty||0),0));
+ const totalEvents=(e.types||[]).reduce((sum,x)=>sum+Number(x.event_count??x.qty??0),0);
+ const installations=Number(e.affected_installations??0),versions=e.by_version||[];
  $('errorCards').innerHTML=
-  card('ERROS NAS 24 H',num(total),'Falhas classificadas.','red')+
-  card('ERROS DA 1.4',num(inv.app14_errors),'Na janela recente.','amber')+
-  card('INSTALAÇÕES AFETADAS',num(inv.app14_installations),'Onde apareceu um erro 1.4.')+
-  card('MATRÍCULAS AFETADAS',num(inv.app14_plates),'Quando a matrícula foi capturada.');
- $('errorTypes').innerHTML=table(['TIPO','QUANTIDADE','ÚLTIMO REGISTO'],(e.types||[]).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'Desconhecido')+'</span>')+td('<strong>'+fmt(x.qty)+'</strong>')+td(datePT(x.last_at))+'</tr>'));
- const bursts=inv.app14_bursts_5m||[];$('errorBursts').innerHTML=table(['HORA','ERROS'],bursts.slice(0,12).map(x=>'<tr>'+td('<strong>'+datePT(x.start)+'</strong>')+td('<strong>'+fmt(x.count)+'</strong>')+'</tr>'));
+  card('QUERIES COM ERRO · 24 H',num(totalQueries),'IDs de consulta únicos; eventos repetidos não inflacionam o total.','red')+
+  card('INSTALAÇÕES AFETADAS',num(installations),'Instalações com pelo menos uma consulta com erro.','amber')+
+  card('VERSÕES AFETADAS',num(versions.length),'Versões observadas nos erros da janela.')+
+  card('DIAGNÓSTICO DISPONÍVEL',pct(e.diagnostic_coverage_pct),'Erros com pelo menos um campo técnico útil.');
+ $('errorTypes').innerHTML=table(['TIPO','QUERIES ÚNICAS','EVENTOS','ÚLTIMO REGISTO'],(e.types||[]).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'Desconhecido')+'</span>')+td('<strong>'+fmt(x.qty)+'</strong>')+td(fmt(x.event_count??x.qty))+td(datePT(x.last_at))+'</tr>'));
+ const bursts=e.bursts||[];
+ $('errorBursts').innerHTML=bursts.length?table(['JANELA DE 5 MIN','QUERIES','INSTALAÇÕES'],bursts.slice(0,12).map(x=>'<tr>'+td('<strong>'+datePT(x.bucket_start)+'</strong>')+td('<strong>'+fmt(x.qty)+'</strong>')+td(fmt(x.installs))+'</tr>')):'<div class="empty">Sem erros na janela atual.</div>';
  $('errorReading').innerHTML=buildErrorReading(d);
- $('errorInstallations').innerHTML=table(['INSTALAÇÃO','ERROS','QUERIES'],(e.installations||[]).slice(0,15).map(x=>'<tr>'+td('<strong>'+esc(x.installation_id||'—')+'</strong>')+td(fmt(x.qty))+td(fmt(x.queries))+'</tr>'));
- $('errorSignatures').innerHTML=table(['TIPO','QUANTIDADE','INSTALAÇÕES'],(e.signatures||[]).slice(0,15).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'—')+'</span>')+td(fmt(x.qty))+td(fmt(x.installs))+'</tr>'));
- const recent=inv.latest_app14||[];
- $('errorTechnical').innerHTML=recent.length?'<table class="table"><thead><tr><th>Hora</th><th>Browser</th><th>Transporte</th><th>Tipo</th><th>HTTP</th><th>ASF ms</th><th>Relay ms</th><th>Hash</th></tr></thead><tbody>'+recent.slice(0,15).map(x=>'<tr>'+td(datePT(x.occurred_at))+td(esc(x.browser||'—'))+td(esc(x.transport||'—'))+td(esc(x.error_type||'—'))+td(x.http_status==null?'—':fmt(x.http_status))+td(x.duration_ms==null?'—':fmt(x.duration_ms)+' ms')+td(x.relay_latency_ms==null?'—':fmt(x.relay_latency_ms)+' ms')+td(esc(x.response_hash||'—'))+'</tr>').join('')+'</tbody></table>':'<div class="empty">Sem incidentes recentes.</div>';
+ $('errorInstallations').innerHTML=table(['INSTALAÇÃO','QUERIES ÚNICAS','EVENTOS'],(e.installations||[]).slice(0,15).map(x=>'<tr>'+td('<strong>'+esc(x.installation_id||'—')+'</strong>')+td(fmt(x.queries??x.qty))+td(fmt(x.event_count??x.qty))+'</tr>'));
+ $('errorSignatures').innerHTML=table(['TIPO','QUERIES ÚNICAS','INSTALAÇÕES'],(e.signatures||[]).slice(0,15).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'—')+'</span>')+td(fmt(x.queries??x.qty))+td(fmt(x.installs))+'</tr>'));
+ const recent=inv.recent_errors||[];
+ const sampleNotice=inv.sampled?'<div class="warnbox" style="margin-bottom:10px">A tabela técnica mostra uma amostra de '+fmt(inv.sample_count)+' em '+fmt(inv.total_errors)+' eventos de erro. Os totais acima vêm dos agregados do servidor.</div>':'';
+ $('errorTechnical').innerHTML=sampleNotice+(recent.length?'<table class="table"><thead><tr><th>Hora</th><th>Versão</th><th>Browser</th><th>Transporte</th><th>Tipo</th><th>HTTP</th><th>ASF ms</th><th>Relay ms</th><th>Hash</th></tr></thead><tbody>'+recent.slice(0,15).map(x=>'<tr>'+td(datePT(x.occurred_at))+td(esc(x.app_version||'—'))+td(esc(x.browser||'—'))+td(esc(x.transport||'—'))+td(esc(x.error_type||'—'))+td(x.http_status==null?'—':fmt(x.http_status))+td(x.duration_ms==null?'—':fmt(x.duration_ms)+' ms')+td(x.relay_latency_ms==null?'—':fmt(x.relay_latency_ms)+' ms')+td(esc(x.response_hash||'—'))+'</tr>').join('')+'</tbody></table>':'<div class="empty">Sem eventos de erro recentes na amostra consultada.</div>');
  function buildErrorReading(data){
-   const n=Number(inv.app14_errors||0),inst=Number(inv.app14_installations||0),hashes=Number(inv.app14_hashes||0);
+   const n=Number(e.affected_queries??0),inst=Number(e.affected_installations??0),hashes=Number(e.signature_count??(e.signatures||[]).length);
    const types=(e.types||[]).slice().sort((a,b)=>Number(b.qty||0)-Number(a.qty||0));
    const top=types[0];
    let html='';
-   if(!n) html+='<div class="goodbox"><strong>Não existem erros 1.4 nas últimas 24 horas.</strong><br>A janela atual não mostra um incidente ativo.</div>';
-   else html+='<div class="warnbox"><strong>Existem '+fmt(n)+' falhas na versão 1.4 nas últimas 24 horas.</strong><br>Foram observadas em '+fmt(inst)+' instalações e '+fmt(hashes)+' assinaturas de resposta. Isto mostra concentração técnica; não determina sozinho a causa.</div>';
-   if(top) html+='<div style="margin-top:10px" class="explain"><strong>Tipo mais frequente:</strong> '+esc(top.kind||'desconhecido')+' · '+fmt(top.qty)+' ocorrências.<br><strong>Como ler:</strong> devemos cruzar hora, instalação, browser e resposta antes de atribuir a origem do problema.</div>';
+   if(!n) html+='<div class="goodbox"><strong>Não foram observadas queries com erro nesta janela.</strong><br>Isto não prova ausência de falhas fora da janela nem de eventos que não tenham chegado à telemetria.</div>';
+   else html+='<div class="warnbox"><strong>'+fmt(n)+' queries únicas com erro nas últimas 24 horas.</strong><br>Foram observadas em '+fmt(inst)+' instalações, com '+fmt(totalEvents)+' eventos e '+fmt(hashes)+' assinaturas técnicas. Isto mostra a dimensão observada, não determina sozinho a causa.</div>';
+   if(top) html+='<div style="margin-top:10px" class="explain"><strong>Tipo mais frequente:</strong> '+esc(top.kind||'desconhecido')+' · '+fmt(top.qty)+' queries únicas ('+fmt(top.event_count??top.qty)+' eventos).<br><strong>Como ler:</strong> cruzar hora, versão, instalação, browser e resposta antes de atribuir a origem.</div>';
+   const lowCoverageVersions=versions.filter(x=>x.diagnostic_pct!=null&&Number(x.diagnostic_pct)<50);
+   if(lowCoverageVersions.length) html+='<div class="warnbox" style="margin-top:10px"><strong>Cobertura técnica baixa em versões:</strong> '+lowCoverageVersions.map(x=>esc(x.app_version||'Unknown')+' / '+esc(x.telemetry_schema||'legacy')+' ('+pct(x.diagnostic_pct)+')').join(', ')+'. Nestas versões, a telemetria não permite atribuir com confiança a causa de todos os erros.</div>';
+   if(versions.length) html+='<div style="margin-top:10px">'+table(['VERSÃO','ESQUEMA','QUERIES COM ERRO','INSTALAÇÕES','EVENTOS','COM DIAGNÓSTICO','COBERTURA'],versions.map(x=>'<tr>'+td('<strong>'+esc(x.app_version||'Unknown')+'</strong>')+td(esc(x.telemetry_schema||'legacy'))+td(fmt(x.error_queries))+td(fmt(x.installations))+td(fmt(x.event_count))+td(fmt(x.diagnosed_events))+td(pct(x.diagnostic_pct))+'</tr>'))+'</div>';
+   if(inv.sampled) html+='<p class="explain">Os detalhes técnicos estão limitados à amostra mais recente; os totais e a distribuição por versão acima são agregados no servidor.</p>';
    return html;
  }
  applyErrorSearch();
@@ -721,23 +747,30 @@ function renderInsights(d){
  $('insightNotes').innerHTML='<div class="explain"><strong>Leitura responsável:</strong> estes indicadores descrevem eventos agregados no período e dependem da cobertura da telemetria. Uma média, concentração ou sequência observada não permite inferir causa nem identificar uma operação individual. Os padrões de Cinemómetro são heurísticas estatísticas, não prova de irregularidade.</div>';
 }
 function renderSystem(d){
- const life=d.lifetime||{},tel=d.analytics?.telemetry||{},o=d.analytics?.overview||{}; const partial=Object.keys(d.errors||{}).length>0;
+ const life=d.lifetime||{},tel=d.analytics?.telemetry||{},o=d.analytics?.overview||{},quality=d.analytics?.query_quality||{},sessionQuality=d.analytics?.usage?.sessions?.['30d']||{};
+ const partial=Object.keys(d.errors||{}).length>0;
  $('systemCards').innerHTML=
   card('BACKEND',partial?'PARCIAL':'ONLINE',partial?'Alguns dados não ficaram disponíveis.':'Última atualização concluída.',partial?'amber':'green')+
   card('VERSÃO', '1.5','A versão apresentada aos utilizadores.','cyan')+
   card('EVENTOS TOTAIS',num(life.events_total),'Histórico observado.')+
   card('ÚLTIMO EVENTO',datePT(life.last_event_at),'Momento mais recente.','blue');
- $('systemCoverage').innerHTML=table(['DADO','COBERTURA','O QUE SIGNIFICA'],[
-  '<tr>'+td('Dados do computador')+td(pct(tel.client_coverage_30d))+td('Browser, sistema e ambiente técnico.')+'</tr>',
-  '<tr>'+td('Diagnóstico ASF')+td(pct(tel.asf_diagnostic_coverage_30d))+td('Consultas ASF com dados técnicos.')+'</tr>',
-  '<tr>'+td('Detalhe do Cinemómetro')+td(pct(tel.cin_detail_coverage_30d))+td('Eventos com mais detalhe.')+'</tr>'
- ]);
+ const errorCoverageByVersion=new Map((d.analytics?.errors?.by_version||[]).map(v=>[String(v.app_version||'Unknown')+'|'+String(v.telemetry_schema||'legacy'),v.diagnostic_pct]));
+ const coverageRows=[
+  '<tr>'+td('Dados do computador · geral')+td(pct(tel.client_coverage_30d))+td('Eventos com browser ou sistema operativo identificável nos últimos 30 dias.')+'</tr>',
+  '<tr>'+td('Diagnóstico ASF · resultados')+td(pct(tel.asf_diagnostic_coverage_30d))+td('Resultados ASF com pelo menos um campo técnico útil, incluindo respostas positivas e negativas.')+'</tr>',
+  '<tr>'+td('Cinemómetro · geral')+td(pct(tel.cin_detail_coverage_30d))+td('Eventos de cálculo/velocidade com velocidade registada.')+'</tr>'
+ ];
+ (tel.coverage_by_version||[]).forEach(v=>{
+  coverageRows.push('<tr>'+td('Cliente · '+esc(v.app_version||'Unknown')+' / '+esc(v.telemetry_schema||'legacy'))+td(pct(v.client_coverage_pct))+td(fmt(v.event_count)+' eventos; '+fmt(v.actions)+' ações; ASF resultados '+pct(v.asf_diagnostic_coverage_pct)+'; erros ASF '+pct(errorCoverageByVersion.get(String(v.app_version||'Unknown')+'|'+String(v.telemetry_schema||'legacy')))+'; Cinemómetro '+pct(v.cin_detail_coverage_pct)+'.')+'</tr>');
+ });
+ $('systemCoverage').innerHTML=table(['DADO','COBERTURA','O QUE SIGNIFICA'],coverageRows);
  $('systemHistory').innerHTML=
-  '<div class="goodbox"><strong>O histórico está preservado.</strong><br>Nenhum reset administrativo apaga eventos. O reset de 24 H apenas muda o ponto de comparação.</div>'+
-  '<div style="margin-top:10px" class="kpi-strip">'+metric('Instalações conhecidas',num(life.installations_total))+metric('Sessões técnicas',num(life.sessions_total))+metric('Primeiro evento',datePT(life.first_event_at))+metric('Último evento',datePT(life.last_event_at))+'</div>';
+  '<div class="goodbox"><strong>O histórico está preservado.</strong><br>Nenhum reset administrativo apaga eventos. O reset de 24 H apenas muda o ponto de comparação; as janelas de 7 e 30 dias são móveis.</div>'+
+  '<div style="margin-top:10px" class="kpi-strip">'+metric('Instalações conhecidas',num(life.installations_total))+metric('Sessões técnicas',num(life.sessions_total))+metric('Primeiro evento',datePT(life.first_event_at))+metric('Último evento',datePT(life.last_event_at))+'</div>'+
+  '<div style="margin-top:10px" class="kpi-strip">'+metric('Inícios de consulta · 30 d',num(quality.started_queries_30d))+metric('Inícios inferidos',num(quality.inferred_starts_30d))+metric('Terminais órfãos',num(quality.orphan_terminal_queries_30d))+metric('Resultados contraditórios',num(quality.conflicting_terminal_queries_30d))+metric('Finais duplicados',num(quality.duplicate_terminal_events_30d))+metric('Sessões com timestamps divergentes',num(sessionQuality.parent_timestamp_mismatch_30d))+'</div>'+
+  ((quality.by_version||[]).length?'<div style="margin-top:10px">'+table(['VERSÃO','ESQUEMA','INÍCIOS','CONFIRMADOS','INFERIDOS','FINAIS VÁLIDOS','ERROS FINAIS','PENDENTES','CONFLITOS'],quality.by_version.map(v=>'<tr>'+td('<strong>'+esc(v.app_version||'Unknown')+'</strong>')+td(esc(v.telemetry_schema||'legacy'))+td(fmt(v.started))+td(fmt(v.confirmed_starts))+td(fmt(v.inferred_starts))+td(fmt(v.clean_finals))+td(fmt(v.clean_error_results))+td(fmt(v.pending))+td(fmt(v.conflicting))+'</tr>'))+'</div>':'');
  const rs=d.reset24hAt;$('reset24hStatus').textContent='Último reset: '+datePT(rs);
 }
-
 function renderAll(d){latestData=d;renderDashboard(d);renderInsurance(d);renderSpeed(d);renderLegislation(d);renderUsage(d);renderErrors(d);renderPerformance(d);renderInsights(d);renderSystem(d)}
 async function loadDashboard(){
  if(dashboardBusy)return null;

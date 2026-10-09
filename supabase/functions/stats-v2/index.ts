@@ -1,3 +1,4 @@
+import { canonicalSpeedMeasurements, groupCinemometerEvents, summarizeErrorRows } from "../_shared/telemetry-analytics.mjs";
 declare const Deno: any;
 
 const ALLOWED_ORIGINS = new Set([
@@ -118,7 +119,7 @@ function percentile(values,p){
 function sessionPattern(rows){
   const speedRows=rows.filter((e:any)=>e.event==="cinemometer_speed_entry" && cinSnapshotOf(e)?.velocidade_registada!=null);
   const calculationRows=rows.filter((e:any)=>e.event==="cinemometer_calculation" && cinSnapshotOf(e)?.velocidade_registada!=null);
-  const measurements=speedRows.length?speedRows:calculationRows;
+  const measurements=canonicalSpeedMeasurements(rows);
   const speeds=measurements.map((e:any)=>Number(cinSnapshotOf(e).velocidade_registada)).filter(Number.isFinite);
   const unique=[...new Set(speeds)];
   const times=measurements.map((e:any)=>new Date(e.occurred_at).getTime()).filter(Number.isFinite).sort((a,b)=>a-b);
@@ -142,7 +143,7 @@ function sessionPattern(rows){
   }
   const copies=rows.filter((e:any)=>e.event==="cinemometer_copy_code"||e.event==="cinemometer_copy_text").length;
   const configCount=measurements.filter((e:any)=>cinSnapshotOf(e)?.aparelho_configurado===true).length;
-  const operatorCount=measurements.filter((e:any)=>cinSnapshotOf(e)?.operador_identificado===true).length;
+  const operatorCount=measurements.filter((e:any)=>{const c=cinSnapshotOf(e)||{};return c.operador_identificado===true||!!(c.operador_numero||c.operador_nome);}).length;
   const first=times[0]??null, last=times[times.length-1]??first;
   const durationMin=first!=null&&last!=null?Math.max(0,(last-first)/60000):0;
   const flags:string[]=[];
@@ -158,7 +159,7 @@ function sessionPattern(rows){
     const hasOperationalEvidence=durationMin>=1 || copies>0 || rows.some((e:any)=>!!cinSnapshotOf(e)?.operador_identificado) || rows.some((e:any)=>!!cinSnapshotOf(e)?.aparelho_configurado);
     pattern=flags.length ? "padrao_atipico_a_rever" : (hasOperationalEvidence ? "compativel_com_uso_operacional" : "atividade_curta_sem_contexto");
   }
-  const latest=calculations.length?cinSnapshotOf(calculations[calculations.length-1]):(cinSnapshotOf(rows[rows.length-1])||{});
+  const latest=calculationRows.length?cinSnapshotOf(calculationRows[calculationRows.length-1]):(cinSnapshotOf(rows[rows.length-1])||{});
   return {
     calculations:speeds.length,
     raw_calculation_events:calculationRows.length,
@@ -183,7 +184,7 @@ function sessionPattern(rows){
       nome:latest?.operador_nome||null,
       numero:latest?.operador_numero||null,
       posto:latest?.operador_posto||null,
-      identificado:latest?.operador_identificado===true
+      identificado:latest?.operador_identificado===true||!!(latest?.operador_numero||latest?.operador_nome||latest?.operador_posto)
     },
     aparelho:{
       marca:latest?.aparelho_marca||null,
@@ -203,29 +204,21 @@ function sessionPattern(rows){
 
 async function loadErrorInvestigation24h(now:string){
   const qs = new URLSearchParams();
-  qs.set("select","occurred_at,event,installation_id,query_id,app_version,browser,metadata");
+  qs.set("select","occurred_at,event,event_id,installation_id,query_id,app_version,browser,metadata");
   qs.set("event","eq.vehicle_insurance_error");
-  qs.set("occurred_at","gte."+new Date(Date.now()-24*60*60*1000).toISOString());
-  qs.set("order","occurred_at.asc");
+  qs.set("and","(occurred_at.gte."+new Date(Date.now()-24*60*60*1000).toISOString()+",occurred_at.lt."+now+")");
+  qs.set("order","occurred_at.desc");
   qs.set("limit","1000");
-  const rr=await fetch(supabaseUrl+"/rest/v1/verix2_events?"+qs.toString(),{headers:{apikey:serviceKey,Authorization:"Bearer "+serviceKey}});
+  const rr=await fetch(supabaseUrl+"/rest/v1/verix2_events?"+qs.toString(),{
+    headers:{apikey:serviceKey,Authorization:"Bearer "+serviceKey,Prefer:"count=exact"}
+  });
   const tt=await rr.text();
   if(!rr.ok)throw new Error("error_investigation:"+tt);
   const rows=tt?JSON.parse(tt):[];
-  const app14=rows.filter((e:any)=>String(e?.app_version||"")==="1.4");
-  const shortId=(v:any)=>{const s=String(v||"");return s.length>14?s.slice(0,8)+"…"+s.slice(-4):s;};
-  const byHash=new Map<string,number>(), byType=new Map<string,number>(), byInstall=new Map<string,number>(), bursts=new Map<string,number>();
-  for(const e of app14){
-    const a=e?.metadata?.asfDiagnostic||{}, hash=String(a.asfResponseHash||"sem-hash"), type=String(a.asfErrorType||"unknown"), inst=String(e?.installation_id||"unknown");
-    byHash.set(hash,(byHash.get(hash)||0)+1); byType.set(type,(byType.get(type)||0)+1); byInstall.set(inst,(byInstall.get(inst)||0)+1);
-    const t=new Date(e.occurred_at).getTime(); if(Number.isFinite(t)){const k=new Date(Math.floor(t/300000)*300000).toISOString();bursts.set(k,(bursts.get(k)||0)+1);}
-  }
-  const hashRows=[...byHash.entries()].map(([hash,count])=>({hash,count})).sort((a,b)=>b.count-a.count).slice(0,10);
-  const typeRows=[...byType.entries()].map(([type,count])=>({type,count})).sort((a,b)=>b.count-a.count);
-  const installRows=[...byInstall.entries()].map(([installation_id,count])=>({installation_id:shortId(installation_id),count})).sort((a,b)=>b.count-a.count).slice(0,10);
-  const burstRows=[...bursts.entries()].map(([start,count])=>({start,count})).sort((a,b)=>b.count-a.count).slice(0,12);
-  const recent=app14.slice(-12).reverse().map((e:any)=>{const a=e?.metadata?.asfDiagnostic||{};return {occurred_at:e?.occurred_at||null,installation_id:shortId(e?.installation_id),query_id:shortId(e?.query_id),browser:e?.browser||"Unknown",error_type:a.asfErrorType||"unknown",transport:a.asfTransport||null,relay_latency_ms:a.asfRelayLatencyMs??null,http_status:a.asfHttpStatus??null,duration_ms:a.asfDurationMs??null,response_hash:a.asfResponseHash||null,response_class:a.asfResponseClass||null,graphql_error_count:a.asfGraphqlErrorCount??null,response_bytes:a.asfResponseBytes??null,parse_path:a.asfParsePath||null,build_id:e?.metadata?.build_id||a.build_id||null};});
-  return {generated_at:now,errors_24h:rows.length,app14_errors:app14.length,app14_installations:new Set(app14.map((e:any)=>String(e?.installation_id||""))).size,app14_plates:new Set(app14.map((e:any)=>String(e?.metadata?.asfDiagnostic?.matricula||"")).filter(Boolean)).size,app14_hashes:byHash.size,app14_types:typeRows,app14_hashes_top:hashRows,app14_installations_top:installRows,app14_bursts_5m:burstRows,latest_app14:recent};
+  const range=rr.headers.get("content-range")||"";
+  const match=range.match(/\/(\d+)$/);
+  const totalCount=match?Number(match[1]):rows.length;
+  return {generated_at:now,...summarizeErrorRows(rows,totalCount)};
 }
 async function loadLifetime(now:string){
   async function resetAllAt(){
@@ -254,45 +247,63 @@ async function loadLifetime(now:string){
 }
 async function loadCinemometerAnalytics24h(now:string){
   const qs = new URLSearchParams();
-  qs.set("select","occurred_at,event,session_id,installation_id,app_version,browser,metadata");
+  qs.set("select","event_id,occurred_at,event,session_id,installation_id,app_version,browser,metadata");
   qs.set("event","in.(cinemometer_speed_entry,cinemometer_calculation,cinemometer_copy_code,cinemometer_copy_text,cinemometer_copy_location,cinemometer_profile_select,cinemometer_profile_new,cinemometer_profile_duplicate,cinemometer_profile_delete,cinemometer_profile_save)");
-  qs.set("occurred_at","gte." + new Date(Date.now()-24*60*60*1000).toISOString());
-  qs.set("order","occurred_at.asc");
+  qs.set("and","(occurred_at.gte."+new Date(Date.now()-24*60*60*1000).toISOString()+",occurred_at.lt."+now+")");
+  qs.set("order","occurred_at.desc");
   qs.set("limit","5000");
-  const rr=await fetch(supabaseUrl+"/rest/v1/verix2_events?"+qs.toString(),{headers:{apikey:serviceKey,Authorization:"Bearer "+serviceKey}});
+  const rr=await fetch(supabaseUrl+"/rest/v1/verix2_events?"+qs.toString(),{headers:{apikey:serviceKey,Authorization:"Bearer "+serviceKey,Prefer:"count=exact"}});
   const tt=await rr.text();
   if(!rr.ok)throw new Error("cin_analytics:"+tt);
   const events=tt?JSON.parse(tt):[];
-  const groups=new Map<string,any[]>();
-  for(const e of events){
-    const c=cinSnapshotOf(e)||{};
-    const key=String(c.operation_id || e?.session_id || "sem_sessao");
-    if(!groups.has(key))groups.set(key,[]);
-    groups.get(key)!.push(e);
-  }
-  const sessions=[...groups.entries()].map(([operation_id,rows])=>({...sessionPattern(rows),operation_id,session_id:rows[0]?.session_id||null,installation_id:rows[0]?.installation_id||null,app_version:rows[rows.length-1]?.app_version||rows[0]?.app_version||null,browser:rows[rows.length-1]?.browser||rows[0]?.browser||null,first_seen:rows[0]?.occurred_at||null,last_seen:rows[rows.length-1]?.occurred_at||null}))
-    .sort((a,b)=>String(b.last_seen||"").localeCompare(String(a.last_seen||"")));
+  events.sort((a:any,b:any)=>String(a.occurred_at||"").localeCompare(String(b.occurred_at||"")));
+  const range=rr.headers.get("content-range")||"";
+  const rangeMatch=range.match(/\/(\d+)$/);
+  const totalEventCount=rangeMatch?Number(rangeMatch[1]):events.length;
+  const measurementEvents=canonicalSpeedMeasurements(events);
+  const measurementEventIds=new Set(measurementEvents.map((event:any)=>String(event.event_id||'')));
+  const groups=groupCinemometerEvents(events).filter((group:any)=>group.events.some((event:any)=>measurementEventIds.has(String(event.event_id||''))));
+  const sessions=groups.map((group:any)=>{
+    const rows=group.events as any[];
+    const calculationRows=rows.filter((e:any)=>e.event==="cinemometer_calculation" && cinSnapshotOf(e)?.velocidade_registada!=null);
+    const latestRow=calculationRows[calculationRows.length-1]||rows[rows.length-1];
+    return {
+      ...sessionPattern(rows),
+      operation_id:cinSnapshotOf(latestRow)?.operation_id||null,
+      grouping_basis:group.grouping_basis,
+      session_id:rows[0]?.session_id||null,
+      installation_id:rows[0]?.installation_id||null,
+      app_version:latestRow?.app_version||rows[0]?.app_version||null,
+      browser:latestRow?.browser||rows[0]?.browser||null,
+      first_seen:group.first_seen||rows[0]?.occurred_at||null,
+      last_seen:group.last_seen||rows[rows.length-1]?.occurred_at||null
+    };
+  }).sort((a:any,b:any)=>String(b.last_seen||"").localeCompare(String(a.last_seen||"")));
   const speedEntries=events.filter((e:any)=>e.event==="cinemometer_speed_entry" && cinSnapshotOf(e)?.velocidade_registada!=null);
   const calcEvents=events.filter((e:any)=>e.event==="cinemometer_calculation" && cinSnapshotOf(e)?.velocidade_registada!=null);
-  const measurementEvents=speedEntries.length?speedEntries:calcEvents;
   const speeds=measurementEvents.map((e:any)=>Number(cinSnapshotOf(e).velocidade_registada)).filter(Number.isFinite);
   const operatorMap=new Map<string,any>();
-  for(const row of calcEvents){
+  for(const row of measurementEvents){
     const c=cinSnapshotOf(row)||{};
-    const key=[c.operador_numero||"",c.operador_nome||"",c.operador_posto||""].join("|")||"não identificado";
-    const cur=operatorMap.get(key)||{nome:c.operador_nome||null,numero:c.operador_numero||null,posto:c.operador_posto||null,identificado:!!(c.operador_numero||c.operador_nome),sessions:new Set<string>(),calculations:0,last_seen:row.occurred_at};
+    const identified=c.operador_identificado===true||!!(c.operador_numero||c.operador_nome||c.operador_posto);
+    if(!identified) continue;
+    const key=[c.operador_numero||"",c.operador_nome||"",c.operador_posto||""].join("|");
+    const cur=operatorMap.get(key)||{nome:c.operador_nome||null,numero:c.operador_numero||null,posto:c.operador_posto||null,identificado:true,sessions:new Set<string>(),measurements:0,last_seen:row.occurred_at};
     if(row.session_id)cur.sessions.add(String(row.session_id));
-    cur.calculations++;
+    cur.measurements++;
     if(String(row.occurred_at)>String(cur.last_seen))cur.last_seen=row.occurred_at;
     operatorMap.set(key,cur);
   }
-  const operators=[...operatorMap.values()].map((x:any)=>({nome:x.nome,numero:x.numero,posto:x.posto,identificado:x.identificado,sessions:x.sessions.size,calculations:x.calculations,last_seen:x.last_seen})).sort((a,b)=>b.calculations-a.calculations);
+  const operators=[...operatorMap.values()].map((x:any)=>({nome:x.nome,numero:x.numero,posto:x.posto,identificado:x.identificado,sessions:x.sessions.size,measurements:x.measurements,last_seen:x.last_seen})).sort((a,b)=>b.measurements-a.measurements);
   const flags=new Map<string,number>();
   sessions.forEach(s=>s.flags.forEach(f=>flags.set(f,(flags.get(f)||0)+1)));
   const patternCounts=new Map<string,number>(); sessions.forEach(s=>patternCounts.set(s.pattern,(patternCounts.get(s.pattern)||0)+1));
   return {
     generated_at:now,
     events:events.length,
+    total_events:totalEventCount,
+    sample_count:events.length,
+    sampled:totalEventCount>events.length,
     sessions:sessions.length,
     calculations:calcEvents.length,
     speed_entries:speedEntries.length,
@@ -457,24 +468,46 @@ Deno.serve(async (req) => {
     const settled = await Promise.allSettled([
       rpc("verix2_admin_analytics",{p_now:now}),
       rpc("verix2_asf_diagnostics",{p_now:now,p_recent_limit:25}),
+      rpc("verix2_telemetry_metrics_v3",{p_now:now}),
       resetState()
     ]);
 
     const errors:any = {};
     const analytics = settled[0].status==="fulfilled" ? settled[0].value : {};
     const diagnostics = settled[1].status==="fulfilled" ? settled[1].value : {};
-    const resetAt = settled[2].status==="fulfilled" ? settled[2].value : null;
+    const canonicalMetrics = settled[2].status==="fulfilled" ? settled[2].value : null;
+    const resetAt = settled[3].status==="fulfilled" ? settled[3].value : null;
 
-    for(const [i,name] of [[0,"analytics"],[1,"diagnostics"],[2,"reset"]] as const) {
+    for(const [i,name] of [[0,"analytics"],[1,"diagnostics"],[2,"telemetry_metrics"],[3,"reset"]] as const) {
       if(settled[i].status==="rejected") {
         const reason:any=settled[i].reason;
         errors[name]=String(reason?.message||reason);
       }
     }
 
-    const analyticsObj = analytics && typeof analytics==="object"
-      ? analytics
-      : {};
+    const analyticsObj:any = analytics && typeof analytics==="object" ? analytics : {};
+    if(canonicalMetrics && typeof canonicalMetrics==="object") {
+      if(canonicalMetrics.bounds) analyticsObj.bounds=canonicalMetrics.bounds;
+      if(canonicalMetrics.insurance) analyticsObj.insurance=canonicalMetrics.insurance;
+      if(canonicalMetrics.insurance_quality) analyticsObj.insurance_quality=canonicalMetrics.insurance_quality;
+      if(canonicalMetrics.query_quality) analyticsObj.query_quality=canonicalMetrics.query_quality;
+      if(canonicalMetrics.errors) analyticsObj.errors=canonicalMetrics.errors;
+      if(canonicalMetrics.telemetry) analyticsObj.telemetry=canonicalMetrics.telemetry;
+      if(canonicalMetrics.speed_summary || canonicalMetrics.speed_distribution_24h) {
+        analyticsObj.speed={...(analyticsObj.speed||{})};
+        if(canonicalMetrics.speed_summary) analyticsObj.speed.summary=canonicalMetrics.speed_summary;
+        if(canonicalMetrics.speed_dimensions) analyticsObj.speed.dimensions=canonicalMetrics.speed_dimensions;
+        if(canonicalMetrics.speed_distribution_24h) analyticsObj.speed.distribution_24h=canonicalMetrics.speed_distribution_24h;
+      }
+      analyticsObj.usage={...(analyticsObj.usage||{}),...(canonicalMetrics.usage||{})};
+      if(canonicalMetrics.sessions) analyticsObj.usage.sessions=canonicalMetrics.sessions;
+      if(canonicalMetrics.actions) analyticsObj.overview={
+        ...(analyticsObj.overview||{}),
+        actions_24h:canonicalMetrics.actions["24h"],
+        actions_7d:canonicalMetrics.actions["7d"],
+        actions_30d:canonicalMetrics.actions["30d"]
+      };
+    }
 
     const payload = {
       ok:true,
