@@ -303,8 +303,13 @@ speed_summary AS (
   'max_24h',(SELECT max(speed_val) FROM speed_measurements,b WHERE occurred_at>=b.s24 AND speed_val IS NOT NULL),
   'avg_24h',(SELECT round(avg(speed_val),1) FROM speed_measurements,b WHERE occurred_at>=b.s24 AND speed_val IS NOT NULL),
   'p50_24h',(SELECT round((percentile_cont(.5) WITHIN GROUP(ORDER BY speed_val))::numeric,1) FROM speed_measurements,b WHERE occurred_at>=b.s24 AND speed_val IS NOT NULL),
-  'detail_coverage_30d',round((100.0*(SELECT count(*) FROM speed_measurements,b WHERE occurred_at>=b.s30 AND speed_val IS NOT NULL)/NULLIF((SELECT count(*) FROM ev WHERE event IN('cinemometer_speed_entry','cinemometer_calculation')),0))::numeric,1)
+  'detail_coverage_30d',round((100.0*(SELECT count(*) FROM speed_num,b WHERE occurred_at>=b.s30 AND speed_val IS NOT NULL)/NULLIF((SELECT count(*) FROM ev WHERE event IN('cinemometer_speed_entry','cinemometer_calculation')),0))::numeric,1)
  ) data
+),
+speed_distribution AS (
+ SELECT coalesce(jsonb_agg(to_jsonb(x) ORDER BY x.bucket_start),'[]'::jsonb) data
+ FROM(SELECT (floor(speed_val/10)*10)::int bucket_start,count(*) qty
+      FROM speed_measurements,b WHERE occurred_at>=b.s24 AND speed_val IS NOT NULL GROUP BY 1)x
 ),
 err_events AS (
  SELECT * FROM ev,b WHERE event='vehicle_insurance_error' AND occurred_at>=b.s24
@@ -320,14 +325,14 @@ err_bursts AS (
  FROM err_events GROUP BY 1
 ),
 err_installs AS (
- SELECT installation_id,count(DISTINCT query_id) qty,count(*) event_count,max(occurred_at) last_at
+ SELECT installation_id,count(DISTINCT query_id) qty,count(*) event_count,count(DISTINCT query_id) queries,max(occurred_at) last_at
  FROM err_events GROUP BY 1
 ),
 err_signatures AS (
  SELECT coalesce(metadata->'asfDiagnostic'->>'asfErrorType','unknown') kind,
   coalesce(metadata->'asfDiagnostic'->>'asfResponseHash','sem-hash') response_hash,
   coalesce(NULLIF(metadata->'asfDiagnostic'->'asfGraphqlMessages'->>0,''),NULLIF(metadata->'asfDiagnostic'->>'asfMessage',''),NULLIF(metadata->>'asfUserMessage',''),'') message_text,
-  count(DISTINCT query_id) qty,count(*) event_count,count(DISTINCT installation_id) installs
+  count(DISTINCT query_id) qty,count(*) event_count,count(DISTINCT query_id) queries,count(DISTINCT installation_id) installs
  FROM err_events GROUP BY 1,2,3
 ),
 err_plates AS (
@@ -381,7 +386,7 @@ telemetry AS (
  ) data FROM ev,b
 ),
 session_rows AS (
- SELECT s.session_id,s.started_at,s.last_seen,
+ SELECT s.session_id,s.started_at,greatest(s.started_at,least(s.last_seen,p_now)) last_seen,
   count(e.event) FILTER(WHERE e.event<>'heartbeat') actions,
   count(DISTINCT e.module) FILTER(WHERE e.event='module_open' AND e.module IS NOT NULL) modules
  FROM public.verix2_sessions s LEFT JOIN ev e ON e.session_id=s.session_id
@@ -446,6 +451,7 @@ SELECT jsonb_build_object(
  'insurance',(SELECT data FROM insurance),
  'query_quality',(SELECT data FROM query_quality),
  'speed_summary',(SELECT data FROM speed_summary),
+ 'speed_distribution_24h',(SELECT data FROM speed_distribution),
  'errors',(SELECT data FROM errors),
  'telemetry',(SELECT data FROM telemetry),
  'sessions',(SELECT data FROM sessions),
