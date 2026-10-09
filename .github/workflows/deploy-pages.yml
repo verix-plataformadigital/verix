@@ -39,6 +39,9 @@ jobs:
         run: |
           node --check verix-mobile.js
           node --check dist/verix-mobile.js
+          grep -q 'id="vxMobileBack"' dist/verix-mobile.js
+          grep -q "Voltar ao menu anterior" dist/verix-mobile.js
+          grep -q "mostrarMenuPrincipal" dist/verix-mobile.js
           test -s dist/verix-mobile.html
           test -s dist/verix-mobile.css
           test -s dist/verix-mobile.js

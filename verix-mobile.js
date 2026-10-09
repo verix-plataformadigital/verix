@@ -137,8 +137,59 @@ const nav=findNavigation();
 
 const top=document.createElement('div');
 top.id='vxMobileTop';
-top.innerHTML='<div class="vx-brand">VÉRIX <b>///</b> MOBILE</div><button type="button" id="vxMobileMenu" aria-label="Abrir menu">☰</button>';
+top.innerHTML='<div class="vx-brand">VÉRIX <b>///</b> MOBILE</div><button type="button" id="vxMobileBack" class="vx-mobile-back" aria-label="Voltar ao menu anterior" title="Voltar ao menu anterior"><span aria-hidden="true">←</span><span>Voltar</span></button><button type="button" id="vxMobileMenu" aria-label="Abrir menu">☰</button>';
 document.body.appendChild(top);
+
+function syncMobileBackState(){
+  const button=document.getElementById('vxMobileBack');
+  if(!button) return;
+  const body=document.body;
+  const home=document.getElementById('mainMenuScreen');
+  const module=document.getElementById('moduleOverlay');
+  const history=document.getElementById('historyOverlay');
+  const moduleOpen=!!(module && module.classList.contains('show'));
+  const historyOpen=!!(history && history.classList.contains('show'));
+  const atHome=body.classList.contains('main-menu-active') || !!(home && home.classList.contains('show'));
+  const canGoBack=historyOpen || moduleOpen ||
+    body.classList.contains('consultation-screen-active') ||
+    body.classList.contains('fixed-workspace-active') ||
+    body.classList.contains('history-page-active') ||
+    body.classList.contains('cinemometro-page-active');
+  const enabled=canGoBack && !(atHome && !historyOpen && !moduleOpen);
+  button.disabled=!enabled;
+  button.setAttribute('aria-disabled',String(!enabled));
+  button.title=enabled?'Voltar ao menu anterior':'Já está no menu principal';
+}
+
+function voltarMenuAnteriorMobile(){
+  closeDrawer();
+  const body=document.body;
+  const module=document.getElementById('moduleOverlay');
+  const history=document.getElementById('historyOverlay');
+  if((body.classList.contains('history-page-active') || (history && history.classList.contains('show'))) &&
+     typeof window.fecharHistorico==='function'){
+    window.fecharHistorico();
+  }else if(module && module.classList.contains('show') && typeof window.fecharModulo==='function'){
+    window.fecharModulo();
+  }else if(body.classList.contains('main-menu-active')){
+    syncMobileBackState();
+    return;
+  }else if(typeof window.mostrarMenuPrincipal==='function'){
+    window.mostrarMenuPrincipal();
+  }else{
+    const fallback=document.getElementById('consultationBackBtn');
+    if(fallback) fallback.click();
+  }
+  syncMobileBackState();
+  setTimeout(syncMobileBackState,80);
+}
+
+document.getElementById('vxMobileBack').addEventListener('click',voltarMenuAnteriorMobile);
+const mobileBackStateObserver=new MutationObserver(syncMobileBackState);
+[document.body,document.getElementById('mainMenuScreen'),document.getElementById('moduleOverlay'),document.getElementById('historyOverlay')]
+  .filter(Boolean)
+  .forEach(el=>mobileBackStateObserver.observe(el,{attributes:true,attributeFilter:['class']}));
+syncMobileBackState();
 
 const bar=document.createElement('div');
 bar.id='vxMobileBar';
