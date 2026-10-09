@@ -11,7 +11,7 @@ const packageConfig = JSON.parse(fs.readFileSync("package.json", "utf8"));
 const currentAppVersion = packageConfig.version.split(".").slice(0, 2).join(".");
 assert.ok(stats.includes('const CURRENT_APP_VERSION = "' + currentAppVersion + '"'), "stats current version must match package.json major.minor");
 assert.match(stats, /canonicalAppVersion\(e\?\.app_version\)===CURRENT_APP_VERSION/);
-assert.match(stats, /current_version_errors:currentVersionRows\.length/);
+assert.match(stats, /current_version_errors:new Set\(currentVersionRows\.map/);
 assert.match(stats, /current_app_version:CURRENT_APP_VERSION/);
 assert.doesNotMatch(stats, /app14|["\']1\.4["\']/i, "stats must not hard-code the obsolete version filter");
 assert.doesNotMatch(admin, /VERSÃO 1\.4|ERROS DA 1\.4|app14|versão 1\.4/i, "Admin must not display or consume obsolete 1.4 error metrics");
