@@ -333,7 +333,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
           <div class="panel"><div class="panel-head"><h3>QUANDO ACONTECEM?</h3><span>PIQUES DE 5 MINUTOS</span></div><div id="errorBursts" class="table-wrap"></div></div>
         </div>
         <div class="panel" style="margin-top:12px">
-          <div class="panel-head"><h3>LEITURA DOS ERROS RECENTES</h3><span>VERSÃO 1.4</span></div>
+          <div class="panel-head"><h3>LEITURA DOS ERROS RECENTES</h3><span>VERSÃO 1.5</span></div>
           <div class="panel-body" id="errorReading"></div>
         </div>
         <div class="grid g2" style="margin-top:12px">
@@ -639,17 +639,17 @@ function renderUsage(d){
 }
 function renderErrors(d){
  const e=d.analytics?.errors||{},inv=d.investigation||{},q=period(),te=d.analytics?.telemetry||{};
- const total=(e.types||[]).reduce((s,x)=>s+Number(x.qty||0),0);
+ const total=(e.types||[]).reduce((s,x)=>s+Number(x.raw_events??x.qty??0),0);
  $('errorCards').innerHTML=
-  card('ERROS NAS 24 H',num(total),'Falhas classificadas.','red')+
+  card('EVENTOS DE ERRO · 24 H',num(total),'Contagem bruta; as consultas distintas são apresentadas por tipo.','red')+
   card('ERROS DA 1.5',num(inv.app15_errors),'Na janela recente.','amber')+
   card('INSTALAÇÕES AFETADAS',num(inv.app15_installations),'Instalações com erros da versão 1.5.')+
   card('MATRÍCULAS AFETADAS',num(inv.app15_plates),'Só quando existe evidência de diagnóstico.');
- $('errorTypes').innerHTML=table(['TIPO','QUANTIDADE','ÚLTIMO REGISTO'],(e.types||[]).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'Desconhecido')+'</span>')+td('<strong>'+fmt(x.qty)+'</strong>')+td(datePT(x.last_at))+'</tr>'));
- const bursts=inv.app14_bursts_5m||[];$('errorBursts').innerHTML=table(['HORA','ERROS'],bursts.slice(0,12).map(x=>'<tr>'+td('<strong>'+datePT(x.start)+'</strong>')+td('<strong>'+fmt(x.count)+'</strong>')+'</tr>'));
+ $('errorTypes').innerHTML=table(['TIPO','CONSULTAS','EVENTOS BRUTOS','ÚLTIMO REGISTO'],(e.types||[]).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'Desconhecido')+'</span>')+td('<strong>'+fmt(x.qty)+'</strong>')+td(fmt(x.raw_events??x.qty))+td(datePT(x.last_at))+'</tr>'));
+ const bursts=inv.app15_bursts_5m||[];$('errorBursts').innerHTML=table(['HORA','EVENTOS DE ERRO'],bursts.slice(0,12).map(x=>'<tr>'+td('<strong>'+datePT(x.start)+'</strong>')+td('<strong>'+fmt(x.count)+'</strong>')+'</tr>'));
  $('errorReading').innerHTML=buildErrorReading(d);
- $('errorInstallations').innerHTML=table(['INSTALAÇÃO','ERROS','QUERIES'],(e.installations||[]).slice(0,15).map(x=>'<tr>'+td('<strong>'+esc(x.installation_id||'—')+'</strong>')+td(fmt(x.qty))+td(fmt(x.queries))+'</tr>'));
- $('errorSignatures').innerHTML=table(['TIPO','QUANTIDADE','INSTALAÇÕES'],(e.signatures||[]).slice(0,15).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'—')+'</span>')+td(fmt(x.qty))+td(fmt(x.installs))+'</tr>'));
+ $('errorInstallations').innerHTML=table(['INSTALAÇÃO','CONSULTAS COM ERRO','EVENTOS BRUTOS'],(e.installations||[]).slice(0,15).map(x=>'<tr>'+td('<strong>'+esc(x.installation_id||'—')+'</strong>')+td(fmt(x.qty))+td(fmt(x.raw_events??x.qty))+'</tr>'));
+ $('errorSignatures').innerHTML=table(['TIPO','CONSULTAS','INSTALAÇÕES'],(e.signatures||[]).slice(0,15).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'—')+'</span>')+td(fmt(x.qty))+td(fmt(x.installs))+'</tr>'));
  const recent=inv.latest_app15||[];
  $('errorTechnical').innerHTML=recent.length?'<table class="table"><thead><tr><th>Hora</th><th>Browser</th><th>Transporte</th><th>Tipo</th><th>HTTP</th><th>ASF ms</th><th>Relay ms</th><th>Hash</th></tr></thead><tbody>'+recent.slice(0,15).map(x=>'<tr>'+td(datePT(x.occurred_at))+td(esc(x.browser||'—'))+td(esc(x.transport||'—'))+td(esc(x.error_type||'—'))+td(x.http_status==null?'—':fmt(x.http_status))+td(x.duration_ms==null?'—':fmt(x.duration_ms)+' ms')+td(x.relay_latency_ms==null?'—':fmt(x.relay_latency_ms)+' ms')+td(esc(x.response_hash||'—'))+'</tr>').join('')+'</tbody></table>':'<div class="empty">Sem incidentes recentes.</div>';
  function buildErrorReading(data){
@@ -659,13 +659,13 @@ function renderErrors(d){
    let html='';
    if(!n) html+='<div class="goodbox"><strong>Não existem erros 1.5 nas últimas 24 horas.</strong><br>A janela atual não mostra um incidente ativo.</div>';
    else html+='<div class="warnbox"><strong>Existem '+fmt(n)+' falhas na versão 1.5 nas últimas 24 horas.</strong><br>Foram observadas em '+fmt(inst)+' instalações e '+fmt(hashes)+' assinaturas de resposta. Isto mostra concentração técnica; não determina sozinho a causa.</div>';
-   if(top) html+='<div style="margin-top:10px" class="explain"><strong>Tipo mais frequente:</strong> '+esc(top.kind||'desconhecido')+' · '+fmt(top.qty)+' ocorrências.<br><strong>Como ler:</strong> devemos cruzar hora, instalação, browser e resposta antes de atribuir a origem do problema.</div>';
+   if(top) html+='<div style="margin-top:10px" class="explain"><strong>Tipo mais frequente:</strong> '+esc(top.kind||'desconhecido')+' · '+fmt(top.qty)+' consultas distintas ('+fmt(top.raw_events??top.qty)+' eventos brutos).<br><strong>Como ler:</strong> devemos cruzar hora, instalação, browser e resposta antes de atribuir a origem do problema.</div>';
    return html;
  }
  applyErrorSearch();
 }
 function renderPerformance(d){
- const a=d.analytics||{},q=a.insurance_quality||{},diag=d.diagnostics?.quality_24h||{},p=period();
+ const a=d.analytics||{},q=a.insurance_quality||{},diag=d.diagnostics?.quality_24h||{},p=period(),quality=a.telemetry||{};
  const started=Number(p.started||0),finals=Number(p.finals||0),errors=Number(p.errors||0);
  const completionRate=started?100*finals/started:null;
  const errorRate=finals?100*errors/finals:null;
@@ -692,7 +692,12 @@ function renderPerformance(d){
   metric('Taxa de conclusão',pct(completionRate))+
   metric('Pendentes',num(p.pending))+
   metric('Erros finais',num(p.errors))+
-  metric('Cobertura ASF',pct(coverage));
+  metric('Cobertura ASF',pct(coverage))+
+  metric('Eventos críticos sem query_id',num(quality.query_events_missing_id_30d))+
+  metric('Consultas sem evento de início',num(quality.query_outcomes_without_start_30d))+
+  metric('Consultas com resultados contraditórios',num(quality.conflicting_final_queries_30d))+
+  metric('Eventos finais duplicados',num(quality.duplicate_final_events_30d))+
+  metric('Grupos IMT repetidos',num(quality.imt_duplicate_query_source_groups_30d));
 }
 function renderInsights(d){
  const a=d.analytics||{},u=a.usage||{},summary=a.speed?.summary||{},l=a.legislation||{};
