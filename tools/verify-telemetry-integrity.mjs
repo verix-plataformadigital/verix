@@ -59,4 +59,8 @@ assert.deepEqual(parseReceipt(JSON.stringify(validReceipt)), validReceipt);
 assert.equal(parseReceipt('{"ok":true}'), null, "HTTP 200 without an application receipt must not clear the queue");
 assert.equal(parseReceipt('not-json'), null, "malformed receipt must not clear the queue");
 
+const telemetryWorkflow = fs.readFileSync(".github/workflows/telemetry-integrity.yml", "utf8");
+assert.match(telemetryWorkflow, /tools\/smoke-production-telemetry\.mjs/);
+assert.match(telemetryWorkflow, /Live production ingestion smoke test/);
+
 console.log("PASS: atomic ingest receipt, ID-based client acknowledgement, loss-safe beacon queue, query-quality metrics and Admin labels.");
