@@ -183,7 +183,7 @@ STABLE
 SECURITY DEFINER
 SET search_path TO 'public','pg_catalog'
 AS $metrics$
-WITH bounds AS (
+WITH b AS (
   SELECT greatest(p_now-interval '24 hours',
     coalesce((SELECT reset_24h_at FROM public.verix2_dashboard_state WHERE singleton=true),'1970-01-01T00:00:00Z'::timestamptz)) s24,
     p_now-interval '7 days' s7,
@@ -485,7 +485,7 @@ transitions AS (
  )x
 )
 SELECT jsonb_build_object(
- 'bounds',jsonb_build_object('s24',(SELECT s24 FROM bounds),'s7',(SELECT s7 FROM bounds),'s30',(SELECT s30 FROM bounds),'end',(SELECT enow FROM bounds)),
+ 'bounds',jsonb_build_object('s24',(SELECT s24 FROM b),'s7',(SELECT s7 FROM b),'s30',(SELECT s30 FROM b),'end',(SELECT enow FROM b)),
  'actions',jsonb_build_object('24h',(SELECT actions_24h FROM telemetry),'7d',(SELECT actions_7d FROM telemetry),'30d',(SELECT actions_30d FROM telemetry)),
  'insurance',(SELECT data FROM insurance),
  'insurance_quality',(SELECT data FROM insurance_quality),
