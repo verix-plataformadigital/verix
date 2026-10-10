@@ -350,7 +350,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
           <div class="panel-body" id="errorReading"></div>
         </div>
         <div class="grid g2" style="margin-top:12px">
-          <div class="panel"><div class="panel-head"><h3>INSTALAÇÕES MAIS AFETADAS</h3><span>24 H</span></div><div id="errorInstallations" class="table-wrap"></div></div>
+          <div class="panel"><div class="panel-head"><h3>IPS MAIS ASSOCIADOS A ERROS</h3><span>24 H</span></div><div id="errorInstallations" class="table-wrap"></div></div>
           <div class="panel"><div class="panel-head"><h3>ASSINATURAS REPETIDAS</h3><span>24 H</span></div><div id="errorSignatures" class="table-wrap"></div></div>
         </div>
         <div class="panel" style="margin-top:12px">
@@ -692,7 +692,7 @@ function renderErrors(d){
  $('errorTypes').innerHTML=table(['TIPO','CONSULTAS','EVENTOS','ÚLTIMO REGISTO'],(e.types||[]).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'Desconhecido')+'</span>')+td('<strong>'+fmt(x.qty)+'</strong>')+td(fmt(x.event_qty??x.qty))+td(datePT(x.last_at))+'</tr>'));
  const bursts=inv.current_version_bursts_5m||[];$('errorBursts').innerHTML=table(['HORA','CONSULTAS','EVENTOS'],bursts.slice(0,12).map(x=>'<tr>'+td('<strong>'+datePT(x.start)+'</strong>')+td('<strong>'+fmt(x.count)+'</strong>')+td(fmt(x.event_count??x.count))+'</tr>'));
  $('errorReading').innerHTML=buildErrorReading(d);
- $('errorInstallations').innerHTML=table(['INSTALAÇÃO','CONSULTAS','EVENTOS'],(e.installations||[]).slice(0,15).map(x=>'<tr>'+td('<strong>'+esc(x.installation_id||'—')+'</strong>')+td(fmt(x.qty))+td(fmt(x.event_qty??x.qty))+'</tr>'));
+ $('errorInstallations').innerHTML=table(['IP OBSERVADO','INSTALAÇÕES','CONSULTAS','EVENTOS'],(e.installations||[]).slice(0,15).map(x=>'<tr>'+td('<strong>'+esc(x.client_ip||'IP não recolhido')+'</strong>')+td(fmt(x.installations??0))+td(fmt(x.qty))+td(fmt(x.event_qty??x.qty))+'</tr>'));
  $('errorSignatures').innerHTML=table(['TIPO','CONSULTAS','EVENTOS','INSTALAÇÕES'],(e.signatures||[]).slice(0,15).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'—')+'</span>')+td(fmt(x.qty))+td(fmt(x.event_qty??x.qty))+td(fmt(x.installs))+'</tr>'));
  const plateCases=inv.current_version_plate_cases;
  $('errorPlates').innerHTML=!Array.isArray(plateCases)
