@@ -530,6 +530,7 @@ Deno.serve(async (req: Request) => {
     const terminalQueryIds = [...new Set(events
       .filter((e:any) => terminalEvents.has(e.event) && e.query_id)
       .map((e:any) => String(e.query_id)))];
+    const existingTerminalEventIds = new Set<string>();
     if (terminalQueryIds.length) {
       const { data: existingTerminalRows, error: terminalReadError } = await db
         .from("verix2_events")
@@ -540,8 +541,9 @@ Deno.serve(async (req: Request) => {
 
       const existingTerminalKeys = new Set((existingTerminalRows || [])
         .map((row:any) => String(row.query_id) + "\\u001f" + String(row.event)));
-      const existingTerminalEventIds = new Set((existingTerminalRows || [])
-        .map((row:any) => String(row.event_id)));
+      for (const row of (existingTerminalRows || [])) {
+        if (row?.event_id) existingTerminalEventIds.add(String(row.event_id));
+      }
       const alreadyStoredIds = events
         .filter((e:any) => terminalEvents.has(e.event) && e.query_id &&
           existingTerminalKeys.has(String(e.query_id) + "\\u001f" + String(e.event)))
@@ -558,7 +560,7 @@ Deno.serve(async (req: Request) => {
     const remainingEventIds = new Set(events.map((e:any) => String(e.event_id)));
     const retainedNoCases = insuranceNoCases.filter((row:any) =>
       remainingEventIds.has(String(row.event_id)) ||
-      (typeof existingTerminalEventIds !== "undefined" && existingTerminalEventIds.has(String(row.event_id))));
+      existingTerminalEventIds.has(String(row.event_id)));
     insuranceNoCases.splice(0, insuranceNoCases.length, ...retainedNoCases);
 
     const acknowledgedTerminalDuplicates = [...new Set(terminalDuplicateIds)];
