@@ -103,6 +103,7 @@ assert.equal(parseReceipt('{"ok":true}'), null, "HTTP 200 without an application
 assert.equal(parseReceipt('not-json'), null, "malformed receipt must not clear the queue");
 
 const presenceMigration = fs.readFileSync("supabase/migrations/20261009045708_fix_browser_presence_kpi.sql", "utf8");
+const recentQueryPresenceMigration = fs.readFileSync("supabase/migrations/20261010222630_consulted_installations_last_3m.sql", "utf8");
 assert.match(endpoint, /"session_close"/, "server must accept browser-close presence events");
 assert.match(telemetryScript, /push\('session_close', null\)/, "pagehide must emit a browser-close event");
 assert.match(telemetryScript, /navigator\.sendBeacon\([\s\S]*events: \[closingEvent\]/, "browser-close event must be sent immediately through Beacon");
@@ -110,7 +111,21 @@ assert.match(presenceMigration, /'online_now',\(SELECT count\(\*\)/, "online_now
 assert.match(presenceMigration, /last_presence >= p_now-interval '90 seconds'/, "online presence must expire after the heartbeat lease");
 assert.match(presenceMigration, /event IN \('app_open','heartbeat','session_close'\)/, "online presence must use lifecycle events only");
 assert.match(presenceMigration, /last_close IS NULL OR last_presence > last_close/, "a later close event must remove a session from the active count");
-assert.ok(admin.includes("Sessões VÉRIX com browser aberto."), "Ativos agora must describe browser sessions, not installations");
+assert.ok(admin.includes("Sessões VÉRIX com browser aberto."), "browser-session presence must remain distinguishable from recent consultation activity");
+assert.ok(admin.includes("ONLINE AGORA"), "Admin must expose the recent-consultation online indicator");
+assert.ok(admin.includes("o.consulted_3m"), "online indicator must use the backend's three-minute consultation metric");
+assert.ok(admin.includes("Instalações com pelo menos uma consulta iniciada nos últimos 3 minutos."), "online indicator must explain its exact measurement window");
+assert.ok(admin.includes("SESSÕES DE BROWSER"), "Admin must retain the separate browser-session presence indicator");
+assert.ok(stats.includes('rpc("verix2_consulted_installations_3m",{p_now:now})'), "stats must request query-based online presence");
+assert.ok(stats.includes("consulted_3m:recentConsulted3m"), "stats must return query-based online presence separately from browser sessions");
+assert.ok(stats.includes('[3,"recent_query_presence"]'), "a failed recent-presence query must mark the dashboard as partial");
+assert.match(recentQueryPresenceMigration, /count\(DISTINCT e\.installation_id\)/, "recent-query presence must count distinct installations");
+assert.match(recentQueryPresenceMigration, /e\.event = 'vehicle_lookup'/, "recent-query presence must count actual consultation starts");
+assert.match(recentQueryPresenceMigration, /e\.query_id IS NOT NULL/, "recent-query presence must ignore lookup events without a query ID");
+assert.match(recentQueryPresenceMigration, /p_now - interval '3 minutes'/, "recent-query presence must use the requested three-minute window");
+assert.match(recentQueryPresenceMigration, /SECURITY INVOKER/, "recent-query presence SQL function must not bypass caller privileges");
+assert.match(recentQueryPresenceMigration, /REVOKE ALL ON FUNCTION public\.verix2_consulted_installations_3m\(timestamptz\)\s+FROM PUBLIC, anon, authenticated/, "recent-query metric must not be publicly executable");
+assert.match(recentQueryPresenceMigration, /GRANT EXECUTE ON FUNCTION public\.verix2_consulted_installations_3m\(timestamptz\)\s+TO service_role/, "recent-query metric must be available to the server-side stats function");
 assert.ok(errorPlateCountMigration.includes("count(DISTINCT e.query_id) qty"), "error plate totals must count unique consultation IDs");
 assert.ok(errorPlateCountMigration.includes("count(*) event_qty"), "raw error event volume must remain visible separately");
 assert.ok(errorPlateCountMigration.includes("^(?:[A-Z]{2}[0-9]{4}|[0-9]{4}[A-Z]{2}|[0-9]{2}[A-Z]{2}[0-9]{2}|[A-Z]{2}[0-9]{2}[A-Z]{2})$"), "error plate table must allow only complete Portuguese plate formats");
