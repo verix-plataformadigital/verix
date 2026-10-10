@@ -1043,7 +1043,7 @@ async function loadDashboard(){
   if(exportButton)exportButton.disabled=false;
  }
 }
-async function csvCell(value){
+function csvCell(value){
  return '"'+String(value??'').replace(/"/g,'""').replace(/[\r\n]+/g,' ')+'"';
 }
 function exportCurrentPageCsv(){
@@ -1076,7 +1076,7 @@ function exportCurrentPageCsv(){
  document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
  toast('Exportação CSV preparada.');
 }
-function resetAllPeriods(){
+async function resetAllPeriods(){
  const b=$('reset24hBtn');b.disabled=true;
  try{const r=await request(STATS_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'reset_all_periods'})});$('reset24hStatus').textContent='Marco do histórico total: '+datePT(r.reset_at);toast('Histórico total reiniciado; 24 H, 7 dias e 30 dias continuam móveis.');await loadDashboard()}
  catch(e){toast('Não foi possível reiniciar os indicadores: '+e.message)}finally{b.disabled=false}
