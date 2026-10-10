@@ -75,30 +75,37 @@ for (const metric of ["'pending'","'incomplete'","'contradictory'","'duplicate_f
 for (const label of ["Incompletas","Contraditórias","Finais duplicados","Finais órfãos","INSTALAÇÕES"]) assert.ok(admin.includes(label), "missing Admin label "+label);
 
 
-// Portuguese vehicle series, machinery suffixes, trailers, diplomatic and export series.
-const strictPlateBaseTest = value => {
+// Admin-only plate format classification: distinguish structure from assigned registration.
+const adminPlateBaseTest = value => {
   const raw=String(value??"").trim().toUpperCase();
-  if (/^[A-Z]{2}[ -]?[0-9]{2}[ -]?[0-9]{2}$/.test(raw)
+  return /^[A-Z]{2}[ -]?[0-9]{2}[ -]?[0-9]{2}$/.test(raw)
     || /^[0-9]{2}[ -]?[0-9]{2}[ -]?[A-Z]{2}$/.test(raw)
-    || /^[0-9]{2}[ -]?[A-Z]{2}[ -]?[0-9]{2}$/.test(raw)) return true;
-  const m=raw.match(/^([A-Z]{2})[ -]?[0-9]{2}[ -]?([A-Z]{2})$/);
-  if(!m)return false;
-  if(/^(?:AA|EE|II|OO|UU)$/.test(m[1])||/^(?:AA|EE|II|OO|UU)$/.test(m[2]))return true;
-  return !/[AEIOU]/.test(m[1][1])&&!/[AEIOU]/.test(m[2][1]);
+    || /^[0-9]{2}[ -]?[A-Z]{2}[ -]?[0-9]{2}$/.test(raw)
+    || /^[A-Z]{2}[ -]?[0-9]{2}[ -]?[A-Z]{2}$/.test(raw);
 };
-const strictPlateTest = value => {
+const adminPlateFormatTest = value => {
   const raw=String(value??"").trim().toUpperCase();
-  if(strictPlateBaseTest(raw))return true;
+  if(adminPlateBaseTest(raw))return true;
   const machine=raw.match(/^(.+?)[ -]?([A-H])$/);
-  if(machine&&strictPlateBaseTest(machine[1]))return true;
+  if(machine&&adminPlateBaseTest(machine[1]))return true;
   if(/^[0-9]{3}[ -](?:CD|CC|FM)[0-9]{3}$/.test(raw))return true;
   if(/^[0-9]+[ -]?[LPAM]$/.test(raw))return true;
   return /^(?:AV|BE|BN|BR|CB|FA|GD|LE|PT|SA|SE|VC|VR|VI|AN|H|A|M|L|P|C|E)[ -]?[0-9]{1,6}$/i.test(raw);
 };
-for(const v of ["AA-00-00","00-00-AA","00-AA-00","AA-01-AA","AB-12-CD","AA-01-AE","AA-00-00-A","00-AA-00-B","VC-123456","BN-12345","L-123456","001-CD001","001-CC001","001-FM001","12345-L","456-P","789-A","100-M"]) assert.equal(strictPlateTest(v),true,"should accept "+v);
-for(const v of ["Aa-2a-ae","AA/00/00","AA--00--00","BA-12-CA","AB-12-AE","AA-00-00-Z","BG-12345","VS-12345","X-12345","L-1234567","L/12345","001-XX001","001CD001","12-X"]) assert.equal(strictPlateTest(v),false,"should reject "+v);
-assert.ok(stats.includes("validPortugueseTrailerPlate"), "stats must classify legal trailer formats");
-assert.ok(stats.includes("validPortuguesePlateBase"), "stats must apply the current-series vowel restriction");
+for(const v of [
+  "AA-00-00","00-00-AA","00-AA-00","AA-01-AA","AB-12-CD",
+  "AU61PL","CA67XG","BA75FC","BV32JU","AI75ZF","AI44OG","CA54GS",
+  "AA-00-00-A","00-AA-00-B","VC-123456","BN-12345","L-123456",
+  "001-CD001","001-CC001","001-FM001","12345-L","456-P","789-A","100-M"
+]) assert.equal(adminPlateFormatTest(v),true,"admin should accept Portuguese plate layout: "+v);
+for(const v of [
+  "Aa-2a-ae","AA/00/00","AA--00--00","AI440G","AA-00-00-Z",
+  "BG-12345","VS-12345","X-12345","L-1234567","L/12345",
+  "001-XX001","001CD001","12-X","AU6","AU","+5897FX","54-T8-9"
+]) assert.equal(adminPlateFormatTest(v),false,"admin should reject malformed plate format: "+v);
+assert.ok(stats.includes("validPortuguesePlateBase"), "admin stats must have a dedicated plate-format classifier");
+assert.ok(stats.includes("|| /^[A-Z]{2}[ -]?[0-9]{2}[ -]?[A-Z]{2}$/.test(raw)"), "admin stats must accept the current AA00AA layout by structure");
+assert.doesNotMatch(stats, /\\[AEIOU\\]/, "admin stats must not impose a blanket vowel-position restriction");
 assert.ok(endpoint.includes("isValidPortugueseTrailerPlateFormat"), "backend must recognize legal trailer codes");
 assert.ok(endpoint.includes("Industrial machinery plates"), "backend must recognize the industrial class suffix");
 assert.ok(endpoint.includes("MNE privileged registration"), "backend must recognize official diplomatic registrations");
