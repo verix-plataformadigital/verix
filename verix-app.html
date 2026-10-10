@@ -350,7 +350,12 @@ let ultimaMatriculaLivrete = "";
  function formatMatricula(input) {
    const raw = String(input.value || '');
    if (/[^a-zA-Z0-9 -]/.test(raw)) {
-     input.value = raw.toUpperCase().slice(0, 8);
+     input.value = raw.slice(0, 8);
+     return;
+   }
+   // Preserve invalid input exactly: never strip separators or rewrite it into a valid-looking plate.
+   if (!validarFormatoMatriculaVeiculo(raw).valid) {
+     input.value = raw.slice(0, 8);
      return;
    }
    input.value = formatarMatriculaVeiculo(raw);
@@ -378,7 +383,12 @@ let ultimaMatriculaLivrete = "";
  function formatMatriculaReboque(input) {
  const raw = String(input.value || '');
  if (/[^a-zA-Z0-9 -]/.test(raw)) {
-   input.value = raw.toUpperCase();
+   input.value = raw;
+   return;
+ }
+ // The regional reboque code must already be valid before normalizing separators.
+ if (!validarFormatoMatriculaReboque(raw).valid) {
+   input.value = raw;
    return;
  }
  const siglas = [

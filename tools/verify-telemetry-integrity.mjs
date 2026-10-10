@@ -114,6 +114,10 @@ assert.doesNotMatch(app.slice(beaconStart, beaconEnd), /queue\.splice\(/, "sendB
 assert.ok(app.includes("VERIX_T2_REJECTED_QUEUE"), "permanent rejections must have bounded non-sensitive local diagnostics");
 assert.match(app, /function cleanMetadata\(meta, event\)/, "client metadata sanitizer must know which event is being sent");
 assert.match(app, /function insurancePlateMetadata\(value, asfDiagnostic\)/, "insurance outcome wrappers must normalize the plate");
+assert.match(app, /function validarFormatoMatriculaVeiculo\(valor\)/, "vehicle validator must exist");
+assert.match(app, /function validarFormatoMatriculaReboque\(valor\)/, "trailer validator must exist");
+assert.match(app, /if \(!validarFormatoMatriculaVeiculo\(raw\)\.valid\)/, "invalid vehicle text must not be normalized into a valid-looking plate");
+assert.match(app, /if \(!validarFormatoMatriculaReboque\(raw\)\.valid\)/, "invalid trailer text must be preserved before validation");
 assert.match(app, /push\('vehicle_insurance_no', 'consulta', meta\)/, "no-record event must include plate metadata");
 assert.match(app, /push\('vehicle_insurance_error', 'consulta', meta\)/, "ASF error event must include plate metadata");
 assert.match(app, /event === 'vehicle_insurance_no' \|\| event === 'vehicle_insurance_error'/, "plate metadata must be limited to no-record/error events");
