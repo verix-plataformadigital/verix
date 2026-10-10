@@ -186,6 +186,12 @@ assert.ok(stats.includes("event_count:b.events"), "error time buckets must expos
 assert.ok(stats.includes("error_queries_24h:new Set(rows.map"), "error total must count unique query IDs separately from event rows");
 assert.ok(stats.includes("current_version_error_events:currentVersionRows.length"), "version errors must expose raw events separately from distinct queries");
 assert.ok(stats.includes("latestErrorByQuery"), "error plate details must not repeat the same consultation");
+assert.ok(stats.includes("valid_plate_error_queries_24h:countDistinctQueries(validPlateErrorRows)"), "admin error summary must count only valid-format plate error consultations");
+assert.ok(stats.includes("valid_plate_error_plates_24h:validPlateErrorPlates"), "admin summary plate list must contain valid-format plate errors only");
+assert.ok(admin.includes("err=Number(p.errors_valid_plate??0)"), "insurance summary must count only valid-format plate errors");
+assert.ok(admin.includes("fmt(x.errors_valid_plate??0)"), "period comparison must count only valid-format plate errors");
+assert.ok(admin.includes("inv.current_version_valid_error_queries"), "Errors summary must exclude invalid-format plate inputs from counts");
+assert.ok(admin.includes("inv.valid_plate_error_types_24h||[]"), "Error type summaries must exclude invalid-format plate inputs");
 assert.ok(stats.includes('qs.set("offset",String(page*pageSize))'), "error investigation must page through all raw telemetry instead of truncating at 1,000 rows");
 assert.ok(stats.includes("validPortuguesePlate"), "error plate diagnostics must use complete Portuguese plate formats");
 assert.ok(endpoint.includes("function isValidPortugueseVehiclePlateFormat(value: unknown)") && endpoint.includes("isValidPortugueseVehiclePlateFormat(raw)"), "server must reject incomplete formats and apply current-series restrictions");
