@@ -502,6 +502,70 @@ Deno.serve(async (req: Request) => {
       });
     }
 
+    // A terminal outcome is idempotent by (query_id, event). Different
+    // outcomes for the same query are deliberately retained as integrity conflicts.
+    const consideredBeforeTerminalDedupe = events.length;
+    const terminalEvents = new Set([
+      "vehicle_insurance_yes",
+      "vehicle_insurance_no",
+      "vehicle_insurance_error"
+    ]);
+    const terminalDuplicateIds: string[] = [];
+    const seenTerminalInBatch = new Set<string>();
+    const batchFiltered = events.filter((e:any) => {
+      if (!terminalEvents.has(e.event) || !e.query_id) return true;
+      const key = String(e.query_id) + "\\u001f" + String(e.event);
+      if (seenTerminalInBatch.has(key)) {
+        terminalDuplicateIds.push(String(e.event_id));
+        return false;
+      }
+      seenTerminalInBatch.add(key);
+      return true;
+    });
+    events.splice(0, events.length, ...batchFiltered);
+
+    const terminalQueryIds = [...new Set(events
+      .filter((e:any) => terminalEvents.has(e.event) && e.query_id)
+      .map((e:any) => String(e.query_id)))];
+    if (terminalQueryIds.length) {
+      const { data: existingTerminalRows, error: terminalReadError } = await db
+        .from("verix2_events")
+        .select("query_id,event")
+        .in("query_id", terminalQueryIds)
+        .in("event", [...terminalEvents]);
+      if (terminalReadError) throw new Error("terminal_dedupe:" + terminalReadError.message);
+
+      const existingTerminalKeys = new Set((existingTerminalRows || [])
+        .map((row:any) => String(row.query_id) + "\\u001f" + String(row.event)));
+      const alreadyStoredIds = events
+        .filter((e:any) => terminalEvents.has(e.event) && e.query_id &&
+          existingTerminalKeys.has(String(e.query_id) + "\\u001f" + String(e.event)))
+        .map((e:any) => String(e.event_id));
+      terminalDuplicateIds.push(...alreadyStoredIds);
+      const kept = events.filter((e:any) =>
+        !terminalEvents.has(e.event) || !e.query_id ||
+        !existingTerminalKeys.has(String(e.query_id) + "\\u001f" + String(e.event)));
+      events.splice(0, events.length, ...kept);
+    }
+
+    // A suppressed duplicate "no record" outcome must not create a second
+    // registry row for the same query under a different event ID.
+    const remainingEventIds = new Set(events.map((e:any) => String(e.event_id)));
+    const retainedNoCases = insuranceNoCases.filter((row:any) => remainingEventIds.has(String(row.event_id)));
+    insuranceNoCases.splice(0, insuranceNoCases.length, ...retainedNoCases);
+
+    const acknowledgedTerminalDuplicates = [...new Set(terminalDuplicateIds)];
+    if (!events.length) {
+      return json({
+        ok: true, accepted: 0, inserted: 0, duplicates: consideredBeforeTerminalDedupe,
+        rejected, received: received.length, considered: consideredBeforeTerminalDedupe,
+        acknowledged_event_ids: acknowledgedTerminalDuplicates,
+        rejected_event_ids: rejectedEventIds,
+        retry_event_ids: retryEventIds,
+        rejection_reasons: rejectionReasons
+      });
+    }
+
     const installations = new Map<string, any>();
     const sessions = new Map<string, any>();
 
@@ -570,7 +634,7 @@ Deno.serve(async (req: Request) => {
       if (registryError) throw new Error("insurance_no_registry:" + registryError.message);
     }
 
-    const duplicates = events.length - inserted;
+    const duplicates = consideredBeforeTerminalDedupe - inserted;
     return json({
       ok: true,
       accepted: inserted,
@@ -578,10 +642,10 @@ Deno.serve(async (req: Request) => {
       duplicates,
       rejected,
       received: received.length,
-      considered: events.length,
-      // Every valid submitted ID is now represented by an insert or an
-      // existing id/query unique-key row after this RPC committed successfully.
-      acknowledged_event_ids: events.map((event: any) => event.event_id),
+      considered: consideredBeforeTerminalDedupe,
+      // Includes inserted rows and duplicate terminal outcomes acknowledged
+      // by (query_id,event) idempotency.
+      acknowledged_event_ids: [...new Set([...events.map((event: any) => event.event_id), ...acknowledgedTerminalDuplicates])],
       rejected_event_ids: rejectedEventIds,
       retry_event_ids: retryEventIds,
       rejection_reasons: rejectionReasons
