@@ -772,7 +772,7 @@ function renderDashboard(d){
  const noRate=dec?100*uninsured/dec:null,errorRate=fin?100*errs/fin:null;
  const backendErrors=Object.keys(d.errors||{});
  $('dashCards').innerHTML=
-  card('ONLINE AGORA',num(o.online_now),'Consultas nos últimos 3 minutos.','green')+
+  card('ONLINE AGORA',num(o.online_now),'Instalações que fizeram uma consulta nos últimos 3 minutos.','green')+
   card('INSTALAÇÕES',num(users),'Com atividade no período selecionado.','cyan')+
   card('CONSULTAS DE SEGURO',num(lookups),'Pedidos de consulta iniciados.','blue')+
   card('COM SEGURO',num(insured),pct(dec?100*insured/dec:null)+' das decisões conhecidas.','green')+
