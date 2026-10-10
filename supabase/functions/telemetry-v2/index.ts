@@ -65,7 +65,7 @@ const ALLOWED_ORIGINS = new Set([
 const allowedEvents = new Set([
   "app_open","heartbeat","session_close","vehicle_lookup",
   "vehicle_insurance_pending","vehicle_insurance_yes",
-  "vehicle_insurance_no","vehicle_insurance_error",
+  "vehicle_insurance_no","vehicle_insurance_error","vehicle_plate_invalid",
   "imt_loaded","module_open","history_open","history_reopen",
   "external_tool_open","alcohol_lookup",
   "cinemometer_operation_start","cinemometer_speed_entry","cinemometer_calculation",
@@ -105,6 +105,8 @@ function cleanMetadata(value: unknown): Record<string, unknown> {
   if (m.resultConfirmed === true) out.resultConfirmed = true;
   if (m.matricula) out.matricula = cleanText(m.matricula, 30);
   if (m.matriculaNormalizada) out.matriculaNormalizada = cleanText(m.matriculaNormalizada, 30);
+  if (m.plateField) out.plateField = cleanText(m.plateField, 20);
+  if (m.plateReason) out.plateReason = cleanText(m.plateReason, 60);
   if (m.asfUserMessage) out.asfUserMessage = cleanText(m.asfUserMessage, 500);
   if (m.profile_id) out.profile_id = cleanText(m.profile_id, 120);
   if (m.operation_id) out.operation_id = cleanText(m.operation_id, 120);
@@ -271,6 +273,18 @@ function cleanMetadata(value: unknown): Record<string, unknown> {
   return out;
 }
 
+function isValidPortugueseVehiclePlateFormat(value: unknown): boolean {
+  const raw = String(value ?? "").trim().toUpperCase();
+  if (/^[A-Z]{2}[ -]?[0-9]{2}[ -]?[0-9]{2}$/.test(raw)
+    || /^[0-9]{2}[ -]?[0-9]{2}[ -]?[A-Z]{2}$/.test(raw)
+    || /^[0-9]{2}[ -]?[A-Z]{2}[ -]?[0-9]{2}$/.test(raw)) return true;
+  const current = raw.match(/^([A-Z]{2})[ -]?[0-9]{2}[ -]?([A-Z]{2})$/);
+  if (!current) return false;
+  const first = current[1], last = current[2];
+  if (/^(?:AA|EE|II|OO|UU)$/.test(first) || /^(?:AA|EE|II|OO|UU)$/.test(last)) return true;
+  return !/[AEIOU]/.test(first[1]) && !/[AEIOU]/.test(last[1]);
+}
+
 function sanitizeErrorPlateMetadata(metadata: Record<string, unknown>): void {
   const diagnostic = metadata.asfDiagnostic;
   const diag = diagnostic && typeof diagnostic === "object" && !Array.isArray(diagnostic)
@@ -293,7 +307,7 @@ function sanitizeErrorPlateMetadata(metadata: Record<string, unknown>): void {
   // Only the expected separators are ignored: valid Portuguese formats work with or without
   // hyphens/spaces. Other punctuation stays in the value and fails the format check.
   const normalized = raw.toUpperCase().replace(/[\s-]/g, "");
-  const isValidFormat = /^(?:[A-Z]{2}[0-9]{4}|[0-9]{4}[A-Z]{2}|[0-9]{2}[A-Z]{2}[0-9]{2}|[A-Z]{2}[0-9]{2}[A-Z]{2})$/.test(normalized);
+  const isValidFormat = isValidPortugueseVehiclePlateFormat(raw);
   if (isValidFormat) {
     if (diag) diag.matricula = raw;
     else metadata.matricula = raw;
@@ -448,7 +462,7 @@ Deno.serve(async (req: Request) => {
 
       // Data minimization: the plate is only needed for technical ASF error investigation.
       // Correlation is done with query_id for all other outcomes.
-      if (event !== "vehicle_insurance_error") {
+      if (event !== "vehicle_insurance_error" && event !== "vehicle_plate_invalid") {
         delete metadata.matricula;
         delete metadata.matriculaNormalizada;
         if (metadata.asfDiagnostic && typeof metadata.asfDiagnostic === "object") {
@@ -478,7 +492,7 @@ Deno.serve(async (req: Request) => {
         if (!queryId || !appVersion || metadata.resultConfirmed !== true) { rejectEvent(x, "unconfirmed_imt_result"); continue; }
       }
 
-      if (event === "vehicle_insurance_yes" || event === "vehicle_insurance_no" || event === "vehicle_insurance_error") {
+      if (event === "vehicle_insurance_yes" || event === "vehicle_insurance_no" || event === "vehicle_insurance_error" || event === "vehicle_plate_invalid") {
         if (!queryId || !appVersion) { rejectEvent(x, "missing_query_id_or_version"); continue; }
       }
 

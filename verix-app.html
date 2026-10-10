@@ -348,13 +348,42 @@ let ultimaMatriculaLivrete = "";
  }
 
  function formatMatricula(input) {
-   input.value = formatarMatriculaVeiculo(input.value);
+   const raw = String(input.value || '');
+   if (/[^a-zA-Z0-9 -]/.test(raw)) {
+     input.value = raw.toUpperCase().slice(0, 8);
+     return;
+   }
+   input.value = formatarMatriculaVeiculo(raw);
+ }
+
+ function validarFormatoMatriculaVeiculo(valor) {
+   const raw = String(valor || '').trim().toUpperCase();
+   if (/^[A-Z]{2}[ -]?[0-9]{2}[ -]?[0-9]{2}$/.test(raw)
+     || /^[0-9]{2}[ -]?[0-9]{2}[ -]?[A-Z]{2}$/.test(raw)
+     || /^[0-9]{2}[ -]?[A-Z]{2}[ -]?[0-9]{2}$/.test(raw)) return { valid: true, reason: null };
+   const atual = raw.match(/^([A-Z]{2})[ -]?[0-9]{2}[ -]?([A-Z]{2})$/);
+   if (!atual) return { valid: false, reason: 'formato_ou_posicoes' };
+   const inicial = atual[1], final = atual[2];
+   if (/^(?:AA|EE|II|OO|UU)$/.test(inicial) || /^(?:AA|EE|II|OO|UU)$/.test(final)) return { valid: true, reason: null };
+   if (/[AEIOU]/.test(inicial[1]) || /[AEIOU]/.test(final[1])) return { valid: false, reason: 'regra_vogais_serie_atual' };
+   return { valid: true, reason: null };
+ }
+
+ function validarFormatoMatriculaReboque(valor) {
+   const raw = String(valor || '').trim().toUpperCase();
+   const valido = /^(?:AV|BE|BN|BR|CB|FA|GD|LE|PT|SA|SE|VC|VR|VI|AN|H|A|M|L|P|C|E)[ -]?[0-9]{1,6}$/.test(raw);
+   return { valid: valido, reason: valido ? null : 'codigo_regional_ou_numero_reboque' };
  }
 
  function formatMatriculaReboque(input) {
+ const raw = String(input.value || '');
+ if (/[^a-zA-Z0-9 -]/.test(raw)) {
+   input.value = raw.toUpperCase();
+   return;
+ }
  const siglas = [
- 'A', 'AN', 'AV', 'BE', 'BG', 'BR', 'C', 'CB', 'E', 'FA',
- 'GD', 'H', 'L', 'LE', 'M', 'P', 'PT', 'SA', 'SE', 'VC', 'VI', 'VR', 'VS'
+ 'A', 'AN', 'AV', 'BE', 'BN', 'BR', 'C', 'CB', 'E', 'FA',
+ 'GD', 'H', 'L', 'LE', 'M', 'P', 'PT', 'SA', 'SE', 'VC', 'VI', 'VR'
  ];
 
  let value = input.value.toUpperCase().replace(/[^A-Z0-9\-]/g, '');
@@ -365,8 +394,8 @@ let ultimaMatriculaLivrete = "";
  let prefixoValido = siglas.some(sigla => sigla.startsWith(letrasDigitadas));
 
  if (!prefixoValido) {
- value = value.substring(0, value.length - 1);
- matchLetras = value.match(/^([A-Z]+)/);
+   input.value = value;
+   return;
  }
  }
 
@@ -929,6 +958,34 @@ function submitConjunto(event) {
 
  if (!valVeiculo && !valReboque) {
    mostrarToast("Introduza pelo menos uma matrícula.");
+   return;
+ }
+
+ const matriculasInvalidas = [];
+ if (valVeiculo) {
+   const resultado = validarFormatoMatriculaVeiculo(valVeiculo);
+   if (!resultado.valid) matriculasInvalidas.push({ field: 'veiculo', label: 'Veículo', value: valVeiculo, reason: resultado.reason, input: inputVeiculo });
+ }
+ if (valReboque) {
+   const resultado = validarFormatoMatriculaReboque(valReboque);
+   if (!resultado.valid) matriculasInvalidas.push({ field: 'reboque', label: 'Reboque', value: valReboque, reason: resultado.reason, input: inputReboque });
+ }
+ if (matriculasInvalidas.length) {
+   const telemetry = window.VERIX_TELEMETRY;
+   matriculasInvalidas.forEach((erro, index) => {
+     try {
+       if (telemetry && typeof telemetry.track === 'function') {
+         const freshId = typeof telemetry.newQueryId === 'function' ? telemetry.newQueryId() : 'q_invalid_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+         telemetry.track('vehicle_plate_invalid', 'consulta', {
+           queryId: String(freshId) + '_invalid_' + erro.field + '_' + (index + 1),
+           matricula: erro.value, plateField: erro.field, plateReason: erro.reason
+         });
+       }
+     } catch (_) {}
+   });
+   const detalhe = matriculasInvalidas.map(e => e.label + ': "' + e.value + '"').join(' · ');
+   mostrarToast('Formato de matrícula inválido (' + detalhe + '). Consulta não iniciada.');
+   try { matriculasInvalidas[0].input.focus(); } catch (_) {}
    return;
  }
 
@@ -17372,7 +17429,12 @@ html body .leg-card-new .copy-all-new{
     if (m.queryId) out.queryId = String(m.queryId).slice(0, 120);
     // Minimização: matrícula só segue nos dois resultados que alimentam as listas ASF.
     var normalizedPlate = '';
-    if (event === 'vehicle_insurance_no' || event === 'vehicle_insurance_error') {
+    if (event === 'vehicle_plate_invalid') {
+      var rejectedPlate = String(m.matricula || '').trim().toUpperCase().slice(0, 30);
+      if (rejectedPlate) out.matricula = rejectedPlate;
+      if (m.plateField) out.plateField = String(m.plateField).slice(0, 20);
+      if (m.plateReason) out.plateReason = String(m.plateReason).slice(0, 60);
+    } else if (event === 'vehicle_insurance_no' || event === 'vehicle_insurance_error') {
       var rawPlate = String(m.matricula || m.matriculaNormalizada || '').trim().toUpperCase().slice(0, 30);
       normalizedPlate = String(m.matriculaNormalizada || rawPlate).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 30);
       if (rawPlate) out.matricula = rawPlate;
@@ -17456,7 +17518,7 @@ html body .leg-card-new .copy-all-new{
 
     // Eventos críticos (arranque, presença e consulta) não ficam dependentes
     // de uma janela de flush posterior. Tentamos enviar logo.
-    if (event === 'app_open' || event === 'heartbeat' || event === 'vehicle_lookup' || event === 'vehicle_insurance_no' || event === 'vehicle_insurance_error') {
+    if (event === 'app_open' || event === 'heartbeat' || event === 'vehicle_lookup' || event === 'vehicle_insurance_no' || event === 'vehicle_insurance_error' || event === 'vehicle_plate_invalid') {
       flushNow();
     } else if (queue.length >= BATCH_SIZE) {
       flush();

@@ -39,7 +39,7 @@ assert.match(admin, /id="errorPlates"/, "Admin must expose a dedicated ASF error
 assert.ok(admin.includes("const plateCases=inv.current_version_plate_cases;"), "Admin must distinguish missing error details from an empty loaded list");
 assert.match(stats, /current_version_plate_cases:plateCases/, "stats must return error plate cases to Admin");
 assert.ok(stats.includes("const candidates=[e?.metadata?.asfDiagnostic?.matricula,e?.metadata?.matriculaNormalizada,e?.metadata?.matricula]"), "error analytics must prefer a valid plate from supported metadata fields");
-assert.ok(stats.includes('replace(/[\\s-]/g,"")'), "stats must accept hyphens/spaces or no separator but must not silently strip other characters");
+assert.ok(stats.includes('replace(/[ -]/g,"")'), "stats display normalization removes only expected separators");
 assert.ok(stats.includes('current_version_invalid_plate_cases:invalidPlateCases'), "stats must return invalid plate inputs separately");
 assert.ok(stats.includes('current_version_missing_plate_cases:missingPlateCases'), "stats must return errors without captured plates separately");
 assert.match(admin, /id="errorInvalidPlates"/, "Admin must display invalid-format plate inputs in a separate table");
@@ -55,7 +55,7 @@ for (const value of ["AA-00-00","AA0000","00-00-AA","0000AA","00-AA-00","00AA00"
 for (const value of ["12-ABC-34","AA/00/00","89","177ZN","1234"]) {
   assert.equal(validPlateForTest(value), false, "non-Portuguese or partial plate format must be classified as invalid: " + value);
 }
-assert.match(endpoint, /if \(event !== "vehicle_insurance_error"\) \{[\s\S]*?delete metadata\.matriculaNormalizada;/, "no-record events must not retain plate metadata in the general event stream");
+assert.match(endpoint, /if \(event !== "vehicle_insurance_error" && event !== "vehicle_plate_invalid"\) \{[\s\S]*?delete metadata\.matriculaNormalizada;/, "only ASF errors and explicit format rejections may retain plate text");
 assert.match(endpoint, /insuranceNoCases\.push/, "valid no-record outcomes must enter the dedicated 90-day registry");
 assert.match(admin, /O resultado, por si só, não confirma a ausência de seguro/, "no-record list must warn that no record alone is not proof");
 assert.match(admin, /Um erro técnico não significa que o veículo não tenha seguro/, "error list must distinguish failures from insurance status");
@@ -73,6 +73,29 @@ assert.doesNotMatch(migration, /SELECT DISTINCT ON\(query_id\)/);
 assert.equal((migration.match(/NOT EXISTS\(SELECT 1 FROM public\.verix2_events lookup_event WHERE lookup_event\.event='vehicle_lookup' AND lookup_event\.query_id=fc\.query_id\)/g) || []).length, 3, "orphan finals must be checked against all recorded lookups, not only the 30-day analytics slice");
 for (const metric of ["'pending'","'incomplete'","'contradictory'","'duplicate_finals'","'orphan_finals'"]) assert.ok(migration.includes(metric), "missing SQL metric "+metric);
 for (const label of ["Incompletas","Contraditórias","Finais duplicados","Finais órfãos","INSTALAÇÕES"]) assert.ok(admin.includes(label), "missing Admin label "+label);
+
+
+// Strict Portuguese plate rules: old layouts remain accepted, new layout follows the IMT vowel rule,
+// separators cannot be repeated or replaced by arbitrary punctuation, and trailer codes are separate.
+const strictPlateTest = value => {
+  const raw=String(value??"").trim().toUpperCase();
+  if (/^[A-Z]{2}[ -]?[0-9]{2}[ -]?[0-9]{2}$/.test(raw)
+    || /^[0-9]{2}[ -]?[0-9]{2}[ -]?[A-Z]{2}$/.test(raw)
+    || /^[0-9]{2}[ -]?[A-Z]{2}[ -]?[0-9]{2}$/.test(raw)) return true;
+  const m=raw.match(/^([A-Z]{2})[ -]?[0-9]{2}[ -]?([A-Z]{2})$/);
+  if(!m)return false;
+  if(/^(?:AA|EE|II|OO|UU)$/.test(m[1])||/^(?:AA|EE|II|OO|UU)$/.test(m[2]))return true;
+  return !/[AEIOU]/.test(m[1][1])&&!/[AEIOU]/.test(m[2][1]);
+};
+for(const v of ["AA-00-00","00-00-AA","00-AA-00","AA-01-AA","AB-12-CD","AA-01-AE"]) assert.equal(strictPlateTest(v),true,"should accept "+v);
+for(const v of ["Aa-2a-ae","AA/00/00","AA--00--00","BA-12-CA","AB-12-AE"]) assert.equal(strictPlateTest(v),false,"should reject "+v);
+const strictTrailerTest=v=>/^(?:AV|BE|BN|BR|CB|FA|GD|LE|PT|SA|SE|VC|VR|VI|AN|H|A|M|L|P|C|E)[ -]?[0-9]{1,6}$/i.test(String(v??"").trim());
+for(const v of ["L-123456","BN-12345","AV123","AN-12"])assert.equal(strictTrailerTest(v),true,"should accept trailer "+v);
+for(const v of ["BG-12345","VS-12345","X-12345","L-1234567","L/12345"])assert.equal(strictTrailerTest(v),false,"should reject trailer "+v);
+assert.match(endpoint, /"vehicle_plate_invalid"/, "backend accepts direct validation events");
+assert.match(endpoint, /isValidPortugueseVehiclePlateFormat\(raw\)/, "backend ASF error validation observes the current-series rule");
+assert.ok(stats.includes('"event","eq.vehicle_plate_invalid"'), "stats query for direct invalid inputs exists");
+assert.match(stats, /currentVersionInvalidInputs/, "invalid inputs feed their separate table");
 
 const app = fs.readFileSync("verix-app.html", "utf8");
 assert.doesNotMatch(app, /\b(?:APP_VERSION|appVersion|app_version)\s*[:=]\s*["\']1\.4(?:\.\d+)?["\']/i, "production runtime must not advertise the obsolete app version");
@@ -94,7 +117,7 @@ assert.match(app, /function insurancePlateMetadata\(value, asfDiagnostic\)/, "in
 assert.match(app, /push\('vehicle_insurance_no', 'consulta', meta\)/, "no-record event must include plate metadata");
 assert.match(app, /push\('vehicle_insurance_error', 'consulta', meta\)/, "ASF error event must include plate metadata");
 assert.match(app, /event === 'vehicle_insurance_no' \|\| event === 'vehicle_insurance_error'/, "plate metadata must be limited to no-record/error events");
-assert.match(app, /event === 'vehicle_insurance_no' \|\| event === 'vehicle_insurance_error'\) \{\s*flushNow\(\)/, "insurance outcome events must be flushed immediately");
+assert.match(app, /event === 'vehicle_insurance_no' \|\| event === 'vehicle_insurance_error' \|\| event === 'vehicle_plate_invalid'\) \{\s*flushNow\(\)/, "insurance outcomes and rejected plates must be flushed immediately");
 
 
 const scriptOpen = '<script id="verix-telemetry-v2">';

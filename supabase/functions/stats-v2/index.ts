@@ -263,6 +263,26 @@ async function loadErrorInvestigation24h(now:string){
     if(page===maxPages-1)throw new Error("error_investigation:page_limit");
   }
   const currentVersionRows=rows.filter((e:any)=>canonicalAppVersion(e?.app_version)===CURRENT_APP_VERSION);
+  // Keep rejected input events separate from ASF error totals and query counts.
+  const invalidInputRows:any[]=[];
+  for(let page=0;page<100;page++){
+    const qs=new URLSearchParams();
+    qs.set("select","event_id,occurred_at,event,installation_id,query_id,app_version,browser,metadata");
+    qs.set("event","eq.vehicle_plate_invalid");
+    qs.set("occurred_at","gte."+startAt);
+    qs.set("order","occurred_at.asc,event_id.asc");
+    qs.set("limit",String(pageSize));
+    qs.set("offset",String(page*pageSize));
+    const rr=await fetch(supabaseUrl+"/rest/v1/verix2_events?"+qs.toString(),{headers:{apikey:serviceKey,Authorization:"Bearer "+serviceKey}});
+    const tt=await rr.text();
+    if(!rr.ok)throw new Error("invalid_plate_investigation:"+tt);
+    const pageRows=tt?JSON.parse(tt):[];
+    if(!Array.isArray(pageRows))throw new Error("invalid_plate_investigation:invalid_page");
+    invalidInputRows.push(...pageRows);
+    if(pageRows.length<pageSize)break;
+    if(page===99)throw new Error("invalid_plate_investigation:page_limit");
+  }
+  const currentVersionInvalidInputs=invalidInputRows.filter((e:any)=>canonicalAppVersion(e?.app_version)===CURRENT_APP_VERSION);
   const shortId=(v:any)=>{const s=String(v||"");return s.length>14?s.slice(0,8)+"…"+s.slice(-4):s;};
   type ErrorDimension = {queryIds:Set<string>;events:number};
   const byHash=new Map<string,ErrorDimension>(), byType=new Map<string,ErrorDimension>(), byInstall=new Map<string,ErrorDimension>();
@@ -288,10 +308,17 @@ async function loadErrorInvestigation24h(now:string){
   const burstRows=[...bursts.entries()].map(([start,b])=>({start,count:b.queryIds.size,event_count:b.events})).sort((a,b)=>b.count-a.count||b.event_count-a.event_count).slice(0,12);
   // Validate the four Portuguese registration formats. Only spaces and hyphens are optional separators;
   // other characters remain in the value and therefore make the format invalid.
-  const normalizePlate=(value:unknown)=>String(value??"").trim().toUpperCase().replace(/[\s-]/g,"");
+  const normalizePlate=(value:unknown)=>String(value??"").trim().toUpperCase().replace(/[ -]/g,"");
   const validPortuguesePlate=(value:unknown)=>{
-    const plate=normalizePlate(value);
-    return /^(?:[A-Z]{2}[0-9]{4}|[0-9]{4}[A-Z]{2}|[0-9]{2}[A-Z]{2}[0-9]{2}|[A-Z]{2}[0-9]{2}[A-Z]{2})$/.test(plate);
+    const raw=String(value??"").trim().toUpperCase();
+    if(/^[A-Z]{2}[ -]?[0-9]{2}[ -]?[0-9]{2}$/.test(raw)
+      || /^[0-9]{2}[ -]?[0-9]{2}[ -]?[A-Z]{2}$/.test(raw)
+      || /^[0-9]{2}[ -]?[A-Z]{2}[ -]?[0-9]{2}$/.test(raw)) return true;
+    const current=raw.match(/^([A-Z]{2})[ -]?[0-9]{2}[ -]?([A-Z]{2})$/);
+    if(!current)return false;
+    const first=current[1],last=current[2];
+    if(/^(?:AA|EE|II|OO|UU)$/.test(first)||/^(?:AA|EE|II|OO|UU)$/.test(last))return true;
+    return !/[AEIOU]/.test(first[1])&&!/[AEIOU]/.test(last[1]);
   };
   const plateInfoOf=(e:any)=>{
     const candidates=[e?.metadata?.asfDiagnostic?.matricula,e?.metadata?.matriculaNormalizada,e?.metadata?.matricula];
@@ -310,8 +337,16 @@ async function loadErrorInvestigation24h(now:string){
   }
   const classifiedPlateCases=[...latestErrorByQuery.values()].map((e:any)=>{
     const plate=plateInfoOf(e),a=e?.metadata?.asfDiagnostic||{};
-    return {...plate,occurred_at:e?.occurred_at||null,error_type:a.asfErrorType||"unknown",browser:e?.browser||"Unknown",query_id:shortId(e?.query_id)};
-  }).sort((a:any,b:any)=>String(a.occurred_at||"").localeCompare(String(b.occurred_at||"")));
+    return {...plate,occurred_at:e?.occurred_at||null,error_type:a.asfErrorType||"unknown",browser:e?.browser||"Unknown",query_id:shortId(e?.query_id),plate_field:null};
+  });
+  for(const e of currentVersionInvalidInputs){
+    const plate=plateInfoOf(e),meta=e?.metadata||{};
+    classifiedPlateCases.push({...plate,occurred_at:e?.occurred_at||null,
+      error_type:"formato_rejeitado"+(meta.plateReason?": "+String(meta.plateReason):""),
+      browser:e?.browser||"Unknown",query_id:shortId(e?.query_id),
+      plate_field:meta.plateField==="reboque"?"Reboque":meta.plateField==="veiculo"?"Veículo":null});
+  }
+  classifiedPlateCases.sort((a:any,b:any)=>String(a.occurred_at||"").localeCompare(String(b.occurred_at||"")));
   const allValidPlateCases=classifiedPlateCases.filter((e:any)=>e.plate_status==="valid");
   const allInvalidPlateCases=classifiedPlateCases.filter((e:any)=>e.plate_status==="invalid");
   const allMissingPlateCases=classifiedPlateCases.filter((e:any)=>e.plate_status==="missing");
