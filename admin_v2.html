@@ -34,12 +34,14 @@ button{cursor:pointer}
 
 #app{display:none;min-height:100vh}
 .shell{display:flex;min-height:100vh}
-.sidebar{width:236px;background:linear-gradient(180deg,var(--nav),var(--nav2));color:#d9e7eb;position:fixed;left:0;top:0;bottom:0;padding:20px 14px;z-index:20}
+.sidebar{width:244px;background:linear-gradient(180deg,var(--nav),var(--nav2));color:#d9e7eb;position:fixed;left:0;top:0;bottom:0;padding:20px 14px;z-index:20}
 .side-brand{padding:7px 10px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
 .side-brand .big{font-weight:950;letter-spacing:2.5px;font-size:20px}.side-brand .big b{color:#66dbe9}
 .side-brand .small{margin-top:6px;color:#81989f;font-size:10px}
-.nav{display:flex;flex-direction:column;gap:5px;margin-top:16px}
-.nav button{width:100%;border:0;border-radius:10px;background:transparent;color:#92a7ad;text-align:left;padding:12px 13px;font-size:12px;font-weight:900}
+.nav{display:flex;flex-direction:column;gap:4px;margin-top:14px}
+.nav-section-label{margin:13px 10px 3px;color:#59737b;font-size:8px;font-weight:950;letter-spacing:1.15px}
+.nav-section-label:first-child{margin-top:4px}
+.nav button{width:100%;border:0;border-radius:10px;background:transparent;color:#92a7ad;text-align:left;padding:10px 13px;font-size:12px;font-weight:900}
 .nav button:hover{background:rgba(255,255,255,.05);color:#fff}
 .nav button:focus-visible{outline:2px solid #66dbe9;outline-offset:2px}
 .nav button.active{background:rgba(0,166,183,.16);color:#fff;box-shadow:inset 3px 0 var(--cyan)}
@@ -47,7 +49,7 @@ button{cursor:pointer}
 .side-bottom{position:absolute;bottom:15px;left:14px;right:14px}
 .side-bottom button{width:100%;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:#b6c8cc;border-radius:9px;padding:9px;font-size:10px;font-weight:900}
 
-.main{margin-left:236px;width:calc(100% - 236px);padding:22px 24px 38px}
+.main{margin-left:244px;width:calc(100% - 244px);padding:22px 24px 38px}
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;position:sticky;top:0;z-index:15;padding:6px 0 14px;background:rgba(238,242,244,.94);backdrop-filter:blur(10px)}
 .title h1{margin:0;font-size:24px}.title p{margin:4px 0 0;color:var(--muted);font-size:12px}
 .top-actions{display:flex;gap:7px;align-items:center}
@@ -74,6 +76,18 @@ button{cursor:pointer}
 .panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 15px;border-bottom:1px solid #edf0f2}
 .panel-head h3{margin:0;font-size:12px}.panel-head span{font-size:9px;color:#809097}
 .panel-body{padding:14px}
+.primary-kpis .card{min-height:112px}
+.primary-kpis .card .value{font-size:clamp(25px,2.2vw,32px)}
+.secondary-kpis .card{padding:10px 13px;background:#f8fafb;box-shadow:none}
+.secondary-kpis .card .value{font-size:20px;margin-top:6px}
+.secondary-kpis .card .note{font-size:9px;margin-top:4px}
+.dashboard-updated{margin-top:12px;color:#9abac1;font-size:9px}
+.dashboard-section-title{margin:20px 2px 9px;color:#60747b;font-size:10px;font-weight:950;letter-spacing:1px;text-transform:uppercase}
+.dashboard-explainer{margin:0 0 10px;color:#74858b;font-size:10px;line-height:1.5}
+.panel-actions{display:flex;justify-content:flex-end;padding:10px 13px;border-top:1px solid #edf0f2;background:#fbfcfc}
+.action-link{border:1px solid #d5e0e4;background:#fff;color:#315660;border-radius:8px;padding:8px 10px;font-size:9px;font-weight:950}
+.action-link:hover{background:#effbfc;border-color:#9ddce4}
+.action-link:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
 .explain{padding:11px 12px;border-left:3px solid #9bdce3;background:#f4fcfd;color:#5e737a;border-radius:8px;font-size:10px;line-height:1.5}
 .explain strong{color:#2c434a}
 .goodbox{padding:12px;border-radius:10px;background:#f0fbf6;border:1px solid #c8efdc;color:#276c50;font-size:10px;line-height:1.45}
@@ -137,7 +151,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
 .reset{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px;border:1px solid #ead9ad;background:#fff9eb;border-radius:12px}.reset b{font-size:11px}.reset span{display:block;margin-top:4px;color:#7d6a42;font-size:9px}.reset button{border:1px solid #d3ae5a;background:#fff;color:#7c5b18;border-radius:9px;padding:9px 11px;font-size:9px;font-weight:950}
 
 @media(max-width:1250px){.g7{grid-template-columns:repeat(4,minmax(0,1fr))}}
-@media(max-width:980px){.sidebar{width:78px}.side-brand .small,.side-brand .big b,.nav button label,.side-bottom{display:none}.side-brand .big{font-size:14px}.nav button{padding:12px 8px;text-align:center}.nav button span{display:block;width:auto;margin-bottom:3px}.main{margin-left:78px;width:calc(100% - 78px);padding:18px}.g7,.g4,.g3{grid-template-columns:repeat(2,minmax(0,1fr))}.hero-row{flex-direction:column;align-items:flex-start}.hero-insight{max-width:none;width:100%}}
+@media(max-width:980px){.sidebar{width:78px}.side-brand .small,.side-brand .big b,.nav button label,.nav-section-label,.side-bottom{display:none}.side-brand .big{font-size:14px}.nav button{padding:12px 8px;text-align:center}.nav button span{display:block;width:auto;margin-bottom:3px}.main{margin-left:78px;width:calc(100% - 78px);padding:18px}.g7,.g4,.g3{grid-template-columns:repeat(2,minmax(0,1fr))}.hero-row{flex-direction:column;align-items:flex-start}.hero-insight{max-width:none;width:100%}}
 @media(max-width:650px){
  .sidebar{width:100%;height:auto;left:0;top:auto;bottom:0;padding:6px 6px max(6px,env(safe-area-inset-bottom));z-index:30;border-top:1px solid rgba(255,255,255,.12)}
  .side-brand{display:none}
@@ -184,14 +198,18 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
         <div class="small">ADMIN 1.5 · PAINEL DE CONTROLO</div>
       </div>
       <nav class="nav" aria-label="Navegação do painel">
+        <div class="nav-section-label">CONTROLO</div>
         <button class="active" data-page="dashboard" aria-current="page"><span>⌂</span><label>Resumo</label></button>
         <button data-page="insurance"><span>✓</span><label>Seguro</label></button>
-        <button data-page="speed"><span>↯</span><label>Cinemómetro</label></button>
         <button data-page="errors"><span>!</span><label>Erros</label></button>
+        <div class="nav-section-label">UTILIZAÇÃO</div>
         <button data-page="usage"><span>◉</span><label>Utilização</label></button>
+        <button data-page="speed"><span>↯</span><label>Cinemómetro</label></button>
         <button data-page="legislation"><span>§</span><label>Legislação</label></button>
+        <div class="nav-section-label">ANÁLISE</div>
         <button data-page="performance"><span>◴</span><label>Desempenho</label></button>
-        <button data-page="insights"><span>✦</span><label>Insights</label></button>
+        <button data-page="insights"><span>✦</span><label>Tendências</label></button>
+        <div class="nav-section-label">SISTEMA</div>
         <button data-page="system"><span>⚙</span><label>Sistema</label></button>
       </nav>
     </aside>
@@ -223,31 +241,53 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
         <div class="hero">
           <div class="hero-row">
             <div>
-              <div class="hero-kicker">VISÃO GERAL</div>
-              <h2>Como está o VÉRIX?</h2>
-              <p>Os números principais, sem linguagem complicada.</p>
+              <div class="hero-kicker">CENTRO DE CONTROLO</div>
+              <h2>Estado operacional do VÉRIX</h2>
+              <p>Primeiro, os problemas e a atividade. Depois, as tendências.</p>
             </div>
             <div class="hero-insight" id="heroInsight"></div>
           </div>
+          <div class="dashboard-updated" id="dashboardUpdated">A aguardar dados do painel…</div>
         </div>
 
-        <div class="grid g7" id="dashCards"></div>
+        <div class="grid g4 primary-kpis" id="dashCards"></div>
+        <div class="grid g3 secondary-kpis" id="dashSecondaryCards" style="margin-top:8px"></div>
 
-        <div class="grid g2" style="margin-top:12px">
+        <div class="dashboard-section-title">Acompanhamento operacional</div>
+        <div class="grid g2 dashboard-attention">
           <div class="panel">
-            <div class="panel-head"><h3>ATIVIDADE DOS ÚLTIMOS 30 DIAS</h3><span>CONSULTAS DE SEGURO</span></div>
+            <div class="panel-head"><h3>MATRÍCULAS COM ERRO NA CONSULTA ASF</h3><span>ÚLTIMAS 24 H · CONSULTAS COM ERRO</span></div>
+            <div class="panel-body">
+              <p class="dashboard-explainer">Um erro técnico não confirma ausência de seguro. Consulta a hora, o tipo de erro e os detalhes antes de tirar conclusões.</p>
+              <div id="dashboardErrorPlates" class="table-wrap"><div class="empty">A carregar matrículas com erro…</div></div>
+            </div>
+            <div class="panel-actions"><button class="action-link" type="button" data-go-page="errors">ABRIR ANÁLISE DE ERROS ↗</button></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>MATRÍCULAS COM RESULTADO «SEM REGISTO»</h3><span>RETENÇÃO DE 90 DIAS</span></div>
+            <div class="panel-body">
+              <p class="dashboard-explainer">«Sem registo» é o resultado da consulta à ASF; por si só, não prova que o veículo não tenha seguro. Mostramos as consultas mais recentes disponíveis.</p>
+              <div id="dashboardNoCases" class="table-wrap"><div class="empty">A carregar resultados sem registo…</div></div>
+            </div>
+            <div class="panel-actions"><button class="action-link" type="button" data-go-page="insurance">ABRIR LISTA COMPLETA ↗</button></div>
+          </div>
+        </div>
+
+        <div class="dashboard-section-title">Atividade e utilização</div>
+        <div class="grid g2">
+          <div class="panel">
+            <div class="panel-head"><h3>CONSULTAS DE SEGURO · ÚLTIMOS 30 DIAS</h3><span>VOLUME DIÁRIO</span></div>
             <div id="dashDaily" class="chart"></div>
           </div>
           <div class="panel">
             <div class="panel-head"><h3>CONSULTAS E ONLINE POR HORA</h3><span>ÚLTIMAS 24 H</span></div>
-            <div class="panel-body"><div id="dashHours" class="hour-grid"></div><div class="hour-note">Consultas = pedidos de seguro iniciados. Online = instalações distintas com abertura ou heartbeat nessa hora; não equivale a pessoas únicas.</div></div>
+            <div class="panel-body"><div id="dashHours" class="hour-grid"></div><div class="hour-note">Consultas = pedidos de seguro iniciados. Presença = instalações distintas com abertura ou heartbeat nessa hora; não equivale a pessoas únicas.</div></div>
           </div>
         </div>
 
-        <div class="grid g3" style="margin-top:12px">
+        <div class="grid g2" style="margin-top:12px">
           <div class="panel"><div class="panel-head"><h3>MÓDULOS MAIS USADOS</h3><span>30 DIAS</span></div><div class="panel-body"><div id="dashModules" class="bar-list"></div></div></div>
-          <div class="panel"><div class="panel-head"><h3>O QUE ESTÁ A ACONTECER</h3><span>LEITURA AUTOMÁTICA</span></div><div class="panel-body" id="dashReading"></div></div>
-          <div class="panel"><div class="panel-head"><h3>CURIOSIDADES</h3><span>DADOS OBSERVADOS</span></div><div class="panel-body" id="dashFun"></div></div>
+          <div class="panel"><div class="panel-head"><h3>LEITURA DA ATIVIDADE</h3><span>PERÍODO SELECIONADO</span></div><div class="panel-body" id="dashReading"></div></div>
         </div>
       </section>
 
@@ -444,15 +484,15 @@ function period(){return latestData?.analytics?.insurance?.[currentPeriod]||{}}
 function setLoadNotice(message,visible=false,kind='warning'){const box=$('loadNotice'),label=$('loadNoticeText');if(!box||!label)return;label.textContent=message||'';box.classList.toggle('hidden',!visible);box.classList.toggle('error',kind==='error');box.classList.toggle('warning',kind==='warning')}
 function renderLoadingState(){
  if(latestData)return;
- const cardHosts=['dashCards','insuranceCards','speedCards','legCards','usageCards','errorCards','systemCards','performanceCards','insightCards'];
- cardHosts.forEach(id=>{const host=$(id);if(host)host.innerHTML=Array.from({length:id==='dashCards'?7:4},()=>'<div class="skeleton skeleton-card" aria-hidden="true"></div>').join('')});
+ const cardHosts=['dashCards','dashSecondaryCards','insuranceCards','speedCards','legCards','usageCards','errorCards','systemCards','performanceCards','insightCards'];
+ cardHosts.forEach(id=>{const host=$(id);if(host)host.innerHTML=Array.from({length:id==='dashCards'?4:id==='dashSecondaryCards'?3:4},()=>'<div class="skeleton skeleton-card" aria-hidden="true"></div>').join('')});
  ['dashDaily','usageDaily'].forEach(id=>{const host=$(id);if(host)host.innerHTML='<div class="skeleton-chart" aria-hidden="true">'+Array.from({length:24},(_,i)=>'<span class="skeleton-chart-bar" style="height:'+(18+(i*17)%70)+'%"></span>').join('')+'</div>'});
  ['dashHours','usageHours'].forEach(id=>{const host=$(id);if(host)host.innerHTML='<div class="skeleton-grid" aria-hidden="true">'+Array.from({length:12},()=>'<span class="skeleton skeleton-chip"></span>').join('')+'</div>'});
- const panels=['dashModules','dashReading','dashFun','insuranceSummary','insurancePerformance','insuranceCompare','insuranceErrors','insurancePlates','insuranceNoCases','speedDistribution','speedPatterns','speedModes','speedLimits','speedCodes','speedSessions','legItems','legActivity','usageModules','usageTransitions','errorTypes','errorBursts','errorReading','errorInstallations','errorSignatures','errorTechnical','systemCoverage','systemHistory','performanceQuality','insightModules','insightLegislation','insightSpeedDistribution','insightHours','insightNotes'];
+ const panels=['dashModules','dashReading','dashboardErrorPlates','dashboardNoCases','insuranceSummary','insurancePerformance','insuranceCompare','insuranceErrors','insurancePlates','insuranceNoCases','speedDistribution','speedPatterns','speedModes','speedLimits','speedCodes','speedSessions','legItems','legActivity','usageModules','usageTransitions','errorTypes','errorBursts','errorReading','errorInstallations','errorSignatures','errorTechnical','systemCoverage','systemHistory','performanceQuality','insightModules','insightLegislation','insightSpeedDistribution','insightHours','insightNotes'];
  panels.forEach(id=>{const host=$(id);if(host)host.innerHTML='<div class="skeleton skeleton-panel" aria-hidden="true"></div><div class="skeleton skeleton-panel" aria-hidden="true"></div>'});
 }
 function renderLoadFailure(){
- const hosts=['dashCards','insuranceCards','speedCards','legCards','usageCards','errorCards','systemCards','performanceCards','insightCards','dashDaily','usageDaily','dashHours','usageHours','dashModules','dashReading','dashFun','insuranceSummary','insurancePerformance','insuranceCompare','insuranceErrors','insurancePlates','insuranceNoCases','speedDistribution','speedPatterns','speedModes','speedLimits','speedCodes','speedSessions','legItems','legActivity','usageModules','usageTransitions','errorTypes','errorBursts','errorReading','errorInstallations','errorSignatures','errorTechnical','systemCoverage','systemHistory','performanceQuality','insightModules','insightLegislation','insightSpeedDistribution','insightHours','insightNotes'];
+ const hosts=['dashCards','dashSecondaryCards','insuranceCards','speedCards','legCards','usageCards','errorCards','systemCards','performanceCards','insightCards','dashDaily','usageDaily','dashHours','usageHours','dashModules','dashReading','dashboardErrorPlates','dashboardNoCases','insuranceSummary','insurancePerformance','insuranceCompare','insuranceErrors','insurancePlates','insuranceNoCases','speedDistribution','speedPatterns','speedModes','speedLimits','speedCodes','speedSessions','legItems','legActivity','usageModules','usageTransitions','errorTypes','errorBursts','errorReading','errorInstallations','errorSignatures','errorTechnical','systemCoverage','systemHistory','performanceQuality','insightModules','insightLegislation','insightSpeedDistribution','insightHours','insightNotes'];
  hosts.forEach(id=>{const host=$(id);if(host&&host.querySelector('.skeleton,.skeleton-chart,.skeleton-grid'))host.innerHTML='<div class="empty">Os dados ainda não estão disponíveis.</div>'});
 }
 function wireDashboardDrilldowns(){
@@ -503,10 +543,11 @@ async function doLogin(password){const ac=new AbortController(),tm=setTimeout(()
 function logout(){sessionStorage.removeItem(TOKEN_KEY);if(refreshTimer)clearInterval(refreshTimer);latestData=null;Object.keys(detailCache).forEach(k=>{detailCache[k]=false;detailBusy[k]=false});$('app').style.display='none';$('loginScreen').style.display='grid';$('password').value='';}
 function switchPage(page){
   currentPage=page;
+  if(page==='insurance')detailCache.insurance=false;
   document.querySelectorAll('.nav button').forEach(b=>{const active=b.dataset.page===page;b.classList.toggle('active',active);if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.dataset.page===page));
   const meta={
-    dashboard:['Resumo','O que está a acontecer no VÉRIX.'],
+    dashboard:['Resumo','Controlo operacional, matrículas e atividade do VÉRIX.'],
     insurance:['Seguro','Consultas ao serviço da ASF.'],
     speed:['Cinemómetro','Utilização e velocidades registadas.'],
     legislation:['Legislação','Itens consultados e utilizados.'],
@@ -527,7 +568,7 @@ function detailEndpoint(kind){
 async function ensurePageDetail(page){
   if(!latestData || !token()) return;
   const kind=page==='insurance'?'insurance':page==='speed'?'speed':page==='errors'?'errors':page==='system'?'system':'';
-  if(!kind || (kind!=='insurance' && detailCache[kind]) || detailBusy[kind]) return;
+  if(!kind || detailCache[kind] || detailBusy[kind]) return;
   detailBusy[kind]=true;
   try{
     const d=await request(detailEndpoint(kind==='insurance'?'insurance-no-cases':kind));
@@ -535,7 +576,7 @@ async function ensurePageDetail(page){
     if(kind==='speed') latestData={...latestData,cinemometer:d.cinemometer||{}};
     if(kind==='errors') latestData={...latestData,investigation:d.investigation||{}};
     if(kind==='system') latestData={...latestData,lifetime:d.lifetime||{}};
-    if(kind!=='insurance') detailCache[kind]=true;
+    detailCache[kind]=true;
     if(kind==='speed') renderSpeed(latestData);
     if(kind==='errors') renderErrors(latestData);
     if(kind==='system') renderSystem(latestData);
@@ -546,47 +587,47 @@ async function ensurePageDetail(page){
   }
 }
 function renderDashboard(d){
- const a=d.analytics||{},o=a.overview||{},p=period(),ret=a.retention||{},u=a.usage||{},s=u.sessions?.[currentPeriod]||{},speed=a.speed?.summary||{},life=d.lifetime||{},invest=d.investigation||{};
+ const a=d.analytics||{},o=a.overview||{},p=period(),ret=a.retention||{},u=a.usage||{},s=u.sessions?.[currentPeriod]||{},speed=a.speed?.summary||{};
  const users=Number(o['unique_'+currentPeriod]||0),lookups=Number(p.started||0),fin=Number(p.finals||0),insured=Number(p.insured||0),uninsured=Number(p.uninsured||0),errs=Number(p.errors||0),dec=insured+uninsured;
  const noRate=dec?100*uninsured/dec:null,errorRate=fin?100*errs/fin:null;
  $('dashCards').innerHTML=
-  card('ATIVOS AGORA',num(o.online_now),'Sessões VÉRIX com browser aberto.','green')+
-  card('INSTALAÇÕES',num(users),'Instalações com atividade no período.','cyan')+
-  card('CONSULTAS DE SEGURO',num(lookups),'Pedidos iniciados.','blue')+
-  card('COM SEGURO',num(insured),pct(dec?100*insured/dec:null)+' das decisões.','green')+
-  card('SEM REGISTO',num(uninsured),pct(noRate)+' das decisões.','red')+
+  card('ATIVOS AGORA',num(o.online_now),'Sessões VÉRIX com browser aberto. Presença por app_open/heartbeat nos últimos 90 s; não mede consultas nos últimos 3 min.','green')+
+  card('CONSULTAS DE SEGURO',num(lookups),'Pedidos de consulta iniciados.','blue')+
   card('ERROS ASF',num(errs),pct(errorRate)+' dos resultados finais.','amber')+
-  card('CINEMÓMETRO',num(speed.calculations_24h),'Cálculos nas últimas 24 H.','');
+  card('SEM REGISTO',num(uninsured),pct(noRate)+' das decisões; não confirma ausência de seguro.','red');
+ $('dashSecondaryCards').innerHTML=
+  card('INSTALAÇÕES',num(users),'Instalações com atividade no período.','cyan')+
+  card('COM SEGURO',num(insured),pct(dec?100*insured/dec:null)+' das decisões.','green')+
+  card('CINEMÓMETRO',num(speed.calculations_24h),'Cálculos nas últimas 24 horas.','');
  wireDashboardDrilldowns();
+ const errorPlates=a.errors?.plates||[];
+ $('dashboardErrorPlates').innerHTML=errorPlates.length
+  ?table(['MATRÍCULA','ÚLTIMA OCORRÊNCIA','EVENTOS'],errorPlates.slice(0,8).map(x=>'<tr>'+td('<strong>'+esc(x.plate||x.plate_key||'—')+'</strong>')+td(datePT(x.last_at))+td(fmt(x.event_qty??x.qty))+'</tr>'))
+  :'<div class="empty">Não há matrículas com erro disponíveis neste resumo.</div>';
+ $('dashboardUpdated').textContent='Dados do painel: '+datePT(d.generatedAt)+' · atualização automática a cada 30 s';
  const mods=(u.modules||[]).map(x=>({label:x.module,value:x.qty}));barList('dashModules',mods);
  const hours=u.hourly||[];hourGrid('dashHours',hours);
  monthlyChart('dashDaily',u.daily||[],'lookups');
  const peakHour=hours.filter(x=>Number(x.consultations||0)>0).sort((x,y)=>Number(y.consultations||0)-Number(x.consultations||0))[0];
- const peakDay=(u.daily||[]).slice().sort((x,y)=>Number(y.lookups||0)-Number(x.lookups||0))[0];
  const topModule=mods[0];
  $('heroInsight').innerHTML='<div class="k">LEITURA PRINCIPAL</div><div class="v">'+(errorRate!=null&&errorRate>8?'Existem erros a acompanhar.':errorRate!=null&&errorRate>3?'Há alguns erros a acompanhar.':'Não há erros relevantes observados nesta janela.')+'</div><div class="s">'+(peakHour?'Hora mais ativa: '+String(peakHour.hour_num).padStart(2,'0')+'h. ':'')+(topModule?'Módulo mais usado: '+esc(topModule.label)+'.':'')+'</div>';
  $('dashReading').innerHTML=
+  metric('Hora com mais consultas',peakHour?String(peakHour.hour_num).padStart(2,'0')+'h · '+fmt(peakHour.consultations)+' consultas':'Sem dados suficientes')+
   metric('Novas instalações',num(ret[currentPeriod]?.new))+
   metric('Instalações que regressaram',num(ret[currentPeriod]?.returning))+
   metric('Média de ações por sessão',num(s.avg_actions))+
   metric('Sessões com vários módulos',pct(s.multi_module_pct));
- $('dashFun').innerHTML=
-  metric('Dia com mais consultas',peakDay?esc(peakDay.day_key):'—')+
-  metric('Consultas nesse dia',peakDay?fmt(peakDay.lookups):'—')+
-  metric('Hora com mais consultas',peakHour?String(peakHour.hour_num).padStart(2,'0')+'h':'—')+
-  metric('Cinemómetro médio',speed.avg_24h==null?'—':fmt(speed.avg_24h)+' km/h')+
-  metric('Primeiro evento registado',datePT(life.first_event_at))+
-  metric('Último evento registado',datePT(life.last_event_at));
 }
 function renderInsuranceNoCases(cases){
- const host=$('insuranceNoCases');
- if(!host)return;
+ const host=$('insuranceNoCases'),dashHost=$('dashboardNoCases');
  const rows=Array.isArray(cases)?cases:[];
  if(!rows.length){
-  host.innerHTML='<div class="empty">Ainda não há matrículas registadas. A lista começa a ser preenchida com novas consultas após a publicação desta funcionalidade.</div>';
+  if(host)host.innerHTML='<div class="empty">Ainda não há matrículas registadas. A lista começa a ser preenchida com novas consultas após a publicação desta funcionalidade.</div>';
+  if(dashHost)dashHost.innerHTML='<div class="empty">Não há resultados «Sem registo» para apresentar nesta lista.</div>';
   return;
  }
- host.innerHTML=table(['MATRÍCULA','DATA E HORA DA CONSULTA'],rows.map(x=>'<tr>'+td('<strong>'+esc(x.matricula||'—')+'</strong>')+td(datePT(x.occurred_at))+'</tr>'));
+ if(host)host.innerHTML=table(['MATRÍCULA','DATA E HORA DA CONSULTA'],rows.map(x=>'<tr>'+td('<strong>'+esc(x.matricula||'—')+'</strong>')+td(datePT(x.occurred_at))+'</tr>'));
+ if(dashHost)dashHost.innerHTML=table(['MATRÍCULA','DATA E HORA'],rows.slice(0,8).map(x=>'<tr>'+td('<strong>'+esc(x.matricula||'—')+'</strong>')+td(datePT(x.occurred_at))+'</tr>'));
 }
 function renderInsurance(d){
  const p=period(),a=d.analytics||{},yes=Number(p.insured||0),no=Number(p.uninsured||0),err=Number(p.errors||0),started=Number(p.started||0),fin=Number(p.finals||0),dec=yes+no;
@@ -796,6 +837,7 @@ async function loadDashboard(){
   setBackend(partial?'partial':'online');
   setLoadNotice(partial?'O backend respondeu, mas alguns dados não ficaram disponíveis. Os painéis podem estar incompletos.':'',partial,'warning');
   if(currentPage!=='dashboard')ensurePageDetail(currentPage);
+  else if(!detailBusy.insurance){detailCache.insurance=false;ensurePageDetail('insurance')}
   return d;
  }catch(e){
   setBackend('offline');
@@ -803,6 +845,11 @@ async function loadDashboard(){
   else{renderLoadFailure();setLoadNotice('Não foi possível carregar os dados. '+e.message,true,'error')}
   return null;
  }finally{dashboardBusy=false}
+}
+function refreshCurrentData(){
+ const detailKey=currentPage==='dashboard'?'insurance':currentPage;
+ if(Object.prototype.hasOwnProperty.call(detailCache,detailKey))detailCache[detailKey]=false;
+ return loadDashboard();
 }
 async function resetAllPeriods(){
  const b=$('reset24hBtn');b.disabled=true;
@@ -812,13 +859,13 @@ async function resetAllPeriods(){
 document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>switchPage(b.dataset.page)));
 $('dashCards').addEventListener('click',e=>{const card=e.target.closest('.card[data-drill-page]');if(card)activateDashboardCard(card)});
 $('dashCards').addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;const card=e.target.closest('.card[data-drill-page]');if(card){e.preventDefault();activateDashboardCard(card)}});
-document.addEventListener('click',e=>{const th=e.target.closest('table.sortable th[data-sort-col]');if(th)sortTable(th)});
+document.addEventListener('click',e=>{const go=e.target.closest('[data-go-page]');if(go){switchPage(go.dataset.goPage);return}const th=e.target.closest('table.sortable th[data-sort-col]');if(th)sortTable(th)});
 document.addEventListener('keydown',e=>{const th=e.target.closest('table.sortable th[data-sort-col]');if(th&&(e.key==='Enter'||e.key===' ')){e.preventDefault();sortTable(th)}});
 $('errorSearch').addEventListener('input',applyErrorSearch);
 $('plateErrorSearch').addEventListener('input',applyPlateErrorSearch);
-$('retryLoadBtn').addEventListener('click',()=>loadDashboard().then(d=>{if(d)toast('Dados atualizados.')}));
+$('retryLoadBtn').addEventListener('click',()=>refreshCurrentData().then(d=>{if(d)toast('Dados atualizados.')}));
 document.querySelectorAll('#periods button').forEach(b=>b.addEventListener('click',()=>{currentPeriod=b.dataset.period;document.querySelectorAll('#periods button').forEach(x=>x.classList.toggle('active',x===b));if(latestData)renderAll(latestData)}));
-$('refreshBtn').addEventListener('click',()=>loadDashboard().then(d=>{if(d)toast('Dados atualizados.')}));$('logoutBtn').addEventListener('click',logout);$('reset24hBtn').addEventListener('click',resetAllPeriods);
+$('refreshBtn').addEventListener('click',()=>refreshCurrentData().then(d=>{if(d)toast('Dados atualizados.')}));$('logoutBtn').addEventListener('click',logout);$('reset24hBtn').addEventListener('click',resetAllPeriods);
 $('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginError').textContent='';try{await doLogin($('password').value);$('loginScreen').style.display='none';$('app').style.display='block';await loadDashboard();refreshTimer=setInterval(loadDashboard,REFRESH_MS)}catch(err){$('loginError').textContent=err.message}});
 if(token()){$('loginScreen').style.display='none';$('app').style.display='block';loadDashboard();refreshTimer=setInterval(loadDashboard,REFRESH_MS)}
 </script>
