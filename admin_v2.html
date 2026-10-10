@@ -407,8 +407,8 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
           <div class="panel"><div class="panel-head"><h3>HISTÓRICO</h3><span>NÃO É APAGADO</span></div><div class="panel-body" id="systemHistory"></div></div>
         </div>
         <div style="margin-top:12px" class="reset">
-          <div><b>Reiniciar indicadores e histórico</b><span>Define um novo marco para 24 H, 7 dias, 30 dias e Histórico total. Os eventos antigos não são apagados; ficam fora dos novos indicadores.</span><div id="reset24hStatus" style="margin-top:5px;font-size:9px;color:#6e644d">Marco atual: —</div></div>
-          <button id="reset24hBtn" type="button">REINICIAR TUDO</button>
+          <div><b>Reiniciar marco do histórico total</b><span>Define um novo marco para o Histórico total. Os períodos 24 H, 7 dias e 30 dias continuam a usar janelas móveis reais; os eventos antigos não são apagados.</span><div id="reset24hStatus" style="margin-top:5px;font-size:9px;color:#6e644d">Marco do histórico total: —</div></div>
+          <button id="reset24hBtn" type="button">REINICIAR HISTÓRICO</button>
         </div>
       </section>
     </main>
@@ -821,7 +821,7 @@ async function loadDashboard(){
 }
 async function resetAllPeriods(){
  const b=$('reset24hBtn');b.disabled=true;
- try{const r=await request(STATS_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'reset_all_periods'})});$('reset24hStatus').textContent='Marco atual: '+datePT(r.reset_at);toast('Indicadores reiniciados; os eventos antigos foram preservados.');await loadDashboard()}
+ try{const r=await request(STATS_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'reset_all_periods'})});$('reset24hStatus').textContent='Marco do histórico total: '+datePT(r.reset_at);toast('Histórico total reiniciado; 24 H, 7 dias e 30 dias continuam móveis.');await loadDashboard()}
  catch(e){toast('Não foi possível reiniciar os indicadores: '+e.message)}finally{b.disabled=false}
 }
 document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>switchPage(b.dataset.page)));
