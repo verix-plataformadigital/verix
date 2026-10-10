@@ -417,7 +417,10 @@ Deno.serve(async (req: Request) => {
       const buildId = cleanText(x?.buildId || metadata.build_id, 60) || appVersion;
       if (!metadata.build_id) metadata.build_id = buildId;
       const noInsurancePlate = event === "vehicle_insurance_no"
-        ? String(metadata.matriculaNormalizada || metadata.matricula || "").toUpperCase().replace(/[^A-Z0-9]/g, "")
+        ? String(metadata.matriculaNormalizada || metadata.matricula ||
+            (metadata.asfDiagnostic && typeof metadata.asfDiagnostic === "object"
+              ? (metadata.asfDiagnostic as Record<string, unknown>).matricula
+              : "") || "").toUpperCase().replace(/[^A-Z0-9]/g, "")
         : "";
       // installation_id é a única identidade técnica obrigatória: a coluna é NOT NULL.
       // session/tab são opcionais para permitir contabilização mesmo quando o browser
@@ -530,13 +533,15 @@ Deno.serve(async (req: Request) => {
     if (terminalQueryIds.length) {
       const { data: existingTerminalRows, error: terminalReadError } = await db
         .from("verix2_events")
-        .select("query_id,event")
+        .select("event_id,query_id,event")
         .in("query_id", terminalQueryIds)
         .in("event", [...terminalEvents]);
       if (terminalReadError) throw new Error("terminal_dedupe:" + terminalReadError.message);
 
       const existingTerminalKeys = new Set((existingTerminalRows || [])
         .map((row:any) => String(row.query_id) + "\\u001f" + String(row.event)));
+      const existingTerminalEventIds = new Set((existingTerminalRows || [])
+        .map((row:any) => String(row.event_id)));
       const alreadyStoredIds = events
         .filter((e:any) => terminalEvents.has(e.event) && e.query_id &&
           existingTerminalKeys.has(String(e.query_id) + "\\u001f" + String(e.event)))
@@ -551,11 +556,21 @@ Deno.serve(async (req: Request) => {
     // A suppressed duplicate "no record" outcome must not create a second
     // registry row for the same query under a different event ID.
     const remainingEventIds = new Set(events.map((e:any) => String(e.event_id)));
-    const retainedNoCases = insuranceNoCases.filter((row:any) => remainingEventIds.has(String(row.event_id)));
+    const retainedNoCases = insuranceNoCases.filter((row:any) =>
+      remainingEventIds.has(String(row.event_id)) ||
+      (typeof existingTerminalEventIds !== "undefined" && existingTerminalEventIds.has(String(row.event_id))));
     insuranceNoCases.splice(0, insuranceNoCases.length, ...retainedNoCases);
 
     const acknowledgedTerminalDuplicates = [...new Set(terminalDuplicateIds)];
     if (!events.length) {
+      // A retried event ID may already exist in telemetry while its restricted
+      // "no record" row did not commit. Retry the registry upsert in that case.
+      if (insuranceNoCases.length) {
+        const { error: registryRetryError } = await db
+          .from("verix_insurance_no_cases")
+          .upsert(insuranceNoCases, { onConflict: "event_id", ignoreDuplicates: true });
+        if (registryRetryError) throw new Error("insurance_no_registry_retry:" + registryRetryError.message);
+      }
       return json({
         ok: true, accepted: 0, inserted: 0, duplicates: consideredBeforeTerminalDedupe,
         rejected, received: received.length, considered: consideredBeforeTerminalDedupe,
