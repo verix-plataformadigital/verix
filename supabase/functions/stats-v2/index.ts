@@ -403,24 +403,25 @@ async function loadLifetime(now:string){
     const r=await fetch(supabaseUrl+"/rest/v1/verix2_dashboard_state?"+q.toString(),{headers:{apikey:serviceKey,Authorization:"Bearer "+serviceKey}});
     if(!r.ok) throw new Error("lifetime_reset:"+await r.text());
     const rows=JSON.parse((await r.text())||"[]");
-    return rows?.[0]?.reset_all_at || "1970-01-01T00:00:00Z";
+    return rows?.[0]?.reset_all_at || null;
   }
-  const startAt=await resetAllAt();
-  async function count(path:string,field:string){
-    const q=new URLSearchParams({select:"*",limit:"1"}); q.set(field,"gte."+startAt);
+  const resetAt=await resetAllAt();
+  async function count(path:string){
+    const q=new URLSearchParams({select:"*",limit:"1"});
     const r=await fetch(supabaseUrl+"/rest/v1/"+path+"?"+q.toString(),{headers:{apikey:serviceKey,Authorization:"Bearer "+serviceKey,Prefer:"count=exact"}});
     if(!r.ok)throw new Error("lifetime_count:"+path+":"+await r.text());
     const range=r.headers.get("content-range")||"";const m=range.match(/\/(\d+)$/);return m?Number(m[1]):0;
   }
-  const eventsTotal=await count("verix2_events","occurred_at");
-  const installationsTotal=await count("verix2_installations","first_seen");
-  const sessionsTotal=await count("verix2_sessions","started_at");
+  const eventsTotal=await count("verix2_events");
+  const installationsTotal=await count("verix2_installations");
+  const sessionsTotal=await count("verix2_sessions");
   async function edge(order:string){
-    const q=new URLSearchParams({select:"occurred_at",order,limit:"1"});q.set("occurred_at","gte."+startAt);
+    const q=new URLSearchParams({select:"occurred_at",order,limit:"1"});
     const r=await fetch(supabaseUrl+"/rest/v1/verix2_events?"+q.toString(),{headers:{apikey:serviceKey,Authorization:"Bearer "+serviceKey}});
-    const t=r.ok?await r.text():"[]";const rows=t?JSON.parse(t):[];return rows?.[0]?.occurred_at||null;
+    if(!r.ok)throw new Error("lifetime_edge:"+await r.text());
+    const t=await r.text();const rows=t?JSON.parse(t):[];return rows?.[0]?.occurred_at||null;
   }
-  return {generated_at:now,reset_all_at:startAt,events_total:eventsTotal,installations_total:installationsTotal,sessions_total:sessionsTotal,first_event_at:await edge("occurred_at.asc"),last_event_at:await edge("occurred_at.desc")};
+  return {generated_at:now,reset_all_at:resetAt,events_total:eventsTotal,installations_total:installationsTotal,sessions_total:sessionsTotal,first_event_at:await edge("occurred_at.asc"),last_event_at:await edge("occurred_at.desc")};
 }
 async function loadCinemometerAnalytics24h(now:string){
   const qs = new URLSearchParams();
@@ -638,15 +639,17 @@ Deno.serve(async (req) => {
     const settled = await Promise.allSettled([
       rpc("verix2_admin_analytics",{p_now:now}),
       rpc("verix2_asf_diagnostics",{p_now:now,p_recent_limit:25}),
-      resetState()
+      resetState(),
+      rpc("verix2_admin_hourly_24h",{p_now:now})
     ]);
 
     const errors:any = {};
     const analytics = settled[0].status==="fulfilled" ? settled[0].value : {};
     const diagnostics = settled[1].status==="fulfilled" ? settled[1].value : {};
     const resetAt = settled[2].status==="fulfilled" ? settled[2].value : null;
+    const hourly24h = settled[3].status==="fulfilled" ? settled[3].value : null;
 
-    for(const [i,name] of [[0,"analytics"],[1,"diagnostics"],[2,"reset"]] as const) {
+    for(const [i,name] of [[0,"analytics"],[1,"diagnostics"],[2,"reset"],[3,"hourly_24h"]] as const) {
       if(settled[i].status==="rejected") {
         const reason:any=settled[i].reason;
         errors[name]=String(reason?.message||reason);
@@ -656,6 +659,9 @@ Deno.serve(async (req) => {
     const analyticsObj = analytics && typeof analytics==="object"
       ? analytics
       : {};
+    if(hourly24h && Array.isArray(hourly24h) && analyticsObj.usage && typeof analyticsObj.usage==="object") {
+      analyticsObj.usage.hourly = hourly24h;
+    }
 
     const payload = {
       ok:true,
