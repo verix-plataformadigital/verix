@@ -113,8 +113,12 @@ assert.match(currentOnlineMigration, /event='vehicle_lookup'/, "online status mu
 assert.match(currentOnlineMigration, /interval '3 minutes'/, "online status must use the requested three-minute window");
 assert.ok(admin.includes("Instalações que fizeram uma consulta nos últimos 3 minutos."), "Online agora must explain the consultation-based three-minute rule");
 const rollingPeriodsMigration = fs.readFileSync("supabase/migrations/20261010073000_make_7d_30d_windows_rolling.sql", "utf8");
-assert.match(rollingPeriodsMigration, /p_now - interval '7 days' AS s7/, "7-day period must remain a true rolling window after a reset");
-assert.match(rollingPeriodsMigration, /p_now - interval '30 days' AS s30/, "30-day event source must include a full rolling month, including the rolling 24-hour slice");
+assert.match(rollingPeriodsMigration, /p_now - interval '7 days' AS s7/, "previous rolling-period behavior must remain documented in migration history");
+assert.match(rollingPeriodsMigration, /p_now - interval '30 days' AS s30/, "previous rolling-period behavior must remain documented in migration history");
+const alignedPeriodsMigration = fs.readFileSync("supabase/migrations/20261010081254_align_period_windows_with_history_total.sql", "utf8");
+assert.match(alignedPeriodsMigration, /greatest\(p_now - interval '24 hours', public\.verix2_all_start\(p_now\)\) AS s24/, "24-hour period must not include events before the total-history baseline");
+assert.match(alignedPeriodsMigration, /greatest\(p_now - interval '7 days', public\.verix2_all_start\(p_now\)\) AS s7/, "7-day period must not include events before the total-history baseline");
+assert.match(alignedPeriodsMigration, /greatest\(p_now - interval '30 days', public\.verix2_all_start\(p_now\)\) AS s30/, "30-day period must not include events before the total-history baseline");
 assert.ok(errorPlateCountMigration.includes("count(DISTINCT e.query_id) qty"), "error plate totals must count unique consultation IDs");
 assert.ok(errorPlateCountMigration.includes("count(*) event_qty"), "raw error event volume must remain visible separately");
 assert.ok(errorPlateCountMigration.includes("^(?:[A-Z]{2}[0-9]{4}|[0-9]{4}[A-Z]{2}|[0-9]{2}[A-Z]{2}[0-9]{2}|[A-Z]{2}[0-9]{2}[A-Z]{2})$"), "error plate table must allow only complete Portuguese plate formats");
