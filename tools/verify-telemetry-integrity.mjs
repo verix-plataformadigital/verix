@@ -39,6 +39,22 @@ assert.match(admin, /id="errorPlates"/, "Admin must expose a dedicated ASF error
 assert.ok(admin.includes("const plateCases=inv.current_version_plate_cases;"), "Admin must distinguish missing error details from an empty loaded list");
 assert.match(stats, /current_version_plate_cases:plateCases/, "stats must return error plate cases to Admin");
 assert.ok(stats.includes("const candidates=[e?.metadata?.asfDiagnostic?.matricula,e?.metadata?.matriculaNormalizada,e?.metadata?.matricula]"), "error analytics must prefer a valid plate from supported metadata fields");
+assert.ok(stats.includes('replace(/[\\s-]/g,"")'), "stats must accept hyphens/spaces or no separator but must not silently strip other characters");
+assert.ok(stats.includes('current_version_invalid_plate_cases:invalidPlateCases'), "stats must return invalid plate inputs separately");
+assert.ok(stats.includes('current_version_missing_plate_cases:missingPlateCases'), "stats must return errors without captured plates separately");
+assert.match(admin, /id="errorInvalidPlates"/, "Admin must display invalid-format plate inputs in a separate table");
+assert.match(admin, /id="errorMissingPlates"/, "Admin must display errors without a captured plate separately");
+assert.match(admin, /ENTRADAS COM FORMATO INVÁLIDO/);
+assert.match(admin, /ERROS SEM MATRÍCULA CAPTURADA/);
+
+const normalizePlateForTest = value => String(value ?? "").trim().toUpperCase().replace(/[\\s-]/g, "");
+const validPlateForTest = value => /^(?:[A-Z]{2}[0-9]{4}|[0-9]{4}[A-Z]{2}|[0-9]{2}[A-Z]{2}[0-9]{2}|[A-Z]{2}[0-9]{2}[A-Z]{2})$/.test(normalizePlateForTest(value));
+for (const value of ["AA-00-00","AA0000","00-00-AA","0000AA","00-AA-00","00AA00","AA-00-AA","AA00AA"]) {
+  assert.equal(validPlateForTest(value), true, "Portuguese plate format must be accepted: " + value);
+}
+for (const value of ["12-ABC-34","AA/00/00","89","177ZN","1234"]) {
+  assert.equal(validPlateForTest(value), false, "non-Portuguese or partial plate format must be classified as invalid: " + value);
+}
 assert.match(endpoint, /if \(event !== "vehicle_insurance_error"\) \{[\s\S]*?delete metadata\.matriculaNormalizada;/, "no-record events must not retain plate metadata in the general event stream");
 assert.match(endpoint, /insuranceNoCases\.push/, "valid no-record outcomes must enter the dedicated 90-day registry");
 assert.match(admin, /O resultado, por si só, não confirma a ausência de seguro/, "no-record list must warn that no record alone is not proof");
@@ -122,7 +138,11 @@ assert.match(alignedPeriodsMigration, /greatest\(p_now - interval '30 days', pub
 assert.ok(errorPlateCountMigration.includes("count(DISTINCT e.query_id) qty"), "error plate totals must count unique consultation IDs");
 assert.ok(errorPlateCountMigration.includes("count(*) event_qty"), "raw error event volume must remain visible separately");
 assert.ok(errorPlateCountMigration.includes("^(?:[A-Z]{2}[0-9]{4}|[0-9]{4}[A-Z]{2}|[0-9]{2}[A-Z]{2}[0-9]{2}|[A-Z]{2}[0-9]{2}[A-Z]{2})$"), "error plate table must allow only complete Portuguese plate formats");
-assert.ok(endpoint.includes("function sanitizeErrorPlateMetadata("), "server must sanitize invalid error plate fragments before persistence");
+assert.ok(endpoint.includes("function sanitizeErrorPlateMetadata("), "server must classify captured plate inputs before persistence");
+assert.ok(endpoint.includes("const candidates = [metadata.matricula, diag?.matricula, metadata.matriculaNormalizada]"), "server must prefer the original captured plate input when validating its format");
+assert.ok(endpoint.includes('replace(/[\\s-]/g, "")'), "server must ignore spaces and hyphens only when validating Portuguese plate formats");
+assert.ok(endpoint.includes("metadata.matricula = raw;"), "server must retain malformed input on ASF error events for separate admin classification");
+assert.ok(endpoint.includes("delete metadata.matriculaNormalizada;"), "invalid input must not be marked as a normalized valid registration");
 assert.ok(endpoint.includes('if (event === "vehicle_insurance_error") sanitizeErrorPlateMetadata(metadata);'), "server must apply plate validation to ASF error events");
 assert.ok(admin.includes("CONSULTAS','EVENTOS"), "Admin must distinguish consultation totals from raw event totals");
 assert.ok(stats.includes("queryIds:new Set<string>()"), "error time buckets must deduplicate repeated events by query ID");
