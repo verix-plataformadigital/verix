@@ -309,16 +309,14 @@ async function loadErrorInvestigation24h(now:string){
   // Validate the four Portuguese registration formats. Only spaces and hyphens are optional separators;
   // other characters remain in the value and therefore make the format invalid.
   const normalizePlate=(value:unknown)=>String(value??"").trim().toUpperCase().replace(/[ -]/g,"");
+  // Admin classification is format-only, not proof that the registration was assigned.
+  // Accept all four standard Portuguese layouts without restricting letters by series history.
   const validPortuguesePlateBase=(value:unknown)=>{
     const raw=String(value??"").trim().toUpperCase();
-    if(/^[A-Z]{2}[ -]?[0-9]{2}[ -]?[0-9]{2}$/.test(raw)
+    return /^[A-Z]{2}[ -]?[0-9]{2}[ -]?[0-9]{2}$/.test(raw)
       || /^[0-9]{2}[ -]?[0-9]{2}[ -]?[A-Z]{2}$/.test(raw)
-      || /^[0-9]{2}[ -]?[A-Z]{2}[ -]?[0-9]{2}$/.test(raw)) return true;
-    const current=raw.match(/^([A-Z]{2})[ -]?[0-9]{2}[ -]?([A-Z]{2})$/);
-    if(!current)return false;
-    const first=current[1],last=current[2];
-    if(/^(?:AA|EE|II|OO|UU)$/.test(first)||/^(?:AA|EE|II|OO|UU)$/.test(last))return true;
-    return !/[AEIOU]/.test(first[1])&&!/[AEIOU]/.test(last[1]);
+      || /^[0-9]{2}[ -]?[A-Z]{2}[ -]?[0-9]{2}$/.test(raw)
+      || /^[A-Z]{2}[ -]?[0-9]{2}[ -]?[A-Z]{2}$/.test(raw);
   };
   const validPortugueseTrailerPlate=(value:unknown)=>
     /^(?:AV|BE|BN|BR|CB|FA|GD|LE|PT|SA|SE|VC|VR|VI|AN|H|A|M|L|P|C|E)[ -]?[0-9]{1,6}$/i.test(String(value??"").trim());
