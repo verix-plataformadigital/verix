@@ -512,7 +512,9 @@ Deno.serve(async (req: Request) => {
       }
 
       if (event === "imt_loaded") {
-        if (!queryId || !appVersion || metadata.resultConfirmed !== true) { rejectEvent(x, "unconfirmed_imt_result"); continue; }
+        // A versão publicada emite imt_loaded após concluir a carga dos dois endpoints IMT,
+        // sem enviar resultConfirmed. Exigir essa propriedade rejeitava todos esses eventos.
+        if (!queryId || !appVersion) { rejectEvent(x, "missing_query_id_or_version"); continue; }
       }
 
       if (event === "vehicle_insurance_yes" || event === "vehicle_insurance_no" || event === "vehicle_insurance_error" || event === "vehicle_plate_invalid") {
