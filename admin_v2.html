@@ -1044,7 +1044,7 @@ async function loadDashboard(){
  }
 }
 async function csvCell(value){
- return '"'+String(value??'').replace(/"[\s\S]*?"/g,m=>m).replace(/[\r\n]+/g,' ')+'"';
+ return '"'+String(value??'').replace(/"/g,'""').replace(/[\r\n]+/g,' ')+'"';
 }
 function exportCurrentPageCsv(){
  const page=document.querySelector('.page.active');
