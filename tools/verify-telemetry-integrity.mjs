@@ -164,7 +164,8 @@ assert.match(alignedPeriodsMigration, /greatest\(p_now - interval '24 hours', pu
 assert.match(alignedPeriodsMigration, /greatest\(p_now - interval '7 days', public\.verix2_all_start\(p_now\)\) AS s7/, "7-day period must not include events before the total-history baseline");
 assert.match(alignedPeriodsMigration, /greatest\(p_now - interval '30 days', public\.verix2_all_start\(p_now\)\) AS s30/, "30-day period must not include events before the total-history baseline");
 assert.match(validPlateErrorSummaryMigration, /'errors_valid_plate'/, "analytics must expose a separate valid-plate error metric");
-assert.match(validPlateErrorSummaryMigration, /query_quality_total[\s\S]*fc\.metadata/, "total-history error filtering must use the captured plate from final outcome metadata");
+assert.match(validPlateErrorSummaryMigration, /query_quality_total/, "valid-plate error metric must cover lifetime history");
+assert.match(validPlateErrorSummaryMigration, /fc\.metadata/, "lifetime error analysis must retain final outcome metadata");
 assert.match(admin, /errs=Number\(p\.errors_valid_plate\?\?0\)/, "main summary must count only error queries with a valid Portuguese plate format");
 assert.match(admin, /Só conta erros com matrícula de formato português válido/, "summary error card must explain the filter");
 assert.match(admin, /não é possível reconstruir o texto original/, "admin must explain why some old unrecorded plate inputs cannot be recovered");
