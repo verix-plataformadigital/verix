@@ -59,7 +59,6 @@ assert.equal((migration.match(/NOT EXISTS\(SELECT 1 FROM public\.verix2_events l
 for (const metric of ["'pending'","'incomplete'","'contradictory'","'duplicate_finals'","'orphan_finals'"]) assert.ok(migration.includes(metric), "missing SQL metric "+metric);
 for (const label of ["Incompletas","Contraditórias","Finais duplicados","Finais órfãos","INSTALAÇÕES"]) assert.ok(admin.includes(label), "missing Admin label "+label);
 
-const app = fs.readFileSync("verix-app.html", "utf8");
 assert.doesNotMatch(app, /\b(?:APP_VERSION|appVersion|app_version)\s*[:=]\s*["\']1\.4(?:\.\d+)?["\']/i, "production runtime must not advertise the obsolete app version");
 const telemetryStart = app.indexOf("function parseReceipt(text)");
 const telemetryEnd = app.indexOf("function rateLimited", telemetryStart);
