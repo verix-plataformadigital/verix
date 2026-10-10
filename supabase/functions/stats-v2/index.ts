@@ -286,29 +286,40 @@ async function loadErrorInvestigation24h(now:string){
   const typeRows=[...byType.entries()].map(([type,b])=>({type,count:b.queryIds.size,event_count:b.events})).sort((a,b)=>b.count-a.count||b.event_count-a.event_count);
   const installRows=[...byInstall.entries()].map(([installation_id,b])=>({installation_id:shortId(installation_id),count:b.queryIds.size,event_count:b.events})).sort((a,b)=>b.count-a.count||b.event_count-a.event_count).slice(0,10);
   const burstRows=[...bursts.entries()].map(([start,b])=>({start,count:b.queryIds.size,event_count:b.events})).sort((a,b)=>b.count-a.count||b.event_count-a.event_count).slice(0,12);
-  const normalizePlate=(value:unknown)=>String(value??"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+  // Validate the four Portuguese registration formats. Only spaces and hyphens are optional separators;
+  // other characters remain in the value and therefore make the format invalid.
+  const normalizePlate=(value:unknown)=>String(value??"").trim().toUpperCase().replace(/[\s-]/g,"");
   const validPortuguesePlate=(value:unknown)=>{
     const plate=normalizePlate(value);
     return /^(?:[A-Z]{2}[0-9]{4}|[0-9]{4}[A-Z]{2}|[0-9]{2}[A-Z]{2}[0-9]{2}|[A-Z]{2}[0-9]{2}[A-Z]{2})$/.test(plate);
   };
-  const plateOf=(e:any)=>{
+  const plateInfoOf=(e:any)=>{
     const candidates=[e?.metadata?.asfDiagnostic?.matricula,e?.metadata?.matriculaNormalizada,e?.metadata?.matricula];
-    const valid=candidates.find(validPortuguesePlate);
-    return valid?normalizePlate(valid):"";
+    // Prefer the captured input when available, rather than a derived field that may have stripped invalid characters.
+    const raw=[candidates[2],candidates[0],candidates[1]].find((value:unknown)=>String(value??"").trim()!=="");
+    if(raw===undefined) return {matricula:"",matricula_normalizada:"",plate_status:"missing"};
+    const original=String(raw).trim(), normalized=normalizePlate(raw);
+    return {matricula:original,matricula_normalizada:normalized,plate_status:validPortuguesePlate(raw)?"valid":"invalid"};
   };
   const latestErrorByQuery=new Map<string,any>();
-  for(const e of currentVersionRows){
-    const queryId=String(e?.query_id||"");
-    if(!queryId) continue;
-    const previous=latestErrorByQuery.get(queryId);
-    if(!previous || String(e?.occurred_at||"")>=String(previous?.occurred_at||"")) latestErrorByQuery.set(queryId,e);
+  for(const [index,e] of currentVersionRows.entries()){
+    const queryId=String(e?.query_id||"").trim();
+    const key=queryId ? "query:"+queryId : "event:"+String(e?.event_id||index);
+    const previous=latestErrorByQuery.get(key);
+    if(!previous || String(e?.occurred_at||"")>=String(previous?.occurred_at||"")) latestErrorByQuery.set(key,e);
   }
-  const plateCases=[...latestErrorByQuery.values()].map((e:any)=>{
-    const plate=plateOf(e),a=e?.metadata?.asfDiagnostic||{};
-    return {matricula:plate,occurred_at:e?.occurred_at||null,error_type:a.asfErrorType||"unknown",browser:e?.browser||"Unknown",query_id:shortId(e?.query_id)};
-  }).filter((e:any)=>validPortuguesePlate(e.matricula)).sort((a:any,b:any)=>String(a.occurred_at||"").localeCompare(String(b.occurred_at||""))).slice(-100).reverse();
-  const recent=currentVersionRows.slice(-12).reverse().map((e:any)=>{const a=e?.metadata?.asfDiagnostic||{};return {occurred_at:e?.occurred_at||null,installation_id:shortId(e?.installation_id),query_id:shortId(e?.query_id),browser:e?.browser||"Unknown",matricula:plateOf(e)||null,error_type:a.asfErrorType||"unknown",transport:a.asfTransport||null,relay_latency_ms:a.asfRelayLatencyMs??null,http_status:a.asfHttpStatus??null,duration_ms:a.asfDurationMs??null,response_hash:a.asfResponseHash||null,response_class:a.asfResponseClass||null,graphql_error_count:a.asfGraphqlErrorCount??null,response_bytes:a.asfResponseBytes??null,parse_path:a.asfParsePath||null,build_id:e?.metadata?.build_id||a.build_id||null};});
-  return {generated_at:now,current_app_version:CURRENT_APP_VERSION,errors_24h:rows.length,error_queries_24h:new Set(rows.map((e:any)=>String(e?.query_id||"")).filter(Boolean)).size,current_version_errors:new Set(currentVersionRows.map((e:any)=>String(e?.query_id||"")).filter(Boolean)).size,current_version_error_events:currentVersionRows.length,current_version_installations:new Set(currentVersionRows.map((e:any)=>String(e?.installation_id||""))).size,current_version_plates:new Set(currentVersionRows.map((e:any)=>plateOf(e)).filter((p:string)=>validPortuguesePlate(p))).size,current_version_hashes:byHash.size,current_version_types:typeRows,current_version_hashes_top:hashRows,current_version_installations_top:installRows,current_version_bursts_5m:burstRows,current_version_plate_cases:plateCases,latest_current_version:recent};
+  const classifiedPlateCases=[...latestErrorByQuery.values()].map((e:any)=>{
+    const plate=plateInfoOf(e),a=e?.metadata?.asfDiagnostic||{};
+    return {...plate,occurred_at:e?.occurred_at||null,error_type:a.asfErrorType||"unknown",browser:e?.browser||"Unknown",query_id:shortId(e?.query_id)};
+  }).sort((a:any,b:any)=>String(a.occurred_at||"").localeCompare(String(b.occurred_at||"")));
+  const allValidPlateCases=classifiedPlateCases.filter((e:any)=>e.plate_status==="valid");
+  const allInvalidPlateCases=classifiedPlateCases.filter((e:any)=>e.plate_status==="invalid");
+  const allMissingPlateCases=classifiedPlateCases.filter((e:any)=>e.plate_status==="missing");
+  const plateCases=allValidPlateCases.slice(-100).reverse();
+  const invalidPlateCases=allInvalidPlateCases.slice(-100).reverse();
+  const missingPlateCases=allMissingPlateCases.slice(-100).reverse();
+  const recent=currentVersionRows.slice(-12).reverse().map((e:any)=>{const a=e?.metadata?.asfDiagnostic||{},plate=plateInfoOf(e);return {occurred_at:e?.occurred_at||null,installation_id:shortId(e?.installation_id),query_id:shortId(e?.query_id),browser:e?.browser||"Unknown",matricula:plate.matricula||null,plate_status:plate.plate_status,error_type:a.asfErrorType||"unknown",transport:a.asfTransport||null,relay_latency_ms:a.asfRelayLatencyMs??null,http_status:a.asfHttpStatus??null,duration_ms:a.asfDurationMs??null,response_hash:a.asfResponseHash||null,response_class:a.asfResponseClass||null,graphql_error_count:a.asfGraphqlErrorCount??null,response_bytes:a.asfResponseBytes??null,parse_path:a.asfParsePath||null,build_id:e?.metadata?.build_id||a.build_id||null};});
+  return {generated_at:now,current_app_version:CURRENT_APP_VERSION,errors_24h:rows.length,error_queries_24h:new Set(rows.map((e:any)=>String(e?.query_id||"")).filter(Boolean)).size,current_version_errors:new Set(currentVersionRows.map((e:any)=>String(e?.query_id||"")).filter(Boolean)).size,current_version_error_events:currentVersionRows.length,current_version_installations:new Set(currentVersionRows.map((e:any)=>String(e?.installation_id||""))).size,current_version_plates:new Set(allValidPlateCases.map((e:any)=>e.matricula_normalizada).filter(Boolean)).size,current_version_invalid_plates:new Set(allInvalidPlateCases.map((e:any)=>e.matricula_normalizada||e.matricula).filter(Boolean)).size,current_version_missing_plate_cases_count:allMissingPlateCases.length,current_version_invalid_plate_cases:invalidPlateCases,current_version_missing_plate_cases:missingPlateCases,current_version_hashes:byHash.size,current_version_types:typeRows,current_version_hashes_top:hashRows,current_version_installations_top:installRows,current_version_bursts_5m:burstRows,current_version_plate_cases:plateCases,latest_current_version:recent};
 }
 async function loadLifetime(now:string){
   async function resetAllAt(){
