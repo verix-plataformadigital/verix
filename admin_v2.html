@@ -256,7 +256,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
         <div class="dashboard-section-title">Acompanhamento operacional</div>
         <div class="grid g2 dashboard-attention">
           <div class="panel">
-            <div class="panel-head"><h3>MATRÍCULAS COM ERRO NA CONSULTA ASF</h3><span>ÚLTIMAS 24 H · MAIS RECORRENTES</span></div>
+            <div class="panel-head"><h3>MATRÍCULAS COM ERRO NA CONSULTA ASF</h3><span>ÚLTIMAS 24 H · CONSULTAS COM ERRO</span></div>
             <div class="panel-body">
               <p class="dashboard-explainer">Um erro técnico não confirma ausência de seguro. Consulta a hora, o tipo de erro e os detalhes antes de tirar conclusões.</p>
               <div id="dashboardErrorPlates" class="table-wrap"><div class="empty">A carregar matrículas com erro…</div></div>
@@ -836,7 +836,7 @@ async function loadDashboard(){
   setBackend(partial?'partial':'online');
   setLoadNotice(partial?'O backend respondeu, mas alguns dados não ficaram disponíveis. Os painéis podem estar incompletos.':'',partial,'warning');
   if(currentPage!=='dashboard')ensurePageDetail(currentPage);
-  else if(!detailCache.insurance)ensurePageDetail('insurance');
+  else if(!detailBusy.insurance){detailCache.insurance=false;ensurePageDetail('insurance')}
   return d;
  }catch(e){
   setBackend('offline');
