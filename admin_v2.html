@@ -571,9 +571,9 @@ button:focus-visible,input:focus-visible,[tabindex="0"]:focus-visible{outline:3p
           </div>
         </div>
         <div class="panel" style="margin-top:12px">
-          <div class="panel-head"><h3>ERROS SEM MATRÍCULA CAPTURADA</h3><span>24 H</span></div>
+          <div class="panel-head"><h3>REGISTOS SEM ENTRADA RECUPERÁVEL</h3><span>24 H</span></div>
           <div class="panel-body">
-            <p>Erros em que os dados recebidos não contêm uma matrícula para validar. Estes casos não são classificados como matrículas inválidas.</p>
+            <p>Alguns registos antigos foram guardados pela telemetria anterior, que eliminava entradas fora do formato válido. Se a matrícula já não estiver guardada, não é possível reconstruir o texto original desses registos. As novas entradas inválidas ficam na tabela acima.</p>
             <div id="errorMissingPlates" class="table-wrap"><div class="empty">A carregar erros sem matrícula…</div></div>
           </div>
         </div>
@@ -636,7 +636,7 @@ button:focus-visible,input:focus-visible,[tabindex="0"]:focus-visible{outline:3p
 
 <script>
 const API_ORIGIN='https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/';
-const ADMIN_CACHE='admin-dashboard-2026-10-10-r10-plate-format';
+const ADMIN_CACHE='admin-dashboard-2026-10-10-r11-valid-error-summary';
 const AUTH_API=API_ORIGIN+'admin-auth-v2?v='+encodeURIComponent(ADMIN_CACHE);
 const STATS_API=API_ORIGIN+'stats-v2?v='+encodeURIComponent(ADMIN_CACHE);
 const TOKEN_KEY='VERIX_ADMIN_V2_TOKEN';
@@ -768,7 +768,7 @@ async function ensurePageDetail(page,force=false){
 }
 function renderDashboard(d){
  const a=d.analytics||{},o=a.overview||{},p=period(),ret=a.retention||{},u=a.usage||{},s=u.sessions?.[currentPeriod]||{},speed=a.speed?.summary||{},life=d.lifetime||{};
- const users=Number(o['unique_'+currentPeriod]||0),lookups=Number(p.started||0),fin=Number(p.finals||0),insured=Number(p.insured||0),uninsured=Number(p.uninsured||0),errs=Number(p.errors||0),dec=insured+uninsured;
+ const users=Number(o['unique_'+currentPeriod]||0),lookups=Number(p.started||0),fin=Number(p.finals||0),insured=Number(p.insured||0),uninsured=Number(p.uninsured||0),errs=Number(p.errors_valid_plate??0),dec=insured+uninsured;
  const noRate=dec?100*uninsured/dec:null,errorRate=fin?100*errs/fin:null;
  const backendErrors=Object.keys(d.errors||{});
  $('dashCards').innerHTML=
@@ -777,7 +777,7 @@ function renderDashboard(d){
   card('CONSULTAS DE SEGURO',num(lookups),'Pedidos de consulta iniciados.','blue')+
   card('COM SEGURO',num(insured),pct(dec?100*insured/dec:null)+' das decisões conhecidas.','green')+
   card('SEM REGISTO',num(uninsured),pct(noRate)+' das decisões conhecidas.','red')+
-  card('ERROS ASF',num(errs),pct(errorRate)+' dos resultados finais.','amber')+
+  card('ERROS ASF',num(errs),'Só conta erros com matrícula de formato português válido.','amber')+
   card('CINEMÓMETRO',num(speed.calculations_24h),'Cálculos registados nas últimas 24 h.','');
  wireDashboardDrilldowns();
  const mods=(u.modules||[]).map(x=>({label:x.module,value:x.qty}));barList('dashModules',mods);
@@ -786,11 +786,11 @@ function renderDashboard(d){
  const peakHour=hours.filter(x=>Number(x.consultations||0)>0).sort((x,y)=>Number(y.consultations||0)-Number(x.consultations||0))[0];
  const peakDay=(u.daily||[]).slice().sort((x,y)=>Number(y.lookups||0)-Number(x.lookups||0))[0];
  const topModule=mods[0];
- const primary=backendErrors.length?'O painel recebeu uma resposta incompleta.':errs>0&&errorRate!=null&&errorRate>8?'A taxa de erro merece análise.':errs>0?'Existem consultas com erro para rever.':'Não há erros ASF registados nesta janela.';
+ const primary=backendErrors.length?'O painel recebeu uma resposta incompleta.':errs>0&&errorRate!=null&&errorRate>8?'A taxa de erro merece análise.':errs>0?'Existem consultas com erro para rever.':'Não há erros ASF com matrícula de formato válido registados nesta janela.';
  $('heroInsight').innerHTML='<div class="k">LEITURA PRINCIPAL</div><div class="v">'+esc(primary)+'</div><div class="s">'+(peakHour?'Pico de consultas: '+String(peakHour.hour_num).padStart(2,'0')+'h. ':'')+(topModule?'Módulo mais usado: '+esc(topModule.label)+'.':'')+'</div>';
  const signals=[];
  if(backendErrors.length)signals.push({kind:'warning',title:'Dados incompletos',detail:'Falharam partes da leitura: '+backendErrors.map(esc).join(', ')+'. Os valores destas áreas podem estar indisponíveis.',page:'system',action:'Ver estado técnico'});
- if(errs>0)signals.push({kind:errorRate!=null&&errorRate>8?'danger':'warning',title:'Consultas com erro',detail:fmt(errs)+' resultados de erro · '+pct(errorRate)+' dos resultados finais. O número não identifica, por si só, a causa.',page:'errors',action:'Investigar erros'});
+ if(errs>0)signals.push({kind:errorRate!=null&&errorRate>8?'danger':'warning',title:'Erros ASF com matrícula válida',detail:fmt(errs)+' consultas com erro e matrícula de formato português válido · '+pct(errorRate)+' de todos os resultados finais. Confirma a causa na secção Erros.',page:'errors',action:'Investigar erros'});
  const integrity=Number(p.incomplete||0)+Number(p.contradictory||0)+Number(p.duplicate_finals||0)+Number(p.orphan_finals||0);
  if(integrity>0)signals.push({kind:'warning',title:'Qualidade dos registos',detail:[Number(p.incomplete||0)?fmt(p.incomplete)+' incompletas':'',Number(p.contradictory||0)?fmt(p.contradictory)+' contraditórias':'',Number(p.duplicate_finals||0)?fmt(p.duplicate_finals)+' finais duplicados':'',Number(p.orphan_finals||0)?fmt(p.orphan_finals)+' resultados sem pedido inicial':''].filter(Boolean).join(' · ')+'. Estes estados devem manter-se separados das consultas válidas.',page:'performance',action:'Ver qualidade dos dados'});
  if(Number(o.online_now||0)===0)signals.push({kind:'',title:'Sem consultas nos últimos 3 minutos',detail:'O indicador “Online agora” conta instalações com uma consulta nesse intervalo; não é uma contagem de browsers abertos.',page:'usage',action:'Ver utilização'});

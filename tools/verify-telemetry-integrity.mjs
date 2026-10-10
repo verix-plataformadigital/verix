@@ -132,9 +132,15 @@ const rollingPeriodsMigration = fs.readFileSync("supabase/migrations/20261010073
 assert.match(rollingPeriodsMigration, /p_now - interval '7 days' AS s7/, "previous rolling-period behavior must remain documented in migration history");
 assert.match(rollingPeriodsMigration, /p_now - interval '30 days' AS s30/, "previous rolling-period behavior must remain documented in migration history");
 const alignedPeriodsMigration = fs.readFileSync("supabase/migrations/20261010081254_align_period_windows_with_history_total.sql", "utf8");
+const validPlateErrorSummaryMigration = fs.readFileSync("supabase/migrations/20261010084904_count_only_valid_plate_errors_in_summary.sql", "utf8");
 assert.match(alignedPeriodsMigration, /greatest\(p_now - interval '24 hours', public\.verix2_all_start\(p_now\)\) AS s24/, "24-hour period must not include events before the total-history baseline");
 assert.match(alignedPeriodsMigration, /greatest\(p_now - interval '7 days', public\.verix2_all_start\(p_now\)\) AS s7/, "7-day period must not include events before the total-history baseline");
 assert.match(alignedPeriodsMigration, /greatest\(p_now - interval '30 days', public\.verix2_all_start\(p_now\)\) AS s30/, "30-day period must not include events before the total-history baseline");
+assert.match(validPlateErrorSummaryMigration, /'errors_valid_plate'/, "analytics must expose a separate valid-plate error metric");
+assert.match(validPlateErrorSummaryMigration, /query_quality_total[\s\S]*fc\.metadata/, "total-history error filtering must use the captured plate from final outcome metadata");
+assert.match(admin, /errs=Number\(p\.errors_valid_plate\?\?0\)/, "main summary must count only error queries with a valid Portuguese plate format");
+assert.match(admin, /Só conta erros com matrícula de formato português válido/, "summary error card must explain the filter");
+assert.match(admin, /não é possível reconstruir o texto original/, "admin must explain why some old unrecorded plate inputs cannot be recovered");
 assert.ok(errorPlateCountMigration.includes("count(DISTINCT e.query_id) qty"), "error plate totals must count unique consultation IDs");
 assert.ok(errorPlateCountMigration.includes("count(*) event_qty"), "raw error event volume must remain visible separately");
 assert.ok(errorPlateCountMigration.includes("^(?:[A-Z]{2}[0-9]{4}|[0-9]{4}[A-Z]{2}|[0-9]{2}[A-Z]{2}[0-9]{2}|[A-Z]{2}[0-9]{2}[A-Z]{2})$"), "error plate table must allow only complete Portuguese plate formats");
