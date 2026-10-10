@@ -75,7 +75,7 @@ for (const metric of ["'pending'","'incomplete'","'contradictory'","'duplicate_f
 for (const label of ["Incompletas","Contraditórias","Finais duplicados","Finais órfãos","INSTALAÇÕES"]) assert.ok(admin.includes(label), "missing Admin label "+label);
 
 
-// Portuguese vehicle series, machinery suffixes, and trailer series.
+// Portuguese vehicle series, machinery suffixes, trailers, diplomatic and export series.
 const strictPlateBaseTest = value => {
   const raw=String(value??"").trim().toUpperCase();
   if (/^[A-Z]{2}[ -]?[0-9]{2}[ -]?[0-9]{2}$/.test(raw)
@@ -91,14 +91,18 @@ const strictPlateTest = value => {
   if(strictPlateBaseTest(raw))return true;
   const machine=raw.match(/^(.+?)[ -]?([A-H])$/);
   if(machine&&strictPlateBaseTest(machine[1]))return true;
+  if(/^[0-9]{3}[ -](?:CD|CC|FM)[0-9]{3}$/.test(raw))return true;
+  if(/^[0-9]+[ -]?[LPAM]$/.test(raw))return true;
   return /^(?:AV|BE|BN|BR|CB|FA|GD|LE|PT|SA|SE|VC|VR|VI|AN|H|A|M|L|P|C|E)[ -]?[0-9]{1,6}$/i.test(raw);
 };
-for(const v of ["AA-00-00","00-00-AA","00-AA-00","AA-01-AA","AB-12-CD","AA-01-AE","AA-00-00-A","00-AA-00-B","VC-123456","BN-12345","L-123456"]) assert.equal(strictPlateTest(v),true,"should accept "+v);
-for(const v of ["Aa-2a-ae","AA/00/00","AA--00--00","BA-12-CA","AB-12-AE","AA-00-00-Z","BG-12345","VS-12345","X-12345","L-1234567","L/12345"]) assert.equal(strictPlateTest(v),false,"should reject "+v);
+for(const v of ["AA-00-00","00-00-AA","00-AA-00","AA-01-AA","AB-12-CD","AA-01-AE","AA-00-00-A","00-AA-00-B","VC-123456","BN-12345","L-123456","001-CD001","001-CC001","001-FM001","12345-L","456-P","789-A","100-M"]) assert.equal(strictPlateTest(v),true,"should accept "+v);
+for(const v of ["Aa-2a-ae","AA/00/00","AA--00--00","BA-12-CA","AB-12-AE","AA-00-00-Z","BG-12345","VS-12345","X-12345","L-1234567","L/12345","001-XX001","001CD001","12-X"]) assert.equal(strictPlateTest(v),false,"should reject "+v);
 assert.ok(stats.includes("validPortugueseTrailerPlate"), "stats must classify legal trailer formats");
 assert.ok(stats.includes("validPortuguesePlateBase"), "stats must apply the current-series vowel restriction");
 assert.ok(endpoint.includes("isValidPortugueseTrailerPlateFormat"), "backend must recognize legal trailer codes");
 assert.ok(endpoint.includes("Industrial machinery plates"), "backend must recognize the industrial class suffix");
+assert.ok(endpoint.includes("MNE privileged registration"), "backend must recognize official diplomatic registrations");
+assert.ok(endpoint.includes("Export registration"), "backend must recognize Portuguese export series");
 const app = fs.readFileSync("verix-app.html", "utf8");
 assert.doesNotMatch(app, /\b(?:APP_VERSION|appVersion|app_version)\s*[:=]\s*["\']1\.4(?:\.\d+)?["\']/i, "production runtime must not advertise the obsolete app version");
 const telemetryStart = app.indexOf("function parseReceipt(text)");

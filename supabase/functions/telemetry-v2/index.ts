@@ -298,6 +298,12 @@ function isValidPortugueseVehiclePlateFormat(value: unknown): boolean {
   const machine = raw.match(/^(.+?)[ -]?([A-H])$/);
   if (machine && isValidPortuguesePlateBaseFormat(machine[1])) return true;
 
+  // MNE privileged registration: mission digits, category and sequence.
+  if (/^[0-9]{3}[ -](?:CD|CC|FM)[0-9]{3}$/.test(raw)) return true;
+
+  // Export registration: sequence followed by customs-office initial (Lisboa, Porto, Açores, Madeira).
+  if (/^[0-9]+[ -]?[LPAM]$/.test(raw)) return true;
+
   // Reboque/semi-reboque numbers use a regional service code plus a number.
   return isValidPortugueseTrailerPlateFormat(raw);
 }

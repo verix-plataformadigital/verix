@@ -327,6 +327,8 @@ async function loadErrorInvestigation24h(now:string){
     if(validPortuguesePlateBase(raw))return true;
     const machine=raw.match(/^(.+?)[ -]?([A-H])$/);
     if(machine&&validPortuguesePlateBase(machine[1]))return true;
+    if(/^[0-9]{3}[ -](?:CD|CC|FM)[0-9]{3}$/.test(raw))return true;
+    if(/^[0-9]+[ -]?[LPAM]$/.test(raw))return true;
     return validPortugueseTrailerPlate(raw);
   };
   const plateInfoOf=(e:any)=>{

@@ -362,6 +362,14 @@ let ultimaMatriculaLivrete = "";
    if (maquina && validarFormatoMatriculaBase(maquina[1]).valid) {
      return { valid: true, reason: null, tipo: 'maquina_industrial' };
    }
+   // Série diplomática/consular publicada pelo MNE: 000-CD000 (categorias CD, CC e FM).
+   if (/^[0-9]{3}[ -](?:CD|CC|FM)[0-9]{3}$/.test(raw)) {
+     return { valid: true, reason: null, tipo: 'diplomatica' };
+   }
+   // Matrícula de exportação: número de ordem seguido da inicial do serviço alfandegário.
+   if (/^[0-9]+[ -]?[LPAM]$/.test(raw)) {
+     return { valid: true, reason: null, tipo: 'exportacao' };
+   }
    return { valid: false, reason: base.reason || 'formato_ou_posicoes' };
  }
 
