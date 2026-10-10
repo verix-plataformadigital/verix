@@ -554,11 +554,27 @@ button:focus-visible,input:focus-visible,[tabindex="0"]:focus-visible{outline:3p
           <div class="panel"><div class="panel-head"><h3>IPS MAIS ASSOCIADOS A ERROS</h3><span>24 H</span></div><div id="errorInstallations" class="table-wrap"></div></div>
           <div class="panel"><div class="panel-head"><h3>ASSINATURAS REPETIDAS</h3><span>24 H</span></div><div id="errorSignatures" class="table-wrap"></div></div>
         </div>
+        <div class="grid g2" style="margin-top:12px">
+          <div class="panel">
+            <div class="panel-head"><h3>ERROS COM MATRÍCULA DE FORMATO VÁLIDO</h3><span>24 H</span></div>
+            <div class="panel-body">
+              <p>Aceita AA-00-00, 00-00-AA, 00-AA-00 e AA-00-AA, com ou sem hífen. O formato correto não confirma, por si só, que a matrícula esteja atribuída a um veículo.</p>
+              <div id="errorPlates" class="table-wrap"><div class="empty">A carregar matrículas com formato válido…</div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>ENTRADAS COM FORMATO INVÁLIDO</h3><span>24 H</span></div>
+            <div class="panel-body">
+              <p>Valores capturados que não correspondem a nenhum dos quatro formatos. A entrada original e a normalizada são mostradas para facilitar a análise.</p>
+              <div id="errorInvalidPlates" class="table-wrap"><div class="empty">A carregar entradas inválidas…</div></div>
+            </div>
+          </div>
+        </div>
         <div class="panel" style="margin-top:12px">
-          <div class="panel-head"><h3>MATRÍCULAS COM ERRO NA CONSULTA ASF</h3><span>24 H</span></div>
+          <div class="panel-head"><h3>ERROS SEM MATRÍCULA CAPTURADA</h3><span>24 H</span></div>
           <div class="panel-body">
-            <p>Consultas ASF inconclusivas ou com falha em que a matrícula foi capturada. Um erro técnico não significa que o veículo não tenha seguro.</p>
-            <div id="errorPlates" class="table-wrap"><div class="empty">A carregar matrículas com erro…</div></div>
+            <p>Erros em que os dados recebidos não contêm uma matrícula para validar. Estes casos não são classificados como matrículas inválidas.</p>
+            <div id="errorMissingPlates" class="table-wrap"><div class="empty">A carregar erros sem matrícula…</div></div>
           </div>
         </div>
         <div class="panel" style="margin-top:12px">
@@ -620,7 +636,7 @@ button:focus-visible,input:focus-visible,[tabindex="0"]:focus-visible{outline:3p
 
 <script>
 const API_ORIGIN='https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/';
-const ADMIN_CACHE='admin-dashboard-2026-10-10-r9';
+const ADMIN_CACHE='admin-dashboard-2026-10-10-r10-plate-format';
 const AUTH_API=API_ORIGIN+'admin-auth-v2?v='+encodeURIComponent(ADMIN_CACHE);
 const STATS_API=API_ORIGIN+'stats-v2?v='+encodeURIComponent(ADMIN_CACHE);
 const TOKEN_KEY='VERIX_ADMIN_V2_TOKEN';
@@ -742,8 +758,8 @@ async function ensurePageDetail(page,force=false){
     if(kind==='system') renderSystem(latestData);
   }catch(e){
     if(kind==='errors'){
-      const host=$('errorPlates');
-      if(host)host.innerHTML='<div class="empty">Não foi possível carregar a lista de matrículas com erro. Tenta atualizar os dados. '+esc(e.message)+'</div>';
+      const message='<div class="empty">Não foi possível carregar os detalhes dos erros. Tenta atualizar os dados. '+esc(e.message)+'</div>';
+      ['errorPlates','errorInvalidPlates','errorMissingPlates'].forEach(id=>{const host=$(id);if(host)host.innerHTML=message;});
     }
     toast('Não foi possível carregar os detalhes: '+e.message);
   }finally{
@@ -899,7 +915,9 @@ function renderErrors(d){
   card('CONSULTAS COM ERRO DA VERSÃO '+versionLabel,num(inv.current_version_errors),'Consultas distintas da versão atual.')+
   card('EVENTOS DE ERRO DA VERSÃO '+versionLabel,num(inv.current_version_error_events),'Eventos técnicos brutos da versão atual.')+
   card('INSTALAÇÕES AFETADAS',num(inv.current_version_installations),'Onde apareceu uma consulta com erro nesta versão.')+
-  card('MATRÍCULAS VÁLIDAS AFETADAS',num(inv.current_version_plates),'Matrículas com formato válido capturadas nos erros.');
+  card('MATRÍCULAS COM FORMATO VÁLIDO',num(inv.current_version_plates),'Valores distintos no formato português, com ou sem hífen.')+
+  card('ENTRADAS COM FORMATO INVÁLIDO',num(inv.current_version_invalid_plates),'Valores distintos que não correspondem aos quatro formatos.')+
+  card('ERROS SEM MATRÍCULA CAPTURADA',num(inv.current_version_missing_plate_cases_count),'Casos sem matrícula nos dados recebidos.');
  $('errorTypes').innerHTML=table(['TIPO','CONSULTAS','EVENTOS','ÚLTIMO REGISTO'],(e.types||[]).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'Desconhecido')+'</span>')+td('<strong>'+fmt(x.qty)+'</strong>')+td(fmt(x.event_qty??x.qty))+td(datePT(x.last_at))+'</tr>'));
  const bursts=inv.current_version_bursts_5m||[];$('errorBursts').innerHTML=table(['HORA','CONSULTAS','EVENTOS'],bursts.slice(0,12).map(x=>'<tr>'+td('<strong>'+datePT(x.start)+'</strong>')+td('<strong>'+fmt(x.count)+'</strong>')+td(fmt(x.event_count??x.count))+'</tr>'));
  $('errorReading').innerHTML=buildErrorReading(d);
@@ -907,9 +925,19 @@ function renderErrors(d){
  $('errorSignatures').innerHTML=table(['TIPO','CONSULTAS','EVENTOS','INSTALAÇÕES'],(e.signatures||[]).slice(0,15).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'—')+'</span>')+td(fmt(x.qty))+td(fmt(x.event_qty??x.qty))+td(fmt(x.installs))+'</tr>'));
  const plateCases=inv.current_version_plate_cases;
  $('errorPlates').innerHTML=!Array.isArray(plateCases)
-  ?'<div class="empty">A carregar os detalhes das matrículas com erro…</div>'
+  ?'<div class="empty">A carregar os detalhes das matrículas com formato válido…</div>'
   :plateCases.length?table(['MATRÍCULA','DATA E HORA','TIPO DE ERRO','BROWSER'],plateCases.map(x=>'<tr>'+td('<strong>'+esc(x.matricula||'—')+'</strong>')+td(datePT(x.occurred_at))+td('<span class="tag red">'+esc(x.error_type||'Desconhecido')+'</span>')+td(esc(x.browser||'—'))+'</tr>'))
-  :'<div class="empty">Os detalhes foram carregados; não há matrículas válidas associadas a erros nas últimas 24 horas.</div>';
+  :'<div class="empty">Não há erros associados a matrículas com formato português válido nas últimas 24 horas.</div>';
+ const invalidPlateCases=inv.current_version_invalid_plate_cases;
+ $('errorInvalidPlates').innerHTML=!Array.isArray(invalidPlateCases)
+  ?'<div class="empty">A carregar entradas com formato inválido…</div>'
+  :invalidPlateCases.length?table(['ENTRADA REGISTADA','NORMALIZADA','DATA E HORA','TIPO DE ERRO','BROWSER'],invalidPlateCases.map(x=>'<tr>'+td('<strong>'+esc(x.matricula||'—')+'</strong>')+td(esc(x.matricula_normalizada||'—'))+td(datePT(x.occurred_at))+td('<span class="tag red">'+esc(x.error_type||'Desconhecido')+'</span>')+td(esc(x.browser||'—'))+'</tr>'))
+  :'<div class="empty">Não há entradas com formato inválido associadas a erros nas últimas 24 horas.</div>';
+ const missingPlateCases=inv.current_version_missing_plate_cases;
+ $('errorMissingPlates').innerHTML=!Array.isArray(missingPlateCases)
+  ?'<div class="empty">A carregar erros sem matrícula…</div>'
+  :missingPlateCases.length?table(['DATA E HORA','TIPO DE ERRO','BROWSER','CONSULTA'],missingPlateCases.map(x=>'<tr>'+td(datePT(x.occurred_at))+td('<span class="tag red">'+esc(x.error_type||'Desconhecido')+'</span>')+td(esc(x.browser||'—'))+td(esc(x.query_id||'—'))+'</tr>'))
+  :'<div class="empty">Não há erros sem matrícula capturada nas últimas 24 horas.</div>';
  const recent=inv.latest_current_version||[];
  $('errorTechnical').innerHTML=recent.length?'<table class="table"><thead><tr><th>Hora</th><th>Browser</th><th>Transporte</th><th>Tipo</th><th>HTTP</th><th>ASF ms</th><th>Relay ms</th><th>Hash</th></tr></thead><tbody>'+recent.slice(0,15).map(x=>'<tr>'+td(datePT(x.occurred_at))+td(esc(x.browser||'—'))+td(esc(x.transport||'—'))+td(esc(x.error_type||'—'))+td(x.http_status==null?'—':fmt(x.http_status))+td(x.duration_ms==null?'—':fmt(x.duration_ms)+' ms')+td(x.relay_latency_ms==null?'—':fmt(x.relay_latency_ms)+' ms')+td(esc(x.response_hash||'—'))+'</tr>').join('')+'</tbody></table>':'<div class="empty">Sem incidentes recentes.</div>';
  function buildErrorReading(data){
