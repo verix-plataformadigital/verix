@@ -106,6 +106,11 @@ for(const v of [
 assert.ok(stats.includes("validPortuguesePlateBase"), "admin stats must have a dedicated plate-format classifier");
 assert.ok(stats.includes("|| /^[A-Z]{2}[ -]?[0-9]{2}[ -]?[A-Z]{2}$/.test(raw)"), "admin stats must accept the current AA00AA layout by structure");
 assert.doesNotMatch(stats, /\\[AEIOU\\]/, "admin stats must not impose a blanket vowel-position restriction");
+const currentVersionRowsDeclaration = stats.indexOf("const currentVersionValidErrorRows=");
+const currentVersionRowsFirstUse = stats.indexOf("for(const e of currentVersionValidErrorRows)");
+assert.ok(currentVersionRowsDeclaration >= 0 && currentVersionRowsFirstUse > currentVersionRowsDeclaration,
+  "currentVersionValidErrorRows must be initialized before error aggregation uses it");
+
 assert.ok(endpoint.includes("isValidPortugueseTrailerPlateFormat"), "backend must recognize legal trailer codes");
 assert.ok(endpoint.includes("Industrial machinery plates"), "backend must recognize the industrial class suffix");
 assert.ok(endpoint.includes("MNE privileged registration"), "backend must recognize official diplomatic registrations");
