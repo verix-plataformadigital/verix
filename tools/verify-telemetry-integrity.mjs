@@ -58,7 +58,7 @@ for (const value of ["12-ABC-34","AA/00/00","89","177ZN","1234"]) {
 assert.match(endpoint, /if \(event !== "vehicle_insurance_error" && event !== "vehicle_plate_invalid"\) \{[\s\S]*?delete metadata\.matriculaNormalizada;/, "only ASF errors and explicit format rejections may retain plate text");
 assert.match(endpoint, /insuranceNoCases\.push/, "valid no-record outcomes must enter the dedicated 90-day registry");
 assert.match(admin, /O resultado, por si só, não confirma a ausência de seguro/, "no-record list must warn that no record alone is not proof");
-assert.match(admin, /Um erro técnico não significa que o veículo não tenha seguro/, "error list must distinguish failures from insurance status");
+assert.match(admin, /Um erro técnico fica separado e não entra aqui\./, "admin must distinguish technical ASF errors from no-record results");
 assert.match(endpoint, /p_installations:\s*\[\.\.\.installations\.values\(\)\]/);
 assert.match(endpoint, /p_sessions:\s*\[\.\.\.sessions\.values\(\)\]/);
 assert.doesNotMatch(endpoint, /db\.from\(["']verix2_(?:events|installations|sessions)["']\)\.upsert/);
