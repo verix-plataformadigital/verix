@@ -519,15 +519,15 @@ function switchPage(page){
   $('pageTitle').textContent=meta[0];
   $('pageSubtitle').textContent=meta[1];
   window.scrollTo({top:0});
-  ensurePageDetail(page);
+  ensurePageDetail(page,page==='errors');
 }
 function detailEndpoint(kind){
   return STATS_API+'&detail='+encodeURIComponent(kind);
 }
-async function ensurePageDetail(page){
+async function ensurePageDetail(page,force=false){
   if(!latestData || !token()) return;
   const kind=page==='insurance'?'insurance':page==='speed'?'speed':page==='errors'?'errors':page==='system'?'system':'';
-  if(!kind || (kind!=='insurance' && detailCache[kind]) || detailBusy[kind]) return;
+  if(!kind || (!force && kind!=='insurance' && detailCache[kind]) || detailBusy[kind]) return;
   detailBusy[kind]=true;
   try{
     const d=await request(detailEndpoint(kind==='insurance'?'insurance-no-cases':kind));
@@ -540,6 +540,10 @@ async function ensurePageDetail(page){
     if(kind==='errors') renderErrors(latestData);
     if(kind==='system') renderSystem(latestData);
   }catch(e){
+    if(kind==='errors'){
+      const host=$('errorPlates');
+      if(host)host.innerHTML='<div class="empty">Não foi possível carregar a lista de matrículas com erro. Tenta atualizar os dados. '+esc(e.message)+'</div>';
+    }
     toast('Não foi possível carregar os detalhes: '+e.message);
   }finally{
     detailBusy[kind]=false;
@@ -550,7 +554,7 @@ function renderDashboard(d){
  const users=Number(o['unique_'+currentPeriod]||0),lookups=Number(p.started||0),fin=Number(p.finals||0),insured=Number(p.insured||0),uninsured=Number(p.uninsured||0),errs=Number(p.errors||0),dec=insured+uninsured;
  const noRate=dec?100*uninsured/dec:null,errorRate=fin?100*errs/fin:null;
  $('dashCards').innerHTML=
-  card('ATIVOS AGORA',num(o.online_now),'Sessões VÉRIX com browser aberto.','green')+
+  card('ONLINE AGORA',num(o.online_now),'Instalações que fizeram uma consulta nos últimos 3 minutos.','green')+
   card('INSTALAÇÕES',num(users),'Instalações com atividade no período.','cyan')+
   card('CONSULTAS DE SEGURO',num(lookups),'Pedidos iniciados.','blue')+
   card('COM SEGURO',num(insured),pct(dec?100*insured/dec:null)+' das decisões.','green')+
@@ -690,8 +694,11 @@ function renderErrors(d){
  $('errorReading').innerHTML=buildErrorReading(d);
  $('errorInstallations').innerHTML=table(['INSTALAÇÃO','CONSULTAS','EVENTOS'],(e.installations||[]).slice(0,15).map(x=>'<tr>'+td('<strong>'+esc(x.installation_id||'—')+'</strong>')+td(fmt(x.qty))+td(fmt(x.event_qty??x.qty))+'</tr>'));
  $('errorSignatures').innerHTML=table(['TIPO','CONSULTAS','EVENTOS','INSTALAÇÕES'],(e.signatures||[]).slice(0,15).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'—')+'</span>')+td(fmt(x.qty))+td(fmt(x.event_qty??x.qty))+td(fmt(x.installs))+'</tr>'));
- const plateCases=inv.current_version_plate_cases||[];
- $('errorPlates').innerHTML=plateCases.length?table(['MATRÍCULA','DATA E HORA','TIPO DE ERRO','BROWSER'],plateCases.map(x=>'<tr>'+td('<strong>'+esc(x.matricula||'—')+'</strong>')+td(datePT(x.occurred_at))+td('<span class="tag red">'+esc(x.error_type||'Desconhecido')+'</span>')+td(esc(x.browser||'—'))+'</tr>')):'<div class="empty">Não há matrículas válidas associadas a erros nas últimas 24 horas.</div>';
+ const plateCases=inv.current_version_plate_cases;
+ $('errorPlates').innerHTML=!Array.isArray(plateCases)
+  ?'<div class="empty">A carregar os detalhes das matrículas com erro…</div>'
+  :plateCases.length?table(['MATRÍCULA','DATA E HORA','TIPO DE ERRO','BROWSER'],plateCases.map(x=>'<tr>'+td('<strong>'+esc(x.matricula||'—')+'</strong>')+td(datePT(x.occurred_at))+td('<span class="tag red">'+esc(x.error_type||'Desconhecido')+'</span>')+td(esc(x.browser||'—'))+'</tr>'))
+  :'<div class="empty">Os detalhes foram carregados; não há matrículas válidas associadas a erros nas últimas 24 horas.</div>';
  const recent=inv.latest_current_version||[];
  $('errorTechnical').innerHTML=recent.length?'<table class="table"><thead><tr><th>Hora</th><th>Browser</th><th>Transporte</th><th>Tipo</th><th>HTTP</th><th>ASF ms</th><th>Relay ms</th><th>Hash</th></tr></thead><tbody>'+recent.slice(0,15).map(x=>'<tr>'+td(datePT(x.occurred_at))+td(esc(x.browser||'—'))+td(esc(x.transport||'—'))+td(esc(x.error_type||'—'))+td(x.http_status==null?'—':fmt(x.http_status))+td(x.duration_ms==null?'—':fmt(x.duration_ms)+' ms')+td(x.relay_latency_ms==null?'—':fmt(x.relay_latency_ms)+' ms')+td(esc(x.response_hash||'—'))+'</tr>').join('')+'</tbody></table>':'<div class="empty">Sem incidentes recentes.</div>';
  function buildErrorReading(data){
@@ -783,7 +790,15 @@ function renderSystem(d){
  const rs=d.resetAllAt||life.reset_all_at||d.reset24hAt;$('reset24hStatus').textContent='Marco atual: '+datePT(rs);
 }
 
-function renderAll(d){latestData=d;renderDashboard(d);renderInsurance(d);renderSpeed(d);renderLegislation(d);renderUsage(d);renderErrors(d);renderPerformance(d);renderInsights(d);renderSystem(d)}
+function renderAll(d){
+ const previous=latestData;
+ const merged={...d};
+ ['investigation','cinemometer','lifetime'].forEach(key=>{
+  if(merged[key]==null && previous?.[key]!=null)merged[key]=previous[key];
+ });
+ latestData=merged;
+ renderDashboard(latestData);renderInsurance(latestData);renderSpeed(latestData);renderLegislation(latestData);renderUsage(latestData);renderErrors(latestData);renderPerformance(latestData);renderInsights(latestData);renderSystem(latestData);
+}
 async function loadDashboard(){
  if(dashboardBusy)return null;
  dashboardBusy=true;
@@ -795,7 +810,7 @@ async function loadDashboard(){
   const partial=Object.keys(d.errors||{}).length>0;
   setBackend(partial?'partial':'online');
   setLoadNotice(partial?'O backend respondeu, mas alguns dados não ficaram disponíveis. Os painéis podem estar incompletos.':'',partial,'warning');
-  if(currentPage!=='dashboard')ensurePageDetail(currentPage);
+  if(currentPage!=='dashboard')ensurePageDetail(currentPage,true);
   return d;
  }catch(e){
   setBackend('offline');
