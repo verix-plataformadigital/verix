@@ -17383,6 +17383,32 @@ html body .leg-card-new .copy-all-new{
     if (m.itemLabel) out.itemLabel = String(m.itemLabel).slice(0, 180);
     if (m.copyType) out.copyType = String(m.copyType).slice(0, 40);
     if (m.asfUserMessage) out.asfUserMessage = String(m.asfUserMessage).slice(0, 500);
+    // Cinemómetro: guardar apenas medições/classificações necessárias às estatísticas.
+    // Não persistir nome/número do operador, número de série nem local exato através deste snapshot.
+    if (m.cin && typeof m.cin === 'object' && !Array.isArray(m.cin)) {
+      var cin = m.cin;
+      var cinNumber = function (value) {
+        if (value === null || value === undefined || String(value).trim() === '') return null;
+        var n = Number(String(value).trim().replace(',', '.'));
+        return isFinite(n) ? n : null;
+      };
+      var cinText = function (value, max) {
+        var v = String(value == null ? '' : value).trim();
+        return v && v !== '—' ? v.slice(0, max) : null;
+      };
+      out.cin = {
+        velocidade_registada: cinNumber(cin.velocidade_registada),
+        velocidade_deduzida: cinNumber(cin.velocidade_deduzida),
+        limite: cinNumber(cin.limite),
+        excesso: cinNumber(cin.excesso),
+        gravidade: cinText(cin.gravidade, 40),
+        codigo: cinText(cin.codigo, 30),
+        modo: cinText(cin.modo, 30),
+        veiculo: cinText(cin.veiculo, 80),
+        enquadramento: cinText(cin.enquadramento, 60),
+        verificacao: cinText(cin.verificacao, 30)
+      };
+    }
     // Contexto técnico do cliente para diagnosticar diferenças entre browser/OS/rede.
     out.client = {
       browser: browserName(),
@@ -17659,6 +17685,52 @@ html body .leg-card-new .copy-all-new{
     } catch (_) {}
   }
 
+  function cinTelemetryRaw(id) {
+    var element = document.getElementById(id);
+    if (!element) return '';
+    return typeof element.value === 'string' ? element.value : (element.textContent || '');
+  }
+
+  function cinTelemetryNumber(id) {
+    var raw = String(cinTelemetryRaw(id) || '').trim();
+    if (!raw || raw === '—') return null;
+    var value = Number(raw.replace(',', '.'));
+    return isFinite(value) ? value : null;
+  }
+
+  function cinTelemetryText(id, max) {
+    var value = String(cinTelemetryRaw(id) || '').trim();
+    return value && value !== '—' ? value.slice(0, max) : null;
+  }
+
+  // Snapshot mínimo para diagnosticar cálculos, sem identidade do operador,
+  // número de série do aparelho ou localização operacional exata.
+  function cinTelemetrySnapshot() {
+    var registered = cinTelemetryNumber('cinRegistada');
+    if (registered === null || registered <= 0) return null;
+
+    var deduced = cinTelemetryNumber('cinDeducida2');
+    if (deduced === null && typeof window.cinCalcularDeducida === 'function') {
+      try {
+        var calculated = window.cinCalcularDeducida(registered);
+        if (calculated !== null && isFinite(Number(calculated))) deduced = Number(calculated);
+      } catch (_) {}
+    }
+
+    return {
+      velocidade_registada: registered,
+      velocidade_deduzida: deduced,
+      limite: cinTelemetryNumber('cinLimite'),
+      excesso: cinTelemetryNumber('cinExcesso'),
+      gravidade: cinTelemetryText('cinGravidade', 40),
+      codigo: cinTelemetryText('cinCodigo', 30),
+      modo: cinTelemetryText('cinSessaoModo', 30),
+      veiculo: cinTelemetryText('cinVeiculo', 80),
+      enquadramento: cinTelemetryText('cinRegime', 60),
+      verificacao: cinTelemetryText('cinVerificacao', 30)
+    };
+  }
+
   function insurancePlateMetadata(value, asfDiagnostic) {
     var raw = String(value || (asfDiagnostic && asfDiagnostic.matricula) || '').trim().toUpperCase().slice(0, 30);
     var normalized = raw.replace(/[^A-Z0-9]/g, '').slice(0, 30);
@@ -17743,9 +17815,16 @@ html body .leg-card-new .copy-all-new{
     });
 
     wrap('cinRecalcular', function () {
-      if (rateLimited('cin_recalculate', 3000)) {
-        push('cinemometer_calculation', 'cinemometro');
-      }
+      var registered = cinTelemetryNumber('cinRegistada');
+      var limit = cinTelemetryNumber('cinLimite');
+      if (registered === null || registered <= 0 || limit === null || limit <= 0) return;
+      if (!rateLimited('cin_recalculate', 3000)) return;
+      // Executar depois da função original atualizar dedutiva/excesso/classificação.
+      setTimeout(function () {
+        var snapshot = cinTelemetrySnapshot();
+        if (!snapshot || snapshot.limite === null || snapshot.velocidade_deduzida === null) return;
+        push('cinemometer_calculation', 'cinemometro', { cin: snapshot });
+      }, 0);
     });
 
     wrap('renderSeguroEncontrado', function (_n, _mat, queryId, asfDiagnostic) {
@@ -17847,7 +17926,11 @@ html body .leg-card-new .copy-all-new{
       if (ev.target && ev.target.id === 'cinRegistada') {
         var value = String(ev.target.value || '').trim();
         if (value && rateLimited('cin_speed_entry', 2000)) {
-          push('cinemometer_speed_entry', 'cinemometro');
+          // O listener é de captura; recolher após o oninput e o recálculo do campo.
+          setTimeout(function () {
+            var snapshot = cinTelemetrySnapshot();
+            if (snapshot) push('cinemometer_speed_entry', 'cinemometro', { cin: snapshot });
+          }, 0);
         }
       }
     }, true);

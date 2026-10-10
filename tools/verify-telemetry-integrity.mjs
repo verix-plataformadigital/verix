@@ -4,6 +4,7 @@ import fs from "node:fs";
 const endpoint = fs.readFileSync("supabase/functions/telemetry-v2/index.ts", "utf8");
 const migration = fs.readFileSync("supabase/migrations/20261009034000_repair_telemetry_integrity_and_query_metrics.sql", "utf8");
 const admin = fs.readFileSync("admin_v2.html", "utf8");
+const app = fs.readFileSync("verix-app.html", "utf8");
 const stats = fs.readFileSync("supabase/functions/stats-v2/index.ts", "utf8");
 const insuranceNoCasesMigration = fs.readFileSync("supabase/migrations/20261009080000_insurance_no_cases.sql", "utf8");
 const errorPlateCountMigration = fs.readFileSync("supabase/migrations/20261009092500_deduplicate_error_plate_consultations.sql", "utf8");
@@ -58,7 +59,6 @@ assert.equal((migration.match(/NOT EXISTS\(SELECT 1 FROM public\.verix2_events l
 for (const metric of ["'pending'","'incomplete'","'contradictory'","'duplicate_finals'","'orphan_finals'"]) assert.ok(migration.includes(metric), "missing SQL metric "+metric);
 for (const label of ["Incompletas","Contraditórias","Finais duplicados","Finais órfãos","INSTALAÇÕES"]) assert.ok(admin.includes(label), "missing Admin label "+label);
 
-const app = fs.readFileSync("verix-app.html", "utf8");
 assert.doesNotMatch(app, /\b(?:APP_VERSION|appVersion|app_version)\s*[:=]\s*["\']1\.4(?:\.\d+)?["\']/i, "production runtime must not advertise the obsolete app version");
 const telemetryStart = app.indexOf("function parseReceipt(text)");
 const telemetryEnd = app.indexOf("function rateLimited", telemetryStart);
@@ -141,4 +141,14 @@ assert.match(admin, /Number\(x\.consultations\|\|0\)/, "hour chart must use cons
 assert.match(admin, /fmt\(x\.users\|\|0\)/, "hour chart must show online installations");
 assert.match(admin, /Hora com mais consultas/, "dashboard insight must refer to consultations, not generic actions");
 
-console.log("PASS: atomic telemetry ingest, loss-safe beacon queue, browser presence KPI, hourly query deduplication, 24-hour presence chart, and Admin labels.");
+assert.ok(app.includes("function cinTelemetrySnapshot()"), "Cinemometer telemetry must construct a structured snapshot");
+assert.ok(app.includes("out.cin = {"), "client metadata sanitizer must retain the Cinemometer snapshot");
+assert.match(app, /push\('cinemometer_speed_entry', 'cinemometro', \{ cin: snapshot \}\)/, "speed entries must include structured measurement metadata");
+assert.match(app, /push\('cinemometer_calculation', 'cinemometro', \{ cin: snapshot \}\)/, "calculations must include structured measurement metadata");
+const snapshotStart = app.indexOf("function cinTelemetrySnapshot()");
+const snapshotEnd = app.indexOf("\n  function insurancePlateMetadata", snapshotStart);
+assert.ok(snapshotStart >= 0 && snapshotEnd > snapshotStart, "Cinemometer snapshot helper must be delimited");
+const snapshot = app.slice(snapshotStart, snapshotEnd);
+assert.doesNotMatch(snapshot, /cinSessaoOperadorNome|cinSessaoOperadorNo|cinSessaoOperadorPosto|cinMarca|cinModelo|cinSerie|cinLocalidade|cinDistrito|cinVia|cinSentido|cinKm/, "telemetry snapshot must not collect operator identifiers, apparatus serials, or exact locations");
+
+console.log("PASS: atomic telemetry ingest, loss-safe beacon queue, browser presence KPI, hourly query deduplication, Cinemometer measurement metadata, and Admin labels.");
