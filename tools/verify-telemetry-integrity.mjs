@@ -187,7 +187,7 @@ assert.ok(stats.includes("current_version_error_events:currentVersionRows.length
 assert.ok(stats.includes("latestErrorByQuery"), "error plate details must not repeat the same consultation");
 assert.ok(stats.includes('qs.set("offset",String(page*pageSize))'), "error investigation must page through all raw telemetry instead of truncating at 1,000 rows");
 assert.ok(stats.includes("validPortuguesePlate"), "error plate diagnostics must use complete Portuguese plate formats");
-assert.ok(endpoint.includes("^(?:[A-Z]{2}[0-9]{4}|[0-9]{4}[A-Z]{2}"), "server must reject incomplete and malformed plate fragments");
+assert.ok(endpoint.includes("function isValidPortugueseVehiclePlateFormat(value: unknown)") && endpoint.includes("isValidPortugueseVehiclePlateFormat(raw)"), "server must reject incomplete formats and apply current-series restrictions");
 
 
 
