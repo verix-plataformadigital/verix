@@ -309,6 +309,13 @@ function clientIp(req: Request): string {
   return "unknown";
 }
 
+function normalizeClientIp(value: unknown): string | null {
+  const ip = String(value ?? "").trim().replace(/^\\[/, "").replace(/\\]$/, "");
+  if (!ip || ip.toLowerCase() === "unknown" || ip.length > 45) return null;
+  if (!/^[0-9a-fA-F:.]+$/.test(ip) || !/[.:]/.test(ip)) return null;
+  return ip.toLowerCase();
+}
+
 async function hmacHex(value: string): Promise<string> {
   const key = await crypto.subtle.importKey(
     "raw",
@@ -357,6 +364,9 @@ Deno.serve(async (req: Request) => {
       return json({ ok: false, error: "rate_limited" }, 429, req);
     }
 
+    // Capture the server-observed network IP for authenticated admin diagnostics.
+    // Never accept an IP supplied by the browser payload.
+    const requestClientIp = normalizeClientIp(clientIp(req));
     const body = await req.json().catch(() => null);
     const received = Array.isArray(body?.events) ? body.events : [];
     const input = received.slice(0, 100);
@@ -599,7 +609,8 @@ Deno.serve(async (req: Request) => {
           app_version: e.app_version,
           device_type: e.device_type,
           browser: e.browser,
-          os: cleanText(client.osPlatform, 40)
+          os: cleanText(client.osPlatform, 40),
+          client_ip: requestClientIp
         });
       } else {
         if (e.occurred_at < existingInstallation.first_seen) existingInstallation.first_seen = e.occurred_at;
@@ -609,6 +620,7 @@ Deno.serve(async (req: Request) => {
         if (e.browser) existingInstallation.browser = e.browser;
         const clientOs = cleanText(client.osPlatform, 40);
         if (clientOs) existingInstallation.os = clientOs;
+        if (requestClientIp) existingInstallation.client_ip = requestClientIp;
       }
 
       if (e.session_id) {
