@@ -406,17 +406,22 @@ async function loadLifetime(now:string){
     return rows?.[0]?.reset_all_at || null;
   }
   const resetAt=await resetAllAt();
-  async function count(path:string){
+  // The "Histórico total" panel represents a rolling year, not an unbounded
+  // lifetime count that silently shrinks when old events are cleaned up.
+  const yearStart=rollingWindowStart(24*365);
+  async function count(path:string, timeColumn:string){
     const q=new URLSearchParams({select:"*",limit:"1"});
+    q.set(timeColumn,"gte."+yearStart);
     const r=await fetch(supabaseUrl+"/rest/v1/"+path+"?"+q.toString(),{headers:{apikey:serviceKey,Authorization:"Bearer "+serviceKey,Prefer:"count=exact"}});
     if(!r.ok)throw new Error("lifetime_count:"+path+":"+await r.text());
     const range=r.headers.get("content-range")||"";const m=range.match(/\/(\d+)$/);return m?Number(m[1]):0;
   }
-  const eventsTotal=await count("verix2_events");
-  const installationsTotal=await count("verix2_installations");
-  const sessionsTotal=await count("verix2_sessions");
+  const eventsTotal=await count("verix2_events","occurred_at");
+  const installationsTotal=await count("verix2_installations","last_seen");
+  const sessionsTotal=await count("verix2_sessions","last_seen");
   async function edge(order:string){
     const q=new URLSearchParams({select:"occurred_at",order,limit:"1"});
+    q.set("occurred_at","gte."+yearStart);
     const r=await fetch(supabaseUrl+"/rest/v1/verix2_events?"+q.toString(),{headers:{apikey:serviceKey,Authorization:"Bearer "+serviceKey}});
     if(!r.ok)throw new Error("lifetime_edge:"+await r.text());
     const t=await r.text();const rows=t?JSON.parse(t):[];return rows?.[0]?.occurred_at||null;
