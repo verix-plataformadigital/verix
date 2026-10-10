@@ -659,8 +659,25 @@ Deno.serve(async (req) => {
     const analyticsObj = analytics && typeof analytics==="object"
       ? analytics
       : {};
-    if(hourly24h && Array.isArray(hourly24h) && analyticsObj.usage && typeof analyticsObj.usage==="object") {
-      analyticsObj.usage.hourly = hourly24h;
+    if(analyticsObj.usage && typeof analyticsObj.usage==="object") {
+      // Never silently fall back to hour-of-day totals: that makes yesterday's
+      // 21h–23h appear as if they were in the future in a rolling 24-hour panel.
+      const hourlyRows = Array.isArray(hourly24h) ? hourly24h : null;
+      const validHourlyRows = !!hourlyRows
+        && hourlyRows.length >= 24
+        && hourlyRows.every((row:any) =>
+          row && typeof row==="object"
+          && typeof row.hour_key==="string"
+          && Number.isFinite(Number(row.consultations))
+          && Number.isFinite(Number(row.users))
+        );
+      if(validHourlyRows) {
+        analyticsObj.usage.hourly = hourlyRows;
+      } else {
+        analyticsObj.usage.hourly = [];
+        errors.hourly_24h = errors.hourly_24h
+          || "A série cronológica das últimas 24 horas está incompleta; o gráfico foi ocultado para não mostrar dados por hora do relógio.";
+      }
     }
 
     const payload = {
