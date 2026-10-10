@@ -608,7 +608,7 @@ button:focus-visible,input:focus-visible,[tabindex="0"]:focus-visible{outline:3p
           <div class="panel"><div class="panel-head"><h3>HISTÓRICO</h3><span>NÃO É APAGADO</span></div><div class="panel-body" id="systemHistory"></div></div>
         </div>
         <div style="margin-top:12px" class="reset">
-          <div><b>Reiniciar marco do histórico total</b><span>Define um novo marco para o Histórico total. Os períodos 24 H, 7 dias e 30 dias continuam a usar janelas móveis reais; os eventos antigos não são apagados.</span><div id="reset24hStatus" style="margin-top:5px;font-size:9px;color:#6e644d">Marco do histórico total: —</div></div>
+          <div><b>Reiniciar marco do histórico total</b><span>Define um novo marco para o Histórico total. Os períodos 24 H, 7 dias e 30 dias contam apenas eventos desde esse marco, dentro da respetiva janela. Assim, os seus valores ficam comparáveis com o Histórico total. Os eventos antigos continuam guardados.</span><div id="reset24hStatus" style="margin-top:5px;font-size:9px;color:#6e644d">Marco do histórico total: —</div></div>
           <button id="reset24hBtn" type="button">REINICIAR HISTÓRICO</button>
         </div>
       </section>
@@ -620,7 +620,7 @@ button:focus-visible,input:focus-visible,[tabindex="0"]:focus-visible{outline:3p
 
 <script>
 const API_ORIGIN='https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/';
-const ADMIN_CACHE='admin-dashboard-2026-10-10-r8';
+const ADMIN_CACHE='admin-dashboard-2026-10-10-r9';
 const AUTH_API=API_ORIGIN+'admin-auth-v2?v='+encodeURIComponent(ADMIN_CACHE);
 const STATS_API=API_ORIGIN+'stats-v2?v='+encodeURIComponent(ADMIN_CACHE);
 const TOKEN_KEY='VERIX_ADMIN_V2_TOKEN';
