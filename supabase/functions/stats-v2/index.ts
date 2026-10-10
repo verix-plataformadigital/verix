@@ -293,7 +293,7 @@ async function loadErrorInvestigation24h(now:string){
     bucket.events++;
     if(queryId) bucket.queryIds.add(String(queryId));
   };
-  for(const e of currentVersionRows){
+  for(const e of currentVersionValidErrorRows){
     const a=e?.metadata?.asfDiagnostic||{}, hash=String(a.asfResponseHash||"sem-hash"), type=String(a.asfErrorType||"unknown"), inst=String(e?.installation_id||"unknown");
     addDimension(byHash,hash,e?.query_id); addDimension(byType,type,e?.query_id); addDimension(byInstall,inst,e?.query_id);
     const t=new Date(e.occurred_at).getTime();
@@ -339,6 +339,37 @@ async function loadErrorInvestigation24h(now:string){
     const original=String(raw).trim(), normalized=normalizePlate(raw);
     return {matricula:original,matricula_normalizada:normalized,plate_status:validPortuguesePlate(raw)?"valid":"invalid"};
   };
+  const queryKeyOf=(e:any,index:number)=>{
+    const queryId=String(e?.query_id||"").trim();
+    return queryId ? "query:"+queryId : "event:"+String(e?.event_id||index);
+  };
+  const countDistinctQueries=(inputRows:any[])=>new Set(inputRows.map((e:any,index:number)=>queryKeyOf(e,index))).size;
+  const validPlateErrorRows=rows.filter((e:any)=>plateInfoOf(e).plate_status==="valid");
+  const currentVersionValidErrorRows=currentVersionRows.filter((e:any)=>plateInfoOf(e).plate_status==="valid");
+  const validPlateErrorTypeMap=new Map<string,{queries:Set<string>;events:number;last_at:string|null}>();
+  const validPlateErrorPlateMap=new Map<string,{queries:Set<string>;events:number;last_at:string|null;kinds:Set<string>}>();
+  for(const [index,e] of validPlateErrorRows.entries()){
+    const a=e?.metadata?.asfDiagnostic||{};
+    const kind=String(a.asfErrorType||(a.asfHttpStatus!=null?"http_"+String(a.asfHttpStatus):"unknown"));
+    const queryKey=queryKeyOf(e,index);
+    let typeBucket=validPlateErrorTypeMap.get(kind);
+    if(!typeBucket){typeBucket={queries:new Set<string>(),events:0,last_at:null};validPlateErrorTypeMap.set(kind,typeBucket);}
+    typeBucket.queries.add(queryKey);
+    typeBucket.events++;
+    if(!typeBucket.last_at||String(e?.occurred_at||"")>typeBucket.last_at)typeBucket.last_at=e?.occurred_at||null;
+    const plate=plateInfoOf(e);
+    const plateKey=plate.matricula_normalizada||plate.matricula;
+    if(plateKey){
+      let plateBucket=validPlateErrorPlateMap.get(plateKey);
+      if(!plateBucket){plateBucket={queries:new Set<string>(),events:0,last_at:null,kinds:new Set<string>()};validPlateErrorPlateMap.set(plateKey,plateBucket);}
+      plateBucket.queries.add(queryKey);
+      plateBucket.events++;
+      plateBucket.kinds.add(kind);
+      if(!plateBucket.last_at||String(e?.occurred_at||"")>plateBucket.last_at)plateBucket.last_at=e?.occurred_at||null;
+    }
+  }
+  const validPlateErrorTypes=[...validPlateErrorTypeMap.entries()].map(([kind,b])=>({kind,qty:b.queries.size,event_qty:b.events,last_at:b.last_at})).sort((a,b)=>b.qty-a.qty||b.event_qty-a.event_qty);
+  const validPlateErrorPlates=[...validPlateErrorPlateMap.entries()].map(([plate,b])=>({plate,plate_key:plate,qty:b.queries.size,event_qty:b.events,last_at:b.last_at,kinds:[...b.kinds]})).sort((a,b)=>b.qty-a.qty||b.event_qty-a.event_qty||String(b.last_at||"").localeCompare(String(a.last_at||"")));
   const latestErrorByQuery=new Map<string,any>();
   for(const [index,e] of currentVersionRows.entries()){
     const queryId=String(e?.query_id||"").trim();
@@ -365,7 +396,7 @@ async function loadErrorInvestigation24h(now:string){
   const invalidPlateCases=allInvalidPlateCases.slice(-100).reverse();
   const missingPlateCases=allMissingPlateCases.slice(-100).reverse();
   const recent=currentVersionRows.slice(-12).reverse().map((e:any)=>{const a=e?.metadata?.asfDiagnostic||{},plate=plateInfoOf(e);return {occurred_at:e?.occurred_at||null,installation_id:shortId(e?.installation_id),query_id:shortId(e?.query_id),browser:e?.browser||"Unknown",matricula:plate.matricula||null,plate_status:plate.plate_status,error_type:a.asfErrorType||"unknown",transport:a.asfTransport||null,relay_latency_ms:a.asfRelayLatencyMs??null,http_status:a.asfHttpStatus??null,duration_ms:a.asfDurationMs??null,response_hash:a.asfResponseHash||null,response_class:a.asfResponseClass||null,graphql_error_count:a.asfGraphqlErrorCount??null,response_bytes:a.asfResponseBytes??null,parse_path:a.asfParsePath||null,build_id:e?.metadata?.build_id||a.build_id||null};});
-  return {generated_at:now,current_app_version:CURRENT_APP_VERSION,errors_24h:rows.length,error_queries_24h:new Set(rows.map((e:any)=>String(e?.query_id||"")).filter(Boolean)).size,current_version_errors:new Set(currentVersionRows.map((e:any)=>String(e?.query_id||"")).filter(Boolean)).size,current_version_error_events:currentVersionRows.length,current_version_installations:new Set(currentVersionRows.map((e:any)=>String(e?.installation_id||""))).size,current_version_plates:new Set(allValidPlateCases.map((e:any)=>e.matricula_normalizada).filter(Boolean)).size,current_version_invalid_plates:new Set(allInvalidPlateCases.map((e:any)=>e.matricula_normalizada||e.matricula).filter(Boolean)).size,current_version_missing_plate_cases_count:allMissingPlateCases.length,current_version_invalid_plate_cases:invalidPlateCases,current_version_missing_plate_cases:missingPlateCases,current_version_hashes:byHash.size,current_version_types:typeRows,current_version_hashes_top:hashRows,current_version_installations_top:installRows,current_version_bursts_5m:burstRows,current_version_plate_cases:plateCases,latest_current_version:recent};
+  return {generated_at:now,current_app_version:CURRENT_APP_VERSION,errors_24h:rows.length,error_queries_24h:new Set(rows.map((e:any)=>String(e?.query_id||"")).filter(Boolean)).size,current_version_errors:new Set(currentVersionRows.map((e:any)=>String(e?.query_id||"")).filter(Boolean)).size,current_version_error_events:currentVersionRows.length,current_version_installations:new Set(currentVersionRows.map((e:any)=>String(e?.installation_id||"")).filter(Boolean)).size,valid_plate_error_queries_24h:countDistinctQueries(validPlateErrorRows),valid_plate_error_events_24h:validPlateErrorRows.length,valid_plate_error_types_24h:validPlateErrorTypes,valid_plate_error_plates_24h:validPlateErrorPlates,current_version_valid_error_queries:countDistinctQueries(currentVersionValidErrorRows),current_version_valid_error_events:currentVersionValidErrorRows.length,current_version_valid_error_installations:new Set(currentVersionValidErrorRows.map((e:any)=>String(e?.installation_id||"")).filter(Boolean)).size,current_version_plates:new Set(allValidPlateCases.map((e:any)=>e.matricula_normalizada).filter(Boolean)).size,current_version_invalid_plates:new Set(allInvalidPlateCases.map((e:any)=>e.matricula_normalizada||e.matricula).filter(Boolean)).size,current_version_missing_plate_cases_count:allMissingPlateCases.length,current_version_invalid_plate_cases:invalidPlateCases,current_version_missing_plate_cases:missingPlateCases,current_version_hashes:byHash.size,current_version_types:typeRows,current_version_hashes_top:hashRows,current_version_installations_top:installRows,current_version_bursts_5m:burstRows,current_version_plate_cases:plateCases,latest_current_version:recent};
 }
 async function loadLifetime(now:string){
   async function resetAllAt(){
