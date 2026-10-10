@@ -562,15 +562,21 @@ Deno.serve(async (req) => {
     const settled = await Promise.allSettled([
       rpc("verix2_admin_analytics",{p_now:now}),
       rpc("verix2_asf_diagnostics",{p_now:now,p_recent_limit:25}),
-      resetState()
+      resetState(),
+      rpc("verix2_consulted_installations_3m",{p_now:now})
     ]);
 
     const errors:any = {};
     const analytics = settled[0].status==="fulfilled" ? settled[0].value : {};
     const diagnostics = settled[1].status==="fulfilled" ? settled[1].value : {};
     const resetAt = settled[2].status==="fulfilled" ? settled[2].value : null;
+    const recentConsultedRaw = settled[3].status==="fulfilled" ? settled[3].value : null;
+    const recentConsultedNumeric = recentConsultedRaw==null ? null : Number(recentConsultedRaw);
+    const recentConsulted3m = recentConsultedNumeric!==null && Number.isFinite(recentConsultedNumeric)
+      ? recentConsultedNumeric
+      : null;
 
-    for(const [i,name] of [[0,"analytics"],[1,"diagnostics"],[2,"reset"]] as const) {
+    for(const [i,name] of [[0,"analytics"],[1,"diagnostics"],[2,"reset"],[3,"recent_query_presence"]] as const) {
       if(settled[i].status==="rejected") {
         const reason:any=settled[i].reason;
         errors[name]=String(reason?.message||reason);
@@ -580,6 +586,14 @@ Deno.serve(async (req) => {
     const analyticsObj = analytics && typeof analytics==="object"
       ? analytics
       : {};
+    const overviewForAdmin = {
+      ...(analyticsObj.overview && typeof analyticsObj.overview==="object" ? analyticsObj.overview : {}),
+      consulted_3m:recentConsulted3m
+    };
+    const analyticsForAdmin = {
+      ...analyticsObj,
+      overview:overviewForAdmin
+    };
 
     const payload = {
       ok:true,
@@ -587,8 +601,8 @@ Deno.serve(async (req) => {
       current_app_version:CURRENT_APP_VERSION,
       reset24hAt:resetAt?.reset_24h_at || null,
       resetAllAt:resetAt?.reset_all_at || null,
-      overview:analyticsObj.overview || null,
-      analytics:analyticsObj,
+      overview:overviewForAdmin,
+      analytics:analyticsForAdmin,
       diagnostics:diagnostics || {},
       investigation:{},
       lifetime:{},

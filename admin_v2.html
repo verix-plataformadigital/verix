@@ -251,7 +251,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
         </div>
 
         <div class="grid g4 primary-kpis" id="dashCards"></div>
-        <div class="grid g3 secondary-kpis" id="dashSecondaryCards" style="margin-top:8px"></div>
+        <div class="grid g4 secondary-kpis" id="dashSecondaryCards" style="margin-top:8px"></div>
 
         <div class="dashboard-section-title">Acompanhamento operacional</div>
         <div class="grid g2 dashboard-attention">
@@ -496,9 +496,9 @@ function renderLoadFailure(){
  hosts.forEach(id=>{const host=$(id);if(host&&host.querySelector('.skeleton,.skeleton-chart,.skeleton-grid'))host.innerHTML='<div class="empty">Os dados ainda não estão disponíveis.</div>'});
 }
 function wireDashboardDrilldowns(){
- const routes={'ATIVOS AGORA':'usage','INSTALAÇÕES':'usage','CONSULTAS DE SEGURO':'insurance','COM SEGURO':'insurance','SEM REGISTO':'insurance','ERROS ASF':'errors','CINEMÓMETRO':'speed'};
+ const routes={'ONLINE AGORA':'usage','SESSÕES DE BROWSER':'usage','INSTALAÇÕES':'usage','CONSULTAS DE SEGURO':'insurance','COM SEGURO':'insurance','SEM REGISTO':'insurance','ERROS ASF':'errors','CINEMÓMETRO':'speed'};
  const host=$('dashCards');if(!host)return;
- host.querySelectorAll('.card').forEach(el=>{const label=el.querySelector('.label')?.textContent.trim();const page=routes[label];if(!page)return;el.dataset.drillPage=page;el.setAttribute('role','button');el.setAttribute('tabindex','0');el.setAttribute('aria-label','Ver detalhes: '+label);if(['CONSULTAS DE SEGURO','SEM REGISTO','ERROS ASF'].includes(label))el.classList.add('key-metric')});
+ host.querySelectorAll('.card').forEach(el=>{const label=el.querySelector('.label')?.textContent.trim();const page=routes[label];if(!page)return;el.dataset.drillPage=page;el.setAttribute('role','button');el.setAttribute('tabindex','0');el.setAttribute('aria-label','Ver detalhes: '+label);if(['ONLINE AGORA','CONSULTAS DE SEGURO','SEM REGISTO','ERROS ASF'].includes(label))el.classList.add('key-metric')});
 }
 function activateDashboardCard(el){if(el?.dataset?.drillPage)switchPage(el.dataset.drillPage)}
 function parseSortValue(raw){
@@ -591,14 +591,14 @@ function renderDashboard(d){
  const users=Number(o['unique_'+currentPeriod]||0),lookups=Number(p.started||0),fin=Number(p.finals||0),insured=Number(p.insured||0),uninsured=Number(p.uninsured||0),errs=Number(p.errors||0),dec=insured+uninsured;
  const noRate=dec?100*uninsured/dec:null,errorRate=fin?100*errs/fin:null;
  $('dashCards').innerHTML=
-  card('ATIVOS AGORA',num(o.online_now),'Sessões VÉRIX com browser aberto. Presença por app_open/heartbeat nos últimos 90 s; não mede consultas nos últimos 3 min.','green')+
+  card('ONLINE AGORA',num(o.consulted_3m),'Instalações com pelo menos uma consulta iniciada nos últimos 3 minutos.','green')+
   card('CONSULTAS DE SEGURO',num(lookups),'Pedidos de consulta iniciados.','blue')+
   card('ERROS ASF',num(errs),pct(errorRate)+' dos resultados finais.','amber')+
   card('SEM REGISTO',num(uninsured),pct(noRate)+' das decisões; não confirma ausência de seguro.','red');
  $('dashSecondaryCards').innerHTML=
   card('INSTALAÇÕES',num(users),'Instalações com atividade no período.','cyan')+
   card('COM SEGURO',num(insured),pct(dec?100*insured/dec:null)+' das decisões.','green')+
-  card('CINEMÓMETRO',num(speed.calculations_24h),'Cálculos nas últimas 24 horas.','');
+  card('SESSÕES DE BROWSER',num(o.online_now),'Sessões VÉRIX com browser aberto. Presença por app_open/heartbeat nos últimos 90 s.','blue');
  wireDashboardDrilldowns();
  const errorPlates=a.errors?.plates||[];
  $('dashboardErrorPlates').innerHTML=errorPlates.length
