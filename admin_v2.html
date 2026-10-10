@@ -534,7 +534,7 @@ button:focus-visible,input:focus-visible,[tabindex="0"]:focus-visible{outline:3p
       </section>
 
       <section class="page" data-page="errors">
-        <div class="page-head"><div><h2>Erros</h2><p>Aqui interessa perceber o problema, a frequência e onde aparece.</p></div></div>
+        <div class="page-head"><div><h2>Erros</h2><p>As estatísticas resumidas contam apenas erros com matrícula de formato português válido. Entradas inválidas e sem matrícula ficam registadas nas listas abaixo.</p></div></div>
         <div class="error-tools">
           <label for="errorSearch">Pesquisar nos erros</label>
           <input id="errorSearch" type="search" placeholder="Tipo, instalação, assinatura…" autocomplete="off" aria-controls="errorTypes errorBursts errorInstallations errorSignatures errorTechnical">
@@ -820,7 +820,7 @@ function renderInsuranceNoCases(cases){
  host.innerHTML=table(['MATRÍCULA','DATA E HORA DA CONSULTA'],rows.map(x=>'<tr>'+td('<strong>'+esc(x.matricula||'—')+'</strong>')+td(datePT(x.occurred_at))+'</tr>'));
 }
 function renderInsurance(d){
- const p=period(),a=d.analytics||{},yes=Number(p.insured||0),no=Number(p.uninsured||0),err=Number(p.errors||0),started=Number(p.started||0),fin=Number(p.finals||0),dec=yes+no;
+ const p=period(),a=d.analytics||{},inv=d.investigation||{},yes=Number(p.insured||0),no=Number(p.uninsured||0),err=Number(p.errors_valid_plate??0),started=Number(p.started||0),fin=Number(p.finals||0),dec=yes+no;
  const errorRate=fin?100*err/fin:null,noRate=dec?100*no/dec:null;
  $('insuranceUpdated').textContent='Dados atualizados em '+datePT(d.generatedAt);
  $('insurancePeriodLabel').textContent=currentPeriod==='total'?'HISTÓRICO TOTAL':currentPeriod.toUpperCase();
@@ -843,9 +843,9 @@ function renderInsurance(d){
   '</div>';
  const q=a.insurance_quality||{};const diag=d.diagnostics?.quality_24h||{};
  /* As métricas de latência são renderizadas na página Desempenho. */
- $('insuranceCompare').innerHTML=table(['PERÍODO','CONSULTAS','RESULTADOS','COM SEGURO','SEM REGISTO','ERROS'],['24h','7d','30d','total'].map(k=>{const x=a.insurance?.[k]||{};const label=k==='total'?'HISTÓRICO TOTAL':k.toUpperCase();return '<tr>'+td('<strong>'+label+'</strong>')+td(fmt(x.started))+td(fmt(x.finals))+td(fmt(x.insured))+td(fmt(x.uninsured))+td(fmt(x.errors))+'</tr>'}));
- const types=a.errors?.types||[];barList('insuranceErrors',types.map(x=>({label:x.kind,value:x.qty})),'red');
- const plates=a.errors?.plates||[];$('insurancePlates').innerHTML=table(['MATRÍCULA','CONSULTAS','EVENTOS','ÚLTIMO','TIPOS'],plates.slice(0,20).map(x=>'<tr>'+td('<strong>'+esc(x.plate||x.plate_key||'—')+'</strong>')+td(fmt(x.qty))+td(fmt(x.event_qty??x.qty))+td(datePT(x.last_at))+td(esc((x.kinds||[]).join(', ')||'—'))+'</tr>'));
+ $('insuranceCompare').innerHTML=table(['PERÍODO','CONSULTAS','RESULTADOS','COM SEGURO','SEM REGISTO','ERROS'],['24h','7d','30d','total'].map(k=>{const x=a.insurance?.[k]||{};const label=k==='total'?'HISTÓRICO TOTAL':k.toUpperCase();return '<tr>'+td('<strong>'+label+'</strong>')+td(fmt(x.started))+td(fmt(x.finals))+td(fmt(x.insured))+td(fmt(x.uninsured))+td(fmt(x.errors_valid_plate??0))+'</tr>'}));
+ const types=inv.valid_plate_error_types_24h||[];barList('insuranceErrors',types.map(x=>({label:x.kind,value:x.qty})),'red');
+ const plates=inv.valid_plate_error_plates_24h||[];$('insurancePlates').innerHTML=table(['MATRÍCULA','CONSULTAS','EVENTOS','ÚLTIMO','TIPOS'],plates.slice(0,20).map(x=>'<tr>'+td('<strong>'+esc(x.plate||x.plate_key||'—')+'</strong>')+td(fmt(x.qty))+td(fmt(x.event_qty??x.qty))+td(datePT(x.last_at))+td(esc((x.kinds||[]).join(', ')||'—'))+'</tr>'));
  applyPlateErrorSearch();
  const sig=a.errors?.signatures||[];$('insuranceTechnical').innerHTML=
   '<div class="kpi-strip">'+metric('Assinaturas repetidas',num(sig.length))+metric('P50 ASF',q.latency_p50_ms==null?'—':fmt(q.latency_p50_ms)+' ms')+metric('P95 ASF',q.latency_p95_ms==null?'—':fmt(q.latency_p95_ms)+' ms')+metric('Pendentes',num(p.pending))+'</div>'+
@@ -908,17 +908,19 @@ function renderErrors(d){
  const appVersion=String(inv.current_app_version||d.current_app_version||"");
  const versionLabel=appVersion?esc(appVersion):"ATUAL";
  const versionPhrase=appVersion?"na versão "+esc(appVersion):"na versão atual";
- const total=Number(inv.error_queries_24h ?? (e.types||[]).reduce((s,x)=>s+Number(x.qty||0),0));
+ const valid24h=d.analytics?.insurance?.['24h']||{};
+ const total=Number(valid24h.errors_valid_plate??inv.valid_plate_error_queries_24h??0);
  $('errorCards').innerHTML=
-  card('CONSULTAS COM ERRO NAS 24 H',num(total),'Consultas distintas em todas as versões.','red')+
-  card('EVENTOS DE ERRO NAS 24 H',num(inv.errors_24h),'Eventos técnicos brutos; podem repetir.','amber')+
-  card('CONSULTAS COM ERRO DA VERSÃO '+versionLabel,num(inv.current_version_errors),'Consultas distintas da versão atual.')+
-  card('EVENTOS DE ERRO DA VERSÃO '+versionLabel,num(inv.current_version_error_events),'Eventos técnicos brutos da versão atual.')+
-  card('INSTALAÇÕES AFETADAS',num(inv.current_version_installations),'Onde apareceu uma consulta com erro nesta versão.')+
+  card('CONSULTAS COM ERRO NAS 24 H',num(total),'Consultas com erro e matrícula de formato português válido.','red')+
+  card('EVENTOS DE ERRO NAS 24 H',num(inv.valid_plate_error_events_24h),'Eventos de erro associados a matrícula de formato válido.','amber')+
+  card('CONSULTAS COM ERRO DA VERSÃO '+versionLabel,num(inv.current_version_valid_error_queries),'Consultas distintas da versão atual com matrícula válida.')+
+  card('EVENTOS DE ERRO DA VERSÃO '+versionLabel,num(inv.current_version_valid_error_events),'Eventos de erro da versão atual com matrícula válida.')+
+  card('INSTALAÇÕES AFETADAS',num(inv.current_version_valid_error_installations),'Instalações com erro e matrícula de formato válido nesta versão.')+
   card('MATRÍCULAS COM FORMATO VÁLIDO',num(inv.current_version_plates),'Valores distintos no formato português, com ou sem hífen.')+
   card('ENTRADAS COM FORMATO INVÁLIDO',num(inv.current_version_invalid_plates),'Valores distintos fora das séries de matrículas reconhecidas.')+
   card('ERROS SEM MATRÍCULA CAPTURADA',num(inv.current_version_missing_plate_cases_count),'Casos sem matrícula nos dados recebidos.');
- $('errorTypes').innerHTML=table(['TIPO','CONSULTAS','EVENTOS','ÚLTIMO REGISTO'],(e.types||[]).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'Desconhecido')+'</span>')+td('<strong>'+fmt(x.qty)+'</strong>')+td(fmt(x.event_qty??x.qty))+td(datePT(x.last_at))+'</tr>'));
+ const validErrorTypes=inv.valid_plate_error_types_24h||[];
+ $('errorTypes').innerHTML=table(['TIPO','CONSULTAS','EVENTOS','ÚLTIMO REGISTO'],validErrorTypes.map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'Desconhecido')+'</span>')+td('<strong>'+fmt(x.qty)+'</strong>')+td(fmt(x.event_qty??x.qty))+td(datePT(x.last_at))+'</tr>'));
  const bursts=inv.current_version_bursts_5m||[];$('errorBursts').innerHTML=table(['HORA','CONSULTAS','EVENTOS'],bursts.slice(0,12).map(x=>'<tr>'+td('<strong>'+datePT(x.start)+'</strong>')+td('<strong>'+fmt(x.count)+'</strong>')+td(fmt(x.event_count??x.count))+'</tr>'));
  $('errorReading').innerHTML=buildErrorReading(d);
  $('errorInstallations').innerHTML=table(['IP DO POSTO','SESSÃO / TURNO','INSTALAÇÕES','CONSULTAS','EVENTOS','ÚLTIMA ATIVIDADE'],(e.installations||[]).slice(0,15).map(x=>'<tr>'+td('<strong>'+esc(x.client_ip||'IP não recolhido')+'</strong>')+td(esc(x.session_label||'Sessão sem registo'))+td(fmt(x.installations??0))+td(fmt(x.qty))+td(fmt(x.event_qty??x.qty))+td(datePT(x.session_last_seen||x.last_at))+'</tr>'));
