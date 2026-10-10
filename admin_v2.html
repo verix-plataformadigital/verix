@@ -692,7 +692,7 @@ function renderErrors(d){
  $('errorTypes').innerHTML=table(['TIPO','CONSULTAS','EVENTOS','ÚLTIMO REGISTO'],(e.types||[]).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'Desconhecido')+'</span>')+td('<strong>'+fmt(x.qty)+'</strong>')+td(fmt(x.event_qty??x.qty))+td(datePT(x.last_at))+'</tr>'));
  const bursts=inv.current_version_bursts_5m||[];$('errorBursts').innerHTML=table(['HORA','CONSULTAS','EVENTOS'],bursts.slice(0,12).map(x=>'<tr>'+td('<strong>'+datePT(x.start)+'</strong>')+td('<strong>'+fmt(x.count)+'</strong>')+td(fmt(x.event_count??x.count))+'</tr>'));
  $('errorReading').innerHTML=buildErrorReading(d);
- $('errorInstallations').innerHTML=table(['IP OBSERVADO','INSTALAÇÕES','CONSULTAS','EVENTOS'],(e.installations||[]).slice(0,15).map(x=>'<tr>'+td('<strong>'+esc(x.client_ip||'IP não recolhido')+'</strong>')+td(fmt(x.installations??0))+td(fmt(x.qty))+td(fmt(x.event_qty??x.qty))+'</tr>'));
+ $('errorInstallations').innerHTML=table(['IP DO POSTO','SESSÃO / TURNO','INSTALAÇÕES','CONSULTAS','EVENTOS','ÚLTIMA ATIVIDADE'],(e.installations||[]).slice(0,15).map(x=>'<tr>'+td('<strong>'+esc(x.client_ip||'IP não recolhido')+'</strong>')+td(esc(x.session_label||'Sessão sem registo'))+td(fmt(x.installations??0))+td(fmt(x.qty))+td(fmt(x.event_qty??x.qty))+td(datePT(x.session_last_seen||x.last_at))+'</tr>'));
  $('errorSignatures').innerHTML=table(['TIPO','CONSULTAS','EVENTOS','INSTALAÇÕES'],(e.signatures||[]).slice(0,15).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'—')+'</span>')+td(fmt(x.qty))+td(fmt(x.event_qty??x.qty))+td(fmt(x.installs))+'</tr>'));
  const plateCases=inv.current_version_plate_cases;
  $('errorPlates').innerHTML=!Array.isArray(plateCases)
