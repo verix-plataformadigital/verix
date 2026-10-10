@@ -276,27 +276,36 @@ function sanitizeErrorPlateMetadata(metadata: Record<string, unknown>): void {
   const diag = diagnostic && typeof diagnostic === "object" && !Array.isArray(diagnostic)
     ? diagnostic as Record<string, unknown>
     : null;
-  const candidates = [diag?.matricula, metadata.matriculaNormalizada, metadata.matricula];
-  const validRaw = candidates
+  // The unprocessed input is the source of truth. A derived value may already have removed
+  // punctuation, which would incorrectly turn a malformed entry into a valid-looking plate.
+  const candidates = [metadata.matricula, diag?.matricula, metadata.matriculaNormalizada];
+  const raw = candidates
     .map(value => String(value ?? "").trim())
-    .find(value => {
-      const normalized = value.toUpperCase().replace(/[^A-Z0-9]/g, "");
-      return /^(?:[A-Z]{2}[0-9]{4}|[0-9]{4}[A-Z]{2}|[0-9]{2}[A-Z]{2}[0-9]{2}|[A-Z]{2}[0-9]{2}[A-Z]{2})$/.test(normalized);
-    });
+    .find(value => value.length > 0);
 
-  if (!validRaw) {
+  if (!raw) {
     delete metadata.matricula;
     delete metadata.matriculaNormalizada;
     if (diag) delete diag.matricula;
     return;
   }
 
-  const normalized = validRaw.toUpperCase().replace(/[^A-Z0-9]/g, "");
-  // Accept only complete Portuguese plate layouts; partial OCR/input fragments
-  // must never enter the stored error details as vehicle registrations.
-  if (diag) diag.matricula = validRaw;
-  else metadata.matricula = validRaw;
-  metadata.matriculaNormalizada = normalized;
+  // Only the expected separators are ignored: valid Portuguese formats work with or without
+  // hyphens/spaces. Other punctuation stays in the value and fails the format check.
+  const normalized = raw.toUpperCase().replace(/[\s-]/g, "");
+  const isValidFormat = /^(?:[A-Z]{2}[0-9]{4}|[0-9]{4}[A-Z]{2}|[0-9]{2}[A-Z]{2}[0-9]{2}|[A-Z]{2}[0-9]{2}[A-Z]{2})$/.test(normalized);
+  if (isValidFormat) {
+    if (diag) diag.matricula = raw;
+    else metadata.matricula = raw;
+    metadata.matriculaNormalizada = normalized;
+    return;
+  }
+
+  // This function is only applied to ASF error events. Keep the bounded captured input so
+  // the admin panel can list invalid formats separately, but never label it as normalized/valid.
+  metadata.matricula = raw;
+  delete metadata.matriculaNormalizada;
+  if (diag) delete diag.matricula;
 }
 
 function clientIp(req: Request): string {
