@@ -209,19 +209,8 @@ function sessionPattern(rows){
   };
 }
 
-async function resetBaselineStart(): Promise<string> {
-  const q=new URLSearchParams({select:"reset_all_at",singleton:"eq.true",limit:"1"});
-  const r=await fetch(supabaseUrl+"/rest/v1/verix2_dashboard_state?"+q.toString(),{headers:{apikey:serviceKey,Authorization:"Bearer "+serviceKey}});
-  const t=await r.text();
-  if(!r.ok) throw new Error("reset_baseline:"+t);
-  const rows=t?JSON.parse(t):[];
-  return rows?.[0]?.reset_all_at || "1970-01-01T00:00:00Z";
-}
-async function windowStartAfterReset(hours:number): Promise<string> {
-  const startAt=await resetBaselineStart();
-  const baseline=Date.parse(startAt);
-  const rolling=Date.now()-hours*60*60*1000;
-  return new Date(Math.max(rolling,Number.isFinite(baseline)?baseline:0)).toISOString();
+function rollingWindowStart(hours:number): string {
+  return new Date(Date.now()-hours*60*60*1000).toISOString();
 }
 async function loadInsuranceNoCases(now:string){
   // PostgREST can cap an individual response at 1,000 rows. Page until the
@@ -255,7 +244,7 @@ async function loadInsuranceNoCases(now:string){
 async function loadErrorInvestigation24h(now:string){
   const pageSize=1000, maxPages=100;
   const rows:any[]=[];
-  const startAt=await windowStartAfterReset(24);
+  const startAt=rollingWindowStart(24);
   for(let page=0;page<maxPages;page++){
     const qs = new URLSearchParams();
     qs.set("select","event_id,occurred_at,event,installation_id,query_id,app_version,browser,metadata");
@@ -350,7 +339,7 @@ async function loadCinemometerAnalytics24h(now:string){
   const qs = new URLSearchParams();
   qs.set("select","occurred_at,event,session_id,installation_id,app_version,browser,metadata");
   qs.set("event","in.(cinemometer_speed_entry,cinemometer_calculation,cinemometer_copy_code,cinemometer_copy_text,cinemometer_copy_location,cinemometer_profile_select,cinemometer_profile_new,cinemometer_profile_duplicate,cinemometer_profile_delete,cinemometer_profile_save)");
-  qs.set("occurred_at","gte." + await windowStartAfterReset(24));
+  qs.set("occurred_at","gte." + rollingWindowStart(24));
   qs.set("order","occurred_at.asc");
   qs.set("limit","5000");
   const rr=await fetch(supabaseUrl+"/rest/v1/verix2_events?"+qs.toString(),{headers:{apikey:serviceKey,Authorization:"Bearer "+serviceKey}});

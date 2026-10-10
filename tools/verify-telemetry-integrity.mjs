@@ -36,7 +36,7 @@ assert.match(stats, /insurance_no_cases_page_limit/, "an unexpectedly huge list 
 assert.match(admin, /MATRÍCULAS COM RESULTADO “SEM REGISTO”/);
 assert.match(admin, /renderInsuranceNoCases/);
 assert.match(admin, /id="errorPlates"/, "Admin must expose a dedicated ASF error-plate list");
-assert.match(admin, /current_version_plate_cases\|\|\[\]/, "Admin must render actual error plate cases");
+assert.ok(admin.includes("const plateCases=inv.current_version_plate_cases;"), "Admin must distinguish missing error details from an empty loaded list");
 assert.match(stats, /current_version_plate_cases:plateCases/, "stats must return error plate cases to Admin");
 assert.ok(stats.includes("const candidates=[e?.metadata?.asfDiagnostic?.matricula,e?.metadata?.matriculaNormalizada,e?.metadata?.matricula]"), "error analytics must prefer a valid plate from supported metadata fields");
 assert.match(endpoint, /if \(event !== "vehicle_insurance_error"\) \{[\s\S]*?delete metadata\.matriculaNormalizada;/, "no-record events must not retain plate metadata in the general event stream");
@@ -106,11 +106,12 @@ const presenceMigration = fs.readFileSync("supabase/migrations/20261009045708_fi
 assert.match(endpoint, /"session_close"/, "server must accept browser-close presence events");
 assert.match(telemetryScript, /push\('session_close', null\)/, "pagehide must emit a browser-close event");
 assert.match(telemetryScript, /navigator\.sendBeacon\([\s\S]*events: \[closingEvent\]/, "browser-close event must be sent immediately through Beacon");
-assert.match(presenceMigration, /'online_now',\(SELECT count\(\*\)/, "online_now must count sessions, not installations");
-assert.match(presenceMigration, /last_presence >= p_now-interval '90 seconds'/, "online presence must expire after the heartbeat lease");
-assert.match(presenceMigration, /event IN \('app_open','heartbeat','session_close'\)/, "online presence must use lifecycle events only");
-assert.match(presenceMigration, /last_close IS NULL OR last_presence > last_close/, "a later close event must remove a session from the active count");
-assert.ok(admin.includes("Sessões VÉRIX com browser aberto."), "Ativos agora must describe browser sessions, not installations");
+assert.match(presenceMigration, /last_presence >= p_now-interval '90 seconds'/, "historical browser-presence migration must remain available for audit");
+const currentOnlineMigration = fs.readFileSync("supabase/migrations/20261010070000_fix_rolling_windows_and_online_consultation_metric.sql", "utf8");
+assert.match(currentOnlineMigration, /'online_now',\(SELECT count\(DISTINCT installation_id\)/, "current online status must count distinct installations");
+assert.match(currentOnlineMigration, /event='vehicle_lookup'/, "online status must require a real consultation");
+assert.match(currentOnlineMigration, /interval '3 minutes'/, "online status must use the requested three-minute window");
+assert.ok(admin.includes("Instalações que fizeram uma consulta nos últimos 3 minutos."), "Online agora must explain the consultation-based three-minute rule");
 assert.ok(errorPlateCountMigration.includes("count(DISTINCT e.query_id) qty"), "error plate totals must count unique consultation IDs");
 assert.ok(errorPlateCountMigration.includes("count(*) event_qty"), "raw error event volume must remain visible separately");
 assert.ok(errorPlateCountMigration.includes("^(?:[A-Z]{2}[0-9]{4}|[0-9]{4}[A-Z]{2}|[0-9]{2}[A-Z]{2}[0-9]{2}|[A-Z]{2}[0-9]{2}[A-Z]{2})$"), "error plate table must allow only complete Portuguese plate formats");
