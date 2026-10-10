@@ -112,6 +112,9 @@ assert.match(currentOnlineMigration, /'online_now',\(SELECT count\(DISTINCT inst
 assert.match(currentOnlineMigration, /event='vehicle_lookup'/, "online status must require a real consultation");
 assert.match(currentOnlineMigration, /interval '3 minutes'/, "online status must use the requested three-minute window");
 assert.ok(admin.includes("Instalações que fizeram uma consulta nos últimos 3 minutos."), "Online agora must explain the consultation-based three-minute rule");
+const rollingPeriodsMigration = fs.readFileSync("supabase/migrations/20261010073000_make_7d_30d_windows_rolling.sql", "utf8");
+assert.match(rollingPeriodsMigration, /p_now - interval '7 days' AS s7/, "7-day period must remain a true rolling window after a reset");
+assert.match(rollingPeriodsMigration, /p_now - interval '30 days' AS s30/, "30-day event source must include a full rolling month, including the rolling 24-hour slice");
 assert.ok(errorPlateCountMigration.includes("count(DISTINCT e.query_id) qty"), "error plate totals must count unique consultation IDs");
 assert.ok(errorPlateCountMigration.includes("count(*) event_qty"), "raw error event volume must remain visible separately");
 assert.ok(errorPlateCountMigration.includes("^(?:[A-Z]{2}[0-9]{4}|[0-9]{4}[A-Z]{2}|[0-9]{2}[A-Z]{2}[0-9]{2}|[A-Z]{2}[0-9]{2}[A-Z]{2})$"), "error plate table must allow only complete Portuguese plate formats");
