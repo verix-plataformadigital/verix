@@ -339,29 +339,7 @@ let ultimaMatriculaLivrete = "";
  }
 
 
- function formatarMatriculaVeiculo(valor) {
-   let value = String(valor || '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-   let formattedValue = value.replace(/(.{2})(.{2})?(.*)/, (_, p1, p2, p3) =>
-     [p1, p2, p3].filter(Boolean).join('-')
-   );
-   return formattedValue.substring(0, 8);
- }
-
- function formatMatricula(input) {
-   const raw = String(input.value || '');
-   if (/[^a-zA-Z0-9 -]/.test(raw)) {
-     input.value = raw.slice(0, 8);
-     return;
-   }
-   // Preserve invalid input exactly: never strip separators or rewrite it into a valid-looking plate.
-   if (!validarFormatoMatriculaVeiculo(raw).valid) {
-     input.value = raw.slice(0, 8);
-     return;
-   }
-   input.value = formatarMatriculaVeiculo(raw);
- }
-
- function validarFormatoMatriculaVeiculo(valor) {
+ function validarFormatoMatriculaBase(valor) {
    const raw = String(valor || '').trim().toUpperCase();
    if (/^[A-Z]{2}[ -]?[0-9]{2}[ -]?[0-9]{2}$/.test(raw)
      || /^[0-9]{2}[ -]?[0-9]{2}[ -]?[A-Z]{2}$/.test(raw)
@@ -369,9 +347,50 @@ let ultimaMatriculaLivrete = "";
    const atual = raw.match(/^([A-Z]{2})[ -]?[0-9]{2}[ -]?([A-Z]{2})$/);
    if (!atual) return { valid: false, reason: 'formato_ou_posicoes' };
    const inicial = atual[1], final = atual[2];
+   // Regra IMT: não usar vogais nas posições 2 e 6, salvo grupo com duas vogais iguais.
    if (/^(?:AA|EE|II|OO|UU)$/.test(inicial) || /^(?:AA|EE|II|OO|UU)$/.test(final)) return { valid: true, reason: null };
    if (/[AEIOU]/.test(inicial[1]) || /[AEIOU]/.test(final[1])) return { valid: false, reason: 'regra_vogais_serie_atual' };
    return { valid: true, reason: null };
+ }
+
+ function validarFormatoMatriculaVeiculo(valor) {
+   const raw = String(valor || '').trim().toUpperCase();
+   const base = validarFormatoMatriculaBase(raw);
+   if (base.valid) return base;
+   // Máquinas industriais: matrícula normal seguida de uma letra de classe A-H.
+   const maquina = raw.match(/^(.+?)[ -]?([A-H])$/);
+   if (maquina && validarFormatoMatriculaBase(maquina[1]).valid) {
+     return { valid: true, reason: null, tipo: 'maquina_industrial' };
+   }
+   return { valid: false, reason: base.reason || 'formato_ou_posicoes' };
+ }
+
+ function formatarMatriculaVeiculo(valor) {
+   const raw = String(valor || '').trim().toUpperCase();
+   const maquina = raw.match(/^(.+?)[ -]?([A-H])$/);
+   if (maquina && validarFormatoMatriculaBase(maquina[1]).valid) {
+     const base = maquina[1].replace(/[ -]/g, '');
+     return base.slice(0, 2) + '-' + base.slice(2, 4) + '-' + base.slice(4, 6) + '-' + maquina[2];
+   }
+   const base = raw.replace(/[ -]/g, '');
+   if (base.length === 6 && validarFormatoMatriculaBase(raw).valid) {
+     return base.slice(0, 2) + '-' + base.slice(2, 4) + '-' + base.slice(4, 6);
+   }
+   return raw;
+ }
+
+ function formatMatricula(input) {
+   const raw = String(input.value || '');
+   if (/[^a-zA-Z0-9 -]/.test(raw)) {
+     input.value = raw.slice(0, 30);
+     return;
+   }
+   // Preserve malformed text verbatim instead of silently repairing it.
+   if (!validarFormatoMatriculaVeiculo(raw).valid) {
+     input.value = raw.slice(0, 30);
+     return;
+   }
+   input.value = formatarMatriculaVeiculo(raw);
  }
 
  function validarFormatoMatriculaReboque(valor) {
@@ -6374,7 +6393,7 @@ html body #asfRateWidget .asf-rate-sub[data-window-state="ready"]{
 
 <div class="cinematic-bg"></div>
 <div class="command"> <div class="brand"><div class="brand-notice"> <div class="brand-notice-title">Ferramenta de apoio ao serviço operacional <span>· Não oficial</span></div> <div class="brand-notice-text">Informação para <strong>apoio e consulta</strong>.<br>Confirme sempre a legislação, procedimentos e demais dados nas fontes oficiais antes da utilização em serviço.</div>
-</div></div> <div class="time" id="dataSistema"><span class="version-label">Versão 1.5</span><span class="date-label">-- --- ----</span></div> <div class="searchbar"><form onsubmit="submitConjunto(event)" autocomplete="off" style="display:flex;align-items:center;gap:13px"><div class="field"><label for="MatriculaVeiculo">VEÍCULO</label><input id="MatriculaVeiculo" name="verix_plate_v" maxlength="8" placeholder="11-AA-11" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" data-lpignore="true" data-form-type="other" oninput="formatMatricula(this)" onblur="formatMatricula(this)"></div><div class="field"><label for="MatriculaReboque">REBOQUE</label><input id="MatriculaReboque" name="verix_plate_r" placeholder="L-121212" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" data-lpignore="true" data-form-type="other" oninput="formatMatriculaReboque(this)"></div><button class="consult" type="submit">⌕ &nbsp; CONSULTAR</button></form></div> <div class="tools"><button class="tool green full" onclick="toggleFullscreen()" title="Ecrã inteiro">⛶</button><button class="tool" onclick="consultarIMTERRU()">IMT-ERRU</button><button class="tool" onclick="consultarINEM()">INEM</button><button class="tool" onclick="consultarWAZE()">WAZE</button></div>
+</div></div> <div class="time" id="dataSistema"><span class="version-label">Versão 1.5</span><span class="date-label">-- --- ----</span></div> <div class="searchbar"><form onsubmit="submitConjunto(event)" autocomplete="off" style="display:flex;align-items:center;gap:13px"><div class="field"><label for="MatriculaVeiculo">VEÍCULO</label><input id="MatriculaVeiculo" name="verix_plate_v" maxlength="30" placeholder="11-AA-11" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" data-lpignore="true" data-form-type="other" oninput="formatMatricula(this)" onblur="formatMatricula(this)"></div><div class="field"><label for="MatriculaReboque">REBOQUE</label><input id="MatriculaReboque" name="verix_plate_r" maxlength="30" placeholder="L-121212" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" data-lpignore="true" data-form-type="other" oninput="formatMatriculaReboque(this)"></div><button class="consult" type="submit">⌕ &nbsp; CONSULTAR</button></form></div> <div class="tools"><button class="tool green full" onclick="toggleFullscreen()" title="Ecrã inteiro">⛶</button><button class="tool" onclick="consultarIMTERRU()">IMT-ERRU</button><button class="tool" onclick="consultarINEM()">INEM</button><button class="tool" onclick="consultarWAZE()">WAZE</button></div>
 </div>
 <div class="rail rail-operacional"> <div class="rail-item rail-modern active" id="consultaRail" onclick="abrirModulo('consulta',this)" title="Consulta"> <div class="rail-modern-ico">⌕</div><span>CONSULTA</span><div class="rail-arrow">›</div> </div> <div class="rail-item rail-modern" onclick="abrirModulo('legislacao',this)" title="Legislação"> <div class="rail-modern-ico">▤</div><span>LEGISLAÇÃO</span><div class="rail-arrow">›</div> </div> <div class="rail-item rail-modern" onclick="abrirModulo('ferramentas',this)" title="Ferramentas"> <div class="rail-modern-ico">⚒</div><span>FERRAMENTAS</span><div class="rail-arrow">›</div> </div> <div class="rail-item rail-modern" onclick="abrirModulo('informacoes',this)" title="Informações"> <div class="rail-modern-ico">ⓘ</div><span>INFORMAÇÕES</span><div class="rail-arrow">›</div> </div> <div class="rail-spacer" aria-hidden="true"><span>+</span></div> <div class="rail-spacer" aria-hidden="true"><span>+</span></div> <div class="rail-item rail-modern rail-cinemometro" onclick="abrirModulo('cinemometro',this)" title="Cinemómetro"> <div class="cinemometro-icon" aria-hidden="true"> <svg viewBox="0 0 64 64" role="img"> <rect x="13" y="10" width="38" height="22" rx="5"></rect> <circle cx="24" cy="21" r="6"></circle> <circle cx="40" cy="21" r="6"></circle> <path d="M32 32v9M22 57l10-16 10 16M27 48h10"></path> <path d="M52 13l7 7M52 29l7-7"></path> </svg> </div> <div class="cinemometro-label"><span>CINEMÓMETRO</span></div> <div class="rail-arrow">›</div> </div> <div class="rail-item rail-modern" onclick="abrirModulo('definicoes',this)" title="Definições"> <div class="rail-modern-ico">⚙</div><span>DEFINIÇÕES</span><div class="rail-arrow">›</div> </div>
 </div>

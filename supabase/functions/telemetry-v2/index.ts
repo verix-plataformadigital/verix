@@ -273,7 +273,7 @@ function cleanMetadata(value: unknown): Record<string, unknown> {
   return out;
 }
 
-function isValidPortugueseVehiclePlateFormat(value: unknown): boolean {
+function isValidPortuguesePlateBaseFormat(value: unknown): boolean {
   const raw = String(value ?? "").trim().toUpperCase();
   if (/^[A-Z]{2}[ -]?[0-9]{2}[ -]?[0-9]{2}$/.test(raw)
     || /^[0-9]{2}[ -]?[0-9]{2}[ -]?[A-Z]{2}$/.test(raw)
@@ -283,6 +283,23 @@ function isValidPortugueseVehiclePlateFormat(value: unknown): boolean {
   const first = current[1], last = current[2];
   if (/^(?:AA|EE|II|OO|UU)$/.test(first) || /^(?:AA|EE|II|OO|UU)$/.test(last)) return true;
   return !/[AEIOU]/.test(first[1]) && !/[AEIOU]/.test(last[1]);
+}
+
+function isValidPortugueseTrailerPlateFormat(value: unknown): boolean {
+  return /^(?:AV|BE|BN|BR|CB|FA|GD|LE|PT|SA|SE|VC|VR|VI|AN|H|A|M|L|P|C|E)[ -]?[0-9]{1,6}$/i
+    .test(String(value ?? "").trim());
+}
+
+function isValidPortugueseVehiclePlateFormat(value: unknown): boolean {
+  const raw = String(value ?? "").trim().toUpperCase();
+  if (isValidPortuguesePlateBaseFormat(raw)) return true;
+
+  // Industrial machinery plates append a circulation-class letter (A-H) to a normal number.
+  const machine = raw.match(/^(.+?)[ -]?([A-H])$/);
+  if (machine && isValidPortuguesePlateBaseFormat(machine[1])) return true;
+
+  // Reboque/semi-reboque numbers use a regional service code plus a number.
+  return isValidPortugueseTrailerPlateFormat(raw);
 }
 
 function sanitizeErrorPlateMetadata(metadata: Record<string, unknown>): void {

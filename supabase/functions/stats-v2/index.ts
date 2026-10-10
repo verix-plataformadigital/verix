@@ -309,7 +309,7 @@ async function loadErrorInvestigation24h(now:string){
   // Validate the four Portuguese registration formats. Only spaces and hyphens are optional separators;
   // other characters remain in the value and therefore make the format invalid.
   const normalizePlate=(value:unknown)=>String(value??"").trim().toUpperCase().replace(/[ -]/g,"");
-  const validPortuguesePlate=(value:unknown)=>{
+  const validPortuguesePlateBase=(value:unknown)=>{
     const raw=String(value??"").trim().toUpperCase();
     if(/^[A-Z]{2}[ -]?[0-9]{2}[ -]?[0-9]{2}$/.test(raw)
       || /^[0-9]{2}[ -]?[0-9]{2}[ -]?[A-Z]{2}$/.test(raw)
@@ -319,6 +319,15 @@ async function loadErrorInvestigation24h(now:string){
     const first=current[1],last=current[2];
     if(/^(?:AA|EE|II|OO|UU)$/.test(first)||/^(?:AA|EE|II|OO|UU)$/.test(last))return true;
     return !/[AEIOU]/.test(first[1])&&!/[AEIOU]/.test(last[1]);
+  };
+  const validPortugueseTrailerPlate=(value:unknown)=>
+    /^(?:AV|BE|BN|BR|CB|FA|GD|LE|PT|SA|SE|VC|VR|VI|AN|H|A|M|L|P|C|E)[ -]?[0-9]{1,6}$/i.test(String(value??"").trim());
+  const validPortuguesePlate=(value:unknown)=>{
+    const raw=String(value??"").trim().toUpperCase();
+    if(validPortuguesePlateBase(raw))return true;
+    const machine=raw.match(/^(.+?)[ -]?([A-H])$/);
+    if(machine&&validPortuguesePlateBase(machine[1]))return true;
+    return validPortugueseTrailerPlate(raw);
   };
   const plateInfoOf=(e:any)=>{
     const candidates=[e?.metadata?.asfDiagnostic?.matricula,e?.metadata?.matriculaNormalizada,e?.metadata?.matricula];

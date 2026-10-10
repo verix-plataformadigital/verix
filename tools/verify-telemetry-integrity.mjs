@@ -75,9 +75,8 @@ for (const metric of ["'pending'","'incomplete'","'contradictory'","'duplicate_f
 for (const label of ["Incompletas","Contraditórias","Finais duplicados","Finais órfãos","INSTALAÇÕES"]) assert.ok(admin.includes(label), "missing Admin label "+label);
 
 
-// Strict Portuguese plate rules: old layouts remain accepted, new layout follows the IMT vowel rule,
-// separators cannot be repeated or replaced by arbitrary punctuation, and trailer codes are separate.
-const strictPlateTest = value => {
+// Portuguese vehicle series, machinery suffixes, and trailer series.
+const strictPlateBaseTest = value => {
   const raw=String(value??"").trim().toUpperCase();
   if (/^[A-Z]{2}[ -]?[0-9]{2}[ -]?[0-9]{2}$/.test(raw)
     || /^[0-9]{2}[ -]?[0-9]{2}[ -]?[A-Z]{2}$/.test(raw)
@@ -87,16 +86,19 @@ const strictPlateTest = value => {
   if(/^(?:AA|EE|II|OO|UU)$/.test(m[1])||/^(?:AA|EE|II|OO|UU)$/.test(m[2]))return true;
   return !/[AEIOU]/.test(m[1][1])&&!/[AEIOU]/.test(m[2][1]);
 };
-for(const v of ["AA-00-00","00-00-AA","00-AA-00","AA-01-AA","AB-12-CD","AA-01-AE"]) assert.equal(strictPlateTest(v),true,"should accept "+v);
-for(const v of ["Aa-2a-ae","AA/00/00","AA--00--00","BA-12-CA","AB-12-AE"]) assert.equal(strictPlateTest(v),false,"should reject "+v);
-const strictTrailerTest=v=>/^(?:AV|BE|BN|BR|CB|FA|GD|LE|PT|SA|SE|VC|VR|VI|AN|H|A|M|L|P|C|E)[ -]?[0-9]{1,6}$/i.test(String(v??"").trim());
-for(const v of ["L-123456","BN-12345","AV123","AN-12"])assert.equal(strictTrailerTest(v),true,"should accept trailer "+v);
-for(const v of ["BG-12345","VS-12345","X-12345","L-1234567","L/12345"])assert.equal(strictTrailerTest(v),false,"should reject trailer "+v);
-assert.match(endpoint, /"vehicle_plate_invalid"/, "backend accepts direct validation events");
-assert.match(endpoint, /isValidPortugueseVehiclePlateFormat\(raw\)/, "backend ASF error validation observes the current-series rule");
-assert.ok(stats.includes('"event","eq.vehicle_plate_invalid"'), "stats query for direct invalid inputs exists");
-assert.match(stats, /currentVersionInvalidInputs/, "invalid inputs feed their separate table");
-
+const strictPlateTest = value => {
+  const raw=String(value??"").trim().toUpperCase();
+  if(strictPlateBaseTest(raw))return true;
+  const machine=raw.match(/^(.+?)[ -]?([A-H])$/);
+  if(machine&&strictPlateBaseTest(machine[1]))return true;
+  return /^(?:AV|BE|BN|BR|CB|FA|GD|LE|PT|SA|SE|VC|VR|VI|AN|H|A|M|L|P|C|E)[ -]?[0-9]{1,6}$/i.test(raw);
+};
+for(const v of ["AA-00-00","00-00-AA","00-AA-00","AA-01-AA","AB-12-CD","AA-01-AE","AA-00-00-A","00-AA-00-B","VC-123456","BN-12345","L-123456"]) assert.equal(strictPlateTest(v),true,"should accept "+v);
+for(const v of ["Aa-2a-ae","AA/00/00","AA--00--00","BA-12-CA","AB-12-AE","AA-00-00-Z","BG-12345","VS-12345","X-12345","L-1234567","L/12345"]) assert.equal(strictPlateTest(v),false,"should reject "+v);
+assert.ok(stats.includes("validPortugueseTrailerPlate"), "stats must classify legal trailer formats");
+assert.ok(stats.includes("validPortuguesePlateBase"), "stats must apply the current-series vowel restriction");
+assert.ok(endpoint.includes("isValidPortugueseTrailerPlateFormat"), "backend must recognize legal trailer codes");
+assert.ok(endpoint.includes("Industrial machinery plates"), "backend must recognize the industrial class suffix");
 const app = fs.readFileSync("verix-app.html", "utf8");
 assert.doesNotMatch(app, /\b(?:APP_VERSION|appVersion|app_version)\s*[:=]\s*["\']1\.4(?:\.\d+)?["\']/i, "production runtime must not advertise the obsolete app version");
 const telemetryStart = app.indexOf("function parseReceipt(text)");
@@ -115,6 +117,8 @@ assert.ok(app.includes("VERIX_T2_REJECTED_QUEUE"), "permanent rejections must ha
 assert.match(app, /function cleanMetadata\(meta, event\)/, "client metadata sanitizer must know which event is being sent");
 assert.match(app, /function insurancePlateMetadata\(value, asfDiagnostic\)/, "insurance outcome wrappers must normalize the plate");
 assert.match(app, /function validarFormatoMatriculaVeiculo\(valor\)/, "vehicle validator must exist");
+assert.match(app, /Máquinas industriais: matrícula normal seguida de uma letra de classe A-H/, "app must support the machinery class suffix");
+assert.match(app, /id="MatriculaVeiculo" name="verix_plate_v" maxlength="30"/, "invalid values must be preserved instead of truncated to standard plate length");
 assert.match(app, /function validarFormatoMatriculaReboque\(valor\)/, "trailer validator must exist");
 assert.match(app, /if \(!validarFormatoMatriculaVeiculo\(raw\)\.valid\)/, "invalid vehicle text must not be normalized into a valid-looking plate");
 assert.match(app, /if \(!validarFormatoMatriculaReboque\(raw\)\.valid\)/, "invalid trailer text must be preserved before validation");

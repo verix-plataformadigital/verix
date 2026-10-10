@@ -916,7 +916,7 @@ function renderErrors(d){
   card('EVENTOS DE ERRO DA VERSÃO '+versionLabel,num(inv.current_version_error_events),'Eventos técnicos brutos da versão atual.')+
   card('INSTALAÇÕES AFETADAS',num(inv.current_version_installations),'Onde apareceu uma consulta com erro nesta versão.')+
   card('MATRÍCULAS COM FORMATO VÁLIDO',num(inv.current_version_plates),'Valores distintos no formato português, com ou sem hífen.')+
-  card('ENTRADAS COM FORMATO INVÁLIDO',num(inv.current_version_invalid_plates),'Valores distintos que não correspondem aos quatro formatos.')+
+  card('ENTRADAS COM FORMATO INVÁLIDO',num(inv.current_version_invalid_plates),'Valores distintos fora das séries de matrículas reconhecidas.')+
   card('ERROS SEM MATRÍCULA CAPTURADA',num(inv.current_version_missing_plate_cases_count),'Casos sem matrícula nos dados recebidos.');
  $('errorTypes').innerHTML=table(['TIPO','CONSULTAS','EVENTOS','ÚLTIMO REGISTO'],(e.types||[]).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'Desconhecido')+'</span>')+td('<strong>'+fmt(x.qty)+'</strong>')+td(fmt(x.event_qty??x.qty))+td(datePT(x.last_at))+'</tr>'));
  const bursts=inv.current_version_bursts_5m||[];$('errorBursts').innerHTML=table(['HORA','CONSULTAS','EVENTOS'],bursts.slice(0,12).map(x=>'<tr>'+td('<strong>'+datePT(x.start)+'</strong>')+td('<strong>'+fmt(x.count)+'</strong>')+td(fmt(x.event_count??x.count))+'</tr>'));
