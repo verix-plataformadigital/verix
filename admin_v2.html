@@ -1044,7 +1044,7 @@ async function loadDashboard(){
  }
 }
 async function csvCell(value){
- return '"'+String(value??'').replace(/"/g,'""').replace(/\\r?\\n/g,' ')+'"';
+ return '"'+String(value??'').replace(/"[\s\S]*?"/g,m=>m).replace(/[\r\n]+/g,' ')+'"';
 }
 function exportCurrentPageCsv(){
  const page=document.querySelector('.page.active');
@@ -1070,7 +1070,7 @@ function exportCurrentPageCsv(){
    card.querySelector('.note')?.textContent?.trim()||''
   ].map(csvCell).join(';')));
  }
- const blob=new Blob(['\\ufeff'+output.join('\\r\\n')],{type:'text/csv;charset=utf-8;'});
+ const blob=new Blob([String.fromCharCode(0xFEFF)+output.join(String.fromCharCode(13,10))],{type:'text/csv;charset=utf-8;'});
  const url=URL.createObjectURL(blob),a=document.createElement('a');
  a.href=url;a.download='verix-'+(page.dataset.page||'painel')+'-'+new Date().toISOString().slice(0,10)+'.csv';
  document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
