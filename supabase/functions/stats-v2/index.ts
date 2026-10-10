@@ -284,28 +284,7 @@ async function loadErrorInvestigation24h(now:string){
   }
   const currentVersionInvalidInputs=invalidInputRows.filter((e:any)=>canonicalAppVersion(e?.app_version)===CURRENT_APP_VERSION);
   const shortId=(v:any)=>{const s=String(v||"");return s.length>14?s.slice(0,8)+"…"+s.slice(-4):s;};
-  type ErrorDimension = {queryIds:Set<string>;events:number};
-  const byHash=new Map<string,ErrorDimension>(), byType=new Map<string,ErrorDimension>(), byInstall=new Map<string,ErrorDimension>();
-  const bursts=new Map<string,ErrorDimension>();
-  const addDimension=(map:Map<string,ErrorDimension>,key:string,queryId:unknown)=>{
-    let bucket=map.get(key);
-    if(!bucket){bucket={queryIds:new Set<string>(),events:0};map.set(key,bucket);}
-    bucket.events++;
-    if(queryId) bucket.queryIds.add(String(queryId));
-  };
-  for(const e of currentVersionValidErrorRows){
-    const a=e?.metadata?.asfDiagnostic||{}, hash=String(a.asfResponseHash||"sem-hash"), type=String(a.asfErrorType||"unknown"), inst=String(e?.installation_id||"unknown");
-    addDimension(byHash,hash,e?.query_id); addDimension(byType,type,e?.query_id); addDimension(byInstall,inst,e?.query_id);
-    const t=new Date(e.occurred_at).getTime();
-    if(Number.isFinite(t)){
-      const k=new Date(Math.floor(t/300000)*300000).toISOString();
-      addDimension(bursts,k,e?.query_id);
-    }
-  }
-  const hashRows=[...byHash.entries()].map(([hash,b])=>({hash,count:b.queryIds.size,event_count:b.events})).sort((a,b)=>b.count-a.count||b.event_count-a.event_count).slice(0,10);
-  const typeRows=[...byType.entries()].map(([type,b])=>({type,count:b.queryIds.size,event_count:b.events})).sort((a,b)=>b.count-a.count||b.event_count-a.event_count);
-  const installRows=[...byInstall.entries()].map(([installation_id,b])=>({installation_id:shortId(installation_id),count:b.queryIds.size,event_count:b.events})).sort((a,b)=>b.count-a.count||b.event_count-a.event_count).slice(0,10);
-  const burstRows=[...bursts.entries()].map(([start,b])=>({start,count:b.queryIds.size,event_count:b.events})).sort((a,b)=>b.count-a.count||b.event_count-a.event_count).slice(0,12);
+
   // Validate the four Portuguese registration formats. Only spaces and hyphens are optional separators;
   // other characters remain in the value and therefore make the format invalid.
   const normalizePlate=(value:unknown)=>String(value??"").trim().toUpperCase().replace(/[ -]/g,"");
@@ -344,6 +323,28 @@ async function loadErrorInvestigation24h(now:string){
   const countDistinctQueries=(inputRows:any[])=>new Set(inputRows.map((e:any,index:number)=>queryKeyOf(e,index))).size;
   const validPlateErrorRows=rows.filter((e:any)=>plateInfoOf(e).plate_status==="valid");
   const currentVersionValidErrorRows=currentVersionRows.filter((e:any)=>plateInfoOf(e).plate_status==="valid");
+  type ErrorDimension = {queryIds:Set<string>;events:number};
+  const byHash=new Map<string,ErrorDimension>(), byType=new Map<string,ErrorDimension>(), byInstall=new Map<string,ErrorDimension>();
+  const bursts=new Map<string,ErrorDimension>();
+  const addDimension=(map:Map<string,ErrorDimension>,key:string,queryId:unknown)=>{
+    let bucket=map.get(key);
+    if(!bucket){bucket={queryIds:new Set<string>(),events:0};map.set(key,bucket);}
+    bucket.events++;
+    if(queryId) bucket.queryIds.add(String(queryId));
+  };
+  for(const e of currentVersionValidErrorRows){
+    const a=e?.metadata?.asfDiagnostic||{}, hash=String(a.asfResponseHash||"sem-hash"), type=String(a.asfErrorType||"unknown"), inst=String(e?.installation_id||"unknown");
+    addDimension(byHash,hash,e?.query_id); addDimension(byType,type,e?.query_id); addDimension(byInstall,inst,e?.query_id);
+    const t=new Date(e.occurred_at).getTime();
+    if(Number.isFinite(t)){
+      const k=new Date(Math.floor(t/300000)*300000).toISOString();
+      addDimension(bursts,k,e?.query_id);
+    }
+  }
+  const hashRows=[...byHash.entries()].map(([hash,b])=>({hash,count:b.queryIds.size,event_count:b.events})).sort((a,b)=>b.count-a.count||b.event_count-a.event_count).slice(0,10);
+  const typeRows=[...byType.entries()].map(([type,b])=>({type,count:b.queryIds.size,event_count:b.events})).sort((a,b)=>b.count-a.count||b.event_count-a.event_count);
+  const installRows=[...byInstall.entries()].map(([installation_id,b])=>({installation_id:shortId(installation_id),count:b.queryIds.size,event_count:b.events})).sort((a,b)=>b.count-a.count||b.event_count-a.event_count).slice(0,10);
+  const burstRows=[...bursts.entries()].map(([start,b])=>({start,count:b.queryIds.size,event_count:b.events})).sort((a,b)=>b.count-a.count||b.event_count-a.event_count).slice(0,12);
   const validPlateErrorTypeMap=new Map<string,{queries:Set<string>;events:number;last_at:string|null}>();
   const validPlateErrorPlateMap=new Map<string,{queries:Set<string>;events:number;last_at:string|null;kinds:Set<string>}>();
   for(const [index,e] of validPlateErrorRows.entries()){
