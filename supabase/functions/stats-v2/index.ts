@@ -565,7 +565,12 @@ Deno.serve(async (req) => {
     const now = new Date().toISOString();
 
     const statsCacheKey = url.searchParams.get("v") || "legacy";
-    const legacyClient = statsCacheKey !== "admin-simple-2026-10-11-r8";
+    // Keep the dashboard-only Admin contract aligned with admin_v2.html.
+    // r9 only invalidated the browser cache; it still uses the optimized dashboard RPC.
+    const legacyClient = ![
+      "admin-simple-2026-10-11-r8",
+      "admin-simple-2026-10-11-r9"
+    ].includes(statsCacheKey);
 
     if(cachedStats && cachedStats.key===statsCacheKey && (Date.now()-cachedStats.at)<STATS_CACHE_MS) {
       return new Response(cachedStats.body,{
