@@ -147,6 +147,26 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
 
 .reset{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px;border:1px solid #ead9ad;background:#fff9eb;border-radius:12px}.reset b{font-size:11px}.reset span{display:block;margin-top:4px;color:#7d6a42;font-size:9px}.reset button{border:1px solid #d3ae5a;background:#fff;color:#7c5b18;border-radius:9px;padding:9px 11px;font-size:9px;font-weight:950}
 
+.dashboard-health .panel-body{min-height:148px}
+.health-progress-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:8px}
+.health-progress-head strong{font-size:22px;letter-spacing:-.5px}
+.health-progress-head span{font-size:10px;color:var(--muted)}
+.health-bar{height:8px;border-radius:99px;background:#e9eff1;overflow:hidden}
+.health-bar>span{display:block;height:100%;border-radius:99px;background:#159b68;transition:width .2s ease}
+.health-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.health-item{padding:9px 10px;border:1px solid #e5ecef;border-radius:9px;background:#fafcfc;min-width:0}
+.health-item span{display:block;font-size:9px;color:var(--muted)}
+.health-item strong{display:block;margin-top:4px;font-size:17px;line-height:1.1}
+.signal-list{display:grid;gap:7px}
+.signal-item{display:flex;align-items:flex-start;gap:9px;padding:9px 10px;border:1px solid #e6ecef;border-radius:9px;background:#fbfcfc}
+.signal-mark{flex:0 0 8px;width:8px;height:8px;margin-top:4px;border-radius:50%;background:#159b68}
+.signal-item.warning{border-color:#f0dfb7;background:#fffaf0}
+.signal-item.warning .signal-mark{background:#d28b00}
+.signal-item.danger{border-color:#f0c9d0;background:#fff5f6}
+.signal-item.danger .signal-mark{background:#d83c55}
+.signal-item .signal-title{font-size:10px;font-weight:900;line-height:1.35}
+.signal-item .signal-copy{margin-top:3px;font-size:9px;line-height:1.45;color:#687a81}
+#dashDaily .chart-label{font-size:8px;transform:none;margin-top:2px}
 @media(max-width:1250px){}
 @media(max-width:980px){.sidebar{width:78px}.side-brand .small,.side-brand .big b,.nav button label,.nav-section-label{display:none}.side-brand .big{font-size:14px}.nav button{padding:12px 8px;text-align:center}.nav button span{display:block;width:auto;margin-bottom:3px}.main{margin-left:78px;width:calc(100% - 78px);padding:18px}.g4,.g3{grid-template-columns:repeat(2,minmax(0,1fr))}.hero-row{flex-direction:column;align-items:flex-start}.hero-insight{max-width:none;width:100%}}
 @media(max-width:650px){
@@ -162,6 +182,22 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
  .top-actions{width:100%;flex-wrap:wrap;justify-content:flex-start}
  .status{margin-right:auto}
  .periods{order:3;flex:1;width:auto;overflow:auto}.g4,.g3,.g2,.kpi-strip{grid-template-columns:1fr}
+ #dashCards,#dashSecondaryCards{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ #dashCards .card,#dashSecondaryCards .card{padding:11px 10px;min-height:103px}
+ #dashCards .card .label,#dashSecondaryCards .card .label{font-size:8px;letter-spacing:.35px}
+ #dashCards .card .value{font-size:23px;margin-top:8px}
+ #dashSecondaryCards .card .value{font-size:20px}
+ #dashCards .card .note,#dashSecondaryCards .card .note{font-size:9px}
+ .dashboard-health{grid-template-columns:1fr}
+ .health-summary{gap:7px}
+ .health-item{padding:9px}
+ .health-item span{font-size:9px}
+ .health-item strong{font-size:16px}
+ .signal-item{padding:10px}
+ .signal-item .signal-title{font-size:10px}
+ .signal-item .signal-copy{font-size:10px}
+ .hour span,.hour small{font-size:8px}
+ .chart-label{font-size:8px}
  .hero h2{font-size:20px}
  .hero-insight{min-width:0;max-width:none;width:100%}
  .chart{height:135px}
@@ -247,6 +283,17 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
 
         <div class="grid g4 primary-kpis" id="dashCards"></div>
         <div class="grid g4 secondary-kpis" id="dashSecondaryCards" style="margin-top:8px"></div>
+
+        <div class="grid g2 dashboard-health" style="margin-top:12px">
+          <div class="panel">
+            <div class="panel-head"><h3>QUALIDADE DAS CONSULTAS</h3><span id="dashCompletionLabel">PERÍODO SELECIONADO</span></div>
+            <div class="panel-body" id="dashQueryHealth"><div class="empty">A calcular qualidade dos resultados…</div></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>SINAIS A ACOMPANHAR</h3><span>TRIAGEM OPERACIONAL</span></div>
+            <div class="panel-body" id="dashOpsSignals"><div class="empty">A verificar sinais operacionais…</div></div>
+          </div>
+        </div>
 
         <div class="dashboard-section-title">Acompanhamento operacional</div>
         <div class="grid g2 dashboard-attention">
@@ -496,20 +543,20 @@ function setLoadNotice(message,visible=false,kind='warning'){const box=$('loadNo
 function renderLoadingState(){
  if(latestData)return;
  const cardHosts=['dashCards','dashSecondaryCards','insuranceCards','speedCards','legCards','usageCards','errorCards','systemCards','performanceCards','insightCards'];
- cardHosts.forEach(id=>{const host=$(id);if(host)host.innerHTML=Array.from({length:id==='dashCards'?4:id==='dashSecondaryCards'?3:4},()=>'<div class="skeleton skeleton-card" aria-hidden="true"></div>').join('')});
+ cardHosts.forEach(id=>{const host=$(id);if(host)host.innerHTML=Array.from({length:id==='dashCards'?4:id==='dashSecondaryCards'?4:4},()=>'<div class="skeleton skeleton-card" aria-hidden="true"></div>').join('')});
  ['dashDaily','usageDaily'].forEach(id=>{const host=$(id);if(host)host.innerHTML='<div class="skeleton-chart" aria-hidden="true">'+Array.from({length:24},(_,i)=>'<span class="skeleton-chart-bar" style="height:'+(18+(i*17)%70)+'%"></span>').join('')+'</div>'});
  ['dashHours','usageHours'].forEach(id=>{const host=$(id);if(host)host.innerHTML='<div class="skeleton-grid" aria-hidden="true">'+Array.from({length:12},()=>'<span class="skeleton skeleton-chip"></span>').join('')+'</div>'});
- const panels=['dashModules','dashReading','dashboardErrorPlates','dashboardNoCases','insuranceSummary','insurancePerformance','insuranceCompare','insuranceErrors','insurancePlates','insuranceNoCases','speedDistribution','speedPatterns','speedModes','speedLimits','speedCodes','speedSessions','legItems','legActivity','usageModules','usageTransitions','errorTypes','errorBursts','errorReading','errorInstallations','errorSignatures','errorTechnical','systemCoverage','systemHistory','performanceQuality','insightModules','insightLegislation','insightSpeedDistribution','insightHours','insightNotes'];
+ const panels=['dashModules','dashReading','dashQueryHealth','dashOpsSignals','dashboardErrorPlates','dashboardNoCases','insuranceSummary','insurancePerformance','insuranceCompare','insuranceErrors','insurancePlates','insuranceNoCases','speedDistribution','speedPatterns','speedModes','speedLimits','speedCodes','speedSessions','legItems','legActivity','usageModules','usageTransitions','errorTypes','errorBursts','errorReading','errorInstallations','errorSignatures','errorTechnical','systemCoverage','systemHistory','performanceQuality','insightModules','insightLegislation','insightSpeedDistribution','insightHours','insightNotes'];
  panels.forEach(id=>{const host=$(id);if(host)host.innerHTML='<div class="skeleton skeleton-panel" aria-hidden="true"></div><div class="skeleton skeleton-panel" aria-hidden="true"></div>'});
 }
 function renderLoadFailure(){
- const hosts=['dashCards','dashSecondaryCards','insuranceCards','speedCards','legCards','usageCards','errorCards','systemCards','performanceCards','insightCards','dashDaily','usageDaily','dashHours','usageHours','dashModules','dashReading','dashboardErrorPlates','dashboardNoCases','insuranceSummary','insurancePerformance','insuranceCompare','insuranceErrors','insurancePlates','insuranceNoCases','speedDistribution','speedPatterns','speedModes','speedLimits','speedCodes','speedSessions','legItems','legActivity','usageModules','usageTransitions','errorTypes','errorBursts','errorReading','errorInstallations','errorSignatures','errorTechnical','systemCoverage','systemHistory','performanceQuality','insightModules','insightLegislation','insightSpeedDistribution','insightHours','insightNotes'];
+ const hosts=['dashCards','dashSecondaryCards','insuranceCards','speedCards','legCards','usageCards','errorCards','systemCards','performanceCards','insightCards','dashDaily','usageDaily','dashHours','usageHours','dashModules','dashReading','dashQueryHealth','dashOpsSignals','dashboardErrorPlates','dashboardNoCases','insuranceSummary','insurancePerformance','insuranceCompare','insuranceErrors','insurancePlates','insuranceNoCases','speedDistribution','speedPatterns','speedModes','speedLimits','speedCodes','speedSessions','legItems','legActivity','usageModules','usageTransitions','errorTypes','errorBursts','errorReading','errorInstallations','errorSignatures','errorTechnical','systemCoverage','systemHistory','performanceQuality','insightModules','insightLegislation','insightSpeedDistribution','insightHours','insightNotes'];
  hosts.forEach(id=>{const host=$(id);if(host&&host.querySelector('.skeleton,.skeleton-chart,.skeleton-grid'))host.innerHTML='<div class="empty">Os dados ainda não estão disponíveis.</div>'});
 }
 function wireDashboardDrilldowns(){
- const routes={'ONLINE AGORA':'usage','SESSÕES DE BROWSER':'usage','INSTALAÇÕES':'usage','CONSULTAS DE SEGURO':'insurance','COM SEGURO':'insurance','SEM REGISTO':'insurance','ERROS ASF':'errors','CINEMÓMETRO':'speed'};
+ const routes={'CONSULTAS INICIADAS':'insurance','RESULTADOS CONCLUÍDOS':'insurance','COM SEGURO':'insurance','ERROS ASF':'errors'};
  const host=$('dashCards');if(!host)return;
- host.querySelectorAll('.card').forEach(el=>{const label=el.querySelector('.label')?.textContent.trim();const page=routes[label];if(!page)return;el.dataset.drillPage=page;el.setAttribute('role','button');el.setAttribute('tabindex','0');el.setAttribute('aria-label','Ver detalhes: '+label);if(['ONLINE AGORA','CONSULTAS DE SEGURO','SEM REGISTO','ERROS ASF'].includes(label))el.classList.add('key-metric')});
+ host.querySelectorAll('.card').forEach(el=>{const label=el.querySelector('.label')?.textContent.trim();const page=routes[label];if(!page)return;el.dataset.drillPage=page;el.setAttribute('role','button');el.setAttribute('tabindex','0');el.setAttribute('aria-label','Ver detalhes: '+label);if(['CONSULTAS INICIADAS','RESULTADOS CONCLUÍDOS','ERROS ASF'].includes(label))el.classList.add('key-metric')});
 }
 function activateDashboardCard(el){if(el?.dataset?.drillPage)switchPage(el.dataset.drillPage)}
 function parseSortValue(raw){
@@ -544,7 +591,7 @@ function applyPlateErrorSearch(){
  const empty=$('plateErrorSearchEmpty');if(empty)empty.classList.toggle('hidden',!(query&&rows.length>0&&matches===0));
 }
 function barList(id,rows,tone=''){const host=$(id);if(!host)return;if(!rows?.length){host.innerHTML='<div class="empty">Sem dados suficientes.</div>';return}const max=Math.max(1,...rows.map(x=>Number(x.value)||0));host.innerHTML=rows.slice(0,12).map(x=>'<div class="bar-row"><div class="bar-label" title="'+esc(x.label)+'">'+esc(x.label)+'</div><div class="track"><div class="fill '+tone+'" style="width:'+Math.max(2,(Number(x.value)||0)/max*100)+'%"></div></div><div class="num">'+fmt(x.value)+'</div></div>').join('')}
-function monthlyChart(id,rows,key){const host=$(id);if(!host)return;if(!rows?.length){host.innerHTML='<div class="empty" style="width:100%">Sem dados suficientes.</div>';return}const vals=rows.map(x=>Number(x[key]||0));const max=Math.max(1,...vals);host.setAttribute('role','group');host.setAttribute('aria-label','Atividade diária. Foca uma barra para consultar o dia e o valor.');host.innerHTML=rows.map(x=>{const label=String(x.day_key||'');const value=fmt(x[key]||0);const unit=key==='users'?'instalações':key==='lookups'?'consultas':key;return '<div class="chart-col" tabindex="0" role="img" aria-label="'+esc(label+': '+value+' '+unit)+'" title="'+esc(label+' · '+value+' '+unit)+'"><div class="chart-bar" aria-hidden="true" style="height:'+Math.max(3,(Number(x[key]||0)/max)*100)+'%"></div><div class="chart-label" aria-hidden="true">'+esc(label.slice(5))+'</div></div>'}).join('')}
+function monthlyChart(id,rows,key){const host=$(id);if(!host)return;if(!rows?.length){host.innerHTML='<div class="empty" style="width:100%">Sem dados suficientes.</div>';return}const vals=rows.map(x=>Number(x[key]||0));const max=Math.max(1,...vals);host.setAttribute('role','group');host.setAttribute('aria-label','Atividade diária. Foca uma barra para consultar o dia e o valor.');host.innerHTML=rows.map((x,index)=>{const label=String(x.day_key||'');const value=fmt(x[key]||0);const unit=key==='users'?'instalações':key==='lookups'?'consultas':key;const showTick=index===0||index===rows.length-1||index%5===0;return '<div class="chart-col" tabindex="0" role="img" aria-label="'+esc(label+': '+value+' '+unit)+'" title="'+esc(label+' · '+value+' '+unit)+'"><div class="chart-bar" aria-hidden="true" style="height:'+Math.max(3,(Number(x[key]||0)/max)*100)+'%"></div><div class="chart-label" aria-hidden="true">'+(showTick?esc(label.slice(8)):'')+'</div></div>'}).join('')}
 function hourGrid(id,rows){const host=$(id);if(!host)return;if(!rows?.length){host.innerHTML='<div class="empty">Sem dados.</div>';return}const max=Math.max(1,...rows.map(x=>Number(x.consultations||0)));host.setAttribute('role','group');host.setAttribute('aria-label','Consultas iniciadas e instalações com presença por hora nas últimas 24 horas');host.innerHTML=rows.map(x=>{const hour=String(x.hour_num??'').padStart(2,'0')+'h';const consultations=Number(x.consultations||0);const count=fmt(consultations);const online=fmt(x.users||0);const detail=hour+' · '+count+' consultas · '+online+' instalações com presença';return '<div class="hour" role="img" aria-label="'+esc(detail)+'" title="'+esc(detail)+'" style="opacity:'+Math.max(.35,(consultations/max))+'"><b>'+esc(hour)+'</b><span>'+count+' cons.</span><small>'+online+' online</small></div>'}).join('')}
 function token(){return sessionStorage.getItem(TOKEN_KEY)||''}
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.remove('hidden');clearTimeout(window.__toastTimer);window.__toastTimer=setTimeout(()=>t.classList.add('hidden'),2200)}
@@ -639,30 +686,69 @@ async function ensurePageDetail(page){
  }
 }
 function renderDashboard(d){
- const a=d.analytics||{},o=a.overview||{},p=period(),ret=a.retention||{},u=a.usage||{},s=u.sessions?.[currentPeriod]||{},speed=a.speed?.summary||{};
- const users=Number(o['unique_'+currentPeriod]||0),lookups=Number(p.started||0),fin=Number(p.finals||0),insured=Number(p.insured||0),uninsured=Number(p.uninsured||0),errs=Number(p.errors||0),dec=insured+uninsured;
- const noRate=dec?100*uninsured/dec:null,errorRate=fin?100*errs/fin:null;
+ const a=d.analytics||{},o=a.overview||{},p=period(),ret=a.retention||{},u=a.usage||{},s=u.sessions?.[currentPeriod]||{};
+ const users=Number(o['unique_'+currentPeriod]||0);
+ const lookups=Number(p.started||0),fin=Number(p.finals||0),insured=Number(p.insured||0);
+ const uninsured=Number(p.uninsured||0),errs=Number(p.errors||0);
+ const pending=Number(p.pending||0),incomplete=Number(p.incomplete||0);
+ const contradictory=Number(p.contradictory||0),duplicateFinals=Number(p.duplicate_finals||0);
+ const decisions=insured+uninsured,completionRate=lookups?Math.min(100,100*fin/lookups):null;
+ const uninsuredRate=decisions?100*uninsured/decisions:null,errorRate=fin?100*errs/fin:null;
+ const labelPeriod=currentPeriod==='24h'?'últimas 24 horas':currentPeriod==='7d'?'últimos 7 dias':currentPeriod==='30d'?'últimos 30 dias':'histórico total';
  $('dashCards').innerHTML=
-  card('ONLINE AGORA',num(o.consulted_3m),'Instalações com pelo menos uma consulta iniciada nos últimos 3 minutos.','green')+
-  card('CONSULTAS DE SEGURO',num(lookups),'Pedidos de consulta iniciados.','blue')+
-  card('ERROS ASF',num(errs),pct(errorRate)+' dos resultados finais.','amber')+
-  card('SEM REGISTO',num(uninsured),pct(noRate)+' das decisões; não confirma ausência de seguro.','red');
+  card('CONSULTAS INICIADAS',num(lookups),'Pedidos de consulta nas '+labelPeriod+'.','blue')+
+  card('RESULTADOS CONCLUÍDOS',num(fin),pct(completionRate)+' das consultas iniciadas.','green')+
+  card('COM SEGURO',num(insured),pct(decisions?100*insured/decisions:null)+' das decisões válidas.','green')+
+  card('ERROS ASF',num(errs),pct(errorRate)+' dos resultados concluídos.','amber');
  $('dashSecondaryCards').innerHTML=
-  card('INSTALAÇÕES',num(users),'Instalações com atividade no período.','cyan')+
-  card('COM SEGURO',num(insured),pct(dec?100*insured/dec:null)+' das decisões.','green')+
-  card('SESSÕES DE BROWSER',num(o.online_now),'Sessões VÉRIX com browser aberto. Presença por app_open/heartbeat nos últimos 90 s.','blue');
+  card('SEM REGISTO',num(uninsured),pct(uninsuredRate)+' das decisões; não confirma ausência de seguro.','amber')+
+  card('CONSULTAS · ÚLTIMOS 3 MIN',num(o.consulted_3m),'Instalações que iniciaram uma consulta recentemente.','cyan')+
+  card('BROWSERS ATIVOS',num(o.online_now),'Sessões com presença recente por abertura ou heartbeat.','blue')+
+  card('INSTALAÇÕES NO PERÍODO',num(users),'Instalações com atividade nas '+labelPeriod+'.','cyan');
  wireDashboardDrilldowns();
+
+ const progress=Math.max(0,Math.min(100,completionRate||0));
+ $('dashCompletionLabel').textContent=labelPeriod.toUpperCase();
+ $('dashQueryHealth').innerHTML=
+  '<div class="health-progress-head"><strong>'+pct(completionRate)+'</strong><span>com resultado final único</span></div>'+
+  '<div class="health-bar" role="img" aria-label="Taxa de conclusão: '+esc(pct(completionRate))+'"><span style="width:'+progress+'%"></span></div>'+
+  '<div class="health-summary">'+
+   '<div class="health-item"><span>Resultados concluídos</span><strong>'+fmt(fin)+'</strong></div>'+
+   '<div class="health-item"><span>Pendentes</span><strong>'+fmt(pending)+'</strong></div>'+
+   '<div class="health-item"><span>Incompletas</span><strong>'+fmt(incomplete)+'</strong></div>'+
+   '<div class="health-item"><span>Finais repetidos/contraditórios</span><strong>'+fmt(duplicateFinals+contradictory)+'</strong></div>'+
+  '</div>'+
+  '<p class="dashboard-explainer" style="margin:10px 0 0">Uma consulta só conta como concluída quando existe um resultado final único. Os casos pendentes, incompletos ou contraditórios ficam separados.</p>';
+
+ const signals=[];
+ if(lookups===0)signals.push({kind:'info',title:'Sem consultas no período',copy:'Não há pedidos iniciados nesta janela. Confirma o período selecionado antes de concluir que existe uma falha.'});
+ if(errorRate!==null&&errorRate>=8)signals.push({kind:'danger',title:'Taxa de erros elevada',copy:fmt(errs)+' consultas com erro ('+pct(errorRate)+'). Abre a análise de erros para investigar.'});
+ else if(errs>0)signals.push({kind:'warning',title:'Existem erros ASF',copy:fmt(errs)+' consultas com erro ('+pct(errorRate)+'). Um erro técnico não significa ausência de seguro.'});
+ if(pending>0)signals.push({kind:'warning',title:'Consultas pendentes',copy:fmt(pending)+' consultas iniciadas ainda estão marcadas como pendentes.'});
+ if(incomplete>0)signals.push({kind:'warning',title:'Consultas incompletas',copy:fmt(incomplete)+' consultas não têm um resultado final nem um estado pendente registado.'});
+ if(contradictory+duplicateFinals>0)signals.push({kind:'danger',title:'Resultados finais múltiplos',copy:fmt(contradictory+duplicateFinals)+' consultas têm resultados finais repetidos ou contraditórios.'});
+ if(!signals.length)signals.push({kind:'ok',title:'Sem sinais de erro nas métricas resumidas',copy:'Continua a acompanhar volume, resultados e atividade recente.'});
+ const lastEvent=o.last_event_at?datePT(o.last_event_at):'Sem eventos registados';
+ $('dashOpsSignals').innerHTML='<div class="signal-list">'+signals.map(x=>'<div class="signal-item '+(x.kind==='danger'?'danger':x.kind==='warning'?'warning':'')+'"><span class="signal-mark"></span><div><div class="signal-title">'+esc(x.title)+'</div><div class="signal-copy">'+esc(x.copy)+'</div></div></div>').join('')+
+  '<div class="signal-item"><span class="signal-mark" style="background:#4778d9"></span><div><div class="signal-title">Último evento registado</div><div class="signal-copy">'+esc(lastEvent)+'. A hora do último evento não prova, por si só, que a telemetria está operacional.</div></div></div></div>';
+
  const errorPlates=a.errors?.plates||[];
  $('dashboardErrorPlates').innerHTML=errorPlates.length
   ?table(['MATRÍCULA','ÚLTIMA OCORRÊNCIA','EVENTOS'],errorPlates.slice(0,8).map(x=>'<tr>'+td('<strong>'+esc(x.plate||x.plate_key||'—')+'</strong>')+td(datePT(x.last_at))+td(fmt(x.event_qty??x.qty))+'</tr>'))
   :'<div class="empty">Não há matrículas com erro disponíveis neste resumo.</div>';
- $('dashboardUpdated').textContent='Dados do painel: '+datePT(d.generatedAt)+' · atualização automática a cada 30 s';
+ $('dashboardUpdated').textContent='Painel atualizado: '+datePT(d.generatedAt)+' · atualização automática a cada 30 s';
  const mods=(u.modules||[]).map(x=>({label:x.module,value:x.qty}));barList('dashModules',mods);
  const hours=u.hourly||[];hourGrid('dashHours',hours);
  monthlyChart('dashDaily',u.daily||[],'lookups');
  const peakHour=hours.filter(x=>Number(x.consultations||0)>0).sort((x,y)=>Number(y.consultations||0)-Number(x.consultations||0))[0];
  const topModule=mods[0];
- $('heroInsight').innerHTML='<div class="k">LEITURA PRINCIPAL</div><div class="v">'+(errorRate!=null&&errorRate>8?'Existem erros a acompanhar.':errorRate!=null&&errorRate>3?'Há alguns erros a acompanhar.':'Não há erros relevantes observados nesta janela.')+'</div><div class="s">'+(peakHour?'Hora mais ativa: '+String(peakHour.hour_num).padStart(2,'0')+'h. ':'')+(topModule?'Módulo mais usado: '+esc(topModule.label)+'.':'')+'</div>';
+ let insight='Dados insuficientes para avaliar a taxa de erro.';
+ if(lookups===0)insight='Sem consultas registadas neste período.';
+ else if(errorRate!==null&&errorRate>=8)insight='A taxa de erros exige atenção.';
+ else if(errs>0)insight='Há erros ASF a acompanhar.';
+ else if(pending+incomplete>0)insight='Há consultas por resolver ou incompletas.';
+ else if(fin>0)insight='Resultados a decorrer sem sinais de erro no resumo.';
+ $('heroInsight').innerHTML='<div class="k">LEITURA PRINCIPAL</div><div class="v">'+esc(insight)+'</div><div class="s">'+(peakHour?'Hora de maior volume: '+String(peakHour.hour_num).padStart(2,'0')+'h ('+fmt(peakHour.consultations)+'). ':'')+(topModule?'Módulo mais usado: '+esc(topModule.label)+'.':'')+'</div>';
  $('dashReading').innerHTML=
   metric('Hora com mais consultas',peakHour?String(peakHour.hour_num).padStart(2,'0')+'h · '+fmt(peakHour.consultations)+' consultas':'Sem dados suficientes')+
   metric('Novas instalações',num(ret[currentPeriod]?.new))+
@@ -670,6 +756,7 @@ function renderDashboard(d){
   metric('Média de ações por sessão',num(s.avg_actions))+
   metric('Sessões com vários módulos',pct(s.multi_module_pct));
 }
+
 function renderInsuranceNoCases(cases){
  const host=$('insuranceNoCases'),dashHost=$('dashboardNoCases');
  const rows=Array.isArray(cases)?cases:[];
