@@ -1000,7 +1000,7 @@ async function loadDashboard(){
  dashboardBusy=true;
  const previous=latestData;
  if(!previous)renderLoadingState();
- setBackend('loading');
+ if(!previous)setBackend('loading');
  try{
   const fresh=await request(STATS_API);
   const preserveDetailed=!!(fresh.dashboardOnly&&previous&&detailCache.analytics&&previous.analytics);
