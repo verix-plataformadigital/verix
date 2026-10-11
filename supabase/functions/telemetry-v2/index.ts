@@ -105,6 +105,7 @@ function cleanMetadata(value: unknown): Record<string, unknown> {
   if (m.resultConfirmed === true) out.resultConfirmed = true;
   if (m.matricula) out.matricula = cleanText(m.matricula, 30);
   if (m.matriculaNormalizada) out.matriculaNormalizada = cleanText(m.matriculaNormalizada, 30);
+  if (m.matriculaCapturada) out.matriculaCapturada = cleanText(m.matriculaCapturada, 30);
   if (m.asfUserMessage) out.asfUserMessage = cleanText(m.asfUserMessage, 500);
   if (m.profile_id) out.profile_id = cleanText(m.profile_id, 120);
   if (m.operation_id) out.operation_id = cleanText(m.operation_id, 120);
@@ -276,7 +277,16 @@ function sanitizeErrorPlateMetadata(metadata: Record<string, unknown>): void {
   const diag = diagnostic && typeof diagnostic === "object" && !Array.isArray(diagnostic)
     ? diagnostic as Record<string, unknown>
     : null;
-  const candidates = [diag?.matricula, metadata.matriculaNormalizada, metadata.matricula];
+  const candidates = [diag?.matricula, metadata.matriculaNormalizada, metadata.matricula, metadata.matriculaCapturada];
+  // Preserve exactly what the client captured (within a small, safe character
+  // set), even when it is foreign, partial, or not a recognized Portuguese layout.
+  // This is explicitly a captured input, not a validated registration.
+  const captured = candidates
+    .map(value => String(value ?? "").trim().toUpperCase().slice(0, 30))
+    .find(value => value && /^[A-Z0-9][A-Z0-9 -]{0,29}$/.test(value));
+  if (captured) metadata.matriculaCapturada = captured;
+  else delete metadata.matriculaCapturada;
+
   const validRaw = candidates
     .map(value => String(value ?? "").trim())
     .find(value => {
@@ -284,6 +294,7 @@ function sanitizeErrorPlateMetadata(metadata: Record<string, unknown>): void {
       return /^(?:[A-Z]{2}[0-9]{4}|[0-9]{4}[A-Z]{2}|[0-9]{2}[A-Z]{2}[0-9]{2}|[A-Z]{2}[0-9]{2}[A-Z]{2})$/.test(normalized);
     });
 
+  // Keep legacy normalized fields only for recognized Portuguese formats.
   if (!validRaw) {
     delete metadata.matricula;
     delete metadata.matriculaNormalizada;
@@ -292,8 +303,6 @@ function sanitizeErrorPlateMetadata(metadata: Record<string, unknown>): void {
   }
 
   const normalized = validRaw.toUpperCase().replace(/[^A-Z0-9]/g, "");
-  // Accept only complete Portuguese plate layouts; partial OCR/input fragments
-  // must never enter the stored error details as vehicle registrations.
   if (diag) diag.matricula = validRaw;
   else metadata.matricula = validRaw;
   metadata.matriculaNormalizada = normalized;

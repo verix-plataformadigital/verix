@@ -303,9 +303,9 @@ async function loadErrorInvestigation24h(now:string){
     return /^(?:[A-Z]{2}[0-9]{4}|[0-9]{4}[A-Z]{2}|[0-9]{2}[A-Z]{2}[0-9]{2}|[A-Z]{2}[0-9]{2}[A-Z]{2})$/.test(plate);
   };
   const plateOf=(e:any)=>{
-    const candidates=[e?.metadata?.asfDiagnostic?.matricula,e?.metadata?.matriculaNormalizada,e?.metadata?.matricula];
-    const valid=candidates.find(validPortuguesePlate);
-    return valid?normalizePlate(valid):"";
+    const candidates=[e?.metadata?.matriculaCapturada,e?.metadata?.asfDiagnostic?.matricula,e?.metadata?.matriculaNormalizada,e?.metadata?.matricula];
+    const captured=candidates.map((value:any)=>String(value??"").trim().toUpperCase().replace(/[^A-Z0-9 -]/g,"").slice(0,30)).find((value:string)=>value.length>0);
+    return captured||"";
   };
   const latestErrorByQuery=new Map<string,any>();
   for(const e of currentVersionRows){
@@ -316,8 +316,8 @@ async function loadErrorInvestigation24h(now:string){
   }
   const plateCases=[...latestErrorByQuery.values()].map((e:any)=>{
     const plate=plateOf(e),a=e?.metadata?.asfDiagnostic||{};
-    return {matricula:plate,occurred_at:e?.occurred_at||null,error_type:a.asfErrorType||"unknown",browser:e?.browser||"Unknown",query_id:shortId(e?.query_id)};
-  }).filter((e:any)=>validPortuguesePlate(e.matricula)).sort((a:any,b:any)=>String(a.occurred_at||"").localeCompare(String(b.occurred_at||""))).slice(-100).reverse();
+    return {matricula:plate||"Não capturada",plate_kind:!plate?"missing":validPortuguesePlate(plate)?"portuguese":"unverified",occurred_at:e?.occurred_at||null,error_type:a.asfErrorType||"unknown",browser:e?.browser||"Unknown",query_id:shortId(e?.query_id)};
+  }).sort((a:any,b:any)=>String(a.occurred_at||"").localeCompare(String(b.occurred_at||""))).slice(-100).reverse();
   const recent=currentVersionRows.slice(-12).reverse().map((e:any)=>{const a=e?.metadata?.asfDiagnostic||{};return {occurred_at:e?.occurred_at||null,installation_id:shortId(e?.installation_id),query_id:shortId(e?.query_id),browser:e?.browser||"Unknown",matricula:plateOf(e)||null,error_type:a.asfErrorType||"unknown",transport:a.asfTransport||null,relay_latency_ms:a.asfRelayLatencyMs??null,http_status:a.asfHttpStatus??null,duration_ms:a.asfDurationMs??null,response_hash:a.asfResponseHash||null,response_class:a.asfResponseClass||null,graphql_error_count:a.asfGraphqlErrorCount??null,response_bytes:a.asfResponseBytes??null,parse_path:a.asfParsePath||null,build_id:e?.metadata?.build_id||a.build_id||null};});
   return {generated_at:now,current_app_version:CURRENT_APP_VERSION,errors_24h:rows.length,error_queries_24h:new Set(rows.map((e:any)=>String(e?.query_id||"")).filter(Boolean)).size,current_version_errors:new Set(currentVersionRows.map((e:any)=>String(e?.query_id||"")).filter(Boolean)).size,current_version_error_events:currentVersionRows.length,current_version_installations:new Set(currentVersionRows.map((e:any)=>String(e?.installation_id||""))).size,current_version_plates:new Set(currentVersionRows.map((e:any)=>plateOf(e)).filter((p:string)=>validPortuguesePlate(p))).size,current_version_hashes:byHash.size,current_version_types:typeRows,current_version_hashes_top:hashRows,current_version_installations_top:installRows,current_version_bursts_5m:burstRows,current_version_plate_cases:plateCases,latest_current_version:recent};
 }
