@@ -414,7 +414,8 @@ async function loadCinemometerAnalytics24h(now:string){
 }
 
 let cachedStats: { at:number; body:string } | null = null;
-const STATS_CACHE_MS = 15000;
+let cachedAnalytics: { at:number; body:string } | null = null;
+const STATS_CACHE_MS = 3000;
 
 async function reset24h() {
   const result = await rpc("verix2_reset_all_periods", {});
@@ -468,6 +469,22 @@ Deno.serve(async (req) => {
         return json({ok:true,detail:"insurance-no-cases",generatedAt:now,cases},200,req);
       } catch(error) {
         return json({ok:false,error:"insurance_no_cases_failed"},500,req);
+      }
+    }
+
+    // Full cross-section analytics are lazy-loaded only when the Admin opens a detailed section.
+    if(req.method==="GET" && detail==="analytics") {
+      const now = new Date().toISOString();
+      try {
+        if(cachedAnalytics && (Date.now()-cachedAnalytics.at)<STATS_CACHE_MS) {
+          return new Response(cachedAnalytics.body,{status:200,headers:{"Content-Type":"application/json",...corsHeaders(req),"X-Verix-Analytics-Cache":"HIT"}});
+        }
+        const analytics = await rpc("verix2_admin_analytics",{p_now:now});
+        const body = JSON.stringify({ok:true,detail:"analytics",generatedAt:now,analytics});
+        cachedAnalytics = {at:Date.now(),body};
+        return new Response(body,{status:200,headers:{"Content-Type":"application/json",...corsHeaders(req),"X-Verix-Analytics-Cache":"MISS"}});
+      } catch(error) {
+        return json({ok:false,error:"analytics_detail_failed",detail:String((error as Error)?.message||error)},500,req);
       }
     }
 
@@ -536,6 +553,7 @@ Deno.serve(async (req) => {
 
       const resetAt = await reset24h();
       cachedStats = null;
+      cachedAnalytics = null;
 
       return json({
         ok:true,
@@ -560,7 +578,7 @@ Deno.serve(async (req) => {
     // Fast path: the consolidated analytics RPC already contains the
     // dashboard, insurance, legislation, usage and most cinemometer data.
     const settled = await Promise.allSettled([
-      rpc("verix2_admin_analytics",{p_now:now}),
+      rpc("verix2_admin_dashboard",{p_now:now}),
       rpc("verix2_asf_diagnostics",{p_now:now,p_recent_limit:25}),
       resetState(),
       rpc("verix2_consulted_installations_3m",{p_now:now})
@@ -576,7 +594,7 @@ Deno.serve(async (req) => {
       ? recentConsultedNumeric
       : null;
 
-    for(const [i,name] of [[0,"analytics"],[1,"diagnostics"],[2,"reset"],[3,"recent_query_presence"]] as const) {
+    for(const [i,name] of [[0,"dashboard"],[1,"diagnostics"],[2,"reset"],[3,"recent_query_presence"]] as const) {
       if(settled[i].status==="rejected") {
         const reason:any=settled[i].reason;
         errors[name]=String(reason?.message||reason);
@@ -597,6 +615,7 @@ Deno.serve(async (req) => {
 
     const payload = {
       ok:true,
+      dashboardOnly:true,
       generatedAt:now,
       current_app_version:CURRENT_APP_VERSION,
       reset24hAt:resetAt?.reset_24h_at || null,
