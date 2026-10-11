@@ -7,7 +7,7 @@ CREATE OR REPLACE FUNCTION public.verix2_admin_dashboard(p_now timestamp with ti
  LANGUAGE sql
  STABLE SECURITY DEFINER
  SET search_path TO 'public', 'pg_catalog'
- SET work_mem TO '64MB'
+ SET work_mem TO '32MB'
 AS $function$
 WITH b AS (
   SELECT greatest(p_now-interval '24 hours',coalesce((SELECT reset_24h_at FROM public.verix2_dashboard_state WHERE singleton=true),'1970-01-01T00:00:00Z'::timestamptz)) s24,
@@ -782,4 +782,3 @@ $function$
 REVOKE ALL ON FUNCTION public.verix2_admin_dashboard(timestamp with time zone) FROM PUBLIC,anon,authenticated;
 GRANT EXECUTE ON FUNCTION public.verix2_admin_dashboard(timestamp with time zone) TO service_role;
 COMMENT ON FUNCTION public.verix2_admin_dashboard(timestamp with time zone) IS 'VÉRIX Admin fast path: only overview, insurance totals, retention, module usage, daily/hourly charts and error plates.';
-COMMIT;
