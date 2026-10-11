@@ -166,7 +166,22 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
 .signal-item.danger .signal-mark{background:#d83c55}
 .signal-item .signal-title{font-size:10px;font-weight:900;line-height:1.35}
 .signal-item .signal-copy{margin-top:3px;font-size:9px;line-height:1.45;color:#687a81}
+.dashboard-accordion{margin-top:12px;border:1px solid var(--line);border-radius:13px;background:#fff;box-shadow:var(--shadow);overflow:hidden}
+.dashboard-accordion>.detail-summary{display:flex;align-items:center;gap:12px;padding:14px 15px;border-top:0;color:var(--ink);font-size:11px}
+.dashboard-accordion>.detail-summary:after{content:'+';float:none;margin-left:auto;font-size:18px;color:var(--cyan)}
+.dashboard-accordion[open]>.detail-summary:after{content:'−'}
+.dashboard-accordion-title{font-size:12px;font-weight:950;color:#243b43}
+.dashboard-accordion-meta{font-size:10px;color:var(--muted);font-weight:500}
+.dashboard-accordion-body{padding:12px;border-top:1px solid #edf0f2}
+.dashboard-accordion-body .dashboard-section-title{margin-top:4px}
+.dashboard-accordion-body .panel{box-shadow:none}
 #dashDaily .chart-label{font-size:8px;transform:none;margin-top:2px}
+@media(max-width:650px){
+ .dashboard-accordion>.detail-summary{flex-wrap:wrap;gap:5px 10px;padding:13px}
+ .dashboard-accordion-title{font-size:11px}
+ .dashboard-accordion-meta{font-size:9px;margin-right:24px}
+ .dashboard-accordion-body{padding:8px}
+}
 @media(max-width:1250px){}
 @media(max-width:980px){.sidebar{width:78px}.side-brand .small,.side-brand .big b,.nav button label,.nav-section-label{display:none}.side-brand .big{font-size:14px}.nav button{padding:12px 8px;text-align:center}.nav button span{display:block;width:auto;margin-bottom:3px}.main{margin-left:78px;width:calc(100% - 78px);padding:18px}.g4,.g3{grid-template-columns:repeat(2,minmax(0,1fr))}.hero-row{flex-direction:column;align-items:flex-start}.hero-insight{max-width:none;width:100%}}
 @media(max-width:650px){
@@ -295,42 +310,50 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
           </div>
         </div>
 
-        <div class="dashboard-section-title">Acompanhamento operacional</div>
-        <div class="grid g2 dashboard-attention">
-          <div class="panel">
-            <div class="panel-head"><h3>CONSULTAS COM ERRO NA CONSULTA ASF</h3><span>ÚLTIMAS 24 H · CONSULTAS COM ERRO</span></div>
-            <div class="panel-body">
-              <p class="dashboard-explainer">Um erro técnico não confirma ausência de seguro. Consulta a hora, o tipo de erro e os detalhes antes de tirar conclusões.</p>
-              <div id="dashboardErrorPlates" class="table-wrap"><div class="empty">A carregar matrículas com erro…</div></div>
-            </div>
-            <div class="panel-actions"><button class="action-link" type="button" data-go-page="errors">ABRIR ANÁLISE DE ERROS ↗</button></div>
+        
+        <details id="dashboardRecordsDetails" class="dashboard-accordion">
+          <summary class="detail-summary"><span class="dashboard-accordion-title">Registos recentes</span><span class="dashboard-accordion-meta">Erros ASF e resultados sem registo</span></summary>
+          <div class="dashboard-accordion-body">
+            <div class="grid g2 dashboard-attention">
+                      <div class="panel">
+                        <div class="panel-head"><h3>CONSULTAS COM ERRO NA CONSULTA ASF</h3><span>ÚLTIMAS 24 H · CONSULTAS COM ERRO</span></div>
+                        <div class="panel-body">
+                          <p class="dashboard-explainer">Um erro técnico não confirma ausência de seguro. Consulta a hora, o tipo de erro e os detalhes antes de tirar conclusões.</p>
+                          <div id="dashboardErrorPlates" class="table-wrap"><div class="empty">A carregar matrículas com erro…</div></div>
+                        </div>
+                        <div class="panel-actions"><button class="action-link" type="button" data-go-page="errors">ABRIR ANÁLISE DE ERROS ↗</button></div>
+                      </div>
+                      <div class="panel">
+                        <div class="panel-head"><h3>MATRÍCULAS COM RESULTADO «SEM REGISTO»</h3><span>RETENÇÃO DE 90 DIAS</span></div>
+                        <div class="panel-body">
+                          <p class="dashboard-explainer">«Sem registo» é o resultado da consulta à ASF; por si só, não prova que o veículo não tenha seguro. Mostramos as consultas mais recentes disponíveis.</p>
+                          <div id="dashboardNoCases" class="table-wrap"><div class="empty">A carregar resultados sem registo…</div></div>
+                        </div>
+                        <div class="panel-actions"><button class="action-link" type="button" data-go-page="insurance">ABRIR LISTA COMPLETA ↗</button></div>
+                      </div>
+                    </div>
           </div>
-          <div class="panel">
-            <div class="panel-head"><h3>MATRÍCULAS COM RESULTADO «SEM REGISTO»</h3><span>RETENÇÃO DE 90 DIAS</span></div>
-            <div class="panel-body">
-              <p class="dashboard-explainer">«Sem registo» é o resultado da consulta à ASF; por si só, não prova que o veículo não tenha seguro. Mostramos as consultas mais recentes disponíveis.</p>
-              <div id="dashboardNoCases" class="table-wrap"><div class="empty">A carregar resultados sem registo…</div></div>
-            </div>
-            <div class="panel-actions"><button class="action-link" type="button" data-go-page="insurance">ABRIR LISTA COMPLETA ↗</button></div>
+        </details>
+        <details id="dashboardTrendsDetails" class="dashboard-accordion">
+          <summary class="detail-summary"><span class="dashboard-accordion-title">Tendências e utilização</span><span class="dashboard-accordion-meta">Gráficos, módulos e evolução</span></summary>
+          <div class="dashboard-accordion-body">
+            <div class="grid g2">
+                      <div class="panel">
+                        <div class="panel-head"><h3>CONSULTAS DE SEGURO · ÚLTIMOS 30 DIAS</h3><span>VOLUME DIÁRIO</span></div>
+                        <div id="dashDaily" class="chart"></div>
+                      </div>
+                      <div class="panel">
+                        <div class="panel-head"><h3>CONSULTAS E ONLINE POR HORA</h3><span>ÚLTIMAS 24 H</span></div>
+                        <div class="panel-body"><div id="dashHours" class="hour-grid"></div><div class="hour-note">Consultas = pedidos de seguro iniciados. Presença = instalações distintas com abertura ou heartbeat nessa hora; não equivale a pessoas únicas.</div></div>
+                      </div>
+                    </div>
+            
+                    <div class="grid g2" style="margin-top:12px">
+                      <div class="panel"><div class="panel-head"><h3>MÓDULOS MAIS USADOS</h3><span>30 DIAS</span></div><div class="panel-body"><div id="dashModules" class="bar-list"></div></div></div>
+                      <div class="panel"><div class="panel-head"><h3>LEITURA DA ATIVIDADE</h3><span>PERÍODO SELECIONADO</span></div><div class="panel-body" id="dashReading"></div></div>
+                    </div>
           </div>
-        </div>
-
-        <div class="dashboard-section-title">Atividade e utilização</div>
-        <div class="grid g2">
-          <div class="panel">
-            <div class="panel-head"><h3>CONSULTAS DE SEGURO · ÚLTIMOS 30 DIAS</h3><span>VOLUME DIÁRIO</span></div>
-            <div id="dashDaily" class="chart"></div>
-          </div>
-          <div class="panel">
-            <div class="panel-head"><h3>CONSULTAS E ONLINE POR HORA</h3><span>ÚLTIMAS 24 H</span></div>
-            <div class="panel-body"><div id="dashHours" class="hour-grid"></div><div class="hour-note">Consultas = pedidos de seguro iniciados. Presença = instalações distintas com abertura ou heartbeat nessa hora; não equivale a pessoas únicas.</div></div>
-          </div>
-        </div>
-
-        <div class="grid g2" style="margin-top:12px">
-          <div class="panel"><div class="panel-head"><h3>MÓDULOS MAIS USADOS</h3><span>30 DIAS</span></div><div class="panel-body"><div id="dashModules" class="bar-list"></div></div></div>
-          <div class="panel"><div class="panel-head"><h3>LEITURA DA ATIVIDADE</h3><span>PERÍODO SELECIONADO</span></div><div class="panel-body" id="dashReading"></div></div>
-        </div>
+        </details>
       </section>
 
       <section class="page" data-page="insurance">
@@ -618,7 +641,7 @@ async function doLogin(password){const ac=new AbortController(),tm=setTimeout(()
 function logout(){sessionStorage.removeItem(TOKEN_KEY);if(refreshTimer)clearInterval(refreshTimer);latestData=null;analyticsLoadPromise=null;Object.keys(detailCache).forEach(k=>{detailCache[k]=false;detailBusy[k]=false});$('app').style.display='none';$('loginScreen').style.display='grid';$('password').value='';}
 function switchPage(page){
   currentPage=page;
-  if(page==='insurance')detailCache.insurance=false;
+  // A lista é mantida em cache ao navegar; a atualização manual invalida a cache.
   document.querySelectorAll('.nav button').forEach(b=>{const active=b.dataset.page===page;b.classList.toggle('active',active);if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.dataset.page===page));
   const meta={
@@ -749,14 +772,20 @@ function renderDashboard(d){
  $('dashOpsSignals').innerHTML='<div class="signal-list">'+signals.map(x=>'<div class="signal-item '+(x.kind==='danger'?'danger':x.kind==='warning'?'warning':'')+'"><span class="signal-mark"></span><div><div class="signal-title">'+esc(x.title)+'</div><div class="signal-copy">'+esc(x.copy)+'</div></div></div>').join('')+
   '<div class="signal-item"><span class="signal-mark" style="background:#4778d9"></span><div><div class="signal-title">Último evento registado</div><div class="signal-copy">'+esc(lastEvent)+'. A hora do último evento não prova, por si só, que a telemetria está operacional.</div></div></div></div>';
 
- const errorPlates=a.errors?.plates||[];
- $('dashboardErrorPlates').innerHTML=errorPlates.length
-  ?table(['MATRÍCULA','ÚLTIMA OCORRÊNCIA','EVENTOS'],errorPlates.slice(0,8).map(x=>'<tr>'+td('<strong>'+esc(x.plate||x.plate_key||'—')+'</strong>')+td(datePT(x.last_at))+td(fmt(x.event_qty??x.qty))+'</tr>'))
-  :'<div class="empty">Não há matrículas com erro disponíveis neste resumo.</div>';
+ if($('dashboardRecordsDetails')?.open){
+  const errorPlates=a.errors?.plates||[];
+  $('dashboardErrorPlates').innerHTML=errorPlates.length
+   ?table(['MATRÍCULA','ÚLTIMA OCORRÊNCIA','EVENTOS'],errorPlates.slice(0,8).map(x=>'<tr>'+td('<strong>'+esc(x.plate||x.plate_key||'—')+'</strong>')+td(datePT(x.last_at))+td(fmt(x.event_qty??x.qty))+'</tr>'))
+   :'<div class="empty">Não há matrículas com erro disponíveis neste resumo.</div>';
+ }
  $('dashboardUpdated').textContent='Painel atualizado: '+datePT(d.generatedAt)+' · atualização automática a cada 30 s';
- const mods=(u.modules||[]).map(x=>({label:x.module,value:x.qty}));barList('dashModules',mods);
- const hours=u.hourly||[];hourGrid('dashHours',hours);
- monthlyChart('dashDaily',u.daily||[],'lookups');
+ const mods=(u.modules||[]).map(x=>({label:x.module,value:x.qty}));
+ const hours=u.hourly||[];
+ if($('dashboardTrendsDetails')?.open){
+  barList('dashModules',mods);
+  hourGrid('dashHours',hours);
+  monthlyChart('dashDaily',u.daily||[],'lookups');
+ }
  const peakHour=hours.filter(x=>Number(x.consultations||0)>0).sort((x,y)=>Number(y.consultations||0)-Number(x.consultations||0))[0];
  const topModule=mods[0];
  let insight='Dados insuficientes para avaliar a taxa de erro.';
@@ -766,12 +795,14 @@ function renderDashboard(d){
  else if(pending+incomplete>0)insight='Há consultas por resolver ou incompletas.';
  else if(fin>0)insight='Resultados a decorrer sem sinais de erro no resumo.';
  $('heroInsight').innerHTML='<div class="k">LEITURA PRINCIPAL</div><div class="v">'+esc(insight)+'</div><div class="s">'+(peakHour?'Hora de maior volume: '+String(peakHour.hour_num).padStart(2,'0')+'h ('+fmt(peakHour.consultations)+'). ':'')+(topModule?'Módulo mais usado: '+esc(topModule.label)+'.':'')+'</div>';
- $('dashReading').innerHTML=
-  metric('Hora com mais consultas',peakHour?String(peakHour.hour_num).padStart(2,'0')+'h · '+fmt(peakHour.consultations)+' consultas':'Sem dados suficientes')+
-  metric('Novas instalações',num(ret[currentPeriod]?.new))+
-  metric('Instalações que regressaram',num(ret[currentPeriod]?.returning))+
-  metric('Média de ações por sessão',num(s.avg_actions))+
-  metric('Sessões com vários módulos',pct(s.multi_module_pct));
+ if($('dashboardTrendsDetails')?.open){
+  $('dashReading').innerHTML=
+   metric('Hora com mais consultas',peakHour?String(peakHour.hour_num).padStart(2,'0')+'h · '+fmt(peakHour.consultations)+' consultas':'Sem dados suficientes')+
+   metric('Novas instalações',num(ret[currentPeriod]?.new))+
+   metric('Instalações que regressaram',num(ret[currentPeriod]?.returning))+
+   metric('Média de ações por sessão',num(s.avg_actions))+
+   metric('Sessões com vários módulos',pct(s.multi_module_pct));
+ }
 }
 
 function renderInsuranceNoCases(cases){
@@ -1023,7 +1054,7 @@ async function loadDashboard(){
   if(currentPage!=='dashboard'&&!detailCache.analytics)await ensurePageDetail(currentPage);
   // The small plate register also serves the dashboard, but is fetched only once per
   // page visit/manual refresh instead of on every automatic statistics refresh.
-  if((currentPage==='dashboard'||currentPage==='insurance')&&!detailCache.insurance)await ensureInsuranceNoCases();
+  if((currentPage==='insurance'||(currentPage==='dashboard'&&$('dashboardRecordsDetails')?.open))&&!detailCache.insurance)await ensureInsuranceNoCases();
   if(currentPeriod==='total'&&!detailCache.analytics)await ensureAnalyticsLoaded();
   return latestData;
  }catch(e){
@@ -1052,6 +1083,14 @@ document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',(
 
 document.addEventListener('click',e=>{const go=e.target.closest('[data-go-page]');if(go){switchPage(go.dataset.goPage);return}const th=e.target.closest('table.sortable th[data-sort-col]');if(th)sortTable(th)});
 document.addEventListener('keydown',e=>{const th=e.target.closest('table.sortable th[data-sort-col]');if(th&&(e.key==='Enter'||e.key===' ')){e.preventDefault();sortTable(th)}});
+$('dashboardRecordsDetails').addEventListener('toggle',()=>{
+ if(!$('dashboardRecordsDetails').open||!latestData)return;
+ renderDashboard(latestData);
+ if(!detailCache.insurance)ensureInsuranceNoCases();
+});
+$('dashboardTrendsDetails').addEventListener('toggle',()=>{
+ if($('dashboardTrendsDetails').open&&latestData)renderDashboard(latestData);
+});
 $('errorSearch').addEventListener('input',applyErrorSearch);
 $('plateErrorSearch').addEventListener('input',applyPlateErrorSearch);
 $('retryLoadBtn').addEventListener('click',()=>refreshCurrentData().then(d=>{if(d)toast('Dados atualizados.')}));
