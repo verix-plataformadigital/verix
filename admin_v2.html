@@ -572,6 +572,7 @@ function switchPage(page){
   $('pageTitle').textContent=meta[0];
   $('pageSubtitle').textContent=meta[1];
   window.scrollTo({top:0});
+  if(latestData&&detailCache.analytics)renderCurrentPage(latestData);
   ensurePageDetail(page);
 }
 function detailEndpoint(kind){
@@ -590,7 +591,7 @@ async function ensureAnalyticsLoaded(){
    const raw=payload.analytics||{};
    latestData={...latestData,analytics:{...raw,overview:{...(raw.overview||{}),consulted_3m:existingOverview.consulted_3m}},dashboardOnly:false,analyticsDetailed:true};
    detailCache.analytics=true;
-   renderAll(latestData);
+   renderCurrentPage(latestData);
    return true;
   }catch(e){
    toast('Não foi possível carregar as estatísticas detalhadas: '+e.message);
@@ -877,6 +878,20 @@ function renderSystem(d){
 }
 
 function renderAll(d){latestData=d;renderDashboard(d);renderInsurance(d);renderSpeed(d);renderLegislation(d);renderUsage(d);renderErrors(d);renderPerformance(d);renderInsights(d);renderSystem(d)}
+function renderCurrentPage(d=latestData){
+ if(!d)return;
+ switch(currentPage){
+  case 'dashboard':renderDashboard(d);break;
+  case 'insurance':renderInsurance(d);break;
+  case 'speed':renderSpeed(d);break;
+  case 'legislation':renderLegislation(d);break;
+  case 'usage':renderUsage(d);break;
+  case 'errors':renderErrors(d);break;
+  case 'performance':renderPerformance(d);break;
+  case 'insights':renderInsights(d);break;
+  case 'system':renderSystem(d);break;
+ }
+}
 async function loadDashboard(){
  if(dashboardBusy)return null;
  dashboardBusy=true;
@@ -896,7 +911,7 @@ async function loadDashboard(){
    if(currentPeriod!=='total')renderDashboard(d);
   }else{
    if(!fresh.dashboardOnly)detailCache.analytics=true;
-   renderAll(d);
+   renderCurrentPage(d);
   }
   const partial=Object.keys(d.errors||{}).length>0;
   setBackend(partial?'partial':'online');
@@ -949,11 +964,12 @@ document.querySelectorAll('#periods button').forEach(b=>b.addEventListener('clic
   }
   return;
  }
- if(detailCache.analytics)renderAll(latestData);else renderDashboard(latestData);
+ if(detailCache.analytics)renderCurrentPage(latestData);else renderDashboard(latestData);
 }));
 $('refreshBtn').addEventListener('click',()=>refreshCurrentData().then(d=>{if(d)toast('Dados atualizados.')}));$('logoutBtn').addEventListener('click',logout);$('reset24hBtn').addEventListener('click',resetAllPeriods);
-$('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginError').textContent='';try{await doLogin($('password').value);$('loginScreen').style.display='none';$('app').style.display='block';await loadDashboard();refreshTimer=setInterval(loadDashboard,REFRESH_MS)}catch(err){$('loginError').textContent=err.message}});
-if(token()){$('loginScreen').style.display='none';$('app').style.display='block';loadDashboard();refreshTimer=setInterval(loadDashboard,REFRESH_MS)}
+$('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginError').textContent='';try{await doLogin($('password').value);$('loginScreen').style.display='none';$('app').style.display='block';await loadDashboard();refreshTimer=setInterval(()=>{if(!document.hidden)loadDashboard()},REFRESH_MS)}catch(err){$('loginError').textContent=err.message}});
+if(token()){$('loginScreen').style.display='none';$('app').style.display='block';loadDashboard();refreshTimer=setInterval(()=>{if(!document.hidden)loadDashboard()},REFRESH_MS)}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&token())loadDashboard()});
 </script>
 </body>
 </html>
