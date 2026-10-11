@@ -893,7 +893,7 @@ async function loadDashboard(){
    // when there is no retained detailed payload, not on every 30-second poll.
    detailCache.analytics=false;
    detailCache.speed=false;detailCache.errors=false;detailCache.system=false;
-   renderDashboard(d);
+   if(currentPeriod!=='total')renderDashboard(d);
   }else{
    if(!fresh.dashboardOnly)detailCache.analytics=true;
    renderAll(d);
@@ -906,6 +906,7 @@ async function loadDashboard(){
   // The small plate register also serves the dashboard, but is fetched only once per
   // page visit/manual refresh instead of on every automatic statistics refresh.
   if((currentPage==='dashboard'||currentPage==='insurance')&&!detailCache.insurance)await ensureInsuranceNoCases();
+  if(currentPeriod==='total'&&!detailCache.analytics)await ensureAnalyticsLoaded();
   return latestData;
  }catch(e){
   setBackend('offline');
@@ -917,7 +918,7 @@ async function loadDashboard(){
 function refreshCurrentData(){
  const detailKey=currentPage==='dashboard'?'insurance':currentPage;
  if(Object.prototype.hasOwnProperty.call(detailCache,detailKey))detailCache[detailKey]=false;
- if(currentPage!=='dashboard')detailCache.analytics=false;
+ if(currentPage!=='dashboard'||currentPeriod==='total')detailCache.analytics=false;
  return loadDashboard();
 }
 async function resetAllPeriods(){
