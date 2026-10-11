@@ -1,7 +1,7 @@
 -- VÉRIX Admin refresh performance fixes.
--- The narrow dashboard RPC returns the data required for the Resumo only; other sections lazy-load full analytics.
--- Both routines use function-scoped work_mem so other application traffic retains the project default.
-BEGIN;
+-- A summary-only RPC avoids full analytics work while the user is on the Resumo.
+-- Details are fetched only after navigating to a detailed Admin section.
+-- Memory is scoped to these functions to prevent temporary file spills without changing global DB defaults.
 CREATE OR REPLACE FUNCTION public.verix2_admin_dashboard(p_now timestamp with time zone DEFAULT now())
  RETURNS jsonb
  LANGUAGE sql
@@ -88,7 +88,7 @@ insurance AS (
 presence AS (
  SELECT session_id,max(occurred_at) FILTER(WHERE event IN('app_open','heartbeat')) last_presence,
         max(occurred_at) FILTER(WHERE event='session_close') last_close
- FROM ev WHERE session_id IS NOT NULL AND event IN('app_open','heartbeat','session_close') AND occurred_at>=p_now-interval '2 minutes'
+ FROM public.verix2_events WHERE session_id IS NOT NULL AND event IN('app_open','heartbeat','session_close') AND occurred_at>=p_now-interval '2 minutes' AND occurred_at<=p_now+interval '30 seconds'
  GROUP BY session_id
 ),
 overview AS (
