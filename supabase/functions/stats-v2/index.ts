@@ -413,7 +413,7 @@ async function loadCinemometerAnalytics24h(now:string){
   };
 }
 
-let cachedStats: { at:number; body:string } | null = null;
+let cachedStats: { at:number; body:string; key:string } | null = null;
 let cachedAnalytics: { at:number; body:string } | null = null;
 const STATS_CACHE_MS = 3000;
 
@@ -564,7 +564,10 @@ Deno.serve(async (req) => {
 
     const now = new Date().toISOString();
 
-    if(cachedStats && (Date.now()-cachedStats.at)<STATS_CACHE_MS) {
+    const statsCacheKey = url.searchParams.get("v") || "legacy";
+    const legacyClient = statsCacheKey !== "admin-simple-2026-10-11-r8";
+
+    if(cachedStats && cachedStats.key===statsCacheKey && (Date.now()-cachedStats.at)<STATS_CACHE_MS) {
       return new Response(cachedStats.body,{
         status:200,
         headers:{
@@ -578,7 +581,7 @@ Deno.serve(async (req) => {
     // Fast path: the consolidated analytics RPC already contains the
     // dashboard, insurance, legislation, usage and most cinemometer data.
     const settled = await Promise.allSettled([
-      rpc("verix2_admin_dashboard",{p_now:now}),
+      rpc(legacyClient ? "verix2_admin_analytics" : "verix2_admin_dashboard",{p_now:now}),
       rpc("verix2_asf_diagnostics",{p_now:now,p_recent_limit:25}),
       resetState(),
       rpc("verix2_consulted_installations_3m",{p_now:now})
@@ -615,7 +618,7 @@ Deno.serve(async (req) => {
 
     const payload = {
       ok:true,
-      dashboardOnly:true,
+      dashboardOnly:!legacyClient,
       generatedAt:now,
       current_app_version:CURRENT_APP_VERSION,
       reset24hAt:resetAt?.reset_24h_at || null,
@@ -630,7 +633,7 @@ Deno.serve(async (req) => {
     };
 
     const body=JSON.stringify(payload);
-    cachedStats={at:Date.now(),body};
+    cachedStats={at:Date.now(),body,key:statsCacheKey};
 
     return new Response(body,{
       status:200,
