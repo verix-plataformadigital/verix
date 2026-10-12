@@ -528,15 +528,15 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
 
 <script>
 const API_ORIGIN='https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/';
-const ADMIN_CACHE='admin-simple-2026-10-11-r9';
+const ADMIN_CACHE='admin-simple-2026-10-12-r10';
 const AUTH_API=API_ORIGIN+'admin-auth-v2?v='+encodeURIComponent(ADMIN_CACHE);
 const STATS_API=API_ORIGIN+'stats-v2?v='+encodeURIComponent(ADMIN_CACHE);
 const TOKEN_KEY='VERIX_ADMIN_V2_TOKEN';
 const REFRESH_MS=30000;
 
-let currentPeriod='24h',currentPage='dashboard',latestData=null,refreshTimer=null,dashboardBusy=false,analyticsLoadPromise=null;
-const detailCache={analytics:false,diagnostics:false,speed:false,errors:false,system:false,insurance:false};
-const detailBusy={analytics:false,diagnostics:false,speed:false,errors:false,system:false,insurance:false};
+let currentPeriod='24h',currentPage='dashboard',latestData=null,refreshTimer=null,dashboardBusy=false,analyticsLoadPromise=null,auxiliaryLoadPromise=null;
+const detailCache={analytics:false,auxiliary:false,diagnostics:false,speed:false,errors:false,system:false,insurance:false};
+const detailBusy={analytics:false,auxiliary:false,diagnostics:false,speed:false,errors:false,system:false,insurance:false};
 
 const $=id=>document.getElementById(id);
 const fmt=v=>v==null||v===''||!Number.isFinite(Number(v))?'—':Number(v).toLocaleString('pt-PT');
@@ -742,27 +742,72 @@ async function ensureDiagnostics(){
   detailBusy.diagnostics=false;
  }
 }
+async function ensureAuxiliaryLoaded(){
+ if(!latestData||!token())return false;
+ if(detailCache.auxiliary)return true;
+ if(auxiliaryLoadPromise)return auxiliaryLoadPromise;
+ detailBusy.auxiliary=true;
+ auxiliaryLoadPromise=(async()=>{
+  try{
+   const payload=await request(detailEndpoint('auxiliary'));
+   if(!latestData)return false;
+   const auxiliary=payload.auxiliary||{};
+   latestData={...latestData,analytics:{...(latestData.analytics||{}),...auxiliary}};
+   detailCache.auxiliary=true;
+   return true;
+  }catch(e){
+   toast('Não foi possível carregar as métricas auxiliares: '+e.message);
+   return false;
+  }finally{
+   detailBusy.auxiliary=false;
+   auxiliaryLoadPromise=null;
+  }
+ })();
+ return auxiliaryLoadPromise;
+}
 async function ensurePageDetail(page){
  if(!latestData||!token()||page==='dashboard')return;
-
- // The main stats endpoint already contains the fast dashboard analytics.
- // Keep lifetime analytics and ASF diagnostics out of the initial dashboard request.
- const needsFullAnalytics=page==='legislation'||page==='insights';
  renderCurrentPage(latestData);
- if(needsFullAnalytics){
-  const loaded=await ensureAnalyticsLoaded();
+
+ // Load only the additional metrics required by each tab; never block these tabs
+ // on the legacy whole-history analytics function.
+ if(['legislation','insights','performance','system'].includes(page)){
+  const loaded=await ensureAuxiliaryLoaded();
   if(!loaded)return;
-  renderCurrentPage(latestData);
+  if(currentPage===page)renderCurrentPage(latestData);
  }
 
  if(page==='insurance'){
   await Promise.all([ensureInsuranceNoCases(),ensureDiagnostics()]);
+  if(currentPage===page)renderInsurance(latestData);
   return;
  }
  if(page==='performance'){
   await ensureDiagnostics();
+  if(currentPage===page)renderPerformance(latestData);
   return;
  }
+ if(page==='insights'){
+  if(!detailCache.speed&&!detailBusy.speed){
+   detailBusy.speed=true;
+   try{
+    const d=await request(detailEndpoint('speed'));
+    latestData={...latestData,cinemometer:d.cinemometer||{}};
+    detailCache.speed=true;
+   }catch(e){
+    toast('Não foi possível carregar os dados do Cinemómetro para Insights: '+e.message);
+   }finally{
+    detailBusy.speed=false;
+   }
+  }
+  if(currentPage===page)renderInsights(latestData);
+  return;
+ }
+ if(page==='legislation'){
+  if(currentPage===page)renderLegislation(latestData);
+  return;
+ }
+
  const kind=page==='speed'?'speed':page==='errors'?'errors':page==='system'?'system':'';
  if(!kind||detailCache[kind]||detailBusy[kind])return;
  detailBusy[kind]=true;
@@ -772,6 +817,7 @@ async function ensurePageDetail(page){
   if(kind==='errors')latestData={...latestData,investigation:d.investigation||{}};
   if(kind==='system')latestData={...latestData,lifetime:d.lifetime||{}};
   detailCache[kind]=true;
+  if(currentPage!==page)return;
   if(kind==='speed')renderSpeed(latestData);
   if(kind==='errors')renderErrors(latestData);
   if(kind==='system')renderSystem(latestData);
@@ -781,6 +827,7 @@ async function ensurePageDetail(page){
   detailBusy[kind]=false;
  }
 }
+
 function renderDashboard(d){
  const a=d.analytics||{},o=a.overview||{},p=period(),ret=a.retention||{},u=a.usage||{},s=u.sessions?.[currentPeriod]||{};
  const users=Number(o['unique_'+currentPeriod]||0);
@@ -1051,8 +1098,8 @@ function renderInsights(d){
  const days=(u.daily||[]).slice().sort((x,y)=>Number(y.lookups||0)-Number(x.lookups||0));
  const laws=(l.items||[]).slice().sort((x,y)=>Number(y.qty||0)-Number(x.qty||0));
  const topModule=modules[0],topHour=hours[0],topDay=days[0],topLaw=laws[0],c=d.cinemometer||{};
- const avg=val(c,'speed_avg','avg_24h')??val(summary,'avg_24h','speed_avg');
- const median=val(c,'speed_p50','p50_24h')??val(summary,'p50_24h','speed_p50');
+ const avg=val(summary,'avg_24h','speed_avg')??val(c,'analytics_speed_avg_24h')??val(c,'speed_avg','avg_24h');
+ const median=val(summary,'p50_24h','speed_p50')??val(c,'analytics_speed_p50_24h')??val(c,'speed_p50','p50_24h');
  $('insightCards').innerHTML=
   card('MÓDULO MAIS USADO · 30 DIAS',topModule?esc(topModule.module||'—'):'—',topModule?fmt(topModule.qty)+' ações registadas.':'Sem dados suficientes.','cyan')+
   card('HORA COM MAIS CONSULTAS · 24 H',topHour?String(topHour.hour_num??'').padStart(2,'0')+'h':'—',topHour?fmt(topHour.consultations)+' consultas iniciadas.':'Sem dados suficientes.')+
@@ -1063,7 +1110,7 @@ function renderInsights(d){
  barList('insightModules',modules.map(x=>({label:x.module||'—',value:x.qty})));
  hourGrid('insightHours',u.hourly||[]);
  $('insightLegislation').innerHTML=table(['ITEM','CÓPIAS','CÓDIGO','DESCRIÇÃO'],laws.slice(0,12).map(x=>'<tr>'+td('<strong>'+esc(x.item_label||x.item_id||'—')+'</strong>')+td(fmt(x.qty))+td(fmt(x.code_qty))+td(fmt(x.desc_qty))+'</tr>'));
- const dist=a.speed?.distribution_24h||[];
+ const dist=a.speed?.distribution_24h||c.distribution_24h||[];
  if(dist.length){
   const max=Math.max(1,...dist.map(x=>Number(x.qty)||0));
   $('insightSpeedDistribution').innerHTML=dist.map(x=>'<div class="bar-row" style="margin-bottom:8px"><div class="bar-label">'+esc(x.bucket_start+'–'+(Number(x.bucket_start)+9)+' km/h')+'</div><div class="track"><div class="fill" style="width:'+Math.max(2,Number(x.qty)/max*100)+'%"></div></div><div class="num">'+fmt(x.qty)+'</div></div>').join('');
