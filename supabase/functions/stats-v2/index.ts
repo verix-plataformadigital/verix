@@ -454,7 +454,7 @@ async function loadCinemometerAnalytics24h(now:string){
 let cachedStats: { at:number; body:string; key:string } | null = null;
 let cachedAnalytics: { at:number; body:string } | null = null;
 let cachedDiagnostics: { at:number; body:string } | null = null;
-const STATS_CACHE_MS = 15000;
+const STATS_CACHE_MS = 35000;
 const ANALYTICS_CACHE_MS = 60000;
 const DETAIL_CACHE_MS = 30000;
 const AUXILIARY_CACHE_MS = 60000;
@@ -529,6 +529,20 @@ Deno.serve(async (req) => {
       }
     }
 
+    if(req.method==="GET" && detail==="total") {
+      const cached=getDetailCache("total",AUXILIARY_CACHE_MS,req);
+      if(cached)return cached;
+      const now=new Date().toISOString();
+      try {
+        const analytics=await rpc("verix2_admin_total_fast",{p_now:now});
+        const body=JSON.stringify({ok:true,detail:"total",generatedAt:now,analytics});
+        setDetailCache("total",body);
+        return new Response(body,{status:200,headers:{"Content-Type":"application/json",...corsHeaders(req),"X-Verix-Detail-Cache":"MISS"}});
+      } catch(error) {
+        return json({ok:false,error:"total_detail_failed",detail:String((error as Error)?.message||error)},500,req);
+      }
+    }
+
     if(req.method==="GET" && detail==="auxiliary") {
       const cached=getDetailCache("auxiliary",AUXILIARY_CACHE_MS,req);
       if(cached)return cached;
@@ -595,6 +609,20 @@ Deno.serve(async (req) => {
       }
     }
 
+    if(req.method==="GET" && detail==="errors-summary") {
+      const cached=getDetailCache("errors-summary",DETAIL_CACHE_MS,req);
+      if(cached)return cached;
+      const now=new Date().toISOString();
+      try {
+        const errors=await rpc("verix2_admin_errors_fast",{p_now:now});
+        const body=JSON.stringify({ok:true,detail:"errors-summary",generatedAt:now,errors});
+        setDetailCache("errors-summary",body);
+        return new Response(body,{status:200,headers:{"Content-Type":"application/json",...corsHeaders(req),"X-Verix-Detail-Cache":"MISS"}});
+      } catch(error) {
+        return json({ok:false,error:"errors_summary_failed",detail:String((error as Error)?.message||error)},500,req);
+      }
+    }
+
     if(req.method==="GET" && detail==="errors") {
       const cached=getDetailCache("errors",DETAIL_CACHE_MS,req);
       if(cached)return cached;
@@ -656,15 +684,17 @@ Deno.serve(async (req) => {
     const now = new Date().toISOString();
 
     const statsCacheKey = url.searchParams.get("v") || "legacy";
-    // Keep the dashboard-only Admin contract aligned with admin_v2.html.
-    // r9 only invalidated the browser cache; it still uses the optimized dashboard RPC.
+    const forceRefresh = url.searchParams.get("fresh") === "1";
+    // These Admin releases use the compact dashboard contract and shared DB cache.
     const legacyClient = ![
       "admin-simple-2026-10-11-r8",
       "admin-simple-2026-10-11-r9",
-      "admin-simple-2026-10-12-r10"
+      "admin-simple-2026-10-12-r10",
+      "admin-simple-2026-10-12-r11",
+      "admin-simple-2026-10-12-r12"
     ].includes(statsCacheKey);
 
-    if(cachedStats && cachedStats.key===statsCacheKey && (Date.now()-cachedStats.at)<STATS_CACHE_MS) {
+    if(!forceRefresh && cachedStats && cachedStats.key===statsCacheKey && (Date.now()-cachedStats.at)<STATS_CACHE_MS) {
       return new Response(cachedStats.body,{
         status:200,
         headers:{
@@ -678,7 +708,10 @@ Deno.serve(async (req) => {
     // Fast path: the consolidated analytics RPC already contains the
     // dashboard, insurance, legislation, usage and most cinemometer data.
     const settled = await Promise.allSettled([
-      rpc(legacyClient ? "verix2_admin_analytics" : "verix2_admin_dashboard_fast",{p_now:now}),
+      rpc(legacyClient ? "verix2_admin_analytics" : "verix2_admin_dashboard_cached",{
+        p_now:now,
+        p_force_refresh:forceRefresh
+      }),
       resetState(),
       rpc("verix2_consulted_installations_3m",{p_now:now})
     ]);
@@ -714,7 +747,7 @@ Deno.serve(async (req) => {
     const payload = {
       ok:true,
       dashboardOnly:!legacyClient,
-      generatedAt:now,
+      generatedAt:typeof analyticsObj.generated_at==="string" ? analyticsObj.generated_at : now,
       current_app_version:CURRENT_APP_VERSION,
       reset24hAt:resetAt?.reset_24h_at || null,
       resetAllAt:resetAt?.reset_all_at || null,
