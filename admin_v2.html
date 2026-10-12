@@ -121,6 +121,8 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
 .error-tools input:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
 .error-tools #errorSearchCount{font-size:9px;color:var(--muted);text-align:right}
 .error-search-empty{margin:0 0 12px}
+.error-kind-code{margin-top:3px;font-size:8px;color:#7c8c92;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;word-break:break-word}
+.error-kind-note{margin-top:5px;max-width:360px;color:#62747b;font-size:10px;line-height:1.4}
 .table.sortable th{cursor:pointer;user-select:none;white-space:nowrap}
 .table.sortable th:focus-visible{outline:2px solid var(--cyan);outline-offset:-2px}
 .sort-indicator{display:inline-block;margin-left:3px;color:#94a2a8;font-size:9px}
@@ -599,6 +601,27 @@ function wireDashboardDrilldowns(){
 }
 
 function activateDashboardCard(el){if(el?.dataset?.drillPage)switchPage(el.dataset.drillPage)}
+function asfErrorLabel(kind){
+ const k=String(kind||'').toLowerCase();
+ const labels={
+  http_null:'Sem resposta HTTP',http_400:'Pedido rejeitado (HTTP 400)',security_auth:'Falha de autorização VÉRIX',
+  http_401:'Autorização recusada (HTTP 401)',http_403:'Acesso recusado (HTTP 403)',http_429:'Limite de pedidos (HTTP 429)',
+  http_500:'Erro interno do relay (HTTP 500)',http_502:'Falha de ligação à ASF (HTTP 502)',http_503:'Relay indisponível (HTTP 503)',
+  http_504:'Tempo de espera excedido (HTTP 504)',timeout:'Tempo de espera excedido',network:'Falha de rede'
+ };
+ return labels[k]||String(kind||'Desconhecido').replace(/_/g,' ');
+}
+function asfErrorNote(kind){
+ switch(String(kind||'').toLowerCase()){
+  case 'http_null':return 'O browser não recebeu um estado HTTP. As tentativas registadas incluem timeout e “Failed to fetch”; isto não é uma resposta “sem seguro”.';
+  case 'http_400':return 'O relay rejeitou o pedido antes de consultar a ASF. Nos eventos analisados, a resposta corresponde a “invalid_plate”; a matrícula enviada não ficou registada, por isso falta confirmar se estava vazia ou fora do comprimento aceite.';
+  case 'security_auth':return 'A validação da autorização da instalação falhou antes de haver tentativa ASF. O evento não guarda a causa técnica mais específica.';
+  case 'http_502':return 'O relay não conseguiu estabelecer a ligação ao serviço a montante.';
+  case 'http_504':case 'timeout':return 'A tentativa excedeu o tempo limite. Verifica a duração e se existiu resposta do relay.';
+  case 'network':return 'Falha de rede sem resposta utilizável. O browser não permite distinguir sempre a origem sem registos adicionais.';
+  default:return 'Cruzar hora, browser, transporte e detalhes da resposta para determinar a origem.';
+ }
+}
 function parseSortValue(raw){
  const value=String(raw||'').trim();if(!value||value==='—')return {kind:'empty',value:''};
  const date=value.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})(?:,?\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
@@ -841,8 +864,8 @@ function renderInsurance(d){
  const q=a.insurance_quality||{};const diag=d.diagnostics?.quality_24h||{};
  /* As métricas de latência são renderizadas na página Desempenho. */
  $('insuranceCompare').innerHTML=table(['PERÍODO','CONSULTAS','RESULTADOS','COM SEGURO','SEM REGISTO','ERROS'],['24h','7d','30d','total'].map(k=>{const x=a.insurance?.[k]||{};const label=k==='total'?'HISTÓRICO TOTAL':k.toUpperCase();return '<tr>'+td('<strong>'+label+'</strong>')+td(fmt(x.started))+td(fmt(x.finals))+td(fmt(x.insured))+td(fmt(x.uninsured))+td(fmt(x.errors))+'</tr>'}));
- const types=a.errors?.types||[];barList('insuranceErrors',types.map(x=>({label:x.kind,value:x.qty})),'red');
- const plates=a.errors?.plates||[];$('insurancePlates').innerHTML=table(['MATRÍCULA','CONSULTAS','EVENTOS','ÚLTIMO','TIPOS'],plates.slice(0,20).map(x=>'<tr>'+td('<strong>'+esc(x.plate||x.plate_key||'—')+'</strong>')+td(fmt(x.qty))+td(fmt(x.event_qty??x.qty))+td(datePT(x.last_at))+td(esc((x.kinds||[]).join(', ')||'—'))+'</tr>'));
+ const types=a.errors?.types||[];barList('insuranceErrors',types.map(x=>({label:asfErrorLabel(x.kind),value:x.qty})),'red');
+ const plates=a.errors?.plates||[];$('insurancePlates').innerHTML=table(['MATRÍCULA','CONSULTAS','EVENTOS','ÚLTIMO','TIPOS'],plates.slice(0,20).map(x=>'<tr>'+td('<strong>'+esc(x.plate||x.plate_key||'—')+'</strong>')+td(fmt(x.qty))+td(fmt(x.event_qty??x.qty))+td(datePT(x.last_at))+td(esc((x.kinds||[]).map(asfErrorLabel).join(', ')||'—'))+'</tr>'));
  applyPlateErrorSearch();
  const sig=a.errors?.signatures||[];$('insuranceTechnical').innerHTML=
   '<div class="kpi-strip">'+metric('Assinaturas repetidas',num(sig.length))+metric('P50 ASF',q.latency_p50_ms==null?'—':fmt(q.latency_p50_ms)+' ms')+metric('P95 ASF',q.latency_p95_ms==null?'—':fmt(q.latency_p95_ms)+' ms')+metric('Pendentes',num(p.pending))+'</div>'+
@@ -913,15 +936,15 @@ function renderErrors(d){
   card('EVENTOS DE ERRO DA VERSÃO '+versionLabel,num(inv.current_version_error_events),'Eventos técnicos brutos da versão atual.')+
   card('INSTALAÇÕES AFETADAS',num(inv.current_version_installations),'Onde apareceu uma consulta com erro nesta versão.')+
   card('MATRÍCULAS VÁLIDAS AFETADAS',num(inv.current_version_plates),'Matrículas com formato válido capturadas nos erros.');
- $('errorTypes').innerHTML=table(['TIPO','CONSULTAS','EVENTOS','ÚLTIMO REGISTO'],(e.types||[]).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'Desconhecido')+'</span>')+td('<strong>'+fmt(x.qty)+'</strong>')+td(fmt(x.event_qty??x.qty))+td(datePT(x.last_at))+'</tr>'));
+ $('errorTypes').innerHTML=table(['TIPO / INTERPRETAÇÃO','CONSULTAS','EVENTOS','ÚLTIMO REGISTO'],(e.types||[]).map(x=>'<tr>'+td('<span class="tag red">'+esc(asfErrorLabel(x.kind))+'</span><div class="error-kind-code">'+esc(x.kind||'Desconhecido')+'</div><div class="error-kind-note">'+esc(asfErrorNote(x.kind))+'</div>')+td('<strong>'+fmt(x.qty)+'</strong>')+td(fmt(x.event_qty??x.qty))+td(datePT(x.last_at))+'</tr>'));
  const bursts=inv.current_version_bursts_5m||[];$('errorBursts').innerHTML=table(['HORA','CONSULTAS','EVENTOS'],bursts.slice(0,12).map(x=>'<tr>'+td('<strong>'+datePT(x.start)+'</strong>')+td('<strong>'+fmt(x.count)+'</strong>')+td(fmt(x.event_count??x.count))+'</tr>'));
  $('errorReading').innerHTML=buildErrorReading(d);
  $('errorInstallations').innerHTML=table(['INSTALAÇÃO','CONSULTAS','EVENTOS'],(e.installations||[]).slice(0,15).map(x=>'<tr>'+td('<strong>'+esc(x.installation_id||'—')+'</strong>')+td(fmt(x.qty))+td(fmt(x.event_qty??x.qty))+'</tr>'));
- $('errorSignatures').innerHTML=table(['TIPO','CONSULTAS','EVENTOS','INSTALAÇÕES'],(e.signatures||[]).slice(0,15).map(x=>'<tr>'+td('<span class="tag red">'+esc(x.kind||'—')+'</span>')+td(fmt(x.qty))+td(fmt(x.event_qty??x.qty))+td(fmt(x.installs))+'</tr>'));
+ $('errorSignatures').innerHTML=table(['TIPO','CONSULTAS','EVENTOS','INSTALAÇÕES'],(e.signatures||[]).slice(0,15).map(x=>'<tr>'+td('<span class="tag red">'+esc(asfErrorLabel(x.kind))+'</span><div class="error-kind-code">'+esc(x.kind||'—')+'</div>')+td(fmt(x.qty))+td(fmt(x.event_qty??x.qty))+td(fmt(x.installs))+'</tr>'));
  const plateCases=inv.current_version_plate_cases||[];
- $('errorPlates').innerHTML=plateCases.length?table(['MATRÍCULA CAPTURADA','DATA E HORA','TIPO DE ERRO','BROWSER'],plateCases.map(x=>'<tr>'+td('<strong>'+esc(x.matricula||'Não capturada')+'</strong>')+td(datePT(x.occurred_at))+td('<span class="tag red">'+esc(x.error_type||'Desconhecido')+'</span>')+td(esc(x.browser||'—'))+'</tr>')):'<div class="empty">Não há consultas com erro registadas nas últimas 24 horas.</div>';
+ $('errorPlates').innerHTML=plateCases.length?table(['MATRÍCULA CAPTURADA','DATA E HORA','TIPO DE ERRO','BROWSER'],plateCases.map(x=>'<tr>'+td('<strong>'+esc(x.matricula||'Não capturada')+'</strong>')+td(datePT(x.occurred_at))+td('<span class="tag red" title="'+esc(asfErrorNote(x.error_type))+'">'+esc(asfErrorLabel(x.error_type))+'</span>')+td(esc(x.browser||'—'))+'</tr>')):'<div class="empty">Não há consultas com erro registadas nas últimas 24 horas.</div>';
  const recent=inv.latest_current_version||[];
- $('errorTechnical').innerHTML=recent.length?'<table class="table"><thead><tr><th>Hora</th><th>Browser</th><th>Transporte</th><th>Tipo</th><th>HTTP</th><th>ASF ms</th><th>Relay ms</th><th>Hash</th></tr></thead><tbody>'+recent.slice(0,15).map(x=>'<tr>'+td(datePT(x.occurred_at))+td(esc(x.browser||'—'))+td(esc(x.transport||'—'))+td(esc(x.error_type||'—'))+td(x.http_status==null?'—':fmt(x.http_status))+td(x.duration_ms==null?'—':fmt(x.duration_ms)+' ms')+td(x.relay_latency_ms==null?'—':fmt(x.relay_latency_ms)+' ms')+td(esc(x.response_hash||'—'))+'</tr>').join('')+'</tbody></table>':'<div class="empty">Sem incidentes recentes.</div>';
+ $('errorTechnical').innerHTML=recent.length?'<table class="table"><thead><tr><th>Hora</th><th>Browser</th><th>Transporte</th><th>Tipo</th><th>HTTP</th><th>ASF ms</th><th>Relay ms</th><th>Hash</th></tr></thead><tbody>'+recent.slice(0,15).map(x=>'<tr>'+td(datePT(x.occurred_at))+td(esc(x.browser||'—'))+td(esc(x.transport||'—'))+td('<span title="'+esc(asfErrorNote(x.error_type))+'">'+esc(asfErrorLabel(x.error_type))+'</span><div class="error-kind-code">'+esc(x.error_type||'—')+'</div>')+td(x.http_status==null?'—':fmt(x.http_status))+td(x.duration_ms==null?'—':fmt(x.duration_ms)+' ms')+td(x.relay_latency_ms==null?'—':fmt(x.relay_latency_ms)+' ms')+td(esc(x.response_hash||'—'))+'</tr>').join('')+'</tbody></table>':'<div class="empty">Sem incidentes recentes.</div>';
  function buildErrorReading(data){
    const n=Number(inv.current_version_errors||0),inst=Number(inv.current_version_installations||0),hashes=Number(inv.current_version_hashes||0);
    const types=(e.types||[]).slice().sort((a,b)=>Number(b.qty||0)-Number(a.qty||0));
