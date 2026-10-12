@@ -1,4 +1,10 @@
--- This administrative aggregate is consumed only by the authenticated stats-v2 Edge Function.
--- Do not expose SECURITY DEFINER telemetry/insurance aggregates through PostgREST to anon/authenticated.
-REVOKE ALL ON FUNCTION public.verix2_admin_auxiliary_fast(timestamp with time zone) FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.verix2_admin_auxiliary_fast(timestamp with time zone) TO service_role;
+-- Restrict the optional auxiliary admin aggregate when it exists in this database.
+-- It is not part of every installation's migration history, so this migration must remain replay-safe.
+DO $$
+BEGIN
+  IF to_regprocedure('public.verix2_admin_auxiliary_fast(timestamp with time zone)') IS NOT NULL THEN
+    EXECUTE 'REVOKE ALL ON FUNCTION public.verix2_admin_auxiliary_fast(timestamp with time zone) FROM PUBLIC, anon, authenticated';
+    EXECUTE 'GRANT EXECUTE ON FUNCTION public.verix2_admin_auxiliary_fast(timestamp with time zone) TO service_role';
+  END IF;
+END
+$$;
