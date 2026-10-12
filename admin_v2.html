@@ -528,15 +528,15 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
 
 <script>
 const API_ORIGIN='https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/';
-const ADMIN_CACHE='admin-simple-2026-10-12-r10';
+const ADMIN_CACHE='admin-simple-2026-10-12-r11';
 const AUTH_API=API_ORIGIN+'admin-auth-v2?v='+encodeURIComponent(ADMIN_CACHE);
 const STATS_API=API_ORIGIN+'stats-v2?v='+encodeURIComponent(ADMIN_CACHE);
 const TOKEN_KEY='VERIX_ADMIN_V2_TOKEN';
 const REFRESH_MS=30000;
 
-let currentPeriod='24h',currentPage='dashboard',latestData=null,refreshTimer=null,dashboardBusy=false,analyticsLoadPromise=null,auxiliaryLoadPromise=null;
-const detailCache={analytics:false,auxiliary:false,diagnostics:false,speed:false,errors:false,system:false,insurance:false};
-const detailBusy={analytics:false,auxiliary:false,diagnostics:false,speed:false,errors:false,system:false,insurance:false};
+let currentPeriod='24h',currentPage='dashboard',latestData=null,refreshTimer=null,dashboardBusy=false,analyticsLoadPromise=null,auxiliaryLoadPromise=null,totalLoadPromise=null;
+const detailCache={analytics:false,auxiliary:false,total:false,diagnostics:false,speed:false,errors:false,system:false,insurance:false};
+const detailBusy={analytics:false,auxiliary:false,total:false,diagnostics:false,speed:false,errors:false,system:false,insurance:false};
 
 const $=id=>document.getElementById(id);
 const fmt=v=>v==null||v===''||!Number.isFinite(Number(v))?'—':Number(v).toLocaleString('pt-PT');
@@ -742,6 +742,18 @@ async function ensureDiagnostics(){
   detailBusy.diagnostics=false;
  }
 }
+function mergeAuxiliaryAnalytics(auxiliary){
+ const previous=latestData?.analytics||{};
+ const merged={...previous,...(auxiliary||{})};
+ for(const key of ['overview','insurance','retention']){
+  if(auxiliary?.[key])merged[key]={...(previous[key]||{}),...auxiliary[key]};
+ }
+ if(auxiliary?.usage){
+  merged.usage={...(previous.usage||{}),...auxiliary.usage,
+   sessions:{...((previous.usage||{}).sessions||{}),...((auxiliary.usage||{}).sessions||{})}};
+ }
+ latestData={...latestData,analytics:merged};
+}
 async function ensureAuxiliaryLoaded(){
  if(!latestData||!token())return false;
  if(detailCache.auxiliary)return true;
@@ -751,8 +763,7 @@ async function ensureAuxiliaryLoaded(){
   try{
    const payload=await request(detailEndpoint('auxiliary'));
    if(!latestData)return false;
-   const auxiliary=payload.auxiliary||{};
-   latestData={...latestData,analytics:{...(latestData.analytics||{}),...auxiliary}};
+   mergeAuxiliaryAnalytics(payload.auxiliary||{});
    detailCache.auxiliary=true;
    return true;
   }catch(e){
@@ -765,13 +776,41 @@ async function ensureAuxiliaryLoaded(){
  })();
  return auxiliaryLoadPromise;
 }
+async function ensureTotalLoaded(){
+ if(!latestData||!token())return false;
+ if(detailCache.total)return true;
+ if(totalLoadPromise)return totalLoadPromise;
+ detailBusy.total=true;
+ totalLoadPromise=(async()=>{
+  try{
+   const payload=await request(detailEndpoint('total'));
+   if(!latestData)return false;
+   mergeAuxiliaryAnalytics(payload.analytics||{});
+   detailCache.total=true;
+   if(currentPage!=='dashboard')renderCurrentPage(latestData);
+   else renderDashboard(latestData);
+   return true;
+  }catch(e){
+   toast('Não foi possível carregar o histórico total: '+e.message);
+   return false;
+  }finally{
+   detailBusy.total=false;
+   totalLoadPromise=null;
+  }
+ })();
+ return totalLoadPromise;
+}
 async function ensurePageDetail(page){
  if(!latestData||!token()||page==='dashboard')return;
+ if(currentPeriod==='total'&&!detailCache.total){
+  const loaded=await ensureTotalLoaded();
+  if(!loaded)return;
+ }
  renderCurrentPage(latestData);
 
  // Load only the additional metrics required by each tab; never block these tabs
  // on the legacy whole-history analytics function.
- if(['legislation','insights','performance','system','insurance'].includes(page)){
+ if(['usage','legislation','insights','performance','system','insurance'].includes(page)){
   const loaded=await ensureAuxiliaryLoaded();
   if(!loaded)return;
   if(currentPage===page)renderCurrentPage(latestData);
@@ -807,19 +846,40 @@ async function ensurePageDetail(page){
   if(currentPage===page)renderLegislation(latestData);
   return;
  }
+ if(page==='errors'){
+  if(detailCache.errors||detailBusy.errors)return;
+  detailBusy.errors=true;
+  try{
+   const [detail,summary]=await Promise.all([
+    request(detailEndpoint('errors')),
+    request(detailEndpoint('errors-summary'))
+   ]);
+   if(!latestData)return;
+   latestData={...latestData,
+    investigation:detail.investigation||{},
+    analytics:{...(latestData.analytics||{}),
+     errors:{...((latestData.analytics||{}).errors||{}),...(summary.errors||{})}}
+   };
+   detailCache.errors=true;
+   if(currentPage===page)renderErrors(latestData);
+  }catch(e){
+   toast('Não foi possível carregar a análise de erros: '+e.message);
+  }finally{
+   detailBusy.errors=false;
+  }
+  return;
+ }
 
- const kind=page==='speed'?'speed':page==='errors'?'errors':page==='system'?'system':'';
+ const kind=page==='speed'?'speed':page==='system'?'system':'';
  if(!kind||detailCache[kind]||detailBusy[kind])return;
  detailBusy[kind]=true;
  try{
   const d=await request(detailEndpoint(kind));
   if(kind==='speed')latestData={...latestData,cinemometer:d.cinemometer||{}};
-  if(kind==='errors')latestData={...latestData,investigation:d.investigation||{}};
   if(kind==='system')latestData={...latestData,lifetime:d.lifetime||{}};
   detailCache[kind]=true;
   if(currentPage!==page)return;
   if(kind==='speed')renderSpeed(latestData);
-  if(kind==='errors')renderErrors(latestData);
   if(kind==='system')renderSystem(latestData);
  }catch(e){
   toast('Não foi possível carregar os detalhes: '+e.message);
@@ -1158,14 +1218,18 @@ async function loadDashboard(){
  if(!previous)setBackend('loading');
  try{
   const fresh=await request(STATS_API);
-  const preserveDetailed=!!(fresh.dashboardOnly&&previous&&detailCache.analytics&&previous.analytics);
+  const preserveDetailed=!!(fresh.dashboardOnly&&previous&&previous.analytics&&(
+   detailCache.analytics||detailCache.auxiliary||detailCache.total||detailCache.diagnostics||
+   detailCache.speed||detailCache.errors||detailCache.system||detailCache.insurance
+  ));
   const d=preserveDetailed?mergeFreshDashboard(previous,fresh):fresh;
   latestData=d;
   if(fresh.dashboardOnly&&!preserveDetailed){
    // The fast endpoint only returns dashboard metrics. Invalidate detail flags only
    // when there is no retained detailed payload, not on every 30-second poll.
    detailCache.analytics=false;
-   detailCache.speed=false;detailCache.errors=false;detailCache.system=false;
+   detailCache.auxiliary=false;detailCache.total=false;detailCache.diagnostics=false;
+   detailCache.speed=false;detailCache.errors=false;detailCache.system=false;detailCache.insurance=false;
    if(currentPeriod!=='total')renderDashboard(d);
   }else{
    if(!fresh.dashboardOnly)detailCache.analytics=true;
@@ -1179,7 +1243,7 @@ async function loadDashboard(){
   // The small plate register also serves the dashboard, but is fetched only once per
   // page visit/manual refresh instead of on every automatic statistics refresh.
   if((currentPage==='insurance'||(currentPage==='dashboard'&&$('dashboardRecordsDetails')?.open))&&!detailCache.insurance)await ensureInsuranceNoCases();
-  if(currentPeriod==='total'&&!detailCache.analytics)await ensureAnalyticsLoaded();
+  if(currentPeriod==='total'&&!detailCache.total)await ensureTotalLoaded();
   return latestData;
  }catch(e){
   setBackend('offline');
@@ -1191,7 +1255,8 @@ async function loadDashboard(){
 function refreshCurrentData(){
  const detailKey=currentPage==='dashboard'?'insurance':currentPage;
  if(Object.prototype.hasOwnProperty.call(detailCache,detailKey))detailCache[detailKey]=false;
- if(currentPage!=='dashboard'||currentPeriod==='total')detailCache.analytics=false;
+ detailCache.auxiliary=false;detailCache.total=false;detailCache.diagnostics=false;
+ if(currentPeriod==='total')detailCache.analytics=false;
  return loadDashboard();
 }
 async function resetAllPeriods(){
@@ -1223,9 +1288,9 @@ document.querySelectorAll('#periods button').forEach(b=>b.addEventListener('clic
  currentPeriod=b.dataset.period;
  document.querySelectorAll('#periods button').forEach(x=>x.classList.toggle('active',x===b));
  if(!latestData)return;
- if(currentPeriod==='total'&&!detailCache.analytics){
+ if(currentPeriod==='total'&&!detailCache.total){
   $('dashboardUpdated').textContent='A carregar o histórico total…';
-  const loaded=await ensureAnalyticsLoaded();
+  const loaded=await ensureTotalLoaded();
   if(!loaded){
    currentPeriod=previousPeriod;
    document.querySelectorAll('#periods button').forEach(x=>x.classList.toggle('active',x.dataset.period===currentPeriod));
@@ -1233,7 +1298,7 @@ document.querySelectorAll('#periods button').forEach(b=>b.addEventListener('clic
   }
   return;
  }
- if(detailCache.analytics)renderCurrentPage(latestData);else renderDashboard(latestData);
+ if(detailCache.analytics||detailCache.total)renderCurrentPage(latestData);else renderDashboard(latestData);
 }));
 $('refreshBtn').addEventListener('click',()=>refreshCurrentData().then(d=>{if(d)toast('Dados atualizados.')}));$('logoutBtn').addEventListener('click',logout);$('reset24hBtn').addEventListener('click',resetAllPeriods);
 $('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginError').textContent='';try{await doLogin($('password').value);$('loginScreen').style.display='none';$('app').style.display='block';await loadDashboard();refreshTimer=setInterval(()=>{if(!document.hidden)loadDashboard()},REFRESH_MS)}catch(err){$('loginError').textContent=err.message}});
