@@ -318,7 +318,28 @@ async function loadErrorInvestigation24h(now:string){
     const plate=plateOf(e),a=e?.metadata?.asfDiagnostic||{};
     return {matricula:plate||"Não capturada",plate_kind:!plate?"missing":validPortuguesePlate(plate)?"portuguese":"unverified",occurred_at:e?.occurred_at||null,error_type:a.asfErrorType||"unknown",browser:e?.browser||"Unknown",query_id:shortId(e?.query_id)};
   }).sort((a:any,b:any)=>String(a.occurred_at||"").localeCompare(String(b.occurred_at||""))).slice(-100).reverse();
-  const recent=currentVersionRows.slice(-12).reverse().map((e:any)=>{const a=e?.metadata?.asfDiagnostic||{};return {occurred_at:e?.occurred_at||null,installation_id:shortId(e?.installation_id),query_id:shortId(e?.query_id),browser:e?.browser||"Unknown",matricula:plateOf(e)||null,error_type:a.asfErrorType||"unknown",transport:a.asfTransport||null,relay_latency_ms:a.asfRelayLatencyMs??null,http_status:a.asfHttpStatus??null,duration_ms:a.asfDurationMs??null,response_hash:a.asfResponseHash||null,response_class:a.asfResponseClass||null,graphql_error_count:a.asfGraphqlErrorCount??null,response_bytes:a.asfResponseBytes??null,parse_path:a.asfParsePath||null,build_id:e?.metadata?.build_id||a.build_id||null};});
+  const recent=currentVersionRows.slice(-12).reverse().map((e:any)=>{
+     const a=e?.metadata?.asfDiagnostic||{},client=e?.metadata?.client||{},plate=plateOf(e);
+     const attempts=Array.isArray(a.asfAttempts)?a.asfAttempts.slice(-6).map((t:any)=>({
+       type:String(t?.errorType|| (t?.status!=null?"http_"+t.status:"unknown")).slice(0,40),
+       status:t?.status??null,
+       duration_ms:t?.durationMs??null,
+       response_bytes:t?.responseBytes??null
+     })):[];
+     return {
+       occurred_at:e?.occurred_at||null,installation_id:shortId(e?.installation_id),query_id:shortId(e?.query_id),
+       browser:e?.browser||"Unknown",matricula:plate||null,
+       captured_plate_length:plate?plate.toUpperCase().replace(/[^A-Z0-9]/g,"").length:null,
+       client_online:typeof client.online==="boolean"?client.online:null,
+       client_effective_type:client.effectiveType||null,client_rtt_ms:client.rttMs??null,
+       error_type:a.asfErrorType||"unknown",transport:a.asfTransport||null,
+       relay_latency_ms:a.asfRelayLatencyMs??null,http_status:a.asfHttpStatus??null,
+       duration_ms:a.asfDurationMs??null,response_hash:a.asfResponseHash||null,
+       response_class:a.asfResponseClass||null,graphql_error_count:a.asfGraphqlErrorCount??null,
+       response_bytes:a.asfResponseBytes??null,parse_path:a.asfParsePath||null,
+       attempts,build_id:e?.metadata?.build_id||a.build_id||null
+     };
+   });
   return {generated_at:now,current_app_version:CURRENT_APP_VERSION,errors_24h:rows.length,error_queries_24h:new Set(rows.map((e:any)=>String(e?.query_id||"")).filter(Boolean)).size,current_version_errors:new Set(currentVersionRows.map((e:any)=>String(e?.query_id||"")).filter(Boolean)).size,current_version_error_events:currentVersionRows.length,current_version_installations:new Set(currentVersionRows.map((e:any)=>String(e?.installation_id||""))).size,current_version_plates:new Set(currentVersionRows.map((e:any)=>plateOf(e)).filter((p:string)=>validPortuguesePlate(p))).size,current_version_hashes:byHash.size,current_version_types:typeRows,current_version_hashes_top:hashRows,current_version_installations_top:installRows,current_version_bursts_5m:burstRows,current_version_plate_cases:plateCases,latest_current_version:recent};
 }
 async function loadLifetime(now:string){
@@ -415,7 +436,9 @@ async function loadCinemometerAnalytics24h(now:string){
 
 let cachedStats: { at:number; body:string; key:string } | null = null;
 let cachedAnalytics: { at:number; body:string } | null = null;
+let cachedDiagnostics: { at:number; body:string } | null = null;
 const STATS_CACHE_MS = 3000;
+const DETAIL_CACHE_MS = 30000;
 
 async function reset24h() {
   const result = await rpc("verix2_reset_all_periods", {});
@@ -488,6 +511,23 @@ Deno.serve(async (req) => {
       }
     }
 
+    // ASF diagnostics are only needed by the Insurance and Performance sections.
+    // Keep them off the initial dashboard path and cache briefly to avoid repeated scans.
+    if(req.method==="GET" && detail==="diagnostics") {
+      const now = new Date().toISOString();
+      try {
+        if(cachedDiagnostics && (Date.now()-cachedDiagnostics.at)<DETAIL_CACHE_MS) {
+          return new Response(cachedDiagnostics.body,{status:200,headers:{"Content-Type":"application/json",...corsHeaders(req),"X-Verix-Diagnostics-Cache":"HIT"}});
+        }
+        const diagnostics = await rpc("verix2_asf_diagnostics",{p_now:now,p_recent_limit:25});
+        const body = JSON.stringify({ok:true,detail:"diagnostics",generatedAt:now,diagnostics});
+        cachedDiagnostics = {at:Date.now(),body};
+        return new Response(body,{status:200,headers:{"Content-Type":"application/json",...corsHeaders(req),"X-Verix-Diagnostics-Cache":"MISS"}});
+      } catch(error) {
+        return json({ok:false,error:"diagnostics_detail_failed",detail:String((error as Error)?.message||error)},500,req);
+      }
+    }
+
     // Heavy diagnostics are explicitly lazy-loaded by the Admin UI.
     if(req.method==="GET" && detail==="speed") {
       const now = new Date().toISOString();
@@ -554,6 +594,7 @@ Deno.serve(async (req) => {
       const resetAt = await reset24h();
       cachedStats = null;
       cachedAnalytics = null;
+      cachedDiagnostics = null;
 
       return json({
         ok:true,
@@ -586,23 +627,21 @@ Deno.serve(async (req) => {
     // Fast path: the consolidated analytics RPC already contains the
     // dashboard, insurance, legislation, usage and most cinemometer data.
     const settled = await Promise.allSettled([
-      rpc(legacyClient ? "verix2_admin_analytics" : "verix2_admin_dashboard",{p_now:now}),
-      rpc("verix2_asf_diagnostics",{p_now:now,p_recent_limit:25}),
+      rpc(legacyClient ? "verix2_admin_analytics" : "verix2_admin_dashboard_fast",{p_now:now}),
       resetState(),
       rpc("verix2_consulted_installations_3m",{p_now:now})
     ]);
 
     const errors:any = {};
     const analytics = settled[0].status==="fulfilled" ? settled[0].value : {};
-    const diagnostics = settled[1].status==="fulfilled" ? settled[1].value : {};
-    const resetAt = settled[2].status==="fulfilled" ? settled[2].value : null;
-    const recentConsultedRaw = settled[3].status==="fulfilled" ? settled[3].value : null;
+    const resetAt = settled[1].status==="fulfilled" ? settled[1].value : null;
+    const recentConsultedRaw = settled[2].status==="fulfilled" ? settled[2].value : null;
     const recentConsultedNumeric = recentConsultedRaw==null ? null : Number(recentConsultedRaw);
     const recentConsulted3m = recentConsultedNumeric!==null && Number.isFinite(recentConsultedNumeric)
       ? recentConsultedNumeric
       : null;
 
-    for(const [i,name] of [[0,"dashboard"],[1,"diagnostics"],[2,"reset"],[3,"recent_query_presence"]] as const) {
+    for(const [i,name] of [[0,"dashboard"],[1,"reset"],[2,"recent_query_presence"]] as const) {
       if(settled[i].status==="rejected") {
         const reason:any=settled[i].reason;
         errors[name]=String(reason?.message||reason);
@@ -630,7 +669,7 @@ Deno.serve(async (req) => {
       resetAllAt:resetAt?.reset_all_at || null,
       overview:overviewForAdmin,
       analytics:analyticsForAdmin,
-      diagnostics:diagnostics || {},
+      diagnostics:{},
       investigation:{},
       lifetime:{},
       cinemometer:{},
