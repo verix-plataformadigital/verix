@@ -454,14 +454,15 @@ async function loadCinemometerAnalytics24h(now:string){
 let cachedStats: { at:number; body:string; key:string } | null = null;
 let cachedAnalytics: { at:number; body:string } | null = null;
 let cachedDiagnostics: { at:number; body:string } | null = null;
-const STATS_CACHE_MS = 35000;
+const STATS_CACHE_MS = 15000;
 const ANALYTICS_CACHE_MS = 60000;
 const DETAIL_CACHE_MS = 30000;
 const AUXILIARY_CACHE_MS = 60000;
 const SYSTEM_CACHE_MS = 60000;
 const detailResponseCache = new Map<string,{at:number;body:string}>();
 
-function getDetailCache(key:string,ttl:number,req:Request):Response|null {
+function getDetailCache(key:string,ttl:number,req:Request,forceRefresh=false):Response|null {
+  if(forceRefresh)return null;
   const entry=detailResponseCache.get(key);
   if(!entry || Date.now()-entry.at>=ttl)return null;
   return new Response(entry.body,{status:200,headers:{"Content-Type":"application/json",...corsHeaders(req),"X-Verix-Detail-Cache":"HIT"}});
@@ -513,10 +514,11 @@ Deno.serve(async (req) => {
   try {
     const url = new URL(req.url);
     const detail = url.searchParams.get("detail") || "";
+    const forceRefresh = url.searchParams.get("fresh") === "1";
 
     // This plate list is only served after the admin token has been validated.
     if(req.method==="GET" && detail==="insurance-no-cases") {
-      const cached=getDetailCache("insurance-no-cases",DETAIL_CACHE_MS,req);
+      const cached=getDetailCache("insurance-no-cases",DETAIL_CACHE_MS,req,forceRefresh);
       if(cached)return cached;
       const now = new Date().toISOString();
       try {
@@ -530,7 +532,7 @@ Deno.serve(async (req) => {
     }
 
     if(req.method==="GET" && detail==="total") {
-      const cached=getDetailCache("total",AUXILIARY_CACHE_MS,req);
+      const cached=getDetailCache("total",AUXILIARY_CACHE_MS,req,forceRefresh);
       if(cached)return cached;
       const now=new Date().toISOString();
       try {
@@ -544,7 +546,7 @@ Deno.serve(async (req) => {
     }
 
     if(req.method==="GET" && detail==="auxiliary") {
-      const cached=getDetailCache("auxiliary",AUXILIARY_CACHE_MS,req);
+      const cached=getDetailCache("auxiliary",AUXILIARY_CACHE_MS,req,forceRefresh);
       if(cached)return cached;
       const now=new Date().toISOString();
       try {
@@ -561,7 +563,7 @@ Deno.serve(async (req) => {
     if(req.method==="GET" && detail==="analytics") {
       const now = new Date().toISOString();
       try {
-        if(cachedAnalytics && (Date.now()-cachedAnalytics.at)<ANALYTICS_CACHE_MS) {
+        if(!forceRefresh && cachedAnalytics && (Date.now()-cachedAnalytics.at)<ANALYTICS_CACHE_MS) {
           return new Response(cachedAnalytics.body,{status:200,headers:{"Content-Type":"application/json",...corsHeaders(req),"X-Verix-Analytics-Cache":"HIT"}});
         }
         const analytics = await rpc("verix2_admin_analytics",{p_now:now});
@@ -592,7 +594,7 @@ Deno.serve(async (req) => {
 
     // Heavy diagnostics are explicitly lazy-loaded by the Admin UI.
     if(req.method==="GET" && detail==="speed") {
-      const cached=getDetailCache("speed",DETAIL_CACHE_MS,req);
+      const cached=getDetailCache("speed",DETAIL_CACHE_MS,req,forceRefresh);
       if(cached)return cached;
       const now = new Date().toISOString();
       try {
@@ -610,7 +612,7 @@ Deno.serve(async (req) => {
     }
 
     if(req.method==="GET" && detail==="errors-summary") {
-      const cached=getDetailCache("errors-summary",DETAIL_CACHE_MS,req);
+      const cached=getDetailCache("errors-summary",DETAIL_CACHE_MS,req,forceRefresh);
       if(cached)return cached;
       const now=new Date().toISOString();
       try {
@@ -624,7 +626,7 @@ Deno.serve(async (req) => {
     }
 
     if(req.method==="GET" && detail==="errors") {
-      const cached=getDetailCache("errors",DETAIL_CACHE_MS,req);
+      const cached=getDetailCache("errors",DETAIL_CACHE_MS,req,forceRefresh);
       if(cached)return cached;
       const now = new Date().toISOString();
       try {
@@ -642,7 +644,7 @@ Deno.serve(async (req) => {
     }
 
     if(req.method==="GET" && detail==="system") {
-      const cached=getDetailCache("system",SYSTEM_CACHE_MS,req);
+      const cached=getDetailCache("system",SYSTEM_CACHE_MS,req,forceRefresh);
       if(cached)return cached;
       const now = new Date().toISOString();
       try {
@@ -684,7 +686,6 @@ Deno.serve(async (req) => {
     const now = new Date().toISOString();
 
     const statsCacheKey = url.searchParams.get("v") || "legacy";
-    const forceRefresh = url.searchParams.get("fresh") === "1";
     // These Admin releases use the compact dashboard contract and shared DB cache.
     const legacyClient = ![
       "admin-simple-2026-10-11-r8",
