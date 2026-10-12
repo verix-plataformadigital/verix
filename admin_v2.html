@@ -663,7 +663,7 @@ function toast(msg){const t=$('toast');t.textContent=msg;t.classList.remove('hid
 function setBackend(state){const dot=$('statusDot'),b=$('backendBadge');dot.className='dot';if(state==='loading'){dot.classList.add('warn');b.textContent='A atualizar…'}else if(state==='partial'){dot.classList.add('warn');b.textContent='Online · alguns dados em falta'}else if(state==='offline'){dot.classList.add('off');b.textContent='Backend indisponível'}else b.textContent='Backend online'}
 async function request(url,options={}){const h=new Headers(options.headers||{});h.set('Authorization','Bearer '+token());h.set('Accept','application/json');const ac=new AbortController();const tm=setTimeout(()=>ac.abort(),15000);try{const r=await fetch(url,{...options,headers:h,mode:'cors',credentials:'omit',cache:'no-store',signal:ac.signal});const raw=await r.text();let data={};try{data=JSON.parse(raw)}catch(_){data={ok:false,error:raw||('HTTP '+r.status)}}if(r.status===401){logout();throw new Error('Sessão expirada.')}if(!r.ok||data?.ok===false)throw new Error(data?.detail||data?.error||('HTTP '+r.status));return data}catch(e){if(e?.name==='AbortError')throw new Error('O backend demorou demasiado tempo a responder.');if(e instanceof TypeError)throw new Error('Não foi possível comunicar com o backend.');throw e}finally{clearTimeout(tm)}}
 async function doLogin(password){const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),12000);try{const r=await fetch(AUTH_API,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({password:String(password||'').slice(0,256)}),mode:'cors',credentials:'omit',cache:'no-store',signal:ac.signal});const raw=await r.text();let data={};try{data=JSON.parse(raw)}catch(_){data={ok:false,error:raw||('HTTP '+r.status)}}if(!r.ok||!data?.ok)throw new Error(data?.error||('HTTP '+r.status));if(!data.token)throw new Error('O servidor de autenticação não devolveu um token.');sessionStorage.setItem(TOKEN_KEY,data.token);return data}catch(e){if(e?.name==='AbortError')throw new Error('Tempo excedido ao autenticar.');if(e instanceof TypeError)throw new Error('Não foi possível comunicar com a autenticação.');throw e}finally{clearTimeout(tm)}}
-function logout(){sessionStorage.removeItem(TOKEN_KEY);if(refreshTimer)clearInterval(refreshTimer);latestData=null;analyticsLoadPromise=null;Object.keys(detailCache).forEach(k=>{detailCache[k]=false;detailBusy[k]=false});$('app').style.display='none';$('loginScreen').style.display='grid';$('password').value='';}
+function logout(){sessionStorage.removeItem(TOKEN_KEY);if(refreshTimer)clearInterval(refreshTimer);latestData=null;analyticsLoadPromise=null;auxiliaryLoadPromise=null;Object.keys(detailCache).forEach(k=>{detailCache[k]=false;detailBusy[k]=false});$('app').style.display='none';$('loginScreen').style.display='grid';$('password').value='';}
 function switchPage(page){
   currentPage=page;
   // A lista é mantida em cache ao navegar; a atualização manual invalida a cache.
@@ -771,7 +771,7 @@ async function ensurePageDetail(page){
 
  // Load only the additional metrics required by each tab; never block these tabs
  // on the legacy whole-history analytics function.
- if(['legislation','insights','performance','system'].includes(page)){
+ if(['legislation','insights','performance','system','insurance'].includes(page)){
   const loaded=await ensureAuxiliaryLoaded();
   if(!loaded)return;
   if(currentPage===page)renderCurrentPage(latestData);
