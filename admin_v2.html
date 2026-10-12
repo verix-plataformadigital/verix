@@ -535,8 +535,8 @@ const TOKEN_KEY='VERIX_ADMIN_V2_TOKEN';
 const REFRESH_MS=30000;
 
 let currentPeriod='24h',currentPage='dashboard',latestData=null,refreshTimer=null,dashboardBusy=false,analyticsLoadPromise=null;
-const detailCache={analytics:false,speed:false,errors:false,system:false,insurance:false};
-const detailBusy={analytics:false,speed:false,errors:false,system:false,insurance:false};
+const detailCache={analytics:false,diagnostics:false,speed:false,errors:false,system:false,insurance:false};
+const detailBusy={analytics:false,diagnostics:false,speed:false,errors:false,system:false,insurance:false};
 
 const $=id=>document.getElementById(id);
 const fmt=v=>v==null||v===''||!Number.isFinite(Number(v))?'—':Number(v).toLocaleString('pt-PT');
@@ -727,12 +727,26 @@ async function ensureInsuranceNoCases(){
   detailBusy.insurance=false;
  }
 }
+async function ensureDiagnostics(){
+ if(!latestData||!token()||detailCache.diagnostics||detailBusy.diagnostics)return;
+ detailBusy.diagnostics=true;
+ try{
+  const d=await request(detailEndpoint('diagnostics'));
+  if(!latestData)return;
+  latestData={...latestData,diagnostics:d.diagnostics||{}};
+  detailCache.diagnostics=true;
+  renderCurrentPage(latestData);
+ }catch(e){
+  toast('Não foi possível carregar os diagnósticos ASF: '+e.message);
+ }finally{
+  detailBusy.diagnostics=false;
+ }
+}
 async function ensurePageDetail(page){
  if(!latestData||!token()||page==='dashboard')return;
 
  // The main stats endpoint already contains the fast dashboard analytics.
- // Do not block everyday sections on the legacy cross-section RPC, which can
- // scan lifetime history and hit PostgreSQL's statement timeout.
+ // Keep lifetime analytics and ASF diagnostics out of the initial dashboard request.
  const needsFullAnalytics=page==='legislation'||page==='insights';
  renderCurrentPage(latestData);
  if(needsFullAnalytics){
@@ -741,7 +755,14 @@ async function ensurePageDetail(page){
   renderCurrentPage(latestData);
  }
 
- if(page==='insurance'){await ensureInsuranceNoCases();return;}
+ if(page==='insurance'){
+  await Promise.all([ensureInsuranceNoCases(),ensureDiagnostics()]);
+  return;
+ }
+ if(page==='performance'){
+  await ensureDiagnostics();
+  return;
+ }
  const kind=page==='speed'?'speed':page==='errors'?'errors':page==='system'?'system':'';
  if(!kind||detailCache[kind]||detailBusy[kind])return;
  detailBusy[kind]=true;
