@@ -729,8 +729,18 @@ async function ensureInsuranceNoCases(){
 }
 async function ensurePageDetail(page){
  if(!latestData||!token()||page==='dashboard')return;
- const loaded=await ensureAnalyticsLoaded();
- if(!loaded)return;
+
+ // The main stats endpoint already contains the fast dashboard analytics.
+ // Do not block everyday sections on the legacy cross-section RPC, which can
+ // scan lifetime history and hit PostgreSQL's statement timeout.
+ const needsFullAnalytics=page==='legislation'||page==='insights';
+ renderCurrentPage(latestData);
+ if(needsFullAnalytics){
+  const loaded=await ensureAnalyticsLoaded();
+  if(!loaded)return;
+  renderCurrentPage(latestData);
+ }
+
  if(page==='insurance'){await ensureInsuranceNoCases();return;}
  const kind=page==='speed'?'speed':page==='errors'?'errors':page==='system'?'system':'';
  if(!kind||detailCache[kind]||detailBusy[kind])return;
@@ -923,7 +933,9 @@ function renderUsage(d){
  barList('usageModules',(u.modules||[]).map(x=>({label:x.module,value:x.qty})));
  hourGrid('usageHours',u.hourly||[]);
  monthlyChart('usageDaily',u.daily||[],'users');
- $('usageTransitions').innerHTML=table(['DE','PARA','VEZES'],(u.transitions||[]).slice(0,20).map(x=>'<tr>'+td('<strong>'+esc(x.from_module||'—')+'</strong>')+td(esc(x.to_module||'—'))+td(fmt(x.qty))+'</tr>'));
+ $('usageTransitions').innerHTML=(u.transitions&&u.transitions.length)
+  ?table(['DE','PARA','VEZES'],u.transitions.slice(0,20).map(x=>'<tr>'+td('<strong>'+esc(x.from_module||'—')+'</strong>')+td(esc(x.to_module||'—'))+td(fmt(x.qty))+'</tr>'))
+  :'<div class="empty" style="margin:12px">As métricas de utilização estão disponíveis. O detalhe dos caminhos entre módulos não vem no resumo rápido e não vai bloquear o resto do painel.</div>';
 }
 function renderErrors(d){
  const e=d.analytics?.errors||{},inv=d.investigation||{},q=period(),te=d.analytics?.telemetry||{};
