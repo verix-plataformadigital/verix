@@ -1,6 +1,6 @@
 -- Canonical performance fast paths for the VERIX Admin.
--- Generated from the live, tested Postgres function definitions on 2026-10-12.
--- All read-only Admin helpers are restricted to service_role; Edge Functions enforce the Admin token.
+-- Generated from live, measured PostgreSQL functions on 2026-10-12.
+-- The targeted error and lifetime functions are internal RPCs for service_role only.
 
 CREATE INDEX IF NOT EXISTS verix2_events_missing_client_coverage_idx
 ON public.verix2_events (occurred_at DESC, event)
@@ -1296,6 +1296,8 @@ $function$
 
 
 
+REVOKE ALL ON FUNCTION public.verix2_is_portuguese_plate_format(text) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.verix2_is_portuguese_plate_format(text) TO service_role;
 REVOKE ALL ON FUNCTION public.verix2_admin_auxiliary_fast(timestamptz) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.verix2_admin_auxiliary_fast(timestamptz) TO service_role;
 REVOKE ALL ON FUNCTION public.verix2_admin_errors_fast(timestamptz) FROM PUBLIC, anon, authenticated;
