@@ -391,6 +391,20 @@ async function loadCinemometerAnalytics24h(now:string){
   const calcEvents=events.filter((e:any)=>e.event==="cinemometer_calculation" && cinSnapshotOf(e)?.velocidade_registada!=null);
   const measurementEvents=speedEntries.length?speedEntries:calcEvents;
   const speeds=measurementEvents.map((e:any)=>Number(cinSnapshotOf(e).velocidade_registada)).filter(Number.isFinite);
+  const analyticsSpeedValues=events
+    .filter((e:any)=>["cinemometer_speed_entry","cinemometer_calculation"].includes(e.event) && cinSnapshotOf(e)?.velocidade_registada!=null)
+    .map((e:any)=>String(cinSnapshotOf(e).velocidade_registada))
+    .filter((v:string)=>/^[0-9]+(\\.[0-9]+)?$/.test(v))
+    .map(Number)
+    .filter(Number.isFinite);
+  const distributionMap=new Map<number,number>();
+  for(const speed of analyticsSpeedValues){
+    const bucket=Math.floor(speed/10)*10;
+    distributionMap.set(bucket,(distributionMap.get(bucket)||0)+1);
+  }
+  const distribution_24h=[...distributionMap.entries()]
+    .map(([bucket_start,qty])=>({bucket_start,qty}))
+    .sort((a,b)=>a.bucket_start-b.bucket_start);
   const operatorMap=new Map<string,any>();
   for(const row of calcEvents){
     const c=cinSnapshotOf(row)||{};
@@ -419,6 +433,9 @@ async function loadCinemometerAnalytics24h(now:string){
     sessions_with_apparatus:sessions.filter(s=>s.aparelho?.configurado).length,
     speed_p50:percentile(speeds,.5),
     speed_avg:speeds.length?speeds.reduce((a,b)=>a+b,0)/speeds.length:null,
+    analytics_speed_p50_24h:percentile(analyticsSpeedValues,.5),
+    analytics_speed_avg_24h:analyticsSpeedValues.length?analyticsSpeedValues.reduce((a,b)=>a+b,0)/analyticsSpeedValues.length:null,
+    distribution_24h,
     speed_min:speeds.length?Math.min(...speeds):null,
     speed_max:speeds.length?Math.max(...speeds):null,
     round5_pct:speeds.length?100*speeds.filter(v=>v%5===0).length/speeds.length:null,
@@ -437,8 +454,21 @@ async function loadCinemometerAnalytics24h(now:string){
 let cachedStats: { at:number; body:string; key:string } | null = null;
 let cachedAnalytics: { at:number; body:string } | null = null;
 let cachedDiagnostics: { at:number; body:string } | null = null;
-const STATS_CACHE_MS = 3000;
+const STATS_CACHE_MS = 15000;
+const ANALYTICS_CACHE_MS = 60000;
 const DETAIL_CACHE_MS = 30000;
+const AUXILIARY_CACHE_MS = 60000;
+const SYSTEM_CACHE_MS = 60000;
+const detailResponseCache = new Map<string,{at:number;body:string}>();
+
+function getDetailCache(key:string,ttl:number,req:Request):Response|null {
+  const entry=detailResponseCache.get(key);
+  if(!entry || Date.now()-entry.at>=ttl)return null;
+  return new Response(entry.body,{status:200,headers:{"Content-Type":"application/json",...corsHeaders(req),"X-Verix-Detail-Cache":"HIT"}});
+}
+function setDetailCache(key:string,body:string) {
+  detailResponseCache.set(key,{at:Date.now(),body});
+}
 
 async function reset24h() {
   const result = await rpc("verix2_reset_all_periods", {});
@@ -486,20 +516,38 @@ Deno.serve(async (req) => {
 
     // This plate list is only served after the admin token has been validated.
     if(req.method==="GET" && detail==="insurance-no-cases") {
+      const cached=getDetailCache("insurance-no-cases",DETAIL_CACHE_MS,req);
+      if(cached)return cached;
       const now = new Date().toISOString();
       try {
         const cases = await loadInsuranceNoCases(now);
-        return json({ok:true,detail:"insurance-no-cases",generatedAt:now,cases},200,req);
+        const body=JSON.stringify({ok:true,detail:"insurance-no-cases",generatedAt:now,cases});
+        setDetailCache("insurance-no-cases",body);
+        return new Response(body,{status:200,headers:{"Content-Type":"application/json",...corsHeaders(req),"X-Verix-Detail-Cache":"MISS"}});
       } catch(error) {
         return json({ok:false,error:"insurance_no_cases_failed"},500,req);
       }
     }
 
-    // Full cross-section analytics are lazy-loaded only when the Admin opens a detailed section.
+    if(req.method==="GET" && detail==="auxiliary") {
+      const cached=getDetailCache("auxiliary",AUXILIARY_CACHE_MS,req);
+      if(cached)return cached;
+      const now=new Date().toISOString();
+      try {
+        const auxiliary=await rpc("verix2_admin_auxiliary_fast",{p_now:now});
+        const body=JSON.stringify({ok:true,detail:"auxiliary",generatedAt:now,auxiliary});
+        setDetailCache("auxiliary",body);
+        return new Response(body,{status:200,headers:{"Content-Type":"application/json",...corsHeaders(req),"X-Verix-Detail-Cache":"MISS"}});
+      } catch(error) {
+        return json({ok:false,error:"auxiliary_detail_failed",detail:String((error as Error)?.message||error)},500,req);
+      }
+    }
+
+    // Legacy cross-section analytics remain for old clients only.
     if(req.method==="GET" && detail==="analytics") {
       const now = new Date().toISOString();
       try {
-        if(cachedAnalytics && (Date.now()-cachedAnalytics.at)<STATS_CACHE_MS) {
+        if(cachedAnalytics && (Date.now()-cachedAnalytics.at)<ANALYTICS_CACHE_MS) {
           return new Response(cachedAnalytics.body,{status:200,headers:{"Content-Type":"application/json",...corsHeaders(req),"X-Verix-Analytics-Cache":"HIT"}});
         }
         const analytics = await rpc("verix2_admin_analytics",{p_now:now});
@@ -530,14 +578,14 @@ Deno.serve(async (req) => {
 
     // Heavy diagnostics are explicitly lazy-loaded by the Admin UI.
     if(req.method==="GET" && detail==="speed") {
+      const cached=getDetailCache("speed",DETAIL_CACHE_MS,req);
+      if(cached)return cached;
       const now = new Date().toISOString();
       try {
-        return json({
-          ok:true,
-          detail:"speed",
-          generatedAt:now,
-          cinemometer:await loadCinemometerAnalytics24h(now)
-        },200,req);
+        const cinemometer=await loadCinemometerAnalytics24h(now);
+        const body=JSON.stringify({ok:true,detail:"speed",generatedAt:now,cinemometer});
+        setDetailCache("speed",body);
+        return new Response(body,{status:200,headers:{"Content-Type":"application/json",...corsHeaders(req),"X-Verix-Detail-Cache":"MISS"}});
       } catch(error) {
         return json({
           ok:false,
@@ -548,14 +596,14 @@ Deno.serve(async (req) => {
     }
 
     if(req.method==="GET" && detail==="errors") {
+      const cached=getDetailCache("errors",DETAIL_CACHE_MS,req);
+      if(cached)return cached;
       const now = new Date().toISOString();
       try {
-        return json({
-          ok:true,
-          detail:"errors",
-          generatedAt:now,
-          investigation:await loadErrorInvestigation24h(now)
-        },200,req);
+        const investigation=await loadErrorInvestigation24h(now);
+        const body=JSON.stringify({ok:true,detail:"errors",generatedAt:now,investigation});
+        setDetailCache("errors",body);
+        return new Response(body,{status:200,headers:{"Content-Type":"application/json",...corsHeaders(req),"X-Verix-Detail-Cache":"MISS"}});
       } catch(error) {
         return json({
           ok:false,
@@ -566,14 +614,14 @@ Deno.serve(async (req) => {
     }
 
     if(req.method==="GET" && detail==="system") {
+      const cached=getDetailCache("system",SYSTEM_CACHE_MS,req);
+      if(cached)return cached;
       const now = new Date().toISOString();
       try {
-        return json({
-          ok:true,
-          detail:"system",
-          generatedAt:now,
-          lifetime:await loadLifetime(now)
-        },200,req);
+        const lifetime=await loadLifetime(now);
+        const body=JSON.stringify({ok:true,detail:"system",generatedAt:now,lifetime});
+        setDetailCache("system",body);
+        return new Response(body,{status:200,headers:{"Content-Type":"application/json",...corsHeaders(req),"X-Verix-Detail-Cache":"MISS"}});
       } catch(error) {
         return json({
           ok:false,
@@ -595,6 +643,8 @@ Deno.serve(async (req) => {
       cachedStats = null;
       cachedAnalytics = null;
       cachedDiagnostics = null;
+      detailResponseCache.clear();
+      cachedDiagnostics = null;
 
       return json({
         ok:true,
@@ -610,7 +660,8 @@ Deno.serve(async (req) => {
     // r9 only invalidated the browser cache; it still uses the optimized dashboard RPC.
     const legacyClient = ![
       "admin-simple-2026-10-11-r8",
-      "admin-simple-2026-10-11-r9"
+      "admin-simple-2026-10-11-r9",
+      "admin-simple-2026-10-12-r10"
     ].includes(statsCacheKey);
 
     if(cachedStats && cachedStats.key===statsCacheKey && (Date.now()-cachedStats.at)<STATS_CACHE_MS) {
