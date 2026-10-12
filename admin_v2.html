@@ -534,7 +534,7 @@ const STATS_API=API_ORIGIN+'stats-v2?v='+encodeURIComponent(ADMIN_CACHE);
 const TOKEN_KEY='VERIX_ADMIN_V2_TOKEN';
 const REFRESH_MS=30000;
 
-let currentPeriod='24h',currentPage='dashboard',latestData=null,refreshTimer=null,dashboardBusy=false,analyticsLoadPromise=null,auxiliaryLoadPromise=null,totalLoadPromise=null;
+let currentPeriod='24h',currentPage='dashboard',latestData=null,refreshTimer=null,dashboardBusy=false,analyticsLoadPromise=null,auxiliaryLoadPromise=null,totalLoadPromise=null,forceDetailRefresh=false;
 const detailCache={analytics:false,auxiliary:false,total:false,diagnostics:false,speed:false,errors:false,system:false,insurance:false};
 const detailBusy={analytics:false,auxiliary:false,total:false,diagnostics:false,speed:false,errors:false,system:false,insurance:false};
 
@@ -687,7 +687,7 @@ function switchPage(page){
   ensurePageDetail(page);
 }
 function detailEndpoint(kind){
-  return STATS_API+'&detail='+encodeURIComponent(kind);
+  return STATS_API+'&detail='+encodeURIComponent(kind)+(forceDetailRefresh?'&fresh=1':'');
 }
 async function ensureAnalyticsLoaded(){
  if(!latestData||!token())return false;
@@ -1260,12 +1260,14 @@ async function loadDashboard(forceFresh=false){
   return null;
  }finally{dashboardBusy=false}
 }
-function refreshCurrentData(){
+async function refreshCurrentData(){
  const detailKey=currentPage==='dashboard'?'insurance':currentPage;
  if(Object.prototype.hasOwnProperty.call(detailCache,detailKey))detailCache[detailKey]=false;
  detailCache.auxiliary=false;detailCache.total=false;detailCache.diagnostics=false;
  if(currentPeriod==='total')detailCache.analytics=false;
- return loadDashboard(true);
+ forceDetailRefresh=true;
+ try{return await loadDashboard(true)}
+ finally{forceDetailRefresh=false}
 }
 async function resetAllPeriods(){
  const b=$('reset24hBtn');b.disabled=true;
