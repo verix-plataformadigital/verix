@@ -123,6 +123,8 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
 .error-search-empty{margin:0 0 12px}
 .error-kind-code{margin-top:3px;font-size:8px;color:#7c8c92;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;word-break:break-word}
 .error-kind-note{margin-top:5px;max-width:360px;color:#62747b;font-size:10px;line-height:1.4}
+.error-context{min-width:210px;max-width:360px;color:#334951;font-size:10px;font-weight:800;line-height:1.4}
+.error-context-detail{min-width:210px;max-width:360px;margin-top:5px;color:#6b7d84;font-size:9px;line-height:1.5;overflow-wrap:anywhere}
 .table.sortable th{cursor:pointer;user-select:none;white-space:nowrap}
 .table.sortable th:focus-visible{outline:2px solid var(--cyan);outline-offset:-2px}
 .sort-indicator{display:inline-block;margin-left:3px;color:#94a2a8;font-size:9px}
@@ -944,7 +946,26 @@ function renderErrors(d){
  const plateCases=inv.current_version_plate_cases||[];
  $('errorPlates').innerHTML=plateCases.length?table(['MATRÍCULA CAPTURADA','DATA E HORA','TIPO DE ERRO','BROWSER'],plateCases.map(x=>'<tr>'+td('<strong>'+esc(x.matricula||'Não capturada')+'</strong>')+td(datePT(x.occurred_at))+td('<span class="tag red" title="'+esc(asfErrorNote(x.error_type))+'">'+esc(asfErrorLabel(x.error_type))+'</span>')+td(esc(x.browser||'—'))+'</tr>')):'<div class="empty">Não há consultas com erro registadas nas últimas 24 horas.</div>';
  const recent=inv.latest_current_version||[];
- $('errorTechnical').innerHTML=recent.length?'<table class="table"><thead><tr><th>Hora</th><th>Browser</th><th>Transporte</th><th>Tipo</th><th>HTTP</th><th>ASF ms</th><th>Relay ms</th><th>Hash</th></tr></thead><tbody>'+recent.slice(0,15).map(x=>'<tr>'+td(datePT(x.occurred_at))+td(esc(x.browser||'—'))+td(esc(x.transport||'—'))+td('<span title="'+esc(asfErrorNote(x.error_type))+'">'+esc(asfErrorLabel(x.error_type))+'</span><div class="error-kind-code">'+esc(x.error_type||'—')+'</div>')+td(x.http_status==null?'—':fmt(x.http_status))+td(x.duration_ms==null?'—':fmt(x.duration_ms)+' ms')+td(x.relay_latency_ms==null?'—':fmt(x.relay_latency_ms)+' ms')+td(esc(x.response_hash||'—'))+'</tr>').join('')+'</tbody></table>':'<div class="empty">Sem incidentes recentes.</div>';
+  const errorContext=x=>{
+   const attempts=Array.isArray(x.attempts)?x.attempts:[];
+   const online=x.client_online===false?'Browser indicava offline':x.client_online===true?'Browser indicava online':'Estado de rede não registado';
+   let context='';
+   if(x.error_type==='http_400'){
+    context='Entrada capturada: '+(x.captured_plate_length==null?'comprimento desconhecido':fmt(x.captured_plate_length)+' caracteres')+'. O relay rejeitou-a antes da ASF.';
+   }else if(x.error_type==='security_auth'){
+    context=online+'. Não houve tentativa ASF; a falha ocorreu na autorização/ligação do VÉRIX.';
+   }else if(x.error_type==='http_null'){
+    context='Sem estado HTTP recebido. '+online+'.';
+   }else{
+    context=online+'.';
+   }
+   const attemptsText=attempts.length
+    ?attempts.map(t=>asfErrorLabel(t.type)+(t.status!=null?' · HTTP '+fmt(t.status):'')+(t.duration_ms!=null?' · '+fmt(t.duration_ms)+' ms':'')+(t.response_bytes!=null?' · '+fmt(t.response_bytes)+' B':'')).join(' → ')
+    :'Sem tentativas ASF registadas.';
+   const network=x.client_effective_type?'Rede: '+x.client_effective_type+(x.client_rtt_ms!=null?' · RTT '+fmt(x.client_rtt_ms)+' ms':'')+'. ':'';
+   return '<div class="error-context">'+esc(context)+'</div><div class="error-context-detail">'+esc(network+attemptsText)+'</div>';
+  };
+  $('errorTechnical').innerHTML=recent.length?'<table class="table"><thead><tr><th>Hora</th><th>Browser</th><th>Transporte</th><th>Tipo</th><th>HTTP</th><th>ASF ms</th><th>Relay ms</th><th>Contexto e tentativas</th><th>Hash</th></tr></thead><tbody>'+recent.slice(0,15).map(x=>'<tr>'+td(datePT(x.occurred_at))+td(esc(x.browser||'—'))+td(esc(x.transport||'—'))+td('<span title="'+esc(asfErrorNote(x.error_type))+'">'+esc(asfErrorLabel(x.error_type))+'</span><div class="error-kind-code">'+esc(x.error_type||'—')+'</div>')+td(x.http_status==null?'—':fmt(x.http_status))+td(x.duration_ms==null?'—':fmt(x.duration_ms)+' ms')+td(x.relay_latency_ms==null?'—':fmt(x.relay_latency_ms)+' ms')+td(errorContext(x))+td(esc(x.response_hash||'—'))+'</tr>').join('')+'</tbody></table>':'<div class="empty">Sem incidentes recentes.</div>';
  function buildErrorReading(data){
    const n=Number(inv.current_version_errors||0),inst=Number(inv.current_version_installations||0),hashes=Number(inv.current_version_hashes||0);
    const types=(e.types||[]).slice().sort((a,b)=>Number(b.qty||0)-Number(a.qty||0));
