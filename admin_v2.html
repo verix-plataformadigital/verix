@@ -585,7 +585,7 @@ function wireDashboardDrilldowns(){
   'CONSULTAS INICIADAS':'insurance',
   'RESULTADOS CONCLUÍDOS':'insurance',
   'COM SEGURO':'insurance',
-  'FALHAS / REJEIÇÕES':'errors',
+  'ERROS · FORMATO PT':'errors',
   'SEM REGISTO':'insurance',
   'CONSULTAS · ÚLTIMOS 3 MIN':'usage',
   'BROWSERS ATIVOS':'usage',
@@ -597,7 +597,7 @@ function wireDashboardDrilldowns(){
    const label=el.querySelector('.label')?.textContent.trim(),page=routes[label];
    if(!page)return;
    el.dataset.drillPage=page;el.setAttribute('role','button');el.setAttribute('tabindex','0');el.setAttribute('aria-label','Ver detalhes: '+label);
-   if(id==='dashCards'&&['CONSULTAS INICIADAS','RESULTADOS CONCLUÍDOS','FALHAS / REJEIÇÕES'].includes(label))el.classList.add('key-metric');
+   if(id==='dashCards'&&['CONSULTAS INICIADAS','RESULTADOS CONCLUÍDOS','ERROS · FORMATO PT'].includes(label))el.classList.add('key-metric');
   });
  });
 }
@@ -754,7 +754,7 @@ function renderDashboard(d){
  const a=d.analytics||{},o=a.overview||{},p=period(),ret=a.retention||{},u=a.usage||{},s=u.sessions?.[currentPeriod]||{};
  const users=Number(o['unique_'+currentPeriod]||0);
  const lookups=Number(p.started||0),fin=Number(p.finals||0),insured=Number(p.insured||0);
- const uninsured=Number(p.uninsured||0),errs=Number(p.errors||0);
+ const uninsured=Number(p.uninsured||0),errs=Number(p.portuguese_errors??p.errors??0);
  const pending=Number(p.pending||0),incomplete=Number(p.incomplete||0);
  const contradictory=Number(p.contradictory||0),duplicateFinals=Number(p.duplicate_finals||0);
  const decisions=insured+uninsured,completionRate=lookups?Math.min(100,100*fin/lookups):null;
@@ -764,7 +764,7 @@ function renderDashboard(d){
   card('CONSULTAS INICIADAS',num(lookups),'Pedidos de consulta nas '+labelPeriod+'.','blue')+
   card('RESULTADOS CONCLUÍDOS',num(fin),pct(completionRate)+' das consultas iniciadas.','green')+
   card('COM SEGURO',num(insured),pct(decisions?100*insured/decisions:null)+' das decisões válidas.','green')+
-  card('FALHAS / REJEIÇÕES',num(errs),pct(errorRate)+' dos resultados concluídos. Inclui rede, autorização e entradas rejeitadas.','amber');
+  card('ERROS · FORMATO PT',num(errs),pct(errorRate)+' do total concluído; só formatos portugueses reconhecidos.','amber');
  $('dashSecondaryCards').innerHTML=
   card('SEM REGISTO',num(uninsured),pct(uninsuredRate)+' das decisões; não confirma ausência de seguro.','amber')+
   card('CONSULTAS · ÚLTIMOS 3 MIN',num(o.consulted_3m),'Instalações que iniciaram uma consulta recentemente.','cyan')+
@@ -788,7 +788,7 @@ function renderDashboard(d){
  const signals=[];
  if(lookups===0)signals.push({kind:'info',title:'Sem consultas no período',copy:'Não há pedidos iniciados nesta janela. Confirma o período selecionado antes de concluir que existe uma falha.'});
  if(errorRate!==null&&errorRate>=8)signals.push({kind:'danger',title:'Taxa de erros elevada',copy:fmt(errs)+' consultas com erro ('+pct(errorRate)+'). Abre a análise de erros para investigar.'});
- else if(errs>0)signals.push({kind:'warning',title:'Existem falhas/rejeições',copy:fmt(errs)+' consultas com falha ('+pct(errorRate)+'). A categoria pode ser rede, autorização ou entrada rejeitada; abre a análise para distinguir a causa.'});
+ else if(errs>0)signals.push({kind:'warning',title:'Erros em matrículas com formato PT',copy:fmt(errs)+' consultas com erro ('+pct(errorRate)+' do total concluído). Consulta a análise técnica; um erro não significa ausência de seguro.'});
  if(pending>0)signals.push({kind:'warning',title:'Consultas pendentes',copy:fmt(pending)+' consultas iniciadas ainda estão marcadas como pendentes.'});
  if(incomplete>0)signals.push({kind:'warning',title:'Consultas incompletas',copy:fmt(incomplete)+' consultas não têm um resultado final nem um estado pendente registado.'});
  if(contradictory+duplicateFinals>0)signals.push({kind:'danger',title:'Resultados finais múltiplos',copy:fmt(contradictory+duplicateFinals)+' consultas têm resultados finais repetidos ou contraditórios.'});
@@ -815,8 +815,8 @@ function renderDashboard(d){
  const topModule=mods[0];
  let insight='Dados insuficientes para avaliar a taxa de erro.';
  if(lookups===0)insight='Sem consultas registadas neste período.';
- else if(errorRate!==null&&errorRate>=8)insight='A taxa de falhas/rejeições exige atenção.';
- else if(errs>0)insight='Há falhas/rejeições a acompanhar.';
+ else if(errorRate!==null&&errorRate>=8)insight='A taxa de erros em formatos PT exige atenção.';
+ else if(errs>0)insight='Há erros em matrículas com formato PT a acompanhar.';
  else if(pending+incomplete>0)insight='Há consultas por resolver ou incompletas.';
  else if(fin>0)insight='Resultados a decorrer sem sinais de erro no resumo.';
  $('heroInsight').innerHTML='<div class="k">LEITURA PRINCIPAL</div><div class="v">'+esc(insight)+'</div><div class="s">'+(peakHour?'Hora de maior volume: '+String(peakHour.hour_num).padStart(2,'0')+'h ('+fmt(peakHour.consultations)+'). ':'')+(topModule?'Módulo mais usado: '+esc(topModule.label)+'.':'')+'</div>';
