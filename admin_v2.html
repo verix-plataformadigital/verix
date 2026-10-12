@@ -748,6 +748,9 @@ function mergeAuxiliaryAnalytics(auxiliary){
  for(const key of ['overview','insurance','retention']){
   if(auxiliary?.[key])merged[key]={...(previous[key]||{}),...auxiliary[key]};
  }
+ if(auxiliary?.insurance_quality){
+  merged.insurance_quality={...(previous.insurance_quality||{}),...auxiliary.insurance_quality};
+ }
  if(auxiliary?.usage){
   merged.usage={...(previous.usage||{}),...auxiliary.usage,
    sessions:{...((previous.usage||{}).sessions||{}),...((auxiliary.usage||{}).sessions||{})}};
@@ -816,6 +819,11 @@ async function ensurePageDetail(page){
   if(currentPage===page)renderCurrentPage(latestData);
  }
 
+ if(['insurance','performance'].includes(page)&&!detailCache.total){
+  const loadedTotal=await ensureTotalLoaded();
+  if(!loadedTotal)return;
+  if(currentPage===page)renderCurrentPage(latestData);
+ }
  if(page==='insurance'){
   await Promise.all([ensureInsuranceNoCases(),ensureDiagnostics()]);
   if(currentPage===page)renderInsurance(latestData);
