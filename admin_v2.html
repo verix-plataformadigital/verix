@@ -710,11 +710,12 @@ function hourGrid(id,rows){
  const dateLong=date=>new Intl.DateTimeFormat('pt-PT',{timeZone:'Europe/Lisbon',weekday:'long',day:'2-digit',month:'long',year:'numeric'}).format(date).replace(/^./,s=>s.toLocaleUpperCase('pt-PT'));
  const hourOf=date=>partMap(date,{hour:'2-digit',hourCycle:'h23'}).hour;
  const hourLabel=date=>hourOf(date)+'h';
+ const exactTime=date=>new Intl.DateTimeFormat('pt-PT',{timeZone:'Europe/Lisbon',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(date);
  const timeZoneOf=date=>{const p=partMap(date,{timeZoneName:'shortOffset'});return p.timeZoneName||''};
  const clockKey=x=>dateKey(x.date)+' '+hourOf(x.date);
  const clockCounts=new Map();raw.forEach(x=>clockCounts.set(clockKey(x),(clockCounts.get(clockKey(x))||0)+1));
  const displayHour=x=>hourLabel(x.date)+(clockCounts.get(clockKey(x))>1?' '+timeZoneOf(x.date):'');
- const describeBucket=x=>dateShort(x.date)+' · '+displayHour(x)+'00–'+hourOf(x.date)+'59';
+ const describeBucket=x=>dateShort(x.date)+' · '+displayHour(x)+' ('+hourOf(x.date)+':00–'+hourOf(x.date)+':59)';
  const peakFor=key=>raw.reduce((best,x)=>x[key]>best[key]?x:best,raw[0]);
  const peakConsult=peakFor('consultations'),peakActive=peakFor('users');
  const peakText=(item,key,suffix)=>item[key]>0?fmt(item[key])+' · '+dateShort(item.date)+' às '+displayHour(item):'Sem '+suffix;
@@ -743,7 +744,7 @@ function hourGrid(id,rows){
    '<div class="hourly-highlight"><span>Pico de consultas</span><strong>'+esc(peakConsultText)+'</strong><small>Pedidos de consulta iniciados nessa hora.</small></div>'+
    '<div class="hourly-highlight"><span>Pico de utilizadores ativos</span><strong>'+esc(peakActiveText)+'</strong><small>Instalações distintas com uma interação real nessa hora.</small></div>'+
   '</div>'+
-  '<div class="hour-note">Cada grupo mostra a data a que pertencem as horas. Período dos registos: '+esc(dateShort(rangeStart)+' '+hourLabel(rangeStart)+'–'+dateShort(rangeEnd)+' '+hourLabel(rangeEnd))+'. O primeiro e o último bloco podem ser parciais.</div>'+
+  '<div class="hour-note">Cada grupo mostra a data a que pertencem as horas. Período dos registos: '+esc(dateShort(rangeStart)+' '+exactTime(rangeStart)+'–'+dateShort(rangeEnd)+' '+exactTime(rangeEnd))+'. O primeiro e o último bloco podem ser parciais.</div>'+
   buildSeries('consultations','Consultas de seguro','Pedidos iniciados por hora.','consultations',peakConsult,'consultas')+
   buildSeries('users','Utilizadores ativos (estimados)','Instalações com pelo menos uma interação real nessa hora.','presence',peakActive,'instalações ativas')+
   '<details class="hourly-data"><summary>Ver valores exatos por data e hora</summary><div class="table-wrap"><table class="table"><thead><tr><th>Data</th><th>Hora</th><th>Consultas</th><th>Instalações ativas (estim.)</th></tr></thead><tbody>'+dataRows+'</tbody></table></div></details>';
