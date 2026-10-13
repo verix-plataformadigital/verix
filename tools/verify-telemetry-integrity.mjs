@@ -159,10 +159,10 @@ assert.match(hourlyMigration, /count\(DISTINCT e\.query_id\) FILTER/, "hourly co
 assert.match(hourlyMigration, /e\.event='vehicle_lookup'/, "hourly consultations must count actual lookup starts");
 assert.match(hourlyMigration, /count\(DISTINCT e\.installation_id\) FILTER/, "hourly presence must count distinct installations");
 assert.match(hourlyMigration, /e\.event IN \('app_open','heartbeat'\)/, "hourly presence must use app-open/heartbeat events");
-assert.ok(admin.includes("CONSULTAS E ONLINE POR HORA"), "dashboard must describe the updated hourly metrics");
+assert.ok(admin.includes("CONSULTAS E PRESENÇA POR HORA"), "dashboard must describe hourly consultations and active-use metrics");
 assert.ok(admin.includes("CONSULTAS E PRESENÇA POR HORA"), "usage page must describe the updated hourly metrics");
-assert.match(admin, /Number\(x\.consultations\|\|0\)/, "hour chart must use consultation count");
-assert.match(admin, /fmt\(x\.users\|\|0\)/, "hour chart must show online installations");
+assert.match(admin, /asNumber\(source\.consultations\)/, "hour chart must use consultation count");
+assert.match(admin, /asNumber\(source\.users\)/, "hour chart must use the active-installation count");
 assert.match(admin, /Hora com mais consultas/, "dashboard insight must refer to consultations, not generic actions");
 
 assert.ok(app.includes("function cinTelemetrySnapshot()"), "Cinemometer telemetry must construct a structured snapshot");
