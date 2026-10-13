@@ -693,7 +693,8 @@ Deno.serve(async (req) => {
       "admin-simple-2026-10-12-r10",
       "admin-simple-2026-10-12-r11",
       "admin-simple-2026-10-12-r12",
-      "admin-simple-2026-10-13-r13"
+      "admin-simple-2026-10-13-r13",
+      "admin-simple-2026-10-13-r14"
     ].includes(statsCacheKey);
 
     if(!forceRefresh && cachedStats && cachedStats.key===statsCacheKey && (Date.now()-cachedStats.at)<STATS_CACHE_MS) {
@@ -715,19 +716,22 @@ Deno.serve(async (req) => {
         p_force_refresh:forceRefresh
       }),
       resetState(),
-      rpc("verix2_consulted_installations_3m",{p_now:now})
+      rpc("verix2_consulted_installations_3m",{p_now:now}),
+      rpc("verix2_admin_hourly_active_interactions",{p_now:now})
     ]);
 
     const errors:any = {};
     const analytics = settled[0].status==="fulfilled" ? settled[0].value : {};
     const resetAt = settled[1].status==="fulfilled" ? settled[1].value : null;
     const recentConsultedRaw = settled[2].status==="fulfilled" ? settled[2].value : null;
+    const activeHourlyRaw = settled[3].status==="fulfilled" ? settled[3].value : null;
+    const activeHourly = Array.isArray(activeHourlyRaw) ? activeHourlyRaw : [];
     const recentConsultedNumeric = recentConsultedRaw==null ? null : Number(recentConsultedRaw);
     const recentConsulted3m = recentConsultedNumeric!==null && Number.isFinite(recentConsultedNumeric)
       ? recentConsultedNumeric
       : null;
 
-    for(const [i,name] of [[0,"dashboard"],[1,"reset"],[2,"recent_query_presence"]] as const) {
+    for(const [i,name] of [[0,"dashboard"],[1,"reset"],[2,"recent_query_presence"],[3,"active_hourly_usage"]] as const) {
       if(settled[i].status==="rejected") {
         const reason:any=settled[i].reason;
         errors[name]=String(reason?.message||reason);
@@ -741,9 +745,19 @@ Deno.serve(async (req) => {
       ...(analyticsObj.overview && typeof analyticsObj.overview==="object" ? analyticsObj.overview : {}),
       consulted_3m:recentConsulted3m
     };
+    const usageObj = analyticsObj.usage && typeof analyticsObj.usage==="object"
+      ? analyticsObj.usage
+      : {};
+    // Never fall back to app_open/heartbeat counts: those include idle browser tabs.
+    // If the active-use RPC fails, show no hourly data instead of a misleading number.
+    const usageForAdmin = {
+      ...usageObj,
+      hourly:activeHourly
+    };
     const analyticsForAdmin = {
       ...analyticsObj,
-      overview:overviewForAdmin
+      overview:overviewForAdmin,
+      usage:usageForAdmin
     };
 
     const payload = {

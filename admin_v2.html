@@ -104,7 +104,31 @@ button{cursor:pointer}
 .chart-col{flex:1;min-width:6px;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:5px}
 .chart-bar{width:100%;max-width:22px;border-radius:7px 7px 2px 2px;background:linear-gradient(180deg,#75d6df,#12889a);min-height:3px}
 .chart-label{font-size:7px;color:#7c8e94;white-space:nowrap;transform:rotate(-50deg);transform-origin:center;margin-top:8px}
-.hour-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:5px}.hour{border:1px solid #edf0f2;border-radius:9px;background:#fafcfc;text-align:center;padding:8px 3px;min-width:0}.hour b{display:block;font-size:9px}.hour span{display:block;margin-top:4px;font-size:7px;color:#617278;white-space:nowrap}.hour small{display:block;margin-top:3px;font-size:7px;color:#078391;font-weight:850;white-space:nowrap}.hour-note{margin:7px 12px 10px;color:#7b898e;font-size:8px;line-height:1.4}
+.hour-grid{display:grid;gap:14px;min-width:0}
+.hourly-highlights{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-bottom:15px}
+.hourly-highlight{min-width:0;padding:11px 12px;border:1px solid #d7e5e8;border-radius:11px;background:#f5fafb}
+.hourly-highlight span{display:block;color:#425d65;font-size:9px;font-weight:900;letter-spacing:.45px;text-transform:uppercase}
+.hourly-highlight strong{display:block;margin-top:5px;color:#143f48;font-size:16px;line-height:1.25;font-variant-numeric:tabular-nums}
+.hourly-highlight small{display:block;margin-top:3px;color:#526a71;font-size:10px;line-height:1.35}
+.hourly-series{min-width:0;padding-top:13px;border-top:1px solid #e3ecee}
+.hourly-series-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:9px}
+.hourly-series-title{display:block;color:#263c42;font-size:12px;font-weight:900;line-height:1.3}
+.hourly-series-subtitle{display:block;margin-top:3px;color:#526a71;font-size:10px;line-height:1.35}
+.hourly-series-peak{flex:0 0 auto;padding:5px 8px;border-radius:7px;background:#edf5f6;color:#244f58;font-size:10px;font-weight:850;white-space:nowrap;font-variant-numeric:tabular-nums}
+.hourly-bars{display:grid;grid-template-columns:repeat(24,minmax(0,1fr));align-items:end;gap:3px;min-width:0}
+.hourly-bar-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;min-width:0;border-radius:5px;outline-offset:2px}
+.hourly-bar-col:focus-visible{outline:2px solid #087f8d}
+.hourly-bar-track{display:flex;align-items:flex-end;justify-content:center;box-sizing:border-box;width:100%;height:70px;padding:0 2px;border-bottom:1px solid #cbd9dd}
+.hourly-bar{display:block;width:100%;max-width:15px;min-width:3px;height:0;border-radius:4px 4px 1px 1px;background:#087f8d}
+.hourly-series.presence .hourly-bar{background:#426da6}
+.hourly-bar-col.is-peak .hourly-bar{background:#153f49}
+.hourly-series.presence .hourly-bar-col.is-peak .hourly-bar{background:#244a78}
+.hourly-hour{display:block;min-height:11px;color:#425a61;font-size:8px;font-weight:750;line-height:1.2;text-align:center;white-space:nowrap}
+.hourly-data{margin-top:10px;border-top:1px solid #e8eff1}
+.hourly-data summary{padding:9px 0 2px;color:#34525a;font-size:10px;font-weight:850;cursor:pointer}
+.hourly-data .table{margin-top:8px}
+.hourly-data .table th,.hourly-data .table td{font-size:10px;padding:8px}
+.hour-note{margin:10px 0 2px;padding:9px 10px;border-left:3px solid #9bcfd4;border-radius:0 7px 7px 0;background:#f5fafb;color:#425c63;font-size:10px;line-height:1.5}
 
 .kpi-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.mini{padding:11px 12px;background:#f8fafb;border:1px solid #e8edef;border-radius:10px}.mini b{display:block;font-size:10px}.mini span{display:block;margin-top:4px;color:#6e8087;font-size:8px}
 .table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:9px 10px;border-bottom:1px solid #edf0f2;text-align:left;font-size:9px}.table th{font-size:8px;color:#7c8c92;text-transform:uppercase;letter-spacing:.5px}.table td strong{font-weight:950}.tag{display:inline-block;padding:3px 7px;border-radius:999px;background:#edf7f8;color:#007e8c;font-size:7px;font-weight:900}.tag.red{background:#fff0f2;color:#be3349}.tag.amber{background:#fff7e6;color:#986500}
@@ -215,12 +239,18 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
  .signal-item{padding:10px}
  .signal-item .signal-title{font-size:10px}
  .signal-item .signal-copy{font-size:10px}
- .hour span,.hour small{font-size:8px}
  .chart-label{font-size:8px}
  .hero h2{font-size:20px}
  .hero-insight{min-width:0;max-width:none;width:100%}
  .chart{height:135px}
- .hour-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
+ .hourly-highlights{gap:7px}
+ .hourly-highlight{padding:9px 10px}
+ .hourly-highlight strong{font-size:14px}
+ .hourly-series-head{gap:6px}
+ .hourly-series-peak{font-size:9px;padding:5px 6px}
+ .hourly-bars{gap:2px}
+ .hourly-bar-track{height:58px;padding:0 1px}
+ .hourly-hour{font-size:7px}
  .bar-row{grid-template-columns:100px 1fr 44px}
  .page-head{align-items:flex-start;flex-direction:column}
  .error-tools{grid-template-columns:1fr;gap:6px}
@@ -347,8 +377,8 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
                         <div id="dashDaily" class="chart"></div>
                       </div>
                       <div class="panel">
-                        <div class="panel-head"><h3>CONSULTAS E ONLINE POR HORA</h3><span>ÚLTIMAS 24 H</span></div>
-                        <div class="panel-body"><div id="dashHours" class="hour-grid"></div><div class="hour-note">Consultas = pedidos de seguro iniciados. Presença = instalações distintas com abertura ou heartbeat nessa hora; não equivale a pessoas únicas.</div></div>
+                        <div class="panel-head"><h3>CONSULTAS E PRESENÇA POR HORA</h3><span>ÚLTIMAS 24 H</span></div>
+                        <div class="panel-body"><div id="dashHours" class="hour-grid"></div><div class="hour-note">Consultas = pedidos de seguro iniciados. Utilizadores ativos estimados = instalações distintas com uma interação real nessa hora (consulta, módulo ou ferramenta). Abrir o browser ou enviar heartbeat não conta; o número não identifica pessoas únicas.</div></div>
                       </div>
                     </div>
             
@@ -435,7 +465,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
         <div class="grid g4" id="usageCards"></div>
         <div class="grid g2" style="margin-top:12px">
           <div class="panel"><div class="panel-head"><h3>MÓDULOS MAIS USADOS</h3><span>30 DIAS</span></div><div class="panel-body"><div id="usageModules" class="bar-list"></div></div></div>
-          <div class="panel"><div class="panel-head"><h3>CONSULTAS E PRESENÇA POR HORA</h3><span>ÚLTIMAS 24 H</span></div><div class="panel-body"><div id="usageHours" class="hour-grid"></div><div class="hour-note">Consultas = pedidos de seguro iniciados. Online = instalações distintas com abertura ou heartbeat nessa hora; não equivale a pessoas únicas.</div></div></div>
+          <div class="panel"><div class="panel-head"><h3>CONSULTAS E PRESENÇA POR HORA</h3><span>ÚLTIMAS 24 H</span></div><div class="panel-body"><div id="usageHours" class="hour-grid"></div><div class="hour-note">Consultas = pedidos de seguro iniciados. Utilizadores ativos estimados = instalações distintas com uma interação real nessa hora (consulta, módulo ou ferramenta). Abrir o browser ou enviar heartbeat não conta; o número não identifica pessoas únicas.</div></div></div>
         </div>
         <div class="panel" style="margin-top:12px"><div class="panel-head"><h3>ATIVIDADE DIÁRIA</h3><span>30 DIAS</span></div><div id="usageDaily" class="chart"></div></div>
         
@@ -528,7 +558,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
 
 <script>
 const API_ORIGIN='https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/';
-const ADMIN_CACHE='admin-simple-2026-10-13-r13';
+const ADMIN_CACHE='admin-simple-2026-10-13-r14';
 const AUTH_API=API_ORIGIN+'admin-auth-v2?v='+encodeURIComponent(ADMIN_CACHE);
 const STATS_API=API_ORIGIN+'stats-v2?v='+encodeURIComponent(ADMIN_CACHE);
 const TOKEN_KEY='VERIX_ADMIN_V2_TOKEN';
@@ -657,7 +687,38 @@ function applyPlateErrorSearch(){
 }
 function barList(id,rows,tone=''){const host=$(id);if(!host)return;if(!rows?.length){host.innerHTML='<div class="empty">Sem dados suficientes.</div>';return}const max=Math.max(1,...rows.map(x=>Number(x.value)||0));host.innerHTML=rows.slice(0,12).map(x=>'<div class="bar-row"><div class="bar-label" title="'+esc(x.label)+'">'+esc(x.label)+'</div><div class="track"><div class="fill '+tone+'" style="width:'+Math.max(2,(Number(x.value)||0)/max*100)+'%"></div></div><div class="num">'+fmt(x.value)+'</div></div>').join('')}
 function monthlyChart(id,rows,key){const host=$(id);if(!host)return;if(!rows?.length){host.innerHTML='<div class="empty" style="width:100%">Sem dados suficientes.</div>';return}const vals=rows.map(x=>Number(x[key]||0));const max=Math.max(1,...vals);host.setAttribute('role','group');host.setAttribute('aria-label','Atividade diária. Foca uma barra para consultar o dia e o valor.');host.innerHTML=rows.map((x,index)=>{const label=String(x.day_key||'');const value=fmt(x[key]||0);const unit=key==='users'?'instalações':key==='lookups'?'consultas':key;const showTick=index===0||index===rows.length-1||index%5===0;return '<div class="chart-col" tabindex="0" role="img" aria-label="'+esc(label+': '+value+' '+unit)+'" title="'+esc(label+' · '+value+' '+unit)+'"><div class="chart-bar" aria-hidden="true" style="height:'+Math.max(3,(Number(x[key]||0)/max)*100)+'%"></div><div class="chart-label" aria-hidden="true">'+(showTick?esc(label.slice(8)):'')+'</div></div>'}).join('')}
-function hourGrid(id,rows){const host=$(id);if(!host)return;if(!rows?.length){host.innerHTML='<div class="empty">Sem dados.</div>';return}const max=Math.max(1,...rows.map(x=>Number(x.consultations||0)));host.setAttribute('role','group');host.setAttribute('aria-label','Consultas iniciadas e instalações com presença por hora nas últimas 24 horas');host.innerHTML=rows.map(x=>{const hour=String(x.hour_num??'').padStart(2,'0')+'h';const consultations=Number(x.consultations||0);const count=fmt(consultations);const online=fmt(x.users||0);const detail=hour+' · '+count+' consultas · '+online+' instalações com presença';return '<div class="hour" role="img" aria-label="'+esc(detail)+'" title="'+esc(detail)+'" style="opacity:'+Math.max(.35,(consultations/max))+'"><b>'+esc(hour)+'</b><span>'+count+' cons.</span><small>'+online+' online</small></div>'}).join('')}
+function hourGrid(id,rows){
+ const host=$(id);if(!host)return;
+ if(!Array.isArray(rows)||!rows.length){host.innerHTML='<div class="empty">Sem dados horários disponíveis.</div>';return}
+ const byHour=new Map(rows.map(x=>[Number(x.hour_num),x]));
+ const hours=Array.from({length:24},(_,hour)=>{const source=byHour.get(hour)||{};const asNumber=value=>{const n=Number(value||0);return Number.isFinite(n)?Math.max(0,n):0};return {hour_num:hour,consultations:asNumber(source.consultations),users:asNumber(source.users)}});
+ const hourLabel=value=>String(value).padStart(2,'0')+'h';
+ const peakFor=key=>hours.reduce((best,x)=>x[key]>best[key]?x:best,hours[0]);
+ const peakConsult=peakFor('consultations'),peakActive=peakFor('users');
+ const peakConsultText=peakConsult.consultations>0?fmt(peakConsult.consultations)+' às '+hourLabel(peakConsult.hour_num):'Sem consultas';
+ const peakActiveText=peakActive.users>0?fmt(peakActive.users)+' instalações ativas · '+hourLabel(peakActive.hour_num):'Sem atividade real';
+ const buildSeries=(key,title,subtitle,kind,peak,unit)=>{
+  const max=Math.max(1,...hours.map(x=>x[key]));
+  const peakValue=peak[key];
+  const peakLabel=peakValue>0?fmt(peakValue)+' · '+hourLabel(peak.hour_num):'Sem movimento';
+  const bars=hours.map((x,index)=>{
+   const value=x[key],isPeak=value>0&&value===peakValue,barHeight=value>0?Math.max(3,(value/max)*100):0;
+   const detail=hourLabel(x.hour_num)+' · '+fmt(value)+' '+unit;
+   const tick=index%3===0?hourLabel(x.hour_num):'';
+   return '<div class="hourly-bar-col'+(isPeak?' is-peak':'')+'" tabindex="0" role="img" aria-label="'+esc(detail)+'" title="'+esc(detail)+'"><div class="hourly-bar-track"><span class="hourly-bar" aria-hidden="true" style="height:'+barHeight+'%"></span></div><span class="hourly-hour" aria-hidden="true">'+tick+'</span></div>';
+  }).join('');
+  return '<div class="hourly-series '+kind+'"><div class="hourly-series-head"><div><span class="hourly-series-title">'+title+'</span><span class="hourly-series-subtitle">'+subtitle+'</span></div><span class="hourly-series-peak">Pico: '+esc(peakLabel)+'</span></div><div class="hourly-bars" role="group" aria-label="'+esc(title+' por hora nas últimas 24 horas')+'">'+bars+'</div></div>';
+ };
+ const dataRows=hours.map(x=>'<tr>'+td('<strong>'+hourLabel(x.hour_num)+'</strong>')+td(fmt(x.consultations))+td(fmt(x.users))+'</tr>').join('');
+ host.innerHTML=
+  '<div class="hourly-highlights">'+
+   '<div class="hourly-highlight"><span>Pico de consultas</span><strong>'+esc(peakConsultText)+'</strong><small>Pedidos de consulta iniciados nessa hora.</small></div>'+
+   '<div class="hourly-highlight"><span>Pico de utilizadores ativos</span><strong>'+esc(peakActiveText)+'</strong><small>Instalações com uma interação real nessa hora.</small></div>'+
+  '</div>'+
+  buildSeries('consultations','Consultas de seguro','Pedidos iniciados por hora.','consultations',peakConsult,'consultas')+
+  buildSeries('users','Utilizadores ativos (estimados)','Instalações com pelo menos uma interação real nessa hora.','presence',peakActive,'instalações ativas')+
+  '<details class="hourly-data"><summary>Ver os valores exatos das 24 horas</summary><div class="table-wrap"><table class="table"><thead><tr><th>Hora</th><th>Consultas</th><th>Instalações com presença</th></tr></thead><tbody>'+dataRows+'</tbody></table></div></details>';
+}
 function token(){return sessionStorage.getItem(TOKEN_KEY)||''}
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.remove('hidden');clearTimeout(window.__toastTimer);window.__toastTimer=setTimeout(()=>t.classList.add('hidden'),2200)}
 function setBackend(state){const dot=$('statusDot'),b=$('backendBadge');dot.className='dot';if(state==='loading'){dot.classList.add('warn');b.textContent='A atualizar…'}else if(state==='partial'){dot.classList.add('warn');b.textContent='Online · alguns dados em falta'}else if(state==='offline'){dot.classList.add('off');b.textContent='Backend indisponível'}else b.textContent='Backend online'}
