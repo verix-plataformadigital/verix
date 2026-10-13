@@ -438,7 +438,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
           <div class="panel"><div class="panel-head"><h3>CONSULTAS E PRESENÇA POR HORA</h3><span>ÚLTIMAS 24 H</span></div><div class="panel-body"><div id="usageHours" class="hour-grid"></div><div class="hour-note">Consultas = pedidos de seguro iniciados. Online = instalações distintas com abertura ou heartbeat nessa hora; não equivale a pessoas únicas.</div></div></div>
         </div>
         <div class="panel" style="margin-top:12px"><div class="panel-head"><h3>ATIVIDADE DIÁRIA</h3><span>30 DIAS</span></div><div id="usageDaily" class="chart"></div></div>
-        <div class="panel" style="margin-top:12px"><div class="panel-head"><h3>CAMINHOS MAIS COMUNS</h3><span>DE UM MÓDULO PARA OUTRO</span></div><div id="usageTransitions" class="table-wrap"></div></div>
+        
       </section>
 
       <section class="page" data-page="errors">
@@ -573,11 +573,11 @@ function renderLoadingState(){
  cardHosts.forEach(id=>{const host=$(id);if(host)host.innerHTML=Array.from({length:id==='dashCards'?4:id==='dashSecondaryCards'?4:4},()=>'<div class="skeleton skeleton-card" aria-hidden="true"></div>').join('')});
  ['dashDaily','usageDaily'].forEach(id=>{const host=$(id);if(host)host.innerHTML='<div class="skeleton-chart" aria-hidden="true">'+Array.from({length:24},(_,i)=>'<span class="skeleton-chart-bar" style="height:'+(18+(i*17)%70)+'%"></span>').join('')+'</div>'});
  ['dashHours','usageHours'].forEach(id=>{const host=$(id);if(host)host.innerHTML='<div class="skeleton-grid" aria-hidden="true">'+Array.from({length:12},()=>'<span class="skeleton skeleton-chip"></span>').join('')+'</div>'});
- const panels=['dashModules','dashReading','dashQueryHealth','dashOpsSignals','dashboardErrorPlates','dashboardNoCases','insuranceSummary','insurancePerformance','insuranceCompare','insuranceErrors','insurancePlates','insuranceNoCases','speedDistribution','speedPatterns','speedModes','speedLimits','speedCodes','speedSessions','legItems','legActivity','usageModules','usageTransitions','errorTypes','errorBursts','errorReading','errorInstallations','errorSignatures','errorTechnical','systemCoverage','systemHistory','performanceQuality','insightModules','insightLegislation','insightSpeedDistribution','insightHours','insightNotes'];
+ const panels=['dashModules','dashReading','dashQueryHealth','dashOpsSignals','dashboardErrorPlates','dashboardNoCases','insuranceSummary','insurancePerformance','insuranceCompare','insuranceErrors','insurancePlates','insuranceNoCases','speedDistribution','speedPatterns','speedModes','speedLimits','speedCodes','speedSessions','legItems','legActivity','usageModules','errorTypes','errorBursts','errorReading','errorInstallations','errorSignatures','errorTechnical','systemCoverage','systemHistory','performanceQuality','insightModules','insightLegislation','insightSpeedDistribution','insightHours','insightNotes'];
  panels.forEach(id=>{const host=$(id);if(host)host.innerHTML='<div class="skeleton skeleton-panel" aria-hidden="true"></div><div class="skeleton skeleton-panel" aria-hidden="true"></div>'});
 }
 function renderLoadFailure(){
- const hosts=['dashCards','dashSecondaryCards','insuranceCards','speedCards','legCards','usageCards','errorCards','systemCards','performanceCards','insightCards','dashDaily','usageDaily','dashHours','usageHours','dashModules','dashReading','dashQueryHealth','dashOpsSignals','dashboardErrorPlates','dashboardNoCases','insuranceSummary','insurancePerformance','insuranceCompare','insuranceErrors','insurancePlates','insuranceNoCases','speedDistribution','speedPatterns','speedModes','speedLimits','speedCodes','speedSessions','legItems','legActivity','usageModules','usageTransitions','errorTypes','errorBursts','errorReading','errorInstallations','errorSignatures','errorTechnical','systemCoverage','systemHistory','performanceQuality','insightModules','insightLegislation','insightSpeedDistribution','insightHours','insightNotes'];
+ const hosts=['dashCards','dashSecondaryCards','insuranceCards','speedCards','legCards','usageCards','errorCards','systemCards','performanceCards','insightCards','dashDaily','usageDaily','dashHours','usageHours','dashModules','dashReading','dashQueryHealth','dashOpsSignals','dashboardErrorPlates','dashboardNoCases','insuranceSummary','insurancePerformance','insuranceCompare','insuranceErrors','insurancePlates','insuranceNoCases','speedDistribution','speedPatterns','speedModes','speedLimits','speedCodes','speedSessions','legItems','legActivity','usageModules','errorTypes','errorBursts','errorReading','errorInstallations','errorSignatures','errorTechnical','systemCoverage','systemHistory','performanceQuality','insightModules','insightLegislation','insightSpeedDistribution','insightHours','insightNotes'];
  hosts.forEach(id=>{const host=$(id);if(host&&host.querySelector('.skeleton,.skeleton-chart,.skeleton-grid'))host.innerHTML='<div class="empty">Os dados ainda não estão disponíveis.</div>'});
 }
 function wireDashboardDrilldowns(){
@@ -751,10 +751,6 @@ function mergeAuxiliaryAnalytics(auxiliary){
  if(auxiliary?.insurance_quality){
   merged.insurance_quality={...(previous.insurance_quality||{}),...auxiliary.insurance_quality};
  }
- if(auxiliary?.usage){
-  merged.usage={...(previous.usage||{}),...auxiliary.usage,
-   sessions:{...((previous.usage||{}).sessions||{}),...((auxiliary.usage||{}).sessions||{})}};
- }
  latestData={...latestData,analytics:merged};
 }
 async function ensureAuxiliaryLoaded(){
@@ -813,7 +809,7 @@ async function ensurePageDetail(page){
 
  // Load only the additional metrics required by each tab; never block these tabs
  // on the legacy whole-history analytics function.
- if(['usage','legislation','insights','performance','system','insurance'].includes(page)){
+ if(['legislation','insights','performance','system','insurance'].includes(page)){
   const loaded=await ensureAuxiliaryLoaded();
   if(!loaded)return;
   if(currentPage===page)renderCurrentPage(latestData);
@@ -1069,9 +1065,6 @@ function renderUsage(d){
  barList('usageModules',(u.modules||[]).map(x=>({label:x.module,value:x.qty})));
  hourGrid('usageHours',u.hourly||[]);
  monthlyChart('usageDaily',u.daily||[],'users');
- $('usageTransitions').innerHTML=(u.transitions&&u.transitions.length)
-  ?table(['DE','PARA','VEZES'],u.transitions.slice(0,20).map(x=>'<tr>'+td('<strong>'+esc(x.from_module||'—')+'</strong>')+td(esc(x.to_module||'—'))+td(fmt(x.qty))+'</tr>'))
-  :'<div class="empty" style="margin:12px">As métricas de utilização estão disponíveis. O detalhe dos caminhos entre módulos não vem no resumo rápido e não vai bloquear o resto do painel.</div>';
 }
 function renderErrors(d){
  const e=d.analytics?.errors||{},inv=d.investigation||{},q=period(),te=d.analytics?.telemetry||{};
