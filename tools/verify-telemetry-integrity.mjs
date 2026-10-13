@@ -106,7 +106,7 @@ assert.equal(parseReceipt('not-json'), null, "malformed receipt must not clear t
 
 const presenceMigration = fs.readFileSync("supabase/migrations/20261009045708_fix_browser_presence_kpi.sql", "utf8");
 const recentQueryPresenceMigration = fs.readFileSync("supabase/migrations/20261010222630_consulted_installations_last_3m.sql", "utf8");
-const activeHourlyMigration = fs.readFileSync("supabase/migrations/20261013090000_admin_hourly_active_interactions.sql", "utf8");
+const activeHourlyMigration = fs.readFileSync("supabase/migrations/20261013100000_hourly_usage_bucket_dates.sql", "utf8");
 assert.match(endpoint, /"session_close"/, "server must accept browser-close presence events");
 assert.match(telemetryScript, /push\('session_close', null\)/, "pagehide must emit a browser-close event");
 assert.match(telemetryScript, /navigator\.sendBeacon\([\s\S]*events: \[closingEvent\]/, "browser-close event must be sent immediately through Beacon");
@@ -128,6 +128,11 @@ assert.ok(stats.includes('[3,"active_hourly_usage"]'), "a failed active-hourly q
 const activeEventsMatch = activeHourlyMigration.match(/active_use AS \([\s\S]*?AND e\.event IN \(([\s\S]*?)\n    \)\n  GROUP BY 1\n\)/);
 assert.ok(activeEventsMatch, "hourly active-use migration must define an explicit interaction-event set");
 assert.ok(!/['"]app_open['"]|['"]heartbeat['"]|['"]session_close['"]/.test(activeEventsMatch[1]), "hourly active-use must exclude passive lifecycle events");
+assert.match(activeHourlyMigration, /'bucket_start', h\.bucket_start/, "each hourly metric must include its real timestamp");
+assert.match(activeHourlyMigration, /date_trunc\('hour', e\.occurred_at AT TIME ZONE 'UTC'\) AT TIME ZONE 'UTC'/, "hourly counts must use chronological hour buckets rather than hour-of-day grouping");
+assert.ok(admin.includes("hourly-day-group"), "hourly chart must visually separate dates");
+assert.ok(admin.includes("new Date(x.bucket_start)"), "hourly chart must read the date associated with each bucket");
+assert.match(stats, /admin-simple-2026-10-13-r15/, "dated hourly chart must use a distinct cache key supported by stats");
 assert.match(recentQueryPresenceMigration, /count\(DISTINCT e\.installation_id\)/, "recent-query presence must count distinct installations");
 assert.match(recentQueryPresenceMigration, /e\.event = 'vehicle_lookup'/, "recent-query presence must count actual consultation starts");
 assert.match(recentQueryPresenceMigration, /e\.query_id IS NOT NULL/, "recent-query presence must ignore lookup events without a query ID");
@@ -159,10 +164,10 @@ assert.match(hourlyMigration, /count\(DISTINCT e\.query_id\) FILTER/, "hourly co
 assert.match(hourlyMigration, /e\.event='vehicle_lookup'/, "hourly consultations must count actual lookup starts");
 assert.match(hourlyMigration, /count\(DISTINCT e\.installation_id\) FILTER/, "hourly presence must count distinct installations");
 assert.match(hourlyMigration, /e\.event IN \('app_open','heartbeat'\)/, "hourly presence must use app-open/heartbeat events");
-assert.ok(admin.includes("CONSULTAS E PRESENÇA POR HORA"), "dashboard must describe hourly consultations and active-use metrics");
-assert.ok(admin.includes("CONSULTAS E PRESENÇA POR HORA"), "usage page must describe the updated hourly metrics");
-assert.match(admin, /asNumber\(source\.consultations\)/, "hour chart must use consultation count");
-assert.match(admin, /asNumber\(source\.users\)/, "hour chart must use the active-installation count");
+assert.ok(admin.includes("CONSULTAS E UTILIZAÇÃO POR HORA"), "dashboard must describe hourly consultations and active-use metrics");
+assert.ok(admin.includes("CONSULTAS E UTILIZAÇÃO POR HORA"), "usage page must describe the updated hourly metrics");
+assert.match(admin, /asNumber\(x\.consultations\)/, "hour chart must use consultation count");
+assert.ok(admin.includes("users:asNumber(x.active_users??x.users)"), "hour chart must use the active-installation count");
 assert.match(admin, /Hora com mais consultas/, "dashboard insight must refer to consultations, not generic actions");
 
 assert.ok(app.includes("function cinTelemetrySnapshot()"), "Cinemometer telemetry must construct a structured snapshot");
