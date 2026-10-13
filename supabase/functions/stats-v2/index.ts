@@ -455,7 +455,7 @@ let cachedStats: { at:number; body:string; key:string } | null = null;
 let cachedAnalytics: { at:number; body:string } | null = null;
 let cachedDiagnostics: { at:number; body:string } | null = null;
 const STATS_CACHE_MS = 15000;
-const ANALYTICS_CACHE_MS = 60000;
+const ANALYTICS_CACHE_MS = 300000;
 const DETAIL_CACHE_MS = 30000;
 const AUXILIARY_CACHE_MS = 60000;
 const SYSTEM_CACHE_MS = 60000;
@@ -692,7 +692,8 @@ Deno.serve(async (req) => {
       "admin-simple-2026-10-11-r9",
       "admin-simple-2026-10-12-r10",
       "admin-simple-2026-10-12-r11",
-      "admin-simple-2026-10-12-r12"
+      "admin-simple-2026-10-12-r12",
+      "admin-simple-2026-10-13-r13"
     ].includes(statsCacheKey);
 
     if(!forceRefresh && cachedStats && cachedStats.key===statsCacheKey && (Date.now()-cachedStats.at)<STATS_CACHE_MS) {
