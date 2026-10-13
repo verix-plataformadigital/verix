@@ -106,6 +106,7 @@ assert.equal(parseReceipt('not-json'), null, "malformed receipt must not clear t
 
 const presenceMigration = fs.readFileSync("supabase/migrations/20261009045708_fix_browser_presence_kpi.sql", "utf8");
 const recentQueryPresenceMigration = fs.readFileSync("supabase/migrations/20261010222630_consulted_installations_last_3m.sql", "utf8");
+const activeHourlyMigration = fs.readFileSync("supabase/migrations/20261013090000_admin_hourly_active_interactions.sql", "utf8");
 assert.match(endpoint, /"session_close"/, "server must accept browser-close presence events");
 assert.match(telemetryScript, /push\('session_close', null\)/, "pagehide must emit a browser-close event");
 assert.match(telemetryScript, /navigator\.sendBeacon\([\s\S]*events: \[closingEvent\]/, "browser-close event must be sent immediately through Beacon");
@@ -113,14 +114,20 @@ assert.match(presenceMigration, /'online_now',\(SELECT count\(\*\)/, "online_now
 assert.match(presenceMigration, /last_presence >= p_now-interval '90 seconds'/, "online presence must expire after the heartbeat lease");
 assert.match(presenceMigration, /event IN \('app_open','heartbeat','session_close'\)/, "online presence must use lifecycle events only");
 assert.match(presenceMigration, /last_close IS NULL OR last_presence > last_close/, "a later close event must remove a session from the active count");
-assert.ok(admin.includes("Sessões VÉRIX com browser aberto."), "browser-session presence must remain distinguishable from recent consultation activity");
-assert.ok(admin.includes("ONLINE AGORA"), "Admin must expose the recent-consultation online indicator");
-assert.ok(admin.includes("o.consulted_3m"), "online indicator must use the backend's three-minute consultation metric");
-assert.ok(admin.includes("Instalações com pelo menos uma consulta iniciada nos últimos 3 minutos."), "online indicator must explain its exact measurement window");
-assert.ok(admin.includes("SESSÕES DE BROWSER"), "Admin must retain the separate browser-session presence indicator");
+assert.ok(admin.includes("BROWSERS ATIVOS"), "Admin must keep browser-session activity labelled separately");
+assert.ok(admin.includes("CONSULTAS · ÚLTIMOS 3 MIN"), "Admin must expose recent consultation activity separately");
+assert.ok(admin.includes("Instalações que iniciaram uma consulta recentemente."), "recent consultation activity must be described accurately");
+assert.ok(admin.includes("Utilizadores ativos (estimados)"), "hourly chart must label active-use estimates");
+assert.ok(admin.includes("Abrir o browser ou enviar heartbeat não conta"), "hourly metric must explicitly exclude passive browser presence");
 assert.ok(stats.includes('rpc("verix2_consulted_installations_3m",{p_now:now})'), "stats must request query-based online presence");
 assert.ok(stats.includes("consulted_3m:recentConsulted3m"), "stats must return query-based online presence separately from browser sessions");
-assert.ok(stats.includes('[3,"recent_query_presence"]'), "a failed recent-presence query must mark the dashboard as partial");
+assert.ok(stats.includes('[2,"recent_query_presence"]'), "a failed recent-presence query must mark the dashboard as partial");
+assert.ok(stats.includes('rpc("verix2_admin_hourly_active_interactions",{p_now:now})'), "stats must request hourly active-use data");
+assert.ok(stats.includes("hourly:activeHourly"), "stats must replace passive hourly presence with active-use counts");
+assert.ok(stats.includes('[3,"active_hourly_usage"]'), "a failed active-hourly query must be reported");
+const activeEventsMatch = activeHourlyMigration.match(/active_use AS \([\s\S]*?AND e\.event IN \(([\s\S]*?)\n    \)\n  GROUP BY 1\n\)/);
+assert.ok(activeEventsMatch, "hourly active-use migration must define an explicit interaction-event set");
+assert.ok(!/['"]app_open['"]|['"]heartbeat['"]|['"]session_close['"]/.test(activeEventsMatch[1]), "hourly active-use must exclude passive lifecycle events");
 assert.match(recentQueryPresenceMigration, /count\(DISTINCT e\.installation_id\)/, "recent-query presence must count distinct installations");
 assert.match(recentQueryPresenceMigration, /e\.event = 'vehicle_lookup'/, "recent-query presence must count actual consultation starts");
 assert.match(recentQueryPresenceMigration, /e\.query_id IS NOT NULL/, "recent-query presence must ignore lookup events without a query ID");
@@ -152,10 +159,10 @@ assert.match(hourlyMigration, /count\(DISTINCT e\.query_id\) FILTER/, "hourly co
 assert.match(hourlyMigration, /e\.event='vehicle_lookup'/, "hourly consultations must count actual lookup starts");
 assert.match(hourlyMigration, /count\(DISTINCT e\.installation_id\) FILTER/, "hourly presence must count distinct installations");
 assert.match(hourlyMigration, /e\.event IN \('app_open','heartbeat'\)/, "hourly presence must use app-open/heartbeat events");
-assert.ok(admin.includes("CONSULTAS E ONLINE POR HORA"), "dashboard must describe the updated hourly metrics");
+assert.ok(admin.includes("CONSULTAS E PRESENÇA POR HORA"), "dashboard must describe hourly consultations and active-use metrics");
 assert.ok(admin.includes("CONSULTAS E PRESENÇA POR HORA"), "usage page must describe the updated hourly metrics");
-assert.match(admin, /Number\(x\.consultations\|\|0\)/, "hour chart must use consultation count");
-assert.match(admin, /fmt\(x\.users\|\|0\)/, "hour chart must show online installations");
+assert.match(admin, /asNumber\(source\.consultations\)/, "hour chart must use consultation count");
+assert.match(admin, /asNumber\(source\.users\)/, "hour chart must use the active-installation count");
 assert.match(admin, /Hora com mais consultas/, "dashboard insight must refer to consultations, not generic actions");
 
 assert.ok(app.includes("function cinTelemetrySnapshot()"), "Cinemometer telemetry must construct a structured snapshot");
