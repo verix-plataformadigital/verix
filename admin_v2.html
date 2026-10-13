@@ -115,6 +115,11 @@ button{cursor:pointer}
 .hourly-series-title{display:block;color:#263c42;font-size:12px;font-weight:900;line-height:1.3}
 .hourly-series-subtitle{display:block;margin-top:3px;color:#526a71;font-size:10px;line-height:1.35}
 .hourly-series-peak{flex:0 0 auto;padding:5px 8px;border-radius:7px;background:#edf5f6;color:#244f58;font-size:10px;font-weight:850;white-space:nowrap;font-variant-numeric:tabular-nums}
+.hourly-day-group{margin-top:10px;padding:10px;border:1px solid #e0eaed;border-radius:10px;background:#fbfdfd}
+.hourly-day-group:first-child{margin-top:0}
+.hourly-day-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}
+.hourly-day-label{color:#294951;font-size:10px;font-weight:900;text-transform:capitalize}
+.hourly-day-count{color:#5b7076;font-size:9px;font-weight:700;white-space:nowrap}
 .hourly-bars{display:grid;grid-template-columns:repeat(24,minmax(0,1fr));align-items:end;gap:3px;min-width:0}
 .hourly-bar-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;min-width:0;border-radius:5px;outline-offset:2px}
 .hourly-bar-col:focus-visible{outline:2px solid #087f8d}
@@ -377,7 +382,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
                         <div id="dashDaily" class="chart"></div>
                       </div>
                       <div class="panel">
-                        <div class="panel-head"><h3>CONSULTAS E PRESENÇA POR HORA</h3><span>ÚLTIMAS 24 H</span></div>
+                        <div class="panel-head"><h3>CONSULTAS E UTILIZAÇÃO POR HORA</h3><span>ÚLTIMAS 24 H</span></div>
                         <div class="panel-body"><div id="dashHours" class="hour-grid"></div><div class="hour-note">Consultas = pedidos de seguro iniciados. Utilizadores ativos estimados = instalações distintas com uma interação real nessa hora (consulta, módulo ou ferramenta). Abrir o browser ou enviar heartbeat não conta; o número não identifica pessoas únicas.</div></div>
                       </div>
                     </div>
@@ -465,7 +470,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
         <div class="grid g4" id="usageCards"></div>
         <div class="grid g2" style="margin-top:12px">
           <div class="panel"><div class="panel-head"><h3>MÓDULOS MAIS USADOS</h3><span>30 DIAS</span></div><div class="panel-body"><div id="usageModules" class="bar-list"></div></div></div>
-          <div class="panel"><div class="panel-head"><h3>CONSULTAS E PRESENÇA POR HORA</h3><span>ÚLTIMAS 24 H</span></div><div class="panel-body"><div id="usageHours" class="hour-grid"></div><div class="hour-note">Consultas = pedidos de seguro iniciados. Utilizadores ativos estimados = instalações distintas com uma interação real nessa hora (consulta, módulo ou ferramenta). Abrir o browser ou enviar heartbeat não conta; o número não identifica pessoas únicas.</div></div></div>
+          <div class="panel"><div class="panel-head"><h3>CONSULTAS E UTILIZAÇÃO POR HORA</h3><span>ÚLTIMAS 24 H</span></div><div class="panel-body"><div id="usageHours" class="hour-grid"></div><div class="hour-note">Consultas = pedidos de seguro iniciados. Utilizadores ativos estimados = instalações distintas com uma interação real nessa hora (consulta, módulo ou ferramenta). Abrir o browser ou enviar heartbeat não conta; o número não identifica pessoas únicas.</div></div></div>
         </div>
         <div class="panel" style="margin-top:12px"><div class="panel-head"><h3>ATIVIDADE DIÁRIA</h3><span>30 DIAS</span></div><div id="usageDaily" class="chart"></div></div>
         
@@ -558,7 +563,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
 
 <script>
 const API_ORIGIN='https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/';
-const ADMIN_CACHE='admin-simple-2026-10-13-r14';
+const ADMIN_CACHE='admin-simple-2026-10-13-r15';
 const AUTH_API=API_ORIGIN+'admin-auth-v2?v='+encodeURIComponent(ADMIN_CACHE);
 const STATS_API=API_ORIGIN+'stats-v2?v='+encodeURIComponent(ADMIN_CACHE);
 const TOKEN_KEY='VERIX_ADMIN_V2_TOKEN';
@@ -690,34 +695,59 @@ function monthlyChart(id,rows,key){const host=$(id);if(!host)return;if(!rows?.le
 function hourGrid(id,rows){
  const host=$(id);if(!host)return;
  if(!Array.isArray(rows)||!rows.length){host.innerHTML='<div class="empty">Sem dados horários disponíveis.</div>';return}
- const byHour=new Map(rows.map(x=>[Number(x.hour_num),x]));
- const hours=Array.from({length:24},(_,hour)=>{const source=byHour.get(hour)||{};const asNumber=value=>{const n=Number(value||0);return Number.isFinite(n)?Math.max(0,n):0};return {hour_num:hour,consultations:asNumber(source.consultations),users:asNumber(source.users)}});
- const hourLabel=value=>String(value).padStart(2,'0')+'h';
- const peakFor=key=>hours.reduce((best,x)=>x[key]>best[key]?x:best,hours[0]);
+ const asNumber=value=>{const n=Number(value||0);return Number.isFinite(n)?Math.max(0,n):0};
+ const dateOf=x=>{if(!x?.bucket_start)return null;const date=new Date(x.bucket_start);return Number.isFinite(date.getTime())?date:null};
+ const raw=rows.map(x=>({date:dateOf(x),consultations:asNumber(x.consultations),users:asNumber(x.active_users??x.users),actions:asNumber(x.actions),sessions:asNumber(x.sessions)})).filter(x=>x.date);
+ if(!raw.length){
+  host.innerHTML='<div class="empty">O serviço ainda não enviou a data de cada hora. Atualiza o painel depois de concluída a atualização dos dados.</div>';
+  return;
+ }
+ raw.sort((a,b)=>a.date-b.date);
+ const parts=(date,options,locale='pt-PT')=>new Intl.DateTimeFormat(locale,{timeZone:'Europe/Lisbon',...options}).formatToParts(date);
+ const partMap=(date,options,locale='pt-PT')=>Object.fromEntries(parts(date,options,locale).map(x=>[x.type,x.value]));
+ const dateKey=date=>{const p=partMap(date,{year:'numeric',month:'2-digit',day:'2-digit'},'en-GB');return p.year+'-'+p.month+'-'+p.day};
+ const dateShort=date=>new Intl.DateTimeFormat('pt-PT',{timeZone:'Europe/Lisbon',day:'2-digit',month:'2-digit',year:'numeric'}).format(date);
+ const dateLong=date=>new Intl.DateTimeFormat('pt-PT',{timeZone:'Europe/Lisbon',weekday:'long',day:'2-digit',month:'long',year:'numeric'}).format(date).replace(/^./,s=>s.toLocaleUpperCase('pt-PT'));
+ const hourOf=date=>partMap(date,{hour:'2-digit',hourCycle:'h23'}).hour;
+ const hourLabel=date=>hourOf(date)+'h';
+ const exactTime=date=>new Intl.DateTimeFormat('pt-PT',{timeZone:'Europe/Lisbon',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(date);
+ const timeZoneOf=date=>{const p=partMap(date,{timeZoneName:'shortOffset'});return p.timeZoneName||''};
+ const clockKey=x=>dateKey(x.date)+' '+hourOf(x.date);
+ const clockCounts=new Map();raw.forEach(x=>clockCounts.set(clockKey(x),(clockCounts.get(clockKey(x))||0)+1));
+ const displayHour=x=>hourLabel(x.date)+(clockCounts.get(clockKey(x))>1?' '+timeZoneOf(x.date):'');
+ const describeBucket=x=>dateShort(x.date)+' · '+displayHour(x)+' ('+hourOf(x.date)+':00–'+hourOf(x.date)+':59)';
+ const peakFor=key=>raw.reduce((best,x)=>x[key]>best[key]?x:best,raw[0]);
  const peakConsult=peakFor('consultations'),peakActive=peakFor('users');
- const peakConsultText=peakConsult.consultations>0?fmt(peakConsult.consultations)+' às '+hourLabel(peakConsult.hour_num):'Sem consultas';
- const peakActiveText=peakActive.users>0?fmt(peakActive.users)+' instalações ativas · '+hourLabel(peakActive.hour_num):'Sem atividade real';
+ const peakText=(item,key,suffix)=>item[key]>0?fmt(item[key])+' · '+dateShort(item.date)+' às '+displayHour(item):'Sem '+suffix;
+ const peakConsultText=peakText(peakConsult,'consultations','consultas');
+ const peakActiveText=peakText(peakActive,'users','atividade real');
  const buildSeries=(key,title,subtitle,kind,peak,unit)=>{
-  const max=Math.max(1,...hours.map(x=>x[key]));
+  const max=Math.max(1,...raw.map(x=>x[key]));
   const peakValue=peak[key];
-  const peakLabel=peakValue>0?fmt(peakValue)+' · '+hourLabel(peak.hour_num):'Sem movimento';
-  const bars=hours.map((x,index)=>{
-   const value=x[key],isPeak=value>0&&value===peakValue,barHeight=value>0?Math.max(3,(value/max)*100):0;
-   const detail=hourLabel(x.hour_num)+' · '+fmt(value)+' '+unit;
-   const tick=index%3===0?hourLabel(x.hour_num):'';
-   return '<div class="hourly-bar-col'+(isPeak?' is-peak':'')+'" tabindex="0" role="img" aria-label="'+esc(detail)+'" title="'+esc(detail)+'"><div class="hourly-bar-track"><span class="hourly-bar" aria-hidden="true" style="height:'+barHeight+'%"></span></div><span class="hourly-hour" aria-hidden="true">'+tick+'</span></div>';
+  const byDay=new Map();
+  raw.forEach(x=>{const k=dateKey(x.date);if(!byDay.has(k))byDay.set(k,[]);byDay.get(k).push(x)});
+  const dayGroups=[...byDay.values()].map(dayRows=>{
+   const bars=dayRows.map((x,index)=>{
+    const value=x[key],isPeak=value>0&&value===peakValue,barHeight=value>0?Math.max(3,(value/max)*100):0;
+    const detail=describeBucket(x)+' · '+fmt(value)+' '+unit;
+    const tick=index%3===0||index===dayRows.length-1?displayHour(x):'';
+    return '<div class="hourly-bar-col'+(isPeak?' is-peak':'')+'" tabindex="0" role="img" aria-label="'+esc(detail)+'" title="'+esc(detail)+'"><div class="hourly-bar-track"><span class="hourly-bar" aria-hidden="true" style="height:'+barHeight+'%"></span></div><span class="hourly-hour" aria-hidden="true">'+esc(tick)+'</span></div>';
+   }).join('');
+   return '<div class="hourly-day-group"><div class="hourly-day-heading"><span class="hourly-day-label">'+esc(dateLong(dayRows[0].date))+'</span><span class="hourly-day-count">'+dayRows.length+' blocos horários</span></div><div class="hourly-bars" role="group" aria-label="'+esc(title+' em '+dateShort(dayRows[0].date))+'">'+bars+'</div></div>';
   }).join('');
-  return '<div class="hourly-series '+kind+'"><div class="hourly-series-head"><div><span class="hourly-series-title">'+title+'</span><span class="hourly-series-subtitle">'+subtitle+'</span></div><span class="hourly-series-peak">Pico: '+esc(peakLabel)+'</span></div><div class="hourly-bars" role="group" aria-label="'+esc(title+' por hora nas últimas 24 horas')+'">'+bars+'</div></div>';
+  return '<div class="hourly-series '+kind+'"><div class="hourly-series-head"><div><span class="hourly-series-title">'+title+'</span><span class="hourly-series-subtitle">'+subtitle+'</span></div><span class="hourly-series-peak">Pico: '+esc(peakValue>0?fmt(peakValue)+' · '+dateShort(peak.date)+' às '+displayHour(peak):'Sem movimento')+'</span></div>'+dayGroups+'</div>';
  };
- const dataRows=hours.map(x=>'<tr>'+td('<strong>'+hourLabel(x.hour_num)+'</strong>')+td(fmt(x.consultations))+td(fmt(x.users))+'</tr>').join('');
+ const dataRows=raw.map(x=>'<tr>'+td('<strong>'+esc(dateShort(x.date))+'</strong>')+td(esc(displayHour(x)))+td(fmt(x.consultations))+td(fmt(x.users))+'</tr>').join('');
+ const rangeStart=raw[0].date,rangeEnd=raw[raw.length-1].date;
  host.innerHTML=
   '<div class="hourly-highlights">'+
    '<div class="hourly-highlight"><span>Pico de consultas</span><strong>'+esc(peakConsultText)+'</strong><small>Pedidos de consulta iniciados nessa hora.</small></div>'+
-   '<div class="hourly-highlight"><span>Pico de utilizadores ativos</span><strong>'+esc(peakActiveText)+'</strong><small>Instalações com uma interação real nessa hora.</small></div>'+
+   '<div class="hourly-highlight"><span>Pico de utilizadores ativos</span><strong>'+esc(peakActiveText)+'</strong><small>Instalações distintas com uma interação real nessa hora.</small></div>'+
   '</div>'+
+  '<div class="hour-note">Cada grupo mostra a data a que pertencem as horas. Período dos registos: '+esc(dateShort(rangeStart)+' '+exactTime(rangeStart)+'–'+dateShort(rangeEnd)+' '+exactTime(rangeEnd))+'. O primeiro e o último bloco podem ser parciais.</div>'+
   buildSeries('consultations','Consultas de seguro','Pedidos iniciados por hora.','consultations',peakConsult,'consultas')+
   buildSeries('users','Utilizadores ativos (estimados)','Instalações com pelo menos uma interação real nessa hora.','presence',peakActive,'instalações ativas')+
-  '<details class="hourly-data"><summary>Ver os valores exatos das 24 horas</summary><div class="table-wrap"><table class="table"><thead><tr><th>Hora</th><th>Consultas</th><th>Instalações com presença</th></tr></thead><tbody>'+dataRows+'</tbody></table></div></details>';
+  '<details class="hourly-data"><summary>Ver valores exatos por data e hora</summary><div class="table-wrap"><table class="table"><thead><tr><th>Data</th><th>Hora</th><th>Consultas</th><th>Instalações ativas (estim.)</th></tr></thead><tbody>'+dataRows+'</tbody></table></div></details>';
 }
 function token(){return sessionStorage.getItem(TOKEN_KEY)||''}
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.remove('hidden');clearTimeout(window.__toastTimer);window.__toastTimer=setTimeout(()=>t.classList.add('hidden'),2200)}
