@@ -693,7 +693,8 @@ Deno.serve(async (req) => {
       "admin-simple-2026-10-12-r10",
       "admin-simple-2026-10-12-r11",
       "admin-simple-2026-10-12-r12",
-      "admin-simple-2026-10-13-r13"
+      "admin-simple-2026-10-13-r13",
+      "admin-simple-2026-10-13-r14"
     ].includes(statsCacheKey);
 
     if(!forceRefresh && cachedStats && cachedStats.key===statsCacheKey && (Date.now()-cachedStats.at)<STATS_CACHE_MS) {
