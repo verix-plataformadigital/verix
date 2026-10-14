@@ -15962,11 +15962,12 @@ html body .leg-card-new .copy-all-new{
 
     saveQueue();
 
-    // Eventos críticos (arranque, presença e consulta) não ficam dependentes
-    // de uma janela de flush posterior. Tentamos enviar logo.
-    if (event === 'app_open' || event === 'heartbeat' || event === 'vehicle_lookup' || event === 'vehicle_insurance_no' || event === 'vehicle_insurance_error') {
+    // Os resultados que alimentam a lista de matrículas e os erros ASF são enviados
+    // imediatamente. Os marcadores de início/presença usam o debounce de 50 ms
+    // para poderem partilhar o mesmo lote com eventos emitidos no mesmo instante.
+    if (event === 'vehicle_insurance_no' || event === 'vehicle_insurance_error') {
       flushNow();
-    } else if (queue.length >= BATCH_SIZE) {
+    } else if (event === 'app_open' || event === 'heartbeat' || event === 'vehicle_lookup' || queue.length >= BATCH_SIZE) {
       flush();
     }
     return item;
