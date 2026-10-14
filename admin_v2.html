@@ -1108,32 +1108,34 @@ function renderInsurance(d){
 }
 function renderSpeed(d){
  const c=d.cinemometer||{},a=d.analytics||{},s={...(a.speed?.summary||{}),...c};
- const calc=Number(s.calculations||s.calculations_24h||0),sessions=Number(s.sessions||0),compat=Number(s.sessions_compatible||0),atyp=Number(s.sessions_atypical||0),p50=s.speed_p50??s.p50_24h,avg=s.speed_avg??s.avg_24h,min=s.speed_min??s.min_24h,max=s.speed_max??s.max_24h;
+ const calc=Number(s.calculations||s.calculations_24h||0),sessions=Number(s.sessions||0),compat=Number(s.sessions_compatible||0),atyp=Number(s.sessions_atypical||0),p50=s.speed_p50??s.p50_24h,avg=s.speed_avg??s.avg_24h,min=s.speed_min??s.min_24h,max=s.max_24h;
+ const hasData=calc>0||sessions>0||Number(s.raw_calculation_events||0)>0||(Array.isArray(c.recent_sessions)&&c.recent_sessions.length>0)||(Array.isArray(a.speed?.distribution_24h)&&a.speed.distribution_24h.length>0);
  $('speedCards').innerHTML=
-  card('CÁLCULOS',num(calc),'Últimas 24 horas.','cyan')+
+  card('CÁLCULOS',hasData?num(calc):'—',hasData?'Últimas 24 horas.':'Sem dados suficientes para este período.','cyan')+
   card('VELOCIDADE MÉDIA',avg==null?'—':fmt(avg)+' km/h','Média das velocidades disponíveis.')+
   card('VELOCIDADE MEDIANA',p50==null?'—':fmt(p50)+' km/h','Valor central.','blue')+
   card('MÍNIMO / MÁXIMO',min==null?'—':fmt(min)+' / '+fmt(max)+' km/h','Valores observados.');
  const dist=(a.speed?.distribution_24h||[]).length?(a.speed.distribution_24h):[];
  if(dist.length){const mx=Math.max(1,...dist.map(x=>Number(x.qty)||0));$('speedDistribution').innerHTML=dist.map(x=>'<div class="bar-row" style="margin-bottom:8px"><div class="bar-label">'+esc(x.bucket_start+'–'+(Number(x.bucket_start)+9)+' km/h')+'</div><div class="track"><div class="fill" style="width:'+Math.max(2,Number(x.qty)/mx*100)+'%"></div></div><div class="num">'+fmt(x.qty)+'</div></div>').join('')}else $('speedDistribution').innerHTML='<div class="empty">Ainda não existe detalhe suficiente para desenhar a distribuição.</div>';
  const flags=c.flag_counts||{},pattern=c.pattern_counts||{};
- $('speedPatterns').innerHTML=
+ $('speedPatterns').innerHTML=hasData?
   metric('Sessões',num(sessions))+
   metric('Para revisão',num(atyp))+
   metric('Compatíveis com utilização operacional',num(compat))+
   metric('Sessões com dados insuficientes',num(pattern.dados_insuficientes))+
   metric('Todas as velocidades iguais',num(flags.todas_velocidades_iguais))+
-  metric('Alternância de dois valores',num(flags.alternancia_de_2_valores));
+  metric('Alternância de dois valores',num(flags.alternancia_de_2_valores)):
+  '<div class="empty">Ainda não existem sessões suficientes para analisar padrões. Os indicadores serão apresentados quando chegarem registos válidos do Cinemómetro.</div>';
  const dims=a.speed?.dimensions||{};
  barList('speedModes',(dims.modo||[]).map(x=>({label:x.value||'—',value:x.qty})));
  barList('speedLimits',(dims.limite||[]).map(x=>({label:x.value||'—',value:x.qty})));
  barList('speedCodes',(dims.codigo||[]).map(x=>({label:x.value||'—',value:x.qty})));
  const ss=Array.isArray(c.recent_sessions)?c.recent_sessions:[];
- $('speedSessions').innerHTML=table(['INÍCIO','DURAÇÃO','CÁLCULOS','VELOCIDADES','LEITURA'],ss.slice(0,30).map(x=>{
+ $('speedSessions').innerHTML=ss.length?table(['INÍCIO','DURAÇÃO','CÁLCULOS','VELOCIDADES','LEITURA'],ss.slice(0,30).map(x=>{
    const mins=x.duration_min==null?'—':Number(x.duration_min).toFixed(1).replace('.',',')+' min';
    const read=x.pattern==='padrao_atipico_a_rever'?'<span class="tag red">PARA REVER</span>':x.pattern==='compativel_com_uso_operacional'?'<span class="tag">COMPATÍVEL (HEURÍSTICA)</span>':'<span class="tag amber">POUCOS DADOS</span>';
    return '<tr>'+td(datePT(x.first_seen))+td(mins)+td(fmt(x.calculations))+td(x.min_speed==null?'—':fmt(x.min_speed)+'–'+fmt(x.max_speed)+' km/h')+td(read)+'</tr>';
- })).slice(0,40000);
+ })).slice(0,40000):'<div class="empty">Sem sessões recentes para apresentar neste período.</div>';
 }
 function renderLegislation(d){
  const l=d.analytics?.legislation||{},counts=l.counts||{},cur=counts[currentPeriod]||{},items=l.items||[];
