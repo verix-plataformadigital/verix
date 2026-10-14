@@ -7,6 +7,7 @@ const migration = fs.readFileSync("supabase/migrations/20261009034000_repair_tel
 const admin = fs.readFileSync("admin_v2.html", "utf8");
 const app = fs.readFileSync("verix-app.html", "utf8");
 const stats = fs.readFileSync("supabase/functions/stats-v2/index.ts", "utf8");
+const overviewOptimizationMigration = fs.readFileSync("supabase/migrations/20261014150000_optimize_admin_dashboard_fast_overview.sql", "utf8");
 const insuranceNoCasesMigration = fs.readFileSync("supabase/migrations/20261009080000_insurance_no_cases.sql", "utf8");
 const errorPlateCountMigration = fs.readFileSync("supabase/migrations/20261009092500_deduplicate_error_plate_consultations.sql", "utf8");
 const packageConfig = JSON.parse(fs.readFileSync("package.json", "utf8"));
@@ -230,3 +231,16 @@ const snapshot = app.slice(snapshotStart, snapshotEnd);
 assert.doesNotMatch(snapshot, /cinSessaoOperadorNome|cinSessaoOperadorNo|cinSessaoOperadorPosto|cinMarca|cinModelo|cinSerie|cinLocalidade|cinDistrito|cinVia|cinSentido|cinKm/, "telemetry snapshot must not collect operator identifiers, apparatus serials, or exact locations");
 
 console.log("PASS: atomic telemetry ingest, loss-safe beacon queue, browser presence KPI, hourly query deduplication, Cinemometer measurement metadata, and Admin labels.");
+
+
+// Regression contract for the dashboard aggregation optimization.
+
+assert.match(overviewOptimizationMigration, /overview_counts AS MATERIALIZED/, "fast dashboard must aggregate headline metrics in a shared pass");
+assert.match(overviewOptimizationMigration, /count\(DISTINCT e\.installation_id\) FILTER \(WHERE e\.occurred_at >= b\.s24\) AS unique_24h/, "24-hour active installations must preserve the existing rolling boundary");
+assert.match(overviewOptimizationMigration, /count\(DISTINCT e\.installation_id\) FILTER \(WHERE e\.occurred_at >= b\.s7\) AS unique_7d/, "7-day active installations must preserve the existing rolling boundary");
+assert.match(overviewOptimizationMigration, /count\(\*\) FILTER \(WHERE e\.occurred_at >= b\.s24\) AS events_24h/, "24-hour event totals must use the same cutoff");
+assert.match(overviewOptimizationMigration, /count\(\*\) FILTER \(WHERE e\.occurred_at >= b\.s7\) AS events_7d/, "7-day event totals must use the same cutoff");
+assert.match(overviewOptimizationMigration, /UNION SELECT installation_id FROM public\.verix2_events\s+WHERE occurred_at>=p_now-interval '10 minutes' AND occurred_at>=\(SELECT s30 FROM b\) AND occurred_at<p_now/, "recent activity must use the time index and preserve the all-time reset boundary");
+assert.match(overviewOptimizationMigration, /SET search_path TO 'public', 'pg_catalog'/, "optimized security-definer function must retain a pinned search_path");
+assert.match(overviewOptimizationMigration, /SET work_mem TO '64MB'/, "optimized fast dashboard must retain its reviewed work_mem setting");
+assert.doesNotMatch(overviewOptimizationMigration, /ALTER TABLE|DROP TABLE|TRUNCATE|DELETE FROM/i, "dashboard optimization must not mutate telemetry rows or schema");
