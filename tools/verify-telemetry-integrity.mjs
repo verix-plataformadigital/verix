@@ -168,7 +168,7 @@ const errorCasesSource = stats.slice(errorCasesStart, errorCasesEnd)
   .replace("new Map<string,{event:any;matricula:string}>()", "new Map()");
 const buildErrorPlateCases = vm.runInNewContext("(" + errorCasesSource + ")");
 const plateValidatorStart = stats.indexOf("const validPortuguesePlate=(value:unknown)=>{");
-const plateValidatorEnd = stats.indexOf("\\n  const plateOf=", plateValidatorStart);
+const plateValidatorEnd = stats.indexOf("\n  const plateOf=", plateValidatorStart);
 assert.ok(plateValidatorStart >= 0 && plateValidatorEnd > plateValidatorStart, "Admin error plate validator must be delimited");
 const plateValidatorSource = stats.slice(plateValidatorStart, plateValidatorEnd)
   .replace("const validPortuguesePlate=(value:unknown)=>{", "(value)=>{")
