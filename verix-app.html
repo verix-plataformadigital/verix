@@ -6255,7 +6255,31 @@ html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-n
   <div class="brand-lockup-subtitle">Plataforma de Apoio Operacional às Forças de Segurança</div>
   <div class="brand-lockup-values">ISENÇÃO <span>*</span> FIRMEZA <span>*</span> CORTESIA</div>
   <div class="brand-lockup-footer"><span class="brand-lockup-badge"><span class="brand-lockup-alert" aria-hidden="true">!</span>NÃO OFICIAL</span><span class="brand-lockup-note">Confirma sempre os dados nas fontes competentes.</span></div>
-</div></div>  <div class="searchbar"><form onsubmit="submitConjunto(event)" autocomplete="off" style="display:flex;align-items:center;gap:13px"><div class="field"><label for="MatriculaVeiculo"><span class="field-label-text">MATRÍCULA DO VEÍCULO</span><span class="field-index" aria-hidden="true">01</span></label><input id="MatriculaVeiculo" name="verix_plate_v" maxlength="8" placeholder="11-AA-11" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" data-lpignore="true" data-form-type="other" oninput="formatMatricula(this)" onblur="formatMatricula(this)"></div><div class="field"><label for="MatriculaReboque"><span class="field-label-text">MATRÍCULA DO REBOQUE</span><span class="field-index" aria-hidden="true">02</span></label><input id="MatriculaReboque" name="verix_plate_r" placeholder="L-121212" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" data-lpignore="true" data-form-type="other" oninput="formatMatriculaReboque(this)"></div><button class="consult" type="submit">⌕ &nbsp; CONSULTAR</button></form></div> <div class="command-right-zone" aria-label="Ações da consulta">
+</div></div>  <div class="searchbar"><form onsubmit="submitConjunto(event)" autocomplete="off" style="display:flex;align-items:center;gap:13px"><div class="field"><label for="MatriculaVeiculo"><span class="field-label-text">MATRÍCULA DO VEÍCULO</span><span class="field-index" aria-hidden="true">01</span></label><div class="pt-plate-input-shell" role="group" aria-label="Matrícula do veículo em formato português"><span class="pt-plate-eu-band" aria-hidden="true">
+  <svg class="pt-plate-eu-stars" viewBox="0 0 24 24" focusable="false">
+    <g fill="#f8d34f" font-size="5.5" text-anchor="middle" font-family="Arial, sans-serif">
+      <text x="12" y="4.3">★</text><text x="16" y="5.5">★</text>
+      <text x="19" y="8.4">★</text><text x="20" y="12.4">★</text>
+      <text x="18.8" y="16.3">★</text><text x="15.8" y="19.1">★</text>
+      <text x="12" y="20.4">★</text><text x="8.2" y="19.1">★</text>
+      <text x="5.2" y="16.3">★</text><text x="4" y="12.4">★</text>
+      <text x="5.1" y="8.4">★</text><text x="8" y="5.5">★</text>
+    </g>
+  </svg>
+  <span class="pt-plate-country">P</span>
+</span><input id="MatriculaVeiculo" name="verix_plate_v" maxlength="8" placeholder="AA-00-AA" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" data-lpignore="true" data-form-type="other" oninput="formatMatricula(this)" onblur="formatMatricula(this)"></div></div><div class="field"><label for="MatriculaReboque"><span class="field-label-text">MATRÍCULA DO REBOQUE</span><span class="field-index" aria-hidden="true">02</span></label><div class="pt-plate-input-shell" role="group" aria-label="Matrícula do reboque em formato português"><span class="pt-plate-eu-band" aria-hidden="true">
+  <svg class="pt-plate-eu-stars" viewBox="0 0 24 24" focusable="false">
+    <g fill="#f8d34f" font-size="5.5" text-anchor="middle" font-family="Arial, sans-serif">
+      <text x="12" y="4.3">★</text><text x="16" y="5.5">★</text>
+      <text x="19" y="8.4">★</text><text x="20" y="12.4">★</text>
+      <text x="18.8" y="16.3">★</text><text x="15.8" y="19.1">★</text>
+      <text x="12" y="20.4">★</text><text x="8.2" y="19.1">★</text>
+      <text x="5.2" y="16.3">★</text><text x="4" y="12.4">★</text>
+      <text x="5.1" y="8.4">★</text><text x="8" y="5.5">★</text>
+    </g>
+  </svg>
+  <span class="pt-plate-country">P</span>
+</span><input id="MatriculaReboque" name="verix_plate_r" placeholder="L-121212" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" data-lpignore="true" data-form-type="other" oninput="formatMatriculaReboque(this)"></div></div><button class="consult" type="submit">⌕ &nbsp; CONSULTAR</button></form></div> <div class="command-right-zone" aria-label="Ações da consulta">
   <div class="command-actions-primary">
     <button id="consultationBackBtn" class="consultation-back-btn" type="button" onclick="mostrarMenuPrincipal()" aria-label="Voltar ao menu principal" title="Voltar ao menu principal"><span class="menu-back-icon" aria-hidden="true">←</span><span class="menu-back-label">MENU</span></button>
     <div class="consulta-history-bottom-wrap" aria-label="Histórico de consultas"><button type="button" class="consulta-history-bottom" onclick="abrirHistorico()" aria-label="Abrir histórico de consultas" title="Histórico de consultas"><span class="consulta-history-bottom-icon">◷</span> HISTÓRICO DE CONSULTAS</button></div>
@@ -19226,6 +19250,146 @@ html body.consultation-screen-active:not(.main-menu-active):not(.history-page-ac
   }
   html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #consultationBackBtn .menu-back-label{
     font-size:8px!important;
+  }
+}
+</style>
+
+
+<style id="verix-portuguese-registration-plate-inputs">
+/* Inputs de matrícula desenhados como chapas portuguesas — permanecem campos editáveis. */
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .pt-plate-input-shell{
+  display:flex!important;
+  align-items:stretch!important;
+  flex:1 1 auto!important;
+  width:100%!important;
+  min-width:0!important;
+  height:43px!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+  border:1px solid #637982!important;
+  border-radius:7px!important;
+  background:
+    radial-gradient(circle at 90% 12%,rgba(255,255,255,.82),transparent 28%),
+    linear-gradient(180deg,#fbfcfc 0%,#eff2f2 38%,#dce2e4 100%)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.96),
+    inset 0 -2px 3px rgba(29,43,48,.09),
+    0 2px 5px rgba(0,0,0,.25)!important;
+  transition:border-color .16s ease,box-shadow .16s ease!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .pt-plate-input-shell:focus-within{
+  border-color:#65b6aa!important;
+  box-shadow:
+    0 0 0 2px rgba(83,190,163,.16),
+    inset 0 1px 0 rgba(255,255,255,.98),
+    inset 0 -2px 3px rgba(29,43,48,.08),
+    0 3px 10px rgba(0,0,0,.22)!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .pt-plate-eu-band{
+  display:flex!important;
+  flex:0 0 29px!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:0!important;
+  width:29px!important;
+  min-width:29px!important;
+  height:100%!important;
+  box-sizing:border-box!important;
+  border-right:1px solid rgba(10,39,87,.9)!important;
+  background:linear-gradient(180deg,#174b9c 0%,#083575 50%,#062d65 100%)!important;
+  box-shadow:inset -1px 0 0 rgba(255,255,255,.18),inset 1px 0 0 rgba(255,255,255,.14)!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .pt-plate-eu-stars{
+  display:block!important;
+  flex:0 0 18px!important;
+  width:17px!important;
+  height:17px!important;
+  margin:1px 0 0!important;
+  overflow:visible!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .pt-plate-country{
+  display:block!important;
+  margin-top:0!important;
+  color:#fff!important;
+  font:900 9px/10px Arial,Helvetica,sans-serif!important;
+  letter-spacing:0!important;
+  text-align:center!important;
+  text-shadow:0 1px 1px rgba(0,0,0,.4)!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .pt-plate-input-shell input,
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .field .pt-plate-input-shell input{
+  display:block!important;
+  position:relative!important;
+  flex:1 1 0!important;
+  width:0!important;
+  min-width:0!important;
+  max-width:none!important;
+  height:100%!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0 5px!important;
+  box-sizing:border-box!important;
+  border:0!important;
+  border-radius:0!important;
+  outline:none!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:#172a36!important;
+  -webkit-text-fill-color:#172a36!important;
+  font-family:ui-monospace,"Courier New",Consolas,monospace!important;
+  font-size:clamp(13px,1vw,17px)!important;
+  font-weight:900!important;
+  line-height:1!important;
+  letter-spacing:1.45px!important;
+  text-align:center!important;
+  text-transform:uppercase!important;
+  text-shadow:0 1px 0 rgba(255,255,255,.65)!important;
+  caret-color:#153b6c!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .pt-plate-input-shell input::placeholder{
+  color:rgba(34,54,66,.48)!important;
+  -webkit-text-fill-color:rgba(34,54,66,.48)!important;
+  opacity:1!important;
+  letter-spacing:1.35px!important;
+  text-shadow:none!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .pt-plate-input-shell input::selection{
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  background:#174b9c!important;
+}
+@media(max-width:1180px){
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .pt-plate-input-shell{
+    height:36px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .pt-plate-eu-band{
+    flex-basis:25px!important;
+    width:25px!important;
+    min-width:25px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .pt-plate-eu-stars{
+    width:15px!important;
+    height:15px!important;
+    flex-basis:16px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .pt-plate-country{
+    font-size:8px!important;
+    line-height:9px!important;
+  }
+}
+@media(max-width:900px){
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .pt-plate-input-shell{
+    height:38px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .pt-plate-eu-band{
+    flex-basis:25px!important;
+    width:25px!important;
+    min-width:25px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .pt-plate-input-shell input{
+    font-size:clamp(11px,3vw,15px)!important;
+    letter-spacing:.9px!important;
   }
 }
 </style>
