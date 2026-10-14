@@ -81,6 +81,8 @@ assert.match(app, /push\('vehicle_insurance_no', 'consulta', meta\)/, "no-record
 assert.match(app, /push\('vehicle_insurance_error', 'consulta', meta\)/, "ASF error event must include plate metadata");
 assert.match(app, /event === 'vehicle_insurance_no' \|\| event === 'vehicle_insurance_error'/, "plate metadata must be limited to no-record/error events");
 assert.match(app, /event === 'vehicle_insurance_no' \|\| event === 'vehicle_insurance_error'\) \{\s*flushNow\(\)/, "insurance outcome events must be flushed immediately");
+assert.match(app, /event === 'vehicle_lookup' \|\| queue\.length >= BATCH_SIZE\) \{\s*flush\(\)/, "lookup start events should use the shared 50ms debounce so pending events can join the batch");
+assert.doesNotMatch(app, /event === 'vehicle_lookup'[\s\S]{0,80}flushNow\(\)/, "lookup start must not launch a separate immediate telemetry request");
 
 
 const scriptOpen = '<script id="verix-telemetry-v2">';
