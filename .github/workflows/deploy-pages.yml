@@ -44,6 +44,15 @@ jobs:
       - name: Install dependencies
         run: npm install --no-fund --no-audit
 
+      - name: Verify mobile asset cache keys
+        shell: bash
+        run: |
+          grep -qF 'verix-mobile.css?v=10' verix-app.html
+          grep -qF 'verix-mobile.js?v=10' verix-app.html
+          if grep -qF 'openToken' verix-app.html; then
+            echo "Mobile assets must use the release ID, not a random per-open URL"
+            exit 1
+          fi
       - name: Build secure release
         env:
           VERIX_BUILD_ID: "1.5-sec-${{ github.run_number }}-${{ github.sha }}"
