@@ -139,7 +139,7 @@ overview AS (
       SELECT installation_id FROM public.verix2_installations WHERE last_seen>=p_now-interval '10 minutes'
       UNION SELECT installation_id FROM public.verix2_sessions WHERE last_seen>=p_now-interval '10 minutes'
       UNION SELECT installation_id FROM public.verix2_events
-        WHERE occurred_at>=p_now-interval '10 minutes' AND occurred_at<p_now
+        WHERE occurred_at>=p_now-interval '10 minutes' AND occurred_at>=b.s30 AND occurred_at<p_now
     ) active10),
     'unique_24h',oc.unique_24h,
     'unique_7d',oc.unique_7d,
