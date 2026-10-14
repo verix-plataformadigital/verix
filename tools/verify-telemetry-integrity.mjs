@@ -240,7 +240,7 @@ assert.match(overviewOptimizationMigration, /count\(DISTINCT e\.installation_id\
 assert.match(overviewOptimizationMigration, /count\(DISTINCT e\.installation_id\) FILTER \(WHERE e\.occurred_at >= b\.s7\) AS unique_7d/, "7-day active installations must preserve the existing rolling boundary");
 assert.match(overviewOptimizationMigration, /count\(\*\) FILTER \(WHERE e\.occurred_at >= b\.s24\) AS events_24h/, "24-hour event totals must use the same cutoff");
 assert.match(overviewOptimizationMigration, /count\(\*\) FILTER \(WHERE e\.occurred_at >= b\.s7\) AS events_7d/, "7-day event totals must use the same cutoff");
-assert.match(overviewOptimizationMigration, /UNION SELECT installation_id FROM public\.verix2_events\s+WHERE occurred_at>=p_now-interval '10 minutes' AND occurred_at<p_now/, "recent activity must be bounded and avoid rescanning the full 30-day CTE");
+assert.match(overviewOptimizationMigration, /UNION SELECT installation_id FROM public\.verix2_events\s+WHERE occurred_at>=p_now-interval '10 minutes' AND occurred_at>=b\.s30 AND occurred_at<p_now/, "recent activity must use the time index and preserve the all-time reset boundary");
 assert.match(overviewOptimizationMigration, /SET search_path TO 'public', 'pg_catalog'/, "optimized security-definer function must retain a pinned search_path");
 assert.match(overviewOptimizationMigration, /SET work_mem TO '64MB'/, "optimized fast dashboard must retain its reviewed work_mem setting");
 assert.doesNotMatch(overviewOptimizationMigration, /ALTER TABLE|DROP TABLE|TRUNCATE|DELETE FROM/i, "dashboard optimization must not mutate telemetry rows or schema");
