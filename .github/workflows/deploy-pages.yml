@@ -3,6 +3,21 @@ name: Deploy VÉRIX (Secure) to GitHub Pages
 on:
   push:
     branches: ["main"]
+    paths:
+      - "verix-app.html"
+      - "admin_v2.html"
+      - "index.html"
+      - "verix-mobile.html"
+      - "verix-mobile.js"
+      - "verix-mobile.css"
+      - "AI-ACCESS-POLICY.md"
+      - "README-RELEASE.txt"
+      - "robots.txt"
+      - "package.json"
+      - "package-lock.json"
+      - "tools/build-secure-release.mjs"
+      - "tools/verify-ai-security.mjs"
+      - ".github/workflows/deploy-pages.yml"
   workflow_dispatch:
 
 permissions:
