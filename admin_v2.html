@@ -472,7 +472,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
           <div class="panel"><div class="panel-head"><h3>MÓDULOS MAIS USADOS</h3><span>30 DIAS</span></div><div class="panel-body"><div id="usageModules" class="bar-list"></div></div></div>
           <div class="panel"><div class="panel-head"><h3>CONSULTAS E UTILIZAÇÃO POR HORA</h3><span>ÚLTIMAS 24 H</span></div><div class="panel-body"><div id="usageHours" class="hour-grid"></div><div class="hour-note">Consultas = pedidos de seguro iniciados. Utilizadores ativos estimados = instalações distintas com uma interação real nessa hora (consulta, módulo ou ferramenta). Abrir o browser ou enviar heartbeat não conta; o número não identifica pessoas únicas.</div></div></div>
         </div>
-        <div class="panel" style="margin-top:12px"><div class="panel-head"><h3>ATIVIDADE DIÁRIA</h3><span>30 DIAS</span></div><div id="usageDaily" class="chart"></div></div>
+        <div class="panel" style="margin-top:12px"><div class="panel-head"><h3>PESQUISAS DE MATRÍCULAS POR DIA</h3><span>ÚLTIMOS 30 DIAS</span></div><div id="usageDaily" class="chart"></div></div>
         
       </section>
 
@@ -692,7 +692,7 @@ function applyPlateErrorSearch(){
  const empty=$('plateErrorSearchEmpty');if(empty)empty.classList.toggle('hidden',!(query&&rows.length>0&&matches===0));
 }
 function barList(id,rows,tone=''){const host=$(id);if(!host)return;if(!rows?.length){host.innerHTML='<div class="empty">Sem dados suficientes.</div>';return}const max=Math.max(1,...rows.map(x=>Number(x.value)||0));host.innerHTML=rows.slice(0,12).map(x=>'<div class="bar-row"><div class="bar-label" title="'+esc(x.label)+'">'+esc(x.label)+'</div><div class="track"><div class="fill '+tone+'" style="width:'+Math.max(2,(Number(x.value)||0)/max*100)+'%"></div></div><div class="num">'+fmt(x.value)+'</div></div>').join('')}
-function monthlyChart(id,rows,key){const host=$(id);if(!host)return;if(!rows?.length){host.innerHTML='<div class="empty" style="width:100%">Sem dados suficientes.</div>';return}const vals=rows.map(x=>Number(x[key]||0));const max=Math.max(1,...vals);host.setAttribute('role','group');host.setAttribute('aria-label','Atividade diária. Foca uma barra para consultar o dia e o valor.');host.innerHTML=rows.map((x,index)=>{const label=String(x.day_key||'');const value=fmt(x[key]||0);const unit=key==='users'?'instalações':key==='lookups'?'consultas':key;const showTick=index===0||index===rows.length-1||index%5===0;return '<div class="chart-col" tabindex="0" role="img" aria-label="'+esc(label+': '+value+' '+unit)+'" title="'+esc(label+' · '+value+' '+unit)+'"><div class="chart-bar" aria-hidden="true" style="height:'+Math.max(3,(Number(x[key]||0)/max)*100)+'%"></div><div class="chart-label" aria-hidden="true">'+(showTick?esc(label.slice(8)):'')+'</div></div>'}).join('')}
+function monthlyChart(id,rows,key){const host=$(id);if(!host)return;if(!rows?.length){host.innerHTML='<div class="empty" style="width:100%">Sem dados suficientes.</div>';return}const vals=rows.map(x=>Number(x[key]||0));const max=Math.max(1,...vals);host.setAttribute('role','group');host.setAttribute('aria-label','Atividade diária. Foca uma barra para consultar o dia e o valor.');host.innerHTML=rows.map((x,index)=>{const label=String(x.day_key||'');const value=fmt(x[key]||0);const unit=key==='users'?'instalações':key==='lookups'?'pesquisas de matrículas':key;const showTick=index===0||index===rows.length-1||index%5===0;return '<div class="chart-col" tabindex="0" role="img" aria-label="'+esc(label+': '+value+' '+unit)+'" title="'+esc(label+' · '+value+' '+unit)+'"><div class="chart-bar" aria-hidden="true" style="height:'+Math.max(3,(Number(x[key]||0)/max)*100)+'%"></div><div class="chart-label" aria-hidden="true">'+(showTick?esc(label.slice(8)):'')+'</div></div>'}).join('')}
 function hourGrid(id,rows){
  const host=$(id);if(!host)return;
  if(!Array.isArray(rows)||!rows.length){host.innerHTML='<div class="empty">Sem dados horários disponíveis.</div>';return}
@@ -1158,7 +1158,7 @@ function renderUsage(d){
   card('AÇÕES REGISTADAS',num(o['events_'+currentPeriod]),'Eventos de utilização.');
  barList('usageModules',(u.modules||[]).map(x=>({label:x.module,value:x.qty})));
  hourGrid('usageHours',u.hourly||[]);
- monthlyChart('usageDaily',u.daily||[],'users');
+ monthlyChart('usageDaily',u.daily||[],'lookups');
 }
 function renderErrors(d){
  const e=d.analytics?.errors||{},inv=d.investigation||{},q=period(),te=d.analytics?.telemetry||{};
