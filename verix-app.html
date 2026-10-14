@@ -6281,7 +6281,14 @@ html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-n
   <span class="pt-plate-country">P</span>
 </span><input id="MatriculaReboque" name="verix_plate_r" placeholder="L-121212" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" data-lpignore="true" data-form-type="other" oninput="formatMatriculaReboque(this)"></div></div><button class="consult" type="submit">⌕ &nbsp; CONSULTAR</button></form></div> <div class="command-right-zone" aria-label="Ações da consulta">
   <div class="command-actions-primary">
-    <button id="consultationBackBtn" class="consultation-back-btn" type="button" onclick="mostrarMenuPrincipal()" aria-label="Voltar ao menu principal" title="Voltar ao menu principal"><span class="menu-back-icon" aria-hidden="true">←</span><span class="menu-back-label">MENU</span></button>
+    <button id="verixMenuReturnButton" class="verix-menu-return" type="button" onclick="mostrarMenuPrincipal()" aria-label="Voltar ao menu principal" title="Voltar ao menu principal">
+  <span class="verix-menu-return-icon" aria-hidden="true">
+    <svg viewBox="0 0 24 24" focusable="false">
+      <path d="M19 12H5M12 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </span>
+  <span class="verix-menu-return-label">MENU</span>
+</button>
     <div class="consulta-history-bottom-wrap" aria-label="Histórico de consultas"><button type="button" class="consulta-history-bottom" onclick="abrirHistorico()" aria-label="Abrir histórico de consultas" title="Histórico de consultas"><span class="consulta-history-bottom-icon">◷</span> HISTÓRICO DE CONSULTAS</button></div>
   </div>
   <div class="tools" aria-label="Ferramentas rápidas"><button class="tool green full" onclick="toggleFullscreen()" title="Ecrã inteiro">⛶</button><button class="tool" onclick="consultarIMTERRU()">IMT-ERRU</button><button class="tool" onclick="consultarINEM()">INEM</button><button class="tool" onclick="consultarWAZE()">WAZE</button></div>
@@ -19128,131 +19135,7 @@ html body.consultation-screen-active:not(.main-menu-active):not(.history-page-ac
 </style>
 
 
-<style id="verix-menu-button-clean-root-fix">
-/* Botão MENU — estrutura limpa, sem setas adicionadas por pseudo-elementos antigos. */
-html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #consultationBackBtn{
-  position:relative!important;
-  inset:auto!important;
-  display:inline-flex!important;
-  flex:0 0 104px!important;
-  align-items:center!important;
-  justify-content:center!important;
-  gap:8px!important;
-  width:104px!important;
-  min-width:104px!important;
-  max-width:104px!important;
-  height:34px!important;
-  min-height:34px!important;
-  margin:0!important;
-  padding:0 10px!important;
-  box-sizing:border-box!important;
-  overflow:hidden!important;
-  border:1px solid rgba(101,179,184,.6)!important;
-  border-radius:7px!important;
-  background:linear-gradient(180deg,rgba(23,55,64,.98) 0%,rgba(8,27,35,.99) 100%)!important;
-  box-shadow:inset 0 1px 0 rgba(222,250,250,.09),0 4px 12px rgba(0,0,0,.2)!important;
-  color:#dbeef0!important;
-  font-family:Arial,Helvetica,sans-serif!important;
-  font-size:9px!important;
-  font-weight:900!important;
-  line-height:1!important;
-  letter-spacing:1px!important;
-  text-align:center!important;
-  text-indent:0!important;
-  text-shadow:none!important;
-  white-space:nowrap!important;
-  opacity:1!important;
-  visibility:visible!important;
-  filter:none!important;
-  transform:none!important;
-  animation:none!important;
-  cursor:pointer!important;
-  z-index:5!important;
-  transition:background .16s ease,border-color .16s ease,box-shadow .16s ease,transform .16s ease!important;
-}
-html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #consultationBackBtn::before,
-html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #consultationBackBtn::after{
-  content:none!important;
-  display:none!important;
-  width:0!important;
-  height:0!important;
-  background:none!important;
-  box-shadow:none!important;
-  animation:none!important;
-  transform:none!important;
-  pointer-events:none!important;
-}
-html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #consultationBackBtn .menu-back-icon{
-  display:inline-flex!important;
-  flex:0 0 auto!important;
-  align-items:center!important;
-  justify-content:center!important;
-  width:15px!important;
-  height:15px!important;
-  margin:0!important;
-  padding:0!important;
-  color:#8de1d7!important;
-  font:800 17px/1 Arial,Helvetica,sans-serif!important;
-  text-shadow:none!important;
-  transform:none!important;
-}
-html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #consultationBackBtn .menu-back-label{
-  display:inline-block!important;
-  flex:0 0 auto!important;
-  position:relative!important;
-  margin:0!important;
-  padding:0!important;
-  color:#e0eff0!important;
-  font:900 9px/1 Arial,Helvetica,sans-serif!important;
-  letter-spacing:1px!important;
-  text-shadow:none!important;
-  transform:none!important;
-}
-html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #consultationBackBtn:hover{
-  background:linear-gradient(180deg,rgba(30,76,83,.99),rgba(10,39,46,.99))!important;
-  border-color:rgba(132,219,211,.88)!important;
-  box-shadow:inset 0 1px 0 rgba(235,255,255,.12),0 6px 16px rgba(0,0,0,.28)!important;
-  color:#fff!important;
-  transform:translateY(-1px)!important;
-}
-html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #consultationBackBtn:active{
-  transform:translateY(0)!important;
-  box-shadow:inset 0 2px 5px rgba(0,0,0,.25)!important;
-}
-html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #consultationBackBtn:focus-visible{
-  outline:2px solid rgba(126,220,210,.92)!important;
-  outline-offset:2px!important;
-}
-@media(max-width:1450px){
-  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #consultationBackBtn{
-    flex-basis:96px!important;
-    width:96px!important;
-    min-width:96px!important;
-    max-width:96px!important;
-    height:32px!important;
-    gap:7px!important;
-  }
-}
-@media(max-width:900px){
-  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #consultationBackBtn{
-    flex-basis:94px!important;
-    width:94px!important;
-    min-width:94px!important;
-    max-width:94px!important;
-    height:27px!important;
-    min-height:27px!important;
-    padding:0 8px!important;
-  }
-  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #consultationBackBtn .menu-back-icon{
-    width:12px!important;
-    height:12px!important;
-    font-size:14px!important;
-  }
-  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #consultationBackBtn .menu-back-label{
-    font-size:8px!important;
-  }
-}
-</style>
+
 
 
 <style id="verix-portuguese-registration-plate-inputs">
@@ -19390,6 +19273,166 @@ html body.consultation-screen-active:not(.main-menu-active):not(.history-page-ac
   html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .pt-plate-input-shell input{
     font-size:clamp(11px,3vw,15px)!important;
     letter-spacing:.9px!important;
+  }
+}
+</style>
+
+
+<style id="verix-menu-return-button-from-scratch">
+/* Botão MENU novo: não reutiliza o ID nem as classes do controlo legado. */
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #verixMenuReturnButton{
+  appearance:none!important;
+  -webkit-appearance:none!important;
+  position:relative!important;
+  inset:auto!important;
+  display:inline-flex!important;
+  flex:0 0 104px!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:9px!important;
+  width:104px!important;
+  min-width:104px!important;
+  max-width:104px!important;
+  height:35px!important;
+  min-height:35px!important;
+  max-height:35px!important;
+  margin:0!important;
+  padding:0 11px!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+  border:1px solid rgba(108,183,174,.62)!important;
+  border-radius:7px!important;
+  background:linear-gradient(180deg,#17343c 0%,#0a2029 100%)!important;
+  box-shadow:inset 0 1px 0 rgba(234,255,255,.09),0 3px 8px rgba(0,0,0,.22)!important;
+  color:#e0f2f1!important;
+  font-family:Arial,Helvetica,sans-serif!important;
+  font-size:9px!important;
+  font-weight:900!important;
+  line-height:1!important;
+  letter-spacing:.9px!important;
+  text-align:center!important;
+  text-indent:0!important;
+  text-shadow:none!important;
+  white-space:nowrap!important;
+  opacity:1!important;
+  visibility:visible!important;
+  filter:none!important;
+  transform:none!important;
+  animation:none!important;
+  cursor:pointer!important;
+  z-index:8!important;
+  isolation:isolate!important;
+  transition:background .14s ease,border-color .14s ease,box-shadow .14s ease,transform .14s ease!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #verixMenuReturnButton:before,
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #verixMenuReturnButton:after{
+  content:none!important;
+  display:none!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #verixMenuReturnButton .verix-menu-return-icon{
+  display:inline-flex!important;
+  flex:0 0 17px!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:17px!important;
+  min-width:17px!important;
+  max-width:17px!important;
+  height:17px!important;
+  min-height:17px!important;
+  margin:0!important;
+  padding:0!important;
+  box-sizing:border-box!important;
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  color:#8fe0d1!important;
+  line-height:0!important;
+  text-shadow:none!important;
+  transform:none!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #verixMenuReturnButton .verix-menu-return-icon svg{
+  display:block!important;
+  width:17px!important;
+  min-width:17px!important;
+  height:17px!important;
+  min-height:17px!important;
+  overflow:visible!important;
+  margin:0!important;
+  padding:0!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #verixMenuReturnButton .verix-menu-return-label{
+  display:inline-block!important;
+  flex:0 0 auto!important;
+  position:static!important;
+  width:auto!important;
+  height:auto!important;
+  min-width:0!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  color:#e0f2f1!important;
+  font:900 9px/1 Arial,Helvetica,sans-serif!important;
+  letter-spacing:1px!important;
+  text-align:center!important;
+  text-shadow:none!important;
+  white-space:nowrap!important;
+  transform:none!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #verixMenuReturnButton:hover{
+  background:linear-gradient(180deg,#20505a 0%,#0d3038 100%)!important;
+  border-color:rgba(142,230,213,.9)!important;
+  box-shadow:inset 0 1px 0 rgba(244,255,255,.13),0 5px 12px rgba(0,0,0,.28)!important;
+  color:#fff!important;
+  filter:none!important;
+  transform:translateY(-1px)!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #verixMenuReturnButton:active{
+  background:linear-gradient(180deg,#0b252d 0%,#071921 100%)!important;
+  box-shadow:inset 0 2px 4px rgba(0,0,0,.25)!important;
+  transform:translateY(0)!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #verixMenuReturnButton:focus-visible{
+  outline:2px solid #85dcca!important;
+  outline-offset:2px!important;
+}
+@media(max-width:1450px){
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #verixMenuReturnButton{
+    flex-basis:96px!important;
+    width:96px!important;
+    min-width:96px!important;
+    max-width:96px!important;
+    height:32px!important;
+    min-height:32px!important;
+    max-height:32px!important;
+    gap:7px!important;
+    padding:0 8px!important;
+  }
+}
+@media(max-width:900px){
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #verixMenuReturnButton{
+    flex-basis:94px!important;
+    width:94px!important;
+    min-width:94px!important;
+    max-width:94px!important;
+    height:27px!important;
+    min-height:27px!important;
+    max-height:27px!important;
+    padding:0 7px!important;
+    gap:6px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #verixMenuReturnButton .verix-menu-return-icon,
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #verixMenuReturnButton .verix-menu-return-icon svg{
+    flex-basis:14px!important;
+    width:14px!important;
+    min-width:14px!important;
+    max-width:14px!important;
+    height:14px!important;
+    min-height:14px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #verixMenuReturnButton .verix-menu-return-label{
+    font-size:8px!important;
   }
 }
 </style>
