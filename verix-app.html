@@ -19437,5 +19437,60 @@ html body.consultation-screen-active:not(.main-menu-active):not(.history-page-ac
 }
 </style>
 
+
+<style id="verix-reclaim-history-space-for-iframes">
+/* Reaproveita o espaço inferior que deixou de ser necessário após mover o Histórico para o cabeçalho. */
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .main.consultation-fixed-active{
+  top:160px!important;
+  bottom:8px!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:hidden!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .main.consultation-fixed-active > .panel{
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+  align-self:stretch!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .main.consultation-fixed-active > .panel > .panel-body,
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .main.consultation-fixed-active > .panel > .insurance-body{
+  bottom:0!important;
+  min-height:0!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .main.consultation-fixed-active .panel-body iframe{
+  width:100%!important;
+  height:100%!important;
+}
+@media(max-width:1450px){
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .main.consultation-fixed-active{
+    top:170px!important;
+    bottom:8px!important;
+  }
+}
+@media(max-width:1180px){
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .main.consultation-fixed-active{
+    top:196px!important;
+    bottom:8px!important;
+  }
+}
+@media(max-width:900px){
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .main.consultation-fixed-active{
+    top:306px!important;
+    bottom:8px!important;
+    height:auto!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+  }
+}
+@media(max-height:820px) and (min-width:1451px){
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .main.consultation-fixed-active{
+    top:134px!important;
+    bottom:8px!important;
+  }
+}
+</style>
+
 </body>
 </html>
