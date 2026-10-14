@@ -172,6 +172,7 @@ const plateValidatorEnd = stats.indexOf("\n  const plateOf=", plateValidatorStar
 assert.ok(plateValidatorStart >= 0 && plateValidatorEnd > plateValidatorStart, "Admin error plate validator must be delimited");
 const plateValidatorSource = stats.slice(plateValidatorStart, plateValidatorEnd)
   .replace("const validPortuguesePlate=(value:unknown)=>{", "(value)=>{")
+  .replace("const plate=normalizePlate(value);", "const plate=String(value??\"\").toUpperCase().replace(/[^A-Z0-9]/g,\"\");")
   .replace(/;\\s*$/, "");
 const isPortuguesePlate = vm.runInNewContext(plateValidatorSource);
 for (const [plate, expected] of [
