@@ -252,6 +252,35 @@ async function loadInsuranceNoCases(now:string){
   throw new Error("insurance_no_cases_page_limit");
 }
 
+function buildErrorPlateCases(rows:any[],plateOf:(e:any)=>string,validPortuguesePlate:(value:unknown)=>boolean,shortId:(value:any)=>string){
+  const errorPlateByQuery=new Map<string,{event:any;matricula:string}>();
+  for(const e of rows){
+    const plate=plateOf(e);
+    // Validate before deduplication: a later incomplete retry must not hide a valid capture.
+    if(!validPortuguesePlate(plate)) continue;
+    const queryId=String(e?.query_id||e?.event_id||"");
+    if(!queryId) continue;
+    const previous=errorPlateByQuery.get(queryId);
+    if(!previous || String(e?.occurred_at||"")>=String(previous.event?.occurred_at||"")){
+      errorPlateByQuery.set(queryId,{event:e,matricula:plate});
+    }
+  }
+  return [...errorPlateByQuery.values()].map(({event:e,matricula})=>{
+    const a=e?.metadata?.asfDiagnostic||{};
+    return {
+      matricula:String(matricula).toUpperCase().replace(/[^A-Z0-9]/g,""),
+      occurred_at:e?.occurred_at||null,
+      error_type:a.asfErrorType||"unknown",
+      http_status:a.asfHttpStatus??null,
+      error_message:a.asfMessage||e?.metadata?.asfUserMessage||a.asfAttempts?.slice(-1)?.[0]?.message||null,
+      browser:e?.browser||"Unknown",
+      query_id:shortId(e?.query_id),
+      app_version:e?.app_version||null,
+      build_id:e?.metadata?.build_id||a.build_id||null
+    };
+  }).sort((a,b)=>String(b.occurred_at||"").localeCompare(String(a.occurred_at||""))).slice(0,100);
+}
+
 async function loadErrorInvestigation24h(now:string){
   const pageSize=1000, maxPages=100;
   const rows:any[]=[];
@@ -304,8 +333,9 @@ async function loadErrorInvestigation24h(now:string){
   };
   const plateOf=(e:any)=>{
     const candidates=[e?.metadata?.matriculaCapturada,e?.metadata?.asfDiagnostic?.matricula,e?.metadata?.matriculaNormalizada,e?.metadata?.matricula];
-    const captured=candidates.map((value:any)=>String(value??"").trim().toUpperCase().replace(/[^A-Z0-9 -]/g,"").slice(0,30)).find((value:string)=>value.length>0);
-    return captured||"";
+    const normalized=candidates.map((value:any)=>String(value??"").trim().toUpperCase().replace(/[^A-Z0-9 -]/g,"").slice(0,30)).filter((value:string)=>value.length>0);
+    // Prefer any complete Portuguese registration over a partial OCR/input fragment.
+    return normalized.find((value:string)=>validPortuguesePlate(value))||normalized[0]||"";
   };
   const latestErrorByQuery=new Map<string,any>();
   for(const e of currentVersionRows){
@@ -340,7 +370,7 @@ async function loadErrorInvestigation24h(now:string){
        attempts,build_id:e?.metadata?.build_id||a.build_id||null
      };
    });
-  return {generated_at:now,current_app_version:CURRENT_APP_VERSION,errors_24h:rows.length,error_queries_24h:new Set(rows.map((e:any)=>String(e?.query_id||"")).filter(Boolean)).size,current_version_errors:new Set(currentVersionRows.map((e:any)=>String(e?.query_id||"")).filter(Boolean)).size,current_version_error_events:currentVersionRows.length,current_version_installations:new Set(currentVersionRows.map((e:any)=>String(e?.installation_id||""))).size,current_version_plates:new Set(currentVersionRows.map((e:any)=>plateOf(e)).filter((p:string)=>validPortuguesePlate(p))).size,current_version_hashes:byHash.size,current_version_types:typeRows,current_version_hashes_top:hashRows,current_version_installations_top:installRows,current_version_bursts_5m:burstRows,current_version_plate_cases:plateCases,latest_current_version:recent};
+  return {generated_at:now,current_app_version:CURRENT_APP_VERSION,errors_24h:rows.length,error_queries_24h:new Set(rows.map((e:any)=>String(e?.query_id||"")).filter(Boolean)).size,current_version_errors:new Set(currentVersionRows.map((e:any)=>String(e?.query_id||"")).filter(Boolean)).size,current_version_error_events:currentVersionRows.length,current_version_installations:new Set(currentVersionRows.map((e:any)=>String(e?.installation_id||""))).size,current_version_plates:new Set(currentVersionRows.map((e:any)=>plateOf(e)).filter((p:string)=>validPortuguesePlate(p))).size,current_version_hashes:byHash.size,current_version_types:typeRows,current_version_hashes_top:hashRows,current_version_installations_top:installRows,current_version_bursts_5m:burstRows,current_version_plate_cases:plateCases,error_plate_cases_24h:buildErrorPlateCases(rows,plateOf,validPortuguesePlate,shortId),latest_current_version:recent};
 }
 async function loadLifetime(now:string){
   async function resetAllAt(){
@@ -695,7 +725,8 @@ Deno.serve(async (req) => {
       "admin-simple-2026-10-12-r12",
       "admin-simple-2026-10-13-r13",
       "admin-simple-2026-10-13-r14",
-      "admin-simple-2026-10-13-r15"
+      "admin-simple-2026-10-13-r15",
+      "admin-simple-2026-10-14-r16"
     ].includes(statsCacheKey);
 
     if(!forceRefresh && cachedStats && cachedStats.key===statsCacheKey && (Date.now()-cachedStats.at)<STATS_CACHE_MS) {
