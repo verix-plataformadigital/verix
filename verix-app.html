@@ -6255,7 +6255,7 @@ html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-n
   <div class="brand-lockup-subtitle">Plataforma de Apoio Operacional às Forças de Segurança</div>
   <div class="brand-lockup-values">ISENÇÃO <span>*</span> FIRMEZA <span>*</span> CORTESIA</div>
   <div class="brand-lockup-footer"><span class="brand-lockup-badge"><span class="brand-lockup-alert" aria-hidden="true">!</span>NÃO OFICIAL</span><span class="brand-lockup-note">Confirma sempre os dados nas fontes competentes.</span></div>
-</div></div> <div class="time" id="dataSistema"><span class="version-label">Versão 1.5</span><span class="date-label">-- --- ----</span></div> <div class="searchbar"><form onsubmit="submitConjunto(event)" autocomplete="off" style="display:flex;align-items:center;gap:13px"><div class="field"><label for="MatriculaVeiculo">VEÍCULO</label><input id="MatriculaVeiculo" name="verix_plate_v" maxlength="8" placeholder="11-AA-11" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" data-lpignore="true" data-form-type="other" oninput="formatMatricula(this)" onblur="formatMatricula(this)"></div><div class="field"><label for="MatriculaReboque">REBOQUE</label><input id="MatriculaReboque" name="verix_plate_r" placeholder="L-121212" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" data-lpignore="true" data-form-type="other" oninput="formatMatriculaReboque(this)"></div><button class="consult" type="submit">⌕ &nbsp; CONSULTAR</button></form></div> <div class="tools"><button class="tool green full" onclick="toggleFullscreen()" title="Ecrã inteiro">⛶</button><button class="tool" onclick="consultarIMTERRU()">IMT-ERRU</button><button class="tool" onclick="consultarINEM()">INEM</button><button class="tool" onclick="consultarWAZE()">WAZE</button></div>
+</div></div> <div class="time" id="dataSistema"><span class="version-label">Versão 1.5</span><span class="date-label">-- --- ----</span></div> <div class="searchbar"><form onsubmit="submitConjunto(event)" autocomplete="off" style="display:flex;align-items:center;gap:13px"><div class="field"><label for="MatriculaVeiculo"><span class="field-label-text">MATRÍCULA DO VEÍCULO</span><span class="field-index" aria-hidden="true">01</span></label><input id="MatriculaVeiculo" name="verix_plate_v" maxlength="8" placeholder="11-AA-11" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" data-lpignore="true" data-form-type="other" oninput="formatMatricula(this)" onblur="formatMatricula(this)"></div><div class="field"><label for="MatriculaReboque"><span class="field-label-text">MATRÍCULA DO REBOQUE</span><span class="field-index" aria-hidden="true">02</span></label><input id="MatriculaReboque" name="verix_plate_r" placeholder="L-121212" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" data-lpignore="true" data-form-type="other" oninput="formatMatriculaReboque(this)"></div><button class="consult" type="submit">⌕ &nbsp; CONSULTAR</button></form></div> <div class="tools"><button class="tool green full" onclick="toggleFullscreen()" title="Ecrã inteiro">⛶</button><button class="tool" onclick="consultarIMTERRU()">IMT-ERRU</button><button class="tool" onclick="consultarINEM()">INEM</button><button class="tool" onclick="consultarWAZE()">WAZE</button></div>
 </div>
 <div class="rail rail-operacional"> <div class="rail-item rail-modern active" id="consultaRail" onclick="abrirModulo('consulta',this)" title="Consulta"> <div class="rail-modern-ico">⌕</div><span>CONSULTA</span><div class="rail-arrow">›</div> </div> <div class="rail-item rail-modern" onclick="abrirModulo('legislacao',this)" title="Legislação"> <div class="rail-modern-ico">▤</div><span>LEGISLAÇÃO</span><div class="rail-arrow">›</div> </div> <div class="rail-item rail-modern" onclick="abrirModulo('ferramentas',this)" title="Ferramentas"> <div class="rail-modern-ico">⚒</div><span>FERRAMENTAS</span><div class="rail-arrow">›</div> </div> <div class="rail-item rail-modern" onclick="abrirModulo('informacoes',this)" title="Informações"> <div class="rail-modern-ico">ⓘ</div><span>INFORMAÇÕES</span><div class="rail-arrow">›</div> </div> <div class="rail-spacer" aria-hidden="true"><span>+</span></div> <div class="rail-spacer" aria-hidden="true"><span>+</span></div> <div class="rail-item rail-modern rail-cinemometro" onclick="abrirModulo('cinemometro',this)" title="Cinemómetro"> <div class="cinemometro-icon" aria-hidden="true"> <svg viewBox="0 0 64 64" role="img"> <rect x="13" y="10" width="38" height="22" rx="5"></rect> <circle cx="24" cy="21" r="6"></circle> <circle cx="40" cy="21" r="6"></circle> <path d="M32 32v9M22 57l10-16 10 16M27 48h10"></path> <path d="M52 13l7 7M52 29l7-7"></path> </svg> </div> <div class="cinemometro-label"><span>CINEMÓMETRO</span></div> <div class="rail-arrow">›</div> </div> <div class="rail-item rail-modern" onclick="abrirModulo('definicoes',this)" title="Definições"> <div class="rail-modern-ico">⚙</div><span>DEFINIÇÕES</span><div class="rail-arrow">›</div> </div>
 </div>
@@ -18247,5 +18247,153 @@ html body .toast-notification {
   setTimeout(function(){if(document.getElementById('settingTheme')){syncUI();renderDiagnostic();}},100);
  },true);
 })();</script>
+
+<style id="verix-registration-labels-and-spacing">
+/* Pesquisa de matrículas — legendas técnicas alinhadas com a referência visual. */
+html body .command .searchbar,
+html body.fixed-workspace-active:not(.cinemometro-page-active) .command .searchbar,
+html body.consultation-screen-active .command .searchbar{
+  width:660px!important;
+  min-width:0!important;
+  max-width:calc(100vw - 500px)!important;
+  box-sizing:border-box!important;
+}
+html body .command .searchbar form{
+  display:flex!important;
+  align-items:flex-end!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+  width:100%!important;
+  height:100%!important;
+  box-sizing:border-box!important;
+  padding:7px 10px!important;
+}
+html body .command .field{
+  display:flex!important;
+  flex:1 1 0!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  justify-content:flex-end!important;
+  gap:6px!important;
+  min-width:0!important;
+}
+html body .command .field label{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:7px!important;
+  width:100%!important;
+  min-width:0!important;
+  padding:0 1px!important;
+  box-sizing:border-box!important;
+  color:#e7f0f2!important;
+  font-size:8px!important;
+  font-weight:950!important;
+  line-height:1.15!important;
+  letter-spacing:.7px!important;
+  white-space:nowrap!important;
+  text-shadow:0 1px 3px rgba(0,0,0,.8)!important;
+}
+html body .command .field-label-text{
+  display:block!important;
+  min-width:0!important;
+  overflow:hidden!important;
+  text-overflow:clip!important;
+}
+html body .command .field-index{
+  display:inline-flex!important;
+  flex:0 0 auto!important;
+  align-items:center!important;
+  justify-content:center!important;
+  align-self:stretch!important;
+  min-width:18px!important;
+  margin-left:auto!important;
+  padding-left:7px!important;
+  border-left:1px solid rgba(113,161,172,.55)!important;
+  color:#b5d5dc!important;
+  font-family:ui-monospace,Consolas,monospace!important;
+  font-size:7px!important;
+  font-weight:800!important;
+  line-height:1!important;
+  letter-spacing:0!important;
+}
+html body .command .field input{
+  display:block!important;
+  width:100%!important;
+  min-width:0!important;
+  height:42px!important;
+  box-sizing:border-box!important;
+  font-size:15px!important;
+}
+html body .command .consult{
+  flex:0 0 178px!important;
+  width:178px!important;
+  min-width:150px!important;
+  height:42px!important;
+  box-sizing:border-box!important;
+}
+html body .command .brand-notice{
+  gap:6px!important;
+}
+html body .command .brand-lockup-footer{
+  margin-top:1px!important;
+}
+@media(max-width:1200px){
+  html body .command .searchbar,
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .command .searchbar,
+  html body.consultation-screen-active .command .searchbar{
+    width:660px!important;
+    max-width:calc(100vw - 430px)!important;
+  }
+  html body .command .field label{
+    font-size:7.5px!important;
+    letter-spacing:.45px!important;
+  }
+  html body .command .consult{
+    flex-basis:150px!important;
+    width:150px!important;
+    min-width:140px!important;
+  }
+}
+@media(max-width:900px){
+  html body .command .searchbar,
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .command .searchbar,
+  html body.consultation-screen-active .command .searchbar{
+    left:50%!important;
+    right:auto!important;
+    width:calc(100vw - 32px)!important;
+    max-width:calc(100vw - 32px)!important;
+    min-width:0!important;
+    transform:translateX(-50%)!important;
+  }
+  html body .command .searchbar form{
+    gap:7px!important;
+    padding:6px 7px!important;
+  }
+  html body .command .field label{
+    font-size:clamp(6px,1.15vw,7.5px)!important;
+    letter-spacing:.15px!important;
+  }
+  html body .command .field-index{
+    min-width:14px!important;
+    padding-left:4px!important;
+    font-size:6px!important;
+  }
+  html body .command .field input{
+    height:38px!important;
+    font-size:clamp(10px,1.8vw,14px)!important;
+    letter-spacing:.5px!important;
+  }
+  html body .command .consult{
+    flex-basis:clamp(92px,22vw,150px)!important;
+    width:clamp(92px,22vw,150px)!important;
+    min-width:0!important;
+    height:38px!important;
+    padding:0 6px!important;
+    font-size:clamp(8px,1.5vw,11px)!important;
+  }
+}
+</style>
+
 </body>
 </html>
