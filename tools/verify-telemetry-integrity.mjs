@@ -89,6 +89,7 @@ const scriptEnd = app.indexOf("</script>", scriptStart + scriptOpen.length);
 assert.ok(scriptStart >= 0 && scriptEnd > scriptStart, "production telemetry script must have clear boundaries");
 const telemetryScript = app.slice(scriptStart + scriptOpen.length, scriptEnd);
 assert.doesNotThrow(() => new Function(telemetryScript), "production telemetry script must parse as JavaScript");
+assert.match(telemetryScript, /var HEARTBEAT_MS = 60000;/, "heartbeat cadence should reduce requests while remaining within the 90-second online lease");
 
 const parserMatch = clientTransport.match(/function parseReceipt\(text\) \{[\s\S]*?\n  \}/);
 assert.ok(parserMatch, "receipt parser must be independently testable");
