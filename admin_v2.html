@@ -1107,7 +1107,7 @@ function renderInsurance(d){
   '<p>Os detalhes técnicos servem para investigação. Não são apresentados como diagnóstico de causa sem evidência suficiente.</p>';
 }
 function renderSpeed(d){
- const c=d.cinemometer||{},a=d.analytics||{},s=c||a.speed?.summary||{};
+ const c=d.cinemometer||{},a=d.analytics||{},s={...(a.speed?.summary||{}),...c};
  const calc=Number(s.calculations||s.calculations_24h||0),sessions=Number(s.sessions||0),compat=Number(s.sessions_compatible||0),atyp=Number(s.sessions_atypical||0),p50=s.speed_p50??s.p50_24h,avg=s.speed_avg??s.avg_24h,min=s.speed_min??s.min_24h,max=s.speed_max??s.max_24h;
  $('speedCards').innerHTML=
   card('CÁLCULOS',num(calc),'Últimas 24 horas.','cyan')+
