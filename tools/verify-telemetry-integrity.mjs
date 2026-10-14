@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import vm from "node:vm";
 
 const endpoint = fs.readFileSync("supabase/functions/telemetry-v2/index.ts", "utf8");
 const migration = fs.readFileSync("supabase/migrations/20261009034000_repair_telemetry_integrity_and_query_metrics.sql", "utf8");
@@ -135,7 +136,7 @@ assert.match(activeHourlyMigration, /'bucket_start', h\.bucket_start/, "each hou
 assert.match(activeHourlyMigration, /date_trunc\('hour', e\.occurred_at AT TIME ZONE 'UTC'\) AT TIME ZONE 'UTC'/, "hourly counts must use chronological hour buckets rather than hour-of-day grouping");
 assert.ok(admin.includes("hourly-day-group"), "hourly chart must visually separate dates");
 assert.ok(admin.includes("new Date(x.bucket_start)"), "hourly chart must read the date associated with each bucket");
-assert.match(stats, /admin-simple-2026-10-13-r15/, "dated hourly chart must use a distinct cache key supported by stats");
+assert.match(stats, /admin-simple-2026-10-14-r16/, "dashboard cache contract must support the latest Admin revision");
 assert.match(recentQueryPresenceMigration, /count\(DISTINCT e\.installation_id\)/, "recent-query presence must count distinct installations");
 assert.match(recentQueryPresenceMigration, /e\.event = 'vehicle_lookup'/, "recent-query presence must count actual consultation starts");
 assert.match(recentQueryPresenceMigration, /e\.query_id IS NOT NULL/, "recent-query presence must ignore lookup events without a query ID");
@@ -155,6 +156,36 @@ assert.ok(stats.includes("event_count:b.events"), "error time buckets must expos
 assert.ok(stats.includes("error_queries_24h:new Set(rows.map"), "error total must count unique query IDs separately from event rows");
 assert.ok(stats.includes("current_version_error_events:currentVersionRows.length"), "version errors must expose raw events separately from distinct queries");
 assert.ok(stats.includes("latestErrorByQuery"), "error plate details must not repeat the same consultation");
+
+assert.ok(stats.includes("function buildErrorPlateCases(rows:any[]"), "error plate details must use a separated all-version helper");
+assert.ok(stats.includes("error_plate_cases_24h:buildErrorPlateCases(rows,plateOf,validPortuguesePlate,shortId)"), "stats must expose all-version error plate cases");
+assert.ok(stats.includes("normalized.find((value:string)=>validPortuguesePlate(value))"), "plate extraction must prefer complete valid plates over partial fragments");
+const errorCasesStart = stats.indexOf("function buildErrorPlateCases");
+const errorCasesEnd = stats.indexOf("\nasync function loadErrorInvestigation24h", errorCasesStart);
+assert.ok(errorCasesStart >= 0 && errorCasesEnd > errorCasesStart, "error-plate helper must be delimited");
+const errorCasesSource = stats.slice(errorCasesStart, errorCasesEnd)
+  .replace("function buildErrorPlateCases(rows:any[],plateOf:(e:any)=>string,validPortuguesePlate:(value:unknown)=>boolean,shortId:(value:any)=>string){", "function buildErrorPlateCases(rows,plateOf,validPortuguesePlate,shortId){")
+  .replace("new Map<string,{event:any;matricula:string}>()", "new Map()");
+const buildErrorPlateCases = vm.runInNewContext("(" + errorCasesSource + ")");
+const isPortuguesePlate = value => /^(?:[A-Z]{2}[0-9]{4}|[0-9]{4}[A-Z]{2}|[0-9]{2}[A-Z]{2}[0-9]{2}|[A-Z]{2}[0-9]{2}[A-Z]{2})$/.test(String(value || "").toUpperCase().replace(/[^A-Z0-9]/g, ""));
+const fixturePlateOf = e => {
+  const candidates = [e?.metadata?.matriculaCapturada, e?.metadata?.asfDiagnostic?.matricula, e?.metadata?.matriculaNormalizada, e?.metadata?.matricula];
+  const normalized = candidates.map(value => String(value ?? "").trim().toUpperCase().replace(/[^A-Z0-9 -]/g, "").slice(0, 30)).filter(value => value.length > 0);
+  return normalized.find(isPortuguesePlate) || normalized[0] || "";
+};
+const errorPlateFixtures = [
+  { event_id:"valid-old", query_id:"query-one", occurred_at:"2026-10-14T10:00:00.000Z", app_version:"1.4", browser:"Chrome", metadata:{matricula:"AA-12-34",asfDiagnostic:{asfErrorType:"network",asfHttpStatus:504,asfMessage:"timeout"}} },
+  { event_id:"partial-retry", query_id:"query-one", occurred_at:"2026-10-14T10:01:00.000Z", app_version:"1.5", browser:"Edge", metadata:{matricula:"O"} },
+  { event_id:"legacy-valid", query_id:"query-two", occurred_at:"2026-10-14T10:02:00.000Z", app_version:"1.3", browser:"Chrome", metadata:{matricula:"1234-AA",asfDiagnostic:{asfErrorType:"http_500",asfHttpStatus:500}} }
+];
+const allVersionPlateCases = buildErrorPlateCases(errorPlateFixtures, fixturePlateOf, isPortuguesePlate, value => String(value || ""));
+assert.equal(allVersionPlateCases.length, 2, "all versions are included and incomplete retries do not hide valid plates");
+assert.ok(allVersionPlateCases.some(item => item.query_id === "query-one" && item.matricula === "AA1234" && item.app_version === "1.4"), "a later incomplete retry must preserve the valid earlier plate");
+assert.ok(allVersionPlateCases.some(item => item.query_id === "query-two" && item.app_version === "1.3"), "valid error plates from older versions must remain visible");
+assert.ok(admin.includes("inv.error_plate_cases_24h||inv.current_version_plate_cases"), "Admin consumes all-version data with a compatibility fallback");
+assert.ok(admin.includes('onclick="refreshCurrentData()"'), "Admin exposes a manual refresh for error-plate cases");
+assert.ok(admin.includes("errorPlatesCount"), "Admin shows the count of returned error-plate cases");
+
 assert.ok(stats.includes('qs.set("offset",String(page*pageSize))'), "error investigation must page through all raw telemetry instead of truncating at 1,000 rows");
 assert.ok(stats.includes("validPortuguesePlate"), "error plate diagnostics must use complete Portuguese plate formats");
 assert.ok(endpoint.includes("^(?:[A-Z]{2}[0-9]{4}|[0-9]{4}[A-Z]{2}"), "server must reject incomplete and malformed plate fragments");
