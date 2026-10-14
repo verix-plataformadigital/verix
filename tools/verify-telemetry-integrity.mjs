@@ -167,7 +167,22 @@ const errorCasesSource = stats.slice(errorCasesStart, errorCasesEnd)
   .replace("function buildErrorPlateCases(rows:any[],plateOf:(e:any)=>string,validPortuguesePlate:(value:unknown)=>boolean,shortId:(value:any)=>string){", "function buildErrorPlateCases(rows,plateOf,validPortuguesePlate,shortId){")
   .replace("new Map<string,{event:any;matricula:string}>()", "new Map()");
 const buildErrorPlateCases = vm.runInNewContext("(" + errorCasesSource + ")");
-const isPortuguesePlate = value => /^(?:[A-Z]{2}[0-9]{4}|[0-9]{4}[A-Z]{2}|[0-9]{2}[A-Z]{2}[0-9]{2}|[A-Z]{2}[0-9]{2}[A-Z]{2})$/.test(String(value || "").toUpperCase().replace(/[^A-Z0-9]/g, ""));
+const plateValidatorStart = stats.indexOf("const validPortuguesePlate=(value:unknown)=>{");
+const plateValidatorEnd = stats.indexOf("\n  const plateOf=", plateValidatorStart);
+assert.ok(plateValidatorStart >= 0 && plateValidatorEnd > plateValidatorStart, "Admin error plate validator must be delimited");
+const plateValidatorSource = stats.slice(plateValidatorStart, plateValidatorEnd)
+  .replace("const validPortuguesePlate=(value:unknown)=>{", "(value)=>{")
+  .replace("const plate=normalizePlate(value);", "const plate=String(value??\"\").toUpperCase().replace(/[^A-Z0-9]/g,\"\");")
+  .replace(/;\\s*$/, "");
+const isPortuguesePlate = vm.runInNewContext(plateValidatorSource);
+for (const [plate, expected] of [
+  ["AA1234", true], ["1234AB", true], ["12AB34", true],
+  ["AB12CD", true], ["AA12AA", true],
+  ["KW1234", false], ["12WY34", false],
+  ["AB00CD", false], ["AB12CA", false]
+]) {
+  assert.equal(isPortuguesePlate(plate), expected, "Portuguese plate validation: " + plate);
+}
 const fixturePlateOf = e => {
   const candidates = [e?.metadata?.matriculaCapturada, e?.metadata?.asfDiagnostic?.matricula, e?.metadata?.matriculaNormalizada, e?.metadata?.matricula];
   const normalized = candidates.map(value => String(value ?? "").trim().toUpperCase().replace(/[^A-Z0-9 -]/g, "").slice(0, 30)).filter(value => value.length > 0);
