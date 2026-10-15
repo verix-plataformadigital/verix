@@ -3915,21 +3915,7 @@ html body .history-close {
  transition: background .15s, border-color .15s !important;
 }
 
-/* ---------- LEGISLAÇÃO ---------- */
-
-
-
-
-
-
-
-
-/* ---------- CINEMÓMETRO ---------- */
-
-/* Cartões e campos típicos do módulo velocidade */
-html body #cinActiveDeviceCard,
-html body .cin-card,
-html body .cin-result-card {
+/* ---------html body #cinActiveDeviceCard, html body .cin-result-card{
  border-radius: 12px !important;
 }html body #cinRegistada,
 html body #cinDeducida,
@@ -4353,8 +4339,7 @@ body:after {
 .mm74-inspec { border-color: rgba(255,59,92,.35) !important; }
 .mm74-inspec:hover { border-color: rgba(255,59,92,.65) !important; box-shadow: 0 24px 50px rgba(0,0,0,.5), 0 0 30px rgba(255,59,92,.15) !important; }
 
-/* --- Legislation --- */
-.leg-card, .leg-card-new {
+/.leg-card-new{
  border: 1px solid rgba(94,240,255,.18) !important;
  background: linear-gradient(155deg, rgba(12,30,40,.98), rgba(4,12,18,.98)) !important;
  box-shadow: 0 10px 28px rgba(0,0,0,.28) !important;
@@ -4366,8 +4351,7 @@ body:after {
  box-shadow: 0 14px 32px rgba(0,0,0,.35), 0 0 20px rgba(94,240,255,.08) !important;
 }
 
-/* --- Cinemometer --- */
-.cin-card, .cin-active-device-card, .cin-ded-card {
+/.cin-active-device-card, .cin-ded-card{
  border: 1px solid rgba(94,240,255,.2) !important;
  box-shadow: 0 12px 32px rgba(0,0,0,.32), 0 0 20px rgba(94,240,255,.04) !important;
 }.cin-code-box{
@@ -4612,8 +4596,7 @@ body {
  letter-spacing: 2.5px !important;
 }
 
-/* Cinemómetro / legislação */
-.cin-card, .leg-card, .leg-card-new {
+/.leg-card-new{
  border-color: rgba(106, 240, 255, 0.22) !important;
 }
 .leg-card-new:hover{
@@ -4848,31 +4831,6 @@ html body .main-menu-v74-grid-small{margin-top:12px!important;}
 
 
 @media(max-width:900px){html body .main-menu-screen{overflow-y:auto!important;}html body .main-menu-v74-shell{min-height:100dvh!important;padding:18px 14px 24px!important;}}
-/* Remove a assinatura central duplicada; mantém a assinatura à direita. */
-
-
-
-/* VÉRIX — réplica visual da mensagem de sistema fornecida pelo utilizador. */
-
-html body .verix-system-message-card{
- position:relative!important;
- width:min(947px, calc(100vw - 80px))!important;
- margin:22px auto 4px!important;
- padding:22px 28px 20px!important;
- box-sizing:border-box!important;
- border:1px solid rgba(81,150,157,.55)!important;
- border-radius:28px!important;
- background:
- radial-gradient(circle at 50% 0%, rgba(26,88,101,.18), transparent 44%),
- linear-gradient(180deg, rgba(5,19,25,.96), rgba(2,10,15,.985))!important;
- box-shadow:
- inset 0 1px 0 rgba(135,211,219,.10),
- inset 0 -20px 45px rgba(0,0,0,.24),
- 0 18px 50px rgba(0,0,0,.34)!important;
- overflow:hidden!important;
- text-align:center!important;
- color:#c3d4d8!important;
-}
 /* O strip antigo de contacto deixa de competir visualmente com a mensagem única. */
 
 /* Metadados antigos ficam fora da composição visual da mensagem. */
@@ -4934,30 +4892,6 @@ html body .main-menu-screen.show .main-menu-v74-title:after{
  color:#64827e!important;
  font-size:7px!important;
  letter-spacing:1.5px!important;
-}
-
-/* Comunicação online — compacta e secundária */
-html body .main-menu-screen.show .verix-system-message-card{
- order:2!important;
- width:min(1040px,100%)!important;
- margin:14px auto 0!important;
- padding:13px 20px 11px!important;
- border-radius:13px!important;
- display:grid!important;
- grid-template-columns:minmax(0,1fr) minmax(0,1.18fr)!important;
- grid-template-areas:
- 'symbol heading'
- 'update update'
- 'contact disclaimer'
- 'motto motto'!important;
- align-items:center!important;
- column-gap:20px!important;
- row-gap:7px!important;
- background:
- radial-gradient(circle at 50% 0%,rgba(31,103,111,.14),transparent 46%),
- linear-gradient(180deg,rgba(5,20,26,.96),rgba(2,9,13,.98))!important;
- border:1px solid rgba(77,141,151,.42)!important;
- box-shadow:inset 0 1px 0 rgba(137,208,214,.08),0 12px 28px rgba(0,0,0,.26)!important;
 }
 
 /* Operações principais */
@@ -5056,107 +4990,15 @@ html body .main-menu-screen.show .main-menu-v74-grid-small .mm74-label{font-size
  html body .main-menu-screen.show .main-menu-v74-grid-big{grid-template-columns:1fr!important}
  html body .main-menu-screen.show .main-menu-v74-grid-small{grid-template-columns:1fr!important}
 }
-/* VÉRIX — mensagem operacional vertical: leitura rápida, hierarquia e baixa densidade visual */
-html body .main-menu-screen.show .verix-system-message-card{
- width:min(680px,calc(100% - 34px))!important;
- min-height:0!important;
- margin:24px auto 10px!important;
- padding:16px 18px 14px!important;
- box-sizing:border-box!important;
- border:1px solid rgba(95,157,164,.34)!important;
- border-radius:12px!important;
- background:
- linear-gradient(180deg,rgba(7,20,26,.97),rgba(3,12,17,.985))!important;
- box-shadow:
- 0 14px 34px rgba(0,0,0,.28),
- inset 0 1px 0 rgba(160,220,225,.05)!important;
- overflow:hidden!important;
-}
-
-/* Cantos: pequenos marcadores, em vez de moldura pesada */
-html body .main-menu-screen.show .verix-system-corner{opacity:1!important;z-index:3!important}
-
-/* Cabeçalho */
-html body .main-menu-screen.show .verix-system-symbol{
- justify-self:auto!important;
- font:800 17px/1 Georgia,serif!important;
- border:1px solid rgba(156,220,226,.68)!important;
- color:#e6fbfc!important;
- box-shadow:0 0 13px rgba(73,194,207,.15)!important;
-}
-
-/* Mensagem principal */
-html body .main-menu-screen.show .verix-system-update{
- font:700 9px/1.5 Arial,sans-serif!important;
- letter-spacing:.1px!important;
- color:#a9bcc0!important;
-}
-
-/* Contacto como bloco operacional */
-html body .main-menu-screen.show .verix-system-contact{
- width:100%!important;
- margin:0 0 11px!important;
- padding:9px 10px!important;
- box-sizing:border-box!important;
- gap:10px!important;
- border:1px solid rgba(75,142,151,.2)!important;
- border-left:2px solid rgba(30,161,139,.65)!important;
- border-radius:7px!important;
- background:rgba(6,25,31,.52)!important;
-}
-
-/* Aviso legal */
-html body .main-menu-screen.show .verix-system-disclaimer{
- margin:0 0 10px!important;
- padding:8px 10px!important;
- border:1px solid rgba(92,143,151,.18)!important;
- border-radius:6px!important;
- background:rgba(8,20,26,.65)!important;
- color:#7f979d!important;
- font:700 7.4px/1.45 Arial,sans-serif!important;
-}
 
 @media(max-width:900px){
 }
 @media(max-width:560px){
 }
-/* VÉRIX — composição vertical empilhada: uma mensagem por bloco, separadores claros. */
-html body .main-menu-screen.show .verix-system-message-card{
- order:4!important;
- width:min(560px,calc(100% - 40px))!important;
- margin:26px auto 14px!important;
- padding:18px 20px 16px!important;
- display:flex!important;
- flex-direction:column!important;
- align-items:stretch!important;
- gap:0!important;
- border:1px solid rgba(82,137,146,.38)!important;
- border-radius:10px!important;
- background:
- linear-gradient(180deg,rgba(7,20,26,.985),rgba(3,12,17,.985))!important;
- box-shadow:0 10px 30px rgba(0,0,0,.24),inset 0 1px 0 rgba(170,220,225,.05)!important;
- text-align:left!important;
-}
-
-
-
-/* Cabeçalho */
-html body .main-menu-screen.show .verix-system-symbol{
- width:28px!important;height:28px!important;flex:0 0 28px!important;
- margin:0 0 8px 0!important;
- font:800 16px/1 Georgia,serif!important;
- border:1px solid rgba(159,220,225,.7)!important;
- box-shadow:0 0 12px rgba(57,190,205,.13)!important;
-}
 
 @media(max-width:900px){
 }
 @media(max-width:560px){
-}
-/* Assinatura do sistema: centrada na caixa, sem herdar grid/posicionamento de versões anteriores. */
-html body .main-menu-screen.show .verix-system-message-card{
- position:relative!important;
- padding-bottom:34px!important;
 }
 @media(max-width:560px){
 }
@@ -8684,8 +8526,7 @@ html body.consultation-screen-active .command .searchbar{
 @media(min-width:901px){
  .module-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}
 }
-/* Codificação cromática fixa para pesquisa visual rápida */
-.leg-category.red,.leg-category.red2,.leg-category.darkred{background:linear-gradient(135deg,#620918,#c8102e 58%,#720719)!important}
+/.leg-category.red, .leg-category.darkred{background:linear-gradient(135deg,#620918,#c8102e 58%,#720719)!important}
 .leg-category.green,.leg-category.green2{background:linear-gradient(135deg,#004b31,#008b55 58%,#005437)!important}
 .leg-category.blue,.leg-category.blue2{background:linear-gradient(135deg,#123f61,#126f9d 58%,#10425f)!important}
 .leg-category.amber{background:linear-gradient(135deg,#6b4a08,#b5870b 58%,#6f4c08)!important}
@@ -12183,27 +12024,6 @@ html body .main-menu-screen.show .main-menu-v74-shell{padding:16px 14px 24px!imp
  grid-row:auto!important;
  }
 }
-/* DESTACAMENTOS ESPECIAIS — contacto apenas, sem postos */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-.-command-card:not(.collapsed) .-toggle-btn::before{content:"−"}
 
 
 
@@ -12914,10 +12734,7 @@ html body .verix-main-title{
  text-shadow:0 0 20px rgba(0,240,255,.3), 0 2px 8px #000 !important;
 }
 
-/* ===== LEGISLATION / MODULE CARDS ===== */
-html body .leg-card-new,
-html body .leg-card,
-html body .module-card{
+/html body .leg-card-new, html body .module-card{
  border:1px solid rgba(0,240,255,.15) !important;
  background:linear-gradient(135deg, rgba(6,20,28,.95), rgba(2,10,14,.97)) !important;
  transition:all .2s var(--ease) !important;
@@ -13428,11 +13245,7 @@ html body .verix-brand{
  50%{ transform:translateY(-2px); }
 }
 
-/* --- Module cards / legislação --- */
-html body .module-card,
-html body .leg-card-new,
-html body .leg-card,
-html body .leg-category{
+/html body .module-card, html body .leg-card-new, html body .leg-category{
  transform-style:preserve-3d;
  transition:transform .25s cubic-bezier(.16,1,.3,1), box-shadow .25s ease, border-color .2s ease, filter .2s ease !important;
 }
@@ -13955,10 +13768,7 @@ html body .verix-brand{
  100%{ filter:hue-rotate(360deg); }
 }
 
-/* Module / leg cards */
-html body .module-card:hover,
-html body .leg-card-new:hover,
-html body .leg-card:hover{
+/html body .module-card:hover, html body .leg-card-new:hover{
  transform:translateY(-8px) rotateX(6deg) scale(1.02) !important;
  box-shadow:0 20px 48px rgba(0,0,0,.45), 0 0 40px rgba(0,240,255,.2) !important;
 }
@@ -14287,9 +14097,7 @@ html body .module-overlay.cinemometro-fullpage .cin-other-radars-section.collaps
  display:none!important;
 }
 
-/* Cards individuais */
-html body .module-overlay.cinemometro-fullpage .cin-profile-item-clean,
-html body .module-overlay.cinemometro-fullpage .cin-profile-item{
+/html body .module-overlay.cinemometro-fullpage .cin-profile-item-clean{
  position:relative!important;
  display:flex!important;
  flex-direction:row!important;
@@ -15759,13 +15567,6 @@ html body .leg-card-new .copy-all-new{
  
  
 }
-/* Ordem final: título → operações principais → sistemas secundários → mensagem → rodapé. */
-html body .main-menu-v74-shell > .verix-system-message-card{
- order:5!important;
- width:min(947px, calc(100vw - 80px))!important;
- margin:18px auto 0!important;
- flex:0 0 auto!important;
-}
 
 @media(max-width:900px){
  
@@ -15779,82 +15580,6 @@ html body .main-menu-screen.show .main-menu-v74-shell > .main-menu-v74-grid-smal
  html body .main-menu-screen.show .main-menu-v74-shell > .main-menu-v74-grid-big{margin-top:22px!important;}
  html body .main-menu-screen.show .main-menu-v74-shell > .main-menu-v74-grid-small{margin-top:14px!important;}
 }
-
-/* Cantos: pequenos marcadores, não molduras */
-html body .main-menu-screen.show .verix-system-corner{
- width:18px!important;
- height:18px!important;
- opacity:.82!important;
-}
-
-/* Ícone */
-html body .main-menu-screen.show .verix-system-symbol{
- grid-area:symbol!important;
- width:30px!important;
- height:30px!important;
- margin:0 auto!important;
- border:1px solid rgba(127,196,204,.62)!important;
- color:#d6eef1!important;
- background:rgba(79,155,163,.07)!important;
- box-shadow:0 0 10px rgba(79,197,211,.10)!important;
-}
-
-/* Título */
-html body .main-menu-screen.show .verix-system-heading-rule{
- font-weight:700!important;
- letter-spacing:1.15px!important;
- color:#edf3f4!important;
-}
-
-/* Mensagem de atualização */
-html body .main-menu-screen.show .verix-system-update{
- display:block!important;
- font-family:Arial,Helvetica,sans-serif!important;
- line-height:1.38!important;
- white-space:normal!important;
-}
-
-/* Contacto */
-
-html body .main-menu-screen.show .verix-system-mail-icon{
- width:24px!important;
- flex:0 0 24px!important;
- border:1px solid rgba(131,174,181,.60)!important;
- color:#a9c9ce!important;
- font-size:13px!important;
-}
-
-/* Aviso */
-html body .main-menu-screen.show .verix-system-disclaimer{
- padding:7px 10px!important;
- gap:8px!important;
- border:1px solid rgba(81,126,136,.24)!important;
- border-radius:4px!important;
- background:rgba(7,20,25,.40)!important;
- color:#748b92!important;
- font-family:Arial,Helvetica,sans-serif!important;
- line-height:1.35!important;
-}/* Rodapé de publicação */
-html body .main-menu-screen.show .verix-system-developed{
- grid-area:developed!important;
- justify-self:stretch!important;
- width:100%!important;
- margin:2px 0 0!important;
- padding-top:8px!important;
- border-top:1px solid rgba(74,125,134,.22)!important;
- box-sizing:border-box!important;
- text-align:center!important;
- color:#7f98a0!important;
- font-family:Consolas,"Courier New",monospace!important;
- font-size:8px!important;
- font-weight:700!important;
- line-height:1.2!important;
- letter-spacing:2.1px!important;
- white-space:nowrap!important;
-}
-
-/* Botão continua: fora desta apresentação */
-html body .main-menu-screen.show .verix-system-continue{display:none!important}
 
 /* Espaçamento dos cartões para a faixa respirar */
 html body .main-menu-screen.show .main-menu-v74-grid-small{
@@ -15889,108 +15614,6 @@ html body .main-menu-screen.show .main-menu-v74-grid-small{
  html body .main-menu-screen.show .verix-system-update span{font-size:7.8px!important}}
 
 @media(max-width:520px){}
-
-/* Cantos mínimos — apenas assinatura visual */
-html body .main-menu-screen.show .verix-system-corner{
- width:14px!important;
- height:14px!important;
- opacity:.8!important;
- z-index:4!important;
-}
-
-/* Ícone lateral */
-html body .main-menu-screen.show .verix-system-symbol{
- position:absolute!important;
- left:17px!important;
- top:16px!important;
- margin:0!important;
- width:29px!important;
- height:29px!important;
- display:flex!important;
- align-items:center!important;
- justify-content:center!important;
- border:1px solid rgba(122,190,198,.7)!important;
- border-radius:50%!important;
- background:rgba(76,159,169,.055)!important;
- color:#d8eef1!important;
- font:700 15px/1 Georgia,serif!important;
- text-shadow:none!important;
- box-shadow:0 0 12px rgba(76,159,169,.10)!important;
- z-index:3!important;
-}
-
-/* Título */
-html body .main-menu-screen.show .verix-system-heading-rule{
- grid-area:heading!important;
- display:flex!important;
- align-items:center!important;
- justify-content:flex-start!important;
- gap:0!important;
- margin:0!important;
- min-width:0!important;
- font-family:Consolas,"Courier New",monospace!important;
- font-size:13px!important;
- line-height:1.1!important;
- font-weight:800!important;
- letter-spacing:1.05px!important;
- white-space:nowrap!important;
- color:#eaf2f3!important;
-}
-
-/* Texto principal */
-html body .main-menu-screen.show .verix-system-update{
- grid-area:update!important;
- display:flex!important;
- flex-direction:column!important;
- justify-content:center!important;
- gap:3px!important;
- min-width:0!important;
- margin:0!important;
- max-width:none!important;
- font-family:"Segoe UI",Arial,sans-serif!important;
- font-size:9px!important;
- line-height:1.35!important;
- letter-spacing:0!important;
- text-align:right!important;
-}
-
-/* Contacto */
-html body .main-menu-screen.show .verix-system-contact{
- grid-area:contact!important;
- display:flex!important;
- align-items:center!important;
- justify-content:flex-start!important;
- gap:9px!important;
- min-width:0!important;
- margin:0!important;
-}
-
-/* Aviso legal */
-html body .main-menu-screen.show .verix-system-disclaimer{
- grid-area:disclaimer!important;
- display:flex!important;
- align-items:center!important;
- justify-content:flex-start!important;
- gap:7px!important;
- width:100%!important;
- min-width:0!important;
- max-width:none!important;
- margin:0!important;
- padding:6px 9px!important;
- box-sizing:border-box!important;
- border:1px solid rgba(72,119,129,.22)!important;
- border-radius:5px!important;
- background:rgba(7,22,27,.46)!important;
- color:#718990!important;
- font-family:"Segoe UI",Arial,sans-serif!important;
- font-size:7.2px!important;
- line-height:1.32!important;
- text-align:left!important;
-}/* Elementos que não pertencem à faixa */
-html body .main-menu-screen.show .verix-system-separator,
-html body .main-menu-screen.show .verix-system-continue{
- display:none!important;
-}
 
 @media(max-width:1100px){
 }
@@ -16083,21 +15706,6 @@ html body .main.consultation-fixed-active .panel.insurance #asfRateWidget .asf-r
   font:900 7px/1 Consolas,monospace!important;
   font-style:normal!important;
   letter-spacing:.25px!important;
-}
-
-/* Dashboard vira parte da grelha para os três cartões ficarem lado a lado. */
-
-
-/* Cada métrica ocupa uma célula própria. */
-
-
-/* Janela */
-
-
-/* Próxima */
-html body .main.consultation-fixed-active .panel.insurance #asfRateWidget .asf-rate-metric:not(.asf-rate-window){
-  grid-column:3!important;
-  grid-row:1!important;
 }
 
 
@@ -18038,43 +17646,6 @@ html body.consultation-screen-active:not(.main-menu-active):not(.history-page-ac
 
 
 <style id="verix-footer-redesign-2026">
-/* VÉRIX footer — barra de estado e contacto. Mantém conteúdo e ações existentes. */
-html body.main-menu-screen.show .main-menu-v74-shell > .verix-system-message-card{
-  order:5!important;
-  position:relative!important;
-  inset:auto!important;
-  flex:0 0 128px!important;
-  align-self:stretch!important;
-  display:grid!important;
-  grid-template-columns:minmax(215px,.82fr) minmax(260px,1.2fr) minmax(245px,.88fr)!important;
-  grid-template-rows:minmax(0,1fr) 29px!important;
-  grid-template-areas:
-    "heading update contact"
-    "disclaimer disclaimer disclaimer"!important;
-  gap:8px 24px!important;
-  width:100%!important;
-  min-width:0!important;
-  max-width:none!important;
-  height:128px!important;
-  min-height:128px!important;
-  max-height:128px!important;
-  margin:auto 0 0!important;
-  padding:17px 20px 10px 54px!important;
-  box-sizing:border-box!important;
-  overflow:hidden!important;
-  border:1px solid rgba(93,140,149,.3)!important;
-  border-left:2px solid rgba(62,194,147,.62)!important;
-  border-right:1px solid rgba(135,92,106,.32)!important;
-  border-radius:8px!important;
-  background:
-    linear-gradient(105deg,rgba(10,37,36,.24),transparent 34%,transparent 72%,rgba(57,22,32,.18)),
-    linear-gradient(180deg,rgba(8,21,28,.96),rgba(3,11,16,.985))!important;
-  box-shadow:
-    inset 0 1px 0 rgba(218,248,249,.045),
-    0 8px 24px rgba(0,0,0,.16)!important;
-  color:#aabfc4!important;
-  text-align:left!important;
-}
 
 /* Tablets: information stacks cleanly instead of crushing the text. */
 @media(max-width:1000px){
