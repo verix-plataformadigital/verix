@@ -20161,13 +20161,13 @@ html body .main-menu-screen.show .vf2-legal-tag{
 html body #seguroResult.insurance-body,
 html body #seguroResult{
   width:100%!important;max-width:none!important;min-width:0!important;
-  box-sizing:border-box!important;overflow:visible!important;
-  padding:0!important;margin:0!important;background:transparent!important;
+  box-sizing:border-box!important;overflow:auto!important;
+  padding:clamp(10px,1.25vw,18px)!important;margin:0!important;
+  background:linear-gradient(180deg,#f7fafb 0%,#eef3f5 100%)!important;
+  scrollbar-width:thin;scrollbar-color:#c4d3d9 transparent;
 }
 html body .panel.insurance .insurance-body{
   align-items:stretch!important;justify-content:flex-start!important;
-  padding:clamp(10px,1.25vw,18px)!important;
-  background:linear-gradient(180deg,#f7fafb 0%,#eef3f5 100%)!important;
   overflow:auto!important;scrollbar-width:thin;scrollbar-color:#c4d3d9 transparent;
 }
 html body #seguroResult .asf-app{
@@ -20446,7 +20446,7 @@ html body #seguroResult .asf-app.asf-app-warn .asf-note{
   html body #seguroResult .asf-operational-status .asf-op-validity{padding-left:10px!important;border-left:1px solid #e0e9e4!important;border-top:0!important;padding-top:0!important;}
 }
 @media(max-width:560px){
-  html body .panel.insurance .insurance-body{padding:9px!important;}
+  html body #seguroResult{padding:9px!important;}
   html body #seguroResult .asf-app{gap:9px!important;padding:0 0 5px!important;}
   html body #seguroResult .asf-success-hero{padding:11px!important;border-radius:13px!important;}
   html body #seguroResult .asf-app.asf-app-ok .asf-success-badge{width:38px!important;height:38px!important;border-radius:11px!important;font-size:22px!important;}
