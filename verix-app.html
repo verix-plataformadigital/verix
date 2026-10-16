@@ -265,7 +265,7 @@ html.verix-starting #verixAsfNoticeOverlay, html.verix-starting #mainMenuScreen,
   opacity:1 !important;
   pointer-events:auto !important;
 }
-@keyframes verixStartupBar{ to{width:100%;} }
+
 #verixAsfNoticeOverlay[aria-hidden="true"]{display:none !important;}
 #verixAsfNoticeOverlay[aria-hidden="false"]{display:flex !important;}
 </style>
@@ -3506,21 +3506,21 @@ html body .cin-config-dashboard {
  Non-destructive: preserves all IDs, classes hooks and JS behaviour
  ##################################################################### */
 :root {
- --fx-bg0: #01060a;
- --fx-bg1: #041018;
- --fx-panel: rgba(6, 18, 26, 0.92);
- --fx-panel2: rgba(10, 28, 38, 0.88);
+ 
+ 
+ 
+ 
  --fx-line: rgba(120, 200, 210, 0.28);
- --fx-line2: rgba(0, 220, 180, 0.35);
+ 
  --fx-cyan: #5ef0ff;
  --fx-mint: #3dffc0;
- --fx-red: #ff3b5c;
- --fx-amber: #ffc857;
- --fx-text: #eaf7f8;
- --fx-muted: #7f9aa3;
- --fx-glow-c: rgba(94, 240, 255, 0.35);
- --fx-glow-m: rgba(61, 255, 192, 0.25);
- --fx-glow-r: rgba(255, 59, 92, 0.3);
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 }
 /* --- Cinematic stage --- */
 body:before {
@@ -3638,10 +3638,7 @@ button:focus-visible {
 }
 ::-webkit-scrollbar-track { background: rgba(0,0,0,.2); }
 /* --- Micro interaction: pulse on active status dot --- */
-@keyframes fxPulse {
- 0%, 100% { box-shadow: 0 0 8px #25db83; }
- 50% { box-shadow: 0 0 16px #25db83, 0 0 28px rgba(37,219,131,.4); }
-}
+
 /* Selection */
 ::selection {
 }
@@ -3652,13 +3649,13 @@ button:focus-visible {
 :root {
  --ops-bg: #02060a;
  --ops-cyan: #6af0ff;
- --ops-mint: #3dffa8;
- --ops-red: #ff2d55;
- --ops-amber: #ffc14d;
+ 
+ 
+ 
  --ops-text: #eef8fa;
- --ops-muted: #7e99a3;
- --ops-line: rgba(106, 240, 255, 0.32);
- --ops-glass: rgba(8, 22, 32, 0.88);
+ 
+ 
+ 
 }
 html, body {
  background: var(--ops-bg) !important;
@@ -6431,13 +6428,13 @@ html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultatio
  content:""!important;position:absolute!important;inset:0!important;pointer-events:none!important;border:1px solid rgba(104,151,160,.08)!important;border-radius:14px!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.015)!important;
 }
 html body.fixed-workspace-active:not(.cinemometro-page-active){
- --ops-g1:#0b231e;
- --ops-g2:#103a30;
- --ops-g3:#176451;
- --ops-g4:#279d78;
- --ops-g5:#64d6af;
+ 
+ 
+ 
+ 
+ 
  --ops-cyan:#72d8df;
- --ops-ink:#010607;
+ 
 }
 html body.fixed-workspace-active:not(.cinemometro-page-active) .command{
  border-color:rgba(91,150,141,.48)!important;
@@ -6745,7 +6742,7 @@ body.ui-compact .module-body{padding:15px}.ui-compact .module-card{padding:12px}
 body.ui-comfortable .module-body{padding:28px}.ui-comfortable .module-card{padding:18px}.ui-comfortable .module-grid{gap:16px}
 body.no-hud .scan,body.no-hud .cinematic-bg,body.no-hud .corner{animation:none!important}.no-hud .scan{display:none!important}.no-hud .cinematic-bg{opacity:.25!important}
 body.no-transitions .module-window,body.no-transitions .main-menu-screen{animation:none!important;transition:none!important}
-@keyframes untModuleIn{from{opacity:0;transform:translateY(14px) scale(.985);filter:blur(3px)}to{opacity:1;transform:none;filter:none}}@keyframes untHomeIn{from{opacity:0;transform:scale(.99)}to{opacity:1;transform:none}}
+
 .profile-card{min-height:132px}
 .profile-hint{margin-top:9px;padding:7px 9px;border-left:2px solid rgba(57,207,145,.55);background:rgba(0,139,85,.07);color:#7f989f;font:800 6.5px/1.3 Arial,sans-serif;letter-spacing:.35px}
 .settings-quick-actions{display:grid;}
@@ -10111,14 +10108,14 @@ html body .main-menu-v74-shell {
  --white:#e8f4f6;
  --muted:#6a8490;
  --cyan:#00f0ff;
- --cyan2:#00a8b8;
+ 
  --amber:#ffc014;
  --line:rgba(0,240,255,.18);
- --glow-green:rgba(0,229,160,.35);
- --glow-red:rgba(255,42,74,.28);
- --glow-cyan:rgba(0,240,255,.22);
- --glass:rgba(4,14,22,.78);
- --glass-border:rgba(0,240,255,.22);
+ 
+ 
+ 
+ 
+ 
  --ease:cubic-bezier(.16,1,.3,1);
  --font-mono:"Consolas","Courier New",monospace;
 }
@@ -10201,10 +10198,7 @@ html body .verix-brand{
  font-family:var(--font-mono) !important;
  clip-path:polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
 }
-@keyframes intelBrandPulse{
- 0%,100%{ box-shadow:0 0 20px rgba(0,240,255,.12), inset 0 0 16px rgba(0,240,255,.06); }
- 50%{ box-shadow:0 0 36px rgba(0,240,255,.28), inset 0 0 24px rgba(0,240,255,.12); }
-}
+
 /* Search bar — terminal input */
 html body .searchbar{
  background:rgba(0,8,12,.88) !important;
@@ -10386,12 +10380,7 @@ html body .head-tag:before{
 html body .scan{
  background:linear-gradient(90deg, transparent, var(--cyan), var(--green), var(--cyan), transparent) !important;
 }
-@keyframes verixScan{
- 0%{ top:54px; opacity:.08; }
- 15%{ opacity:.25; }
- 85%{ opacity:.25; }
- 100%{ top:100%; opacity:.08; }
-}
+
 html body .corner{
  border-color:var(--cyan) !important;
  opacity:.8;
@@ -10788,24 +10777,14 @@ html body .insurance .asf-rate-widget{
  Camada visual apenas — não altera lógica operacional
  ================================================================ */
 /* --- Atmosfera global --- */
-@keyframes verixBgDrift{
- 0%{ filter:hue-rotate(0deg) brightness(1); }
- 100%{ filter:hue-rotate(8deg) brightness(1.06); }
-}
-@keyframes verixGridPulse{
- 0%{ opacity:.45; transform:scale(1); }
- 50%{ opacity:.7; transform:scale(1.02); }
- 100%{ opacity:.45; transform:scale(1); }
-}
+
+
 /* Scanline holográfica extra */
 html body .verix-holo-scan{
  pointer-events:none;
  position:fixed; inset:0; 
 }
-@keyframes verixHoloScan{
- 0%{ transform:translateY(0); }
- 100%{ transform:translateY(3px); }
-}
+
 /* --- Header command: profundidade --- */
 html body .command{
  transition:box-shadow .35s ease, border-color .35s ease, transform .25s ease;
@@ -10817,11 +10796,7 @@ html body .command:hover{
  inset 0 1px 0 rgba(0,240,255,.18),
  inset 0 -1px 0 rgba(255,42,74,.12) !important;
 }
-@keyframes verixBarShine{
- 0%{ filter:brightness(1) saturate(1); }
- 40%{ filter:brightness(1.35) saturate(1.3); }
- 100%{ filter:brightness(1) saturate(1); }
-}
+
 /* Inputs com relevo */
 html body .field input{
  transition:transform .2s ease, box-shadow .25s ease, border-color .2s ease !important;
@@ -10854,11 +10829,7 @@ html body .head.green::after{
  background-size:200% 100%;
 pointer-events:none;
 }
-@keyframes verixHeadShine{
- 0%{ background-position:120% 0; opacity:0; }
- 30%{ opacity:1; }
- 100%{ background-position:-80% 0; opacity:0; }
-}
+
 /* Scan line mais viva nos painéis */
 html body .scan{
  opacity:.28 !important;
@@ -10886,10 +10857,7 @@ html body .mm74-card::after{
  box-shadow:0 0 12px currentColor, 0 0 4px #fff !important;
 }
 /* Brand pulse holográfico */
-@keyframes verixBrandFloat{
- 0%,100%{ transform:translateY(0); }
- 50%{ transform:translateY(-2px); }
-}
+
 /html body .module-card, html body .leg-card-new, html body .leg-category{
  transform-style:preserve-3d;
  transition:transform .25s cubic-bezier(.16,1,.3,1), box-shadow .25s ease, border-color .2s ease, filter .2s ease !important;
@@ -10899,10 +10867,7 @@ html body .module-card:hover, html body .leg-card-new:hover{
  box-shadow:0 16px 36px rgba(0,0,0,.4), 0 0 28px rgba(0,240,255,.12) !important;
 }
 /* --- Overlays / janelas --- */
-@keyframes verixModalIn{
- from{ opacity:0; transform:translateY(18px) scale(.96); filter:blur(4px); }
- to{ opacity:1; transform:translateY(0) scale(1); filter:blur(0); }
-}
+
 /* Botões genéricos com depth */
 html body button.tool,
 html body .copy-btn-new,
@@ -11213,12 +11178,7 @@ html body .command:after{
  50%{ filter:hue-rotate(40deg) brightness(1.5); }
  100%{ filter:hue-rotate(0deg) brightness(1.2); }
 }
-@keyframes v007GlitchTitle{
- 0%,90%,100%{ text-shadow:0 0 18px rgba(0,240,255,.4), 0 2px 4px #000; transform:none; }
- 91%{ text-shadow:2px 0 #ff2a4a, -2px 0 #00f0ff; transform:translateX(1px); }
- 92%{ text-shadow:-2px 0 #ff2a4a, 2px 0 #00f0ff; transform:translateX(-1px); }
- 93%{ text-shadow:0 0 18px rgba(0,240,255,.4); transform:none; }
-}
+
 /* Buttons: aggressive 3D press */
 html body .consult{
  animation:v007BtnGlow 3s ease-in-out infinite !important;
@@ -15518,7 +15478,7 @@ html body #seguroResult .asf-app.asf-app-warn .asf-note{
 }
 /* VÉRIX-ASF-PREMIUM-STATE-V2 — presentation only */
 html body #seguroResult .asf-app.asf-app-ok{
-  --asf-accent:#00c982;--asf-accent-2:#50ffc2;--asf-ink:#064a32;
+  --asf-accent:#00c982;--asf-accent-2:#50ffc2;
 }
 html body #seguroResult .asf-app.asf-app-ok .asf-operational-status{
   position:relative!important;overflow:hidden!important;
