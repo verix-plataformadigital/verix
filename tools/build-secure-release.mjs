@@ -232,7 +232,7 @@ for (const f of ["verix-mobile.css", "verix-mobile.js"]) {
 }
 
 // VÉRIX brand assets: keep favicon, app icons and manifest in the published bundle.
-for (const f of ["favicon.svg", "site.webmanifest", "assets/verix-emblem.svg", "assets/icon-192.png", "assets/icon-512.png"]) {
+for (const f of ["favicon.svg", "site.webmanifest", "sw.js", "assets/verix-emblem.svg", "assets/icon-192.png", "assets/icon-512.png"]) {
   const src = path.join(ROOT, f);
   if (fs.existsSync(src)) {
     const out = path.join(OUTPUT_DIR, f);

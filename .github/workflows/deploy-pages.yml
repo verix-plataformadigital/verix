@@ -12,6 +12,7 @@ on:
       - "verix-mobile.css"
       - "favicon.svg"
       - "site.webmanifest"
+      - "sw.js"
       - "assets/**"
       - "AI-ACCESS-POLICY.md"
       - "robots.txt"
@@ -160,6 +161,8 @@ jobs:
         run: |
           test -s dist/favicon.svg
           test -s dist/site.webmanifest
+          test -s dist/sw.js
+          grep -q "event.respondWith(fetch(event.request))" dist/sw.js
           test -s dist/assets/verix-emblem.svg
           test -s dist/assets/icon-192.png
           test -s dist/assets/icon-512.png

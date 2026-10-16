@@ -261,6 +261,17 @@
   var appUrl = 'https://verix-plataformadigital.github.io/verix/';
   var installButtonId = 'vxInstallShortcutButton';
 
+  // A pass-through service worker satisfies Chromium's install-prompt criteria
+  // without caching operational pages, scripts, queries, or authority responses.
+  if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
+    navigator.serviceWorker.register('./sw.js?v=20261017-install', {
+      scope: './',
+      updateViaCache: 'none'
+    }).then(function(registration) {
+      return registration.update().catch(function(){});
+    }).catch(function(){});
+  }
+
   function isStandalone(){
     try {
       return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
@@ -4494,7 +4505,7 @@ html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-service-name{
     <footer class="vx-home-footer">
   <div class="vx-home-footer-brand"><span class="vx-home-footer-dot" aria-hidden="true"></span><strong>VÉRIX</strong><span>APOIO OPERACIONAL</span></div>
   <div class="vx-home-footer-actions">
-    <button type="button" class="vx-home-install-trigger" id="vxInstallShortcutButton" aria-label="Adicionar o VÉRIX ao Ambiente de Trabalho" title="Adicionar o VÉRIX ao Ambiente de Trabalho"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4M12 7v5m-3-3 3 3 3-3"/></svg><span>Adicionar atalho</span></button>
+    <button type="button" class="vx-home-install-trigger" id="vxInstallShortcutButton" aria-label="Adicionar Atalho ao Ambiente de Trabalho" title="Adicionar Atalho ao Ambiente de Trabalho"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4M12 7v5m-3-3 3 3 3-3"/></svg><span>Adicionar Atalho ao Ambiente de Trabalho</span></button>
     <a class="vx-home-footer-contact" href="mailto:verix.plataformadigital@gmail.com?subject=V%C3%89RIX%20-%20Sugest%C3%A3o%20%2F%20Erro" aria-label="Contactar a equipa VÉRIX"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg><span>Contactar a equipa</span><b aria-hidden="true">↗</b></a>
     <span class="vx-home-footer-unofficial">NÃO OFICIAL</span>
   </div>
