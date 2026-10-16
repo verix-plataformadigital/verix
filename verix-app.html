@@ -4624,6 +4624,106 @@ html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-n
 }
 </style>
 
+
+<style id="verix-portugal-flag-3d">
+/* Bandeira nacional: animação 3D leve, autónoma e adaptada a ecrãs pequenos. */
+.verix-pt-flag{
+  position:relative!important;
+  display:inline-block!important;
+  flex:0 0 38px!important;
+  width:38px!important;
+  height:25px!important;
+  vertical-align:middle!important;
+  overflow:hidden!important;
+  isolation:isolate!important;
+  border:1px solid rgba(255,255,255,.52)!important;
+  border-radius:2px!important;
+  box-sizing:border-box!important;
+  background:linear-gradient(90deg,#006600 0 40%,#ff0000 40% 100%)!important;
+  box-shadow:0 3px 8px rgba(0,0,0,.48),inset 0 1px 1px rgba(255,255,255,.28),inset 0 -2px 3px rgba(0,0,0,.22)!important;
+  transform-origin:12% 50%!important;
+  transform-style:preserve-3d!important;
+  animation:verix-pt-flag-wave 4.6s ease-in-out infinite!important;
+  will-change:transform!important;
+}
+.verix-pt-flag svg{
+  position:absolute!important;
+  inset:0!important;
+  z-index:1!important;
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  overflow:visible!important;
+  filter:drop-shadow(0 0 1px rgba(0,0,0,.3))!important;
+}
+.verix-pt-flag::before{
+  content:""!important;
+  position:absolute!important;
+  inset:0!important;
+  z-index:2!important;
+  pointer-events:none!important;
+  background:repeating-linear-gradient(100deg,rgba(255,255,255,.13) 0,rgba(255,255,255,.03) 4px,rgba(0,0,0,.15) 7px,rgba(255,255,255,.02) 10px,transparent 14px)!important;
+  mix-blend-mode:soft-light!important;
+  opacity:.78!important;
+  animation:verix-pt-flag-folds 3.8s ease-in-out infinite!important;
+}
+.verix-pt-flag::after{
+  content:""!important;
+  position:absolute!important;
+  inset:0!important;
+  z-index:3!important;
+  pointer-events:none!important;
+  background:linear-gradient(110deg,rgba(0,0,0,.26),transparent 22%,rgba(255,255,255,.22) 42%,rgba(255,255,255,.04) 51%,rgba(0,0,0,.18) 69%,transparent 88%)!important;
+  opacity:.82!important;
+  animation:verix-pt-flag-shine 4.6s ease-in-out infinite!important;
+}
+.command .brand-lockup-line{
+  align-items:center!important;
+  gap:8px!important;
+}
+.command .brand-lockup-line .verix-pt-flag{margin-right:1px!important}
+#vxMobileTop .vx-brand{
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+}
+#vxMobileTop .vx-brand-text{
+  display:block!important;
+  min-width:0!important;
+  white-space:nowrap!important;
+}
+#vxMobileTop .verix-pt-flag{
+  flex-basis:32px!important;
+  width:32px!important;
+  height:21px!important;
+}
+@keyframes verix-pt-flag-wave{
+  0%,100%{transform:perspective(150px) rotateY(-9deg) rotateX(1deg) skewY(-.6deg) scaleX(1)}
+  25%{transform:perspective(150px) rotateY(10deg) rotateX(-1.4deg) skewY(.7deg) scaleX(.98)}
+  50%{transform:perspective(150px) rotateY(0deg) rotateX(1.5deg) skewY(-.3deg) scaleX(1)}
+  75%{transform:perspective(150px) rotateY(-12deg) rotateX(-.8deg) skewY(.6deg) scaleX(.985)}
+}
+@keyframes verix-pt-flag-folds{
+  0%,100%{transform:translateX(-2px);opacity:.62}
+  50%{transform:translateX(2px);opacity:.95}
+}
+@keyframes verix-pt-flag-shine{
+  0%,100%{transform:translateX(-3px);opacity:.58}
+  50%{transform:translateX(2px);opacity:.9}
+}
+@media(max-width:600px){
+  .command .brand-lockup-line .verix-pt-flag{flex-basis:32px!important;width:32px!important;height:21px!important}
+  .command .brand-lockup-line{gap:6px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .verix-pt-flag,.verix-pt-flag::before,.verix-pt-flag::after{
+    animation:none!important;
+    transform:perspective(150px) rotateY(-5deg)!important;
+    will-change:auto!important;
+  }
+}
+</style>
+
 </head><body>
 <script id="verix-splash-clock">(function(){try{window.__verixSplashStarted=performance.now();}catch(e){window.__verixSplashStarted=Date.now();}})();</script>
 <div id="opsBootOverlay" aria-hidden="false">
@@ -4670,7 +4770,7 @@ html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-n
 
 <div class="cinematic-bg"></div>
 <div class="command"> <div class="brand"><div class="brand-notice" role="group" aria-label="VÉRIX - Apoio Operacional">
-  <div class="brand-lockup-line"><span class="brand-lockup-logo">VÉRIX</span><span class="brand-lockup-separator">-</span><span class="brand-lockup-label">Apoio Operacional</span></div>
+  <div class="brand-lockup-line"><span class="verix-pt-flag" role="img" aria-label="Bandeira de Portugal"><svg viewBox="0 0 40 26" aria-hidden="true" focusable="false"><g fill="none" stroke="#f6cf4a" stroke-width="1.05"><circle cx="16" cy="13" r="7.1"/><path d="M16 5.9C12.7 8.5 12.7 17.5 16 20.1M16 5.9C19.3 8.5 19.3 17.5 16 20.1M9.2 13h13.6M10.3 9.1c3.7 2.1 7.7 2.1 11.4 0M10.3 16.9c3.7-2.1 7.7-2.1 11.4 0"/></g><path d="M11.8 7.8h8.4l-.7 7.1c-.4 2.3-2.4 3.6-3.5 4.1-1.1-.5-3.1-1.8-3.5-4.1z" fill="#fff9e8" stroke="#b7192a" stroke-width=".9"/><g fill="#064b9b"><path d="M15.4 9.1h1.2v1.5l-.6.35-.6-.35zM13.5 11.2h1.2v1.5l-.6.35-.6-.35zM17.3 11.2h1.2v1.5l-.6.35-.6-.35zM14.2 13.2h1.2v1.5l-.6.35-.6-.35zM16.6 13.2h1.2v1.5l-.6.35-.6-.35z"/></g><g fill="#fff"><circle cx="16" cy="9.8" r=".25"/><circle cx="14.1" cy="11.9" r=".25"/><circle cx="17.9" cy="11.9" r=".25"/><circle cx="14.8" cy="13.9" r=".25"/><circle cx="17.2" cy="13.9" r=".25"/></g></svg></span><span class="brand-lockup-logo">VÉRIX</span><span class="brand-lockup-separator">-</span><span class="brand-lockup-label">Apoio Operacional</span></div>
   <div class="brand-lockup-subtitle">Sistema de apoio ao serviço operacional</div>
   <div class="brand-lockup-values">ISENÇÃO <span>*</span> FIRMEZA <span>*</span> CORTESIA</div>
   <div class="brand-lockup-footer"><span class="brand-lockup-badge"><span class="brand-lockup-alert" aria-hidden="true">!</span>NÃO OFICIAL</span><span class="brand-lockup-note">Confirma sempre os dados nas fontes competentes.</span></div>
