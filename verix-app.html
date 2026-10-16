@@ -2854,10 +2854,7 @@ button,input{font:inherit}button{cursor:pointer}
 @media(max-width:1050px){.main{height:calc(100vh - 210px)!important;}}
 /* 10.27 — substituir apenas a imagem da marca pelo aviso; pesquisa mantém o layout 10.21 */
 /* A caixa de pesquisa NÃO é alterada nesta versão. */
-@media(max-width:1200px){
- 
- 
- .command .brand-notice-title,.command .brand-notice-text{max-width:340px!important;}}
+
 .cin-session-operator{
  width:100%%; box-sizing:border-box;
  display:grid!important; grid-template-columns:220px minmax(0,1fr)!important; gap:14px!important;
@@ -2986,7 +2983,7 @@ button,input{font:inherit}button{cursor:pointer}
 }
 
 /* Ajuda geral removida: a informação está implícita no valor preenchido. */
-#cinLimiteFonte:empty,#cinV47Help:empty,#cinRegimeHelp:empty{display:none!important}
+#cinLimiteFonte:empty,#cinV47Help:empty{display:none!important}
 @media(max-width:1050px){
  .cin-active-device-top{gap:8px!important}
 }
@@ -4332,11 +4329,11 @@ html body .main-menu-screen.show .main-menu-v74-grid-small .mm74-label{font-size
  html body .main-menu-screen.show .main-menu-v74-title{height:48px!important;min-height:48px!important;font-size:19px!important;letter-spacing:2px!important}
  html body .main-menu-screen.show .main-menu-v74-title:after{display:none!important}
  
- html body .main-menu-screen.show .verix-system-symbol{justify-self:center!important}
- html body .main-menu-screen.show .verix-system-heading-rule{justify-content:center!important;}
- html body .main-menu-screen.show .verix-system-update{white-space:normal!important;flex-direction:column!important;gap:2px!important}
- html body .main-menu-screen.show .verix-system-update span:before{display:none!important}
- html body .main-menu-screen.show .verix-system-contact{justify-content:center!important}
+ 
+ 
+ 
+ 
+ 
  html body .main-menu-screen.show .main-menu-v74-grid-big{margin-top:28px!important}
  html body .main-menu-screen.show .main-menu-v74-grid-big .mm74-card{height:140px!important;min-height:140px!important}
  html body .main-menu-screen.show .main-menu-v74-grid-small{width:100%!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:none!important;margin-top:28px!important}
@@ -4687,11 +4684,7 @@ html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-n
   align-items:center!important;
   gap:8px!important;
 }
-#vxMobileTop .vx-brand-text{
-  display:block!important;
-  min-width:0!important;
-  white-space:nowrap!important;
-}
+
 #vxMobileTop .verix-pt-flag{
   flex-basis:32px!important;
   width:32px!important;
@@ -5162,21 +5155,13 @@ html body #asfRateWidget #asfRateCountdown[data-state="wait"]{
     font-size:8px!important;
   }
 
-  html body #asfRateWidget .asf-rate-metric{
-    padding:4px 7px!important;
-  }
+  
 
-  html body #asfRateWidget .asf-rate-metric > span{
-    font-size:6.7px!important;
-  }
+  
 
-  html body #asfRateWidget .asf-rate-metric > strong{
-    font-size:13px!important;
-  }
+  
 
-  html body #asfRateWidget .asf-rate-window > strong b{
-    font-size:9px!important;
-  }
+  
 }
 
 @media(max-width:560px){
@@ -10008,7 +9993,7 @@ body.main-menu-active .main-menu-screen:before{content:"";position:absolute;inse
 
 
 /* tech marks */
-.main-menu-v74-shell>div:not(.main-menu-v74-title):not(.main-menu-v74-grid-big):not(.main-menu-v74-grid-small):not(.main-menu-v74-footer):not(.verix-system-message-card){display:none!important;}
+.main-menu-v74-shell>div:not(.main-menu-v74-title):not(.main-menu-v74-grid-big):not(.main-menu-v74-grid-small){display:none!important;}
 @media(max-width:900px){
  .main-menu-v74-title:after{display:none}.main-menu-v74-grid-big{grid-template-columns:1fr!important}.main-menu-v74-grid-small{max-width:620px!important}.main-menu-v74-shell{justify-content:flex-start!important;gap:16px!important}
  
@@ -10232,8 +10217,8 @@ html body.fixed-workspace-active #consultationBackBtn::after{
  html body.fixed-workspace-active:not(.cinemometro-page-active) .command{height:104px!important;}
  html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand{height:88px!important;}
  html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-notice{height:88px!important;}
- html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-notice-title{font-size:12px!important;}
- html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-notice-text{font-size:7px!important;}
+ 
+ 
  html body.fixed-workspace-active:not(.cinemometro-page-active) .command .tools{top:42px!important;}
  html body.fixed-workspace-active:not(.cinemometro-page-active) #consultationBackBtn{top:5px!important;height:26px!important;width:94px!important;min-width:94px!important;}
  html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active{top:116px!important;bottom:42px!important;gap:7px!important;}
@@ -12143,7 +12128,7 @@ html body #asfRateWidget .asf-rate-label{
 html body #asfRateWidget.high .asf-rate-dot{ background:#ff3d5a!important; box-shadow:0 0 8px rgba(255,61,90,.7)!important; }
 html body #asfRateWidget.warn .asf-rate-dot{ background:#ffc933!important; box-shadow:0 0 8px rgba(255,201,51,.7)!important; }
 
-html body #asfRateMain.asf-rate-main,
+
 html body #asfRateWidget .asf-rate-main{
  grid-column:2!important;
  margin:0!important;
@@ -12200,7 +12185,7 @@ html body #asfRateWidget.cooldown #asfRateCountdown{
  color:#ffc44a!important;
  animation:asfCdPulse .9s ease-in-out infinite!important;
 }
-html body #asfRateSub.asf-rate-sub,
+
 html body #asfRateWidget .asf-rate-sub{
  grid-column:4!important;
  margin:0!important; padding:0 2px 0 0!important;
@@ -14215,30 +14200,7 @@ html body .main-menu-screen.show .main-menu-v74-grid-small{
 
 
 /* Tablet/mobile */
-@media(max-width:900px){
- html body .main-menu-screen.show .verix-system-message-card{
- width:100%!important;
- min-height:0!important;
- padding:13px 14px 12px!important;
- grid-template-columns:32px minmax(0,1fr)!important;
- grid-template-rows:auto auto auto auto!important;
- grid-template-areas:
- "symbol heading"
- "update update"
- "contact contact"
- "disclaimer motto"!important;
- gap:7px 11px!important;
- }
- html body .main-menu-screen.show .verix-system-symbol{
- width:27px!important;height:27px!important;font-size:14px!important;
- }
- html body .main-menu-screen.show .verix-system-heading-rule{
- font-size:11px!important;
- letter-spacing:.9px!important;
- }
- html body .main-menu-screen.show .verix-system-update{text-align:left!important}
- html body .main-menu-screen.show .verix-system-update strong{font-size:8.8px!important}
- html body .main-menu-screen.show .verix-system-update span{font-size:7.8px!important}}
+
 /* ==========================================================
    VÉRIX ASF — LAYOUT FINAL
    Um único trilho horizontal: CONTROLO | JANELA | PRÓXIMA | CACHE
@@ -14361,22 +14323,13 @@ html body .main.consultation-fixed-active .panel.insurance #asfRateWidget .asf-r
     padding:3px 4px!important;
   }
 
-  html body .main.consultation-fixed-active .panel.insurance #asfRateWidget .asf-rate-metric{
-    padding:4px 4px!important;
-    gap:3px!important;
-  }
+  
 
-  html body .main.consultation-fixed-active .panel.insurance #asfRateWidget .asf-rate-metric > span{
-    font-size:5.6px!important;
-  }
+  
 
-  html body .main.consultation-fixed-active .panel.insurance #asfRateWidget .asf-rate-metric > strong{
-    font-size:10px!important;
-  }
+  
 
-  html body .main.consultation-fixed-active .panel.insurance #asfRateWidget .asf-rate-window > strong b{
-    font-size:6.5px!important;
-  }
+  
 }
 
 @media (max-width:430px){
@@ -16206,38 +16159,7 @@ html body.consultation-screen-active:not(.main-menu-active):not(.history-page-ac
 
 
 /* Tablets: information stacks cleanly instead of crushing the text. */
-@media(max-width:1000px){
-  html body.main-menu-screen.show .main-menu-v74-shell > .verix-system-message-card{
-    flex:0 0 auto!important;
-    height:auto!important;
-    min-height:0!important;
-    max-height:none!important;
-    margin:22px 0 0!important;
-    padding:16px 14px 12px 48px!important;
-    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
-    grid-template-rows:auto auto auto!important;
-    grid-template-areas:"heading heading" "update update" "contact contact" "disclaimer disclaimer"!important;
-    gap:11px!important;
-  }
-  html body.main-menu-screen.show .verix-system-message-card .verix-system-symbol{
-    left:11px!important;
-    top:14px!important;
-    width:25px!important;
-    height:25px!important;
-  }
-  html body.main-menu-screen.show .verix-system-message-card .verix-system-update,
-  html body.main-menu-screen.show .verix-system-message-card .verix-system-contact{
-    padding:0!important;
-    border-left:0!important;
-  }
-  html body.main-menu-screen.show .verix-system-message-card .verix-system-update strong{
-    font-size:9px!important;
-  }
-  html body.main-menu-screen.show .verix-system-message-card .verix-system-update span,
-  html body.main-menu-screen.show .verix-system-message-card .verix-system-contact-copy{
-    font-size:8px!important;
-  }
-}
+
 
 
 /* Rodapé reconstruído em HTML: barra de estado, contacto e aviso independente. */
