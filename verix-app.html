@@ -704,11 +704,42 @@ function fecharAvisoLegalFora(event){
  if(event && event.target===event.currentTarget) fecharAvisoLegal();
 }
 document.addEventListener('keydown',function(e){
- if(e.key==='Escape') fecharAvisoLegal();
+ if(e.key!=='Escape')return;
+ const o=document.getElementById('legalNoticeOverlay');
+ if(o&&o.classList.contains('open')){
+  e.preventDefault();e.stopImmediatePropagation();
+  fecharAvisoLegal();
+ }
 });
 
 function fecharModuloFora(event){ /* módulos são páginas fixas; não fecham ao clicar fora */ }
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(document.body.classList.contains('cin-config-modal-open')){e.preventDefault();e.stopPropagation();return;}fecharModulo();fecharHistorico();fecharConfirmacaoLimparHistorico();fecharWazeGpsModal();cinFecharDeleteModal();}});
+document.addEventListener('keydown',function(e){
+ if(e.key!=='Escape')return;
+ const body=document.body;
+ const byId=id=>document.getElementById(id);
+ const active=(id,cls='active')=>{const el=byId(id);return !!(el&&el.classList.contains(cls));};
+ const finish=()=>{e.preventDefault();e.stopImmediatePropagation();};
+ // Fecha apenas a camada transitória mais interna; nunca fecha vários painéis de uma só vez.
+ if(body.classList.contains('cin-config-modal-open')){finish();return;}
+ if(active('systemFactoryResetModal','open')){window.VÉRIXFactoryResetModal?.close?.();finish();return;}
+ const notice=byId('verixAsfNoticeOverlay');
+ if(notice&&notice.getAttribute('aria-hidden')==='false'&&typeof window.fecharAvisoASFInicial==='function'){window.fecharAvisoASFInicial();finish();return;}
+ if(active('legalNoticeOverlay','open')){fecharAvisoLegal();finish();return;}
+ if(active('cinConfigCancelModal')){cinFecharCancelConfigModal();finish();return;}
+ if(active('cinDeleteModal')){cinFecharDeleteModal();finish();return;}
+ if(active('clearHistoryModal')){fecharConfirmacaoLimparHistorico();finish();return;}
+ if(active('wazeGpsModal')){fecharWazeGpsModal();finish();return;}
+ const module=byId('moduleOverlay');
+ if(module&&module.classList.contains('show')){fecharModulo();finish();return;}
+ const history=byId('historyOverlay');
+ if(history&&history.classList.contains('show')){fecharHistorico();finish();return;}
+ const home=byId('mainMenuScreen');
+ if((body.classList.contains('consultation-screen-active')||body.classList.contains('fixed-workspace-active'))&&!(home&&home.classList.contains('show'))){
+  mostrarMenuPrincipal();finish();return;
+ }
+ // No menu principal, Esc não altera a navegação.
+ finish();
+});
 
 function legRestaurarGrelhaCategorias(){
  try{
@@ -4259,6 +4290,24 @@ html body #mainMenuScreen.vx-home-screen .vx-home-footer{min-height:52px!importa
 html body #mainMenuScreen.vx-home-screen .vx-home-action,html body #mainMenuScreen.vx-home-screen .vx-home-action-arrow,html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact{transition:none!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-action:hover,html body #mainMenuScreen.vx-home-screen .vx-home-action:active{transform:none!important}
 }
+
+/* Legenda de teclado do menu principal — discreta, responsiva e consistente. */
+html body #mainMenuScreen.vx-home-screen .vx-home-footer{flex-wrap:wrap!important;min-height:0!important;padding-top:8px!important;padding-bottom:6px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-shortcuts{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 100%!important;order:5!important;gap:clamp(12px,2vw,24px)!important;min-width:0!important;margin:1px 0 0!important;padding:8px 0 0!important;border-top:1px solid rgba(70,100,85,.34)!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-shortcut{display:inline-flex!important;align-items:center!important;gap:6px!important;min-width:0!important;color:#93a99e!important;font:500 10px/1.2 Inter,"Segoe UI",Arial,sans-serif!important;white-space:nowrap!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-shortcut kbd{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:24px!important;padding:4px 5px!important;border:1px solid #344b40!important;border-radius:4px!important;background:#101d17!important;color:#d5ebdd!important;font:750 9px/1 Inter,"Segoe UI",Arial,sans-serif!important;box-shadow:0 1px 0 rgba(0,0,0,.22)!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-shortcuts{border-top-color:#d4e1d8!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-shortcut{color:#597064!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-shortcut kbd{border-color:#c6d8cb!important;background:#f0f6f2!important;color:#244936!important;box-shadow:none!important}
+@media(max-width:760px){
+ html body #mainMenuScreen.vx-home-screen .vx-home-shortcuts{order:4!important;justify-content:flex-start!important;flex-wrap:wrap!important;gap:10px 16px!important;padding-top:8px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-shortcut{font-size:9px!important}
+}
+@media(max-width:380px){
+ html body #mainMenuScreen.vx-home-screen .vx-home-shortcuts{gap:8px 12px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-shortcut{gap:4px!important;font-size:8.5px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-shortcut kbd{min-width:22px!important;padding:4px!important}
+}
 </style>
 <style id="verix-brand-mark-assets">
 html body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup .vx-home-brand-mark{border:0!important;background:transparent!important;box-shadow:none!important;padding:0!important;color:transparent!important}
@@ -4388,7 +4437,7 @@ html body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup .vx-home-brand-ma
       </div></section>
       </div>
     <footer class="vx-home-footer"><div class="vx-home-footer-brand"><span class="vx-home-footer-dot" aria-hidden="true"></span><strong>VÉRIX</strong><span>APOIO OPERACIONAL</span></div><p>Confirma sempre a legislação e os dados nas fontes oficiais antes da utilização em serviço.</p><a class="vx-home-footer-contact" href="mailto:verix.plataformadigital@gmail.com?subject=V%C3%89RIX%20-%20Sugest%C3%A3o%20%2F%20Erro" aria-label="Contactar a equipa VÉRIX"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg><span>Contactar a equipa</span><b aria-hidden="true">↗</b></a>
-  <span class="vx-home-footer-unofficial">NÃO OFICIAL</span></footer>
+  <span class="vx-home-footer-unofficial">NÃO OFICIAL</span><div class="vx-home-shortcuts" role="note" aria-label="Atalhos de teclado"><span class="vx-home-shortcut"><kbd>Esc</kbd><span>Voltar / fechar</span></span><span class="vx-home-shortcut"><kbd>Enter</kbd><span>Consultar / confirmar</span></span><span class="vx-home-shortcut"><kbd>Tab</kbd><span>Navegar</span></span></div></footer>
   </main>
 </div>
 </div>
@@ -5348,16 +5397,9 @@ html.verix-low-power .verix-holo-scan{
  }
  };
 
- // Enter na consulta principal e botão de limpar estado visual.
- document.addEventListener('keydown',e=>{
- if(e.target && /input|textarea|select/i.test(e.target.tagName)) return;
- if(e.key==='F1'){e.preventDefault();document.getElementById('MatriculaVeiculo')?.focus();}
- if(e.key==='F2'){e.preventDefault();window.abrirHistorico?.();}
- if(e.key==='F3'){e.preventDefault();window.abrirModulo?.('legislacao',document.querySelector('.rail-item[title=\"Legislação\"]'));}
- if(e.key==='F4'){e.preventDefault();window.abrirModulo?.('ferramentas',document.querySelector('.rail-item[title=\"Ferramentas\"]'));}
- });
+ // Atalhos F1–F4 removidos: evitam conflitos entre módulos e com o sistema.
 
- const oldSubmit=window.submitConjunto;
+  const oldSubmit=window.submitConjunto;
  window.submitConjunto=function(ev){
  const v=document.getElementById('MatriculaVeiculo'); if(v&&v.value.trim())v.value=v.value.trim().toUpperCase();
  const r=document.getElementById('MatriculaReboque'); if(r&&r.value.trim())r.value=r.value.trim().toUpperCase();
@@ -5440,10 +5482,13 @@ window.filtrarLegislacao=function(valor){
  return total;
 };
 
-// Common desktop shortcuts for faster operation.
+// A pesquisa por "/" fica limitada ao módulo Legislação para não roubar atalhos do browser.
 document.addEventListener('keydown',e=>{
- if(e.ctrlKey&&e.key.toLowerCase()==='k'){const s=document.getElementById('legSearch');if(s){e.preventDefault();s.focus();s.select();}}
- if(e.key==='/'&&!/input|textarea|select/i.test(e.target?.tagName||'')){const s=document.getElementById('legSearch');if(s){e.preventDefault();s.focus();}}
+ if(e.key!=='/'||e.ctrlKey||e.altKey||e.metaKey||/input|textarea|select/i.test(e.target?.tagName||'')||e.target?.isContentEditable)return;
+ const overlay=document.getElementById('moduleOverlay');
+ const title=document.getElementById('moduleTitle')?.textContent||'';
+ const s=document.getElementById('legSearch');
+ if(overlay?.classList.contains('show')&&/LEGISLAÇÃO/i.test(title)&&s&&s.offsetParent!==null){e.preventDefault();s.focus();}
 });
 })();
 </script> <div id="cinDeleteModal" class="cin-delete-overlay" role="dialog" aria-modal="true" aria-labelledby="cinDeleteTitle"> <div class="cin-delete-modal"> <div class="cin-delete-head"> <div class="cin-delete-icon">⚠</div> <h3 id="cinDeleteTitle" class="cin-delete-head-title">APAGAR CINEMÓMETRO</h3> </div> <div class="cin-delete-body"> <p><strong>Tem a certeza de que pretende apagar este cinemómetro?</strong></p> <p id="cinDeleteProfileName" class="cin-delete-profile-name">—</p> <p class="cin-delete-note">Esta ação remove apenas a ficha guardada neste computador.</p> </div> <div class="cin-delete-actions"> <button type="button" class="cin-delete-cancel" onclick="cinFecharDeleteModal()">CANCELAR</button> <button type="button" class="cin-delete-confirm" onclick="cinConfirmarDeletePerfil()">🗑 APAGAR CINEMÓMETRO</button> </div> </div>
@@ -6597,36 +6642,9 @@ body.theme-light .settings-factory-reset{background:linear-gradient(90deg,rgba(1
       return;
     }
 
-    if(e.key==='F2'){
-      e.preventDefault();
-      if(!tryCall('abrirHistorico')){
-        var b=document.querySelector('[onclick*="abrirHistorico"]');
-        if(b) b.click();
-      }
-      return;
-    }
+    // Atalhos F1/F2 removidos; usar a navegação visível e os comandos universais.
 
-    if(e.key==='F1'){
-      e.preventDefault();
-      if(!tryCall('mostrarMenuPrincipal')){
-        var b=document.querySelector('[onclick*="mostrarMenuPrincipal"],[onclick*="abrirMenu"]');
-        if(b) b.click();
-      }
-      return;
-    }
-
-    if(e.key==='Escape'){
-      if(typeof window.fecharAvisoASFInicial==='function'){
-        var notice=qs('verixAsfNoticeOverlay');
-        if(notice&&notice.getAttribute('aria-hidden')==='false'){
-          window.fecharAvisoASFInicial();
-          return;
-        }
-      }
-      if(tryCall('fecharHistorico')) return;
-      var close=document.querySelector('.module-overlay.show .module-close,.history-overlay.show .history-close,.module-close');
-      if(close&&close.offsetParent!==null) close.click();
-    }
+    // Escape é gerido pelo controlador global, que fecha apenas a camada superior.
   }
 
   function ready(fn){
