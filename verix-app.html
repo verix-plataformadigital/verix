@@ -2532,7 +2532,7 @@ body:before{content:"";position:fixed;inset:0;}
 body:after{content:"";position:fixed;inset:0;}
 button,input{font:inherit}button{cursor:pointer}
 /* cinematic backdrop */
-.cinematic-bg{position:fixed;inset:0;background-image:linear-gradient(90deg,rgba(2,8,12,.98) 0%,rgba(2,8,12,.86) 42%,rgba(2,8,12,.52) 68%,rgba(2,8,12,.88) 100%),linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.82)),linear-gradient(135deg,#061118 0%,#02070a 55%,#07171b 100%)}
+.cinematic-bg{position:fixed;inset:0;}
 /* COMMAND TOP */
 
 .command:before{content:"";position:absolute;inset:0;}
@@ -2545,10 +2545,10 @@ button,input{font:inherit}button{cursor:pointer}
 .rail{position:fixed;z-index:15;left:14px;top:130px;width:68px;display:flex;flex-direction:column;align-items:center;padding:9px 5px;gap:6px}.rail-item{width:56px;height:61px;color:#81969e;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:8px;font-weight:900;text-transform:uppercase}
 /* MAIN */
 .main{position:fixed;display:grid;grid-template-columns:3fr 5fr 2fr;gap:12px}.panel{min-width:0;min-height:0;position:relative;overflow:hidden;}.panel:before{content:"";position:absolute;inset:0;pointer-events:none;z-index:20}.head{height:54px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-bottom:2px solid var(--green);color:#fff}.head:before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,transparent 0 48%,rgba(255,255,255,.11) 48.2% 50%,transparent 50.2% 61%,rgba(0,0,0,.16) 61.2% 66%,transparent 66.2%)}.head-title{position:relative;z-index:2;font-weight:900;text-transform:uppercase;}.head-title:before{margin-right:8px}.head-tag{position:absolute;z-index:2;font-weight:900;}.head-tag:before{content:"●";margin-right:5px;font-size:7px}
-.panel-body{position:absolute;top:54px;left:0;right:0;bottom:0;background:#fff}.panel-body iframe{width:100%;height:100%;border:0;display:block;background:#fff}.panel-body:after{content:"";position:absolute;left:0;right:0;top:0;height:26px;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.18),transparent);}.loading-overlay{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;justify-content:center;align-items:center;color:#b8c9ce;font-size:10px;font-weight:900;letter-spacing:1.1px}.imt-offline-icon{border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:14px;}.imt-offline-title{font-weight:950;text-align:center}.imt-offline-text{letter-spacing:.3px;text-align:center;}.imt-offline-sub{font-weight:700;text-align:center;}.imt-retry-btn{border:1px solid #c99700;border-radius:7px;font-size:10px;font-weight:950;letter-spacing:.8px;cursor:pointer}.imt-retry-btn:hover{background:#25383f}.loading-overlay small{margin-top:7px;color:#59737d;font-size:7px}.spinner{width:48px;height:48px;border:2px solid rgba(110,151,163,.18);border-radius:50%;animation:spin .75s linear infinite;margin-bottom:14px;}@keyframes spin{to{transform:rotate(360deg)}}
+.panel-body{position:absolute;top:54px;left:0;right:0;bottom:0;background:#fff}.panel-body iframe{width:100%;height:100%;border:0;display:block;background:#fff}.panel-body:after{content:"";position:absolute;left:0;right:0;top:0;height:26px;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.18),transparent);}.loading-overlay{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;justify-content:center;align-items:center;color:#b8c9ce;font-size:10px;font-weight:900;letter-spacing:1.1px}.imt-offline-icon{border-radius:50%;display:flex;align-items:center;justify-content:center;}.imt-offline-title{font-weight:950;text-align:center}.imt-offline-text{letter-spacing:.3px;text-align:center;}.imt-offline-sub{font-weight:700;text-align:center;}.imt-retry-btn{border:1px solid #c99700;border-radius:7px;font-size:10px;font-weight:950;letter-spacing:.8px;cursor:pointer}.imt-retry-btn:hover{background:#25383f}.loading-overlay small{margin-top:7px;color:#59737d;font-size:7px}.spinner{width:48px;height:48px;border:2px solid rgba(110,151,163,.18);border-radius:50%;animation:spin .75s linear infinite;margin-bottom:14px;}@keyframes spin{to{transform:rotate(360deg)}}
 
 /* CONTADOR ASF — janela móvel de 60 segundos */
-.asf-rate-widget{z-index:8;}.asf-rate-label{font-size:7px;font-weight:900;text-transform:uppercase}.asf-rate-main{margin-top:2px;font:900 18px/1 Arial,sans-serif;color:#008b55;letter-spacing:.3px}.asf-rate-main strong{font-size:11px;color:#53666d;letter-spacing:.6px}.asf-rate-sub{margin-top:3px;font-size:7px;font-weight:800;}.asf-rate-widget.warn .asf-rate-main{color:#a06f00}.asf-rate-widget.high .asf-rate-main{color:#c8102e}.asf-rate-dot{display:inline-block;border-radius:50%;background:#27d887;box-shadow:0 0 7px rgba(39,216,135,.55)}.asf-rate-widget.warn .asf-rate-dot{background:#e4b927;box-shadow:0 0 7px rgba(228,185,39,.55)}.asf-rate-widget.high .asf-rate-dot{background:#c8102e;box-shadow:0 0 7px rgba(200,16,46,.5)}
+.asf-rate-widget{z-index:8;}.asf-rate-label{text-transform:uppercase}.asf-rate-main{margin-top:2px;font:900 18px/1 Arial,sans-serif;color:#008b55;letter-spacing:.3px}.asf-rate-main strong{font-size:11px;color:#53666d;letter-spacing:.6px}.asf-rate-widget.warn .asf-rate-main{color:#a06f00}.asf-rate-widget.high .asf-rate-main{color:#c8102e}.asf-rate-dot{display:inline-block;border-radius:50%;background:#27d887;box-shadow:0 0 7px rgba(39,216,135,.55)}.asf-rate-widget.warn .asf-rate-dot{background:#e4b927;box-shadow:0 0 7px rgba(228,185,39,.55)}.asf-rate-widget.high .asf-rate-dot{background:#c8102e;box-shadow:0 0 7px rgba(200,16,46,.5)}
 /* insurance */
 .insurance{background:linear-gradient(180deg,#e8edef,#dce3e5);color:#18242a}.insurance .head{border-bottom-color:#62bd93}.insurance-body{position:absolute;top:54px;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;text-align:center;}.insurance-body:before{content:"SEGURO // CANAL DE CONSULTA";position:absolute;top:11px;left:14px;color:#73838a;font-size:7px;font-weight:900;letter-spacing:1px}.insurance-body:after{content:"";position:absolute;right:10px;bottom:8px;width:110px;height:110px;border-radius:50%;border:1px solid rgba(0,83,55,.08);box-shadow:0 0 0 12px rgba(0,83,55,.025),0 0 0 24px rgba(0,83,55,.018)}.status{font-size:25px;font-weight:900;letter-spacing:.5px}.status.ok{color:#008b55}.status.no{color:#c8102e}.status.wait{color:#52656d}.status.warn{color:#8e6900}
 /* bottom command strip */
@@ -2698,7 +2698,7 @@ button,input{font:inherit}button{cursor:pointer}
 .copy-btn-new:hover,.copy-desc-new:hover{filter:brightness(1.15)}
 .copy-desc-new{background:linear-gradient(#147f9d,#07556b)}
 .leg-desc-label{font-size:8px;letter-spacing:1px;color:#758892;}
-.leg-description-new{border-left:2px solid rgba(255,255,255,.12);}
+
 
 
 
@@ -2711,11 +2711,10 @@ button,input{font:inherit}button{cursor:pointer}
 @media(max-width:850px){.leg-category-grid{grid-template-columns:1fr}.leg-intro-new{flex-direction:column;align-items:flex-start}.leg-card-header-new{flex-direction:column}.leg-code-box{width:100%}}
 
 .brand{overflow:visible}
-@media(max-width:1050px){.searchbar{width:52vw}.brand{width:330px}}@media(max-width:1050px){}
+@media(max-width:1050px){.searchbar{width:52vw}.brand{width:330px}}
 
 .main{top:160px!important;}
 @media(max-width:1050px){.main{top:158px!important;}}
-@media(max-width:900px){}
 .cinematic-bg{z-index:0!important}
 .command{isolation:isolate}
 
@@ -2732,10 +2731,6 @@ button,input{font:inherit}button{cursor:pointer}
 .command .tools{opacity:1!important;visibility:visible!important}
 .command .time{color:#9eb0b7!important}
 @media(max-width:1200px){.command .searchbar{left:405px!important;right:300px!important}}
-
-
-
-@media(max-width:900px){}
 </style>    
  
 
@@ -2783,24 +2778,16 @@ button,input{font:inherit}button{cursor:pointer}
  .command .field input{width:125px!important}
  .command .consult{width:185px!important;min-width:185px!important}
 }
-@media(max-width:1200px){
-}
 /* CORREÇÃO FINAL: caixa de pesquisa centrada no ecrã e afastada da identidade VÉRIX */
 .command .searchbar {
  position: absolute !important;
-}
-@media (max-width: 1200px) {
- .command .searchbar {
- width: 620px !important;
- max-width: calc(100vw - 360px) !important;
- }
 }
 @media (max-width: 900px) {
  .command .searchbar {
  left: 50% !important;
  right: auto !important;
- width: calc(100vw - 40px) !important;
- max-width: calc(100vw - 40px) !important;
+ 
+ 
  }
 }
 /* ===== 8.7 — expansão do referencial legislativo ===== */
@@ -2862,7 +2849,7 @@ button,input{font:inherit}button{cursor:pointer}
 @media(max-width:1200px){.main{bottom:54px!important}.rail{bottom:54px!important}}
 /* ===== 10.13 — SEGURO ASF: fallback operacional e isolamento do rodapé ===== */
 
-.insurance-body{box-sizing:border-box!important;padding-bottom:34px!important}
+.insurance-body{box-sizing:border-box!important;}
 .insurance-body .aux-btn{position:relative;z-index:5}
 .bottom{pointer-events:none!important}
 .bottom .credit{pointer-events:auto!important}
@@ -2896,7 +2883,7 @@ button,input{font:inherit}button{cursor:pointer}
 .cin-operational-config-row{
   box-sizing:border-box;
  display:grid;   
-  margin-bottom:7px;
+  
  border:1px solid #24606d; border-radius:8px;
  background:linear-gradient(90deg,rgba(5,31,40,.98),rgba(5,19,25,.96));
  box-shadow:inset 0 0 20px rgba(18,133,151,.035);
@@ -2976,18 +2963,10 @@ button,input{font:inherit}button{cursor:pointer}
 .cin-operational-fields select,.cin-operational-fields input,.cin-operational-fields .cin-limit-wrap{
  flex:none!important;
 }
-.cin-operational-fields label:nth-child(1)::after,
-.cin-operational-fields label:nth-child(2)::after,
-.cin-operational-fields label:nth-child(3)::after{
- margin-top:4px!important;
-}
-.cin-operational-fields label:last-child em#cinLimiteFonte{
- margin-top:4px!important;
-}
+
+
 /* Ajudas da ficha técnica: legíveis sem aumentar demasiado a altura. */
-.cin-field-help{
- margin-top:3px!important;
-}
+
 .cin-technical-header small,.cin-config-dashboard-head small,.cin-other-title-text small{
  font-size:8px!important;
  line-height:1.2!important;
@@ -3014,9 +2993,6 @@ button,input{font:inherit}button{cursor:pointer}
 #cinLimiteFonte:empty,#cinV47Help:empty,#cinRegimeHelp:empty{display:none!important}
 @media(max-width:1050px){
  .cin-active-device-top{gap:8px!important}
-}
-@media(max-width:700px){
- 
 }
 </style>  
    
@@ -3238,25 +3214,16 @@ body.history-page-active .history-footer{position:sticky!important;bottom:0!impo
       <style id="verix-css-batch-004">
 
 
-
-@media(max-width:900px){
- 
-}
-@media(max-width:560px){
- 
-}
-
-
 .leg-card-header-new{gap:12px}
 .leg-meta{margin-top:6px!important;padding:0!important;line-height:1.15!important}
 .leg-desc-label{margin:7px 0 3px!important}
-.leg-description-new{font-size:12px;line-height:1.35;}
+
 .copy-desc-new{margin-top:7px!important}
 
 .leg-card-new .leg-card-header-new h3{
  
  position:relative;
- padding-left:11px;
+ 
 }
 .leg-card-new .leg-card-header-new h3:before{
  
@@ -3299,7 +3266,6 @@ body.history-page-active .history-footer{position:sticky!important;bottom:0!impo
 .leg-description-new{white-space:pre-wrap!important}
 .leg-meta{white-space:pre-wrap!important}
 .leg-version{display:none!important}
-@media(max-width:1200px){}
 @media(max-width:850px){.leg-category-grid-expanded{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media(max-width:600px){.leg-category-grid-expanded{grid-template-columns:1fr!important}}
 html body.fixed-workspace-active:not(.cinemometro-page-active) .command .searchbar form{
@@ -3309,11 +3275,6 @@ html body.fixed-workspace-active:not(.cinemometro-page-active) .command .searchb
  width:330px!important;
  max-width:330px!important;
  }
-}
-@media(max-width:1200px){
-}
-@media(max-width:900px){
- 
 }
 /* Painel SEGURO — visual tipo app Tem Seguro? adaptado ao consola PC */
 .insurance-body{
@@ -3430,9 +3391,7 @@ html, body {
 }
 
 /* Cabeçalho de comando mais nítido */
-html body .command {
- border-color: rgba(100, 130, 142, 0.55) !important;
-}
+
 
 html body .command .field input {
  transition: border-color .15s, box-shadow .15s;
@@ -3481,21 +3440,17 @@ html body .loading-overlay .spinner {
 }
 
 /* Rail lateral */
-html body .rail {
- border-color: rgba(50, 72, 82, 0.9) !important;
-}
+
 
 
 
 /* Histórico — lista mais legível */
-html body .history-window {
- border-color: rgba(80, 110, 120, 0.7) !important;
-}
+
 
 
 /* Módulos (legislação, ferramentas, etc.) */
 html body .module-window {
- border-color: rgba(80, 110, 120, 0.7) !important;
+ 
  box-shadow: 0 28px 80px rgba(0,0,0,.72), 0 0 0 1px rgba(0,139,85,.1) !important;
 }
 
@@ -3517,11 +3472,9 @@ html body .history-list-scroll::-webkit-scrollbar-track,
 html body .insurance-body::-webkit-scrollbar-track {
  background: transparent;
 }
-html body .asf-status-title {
- font-size: 20px !important;
-}
+
 html body .asf-app-plate-badge {
- font-size: 16px !important;
+ 
  min-width: 132px;
  text-align: center;
 }
@@ -3817,11 +3770,7 @@ body:after {
  
  overflow: hidden !important;
 }
-.command:before {
- 
- 
- background-size: auto, 24px 100% !important;
-}
+
 
 
 
@@ -3865,16 +3814,8 @@ body:after {
  border-bottom-width: 2px !important;
  position: relative !important;
 }
-.head.red {
- 
- border-bottom-color: var(--fx-red) !important;
- 
-}
-.head.green {
- 
- border-bottom-color: var(--fx-mint) !important;
- 
-}
+
+
 
 .head-tag {
  font-size: 8px !important;
@@ -3920,7 +3861,7 @@ body:after {
 .main-menu-v74-title {
  
  -webkit-background-clip: text !important;
- background-clip: text !important;
+ 
  filter: drop-shadow(0 0 20px rgba(94,240,255,.25)) !important;
 }
 .mm74-card {
@@ -4105,10 +4046,7 @@ body {
 
 /* Seguro — reforço legibilidade operacional */
 
-.asf-app-plate-badge {
- font-size: 17px !important;
- 
-}
+
 
 /.leg-card-new{
  border-color: rgba(106, 240, 255, 0.22) !important;
@@ -4279,44 +4217,13 @@ html body .leg-alert-icon{
  height:25px!important;
  font-size:14px!important;
 }
-html body .leg-database-alert p{
- margin-top:2px!important;
-}
-html body .main-menu-screen{overflow-y:auto!important;overflow-x:hidden!important;}
+
+
 html body .main-menu-v74-shell{gap:0!important;}
-html body .main-menu-v74-title{margin-bottom:16px!important;}
-html body .main-menu-v74-grid-big{margin-top:0!important;}
-html body .main-menu-v74-grid-small{margin-top:12px!important;}
-
-
-
-
-
-
-
-
-@media(max-width:900px){html body .main-menu-screen{overflow-y:auto!important;}html body .main-menu-v74-shell{min-height:100dvh!important;}}
-/* O strip antigo de contacto deixa de competir visualmente com a mensagem única. */
-
-/* Metadados antigos ficam fora da composição visual da mensagem. */
-
-
-@media(max-width:900px){
- 
- 
- 
- 
- 
-}
-@media(max-width:520px){
-}
-@media(max-width:900px){
- 
-}
 
 html body .main-menu-screen.show .main-menu-v74-shell{
- overflow-y:auto!important;
- overflow-x:hidden!important;
+ 
+ 
  align-items:center!important;
  gap:0!important;
 }
@@ -4429,7 +4336,7 @@ html body .main-menu-screen.show .main-menu-v74-grid-small .mm74-label{font-size
  
  html body .main-menu-screen.show .main-menu-v74-title{height:48px!important;min-height:48px!important;font-size:19px!important;letter-spacing:2px!important}
  html body .main-menu-screen.show .main-menu-v74-title:after{display:none!important}
- html body .main-menu-screen.show .verix-system-message-card{row-gap:6px!important}
+ 
  html body .main-menu-screen.show .verix-system-symbol{justify-self:center!important}
  html body .main-menu-screen.show .verix-system-heading-rule{justify-content:center!important;}
  html body .main-menu-screen.show .verix-system-update{white-space:normal!important;flex-direction:column!important;gap:2px!important}
@@ -4448,18 +4355,6 @@ html body .main-menu-screen.show .main-menu-v74-grid-small .mm74-label{font-size
 @media(max-width:560px){
  html body .main-menu-screen.show .main-menu-v74-grid-big{grid-template-columns:1fr!important}
  html body .main-menu-screen.show .main-menu-v74-grid-small{grid-template-columns:1fr!important}
-}
-
-@media(max-width:900px){
-}
-@media(max-width:560px){
-}
-
-@media(max-width:900px){
-}
-@media(max-width:560px){
-}
-@media(max-width:560px){
 }
 /* Aviso operacional — linha própria, imediatamente sob o painel LIVRETE / VEÍCULO */
 html body .main{
@@ -6593,7 +6488,7 @@ setTimeout(()=>{try{cinAplicarEstadoLimiteV42();}catch(e){}},0);
 }
 html body .module-overlay.cinemometro-fullpage{
  position:fixed!important;
- top:0!important;right:0!important;bottom:0!important;left:0!important;
+ 
  inset:0!important;
  margin:0!important;
  padding:0!important;
@@ -6601,7 +6496,7 @@ html body .module-overlay.cinemometro-fullpage{
 }
 html body .module-overlay.cinemometro-fullpage .module-window{
  position:absolute!important;
- top:0!important;right:0!important;bottom:0!important;left:0!important;
+ 
  inset:0!important;
  margin:0!important;
  transform:none!important;
@@ -6648,7 +6543,7 @@ html body.cin-config-modal-open .cin-config-panel:not(.collapsed) .cin-config-fo
  overflow:hidden
 }
 /* Quando se expandem os radares, o próprio módulo passa a poder ser percorrido verticalmente. */
-.module-overlay.cinemometro-fullpage .module-body{overflow-x:hidden!important;overflow-y:auto!important;}
+
 .module-overlay.cinemometro-fullpage .cin-one-screen.cin-list-expanded{
  height:auto!important;min-height:100%!important;max-height:none!important;overflow:visible!important;
  grid-template-rows:auto auto auto minmax(420px,1fr) auto auto auto!important;
@@ -6708,9 +6603,9 @@ html body.cin-config-modal-open .cin-config-panel:not(.collapsed) .cin-config-fo
  window.addEventListener('load',()=>setTimeout(()=>syncRadarListViewport(false),80));
  setTimeout(()=>syncRadarListViewport(false),60);
 })();</script>  <style id="v84-menu-principal-header">
-.main-menu-v74-title{border-top:0!important;}
+
 .main-menu-v74-title:after{opacity:.95;}
-.main-menu-v74-grid-big{margin-top:54px!important;}
+
 
 @media(max-width:900px){.main-menu-v74-title{font-size:20px!important;padding:12px 14px 10px!important}.main-menu-v74-title:after{font-size:8px!important}}
 </style><style id="v93-radar-expand-real-scroll">
@@ -7127,14 +7022,6 @@ html body.fixed-workspace-active:not(.cinemometro-page-active) .time{
  text-shadow:0 1px 4px rgba(0,0,0,.8),0 0 9px rgba(81,190,150,.08)!important;
 }
 
-
-@media(max-width:900px){
- 
-}
-@media(max-width:560px){
- 
-}
-
 .main-menu-v74-title:after{display:none!important;}
 .main-menu-v74-title:before{margin-right:10px!important;color:#39d7b1!important;opacity:.9!important;}
 .main-menu-v74-grid-big .mm74-card{isolation:isolate!important;}
@@ -7164,7 +7051,7 @@ html body.fixed-workspace-active:not(.cinemometro-page-active) .time{
 @media(max-width:560px){.main-menu-v74-grid-big .mm74-tech-icon{width:72px!important;height:72px!important;}}
 </style><style id="v152-leg-copy-count-fix">
 
-.leg-panel-count{transition:.15s;font-weight:900;}
+.leg-panel-count{transition:.15s;}
 .leg-panel-count.filtered{color:#65d7e8}
 .leg-copy-feedback{min-width:86px}
 </style>
@@ -7245,20 +7132,7 @@ html body.fixed-workspace-active:not(.cinemometro-page-active) .time{
 .copy-btn-new.copied,.copy-desc-new.copied{background:linear-gradient(180deg,#12b76a,#087744)!important;border-color:#49d59a!important;color:#fff!important;box-shadow:0 0 12px rgba(18,183,106,.22)!important}
 #toastNotification{z-index:999999!important}
 </style>        
-<style id="verix-css-batch-009">
-@media(max-width:1200px){
-}
-@media(max-height:740px) and (min-width:901px){
- html body.fixed-workspace-active:not(.cinemometro-page-active) .command .searchbar{
- width:540px!important;
- max-width:540px!important;
- }
-}
-/* Caixa de pesquisa compacta: mantém o centro, aproxima a moldura dos campos. */
-
-@media (max-height:740px) and (min-width:901px){
- 
-}@media(max-width:1200px){
+<style id="verix-css-batch-009">@media(max-width:1200px){
  html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand{left:6px!important;}}
 /* Caixa exterior da pesquisa: cerca de 1 cm menos em cada lado, mantendo o centro */
 .command .searchbar{
@@ -7269,7 +7143,6 @@ html body.fixed-workspace-active:not(.cinemometro-page-active) .time{
 }
 @media(max-width:700px){
  .command .searchbar{width:calc(100vw - 40px) !important;max-width:calc(100vw - 40px) !important;}
-}@media(max-width:1200px){
 }
 @media(max-width:1050px){
  html body.fixed-workspace-active:not(.cinemometro-page-active) .command .searchbar{
@@ -7293,8 +7166,8 @@ html body.fixed-workspace-active:not(.cinemometro-page-active) .time{
 }
 html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-notice{
  margin-left:0!important;
- padding-left:0!important;
-}@media(max-width:1200px){}
+ 
+}
 </style>
 
 
@@ -7445,7 +7318,7 @@ body.theme-light .settings-factory-reset{background:linear-gradient(90deg,rgba(1
 .settings-command-hero:before{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 0 62%,rgba(101,215,232,.06) 62.2% 62.6%,transparent 62.8% 100%),repeating-linear-gradient(0deg,transparent 0 4px,rgba(255,255,255,.012) 4px 5px);pointer-events:none}
 .settings-hero-kicker{position:relative;font:900 7px/1 Arial,sans-serif;letter-spacing:1.5px;color:#67d8e8}.settings-pulse{display:inline-block;width:6px;height:6px;border-radius:50%;background:#35df9c;box-shadow:0 0 10px rgba(53,223,156,.85);margin-right:6px;vertical-align:middle}
 .settings-hero-main{position:relative;display:flex;align-items:center;justify-content:space-between;gap:15px;margin-top:8px}.settings-hero-main h3{margin:0;font:950 16px/1 Arial,sans-serif;letter-spacing:1.5px;color:#f0f5f7}.settings-hero-main p{margin:6px 0 0;max-width:720px;color:#8098a1;font:700 8px/1.5 Arial,sans-serif}.settings-live-chip{min-width:96px;padding:9px 10px;border:1px solid rgba(0,139,85,.48);border-radius:9px;text-align:center;background:linear-gradient(180deg,rgba(0,139,85,.20),rgba(0,60,42,.14));box-shadow:inset 0 0 14px rgba(0,139,85,.08)}.settings-live-chip strong{display:block;font:950 11px/1 Arial,sans-serif;letter-spacing:1px;color:#5ee1ab}.settings-live-chip span{display:block;margin-top:4px;font:900 6px/1 Arial,sans-serif;color:#6d858d;letter-spacing:1px}
-.settings-section-title.futurista{margin-top:17px;background:linear-gradient(90deg,rgba(0,139,85,.16),transparent);position:relative}.settings-section-title.futurista:after{content:"//";position:absolute;right:10px;color:#506870;opacity:.6}
+.settings-section-title.futurista{background:linear-gradient(90deg,rgba(0,139,85,.16),transparent);position:relative}.settings-section-title.futurista:after{content:"//";position:absolute;right:10px;color:#506870;opacity:.6}
 
 .setting-card{position:relative;min-width:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.025);transition:transform .16s,border-color .16s,box-shadow .16s}.setting-card:hover{transform:translateY(-1px);border-color:rgba(101,215,232,.42);box-shadow:0 8px 22px rgba(0,0,0,.18)}
 .setting-card-head{display:flex;align-items:flex-start;min-width:0}.setting-card-head>div:last-child{min-width:0}.setting-card-icon{flex:0 0 29px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(95,183,198,.25);border-radius:8px;background:rgba(6,26,34,.75);color:#68cfdf;font:900 16px/1 Arial}.setting-card strong{display:block;color:#edf4f6;font:950 9px/1.1 Arial,sans-serif;letter-spacing:.75px}.setting-card span{display:block;color:#6f8790;font:700 7px/1.35 Arial,sans-serif}
@@ -7457,7 +7330,7 @@ body.ui-scale-auto{transform-origin:top left}
 body.theme-light{--glow:rgba(0,139,85,.16);}
 body.theme-light:before{opacity:.11;background:repeating-linear-gradient(0deg,rgba(40,60,66,.035) 0 1px,transparent 1px 4px),linear-gradient(115deg,transparent 0 26%,rgba(40,70,78,.05) 26.1% 26.25%,transparent 26.35% 100%)}
 body.theme-light:after{background:radial-gradient(ellipse at center,transparent 52%,rgba(56,76,84,.16) 100%)}
-body.theme-light .cinematic-bg{background-image:linear-gradient(90deg,rgba(229,236,238,.98),rgba(220,229,232,.92) 44%,rgba(205,217,220,.72) 68%,rgba(225,232,234,.94) 100%),linear-gradient(180deg,rgba(255,255,255,.18),rgba(140,155,161,.10)),linear-gradient(135deg,#eef3f4 0%,#dbe4e6 55%,#f0f4f5 100%)}
+
 
 body.theme-light .command:before{opacity:.35;background:linear-gradient(120deg,transparent 0 43%,rgba(200,16,46,.08) 43.2% 45%,transparent 45.2% 48%,rgba(0,139,85,.08) 48.2% 50%,transparent 50.2%),linear-gradient(90deg,rgba(35,62,70,.035) 1px,transparent 1px)}
 .theme-light .time{color:#60737b!important}
@@ -7637,33 +7510,11 @@ try {
 
 .extra-formula{padding:11px 12px;border:1px solid rgba(228,185,39,.25);background:rgba(228,185,39,.05);border-radius:8px;color:#d8c989;font:800 8px/1.5 Consolas,monospace}
 .extra-result{margin-top:8px;padding:10px;border-radius:7px;background:rgba(0,139,85,.08);border:1px solid rgba(0,139,85,.24);color:#7fe2b0;font:900 9px/1.45 Arial,sans-serif}
-
-
-
-
-
-
-
-
-
-
-
-@media(max-width:760px){}
 @media(max-width:760px){.extra-grid{grid-template-columns:1fr}.main-menu-v74-grid-small .mm74-card.mm74-extra{width:145px}}
 </style>    
  
 
 \n\n<!-- ===== v44 — ENQUADRAMENTO OPERACIONAL + ORDEM DO OPERADOR ===== -->\n<style id="verix-css-batch-012">
-
-
-@media(max-width:900px){
- 
-}
-@media(max-width:1200px){
-}
-@media(max-width:900px){
- 
-}
 html body.fixed-workspace-active:not(.cinemometro-page-active) .command .searchbar,
 html body.consultation-screen-active .command .searchbar{
  left:50% !important;
@@ -8105,7 +7956,7 @@ html body.consultation-screen-active .command .searchbar{
 .rail-cinemometro{
  margin-top:4px!important;
  margin-bottom:4px!important;
- border-color:rgba(255,166,0,.58)!important;
+ 
  
 }
 
@@ -8222,10 +8073,6 @@ html body.consultation-screen-active .command .searchbar{
  .rail-operacional{
  left:8px!important;
  }
- 
-}
-@media(max-width:900px){
- 
  
 }
 
@@ -8347,66 +8194,6 @@ body.cinemometro-page-active{
 }
 
 .cin-warning{border-radius:4px;}
-
-
-
-
-@media(max-width:1100px){
- 
- 
- 
-}
-@media(max-width:700px){
- 
- 
- 
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-@media(max-width:1100px){
- 
- 
- 
- 
-}
-@media(max-width:700px){
- 
- 
- 
- 
-}
 
 .cin-one-screen{min-height:100%;flex-direction:column;box-sizing:border-box}
 
@@ -8706,10 +8493,6 @@ body.cinemometro-page-active{
 }
 .cin-note-modal-actions .cancel{border:1px solid #526870;background:#172a31;color:#d8e5e8}
 .cin-note-modal-actions .save{border:1px solid #00ad8d;background:#087c66;color:#fff}
-@media(max-width:900px){
- 
- 
-}
 
 
 
@@ -9695,9 +9478,9 @@ body.main-menu-active .rail{display:none!important;}
  linear-gradient(180deg,#030a0f 0%,#02070a 100%)!important;}
 .main-menu-screen.show{display:block!important;}
 
-.main-menu-v74-title{margin-bottom:24px;}
+
 .main-menu-v74-grid-big,.main-menu-v74-grid-small{display:flex;justify-content:center;align-items:stretch;gap:18px;width:100%;}
-.main-menu-v74-grid-small{margin-top:16px;}
+
 .mm74-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;color:#f4f7f8;}
 .mm74-card:before{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 25%,currentColor,transparent 55%);}
 
@@ -9728,7 +9511,7 @@ body.main-menu-active .rail{display:none!important;}
 
 
 @media(max-width:900px){
- .main-menu-v74-shell{padding-top:28px;padding-bottom:20px;}
+ 
  .main-menu-v74-grid-big{flex-wrap:wrap}.main-menu-v74-grid-small{flex-wrap:wrap;}
  
 }
@@ -9743,7 +9526,6 @@ body.main-menu-active .rail{display:none!important;}
 .consulta-history-bottom:hover{box-shadow:0 11px 28px rgba(200,16,46,.3),inset 0 1px 0 rgba(255,255,255,.14);}
 .consulta-history-bottom:active{transform:translateY(0);}
 .consulta-history-bottom-icon{font-size:16px;line-height:1;}#historyRail{display:none!important;}
-@media(max-width:700px){}
 </style>    
  
 
@@ -10131,39 +9913,6 @@ body.main-menu-active .main-menu-screen:before{content:"";position:absolute;inse
  
 }
 @media(max-width:560px){.main-menu-v74-grid-small{grid-template-columns:1fr 1fr!important}.main-menu-v74-grid-big .mm74-card{height:145px!important}.main-menu-v74-grid-small .mm74-card{height:92px!important}.main-menu-v74-title{font-size:20px!important}}
-
-
-
-
-
-
-
-
-
-
-
-
-
-@media(max-width:900px){
- 
- 
- 
- 
- 
-}
-@media(max-width:560px){
- 
- 
- 
- 
-}
-
-@media(max-width:900px){
- 
-}
-@media(max-width:560px){
- 
-}
 /* O botão de retorno próprio da Consulta não aparece em Legislação, Ferramentas, Informações ou Definições,
  evitando a duplicação com o botão de retorno do cabeçalho do módulo. */
 html body.fixed-workspace-active:not(.consultation-screen-active):not(.history-page-active) #consultationBackBtn{
@@ -10196,7 +9945,7 @@ html body.fixed-workspace-active #consultationBackBtn{
  border-radius:8px!important;
  background:linear-gradient(180deg,#342b0b,#171507)!important;
  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 5px 14px rgba(0,0,0,.28)!important;
- line-height:1!important;
+ 
  letter-spacing:0!important;
  overflow:hidden!important;
 }
@@ -10383,7 +10132,7 @@ html body.fixed-workspace-active #consultationBackBtn::after{
  html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand{height:88px!important;}
  html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-notice{height:88px!important;}
  html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-notice-title{font-size:12px!important;}
- html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-notice-text{font-size:7px!important;}html body.fixed-workspace-active:not(.cinemometro-page-active) .command .searchbar{top:9px!important;height:56px!important;}
+ html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-notice-text{font-size:7px!important;}
  html body.fixed-workspace-active:not(.cinemometro-page-active) .command .tools{top:42px!important;}
  html body.fixed-workspace-active:not(.cinemometro-page-active) #consultationBackBtn{top:5px!important;height:26px!important;width:94px!important;min-width:94px!important;}
  html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active{top:116px!important;bottom:42px!important;gap:7px!important;}
@@ -10396,12 +10145,6 @@ html body.fixed-workspace-active #consultationBackBtn::after{
 html body.fixed-workspace-active:not(.cinemometro-page-active) .command .searchbar form{
  width:100%!important;
  justify-content:center!important;
-}
-@media (max-width:1200px){
- html body.fixed-workspace-active:not(.cinemometro-page-active) .command .searchbar{
- width:650px!important;
- max-width:calc(100vw - 470px)!important;
- }
 }
 @media (max-height:740px) and (min-width:901px){
  html body.fixed-workspace-active:not(.cinemometro-page-active) .command .searchbar{
@@ -10492,7 +10235,7 @@ html body .main-menu-v74-grid-small .mm74-card{
  text-align:center!important;
  border-radius:11px!important;
 }
-html body .main-menu-v74-grid-small .mm74-icon{margin-bottom:9px!important}
+
 
 
 
@@ -10760,23 +10503,6 @@ window.VÉRIXFactoryResetModal={open,close,confirm:confirmReset,execute};m.addEv
 <!-- VÉRIX telemetry fix V172: vehicle events use exposed telemetry API. --> <style id="verix-css-batch-014">
 html body .main-menu-v74-shell .main-menu-v74-grid-big{order:3!important;}
 html body .main-menu-v74-shell .main-menu-v74-grid-small{order:4!important;}
-
-
-
-
-
-@media(max-width:760px){
- 
- 
- 
- 
-}
-
-
-@media(max-width:760px){
- 
- 
-}
 html body .main-menu-screen.show{overflow-y:auto!important;overflow-x:hidden!important;height:100dvh!important;min-height:100dvh!important;}
 html body .main-menu-screen.show .main-menu-v74-shell{height:auto!important;min-height:100dvh!important;overflow:visible!important;justify-content:flex-start!important;padding:18px 38px 28px!important;box-sizing:border-box!important;}
 html body .main-menu-screen.show .main-menu-v74-title{margin-bottom:16px!important;}
@@ -11080,26 +10806,6 @@ html body .main-menu-screen.show .main-menu-v74-shell{padding:16px 14px 24px!imp
  }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-@media(max-width:950px){}
-@media(max-width:650px){}
-
 /* — modo compacto + estado inicial recolhido */
 
 
@@ -11219,7 +10925,7 @@ html body .main-menu-v74-grid-small .mm74-label{font-size:10px!important;line-he
 
 
 @media(max-width:900px){
- html body .main-menu-v74-shell{overflow:auto!important;padding:14px!important}
+ html body .main-menu-v74-shell{padding:14px!important}
  html body .main-menu-v74-grid-big{width:min(760px,100%)!important}
  html body .main-menu-v74-grid-big .mm74-card{height:145px!important;min-height:145px!important}
  html body .main-menu-v74-grid-small{width:min(680px,100%)!important;grid-template-rows:repeat(2,105px)!important}
@@ -11263,12 +10969,6 @@ html body .main-menu-v74-shell {
 @media (max-width:560px) {
  html body .main-menu-v74-shell { min-height:100dvh!important; }
  
-}
-
-html body .insurance .asf-rate-main{margin-top:2px!important;font-size:13px!important;line-height:1!important;}
-html body .insurance .asf-rate-sub{margin-top:2px!important;font-size:5.5px!important;line-height:1!important;}
-html body .insurance .asf-rate-dot{margin-right:3px!important;}
-@media(max-width:900px){
 }
 </style> <script id="verix-no-plate-history">
 (function(){
@@ -12337,9 +12037,7 @@ html body #asfRateWidget .asf-rate-label{
  
  z-index:2!important;
 }
-html body #asfRateWidget .asf-rate-dot{ flex-shrink:0!important;
- 
-}
+
 html body #asfRateWidget.high .asf-rate-dot{ background:#ff3d5a!important; box-shadow:0 0 8px rgba(255,61,90,.7)!important; }
 html body #asfRateWidget.warn .asf-rate-dot{ background:#ffc933!important; box-shadow:0 0 8px rgba(255,201,51,.7)!important; }
 
@@ -13271,9 +12969,6 @@ html body .setting-select.wide{
 </script> <style id="verix-css-batch-018">
 html body .insurance .asf-rate-label{font-weight:950!important;}
 html body .insurance .asf-rate-main{font-weight:950!important;}
-@media(max-width:900px){
- 
-}
 html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-operational-fields label:last-child em#cinLimiteFonte{
  font-size:6px!important;
  line-height:1.1!important;
@@ -13343,7 +13038,7 @@ html body .leg-database-alert p{
 html body .leg-card-new{
  height:auto!important;
  min-height:0!important;
- padding-bottom:7px!important;
+ 
 }
 html body .leg-card-new .leg-card-toolbar{
  padding:0!important;
@@ -14410,33 +14105,6 @@ html body .leg-card-new .copy-all-new{
 .legal-notice-version span{font-size:18px;color:#48a8ff;}
 .legal-notice-version strong{font-size:22px;letter-spacing:1px;}
 @media(max-width:600px){.legal-notice-overlay{padding:12px;}.legal-notice-window{width:100%;max-height:88vh;border-radius:12px;}.legal-notice-top{padding:15px 16px;}.legal-notice-body{padding:20px 17px 24px;font-size:16px;line-height:1.48;}.legal-notice-body p{margin-bottom:22px;}}
-
-
-
-
-
-
-
-@media(max-width:760px){
- 
- 
- 
-}
-
-
-
-
-
-
-@media(max-width:760px){
- 
- 
- 
-}
-
-@media(max-width:900px){
- 
-}
 /* POSIÇÃO FINAL — mensagem sempre abaixo dos cartões do menu */
 html body .main-menu-screen.show .main-menu-v74-shell > .main-menu-v74-title{order:1!important;}
 html body .main-menu-screen.show .main-menu-v74-shell > .main-menu-v74-grid-big{order:2!important; margin-top:30px!important;}
@@ -14478,13 +14146,6 @@ html body .main-menu-screen.show .main-menu-v74-grid-small{
  html body .main-menu-screen.show .verix-system-update{text-align:left!important}
  html body .main-menu-screen.show .verix-system-update strong{font-size:8.8px!important}
  html body .main-menu-screen.show .verix-system-update span{font-size:7.8px!important}}
-
-@media(max-width:520px){}
-
-@media(max-width:1100px){
-}
-@media(max-width:820px){}
-@media(max-width:520px){}
 /* ==========================================================
    VÉRIX ASF — LAYOUT FINAL
    Um único trilho horizontal: CONTROLO | JANELA | PRÓXIMA | CACHE
@@ -14593,23 +14254,9 @@ html body .main.consultation-fixed-active .panel.insurance #asfRateWidget .asf-r
 
 /* Telemóvel: ainda mais simples, sem esmagar os textos. */
 @media (max-width:700px){
-  html body .main.consultation-fixed-active .panel.insurance .insurance-body{
-    padding-bottom:66px!important;
-  }
+  
 
-  html body .main.consultation-fixed-active .panel.insurance #asfRateWidget{
-    left:6px!important;
-    right:6px!important;
-    bottom:6px!important;
-    height:52px!important;
-    min-height:52px!important;
-    max-height:52px!important;
-
-    padding:5px!important;
-    gap:4px!important;
-
-    grid-template-columns:minmax(80px,1.2fr) minmax(54px,.8fr) minmax(58px,.9fr) minmax(52px,.8fr)!important;
-  }
+  
 
   html body .main.consultation-fixed-active .panel.insurance #asfRateWidget .asf-rate-label{
     font-size:7px!important;
@@ -16110,16 +15757,10 @@ html body.consultation-screen-active:not(.main-menu-active):not(.history-page-ac
     height:38px!important;
   }
 }
-@media(max-width:1450px){
-}
-@media(max-width:1180px){
-}
 @media(max-width:900px){
   html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .main.consultation-fixed-active{
     overflow:auto!important;
   }
-}
-@media(max-height:820px) and (min-width:1451px){
 }
 </style>
 
@@ -16516,10 +16157,6 @@ html body.consultation-screen-active:not(.main-menu-active):not(.history-page-ac
   html body.main-menu-screen.show .verix-system-message-card .verix-system-contact-copy{
     font-size:8px!important;
   }
-}
-@media(max-width:520px){
-}
-@media(max-height:760px) and (min-width:1001px){
 }
 </style>
 
@@ -17117,12 +16754,6 @@ html body #seguroResult .asf-actions button.secondary{
 html body #seguroResult .asf-app.asf-app-warn .asf-note{
   border-color:#eedfb6!important;background:#fffbf1!important;color:#806b32!important;
 }
-@supports selector(.asf-app:has(.asf-operational-status.expired)){
-  
-  
-  
-  
-}
 @media(max-width:900px){
   html body #seguroResult .asf-app{max-width:none!important;gap:10px!important;}
   html body #seguroResult .asf-success-hero{
@@ -17197,10 +16828,7 @@ html body #seguroResult .asf-app.asf-app-ok .asf-operational-status:after{
   border:14px solid rgba(10,185,116,.07);border-radius:50%;pointer-events:none;
 }
 
-html body #seguroResult .asf-app.asf-app-ok .asf-operational-card{
-  border-color:#d6e5df!important;
-  
-}
+
 
 
 
@@ -17208,15 +16836,8 @@ html body #seguroResult .asf-app.asf-app-ok .asf-operational-card{
 html body #seguroResult .asf-app.asf-app-ok .asf-date-box.valid strong{
   font-size:15px!important;font-weight:950!important;
 }
-html body #seguroResult .asf-app.asf-app-ok .asf-operational-actions .aux-btn.secondary{
-  
-  border-color:#08764d!important;
-  
-}
-html body #seguroResult .asf-app.asf-app-ok .asf-note{
-  border-color:#dcece4!important;
-  
-}
+
+
 /* Expired policy is not shown in green even though a record was returned. */
 @supports selector(.asf-app:has(.asf-operational-status.expired)){
   html body #seguroResult .asf-app.asf-operational-result:has(.asf-operational-status.expired) .asf-success-hero{
@@ -17239,17 +16860,9 @@ html body #seguroResult .asf-app.asf-app-no{
   --asf-accent:#ed3347;--asf-accent-2:#ff9ca7;
   gap:12px!important;max-width:620px!important;
 }
-html body #seguroResult .asf-app.asf-app-no .asf-app-plate{
-  border-color:#edc7cd!important;
-  
-  
-}
 
-html body #seguroResult .asf-app.asf-app-no .asf-app-plate-badge{
-  border-color:#8d2432!important;
-  
-  
-}
+
+
 
 
 
@@ -17257,15 +16870,11 @@ html body #seguroResult .asf-app.asf-app-no .asf-app-plate-badge{
 
 
 html body #seguroResult .asf-app.asf-app-no .asf-note{
-  padding:13px 14px!important;border-color:#f2d0d4!important;
+  padding:13px 14px!important;
   
   font-weight:750!important;
 }
-html body #seguroResult .asf-app.asf-app-no .asf-actions .aux-btn,
-html body #seguroResult .asf-app.asf-app-no .asf-actions button{
-  border-color:#ecc4ca!important;
-  
-}
+
 /* Tablet: keep a richer, spacious result rather than inheriting phone stacking. */
 @media(min-width:561px) and (max-width:900px){
   
@@ -17280,7 +16889,7 @@ html body #seguroResult .asf-app.asf-app-no .asf-actions button{
   
   
   html body #seguroResult .asf-app.asf-app-ok .asf-success-plate{
-    margin-left:50px!important;
+    
     padding:9px 12px!important;
   }
   
@@ -17653,9 +17262,6 @@ html body #seguroResult .asf-app.asf-operational-result:has(.asf-operational-sta
   html body #seguroResult .asf-app.asf-app-ok .asf-rows > .asf-row-emphasis:nth-child(2) .k {font-size:7px!important;}
   html body #seguroResult .asf-app.asf-app-ok .asf-rows > .asf-row-emphasis:nth-child(2) .v {font-size:10px!important;}
   html body #seguroResult .asf-app.asf-app-ok .asf-operational-actions .aux-btn.secondary {min-height:40px!important;}
-}
-@media(prefers-reduced-motion:reduce) {
-  
 }
 /* Fim VÉRIX-ASF-GREEN-RELAYOUT-V3. */
 
