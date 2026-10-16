@@ -4626,27 +4626,31 @@ html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-n
 
 
 <style id="verix-portugal-flag-3d">
-/* Bandeira nacional: animação 3D leve, autónoma e adaptada a ecrãs pequenos. */
-.verix-pt-flag{
+/* Bandeira portuguesa com movimento de tecido em perspetiva 3D. */
+html body .verix-pt-flag{
   position:relative!important;
   display:inline-block!important;
-  flex:0 0 38px!important;
-  width:38px!important;
-  height:25px!important;
+  flex:0 0 44px!important;
+  width:44px!important;
+  height:29px!important;
   vertical-align:middle!important;
   overflow:hidden!important;
   isolation:isolate!important;
-  border:1px solid rgba(255,255,255,.52)!important;
+  border:1px solid rgba(255,255,255,.62)!important;
   border-radius:2px!important;
   box-sizing:border-box!important;
   background:linear-gradient(90deg,#006600 0 40%,#ff0000 40% 100%)!important;
-  box-shadow:0 3px 8px rgba(0,0,0,.48),inset 0 1px 1px rgba(255,255,255,.28),inset 0 -2px 3px rgba(0,0,0,.22)!important;
+  box-shadow:0 5px 12px rgba(0,0,0,.52),inset 0 1px 2px rgba(255,255,255,.36),inset 0 -3px 5px rgba(0,0,0,.25)!important;
   transform-origin:12% 50%!important;
   transform-style:preserve-3d!important;
-  animation:verix-pt-flag-wave 4.6s ease-in-out infinite!important;
-  will-change:transform!important;
+  backface-visibility:visible!important;
+  animation:verix-pt-flag-wave 3.1s ease-in-out infinite!important;
+  animation-duration:3.1s!important;
+  animation-iteration-count:infinite!important;
+  animation-play-state:running!important;
+  will-change:transform,filter!important;
 }
-.verix-pt-flag svg{
+html body .verix-pt-flag svg{
   position:absolute!important;
   inset:0!important;
   z-index:1!important;
@@ -4654,72 +4658,107 @@ html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-n
   width:100%!important;
   height:100%!important;
   overflow:visible!important;
-  filter:drop-shadow(0 0 1px rgba(0,0,0,.3))!important;
+  filter:drop-shadow(0 0 1px rgba(0,0,0,.4))!important;
+  pointer-events:none!important;
 }
-.verix-pt-flag::before{
+html body .verix-pt-flag::before{
   content:""!important;
   position:absolute!important;
-  inset:0!important;
+  inset:-1px!important;
   z-index:2!important;
   pointer-events:none!important;
-  background:repeating-linear-gradient(100deg,rgba(255,255,255,.13) 0,rgba(255,255,255,.03) 4px,rgba(0,0,0,.15) 7px,rgba(255,255,255,.02) 10px,transparent 14px)!important;
+  background:repeating-linear-gradient(100deg,rgba(255,255,255,.22) 0,rgba(255,255,255,.02) 3px,rgba(0,0,0,.24) 6px,rgba(255,255,255,.07) 9px,transparent 13px)!important;
+  background-size:180% 100%!important;
   mix-blend-mode:soft-light!important;
-  opacity:.78!important;
-  animation:verix-pt-flag-folds 3.8s ease-in-out infinite!important;
+  opacity:.92!important;
+  animation:verix-pt-flag-folds 2.2s ease-in-out infinite!important;
+  animation-duration:2.2s!important;
+  animation-iteration-count:infinite!important;
+  animation-play-state:running!important;
 }
-.verix-pt-flag::after{
+html body .verix-pt-flag::after{
   content:""!important;
   position:absolute!important;
   inset:0!important;
   z-index:3!important;
   pointer-events:none!important;
-  background:linear-gradient(110deg,rgba(0,0,0,.26),transparent 22%,rgba(255,255,255,.22) 42%,rgba(255,255,255,.04) 51%,rgba(0,0,0,.18) 69%,transparent 88%)!important;
-  opacity:.82!important;
-  animation:verix-pt-flag-shine 4.6s ease-in-out infinite!important;
+  background:linear-gradient(110deg,rgba(0,0,0,.34),transparent 17%,rgba(255,255,255,.34) 35%,rgba(255,255,255,.03) 47%,rgba(0,0,0,.28) 65%,rgba(255,255,255,.2) 79%,transparent 92%)!important;
+  background-size:210% 100%!important;
+  opacity:.94!important;
+  animation:verix-pt-flag-shine 2.8s ease-in-out infinite!important;
+  animation-duration:2.8s!important;
+  animation-iteration-count:infinite!important;
+  animation-play-state:running!important;
 }
-.command .brand-lockup-line{
+html body .command .brand-lockup-line{
   align-items:center!important;
   gap:8px!important;
 }
-.command .brand-lockup-line .verix-pt-flag{margin-right:1px!important}
-#vxMobileTop .vx-brand{
+html body .command .brand-lockup-line .verix-pt-flag{margin-right:1px!important}
+html body #vxMobileTop .vx-brand{
   display:flex!important;
   align-items:center!important;
   gap:8px!important;
 }
-#vxMobileTop .vx-brand-text{
+html body #vxMobileTop .vx-brand-text{
   display:block!important;
   min-width:0!important;
   white-space:nowrap!important;
 }
-#vxMobileTop .verix-pt-flag{
-  flex-basis:32px!important;
-  width:32px!important;
-  height:21px!important;
+html body #vxMobileTop .verix-pt-flag{
+  flex-basis:36px!important;
+  width:36px!important;
+  height:24px!important;
 }
 @keyframes verix-pt-flag-wave{
-  0%,100%{transform:perspective(150px) rotateY(-9deg) rotateX(1deg) skewY(-.6deg) scaleX(1)}
-  25%{transform:perspective(150px) rotateY(10deg) rotateX(-1.4deg) skewY(.7deg) scaleX(.98)}
-  50%{transform:perspective(150px) rotateY(0deg) rotateX(1.5deg) skewY(-.3deg) scaleX(1)}
-  75%{transform:perspective(150px) rotateY(-12deg) rotateX(-.8deg) skewY(.6deg) scaleX(.985)}
+  0%,100%{
+    transform:perspective(95px) rotateY(-24deg) rotateX(4deg) skewY(-2deg) scaleX(.92) translateY(0);
+    filter:drop-shadow(0 4px 4px rgba(0,0,0,.32)) brightness(.96);
+  }
+  25%{
+    transform:perspective(95px) rotateY(19deg) rotateX(-4deg) skewY(2.3deg) scaleX(1.03) translateY(-1px);
+    filter:drop-shadow(0 7px 5px rgba(0,0,0,.4)) brightness(1.13);
+  }
+  50%{
+    transform:perspective(95px) rotateY(-7deg) rotateX(4deg) skewY(-1.5deg) scaleX(.9) translateY(1px);
+    filter:drop-shadow(0 3px 3px rgba(0,0,0,.3)) brightness(.98);
+  }
+  75%{
+    transform:perspective(95px) rotateY(25deg) rotateX(-3deg) skewY(2deg) scaleX(1.02) translateY(0);
+    filter:drop-shadow(0 8px 5px rgba(0,0,0,.42)) brightness(1.12);
+  }
 }
 @keyframes verix-pt-flag-folds{
-  0%,100%{transform:translateX(-2px);opacity:.62}
-  50%{transform:translateX(2px);opacity:.95}
+  0%,100%{background-position:0 0;transform:translateX(-5px) skewY(-1deg);opacity:.58}
+  50%{background-position:100% 0;transform:translateX(5px) skewY(1deg);opacity:1}
 }
 @keyframes verix-pt-flag-shine{
-  0%,100%{transform:translateX(-3px);opacity:.58}
-  50%{transform:translateX(2px);opacity:.9}
+  0%{background-position:100% 0;opacity:.48}
+  50%{background-position:0 0;opacity:1}
+  100%{background-position:100% 0;opacity:.48}
 }
 @media(max-width:600px){
-  .command .brand-lockup-line .verix-pt-flag{flex-basis:32px!important;width:32px!important;height:21px!important}
-  .command .brand-lockup-line{gap:6px!important}
+  html body .command .brand-lockup-line .verix-pt-flag{flex-basis:36px!important;width:36px!important;height:24px!important}
+  html body .command .brand-lockup-line{gap:6px!important}
 }
+/* A bandeira mantém a animação pedida mesmo quando o sistema reduz o movimento global. */
 @media(prefers-reduced-motion:reduce){
-  .verix-pt-flag,.verix-pt-flag::before,.verix-pt-flag::after{
-    animation:none!important;
-    transform:perspective(150px) rotateY(-5deg)!important;
-    will-change:auto!important;
+  html body .verix-pt-flag{
+    animation:verix-pt-flag-wave 3.1s ease-in-out infinite!important;
+    animation-duration:3.1s!important;
+    animation-iteration-count:infinite!important;
+    animation-play-state:running!important;
+    transform:perspective(95px) rotateY(-20deg)!important;
+  }
+  html body .verix-pt-flag::before{
+    animation:verix-pt-flag-folds 2.2s ease-in-out infinite!important;
+    animation-duration:2.2s!important;
+    animation-iteration-count:infinite!important;
+  }
+  html body .verix-pt-flag::after{
+    animation:verix-pt-flag-shine 2.8s ease-in-out infinite!important;
+    animation-duration:2.8s!important;
+    animation-iteration-count:infinite!important;
   }
 }
 </style>
