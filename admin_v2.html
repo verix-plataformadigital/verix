@@ -27,7 +27,7 @@ button{cursor:pointer}
 #loginScreen{min-height:100vh;display:grid;place-items:center;padding:24px;background:linear-gradient(135deg,#0e1c22,#16333b)}
 .login-card{width:min(420px,94vw);background:#fff;border-radius:18px;padding:30px;box-shadow:0 24px 60px rgba(0,0,0,.25)}
 .logo{font-weight:950;letter-spacing:3px;font-size:23px}.logo b{color:var(--cyan)}
-.login-sub{margin:7px 0 22px;color:var(--muted);font-size:12px}
+
 .login-card input{width:100%;height:46px;border:1px solid #c7d0d5;border-radius:10px;padding:0 13px}
 .login-card button{width:100%;height:46px;margin-top:10px;border:0;border-radius:10px;background:#0f5d69;color:#fff;font-weight:900}
 .login-error{height:18px;margin-top:9px;text-align:center;color:var(--red);font-size:11px;font-weight:800}
@@ -80,7 +80,7 @@ button{cursor:pointer}
 .secondary-kpis .card .value{font-size:20px;margin-top:6px}
 .secondary-kpis .card .note{font-size:9px;margin-top:4px}
 .dashboard-updated{margin-top:12px;color:#9abac1;font-size:9px}
-.dashboard-section-title{margin:20px 2px 9px;color:#60747b;font-size:10px;font-weight:950;letter-spacing:1px;text-transform:uppercase}
+
 .dashboard-explainer{margin:0 0 10px;color:#74858b;font-size:10px;line-height:1.5}
 .panel-actions{display:flex;justify-content:flex-end;padding:10px 13px;border-top:1px solid #edf0f2;background:#fbfcfc}
 .action-link{border:1px solid #d5e0e4;background:#fff;color:#315660;border-radius:8px;padding:8px 10px;font-size:9px;font-weight:950}
@@ -206,7 +206,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
 .dashboard-accordion-title{font-size:12px;font-weight:950;color:#243b43}
 .dashboard-accordion-meta{font-size:10px;color:var(--muted);font-weight:500}
 .dashboard-accordion-body{padding:12px;border-top:1px solid #edf0f2}
-.dashboard-accordion-body .dashboard-section-title{margin-top:4px}
+
 .dashboard-accordion-body .panel{box-shadow:none}
 #dashDaily .chart-label{font-size:8px;transform:none;margin-top:2px}
 @media(max-width:650px){
@@ -215,7 +215,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
  .dashboard-accordion-meta{font-size:9px;margin-right:24px}
  .dashboard-accordion-body{padding:8px}
 }
-@media(max-width:1250px){}
+
 @media(max-width:980px){.sidebar{width:78px}.side-brand .small,.side-brand .big b,.nav button label,.nav-section-label{display:none}.side-brand .big{font-size:14px}.nav button{padding:12px 8px;text-align:center}.nav button span{display:block;width:auto;margin-bottom:3px}.main{margin-left:78px;width:calc(100% - 78px);padding:18px}.g4,.g3{grid-template-columns:repeat(2,minmax(0,1fr))}.hero-row{flex-direction:column;align-items:flex-start}.hero-insight{max-width:none;width:100%}}
 @media(max-width:650px){
  .sidebar{width:100%;height:auto;left:0;top:auto;bottom:0;padding:6px 6px max(6px,env(safe-area-inset-bottom));z-index:30;border-top:1px solid rgba(255,255,255,.12)}
@@ -570,9 +570,9 @@ const STATS_API=API_ORIGIN+'stats-v2?v='+encodeURIComponent(ADMIN_CACHE);
 const TOKEN_KEY='VERIX_ADMIN_V2_TOKEN';
 const REFRESH_MS=60000;
 
-let currentPeriod='24h',currentPage='dashboard',latestData=null,refreshTimer=null,dashboardBusy=false,analyticsLoadPromise=null,auxiliaryLoadPromise=null,totalLoadPromise=null,forceDetailRefresh=false,lastDashboardSuccessAt=0;
+let currentPeriod='24h',currentPage='dashboard',latestData=null,refreshTimer=null,dashboardBusy=false,auxiliaryLoadPromise=null,totalLoadPromise=null,forceDetailRefresh=false,lastDashboardSuccessAt=0;
 const detailCache={analytics:false,auxiliary:false,total:false,diagnostics:false,speed:false,errors:false,system:false,insurance:false};
-const detailBusy={analytics:false,auxiliary:false,total:false,diagnostics:false,speed:false,errors:false,system:false,insurance:false};
+const detailBusy={auxiliary:false,total:false,diagnostics:false,speed:false,errors:false,system:false,insurance:false};
 
 const $=id=>document.getElementById(id);
 const fmt=v=>v==null||v===''||!Number.isFinite(Number(v))?'—':Number(v).toLocaleString('pt-PT');
@@ -755,7 +755,7 @@ function toast(msg){const t=$('toast');t.textContent=msg;t.classList.remove('hid
 function setBackend(state){const dot=$('statusDot'),b=$('backendBadge');dot.className='dot';if(state==='loading'){dot.classList.add('warn');b.textContent='A atualizar…'}else if(state==='partial'){dot.classList.add('warn');b.textContent='Online · alguns dados em falta'}else if(state==='offline'){dot.classList.add('off');b.textContent='Backend indisponível'}else b.textContent='Backend online'}
 async function request(url,options={}){const h=new Headers(options.headers||{});h.set('Authorization','Bearer '+token());h.set('Accept','application/json');const ac=new AbortController();const tm=setTimeout(()=>ac.abort(),15000);try{const r=await fetch(url,{...options,headers:h,mode:'cors',credentials:'omit',cache:'no-store',signal:ac.signal});const raw=await r.text();let data={};try{data=JSON.parse(raw)}catch(_){data={ok:false,error:raw||('HTTP '+r.status)}}if(r.status===401){logout();throw new Error('Sessão expirada.')}if(!r.ok||data?.ok===false)throw new Error(data?.detail||data?.error||('HTTP '+r.status));return data}catch(e){if(e?.name==='AbortError')throw new Error('O backend demorou demasiado tempo a responder.');if(e instanceof TypeError)throw new Error('Não foi possível comunicar com o backend.');throw e}finally{clearTimeout(tm)}}
 async function doLogin(password){const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),12000);try{const r=await fetch(AUTH_API,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({password:String(password||'').slice(0,256)}),mode:'cors',credentials:'omit',cache:'no-store',signal:ac.signal});const raw=await r.text();let data={};try{data=JSON.parse(raw)}catch(_){data={ok:false,error:raw||('HTTP '+r.status)}}if(!r.ok||!data?.ok)throw new Error(data?.error||('HTTP '+r.status));if(!data.token)throw new Error('O servidor de autenticação não devolveu um token.');sessionStorage.setItem(TOKEN_KEY,data.token);return data}catch(e){if(e?.name==='AbortError')throw new Error('Tempo excedido ao autenticar.');if(e instanceof TypeError)throw new Error('Não foi possível comunicar com a autenticação.');throw e}finally{clearTimeout(tm)}}
-function logout(){sessionStorage.removeItem(TOKEN_KEY);if(refreshTimer)clearInterval(refreshTimer);latestData=null;analyticsLoadPromise=null;auxiliaryLoadPromise=null;Object.keys(detailCache).forEach(k=>{detailCache[k]=false;detailBusy[k]=false});$('app').style.display='none';$('loginScreen').style.display='grid';$('password').value='';}
+function logout(){sessionStorage.removeItem(TOKEN_KEY);if(refreshTimer)clearInterval(refreshTimer);latestData=null;auxiliaryLoadPromise=null;Object.keys(detailCache).forEach(k=>{detailCache[k]=false;detailBusy[k]=false});$('app').style.display='none';$('loginScreen').style.display='grid';$('password').value='';}
 function switchPage(page){
   currentPage=page;
   // A lista é mantida em cache ao navegar; a atualização manual invalida a cache.
@@ -781,31 +781,7 @@ function switchPage(page){
 function detailEndpoint(kind){
   return STATS_API+'&detail='+encodeURIComponent(kind)+(forceDetailRefresh?'&fresh=1':'');
 }
-async function ensureAnalyticsLoaded(){
- if(!latestData||!token())return false;
- if(detailCache.analytics)return true;
- if(analyticsLoadPromise)return analyticsLoadPromise;
- detailBusy.analytics=true;
- analyticsLoadPromise=(async()=>{
-  try{
-   const payload=await request(detailEndpoint('analytics'));
-   if(!latestData)return false;
-   const existingOverview=latestData.analytics?.overview||{};
-   const raw=payload.analytics||{};
-   latestData={...latestData,analytics:{...raw,overview:{...(raw.overview||{}),consulted_3m:existingOverview.consulted_3m}},dashboardOnly:false,analyticsDetailed:true};
-   detailCache.analytics=true;
-   renderCurrentPage(latestData);
-   return true;
-  }catch(e){
-   toast('Não foi possível carregar as estatísticas detalhadas: '+e.message);
-   return false;
-  }finally{
-   detailBusy.analytics=false;
-   analyticsLoadPromise=null;
-  }
- })();
- return analyticsLoadPromise;
-}
+
 async function ensureInsuranceNoCases(){
  if(!latestData||!token()||detailCache.insurance||detailBusy.insurance)return;
  detailBusy.insurance=true;
@@ -1297,7 +1273,7 @@ function renderSystem(d){
  const rs=d.resetAllAt||life.reset_all_at||d.reset24hAt;$('reset24hStatus').textContent='Marco atual: '+datePT(rs);
 }
 
-function renderAll(d){latestData=d;renderDashboard(d);renderInsurance(d);renderSpeed(d);renderLegislation(d);renderUsage(d);renderErrors(d);renderPerformance(d);renderInsights(d);renderSystem(d)}
+
 function renderCurrentPage(d=latestData){
  if(!d)return;
  switch(currentPage){
