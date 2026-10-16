@@ -558,3 +558,15 @@ body.vx-mobile-mode .vx-scroll-x{
     pointer-events:none!important;
   }
 }
+
+
+/* VÉRIX home launcher — hide secondary mobile navigation while the main menu is open.
+   The new home screen already provides category navigation; keeping the mobile
+   header and shortcut bar visible here would create a second competing menu. */
+html body #mainMenuScreen.show ~ #vxMobileTop,
+html body #mainMenuScreen.show ~ #vxMobileBar,
+html body #mainMenuScreen.show ~ #vxMobileOverlay{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
