@@ -144,13 +144,8 @@ body.vx-mobile-mode .vx-scroll-x{
     width:100%!important;height:auto!important;min-height:48px!important;
     padding:2px 4px 7px!important;
   }
-  body.vx-mobile-mode .command .brand-notice-title{
-    font-size:12px!important;line-height:1.2!important;
-    white-space:normal!important;letter-spacing:.5px!important;
-  }
-  body.vx-mobile-mode .command .brand-notice-text{
-    font-size:9px!important;line-height:1.45!important;
-  }
+  
+  
   body.vx-mobile-mode .command .time{display:none!important}
 
   body.vx-mobile-mode .command .searchbar{
@@ -269,13 +264,13 @@ body.vx-mobile-mode .vx-scroll-x{
     padding-top:58px!important;
   }
   #vxMobileTop,#vxMobileBar{display:flex}
-  body.vx-mobile-mode :is(main,section,article,aside,nav,.main,.shell,.content,.container,.wrap,.workspace,.panel,.card,.modal,.dialog,.grid,.toolbar,.topbar,.form-row,.row,.columns){
+  body.vx-mobile-mode :is(main,section,article,aside,nav,.main,.content,.wrap,.panel,.card,.modal,.dialog,.grid,.toolbar,.row){
     max-width:100%!important;
   }
-  body.vx-mobile-mode :is(.grid,.columns){
+  body.vx-mobile-mode :is(.grid){
     grid-template-columns:minmax(0,1fr)!important;
   }
-  body.vx-mobile-mode :is(.row,.form-row,.toolbar){
+  body.vx-mobile-mode :is(.row,.toolbar){
     flex-wrap:wrap!important;
   }
   body.vx-mobile-mode :is(.sidebar,[class*="sidebar"],aside,[role="navigation"]){
@@ -298,7 +293,7 @@ body.vx-mobile-mode .vx-scroll-x{
     padding-bottom:12px!important;
     padding-top:0!important;
   }
-  body.vx-mobile-mode :is(.grid,.columns){
+  body.vx-mobile-mode :is(.grid){
     grid-template-columns:repeat(2,minmax(0,1fr))!important;
   }
   body.vx-mobile-mode :is(.main,[class*="main"]){
@@ -310,7 +305,7 @@ body.vx-mobile-mode .vx-scroll-x{
 }
 @media (orientation:landscape) and (max-width:767px){
   body.vx-mobile-mode{--vx-mobile-bar:58px}
-  body.vx-mobile-mode :is(.grid,.columns){
+  body.vx-mobile-mode :is(.grid){
     grid-template-columns:repeat(2,minmax(0,1fr))!important;
   }
 }
@@ -557,8 +552,7 @@ body.vx-mobile-mode .vx-scroll-x{
     pointer-events:none!important;
   }
   html body.vx-mobile-mode.fixed-workspace-active:not(.cinemometro-page-active) .rail,
-  html body.vx-mobile-mode.fixed-workspace-active:not(.cinemometro-page-active) .rail-operacional,
-  html body.vx-mobile-mode.fixed-workspace-active:not(.cinemometro-page-active) .operational-strip{
+  html body.vx-mobile-mode.fixed-workspace-active:not(.cinemometro-page-active) .rail-operacional{
     display:none!important;
     visibility:hidden!important;
     pointer-events:none!important;
