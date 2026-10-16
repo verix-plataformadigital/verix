@@ -5,10 +5,7 @@ verify_jwt = false
 [functions.stats-v2]
 verify_jwt = false
 [functions.admin-auth-v2]
-verify_jwt = false
-[functions.hourly-history-v2]
-verify_jwt = false
-[functions.asf-proxy-v1]
+verify_jwt = false[functions.asf-proxy-v1]
 verify_jwt = false
 [functions.verix-gate-v1]
 verify_jwt = false
