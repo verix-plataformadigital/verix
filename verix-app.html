@@ -4440,160 +4440,126 @@ html body #vxMobileTop .vx-brand-text{position:relative!important;z-index:1!impo
 }
 </style>
 
-<style id="verix-main-menu-launcher-style-v3">
-/* VÉRIX launcher v3: navegação de aplicação, pesquisa imediata, ferramentas como ações. */
-html body.main-menu-active::before,html body.main-menu-active::after{content:none!important;display:none!important}
-html body #mainMenuScreen.vx-home-screen{position:fixed!important;inset:0!important;z-index:1800!important;display:none!important;width:100vw!important;height:100vh!important;height:100dvh!important;margin:0!important;padding:0!important;overflow:hidden!important;box-sizing:border-box!important;color:#e9f0f1!important;background:#081114!important;font-family:Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:normal!important}
-html body #mainMenuScreen.vx-home-screen.show{display:block!important;inset:0!important;overflow:hidden!important;background:#081114!important}
+<style id="verix-main-menu-launcher-style-v4">
+html body #mainMenuScreen.vx-home-screen{position:fixed!important;inset:0!important;z-index:1800!important;display:none!important;width:100vw!important;height:100vh!important;height:100dvh!important;min-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important;box-sizing:border-box!important;color:#edf4f2!important;background:#071012!important;font-family:Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:normal!important}
+html body #mainMenuScreen.vx-home-screen.show{display:flex!important;flex-direction:column!important;inset:0!important;overflow:hidden!important}
 html body #mainMenuScreen.vx-home-screen *{box-sizing:border-box}
 html body #mainMenuScreen.vx-home-screen [hidden]{display:none!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-shell{display:grid!important;grid-template-columns:224px minmax(0,1fr)!important;width:100%!important;height:100%!important;min-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important;background:#0b1518!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-sidebar{position:relative!important;z-index:2!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;min-width:0!important;min-height:0!important;padding:24px 17px 15px!important;border-right:1px solid #1d3034!important;background:#0b171a!important;overflow:hidden!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-brand{display:flex!important;align-items:center!important;gap:11px!important;min-width:0!important;margin:0!important;padding:0!important;color:#edf6f5!important;background:transparent!important;border:0!important;box-shadow:none!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-brand-mark{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 39px!important;width:39px!important;height:39px!important;border-radius:10px!important;border:1px solid rgba(86,192,148,.45)!important;background:#142c27!important;color:#a6e4c5!important;font:900 19px/1 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:-.8px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-shell{display:flex!important;flex-direction:column!important;width:100%!important;height:100%!important;min-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important;background:#0a1417!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-topbar{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:18px!important;flex:0 0 72px!important;min-width:0!important;padding:0 clamp(18px,3.3vw,48px)!important;border-bottom:1px solid #203235!important;background:#0a1417!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand{display:flex!important;align-items:center!important;gap:12px!important;min-width:0!important;color:#edf7f3!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-mark{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 42px!important;width:42px!important;height:42px!important;border:1px solid rgba(93,202,155,.52)!important;border-radius:11px!important;background:linear-gradient(145deg,#163a2e,#11251f)!important;color:#b2f0d0!important;font:900 21px/1 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:-.8px!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-brand-copy{display:flex!important;flex-direction:column!important;gap:4px!important;min-width:0!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-brand-copy strong{font:850 15px/1 Arial,sans-serif!important;letter-spacing:1.7px!important;color:#f0f6f5!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-brand-copy small{font:750 7px/1.2 Arial,sans-serif!important;letter-spacing:1.1px!important;color:#76938f!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-sidebar-rule{height:1px!important;margin:24px 0 20px!important;background:#1b3033!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-side-caption{margin:0 0 12px!important;color:#698783!important;font:850 8px/1 Arial,sans-serif!important;letter-spacing:1.6px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-side-context{display:flex!important;align-items:center!important;gap:10px!important;padding:11px 9px!important;border-radius:8px!important;background:#102125!important;border:1px solid #1d3538!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-side-context-icon{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 30px!important;width:30px!important;height:30px!important;color:#87cdb1!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-side-context-icon svg{width:17px!important;height:17px!important;display:block!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-side-context>span:last-child{display:flex!important;flex-direction:column!important;gap:5px!important;min-width:0!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-side-context strong{font:750 10px/1.25 Arial,sans-serif!important;color:#d8e7e6!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-side-context small{font:500 9px/1.3 Arial,sans-serif!important;color:#7f989a!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-sidebar-spacer{flex:1 1 auto!important;min-height:24px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-sidebar-notice{padding:13px 11px!important;border:1px solid #26373a!important;border-radius:9px!important;background:#0d1a1d!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-notice-label{display:block!important;margin-bottom:8px!important;color:#89a29f!important;font:800 7px/1.2 Arial,sans-serif!important;letter-spacing:1px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-sidebar-notice p{margin:0 0 11px!important;color:#93a6a8!important;font:500 10px/1.5 Arial,sans-serif!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-unofficial{display:inline-flex!important;padding:5px 7px!important;border:1px solid rgba(192,157,91,.38)!important;border-radius:5px!important;background:rgba(98,74,33,.14)!important;color:#d8bd85!important;font:850 7px/1 Arial,sans-serif!important;letter-spacing:.8px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-sidebar-foot{display:flex!important;align-items:center!important;gap:7px!important;margin-top:17px!important;padding:0 2px!important;color:#627d80!important;font:750 7px/1 Arial,sans-serif!important;letter-spacing:.7px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-sidebar-foot>span{width:6px!important;height:6px!important;flex:0 0 6px!important;border-radius:50%!important;background:#5bb994!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-main{display:flex!important;flex-direction:column!important;min-width:0!important;min-height:0!important;height:100%!important;background:#0b1518!important;overflow:hidden!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-topbar{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:16px!important;flex:0 0 58px!important;min-width:0!important;padding:0 clamp(20px,2.5vw,42px)!important;border-bottom:1px solid #1b2d31!important;background:#0b1518!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-breadcrumb{display:flex!important;align-items:center!important;gap:10px!important;min-width:0!important;color:#7d9699!important;font:800 8px/1 Arial,sans-serif!important;letter-spacing:1.1px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-breadcrumb>span:first-child{color:#cde4dc!important;letter-spacing:1.5px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-breadcrumb-sep{color:#435d60!important;font-size:12px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-contact{display:inline-flex!important;align-items:center!important;gap:9px!important;min-height:34px!important;padding:0 11px!important;border:1px solid #284044!important;border-radius:7px!important;background:#0f2024!important;color:#b7cbca!important;text-decoration:none!important;font:700 9px/1 Arial,sans-serif!important;transition:border-color .16s ease,background .16s ease,color .16s ease!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-contact svg{width:15px!important;height:15px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-contact b{font-size:12px!important;color:#87cdb1!important;font-weight:700!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-contact:hover{border-color:#4b9c7b!important;background:#142c29!important;color:#f0f7f4!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-body{flex:1 1 auto!important;min-width:0!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;padding:27px clamp(20px,2.5vw,42px) 18px!important;scrollbar-color:#284348 transparent!important;scrollbar-width:thin!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-hero{display:flex!important;align-items:flex-end!important;justify-content:space-between!important;gap:25px!important;margin:0 0 23px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-copy strong{font:850 16px/1 Arial,sans-serif!important;letter-spacing:1.6px!important;color:#f2f7f5!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-copy small{font:750 8px/1.2 Arial,sans-serif!important;letter-spacing:1.35px!important;color:#85a39a!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-contact{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:9px!important;min-height:40px!important;padding:0 13px!important;border:1px solid #2b4644!important;border-radius:8px!important;background:#102321!important;color:#c6d8d2!important;text-decoration:none!important;font:700 11px/1 Arial,sans-serif!important;transition:border-color .16s ease,background .16s ease,color .16s ease!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-contact svg{width:16px!important;height:16px!important;flex:0 0 16px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-contact b{font-size:13px!important;color:#8de0b7!important;font-weight:800!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-contact:hover{border-color:#58aa86!important;background:#17332b!important;color:#f6fbf8!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-main{display:flex!important;flex:1 1 auto!important;flex-direction:column!important;min-width:0!important;min-height:0!important;height:auto!important;background:#0a1417!important;overflow:hidden!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-body{display:flex!important;flex:1 1 auto!important;flex-direction:column!important;justify-content:center!important;min-width:0!important;min-height:0!important;width:100%!important;max-width:1440px!important;margin:0 auto!important;padding:34px clamp(20px,4.1vw,64px) 30px!important;overflow-y:auto!important;overflow-x:hidden!important;scrollbar-color:#284348 transparent!important;scrollbar-width:thin!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-hero{display:flex!important;align-items:flex-end!important;justify-content:space-between!important;gap:28px!important;margin:0 auto 27px!important;width:100%!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-hero-copy{min-width:0!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-eyebrow{display:block!important;margin:0 0 9px!important;color:#69c8a1!important;font:850 8px/1 Arial,sans-serif!important;letter-spacing:1.7px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-hero h1{margin:0!important;color:#edf4f4!important;font:750 clamp(23px,2.5vw,32px)/1.12 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:-.85px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-hero p{margin:8px 0 0!important;color:#90a6a8!important;font:450 12px/1.45 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:0!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-search{display:flex!important;align-items:center!important;gap:9px!important;flex:0 1 390px!important;min-width:230px!important;height:42px!important;padding:0 10px 0 13px!important;border:1px solid #2a4145!important;border-radius:9px!important;background:#0c1b1f!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.018)!important;transition:border-color .16s ease,box-shadow .16s ease!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-search:focus-within{border-color:#4f987c!important;box-shadow:0 0 0 3px rgba(68,165,122,.10)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-search>svg{width:17px!important;height:17px!important;flex:0 0 17px!important;color:#7b9998!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-search input{width:100%!important;min-width:0!important;height:100%!important;padding:0!important;border:0!important;outline:none!important;background:transparent!important;box-shadow:none!important;color:#e4eeee!important;font:500 11px/1 Arial,sans-serif!important;text-transform:none!important;letter-spacing:0!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-search input::placeholder{color:#6f888a!important;opacity:1!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-search kbd{display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 22px!important;width:22px!important;height:23px!important;border:1px solid #2c4447!important;border-radius:5px!important;background:#102226!important;color:#779294!important;font:750 10px/1 ui-monospace,Consolas,monospace!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-search button{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 24px!important;width:24px!important;height:24px!important;border:0!important;border-radius:5px!important;background:transparent!important;color:#a9bdbc!important;font:500 19px/1 Arial,sans-serif!important;cursor:pointer!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-eyebrow{display:block!important;margin:0 0 11px!important;color:#69d3a6!important;font:850 9px/1 Arial,sans-serif!important;letter-spacing:1.8px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-hero h1{margin:0!important;color:#eff6f3!important;font:760 clamp(26px,2.5vw,35px)/1.12 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:-1px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-hero p{margin:10px 0 0!important;color:#94aaa8!important;font:450 13px/1.5 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:0!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-back{display:inline-flex!important;align-items:center!important;gap:8px!important;margin:0 0 15px!important;padding:0!important;border:0!important;background:transparent!important;color:#8ce0b5!important;font:750 11px/1.3 Arial,sans-serif!important;cursor:pointer!important;text-align:left!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-back:hover{color:#c6f4db!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-back span{font-size:17px!important;line-height:1!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-search{display:flex!important;align-items:center!important;gap:10px!important;flex:0 1 365px!important;min-width:250px!important;height:44px!important;padding:0 12px 0 14px!important;border:1px solid #2b4244!important;border-radius:10px!important;background:#0d1d20!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.02)!important;transition:border-color .16s ease,box-shadow .16s ease!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-search:focus-within{border-color:#5ab48b!important;box-shadow:0 0 0 3px rgba(68,165,122,.12)!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-search>svg{width:18px!important;height:18px!important;flex:0 0 18px!important;color:#82a49e!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-search input{width:100%!important;min-width:0!important;height:100%!important;padding:0!important;border:0!important;outline:none!important;background:transparent!important;box-shadow:none!important;color:#ecf5f1!important;font:500 12px/1 Arial,sans-serif!important;text-transform:none!important;letter-spacing:0!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-search input::placeholder{color:#799391!important;opacity:1!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-search kbd{display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 23px!important;width:23px!important;height:24px!important;border:1px solid #2c4547!important;border-radius:5px!important;background:#122629!important;color:#86a09c!important;font:750 10px/1 ui-monospace,Consolas,monospace!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-search button{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 25px!important;width:25px!important;height:25px!important;border:0!important;border-radius:6px!important;background:transparent!important;color:#b5c8c2!important;font:500 20px/1 Arial,sans-serif!important;cursor:pointer!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-search button:hover{background:#1a3033!important;color:#fff!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-toolbar{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;margin:0 0 19px!important;padding-bottom:12px!important;border-bottom:1px solid #213438!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-filters{display:inline-flex!important;align-items:center!important;gap:4px!important;padding:3px!important;border:1px solid #203437!important;border-radius:8px!important;background:#0c191d!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-filter{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;min-height:29px!important;padding:0 11px!important;border:1px solid transparent!important;border-radius:6px!important;background:transparent!important;color:#87a0a1!important;font:700 9px/1 Arial,sans-serif!important;white-space:nowrap!important;cursor:pointer!important;transition:background .15s ease,color .15s ease,border-color .15s ease!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-filter span{color:#648284!important;font:800 8px/1 ui-monospace,Consolas,monospace!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-filter:hover{color:#d9e9e6!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-filter.is-active{border-color:#294d45!important;background:#173128!important;color:#c1ead5!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-filter.is-active span{color:#88d2af!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-result-count{color:#71898c!important;font:650 9px/1 Arial,sans-serif!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-group{margin:0 0 25px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-group-heading{display:flex!important;align-items:baseline!important;justify-content:space-between!important;gap:12px!important;margin:0 0 12px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-group-heading h2{margin:0!important;color:#dce9e8!important;font:760 13px/1.2 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:0!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-group-heading>span{color:#6e898c!important;font:800 7px/1 Arial,sans-serif!important;letter-spacing:1.1px!important;white-space:nowrap!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-primary-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:14px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action{appearance:none!important;-webkit-appearance:none!important;position:relative!important;display:flex!important;align-items:center!important;min-width:0!important;margin:0!important;text-align:left!important;text-transform:none!important;letter-spacing:normal!important;cursor:pointer!important;outline-offset:3px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary{gap:17px!important;min-height:144px!important;padding:20px!important;border:1px solid #29433e!important;border-radius:12px!important;background:#102422!important;box-shadow:none!important;color:#ecf3f1!important;transition:transform .17s ease,border-color .17s ease,background .17s ease!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:first-child{border-color:#2a5948!important;background:linear-gradient(105deg,#13392c 0%,#102622 57%,#101f23 100%)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2){border-color:#4b4930!important;background:linear-gradient(105deg,#2a2b20 0%,#1a2421 57%,#101f23 100%)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:hover{transform:translateY(-2px)!important;border-color:#579d7f!important;background-color:#17352d!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-icon{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 53px!important;width:53px!important;height:53px!important;color:#8bcdb0!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2) .vx-home-action-icon{color:#c7bb7d!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-icon svg{display:block!important;width:46px!important;height:46px!important;max-width:100%!important;max-height:100%!important;stroke:currentColor!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-copy{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:6px!important;flex:1 1 auto!important;min-width:0!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-code{color:#89b5a3!important;font:800 7px/1 Arial,sans-serif!important;letter-spacing:1.15px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-title{display:block!important;color:#f0f5f4!important;font:780 15px/1.25 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:0!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-description{display:block!important;color:#9bb0ae!important;font:450 10px/1.5 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:0!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-cta{display:inline-flex!important;align-items:center!important;gap:8px!important;flex:0 0 auto!important;margin-left:auto!important;padding:8px 10px!important;border:1px solid rgba(145,187,169,.24)!important;border-radius:6px!important;color:#a9d9bf!important;background:rgba(9,18,19,.24)!important;font:750 8px/1 Arial,sans-serif!important;letter-spacing:.35px!important;white-space:nowrap!important;transition:background .16s ease,border-color .16s ease!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-cta::after{content:"↗"!important;font:700 11px/1 Arial,sans-serif!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:hover .vx-home-action-cta{border-color:#62af8b!important;background:rgba(33,78,57,.34)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-secondary-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;column-gap:24px!important;row-gap:0!important;border-top:1px solid #263a3e!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary{display:grid!important;grid-template-columns:32px minmax(0,1fr) 14px!important;gap:8px 12px!important;align-content:center!important;align-items:center!important;min-height:76px!important;padding:12px 4px!important;border:0!important;border-bottom:1px solid #203437!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;color:#dfe9e8!important;transition:background .15s ease,padding .15s ease!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary:hover{padding-left:9px!important;padding-right:0!important;background:rgba(22,45,43,.46)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-icon{grid-column:1!important;grid-row:1/span 2!important;width:31px!important;height:31px!important;flex-basis:31px!important;border:1px solid #2b4345!important;border-radius:8px!important;background:#112327!important;color:#9ac9be!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-icon svg{width:17px!important;height:17px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-copy{grid-column:2!important;grid-row:1/span 2!important;gap:5px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-title{font-size:10px!important;font-weight:800!important;color:#e0eae8!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-description{font-size:9px!important;line-height:1.45!important;color:#849d9f!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-arrow{grid-column:3!important;grid-row:1/span 2!important;display:flex!important;align-items:center!important;justify-content:center!important;width:19px!important;height:19px!important;border:1px solid #293f42!important;border-radius:50%!important;color:#759294!important;font:700 10px/1 Arial,sans-serif!important;transition:color .15s ease,border-color .15s ease,transform .15s ease!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary:hover .vx-home-action-arrow{color:#b7e5d0!important;border-color:#4b8b71!important;transform:translate(1px,-1px)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action:focus-visible{outline:2px solid #80d9b1!important;outline-offset:3px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-empty{padding:28px!important;border:1px dashed #2b4547!important;border-radius:9px!important;text-align:center!important;background:#0c1a1d!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-empty strong{color:#dbe9e7!important;font:750 13px/1.3 Arial,sans-serif!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-empty p{color:#82999a!important;font:500 10px/1.5 Arial,sans-serif!important;margin:7px 0 13px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-empty button{padding:8px 12px!important;border:1px solid #34584c!important;border-radius:6px!important;background:#153127!important;color:#b5e5ce!important;font:700 9px/1 Arial,sans-serif!important;cursor:pointer!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer{display:flex!important;align-items:center!important;gap:18px!important;flex:0 0 47px!important;min-width:0!important;padding:0 clamp(20px,2.5vw,42px)!important;border-top:1px solid #1d3034!important;background:#0a1417!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer-brand{display:flex!important;align-items:center!important;gap:8px!important;flex:0 0 auto!important;color:#d7e5e2!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer-dot{width:6px!important;height:6px!important;flex:0 0 6px!important;border-radius:50%!important;background:#5bb994!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer-brand strong{font:850 9px/1 Arial,sans-serif!important;letter-spacing:1px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer-brand>span:last-child{color:#71898d!important;font:750 7px/1 Arial,sans-serif!important;letter-spacing:.7px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer p{flex:1 1 auto!important;min-width:0!important;margin:0!important;color:#779093!important;font:450 8px/1.4 Arial,sans-serif!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer-unofficial{flex:0 0 auto!important;padding:5px 7px!important;border:1px solid #3c3c2e!important;border-radius:5px!important;color:#baa977!important;background:#171a16!important;font:800 6px/1 Arial,sans-serif!important;letter-spacing:.75px!important}
-@media(max-width:1120px){
- html body #mainMenuScreen.vx-home-screen .vx-home-shell{grid-template-columns:76px minmax(0,1fr)!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-sidebar{align-items:center!important;padding:18px 8px 12px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-brand{justify-content:center!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-brand-copy,html body #mainMenuScreen.vx-home-screen .vx-home-sidebar-rule,html body #mainMenuScreen.vx-home-screen .vx-home-side-caption,html body #mainMenuScreen.vx-home-screen .vx-home-side-context,html body #mainMenuScreen.vx-home-screen .vx-home-sidebar-notice,html body #mainMenuScreen.vx-home-screen .vx-home-sidebar-foot{display:none!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-sidebar-spacer{display:block!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-body{padding-left:24px!important;padding-right:24px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-secondary-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;column-gap:18px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-action-primary{gap:12px!important;padding:16px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-cta{display:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-category-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:17px!important;width:100%!important;margin:0 auto!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-category{position:relative!important;display:grid!important;grid-template-columns:52px minmax(0,1fr) 18px!important;align-items:center!important;gap:17px!important;min-width:0!important;min-height:190px!important;padding:24px 22px!important;border:1px solid #26423d!important;border-radius:15px!important;background:linear-gradient(145deg,rgba(22,55,44,.72),rgba(13,29,31,.98) 72%)!important;color:#edf5f1!important;text-align:left!important;cursor:pointer!important;overflow:hidden!important;transition:transform .16s ease,border-color .16s ease,background .16s ease,box-shadow .16s ease!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-category:after{position:absolute!important;content:""!important;inset:auto 0 0 0!important;height:3px!important;background:linear-gradient(90deg,#5ac99b,rgba(90,201,155,0))!important;opacity:.6!important;transition:opacity .16s ease!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-category:hover{transform:translateY(-3px)!important;border-color:#4e8c70!important;background:linear-gradient(145deg,rgba(26,72,53,.82),rgba(14,33,34,.99) 72%)!important;box-shadow:0 12px 32px rgba(0,0,0,.14)!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-category:hover:after{opacity:1!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-category:focus-visible,html body #mainMenuScreen.vx-home-screen .vx-home-back:focus-visible,html body #mainMenuScreen.vx-home-screen .vx-home-tool:focus-visible{outline:2px solid #9be9c0!important;outline-offset:3px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-category-icon{display:flex!important;align-items:center!important;justify-content:center!important;width:52px!important;height:52px!important;border:1px solid rgba(104,206,162,.32)!important;border-radius:13px!important;background:rgba(25,76,55,.44)!important;color:#93e4bc!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-category-icon svg{display:block!important;width:27px!important;height:27px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-category[data-vx-home-category="fiscalizacao"] .vx-home-category-icon{border-color:rgba(105,180,190,.33)!important;background:rgba(31,74,80,.3)!important;color:#a0dce0!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-category[data-vx-home-category="apoio"] .vx-home-category-icon{border-color:rgba(203,181,116,.34)!important;background:rgba(74,62,36,.25)!important;color:#dfcb91!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-category-copy{display:flex!important;flex-direction:column!important;gap:9px!important;min-width:0!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-category-title{display:block!important;color:#f0f6f3!important;font:800 17px/1.2 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:-.2px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-category-description{display:block!important;color:#9db4ad!important;font:450 12px/1.55 Inter,"Segoe UI",Arial,sans-serif!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-category-arrow{display:flex!important;align-items:center!important;justify-content:center!important;width:25px!important;height:25px!important;border:1px solid #34554a!important;border-radius:50%!important;color:#9de2be!important;font:600 15px/1 Arial,sans-serif!important;transition:transform .16s ease,background .16s ease!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-category:hover .vx-home-category-arrow{transform:translateX(2px)!important;background:#193b2d!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-tools{width:100%!important;margin:0 auto!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-tool-grid{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))!important;gap:13px!important;align-items:stretch!important;width:100%!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-tool{display:flex!important;align-items:center!important;gap:15px!important;min-width:0!important;min-height:112px!important;padding:18px!important;border:1px solid #243d3e!important;border-radius:12px!important;background:linear-gradient(145deg,#102123,#0d1a1d)!important;color:#eaf2ef!important;text-align:left!important;cursor:pointer!important;transition:transform .14s ease,border-color .14s ease,background .14s ease!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-tool:hover{transform:translateY(-2px)!important;border-color:#477a62!important;background:linear-gradient(145deg,#142b27,#102022)!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-icon{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 46px!important;width:46px!important;height:46px!important;border:1px solid #2b4b41!important;border-radius:11px!important;background:#122b25!important;color:#9cdec0!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-icon svg{display:block!important;width:31px!important;height:31px!important;max-width:100%!important;max-height:100%!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-copy{display:flex!important;flex:1 1 auto!important;flex-direction:column!important;gap:6px!important;min-width:0!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-tool-category{display:none!important;color:#76bfa0!important;font:800 8px/1 Arial,sans-serif!important;letter-spacing:1.1px!important;text-transform:uppercase!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-tool-grid[data-vx-home-search-results="true"] .vx-home-tool-category{display:block!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-title{display:block!important;color:#eaf4ef!important;font:800 13px/1.25 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:.1px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-description{display:block!important;color:#95aaa6!important;font:450 11px/1.5 Inter,"Segoe UI",Arial,sans-serif!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-tool-arrow{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 27px!important;width:27px!important;height:27px!important;border:1px solid #2d4845!important;border-radius:50%!important;color:#92d8b3!important;font:700 15px/1 Arial,sans-serif!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-tool:hover .vx-home-tool-arrow{border-color:#4d8e6b!important;background:#18392b!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-empty{margin:22px 0 0!important;padding:30px 18px!important;border:1px dashed #2d4546!important;border-radius:12px!important;background:rgba(11,25,28,.55)!important;text-align:center!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-empty strong{color:#e5efea!important;font:750 14px/1.3 Arial,sans-serif!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-empty p{margin:8px 0 14px!important;color:#8fa6a2!important;font:450 12px/1.5 Arial,sans-serif!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-empty button{min-height:38px!important;padding:0 13px!important;border:1px solid #315849!important;border-radius:8px!important;background:#142c25!important;color:#a8e8c6!important;font:750 11px/1 Arial,sans-serif!important;cursor:pointer!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:16px!important;flex:0 0 52px!important;min-width:0!important;padding:0 clamp(18px,3.3vw,48px)!important;border-top:1px solid #203235!important;background:#091316!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-brand{display:flex!important;align-items:center!important;gap:9px!important;min-width:0!important;color:#b7d2c7!important;font:800 9px/1 Arial,sans-serif!important;letter-spacing:.6px!important;white-space:nowrap!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-dot{width:6px!important;height:6px!important;flex:0 0 6px!important;border-radius:50%!important;background:#65d1a0!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-brand strong{color:#e8f2ed!important;font-size:10px!important;letter-spacing:1.1px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer p{margin:0!important;color:#8da5a0!important;font:450 10px/1.4 Arial,sans-serif!important;text-align:right!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-unofficial{flex:0 0 auto!important;padding:6px 8px!important;border:1px solid #3e3d2d!important;border-radius:5px!important;background:#191b16!important;color:#d8c489!important;font:850 7px/1 Arial,sans-serif!important;letter-spacing:.8px!important;white-space:nowrap!important}
+@media(max-width:1080px){
+ html body #mainMenuScreen.vx-home-screen .vx-home-body{padding-left:26px!important;padding-right:26px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-category-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-category{min-height:155px!important;padding:21px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-category:last-child{grid-column:1/-1!important;min-height:130px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-tool-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 }
 @media(max-width:760px){
- html body #mainMenuScreen.vx-home-screen .vx-home-shell{grid-template-columns:minmax(0,1fr)!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-sidebar{display:none!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-topbar{flex-basis:50px!important;height:50px!important;padding:0 16px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-contact{min-height:31px!important;padding:0 8px!important;font-size:8px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-body{padding:20px 16px 16px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-hero{align-items:stretch!important;flex-direction:column!important;gap:16px!important;margin-bottom:18px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-hero h1{font-size:25px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-search{flex:0 0 42px!important;min-width:0!important;width:100%!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-toolbar{align-items:flex-start!important;flex-direction:column!important;gap:10px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-primary-grid{grid-template-columns:minmax(0,1fr)!important;gap:10px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-action-primary{min-height:116px!important;padding:14px!important;gap:12px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-icon{flex-basis:43px!important;width:43px!important;height:43px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-icon svg{width:39px!important;height:39px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-topbar{flex-basis:62px!important;padding:0 16px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-brand-mark{flex-basis:38px!important;width:38px!important;height:38px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-brand-copy strong{font-size:14px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-brand-copy small{font-size:7px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-contact{min-height:36px!important;padding:0 9px!important;font-size:9px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-contact span{display:none!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-body{justify-content:flex-start!important;padding:26px 16px 24px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-hero{align-items:stretch!important;flex-direction:column!important;gap:18px!important;margin-bottom:22px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-hero h1{font-size:27px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-search{flex:0 0 44px!important;min-width:0!important;width:100%!important;max-width:none!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-category-grid{grid-template-columns:minmax(0,1fr)!important;gap:11px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-category,html body #mainMenuScreen.vx-home-screen .vx-home-category:last-child{grid-column:auto!important;min-height:124px!important;padding:18px!important;grid-template-columns:46px minmax(0,1fr) 22px!important;gap:13px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-category-icon{width:46px!important;height:46px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-category-icon svg{width:24px!important;height:24px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-category-title{font-size:15px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-category-description{font-size:11px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-tool-grid{grid-template-columns:minmax(0,1fr)!important;gap:10px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-tool{min-height:92px!important;padding:14px!important;gap:12px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-action-icon{flex-basis:42px!important;width:42px!important;height:42px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-action-icon svg{width:29px!important;height:29px!important}
  html body #mainMenuScreen.vx-home-screen .vx-home-action-title{font-size:13px!important}
  html body #mainMenuScreen.vx-home-screen .vx-home-action-description{font-size:10px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-cta{display:none!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-secondary-grid{grid-template-columns:minmax(0,1fr)!important;column-gap:0!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary{min-height:68px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-footer{flex:0 0 auto!important;min-height:50px!important;padding:10px 14px!important;gap:10px!important;flex-wrap:wrap!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-footer p{order:3;flex-basis:100%!important;font-size:8px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-footer{flex-basis:auto!important;min-height:55px!important;padding:10px 14px!important;gap:8px!important;flex-wrap:wrap!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-footer p{order:3;flex-basis:100%!important;font-size:8px!important;text-align:left!important}
  html body #mainMenuScreen.vx-home-screen .vx-home-footer-unofficial{margin-left:auto!important}
 }
-@media(max-width:380px){
- html body #mainMenuScreen.vx-home-screen .vx-home-breadcrumb{font-size:7px!important;gap:6px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-contact span{display:none!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-filters{max-width:100%!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-filter{gap:5px!important;padding:0 8px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-description{font-size:9px!important}
+@media(max-width:390px){
+ html body #mainMenuScreen.vx-home-screen .vx-home-brand-copy small{letter-spacing:.8px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-contact{min-width:35px!important;width:35px!important;padding:0!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-footer-brand{font-size:8px!important;gap:6px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-footer-brand strong{font-size:9px!important}
 }
-@media(max-height:760px) and (min-width:761px){
- html body #mainMenuScreen.vx-home-screen .vx-home-topbar{flex-basis:50px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-body{padding-top:18px!important;padding-bottom:10px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-hero{margin-bottom:16px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-action-primary{min-height:126px!important;padding-top:14px!important;padding-bottom:14px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary{min-height:66px!important;padding-top:10px!important;padding-bottom:10px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-group{margin-bottom:18px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-footer{flex-basis:42px!important}
+@media(max-height:700px) and (min-width:761px){
+ html body #mainMenuScreen.vx-home-screen .vx-home-body{justify-content:flex-start!important;padding-top:22px!important;padding-bottom:20px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-category{min-height:150px!important}
 }
 @media(prefers-reduced-motion:reduce){
- html body #mainMenuScreen.vx-home-screen .vx-home-action,html body #mainMenuScreen.vx-home-screen .vx-home-contact,html body #mainMenuScreen.vx-home-screen .vx-home-filter{transition:none!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-category,html body #mainMenuScreen.vx-home-screen .vx-home-category-arrow,html body #mainMenuScreen.vx-home-screen .vx-home-tool,html body #mainMenuScreen.vx-home-screen .vx-home-contact{transition:none!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-category:hover,html body #mainMenuScreen.vx-home-screen .vx-home-tool:hover{transform:none!important}
 }
 </style>
 </head><body>
@@ -4696,94 +4662,122 @@ html body #mainMenuScreen.vx-home-screen .vx-home-footer-unofficial{flex:0 0 aut
 
 <div class="bottom"><div class="bottom-left"></div><div class="bottom-right"><div class="credit"><strong></strong><br><br></div></div></div>
 <div id="mainMenuScreen" class="main-menu-screen vx-home-screen" aria-label="Menu principal">
-<div class="vx-home-shell">
-  <aside class="vx-home-sidebar" aria-label="Identidade e aviso da plataforma">
-    <div class="vx-home-brand"><span class="vx-home-brand-mark" aria-hidden="true">V</span><span class="vx-home-brand-copy"><strong>VÉRIX</strong><small>APOIO OPERACIONAL</small></span></div>
-    <div class="vx-home-sidebar-rule"></div>
-    <div class="vx-home-side-caption">PLATAFORMA</div>
-    <div class="vx-home-side-context"><span class="vx-home-side-context-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span><span><strong>Centro operacional</strong><small>Consultas e utilitários</small></span></div>
-    <div class="vx-home-sidebar-spacer"></div>
-    <div class="vx-home-sidebar-notice"><span class="vx-home-notice-label">NOTA DE UTILIZAÇÃO</span><p>Ferramenta de apoio. Confirma sempre os dados nas fontes oficiais antes de atuar.</p><span class="vx-home-unofficial">NÃO OFICIAL</span></div>
-    <div class="vx-home-sidebar-foot"><span aria-hidden="true"></span>VÉRIX · PLATAFORMA DIGITAL</div>
-  </aside>
-  <main class="vx-home-main">
+  <div class="vx-home-shell">
     <header class="vx-home-topbar">
-      <div class="vx-home-breadcrumb"><span>VÉRIX</span><span class="vx-home-breadcrumb-sep">/</span><span>PAINEL OPERACIONAL</span></div>
+      <div class="vx-home-brand"><span class="vx-home-brand-mark" aria-hidden="true">V</span><span class="vx-home-brand-copy"><strong>VÉRIX</strong><small>APOIO OPERACIONAL</small></span></div>
       <a class="vx-home-contact" href="mailto:verix.plataformadigital@gmail.com?subject=V%C3%89RIX%20-%20Sugest%C3%A3o%20%2F%20Erro" aria-label="Contactar a equipa VÉRIX"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg><span>Contactar a equipa</span><b aria-hidden="true">↗</b></a>
     </header>
-    <div class="vx-home-body">
-      <section class="vx-home-hero" aria-label="Introdução e pesquisa">
-        <div class="vx-home-hero-copy"><span class="vx-home-eyebrow">ACESSO RÁPIDO</span><h1>O que precisas de fazer?</h1><p>Consultas e ferramentas de apoio ao serviço, num só lugar.</p></div>
-        <div class="vx-home-search" role="search"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg><input id="vxHomeSearch" type="search" autocomplete="off" spellcheck="false" aria-label="Pesquisar ferramentas do VÉRIX" placeholder="Pesquisar ferramenta…" /><kbd aria-hidden="true">/</kbd><button id="vxHomeSearchClear" type="button" aria-label="Limpar pesquisa" title="Limpar pesquisa" hidden>×</button></div>
-      </section>
-      <div class="vx-home-toolbar"><div class="vx-home-filters" role="group" aria-label="Filtrar ferramentas"><button class="vx-home-filter is-active" type="button" data-vx-home-filter="all" aria-pressed="true">Todas <span>08</span></button><button class="vx-home-filter" type="button" data-vx-home-filter="primary" aria-pressed="false">Operações <span>02</span></button><button class="vx-home-filter" type="button" data-vx-home-filter="support" aria-pressed="false">Apoio <span>06</span></button></div><span id="vxHomeResultCount" class="vx-home-result-count" role="status" aria-live="polite">8 ferramentas</span></div>
-      <section class="vx-home-group" data-vx-home-group-panel="primary" aria-labelledby="vxHomePrimaryHeading"><div class="vx-home-group-heading"><h2 id="vxHomePrimaryHeading">Operações prioritárias</h2><span>ACESSO DIRETO</span></div><div class="vx-home-primary-grid"><button type="button" class="vx-home-action vx-home-action-primary" data-vx-home-action="1" data-vx-home-group="primary" data-vx-home-search="inspecoes inspeções seguro seguro automovel automóvel inspeção periodica periódica veiculo veículo viatura matricula matrícula asf imt" aria-label="INSPEÇÕES / SEGURO" onclick="abrirConsultaPrincipal()"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 160 120" role="img"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M34 77h92l-5-27c-2-11-11-19-22-21H61c-11 2-20 10-22 21l-5 27Z"/><path d="M46 50h68l-7-12c-2-4-7-6-12-6H65c-5 0-10 2-12 6l-7 12Z"/><path d="M34 77h92"/><circle cx="51" cy="84" r="10"/><circle cx="109" cy="84" r="10"/><path d="M59 67h42"/><path d="M45 61h9m57 0h-9"/><path d="M75 36v14m10-14v14"/><rect x="69" y="26" width="22" height="7" rx="2"/><path d="M126 69h9m-9 8h9"/></g><circle cx="80" cy="60" r="54" opacity=".11"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-code">OPERAÇÃO 01</span><span class="vx-home-action-title">INSPEÇÕES / SEGURO</span><span class="vx-home-action-description">Consultar seguro automóvel, inspeção periódica e dados da viatura.</span></span><span class="vx-home-action-cta" aria-hidden="true">Abrir módulo</span></button>
-<button type="button" class="vx-home-action vx-home-action-primary" data-vx-home-action="1" data-vx-home-group="primary" data-vx-home-search="cinemometro cinemómetro velocidade radar fiscalizacao fiscalização erro maximo admissivel ema" aria-label="CINEMÓMETRO" onclick="abrirModulo('cinemometro',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 160 120" role="img"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="78" cy="39" r="23"/><circle cx="78" cy="39" r="9"/><path d="M78 16v46m-23-23h46"/><path d="M61 58l-18 30h70L95 58"/><path d="M67 88l-5 18m27-18 5 18"/><path d="M43 88h68"/><path d="M29 18h18m-18 8h11M118 18h13m-13 8h20"/><path d="M112 50c10 3 17 9 21 18"/></g><circle cx="78" cy="39" r="50" opacity=".10"/><path d="M25 39h20" opacity=".25"/><path d="M111 39h20" opacity=".25"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-code">OPERAÇÃO 02</span><span class="vx-home-action-title">CINEMÓMETRO</span><span class="vx-home-action-description">Efetuar cálculos e verificações de velocidade.</span></span><span class="vx-home-action-cta" aria-hidden="true">Abrir módulo</span></button></div></section>
-      <section class="vx-home-group vx-home-secondary-group" data-vx-home-group-panel="support" aria-labelledby="vxHomeSupportHeading"><div class="vx-home-group-heading"><h2 id="vxHomeSupportHeading">Ferramentas complementares</h2><span>06 MÓDULOS</span></div><div class="vx-home-secondary-grid"><button type="button" class="vx-home-action vx-home-action-secondary" data-vx-home-action="1" data-vx-home-group="support" data-vx-home-search="legislacao legislação infracoes infrações artigos codigo da estrada código da estrada coimas dr" aria-label="LEGISLAÇÃO" onclick="abrirModulo('legislacao',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5h10.5A3.5 3.5 0 0 1 19 8v11H8a3 3 0 0 1-3-3z"/><path d="M8 4.5v11.8A2.7 2.7 0 0 0 10.7 19M9 8h6M9 11h6M9 14h4"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">LEGISLAÇÃO</span><span class="vx-home-action-description">Pesquisar infrações, artigos e enquadramentos legais.</span></span><span class="vx-home-action-arrow" aria-hidden="true">↗</span></button>
-<button type="button" class="vx-home-action vx-home-action-secondary" data-vx-home-action="1" data-vx-home-group="support" data-vx-home-search="alcool álcool alcoolemia deducoes deduções taxa sangue ar expirado" aria-label="ÁLCOOL / DEDUÇÕES" onclick="abrirModulo('alcoolExcel',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v5l-4.2 7.1A3.8 3.8 0 0 0 9.1 21h5.8a3.8 3.8 0 0 0 3.3-5.9L14 8V3"/><path d="M7.8 15h8.4M10 12h4"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">ÁLCOOL / DEDUÇÕES</span><span class="vx-home-action-description">Consultar tabelas de alcoolemia e cálculos de deduções.</span></span><span class="vx-home-action-arrow" aria-hidden="true">↗</span></button>
-<button type="button" class="vx-home-action vx-home-action-secondary" data-vx-home-action="1" data-vx-home-group="support" data-vx-home-search="codigos códigos distrito matricula matrícula portugal" aria-label="CÓDIGOS DISTRITO" onclick="abrirModulo('codigosDistrito',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3 6.5 21M17.5 3 15 21M3 9h18M2 15h18"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">CÓDIGOS DISTRITO</span><span class="vx-home-action-description">Identificar o distrito através dos códigos de matrícula.</span></span><span class="vx-home-action-arrow" aria-hidden="true">↗</span></button>
-<button type="button" class="vx-home-action vx-home-action-secondary" data-vx-home-action="1" data-vx-home-group="support" data-vx-home-search="ferramentas utilitarios utilitários calculadora conversor apoio" aria-label="FERRAMENTAS" onclick="abrirModulo('ferramentas',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 6.2a4 4 0 0 0-5.3 5.3L3.8 17a2 2 0 0 0 2.9 2.9l5.5-5.4a4 4 0 0 0 5.3-5.3l-2.4 2.4-3-3z"/><path d="m14 14 5.8 5.8"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">FERRAMENTAS</span><span class="vx-home-action-description">Utilitários complementares de apoio ao serviço.</span></span><span class="vx-home-action-arrow" aria-hidden="true">↗</span></button>
-<button type="button" class="vx-home-action vx-home-action-secondary" data-vx-home-action="1" data-vx-home-group="support" data-vx-home-search="informacoes informações ajuda instrucoes instruções funcionamento" aria-label="INFORMAÇÕES" onclick="abrirModulo('informacoes',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 10.5v5M12 7.5h.01"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">INFORMAÇÕES</span><span class="vx-home-action-description">Ajuda de utilização e informação sobre a plataforma.</span></span><span class="vx-home-action-arrow" aria-hidden="true">↗</span></button>
-<button type="button" class="vx-home-action vx-home-action-secondary" data-vx-home-action="1" data-vx-home-group="support" data-vx-home-search="definicoes definições preferencias preferências configuracao configuração" aria-label="DEFINIÇÕES" onclick="abrirModulo('definicoes',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19 13.5a7.6 7.6 0 0 0 0-3l1.6-1.2-1.7-3-1.9.7a7 7 0 0 0-2.6-1.5L14 3.5h-4l-.4 2a7 7 0 0 0-2.6 1.5l-1.9-.7-1.7 3L5 10.5a7.6 7.6 0 0 0 0 3l-1.6 1.2 1.7 3 1.9-.7a7 7 0 0 0 2.6 1.5l.4 2h4l.4-2a7 7 0 0 0 2.6-1.5l1.9.7 1.7-3z"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">DEFINIÇÕES</span><span class="vx-home-action-description">Preferências e opções disponíveis da aplicação.</span></span><span class="vx-home-action-arrow" aria-hidden="true">↗</span></button></div></section>
-      <div class="vx-home-empty" id="vxHomeEmpty" hidden><strong>Não encontrámos ferramentas</strong><p>Tenta outro termo ou limpa a pesquisa.</p><button type="button" id="vxHomeReset">Limpar pesquisa</button></div>
-    </div>
-    <footer class="vx-home-footer"><div class="vx-home-footer-brand"><span class="vx-home-footer-dot" aria-hidden="true"></span><strong>VÉRIX</strong><span>APOIO OPERACIONAL</span></div><p>Confirma sempre a legislação e os dados nas fontes oficiais antes da utilização em serviço.</p><span class="vx-home-footer-unofficial">NÃO OFICIAL</span></footer>
-  </main>
+    <main class="vx-home-main">
+      <div class="vx-home-body">
+        <section class="vx-home-hero" aria-label="Escolher área ou pesquisar">
+          <div class="vx-home-hero-copy">
+            <button type="button" class="vx-home-back" id="vxHomeBack" hidden><span aria-hidden="true">←</span> Todas as áreas</button>
+            <span class="vx-home-eyebrow" id="vxHomeEyebrow">ACESSO OPERACIONAL</span>
+            <h1 id="vxHomePageTitle">Onde precisas de atuar?</h1>
+            <p id="vxHomePageDescription">Escolhe uma área para veres apenas as ferramentas relevantes.</p>
+          </div>
+          <div class="vx-home-search" role="search"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg><input id="vxHomeSearch" type="search" autocomplete="off" spellcheck="false" aria-label="Pesquisar ferramentas do VÉRIX" placeholder="Pesquisar ferramenta…" /><kbd aria-hidden="true">/</kbd><button id="vxHomeSearchClear" type="button" aria-label="Limpar pesquisa" title="Limpar pesquisa" hidden>×</button></div>
+        </section>
+        <section class="vx-home-category-grid" id="vxHomeCategoryGrid" aria-label="Áreas principais">
+          <button type="button" class="vx-home-category" data-vx-home-category="operacoes" aria-pressed="false"><span class="vx-home-category-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14l1.8-5.2A2.8 2.8 0 0 1 7.5 7h9a2.8 2.8 0 0 1 2.7 1.8L21 14v4h-2v-2H5v2H3z"/><path d="M5 13h14M7 16h.01M17 16h.01M8 7l1-2h6l1 2"/></svg></span><span class="vx-home-category-copy"><span class="vx-home-category-title">Operações rodoviárias</span><span class="vx-home-category-description">Seguro, inspeção e controlo de velocidade.</span></span><span class="vx-home-category-arrow" aria-hidden="true">↗</span></button>
+          <button type="button" class="vx-home-category" data-vx-home-category="fiscalizacao" aria-pressed="false"><span class="vx-home-category-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 20 6v5c0 4.6-3.2 8.1-8 10-4.8-1.9-8-5.4-8-10V6z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></span><span class="vx-home-category-copy"><span class="vx-home-category-title">Fiscalização e legislação</span><span class="vx-home-category-description">Álcool, deduções, enquadramento legal e códigos.</span></span><span class="vx-home-category-arrow" aria-hidden="true">↗</span></button>
+          <button type="button" class="vx-home-category" data-vx-home-category="apoio" aria-pressed="false"><span class="vx-home-category-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 6.2a4 4 0 0 0-5.3 5.3L3.8 17a2 2 0 0 0 2.9 2.9l5.5-5.4a4 4 0 0 0 5.3-5.3l-2.4 2.4-3-3z"/><path d="m14 14 5.8 5.8"/></svg></span><span class="vx-home-category-copy"><span class="vx-home-category-title">Apoio operacional</span><span class="vx-home-category-description">Utilitários, informações e definições.</span></span><span class="vx-home-category-arrow" aria-hidden="true">↗</span></button>
+        </section>
+        <section class="vx-home-tools" id="vxHomeTools" hidden aria-label="Ferramentas disponíveis">
+          <div class="vx-home-tool-grid" id="vxHomeToolGrid">
+<button type="button" class="vx-home-tool" data-vx-home-action="1" data-vx-home-group="operacoes" data-vx-home-search="inspecoes inspeções seguro seguro automovel automóvel inspeção periodica periódica veiculo veículo viatura matricula matrícula asf imt" aria-label="INSPEÇÕES / SEGURO" onclick="abrirConsultaPrincipal()" hidden><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 160 120" role="img"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M34 77h92l-5-27c-2-11-11-19-22-21H61c-11 2-20 10-22 21l-5 27Z"/><path d="M46 50h68l-7-12c-2-4-7-6-12-6H65c-5 0-10 2-12 6l-7 12Z"/><path d="M34 77h92"/><circle cx="51" cy="84" r="10"/><circle cx="109" cy="84" r="10"/><path d="M59 67h42"/><path d="M45 61h9m57 0h-9"/><path d="M75 36v14m10-14v14"/><rect x="69" y="26" width="22" height="7" rx="2"/><path d="M126 69h9m-9 8h9"/></g><circle cx="80" cy="60" r="54" opacity=".11"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-tool-category">Operações rodoviárias</span><span class="vx-home-action-title">INSPEÇÕES / SEGURO</span><span class="vx-home-action-description">Consultar seguro automóvel, inspeção periódica e dados da viatura.</span></span><span class="vx-home-tool-arrow" aria-hidden="true">↗</span></button>
+<button type="button" class="vx-home-tool" data-vx-home-action="1" data-vx-home-group="operacoes" data-vx-home-search="cinemometro cinemómetro velocidade radar fiscalizacao fiscalização erro maximo admissivel ema" aria-label="CINEMÓMETRO" onclick="abrirModulo('cinemometro',this)" hidden><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 160 120" role="img"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="78" cy="39" r="23"/><circle cx="78" cy="39" r="9"/><path d="M78 16v46m-23-23h46"/><path d="M61 58l-18 30h70L95 58"/><path d="M67 88l-5 18m27-18 5 18"/><path d="M43 88h68"/><path d="M29 18h18m-18 8h11M118 18h13m-13 8h20"/><path d="M112 50c10 3 17 9 21 18"/></g><circle cx="78" cy="39" r="50" opacity=".10"/><path d="M25 39h20" opacity=".25"/><path d="M111 39h20" opacity=".25"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-tool-category">Operações rodoviárias</span><span class="vx-home-action-title">CINEMÓMETRO</span><span class="vx-home-action-description">Efetuar cálculos e verificações de velocidade.</span></span><span class="vx-home-tool-arrow" aria-hidden="true">↗</span></button>
+<button type="button" class="vx-home-tool" data-vx-home-action="1" data-vx-home-group="fiscalizacao" data-vx-home-search="legislacao legislação infracoes infrações artigos codigo da estrada código da estrada coimas dr" aria-label="LEGISLAÇÃO" onclick="abrirModulo('legislacao',this)" hidden><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5h10.5A3.5 3.5 0 0 1 19 8v11H8a3 3 0 0 1-3-3z"/><path d="M8 4.5v11.8A2.7 2.7 0 0 0 10.7 19M9 8h6M9 11h6M9 14h4"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-tool-category">Fiscalização e legislação</span><span class="vx-home-action-title">LEGISLAÇÃO</span><span class="vx-home-action-description">Pesquisar infrações, artigos e enquadramentos legais.</span></span><span class="vx-home-tool-arrow" aria-hidden="true">↗</span></button>
+<button type="button" class="vx-home-tool" data-vx-home-action="1" data-vx-home-group="fiscalizacao" data-vx-home-search="alcool álcool alcoolemia deducoes deduções taxa sangue ar expirado" aria-label="ÁLCOOL / DEDUÇÕES" onclick="abrirModulo('alcoolExcel',this)" hidden><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v5l-4.2 7.1A3.8 3.8 0 0 0 9.1 21h5.8a3.8 3.8 0 0 0 3.3-5.9L14 8V3"/><path d="M7.8 15h8.4M10 12h4"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-tool-category">Fiscalização e legislação</span><span class="vx-home-action-title">ÁLCOOL / DEDUÇÕES</span><span class="vx-home-action-description">Consultar tabelas de alcoolemia e cálculos de deduções.</span></span><span class="vx-home-tool-arrow" aria-hidden="true">↗</span></button>
+<button type="button" class="vx-home-tool" data-vx-home-action="1" data-vx-home-group="fiscalizacao" data-vx-home-search="codigos códigos distrito matricula matrícula portugal" aria-label="CÓDIGOS DISTRITO" onclick="abrirModulo('codigosDistrito',this)" hidden><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3 6.5 21M17.5 3 15 21M3 9h18M2 15h18"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-tool-category">Fiscalização e legislação</span><span class="vx-home-action-title">CÓDIGOS DISTRITO</span><span class="vx-home-action-description">Identificar o distrito através dos códigos de matrícula.</span></span><span class="vx-home-tool-arrow" aria-hidden="true">↗</span></button>
+<button type="button" class="vx-home-tool" data-vx-home-action="1" data-vx-home-group="apoio" data-vx-home-search="ferramentas utilitarios utilitários calculadora conversor apoio" aria-label="FERRAMENTAS" onclick="abrirModulo('ferramentas',this)" hidden><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 6.2a4 4 0 0 0-5.3 5.3L3.8 17a2 2 0 0 0 2.9 2.9l5.5-5.4a4 4 0 0 0 5.3-5.3l-2.4 2.4-3-3z"/><path d="m14 14 5.8 5.8"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-tool-category">Apoio operacional</span><span class="vx-home-action-title">FERRAMENTAS</span><span class="vx-home-action-description">Utilitários complementares de apoio ao serviço.</span></span><span class="vx-home-tool-arrow" aria-hidden="true">↗</span></button>
+<button type="button" class="vx-home-tool" data-vx-home-action="1" data-vx-home-group="apoio" data-vx-home-search="informacoes informações ajuda instrucoes instruções funcionamento" aria-label="INFORMAÇÕES" onclick="abrirModulo('informacoes',this)" hidden><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 10.5v5M12 7.5h.01"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-tool-category">Apoio operacional</span><span class="vx-home-action-title">INFORMAÇÕES</span><span class="vx-home-action-description">Ajuda de utilização e informação sobre a plataforma.</span></span><span class="vx-home-tool-arrow" aria-hidden="true">↗</span></button>
+<button type="button" class="vx-home-tool" data-vx-home-action="1" data-vx-home-group="apoio" data-vx-home-search="definicoes definições preferencias preferências configuracao configuração" aria-label="DEFINIÇÕES" onclick="abrirModulo('definicoes',this)" hidden><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19 13.5a7.6 7.6 0 0 0 0-3l1.6-1.2-1.7-3-1.9.7a7 7 0 0 0-2.6-1.5L14 3.5h-4l-.4 2a7 7 0 0 0-2.6 1.5l-1.9-.7-1.7 3L5 10.5a7.6 7.6 0 0 0 0 3l-1.6 1.2 1.7 3 1.9-.7a7 7 0 0 0 2.6 1.5l.4 2h4l.4-2a7 7 0 0 0 2.6-1.5l1.9.7 1.7-3z"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-tool-category">Apoio operacional</span><span class="vx-home-action-title">DEFINIÇÕES</span><span class="vx-home-action-description">Preferências e opções disponíveis da aplicação.</span></span><span class="vx-home-tool-arrow" aria-hidden="true">↗</span></button>
+          </div>
+          <div class="vx-home-empty" id="vxHomeEmpty" hidden><strong>Não encontrámos ferramentas</strong><p>Tenta outro termo ou limpa a pesquisa.</p><button type="button" id="vxHomeReset">Limpar pesquisa</button></div>
+          <span id="vxHomeResultCount" class="vx-home-sr-only" role="status" aria-live="polite"></span>
+        </section>
+      </div>
+      <footer class="vx-home-footer"><div class="vx-home-footer-brand"><span class="vx-home-footer-dot" aria-hidden="true"></span><strong>VÉRIX</strong><span>APOIO OPERACIONAL</span></div><p>Confirma sempre a legislação e os dados nas fontes oficiais antes de atuar.</p><span class="vx-home-footer-unofficial">NÃO OFICIAL</span></footer>
+    </main>
+  </div>
 </div>
-</div>
-<script id="verix-main-menu-launcher-script-v3">
+<script id="verix-main-menu-launcher-script-v4">
 (function(){
   'use strict';
   var root=document.getElementById('mainMenuScreen');
-  if(!root || root.getAttribute('data-vx-launcher-bound')==='1') return;
+  if(!root||root.getAttribute('data-vx-launcher-bound')==='1') return;
   root.setAttribute('data-vx-launcher-bound','1');
   var input=root.querySelector('#vxHomeSearch');
   var clearButton=root.querySelector('#vxHomeSearchClear');
   var resetButton=root.querySelector('#vxHomeReset');
+  var eyebrow=root.querySelector('#vxHomeEyebrow');
+  var pageTitle=root.querySelector('#vxHomePageTitle');
+  var pageDescription=root.querySelector('#vxHomePageDescription');
+  var categoryGrid=root.querySelector('#vxHomeCategoryGrid');
+  var categoryCards=Array.prototype.slice.call(root.querySelectorAll('[data-vx-home-category]'));
+  var toolPanel=root.querySelector('#vxHomeTools');
+  var toolGrid=root.querySelector('#vxHomeToolGrid');
+  var backButton=root.querySelector('#vxHomeBack');
   var resultCount=root.querySelector('#vxHomeResultCount');
   var emptyState=root.querySelector('#vxHomeEmpty');
   var actions=Array.prototype.slice.call(root.querySelectorAll('[data-vx-home-action]'));
-  var filters=Array.prototype.slice.call(root.querySelectorAll('[data-vx-home-filter]'));
-  var panels=Array.prototype.slice.call(root.querySelectorAll('[data-vx-home-group-panel]'));
-  var activeFilter='all';
+  var activeCategory=null;
+  var categories={
+    operacoes:{title:'Operações rodoviárias',description:'Seguro, inspeção e ferramentas de velocidade.'},
+    fiscalizacao:{title:'Fiscalização e legislação',description:'Álcool, deduções, enquadramento legal e códigos de distrito.'},
+    apoio:{title:'Apoio operacional',description:'Utilitários, informações e preferências da aplicação.'}
+  };
   function normalise(value){
     return String(value||'').toLocaleLowerCase('pt-PT').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
   }
-  function applyFilters(){
-    var query=normalise(input ? input.value : '');
+  function applyState(){
+    var query=normalise(input?input.value:'');
+    var viewTools=!!activeCategory||!!query;
     var shown=0;
+    categoryGrid.hidden=viewTools;
+    toolPanel.hidden=!viewTools;
+    if(backButton) backButton.hidden=!viewTools;
+    if(eyebrow) eyebrow.textContent=activeCategory?'FERRAMENTAS DA ÁREA':(query?'PESQUISA DE FERRAMENTAS':'ACESSO OPERACIONAL');
+    if(pageTitle) pageTitle.textContent=activeCategory?categories[activeCategory].title:(query?'Resultados da pesquisa':'Onde precisas de atuar?');
+    if(pageDescription) pageDescription.textContent=activeCategory?categories[activeCategory].description:(query?'Ferramentas encontradas em todas as áreas.':'Escolhe uma área para veres apenas as ferramentas relevantes.');
     actions.forEach(function(action){
       var group=action.getAttribute('data-vx-home-group');
       var searchable=normalise((action.textContent||'')+' '+(action.getAttribute('data-vx-home-search')||''));
-      var visible=(activeFilter==='all'||activeFilter===group) && (!query||searchable.indexOf(query)!==-1);
+      var groupMatches=!activeCategory||group===activeCategory;
+      var visible=viewTools&&groupMatches&&(!query||searchable.indexOf(query)!==-1);
       action.hidden=!visible;
       if(visible) shown++;
     });
-    panels.forEach(function(panel){
-      var panelGroup=panel.getAttribute('data-vx-home-group-panel');
-      var any=actions.some(function(action){return !action.hidden&&action.getAttribute('data-vx-home-group')===panelGroup;});
-      panel.hidden=!any;
-    });
-    if(resultCount) resultCount.textContent=shown===1?'1 ferramenta':(shown+' ferramentas');
-    if(emptyState) emptyState.hidden=shown!==0;
+    if(toolGrid) toolGrid.setAttribute('data-vx-home-search-results',(!activeCategory&&!!query)?'true':'false');
+    if(emptyState) emptyState.hidden=!viewTools||shown>0;
+    if(resultCount) resultCount.textContent=shown+' ferramentas encontradas.';
     if(clearButton) clearButton.hidden=!(input&&input.value);
-    filters.forEach(function(filter){
-      var selected=filter.getAttribute('data-vx-home-filter')===activeFilter;
-      filter.classList.toggle('is-active',selected);
-      filter.setAttribute('aria-pressed',selected?'true':'false');
+    categoryCards.forEach(function(card){
+      card.setAttribute('aria-pressed',card.getAttribute('data-vx-home-category')===activeCategory?'true':'false');
     });
   }
-  filters.forEach(function(filter){
-    filter.addEventListener('click',function(){
-      activeFilter=filter.getAttribute('data-vx-home-filter')||'all';
-      applyFilters();
+  categoryCards.forEach(function(card){
+    card.addEventListener('click',function(){
+      activeCategory=card.getAttribute('data-vx-home-category');
+      if(input) input.value='';
+      applyState();
     });
   });
+  if(backButton) backButton.addEventListener('click',function(){
+    activeCategory=null;
+    if(input) input.value='';
+    applyState();
+  });
   if(input){
-    input.addEventListener('input',applyFilters);
+    input.addEventListener('input',function(){
+      if(input.value) activeCategory=null;
+      applyState();
+    });
     input.addEventListener('keydown',function(event){
       if(event.key==='Escape'){
-        if(input.value){input.value='';applyFilters();event.preventDefault();}
+        if(input.value){input.value='';applyState();event.preventDefault();}
+        else if(activeCategory){activeCategory=null;applyState();event.preventDefault();}
         else input.blur();
       }else if(event.key==='Enter'){
         var visible=actions.filter(function(action){return !action.hidden;});
@@ -4792,7 +4786,7 @@ html body #mainMenuScreen.vx-home-screen .vx-home-footer-unofficial{flex:0 0 aut
     });
   }
   function clearSearch(){
-    if(input){input.value='';activeFilter='all';applyFilters();input.focus();}
+    if(input){input.value='';applyState();input.focus();}
   }
   if(clearButton) clearButton.addEventListener('click',clearSearch);
   if(resetButton) resetButton.addEventListener('click',clearSearch);
@@ -4803,7 +4797,7 @@ html body #mainMenuScreen.vx-home-screen .vx-home-footer-unofficial{flex:0 0 aut
     var isTyping=tag==='input'||tag==='textarea'||tag==='select'||(target&&target.isContentEditable);
     if(event.key==='/'&&!isTyping&&input){event.preventDefault();input.focus();}
   });
-  applyFilters();
+  applyState();
 })();
 </script>
 <div id="moduleOverlay" class="module-overlay" onclick="fecharModuloFora(event)"> <div class="module-window"> <div class="module-top"><div><div id="moduleTitle" class="module-title">MÓDULO OPERACIONAL</div><div id="moduleSub" class="module-sub">VÉRIX // OPERAÇÕES</div></div><button class="module-close" onclick="fecharModulo()">×</button></div> <div id="moduleBody" class="module-body"></div> </div>
