@@ -2519,7 +2519,7 @@ function toggleFullscreen() {
  }
  }
 </script>
-<style id="verix-css-batch-001">:root{--glow:rgba(0,139,85,.24)}
+<style id="verix-css-batch-001">
 *{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;font-family:Arial,Helvetica,sans-serif}
 body{position:relative;background:radial-gradient(circle at 52% 10%,#18313b 0,#07131a 28%,#02070a 72%)}
 body:before{content:"";position:fixed;inset:0;}
@@ -3557,11 +3557,6 @@ button:focus-visible {
  border-radius: 10px;
 }
 ::-webkit-scrollbar-track { background: rgba(0,0,0,.2); }
-/* --- Micro interaction: pulse on active status dot --- */
-
-/* Selection */
-::selection {
-}
 /* ============================================================
  VÉRIX CONSOLA OPERACIONAL 12.0 — Interface tática / cinema
  Camada final: legibilidade + drama visual + feedback claro
@@ -3979,33 +3974,6 @@ html body .command .brand-notice{
   overflow:visible!important;
   background:transparent!important;
 }
-html body .command .brand-notice::after{
-  content:""!important;
-  position:absolute!important;
-  z-index:0!important;
-  pointer-events:none!important;
-  left:-28px!important;
-  top:-9px!important;
-  bottom:-5px!important;
-  width:min(360px,calc(100vw - 38px))!important;
-  border-radius:9px!important;
-  background-image:
-    linear-gradient(90deg,rgba(2,7,9,.03) 0%,rgba(2,7,9,.07) 36%,rgba(2,7,9,.34) 62%,rgba(2,7,9,.96) 100%),
-    linear-gradient(0deg,rgba(2,7,9,.66) 0%,rgba(2,7,9,.02) 48%,rgba(2,7,9,.18) 100%),
-    url("https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Bandera_portuguesa_%283771095401%29.jpg/1280px-Bandera_portuguesa_%283771095401%29.jpg")!important;
-  background-size:100% 100%,100% 100%,cover!important;
-  background-position:0 0,0 0,49% 47%;
-  background-repeat:no-repeat!important;
-  opacity:.9!important;
-  filter:url(#verix-flag-wave-filter) saturate(1.13) contrast(1.08) brightness(.82)!important;
-  transform-origin:12% 50%!important;
-  animation:verix-flag-photo-wave 6.2s ease-in-out infinite!important;
-  will-change:transform,background-position!important;
-}
-html body .command .brand-notice > *{
-  position:relative!important;
-  z-index:1!important;
-}
 html body .command .brand-notice::before{
   z-index:3!important;
   pointer-events:none!important;
@@ -4025,43 +3993,12 @@ html body .command .brand-lockup-values,
 html body .command .brand-lockup-footer{
   text-shadow:0 1px 5px rgba(0,0,0,.94)!important;
 }
-/* Na barra móvel, a fotografia forma parte do próprio wordmark, não um ícone separado. */
-html body #vxMobileTop .vx-brand{
-  position:relative!important;
-  display:flex!important;
-  align-items:center!important;
-  min-width:0!important;
-  padding-left:76px!important;
-  overflow:hidden!important;
-  isolation:isolate!important;
-}
-html body #vxMobileTop .vx-brand::before{
-  content:""!important;
-  position:absolute!important;
-  z-index:0!important;
-  left:-3px!important;
-  top:-4px!important;
-  bottom:-4px!important;
-  width:78px!important;
-  border-radius:5px!important;
-  background-image:
-    linear-gradient(90deg,rgba(7,12,16,.02) 0%,rgba(7,12,16,.03) 58%,rgba(7,12,16,.96) 100%),
-    url("https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Bandera_portuguesa_%283771095401%29.jpg/1280px-Bandera_portuguesa_%283771095401%29.jpg")!important;
-  background-size:100% 100%,cover!important;
-  background-position:0 0,50% 46%;
-  background-repeat:no-repeat!important;
-  opacity:.96!important;
-  filter:url(#verix-flag-wave-filter) saturate(1.12) contrast(1.06) brightness(.9)!important;
-  animation:verix-flag-mobile-photo-wave 6.2s ease-in-out infinite!important;
-  will-change:transform,background-position!important;
-}
 html body #vxMobileTop .vx-brand-text{
-  position:relative!important;
-  z-index:1!important;
+
   display:block!important;
   min-width:0!important;
   white-space:nowrap!important;
-  text-shadow:0 2px 5px rgba(0,0,0,.95)!important;
+
 }
 @keyframes verix-flag-mobile-photo-wave{
   0%,100%{transform:perspective(480px) rotateY(-1deg) skewY(-.3deg) translate3d(-1px,0,0);background-position:0 0,47% 44%}
@@ -4082,24 +4019,7 @@ html body #vxMobileTop .vx-brand-text{
     background-position:0 0,0 0,46% 52%;
   }
 }
-@media(max-width:760px){
-  html body .command .brand-notice::after{
-    left:-15px!important;
-    top:-5px!important;
-    bottom:-3px!important;
-    width:min(300px,calc(100vw - 36px))!important;
-    opacity:.84!important;
-  }
-}
-@media(max-width:380px){
-  html body #vxMobileTop .vx-brand{padding-left:63px!important}
-  html body #vxMobileTop .vx-brand::before{width:66px!important}
-}
 @media(prefers-reduced-motion:reduce){
-  html body .command .brand-notice::after,
-  html body #vxMobileTop .vx-brand::before{
-    animation:verix-flag-photo-wave 6.2s ease-in-out infinite!important;
-  }
   html body #vxMobileTop .vx-brand::before{
     animation:verix-flag-mobile-photo-wave 6.2s ease-in-out infinite!important;
   }
@@ -4183,27 +4103,26 @@ html body #vxMobileTop .vx-brand-text{position:relative!important;z-index:1!impo
 </style>
 
 <style id="verix-main-menu-launcher-style-v6">
-html body #mainMenuScreen.vx-home-screen{position:fixed!important;inset:0!important;z-index:1800!important;display:none!important;width:100vw!important;height:100vh!important;height:100dvh!important;margin:0!important;padding:0!important;overflow:hidden!important;box-sizing:border-box!important;color:#edf4f2!important;background:#071012!important;font-family:Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:normal!important}
+html body #mainMenuScreen.vx-home-screen{position:fixed!important;inset:0!important;z-index:1800!important;display:none!important;width:100vw!important;height:100dvh!important;margin:0!important;padding:0!important;overflow:hidden!important;box-sizing:border-box!important;color:#edf4f2!important;background:#071012!important;font-family:Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:normal!important}
 html body #mainMenuScreen.vx-home-screen.show{display:block!important;inset:0!important;overflow:hidden!important;background:#081315!important}
 html body #mainMenuScreen.vx-home-screen *{box-sizing:border-box}
-html body #mainMenuScreen.vx-home-screen [hidden]{display:none!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-shell{display:grid!important;grid-template-columns:224px minmax(0,1fr)!important;width:100%!important;height:100%!important;min-height:0!important;overflow:hidden!important;background:#0a1417!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-shell{display:grid!important;width:100%!important;height:100%!important;min-height:0!important;overflow:hidden!important;background:#0a1417!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-brand{display:flex!important;align-items:center!important;gap:11px!important;min-width:0!important;color:#edf7f3!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-brand-mark{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 39px!important;width:39px!important;height:39px!important;border:1px solid rgba(93,202,155,.52)!important;border-radius:10px!important;background:linear-gradient(145deg,#163a2e,#11251f)!important;color:#b2f0d0!important;font:900 19px/1 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:-.8px!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-brand-copy{display:flex!important;flex-direction:column!important;gap:4px!important;min-width:0!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-brand-copy strong{font:850 15px/1 Arial,sans-serif!important;letter-spacing:1.7px!important;color:#f2f7f5!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-brand-copy small{font:750 7px/1.2 Arial,sans-serif!important;letter-spacing:1.1px!important;color:#85a39a!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-main{display:flex!important;flex-direction:column!important;min-width:0!important;min-height:0!important;height:100%!important;background:#0a1417!important;overflow:hidden!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-topbar{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:16px!important;flex:0 0 58px!important;min-width:0!important;padding:0 clamp(20px,2.5vw,42px)!important;border-bottom:1px solid #203235!important;background:#0a1417!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-main{display:flex!important;flex-direction:column!important;min-height:0!important;height:100%!important;background:#0a1417!important;overflow:hidden!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-topbar{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:16px!important;flex:0 0 58px!important;min-width:0!important;border-bottom:1px solid #203235!important;background:#0a1417!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-contact{display:inline-flex!important;align-items:center!important;gap:9px!important;min-height:35px!important;padding:0 11px!important;border:1px solid #2b4644!important;border-radius:7px!important;background:#102321!important;color:#c6d8d2!important;text-decoration:none!important;font:700 9px/1 Arial,sans-serif!important;transition:border-color .16s ease,background .16s ease,color .16s ease!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-contact svg{width:15px!important;height:15px!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-contact b{font-size:12px!important;color:#8de0b7!important;font-weight:800!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-contact:hover{border-color:#58aa86!important;background:#17332b!important;color:#f6fbf8!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-body{flex:1 1 auto!important;min-width:0!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;padding:27px clamp(20px,2.5vw,42px) 18px!important;scrollbar-color:#284348 transparent!important;scrollbar-width:thin!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-body{flex:1 1 auto!important;min-width:0!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;scrollbar-color:#284348 transparent!important;scrollbar-width:thin!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-hero{display:flex!important;align-items:flex-end!important;justify-content:space-between!important;gap:25px!important;margin:0 0 23px!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-hero-copy{min-width:0!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-eyebrow{display:block!important;margin:0 0 9px!important;color:#69d3a6!important;font:850 8px/1 Arial,sans-serif!important;letter-spacing:1.7px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-hero h1{margin:0!important;color:#eff6f3!important;font:760 clamp(23px,2.5vw,32px)/1.12 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:-.85px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-eyebrow{display:block!important;margin:0 0 9px!important;color:#69d3a6!important;font:850 8px/1 Arial,sans-serif!important;}
+html body #mainMenuScreen.vx-home-screen .vx-home-hero h1{margin:0!important;color:#eff6f3!important;font:760 clamp(23px,2.5vw,32px)/1.12 Inter,"Segoe UI",Arial,sans-serif!important;}
 html body #mainMenuScreen.vx-home-screen .vx-home-hero p{margin:8px 0 0!important;color:#a0b5b3!important;font:450 12px/1.45 Inter,"Segoe UI",Arial,sans-serif!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-search{display:flex!important;align-items:center!important;gap:9px!important;flex:0 1 390px!important;min-width:230px!important;height:42px!important;padding:0 10px 0 13px!important;border:1px solid #2b4244!important;border-radius:9px!important;background:#0c1b1f!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.02)!important;transition:border-color .16s ease,box-shadow .16s ease!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-search:focus-within{border-color:#5ab48b!important;box-shadow:0 0 0 3px rgba(68,165,122,.12)!important}
@@ -4213,15 +4132,15 @@ html body #mainMenuScreen.vx-home-screen .vx-home-search input::placeholder{colo
 html body #mainMenuScreen.vx-home-screen .vx-home-search kbd{display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 22px!important;width:22px!important;height:23px!important;border:1px solid #2c4547!important;border-radius:5px!important;background:#122629!important;color:#86a09c!important;font:750 10px/1 ui-monospace,Consolas,monospace!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-search button{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 24px!important;width:24px!important;height:24px!important;border:0!important;border-radius:5px!important;background:transparent!important;color:#b5c8c2!important;font:500 19px/1 Arial,sans-serif!important;cursor:pointer!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-search button:hover{background:#1a3033!important;color:#fff!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-toolbar{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;margin:0 0 19px!important;padding-bottom:12px!important;border-bottom:1px solid #213438!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-result-count{color:#8da7a4!important;font:600 8px/1 Arial,sans-serif!important;letter-spacing:.2px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-group{margin:0 0 24px!important;min-width:0!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-toolbar{gap:12px!important;padding-bottom:12px!important;}
+html body #mainMenuScreen.vx-home-screen .vx-home-result-count{font:600 8px/1 Arial,sans-serif!important;}
+html body #mainMenuScreen.vx-home-screen .vx-home-group{min-width:0!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-group-heading{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;margin:0 0 11px!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-group-heading h2{margin:0!important;color:#eaf4ef!important;font:750 12px/1.3 Inter,"Segoe UI",Arial,sans-serif!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-group-heading>span{color:#83a19a!important;font:800 7px/1 Arial,sans-serif!important;letter-spacing:1px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-primary-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:15px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-primary-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;}
 html body #mainMenuScreen.vx-home-screen .vx-home-action{position:relative!important;display:flex!important;align-items:center!important;min-width:0!important;text-align:left!important;cursor:pointer!important;transition:transform .15s ease,border-color .15s ease,background .15s ease,box-shadow .15s ease!important;overflow:hidden!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary{gap:19px!important;min-height:144px!important;padding:23px!important;border:1px solid #2e6250!important;border-radius:13px!important;background:linear-gradient(115deg,rgba(25,76,55,.70),rgba(14,33,34,.98) 68%)!important;color:#f0f7f3!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary{gap:19px!important;border:1px solid #2e6250!important;border-radius:13px!important;background:linear-gradient(115deg,rgba(25,76,55,.70),rgba(14,33,34,.98) 68%)!important;color:#f0f7f3!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:first-child{border-color:#347f60!important;background:linear-gradient(115deg,rgba(26,91,61,.64),rgba(13,31,33,.98) 74%)!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2){border-color:#6b6540!important;background:linear-gradient(115deg,rgba(91,78,37,.40),rgba(15,32,33,.98) 73%)!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:hover{transform:translateY(-2px)!important;box-shadow:0 12px 32px rgba(0,0,0,.15)!important}
@@ -4234,32 +4153,31 @@ html body #mainMenuScreen.vx-home-screen .vx-home-action-icon svg{display:block!
 html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-icon svg{width:42px!important;height:42px!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-action-copy{display:flex!important;flex:1 1 auto!important;flex-direction:column!important;gap:6px!important;min-width:0!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-action-title{display:block!important;color:#edf6f1!important;font:800 13px/1.25 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:.1px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-title{font-size:15px!important;font-weight:850!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-title{font-weight:850!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-action-description{display:block!important;color:#a3b8b3!important;font:450 10px/1.5 Inter,"Segoe UI",Arial,sans-serif!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-description{font-size:11px!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-action-cta{display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 auto!important;margin-left:auto!important;padding:8px 10px!important;border:1px solid #31534a!important;border-radius:7px!important;background:rgba(8,24,24,.45)!important;color:#b8e6cf!important;font:750 9px/1 Arial,sans-serif!important;white-space:nowrap!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2) .vx-home-action-cta{border-color:#5e5a3c!important;color:#e1d49d!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-secondary-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;column-gap:18px!important;row-gap:0!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary{gap:12px!important;min-height:76px!important;padding:12px 5px!important;border:0!important;border-bottom:1px solid #29403f!important;border-radius:0!important;background:transparent!important;color:#e9f3ef!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-secondary-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;row-gap:0!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary{gap:12px!important;border:0!important;border-bottom:1px solid #29403f!important;border-radius:0!important;background:transparent!important;color:#e9f3ef!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary:hover{background:linear-gradient(90deg,rgba(26,65,49,.26),transparent)!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-icon{flex-basis:36px!important;width:36px!important;height:36px!important;border-radius:8px!important;border-color:#2a4e45!important;background:#112723!important;color:#9bd9ba!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-icon svg{width:22px!important;height:22px!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-copy{gap:5px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-title{font-size:10px!important;font-weight:850!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-description{font-size:9px!important;color:#99afad!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-title{font-weight:850!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-description{color:#99afad!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-action-arrow{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 21px!important;width:21px!important;height:21px!important;border:1px solid #2a4844!important;border-radius:50%!important;color:#90d9b4!important;font:700 12px/1 Arial,sans-serif!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-empty{margin:22px 0 0!important;padding:24px 18px!important;border:1px dashed #2d4546!important;border-radius:12px!important;background:rgba(11,25,28,.55)!important;text-align:center!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-empty strong{color:#e5efea!important;font:750 14px/1.3 Arial,sans-serif!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-empty p{margin:8px 0 14px!important;color:#8fa6a2!important;font:450 12px/1.5 Arial,sans-serif!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-empty button{min-height:38px!important;padding:0 13px!important;border:1px solid #315849!important;border-radius:8px!important;background:#142c25!important;color:#a8e8c6!important;font:750 11px/1 Arial,sans-serif!important;cursor:pointer!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:16px!important;flex:0 0 45px!important;min-width:0!important;padding:0 clamp(20px,2.5vw,42px)!important;border-top:1px solid #203235!important;background:#091316!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:16px!important;flex:0 0 45px!important;min-width:0!important;border-top:1px solid #203235!important;background:#091316!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-footer-brand{display:flex!important;align-items:center!important;gap:9px!important;min-width:0!important;color:#b7d2c7!important;font:800 8px/1 Arial,sans-serif!important;letter-spacing:.6px!important;white-space:nowrap!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-footer-dot{width:6px!important;height:6px!important;flex:0 0 6px!important;border-radius:50%!important;background:#65d1a0!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-footer-brand strong{color:#e8f2ed!important;font-size:9px!important;letter-spacing:1.1px!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-footer p{margin:0!important;color:#8da5a0!important;font:450 8px/1.4 Arial,sans-serif!important;text-align:right!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-footer-unofficial{flex:0 0 auto!important;padding:5px 7px!important;border:1px solid #3e3d2d!important;border-radius:5px!important;background:#191b16!important;color:#d8c489!important;font:850 6px/1 Arial,sans-serif!important;letter-spacing:.8px!important;white-space:nowrap!important}
 @media(max-width:1120px){
- html body #mainMenuScreen.vx-home-screen .vx-home-shell{grid-template-columns:76px minmax(0,1fr)!important}
  html body #mainMenuScreen.vx-home-screen .vx-home-brand{justify-content:center!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-brand-copy {display:none!important}
  html body #mainMenuScreen.vx-home-screen .vx-home-secondary-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;column-gap:14px!important}
@@ -4268,9 +4186,8 @@ html body #mainMenuScreen.vx-home-screen .vx-home-brand-copy {display:none!impor
 }
 @media(max-width:760px){
  html body #mainMenuScreen.vx-home-screen .vx-home-shell{grid-template-columns:minmax(0,1fr)!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-topbar{flex-basis:50px!important;height:50px!important;padding:0 16px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-topbar{height:50px!important;}
  html body #mainMenuScreen.vx-home-screen .vx-home-contact{min-height:31px!important;padding:0 8px!important;font-size:8px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-body{padding:20px 16px 16px!important}
  html body #mainMenuScreen.vx-home-screen .vx-home-hero{align-items:stretch!important;flex-direction:column!important;gap:16px!important;margin-bottom:18px!important}
  html body #mainMenuScreen.vx-home-screen .vx-home-hero h1{font-size:25px!important}
  html body #mainMenuScreen.vx-home-screen .vx-home-search{flex:0 0 42px!important;min-width:0!important;width:100%!important}
@@ -4314,7 +4231,7 @@ html body #mainMenuScreen.vx-home-screen .vx-home-topbar .vx-home-brand{display:
 html body #mainMenuScreen.vx-home-screen .vx-home-topbar .vx-home-brand-mark{flex:0 0 42px!important;width:42px!important;height:42px!important;font-size:21px!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-topbar .vx-home-brand-copy strong{font-size:16px!important;letter-spacing:1.7px!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-topbar .vx-home-brand-copy small{font-size:8px!important;letter-spacing:1.3px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-body{width:100%!important;max-width:1580px!important;margin:0 auto!important;padding:30px clamp(20px,3.2vw,52px) 24px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-body{width:100%!important;max-width:1580px!important;margin:0 auto!important;}
 html body #mainMenuScreen.vx-home-screen .vx-home-eyebrow{font-size:9px!important;letter-spacing:1.9px!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-hero h1{font-size:clamp(27px,2.7vw,36px)!important;letter-spacing:-1px!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-hero p{font-size:13px!important}
@@ -4339,7 +4256,6 @@ html body #mainMenuScreen.vx-home-screen .vx-home-footer{padding:0 clamp(20px,3.
  html body #mainMenuScreen.vx-home-screen .vx-home-topbar .vx-home-brand-mark{flex-basis:38px!important;width:38px!important;height:38px!important}
  html body #mainMenuScreen.vx-home-screen .vx-home-topbar .vx-home-brand-copy strong{font-size:14px!important}
  html body #mainMenuScreen.vx-home-screen .vx-home-topbar .vx-home-brand-copy small{font-size:7px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-body{padding:24px 16px 20px!important}
  html body #mainMenuScreen.vx-home-screen .vx-home-toolbar{justify-content:flex-start!important;margin-bottom:16px!important}
 }
 
@@ -4681,8 +4597,6 @@ html body #asfRateWidget .asf-rate-center{
  min-width:0!important;display:flex!important;flex-direction:column!important;
  justify-content:center!important;align-items:center!important;gap:3px!important;
  overflow:hidden!important;
-}
-html body #asfRateWidget .asf-rate-main{
 }
 html body #asfRateWidget .asf-rate-main strong{font-size:9px!important;color:#9eb1b7!important}
 html body #asfRateWidget .asf-rate-sub{max-width:100%!important;letter-spacing:.25px!important;
@@ -6455,7 +6369,7 @@ html body.consultation-screen-active .command .time{
  text-shadow:0 1px 3px rgba(0,0,0,.75)!important;
 }
 html body.fixed-workspace-active:not(.cinemometro-page-active){
- --bg:#02070a;--panel:#071117;--panel2:#0a151c;--red:#9b2435;--red2:#54121d;--green:#2d7b67;--green2:#17483d;--cyan:#69bac7;--amber:#b89a4a;--white:#e6ecee;--muted:#72838a;
+ --bg:#02070a;--red:#9b2435;--green:#2d7b67;--cyan:#69bac7;--amber:#b89a4a;--white:#e6ecee;--muted:#72838a;
 }
 html body.fixed-workspace-active:not(.cinemometro-page-active) .field label{
  color:#c6d0d4!important;letter-spacing:.9px!important;
@@ -6764,7 +6678,7 @@ html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-n
 .setting-select:focus{border-color:#39cf91;box-shadow:0 0 0 2px rgba(57,207,145,.12)}
 .settings-actions{display:flex;justify-content:flex-end;border-top:1px solid rgba(120,145,155,.16)}
 .
-body.theme-light{--ink:#18242a;--panel:#eef3f4;--panel2:#e0e8ea;--soft:#f5f8f8;color:#18242a;background:#d9e2e4}
+body.theme-light{--ink:#18242a;color:#18242a;background:#d9e2e4}
 body.theme-light .module-window,body.theme-light .history-window{background:linear-gradient(180deg,#edf2f4,#d9e1e3);color:#18242a}
 body.theme-light .module-top,body.theme-light .history-top{background:linear-gradient(90deg,rgba(190,18,43,.14),rgba(218,227,230,.82) 48%,rgba(0,139,85,.13))}
 body.theme-light .module-title,body.theme-light .history-title{color:#17262d}.theme-light .module-sub, .theme-light .history-sub, .theme-light .info-strip{color:#5b6e76}
@@ -6904,8 +6818,6 @@ body.theme-light .settings-factory-reset{background:linear-gradient(90deg,rgba(1
 .setting-select.wide{min-width:0;}.effect-card{display:flex;align-items:center;justify-content:space-between;gap:10px}.effect-card .toggle{flex:0 0 auto}.toggle{display:flex!important;padding-right:6px}.toggle span{margin:0!important;color:#79a49a!important;font-size:6px!important;letter-spacing:.6px!important}.toggle:not(.on) span{color:#8b686d!important}.toggle.on:after{left:21px}.toggle:after{transition:left .2s cubic-bezier(.2,.8,.2,1),background .2s,box-shadow .2s}
 .settings-status-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));}.settings-status-card{border:1px solid rgba(91,120,130,.28);border-radius:10px;background:linear-gradient(180deg,rgba(12,29,37,.9),rgba(5,14,19,.96));display:flex;flex-direction:column;}.settings-status-card .ss-label{color:#5f7880;font:900 6px/1 Arial,sans-serif;letter-spacing:1.1px}.settings-status-card strong{color:#edf4f6;font:950 15px/1 Arial,sans-serif;letter-spacing:.6px}.settings-status-card small{margin-top:auto;color:#6b838b;font:900 6px/1 Arial,sans-serif;letter-spacing:.65px}
 body.ui-scale-auto{transform-origin:top left}
-/* TEMA CLARO GLOBAL — aplica à consola inteira, não apenas ao popup */
-body.theme-light{--glow:rgba(0,139,85,.16);}
 body.theme-light:before{opacity:.11;background:repeating-linear-gradient(0deg,rgba(40,60,66,.035) 0 1px,transparent 1px 4px),linear-gradient(115deg,transparent 0 26%,rgba(40,70,78,.05) 26.1% 26.25%,transparent 26.35% 100%)}
 body.theme-light:after{background:radial-gradient(ellipse at center,transparent 52%,rgba(56,76,84,.16) 100%)}
 body.theme-light .command:before{opacity:.35;background:linear-gradient(120deg,transparent 0 43%,rgba(200,16,46,.08) 43.2% 45%,transparent 45.2% 48%,rgba(0,139,85,.08) 48.2% 50%,transparent 50.2%),linear-gradient(90deg,rgba(35,62,70,.035) 1px,transparent 1px)}
@@ -7612,9 +7524,6 @@ html body.consultation-screen-active .command .searchbar{
  max-width:76px!important;
  }
  .main{left:94px!important}
-}
-/* ===== CINEMÓMETRO COMO PÁGINA DE TRABALHO ===== */
-body.cinemometro-page-active{
 }
 .module-overlay.cinemometro-fullpage{
  position:fixed!important;
@@ -9144,8 +9053,7 @@ html body.fixed-workspace-active .module-close {
  overflow:hidden!important;
 }
 html body.fixed-workspace-active .module-close{
- color:#f4cc5a!important;
- font:900 30px/1 Arial,Helvetica,sans-serif!important;
+
  text-align:center!important;
  text-shadow:0 0 8px rgba(242,202,88,.18)!important;
 }
@@ -9399,7 +9307,7 @@ html body .main-menu-screen{
 @media(max-width:900px){.settings-profile-grid{grid-template-columns:1fr 1fr}.settings-profile-grid .profile-card:last-child{grid-column:1/-1}}
 @media(max-width:700px){.settings-grid,.settings-grid-effects,.settings-profile-grid,.settings-status-grid{grid-template-columns:1fr}.settings-profile-grid .profile-card:last-child{grid-column:auto}.settings-quick-actions{grid-template-columns:1fr}}
 body.theme-light{color:#172930!important;
- --bg:#e7edef;--panel:#f5f8f9;--panel2:#e9eff1;--soft:#f8fafb;
+ --bg:#e7edef;
  --ink:#172930;--white:#172930;--muted:#60747c;--line:rgba(73,104,114,.25);
 }
 body.theme-light .cinematic-bg{
@@ -9803,12 +9711,11 @@ html body .main-menu-screen {
  ================================================================ */
 :root{
  --bg:#010406;
- --panel:#050d12;
- --panel2:#0a1520;
+
  --red:#ff2a4a;
- --red2:#a00820;
+
  --green:#00e5a0;
- --green2:#007a55;
+
  --white:#e8f4f6;
  --muted:#6a8490;
  --cyan:#00f0ff;
@@ -10746,10 +10653,7 @@ html body .verix-holo-scan{
  94%{ opacity:.4; }
  96%{ opacity:.65; }
 }
-@keyframes v007Stamp{
- 0%,100%{ opacity:.35; letter-spacing:4px; }
- 50%{ opacity:.7; letter-spacing:5px; }
-}
+
 /* --- COMMAND BAR: heavy 3D --- */
 html body .command{
  transform:translateZ(40px);
@@ -10858,14 +10762,7 @@ html body .corner{
  width:16px !important; height:16px !important;
  border-width:2px !important;
 }
-@keyframes v007CardIdle{
- 0%,100%{ transform:translateY(0) rotateX(0); }
- 50%{ transform:translateY(-3px) rotateX(1.5deg); }
-}
-@keyframes v007BrandSpin{
- 0%{ filter:hue-rotate(0deg); }
- 100%{ filter:hue-rotate(360deg); }
-}
+
 /html body .module-card:hover, html body .leg-card-new:hover{
  transform:translateY(-8px) rotateX(6deg) scale(1.02) !important;
  box-shadow:0 20px 48px rgba(0,0,0,.45), 0 0 40px rgba(0,240,255,.2) !important;
@@ -14639,10 +14536,6 @@ html body #seguroResult .asf-app.asf-app-warn .asf-note{
 @media(prefers-reduced-motion:reduce){
   html body #seguroResult *{scroll-behavior:auto!important;}
 }
-/* VÉRIX-ASF-PREMIUM-STATE-V2 — presentation only */
-html body #seguroResult .asf-app.asf-app-ok{
-  --asf-accent:#00c982;--asf-accent-2:#50ffc2;
-}
 html body #seguroResult .asf-app.asf-app-ok .asf-operational-status{
   position:relative!important;overflow:hidden!important;
 }
@@ -14672,7 +14565,7 @@ html body #seguroResult .asf-app.asf-app-ok .asf-date-box.valid strong{
 }
 /* Strong red state for a completed query with no insurance record. */
 html body #seguroResult .asf-app.asf-app-no{
-  --asf-accent:#ed3347;--asf-accent-2:#ff9ca7;
+
   gap:12px!important;max-width:620px!important;
 }
 html body #seguroResult .asf-app.asf-app-no .asf-note{
@@ -14899,26 +14792,9 @@ html body #seguroResult .asf-app.asf-app-ok .asf-success-plate {
 html body #seguroResult .asf-app.asf-app-ok .asf-success-plate:after {
   letter-spacing:.6px!important;
 }
-/* SEGUNDO BLOCO: a validade é apresentada como um resumo verde imediato. */
-/* TERCEIRO BLOCO: seguradora num cabeçalho verde; removida a repetição do nome abaixo. */
-/* Datas passam a surgir antes da apólice; não se repete "SEGURADORA" no corpo do cartão. */
-html body #seguroResult .asf-app.asf-app-ok .asf-rows > .asf-row-emphasis:first-child {display:none!important;}
-html body #seguroResult .asf-app.asf-app-ok .asf-rows > .asf-dates-grid {
-  order:2!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
-  gap:8px!important;margin:10px!important;
-}
-html body #seguroResult .asf-app.asf-app-ok .asf-rows > .asf-row-emphasis:nth-child(2) {
-  order:3!important;display:flex!important;align-items:center!important;justify-content:space-between!important;
-  gap:10px!important;padding:10px 13px!important;border-top:1px solid #e0f0e6!important;
-  border-bottom:0!important;background:#f4fcf7!important;
-}
-html body #seguroResult .asf-app.asf-app-ok .asf-rows > .asf-row-emphasis:nth-child(2) .k {
-  flex:0 0 25%!important;color:#4d7964!important;font-size:8px!important;
-  font-weight:900!important;letter-spacing:.8px!important;
-}
 html body #seguroResult .asf-app.asf-app-ok .asf-rows > .asf-row-emphasis:nth-child(2) .v {
-  max-width:75%!important;color:#075c39!important;font-size:11px!important;
-  font-weight:900!important;overflow-wrap:anywhere!important;
+  font-size:11px!important;
+  font-weight:900!important;
 }
 /* Ação principal verde e aviso mais discreto. */
 /* Seguro expirado mantém deliberadamente a codificação vermelha — não confundir com seguro válido. */
@@ -14932,10 +14808,6 @@ html body #seguroResult .asf-app.asf-operational-result:has(.asf-operational-sta
 html body #seguroResult .asf-app.asf-operational-result:has(.asf-operational-status.expired) .asf-date-box.valid strong {color:#a51e32!important;}
 /* Responsivo: placa centrada, datas lado a lado e texto sem cortes em telemóveis. */
 @media(max-width:560px) {
-  html body #seguroResult .asf-app.asf-app-ok .asf-rows > .asf-dates-grid {gap:6px!important;margin:8px!important;}
-  html body #seguroResult .asf-app.asf-app-ok .asf-rows > .asf-row-emphasis:nth-child(2) {padding:9px 10px!important;}
-  html body #seguroResult .asf-app.asf-app-ok .asf-rows > .asf-row-emphasis:nth-child(2) .k {font-size:7px!important;}
-  html body #seguroResult .asf-app.asf-app-ok .asf-rows > .asf-row-emphasis:nth-child(2) .v {font-size:10px!important;}
   html body #seguroResult .asf-app.asf-app-ok .asf-operational-actions .aux-btn.secondary {min-height:40px!important;}
 }
 /* Fim VÉRIX-ASF-GREEN-RELAYOUT-V3. */
