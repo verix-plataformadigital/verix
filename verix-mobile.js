@@ -208,7 +208,7 @@ const nav=findNavigation();
 
 const top=document.createElement('div');
 top.id='vxMobileTop';
-top.innerHTML='<div class="vx-brand"><span class="verix-pt-flag" role="img" aria-label="Bandeira de Portugal"><svg viewBox="0 0 78 52" aria-hidden="true" focusable="false">
+top.innerHTML=`<div class="vx-brand"><span class="verix-pt-flag" role="img" aria-label="Bandeira de Portugal"><svg viewBox="0 0 78 52" aria-hidden="true" focusable="false">
   <defs>
     <filter id="verix-flag-fabric-mobile" x="-16%" y="-20%" width="132%" height="140%" color-interpolation-filters="sRGB">
       <feTurbulence type="fractalNoise" baseFrequency="0.018 0.11" numOctaves="2" seed="7" result="fabricNoise">
@@ -258,7 +258,7 @@ top.innerHTML='<div class="vx-brand"><span class="verix-pt-flag" role="img" aria
       <path d="M0 7 C7 1 13 5 20 4 S33 2 39 5 S53 2 60 4 S72 2 78 5 L78 44 C70 49 63 43 55 46 S40 47 32 45 S16 49 8 45 L0 44 Z" fill="url(#verix-flag-fabric-mobile-metal)"/>
     </g>
   </g>
-</svg></span><span class="vx-brand-text">VÉRIX <b>///</b> MOBILE</span></div><button type="button" id="vxMobileBack" class="vx-mobile-back" aria-label="Voltar ao menu anterior" title="Voltar ao menu anterior"><span aria-hidden="true">←</span><span>Voltar</span></button><button type="button" id="vxMobileMenu" aria-label="Abrir menu">☰</button>';
+</svg></span><span class="vx-brand-text">VÉRIX <b>///</b> MOBILE</span></div><button type="button" id="vxMobileBack" class="vx-mobile-back" aria-label="Voltar ao menu anterior" title="Voltar ao menu anterior"><span aria-hidden="true">←</span><span>Voltar</span></button><button type="button" id="vxMobileMenu" aria-label="Abrir menu">☰</button>`;
 document.body.appendChild(top);
 
 function syncMobileBackState(){
