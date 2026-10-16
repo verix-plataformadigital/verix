@@ -3953,16 +3953,17 @@ html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-acti
 html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-description{color:#aebfb8!important;font-size:10.5px!important;line-height:1.45!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-arrow{color:#6daf8c!important;font-size:19px!important}
 /* Rodapé preserva o aviso de utilização e o contacto com a equipa. */
-html body #mainMenuScreen.vx-home-screen .vx-home-footer{display:flex!important;align-items:center!important;justify-content:space-between!important;flex:0 0 auto!important;min-width:0!important;min-height:60px!important;gap:clamp(10px,1.4vw,20px)!important;padding:9px clamp(20px,3.5vw,54px)!important;border:0!important;border-top:1px solid #243a38!important;border-radius:0!important;background:#091315!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer-brand{display:flex!important;align-items:center!important;flex:0 0 auto!important;gap:8px!important;min-width:0!important;color:#a9beb4!important;font:750 9px/1.2 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:.55px!important;white-space:nowrap!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-rows:auto auto!important;align-items:center!important;justify-content:initial!important;flex:0 0 auto!important;min-width:0!important;min-height:82px!important;column-gap:clamp(14px,2vw,28px)!important;row-gap:8px!important;padding:10px clamp(20px,3.5vw,54px) 7px!important;border:0!important;border-top:1px solid #243a38!important;border-radius:0!important;background:#091315!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-brand{display:flex!important;align-items:center!important;flex:0 0 auto!important;grid-column:1!important;grid-row:1!important;gap:8px!important;min-width:0!important;color:#a9beb4!important;font:750 9px/1.2 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:.55px!important;white-space:nowrap!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-footer-dot{display:block!important;width:6px!important;height:6px!important;flex:0 0 6px!important;border-radius:50%!important;background:#67d6a0!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-footer-brand strong{color:#eef5f0!important;font-size:10px!important;letter-spacing:1px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer p{flex:1 1 auto!important;margin:0!important;color:#a0b4aa!important;font:450 10px/1.45 Inter,"Segoe UI",Arial,sans-serif!important;text-align:center!important}
+
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-actions{grid-column:2!important;grid-row:1!important;display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:12px!important;min-width:0!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;flex:0 0 auto!important;min-width:0!important;min-height:38px!important;padding:0 13px!important;border:1px solid #315b46!important;border-radius:7px!important;background:#10251c!important;color:#d2e7da!important;text-decoration:none!important;font:700 10.5px/1 Inter,"Segoe UI",Arial,sans-serif!important;white-space:nowrap!important;box-shadow:none!important;transition:background-color .16s ease,border-color .16s ease!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact svg{display:block!important;width:15px!important;height:15px!important;flex:0 0 15px!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact b{color:#92ddb2!important;font-size:12px!important;font-weight:800!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact:hover{border-color:#67c693!important;background:#173528!important;color:#f3faf5!important;transform:none!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer-unofficial{flex:0 0 auto!important;margin:0!important;padding:5px 8px!important;border:1px solid #4c482e!important;border-radius:4px!important;background:#191b15!important;color:#e0d39a!important;font:850 7px/1 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:.75px!important;white-space:nowrap!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-unofficial{flex:0 0 auto!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;margin:0!important;padding:5px 8px!important;border:1px solid #4c482e!important;border-radius:4px!important;background:#191b15!important;color:#e0d39a!important;font:850 7px/1 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:.75px!important;white-space:nowrap!important}
 /* Tema claro: conservar legibilidade quando ativado nas definições. */
 html body.theme-light #mainMenuScreen.vx-home-screen,html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-shell,html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-main{background:#f1f5f2!important;color:#203229!important}
 html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead{background:#fbfdfb!important;border-bottom-color:#d5e1d9!important}
@@ -3983,7 +3984,7 @@ html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-action-secondary:h
 html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-footer{background:#fbfdfb!important;border-top-color:#d5e1d9!important}
 html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-footer-brand{color:#52695d!important}
 html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-footer-brand strong{color:#23382c!important}
-html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-footer p{color:#566a5f!important}
+
 html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-footer-contact{background:#e7f2eb!important;border-color:#a7cbb5!important;color:#244b34!important}
 html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-footer-unofficial{background:#f8f3df!important;border-color:#d4c78f!important;color:#5a4d1c!important}
 /* Tablet e janelas médias. */
@@ -4016,11 +4017,12 @@ html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary{min-height:70
 html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-icon{flex-basis:31px!important;width:31px!important;height:31px!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-title{font-size:12px!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-description{font-size:10.5px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer{align-items:center!important;justify-content:space-between!important;flex-wrap:wrap!important;min-height:0!important;padding:11px 14px!important;gap:9px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer-brand{order:0!important;flex-basis:100%!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact{order:1!important;min-height:35px!important;padding:0 11px!important;font-size:10px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer-unofficial{order:2!important;margin-left:auto!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer p{order:3!important;flex:0 0 100%!important;text-align:left!important;font-size:9px!important;line-height:1.4!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer{display:grid!important;grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto auto auto!important;align-items:center!important;justify-content:stretch!important;flex-wrap:initial!important;min-height:0!important;padding:12px 14px!important;row-gap:10px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-brand{grid-column:1!important;grid-row:1!important;order:initial!important;flex-basis:auto!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-actions{grid-column:1!important;grid-row:2!important;justify-content:space-between!important;gap:8px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact{order:initial!important;min-height:35px!important;padding:0 11px!important;font-size:10px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-unofficial{order:initial!important;margin-left:0!important}grid-row:auto!important;
+
 }
 @media(max-width:380px){
 html body #mainMenuScreen.vx-home-screen .vx-home-brand-line{gap:6px!important}
@@ -4041,10 +4043,10 @@ html body #mainMenuScreen.vx-home-screen .vx-home-action:hover,html body #mainMe
 }
 
 
-/* Valores institucionais — assinatura visual no espaço central do rodapé. */
+/* Valores institucionais — centrados no espaço livre entre cartões e rodapé. */
 html body #mainMenuScreen.vx-home-screen .vx-home-body .vx-home-motto{
  display:flex!important;align-items:center!important;justify-content:center!important;gap:clamp(8px,1.4vw,18px)!important;
- flex:0 0 auto!important;width:100%!important;min-width:0!important;margin:auto 0 0!important;padding:0 8px!important;
+ flex:0 0 auto!important;width:100%!important;min-width:0!important;margin:auto 0!important;padding:0 8px!important;
  color:#e2ede6!important;font:850 12px/1.2 Inter,"Segoe UI",Arial,sans-serif!important;
  letter-spacing:1.75px!important;text-align:center!important;white-space:nowrap!important;
 }
@@ -4067,14 +4069,14 @@ html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-body .vx-home-mott
 
 /* Legenda de teclado do menu principal — discreta, responsiva e consistente. */
 html body #mainMenuScreen.vx-home-screen .vx-home-footer{flex-wrap:wrap!important;min-height:0!important;padding-top:8px!important;padding-bottom:6px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-shortcuts{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 100%!important;order:5!important;gap:clamp(12px,2vw,24px)!important;min-width:0!important;margin:1px 0 0!important;padding:8px 0 0!important;border-top:1px solid rgba(70,100,85,.34)!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-shortcuts{display:flex!important;grid-column:1 / -1!important;grid-row:2!important;align-items:center!important;justify-content:center!important;gap:clamp(12px,2vw,24px)!important;width:100%!important;min-width:0!important;margin:0!important;padding:8px 0 0!important;border-top:1px solid rgba(70,100,85,.34)!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-shortcut{display:inline-flex!important;align-items:center!important;gap:6px!important;min-width:0!important;color:#93a99e!important;font:500 10px/1.2 Inter,"Segoe UI",Arial,sans-serif!important;white-space:nowrap!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-shortcut kbd{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:24px!important;padding:4px 5px!important;border:1px solid #344b40!important;border-radius:4px!important;background:#101d17!important;color:#d5ebdd!important;font:750 9px/1 Inter,"Segoe UI",Arial,sans-serif!important;box-shadow:0 1px 0 rgba(0,0,0,.22)!important}
 html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-shortcuts{border-top-color:#d4e1d8!important}
 html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-shortcut{color:#597064!important}
 html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-shortcut kbd{border-color:#c6d8cb!important;background:#f0f6f2!important;color:#244936!important;box-shadow:none!important}
 @media(max-width:760px){
- html body #mainMenuScreen.vx-home-screen .vx-home-shortcuts{order:4!important;justify-content:flex-start!important;flex-wrap:wrap!important;gap:10px 16px!important;padding-top:8px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-shortcuts{grid-column:1!important;grid-row:3!important;order:initial!important;justify-content:flex-start!important;flex-wrap:wrap!important;gap:10px 16px!important;margin:0!important;padding-top:8px!important}
  html body #mainMenuScreen.vx-home-screen .vx-home-shortcut{font-size:9px!important}
 }
 @media(max-width:380px){
@@ -4332,8 +4334,14 @@ html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-service-name{
       </div></section>
       <p class="vx-home-motto" aria-label="Valores: Isenção, Firmeza e Cortesia">ISENÇÃO <span aria-hidden="true">*</span> FIRMEZA <span aria-hidden="true">*</span> CORTESIA</p>
       </div>
-    <footer class="vx-home-footer"><div class="vx-home-footer-brand"><span class="vx-home-footer-dot" aria-hidden="true"></span><strong>VÉRIX</strong><span>APOIO OPERACIONAL</span></div><a class="vx-home-footer-contact" href="mailto:verix.plataformadigital@gmail.com?subject=V%C3%89RIX%20-%20Sugest%C3%A3o%20%2F%20Erro" aria-label="Contactar a equipa VÉRIX"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg><span>Contactar a equipa</span><b aria-hidden="true">↗</b></a>
-  <span class="vx-home-footer-unofficial">NÃO OFICIAL</span><div class="vx-home-shortcuts" role="note" aria-label="Atalhos de teclado"><span class="vx-home-shortcut"><kbd>Esc</kbd><span>Voltar / fechar</span></span><span class="vx-home-shortcut"><kbd>Enter</kbd><span>Consultar / confirmar</span></span><span class="vx-home-shortcut"><kbd>Tab</kbd><span>Navegar</span></span></div></footer>
+    <footer class="vx-home-footer">
+  <div class="vx-home-footer-brand"><span class="vx-home-footer-dot" aria-hidden="true"></span><strong>VÉRIX</strong><span>APOIO OPERACIONAL</span></div>
+  <div class="vx-home-footer-actions">
+    <a class="vx-home-footer-contact" href="mailto:verix.plataformadigital@gmail.com?subject=V%C3%89RIX%20-%20Sugest%C3%A3o%20%2F%20Erro" aria-label="Contactar a equipa VÉRIX"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg><span>Contactar a equipa</span><b aria-hidden="true">↗</b></a>
+    <span class="vx-home-footer-unofficial">NÃO OFICIAL</span>
+  </div>
+  <div class="vx-home-shortcuts" role="note" aria-label="Atalhos de teclado"><span class="vx-home-shortcut"><kbd>Esc</kbd><span>Voltar / fechar</span></span><span class="vx-home-shortcut"><kbd>Enter</kbd><span>Consultar / confirmar</span></span><span class="vx-home-shortcut"><kbd>Tab</kbd><span>Navegar</span></span></div>
+</footer>
   </main>
 </div>
 </div>
