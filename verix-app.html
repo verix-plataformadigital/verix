@@ -254,6 +254,104 @@
 <link rel="icon" href="./assets/icon-192.png?v=20261016" type="image/png" sizes="192x192">
 <link rel="apple-touch-icon" href="./assets/icon-192.png?v=20261016">
 <link rel="manifest" href="./site.webmanifest?v=20261016">
+<script id="vx-install-shortcut-runtime">
+(function(){
+  'use strict';
+  var deferredInstallPrompt = null;
+  var appUrl = 'https://verix-plataformadigital.github.io/verix/';
+  var installButtonId = 'vxInstallShortcutButton';
+
+  function isStandalone(){
+    try {
+      return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+        navigator.standalone === true;
+    } catch (_) { return false; }
+  }
+  function markInstalled(){
+    document.documentElement.classList.add('vx-install-standalone');
+    var button = document.getElementById(installButtonId);
+    if(button) button.hidden = true;
+  }
+  if(isStandalone()) markInstalled();
+
+  window.addEventListener('beforeinstallprompt', function(event){
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    document.documentElement.classList.add('vx-install-prompt-ready');
+  });
+  window.addEventListener('appinstalled', function(){
+    deferredInstallPrompt = null;
+    markInstalled();
+  });
+
+  function showInstallGuide(){
+    if(document.getElementById('vxInstallGuideDialog')) return;
+    var ua = navigator.userAgent || '';
+    var isEdge = /Edg\//i.test(ua);
+    var isChrome = /Chrome\//i.test(ua) && !isEdge;
+    var steps;
+    if(isEdge){
+      steps = '<ol><li>Abre o menu <strong>⋯</strong> do Edge.</li><li>Escolhe <strong>Aplicações → Instalar este site como aplicação</strong>.</li><li>Depois abre <code>edge://apps</code>, entra em <strong>Detalhes</strong> do VÉRIX e escolhe <strong>Criar atalho de Ambiente de Trabalho</strong>.</li></ol>';
+    } else if(isChrome){
+      steps = '<ol><li>Abre o menu <strong>⋮</strong> do Chrome.</li><li>Escolhe <strong>Transmitir, guardar e partilhar → Instalar página como aplicação</strong>.</li><li>Se precisares, abre <code>chrome://apps</code>, clica com o botão direito no VÉRIX e escolhe <strong>Criar atalho</strong>.</li></ol>';
+    } else {
+      steps = '<ol><li>Abre o menu do teu navegador e procura <strong>Instalar este site como aplicação</strong>.</li><li>Se não houver essa opção, no Ambiente de Trabalho clica com o botão direito → <strong>Novo → Atalho</strong>.</li><li>Cola o endereço abaixo e dá ao atalho o nome <strong>VÉRIX</strong>.</li></ol>';
+    }
+    var dialog = document.createElement('dialog');
+    dialog.id = 'vxInstallGuideDialog';
+    dialog.className = 'vx-install-guide';
+    dialog.setAttribute('aria-labelledby','vxInstallGuideTitle');
+    dialog.innerHTML = '<section class="vx-install-guide-panel">' +
+      '<header class="vx-install-guide-head"><span class="vx-install-guide-mark" aria-hidden="true">V</span><div><div class="vx-install-guide-kicker">ACESSO RÁPIDO</div><h2 id="vxInstallGuideTitle">Adicionar o VÉRIX</h2></div><button type="button" class="vx-install-guide-close" data-vx-guide-close aria-label="Fechar">×</button></header>' +
+      '<p class="vx-install-guide-intro">Cria um atalho no Ambiente de Trabalho para abrir o VÉRIX sem teres de procurar o endereço.</p>' +
+      '<div class="vx-install-guide-steps">' + steps + '</div>' +
+      '<div class="vx-install-guide-address"><code>verix-plataformadigital.github.io/verix/</code><button type="button" class="vx-install-guide-copy" data-vx-copy-link>Copiar endereço</button></div>' +
+      '<p class="vx-install-guide-status" data-vx-guide-status role="status" aria-live="polite"></p>' +
+      '<footer class="vx-install-guide-actions"><button type="button" data-vx-guide-close>Fechar</button></footer>' +
+      '</section>';
+    document.body.appendChild(dialog);
+    dialog.addEventListener('click', function(event){
+      if(event.target === dialog) dialog.close();
+    });
+    dialog.querySelectorAll('[data-vx-guide-close]').forEach(function(button){
+      button.addEventListener('click', function(){ dialog.close(); });
+    });
+    dialog.addEventListener('close', function(){ dialog.remove(); });
+    dialog.querySelector('[data-vx-copy-link]').addEventListener('click', function(){
+      var status = dialog.querySelector('[data-vx-guide-status]');
+      function copied(){ status.textContent = 'Endereço copiado. Já o podes colar ao criar o atalho.'; }
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(appUrl).then(copied).catch(function(){
+          status.textContent = 'Não foi possível copiar automaticamente. Seleciona o endereço e copia-o manualmente.';
+        });
+      } else {
+        status.textContent = 'O browser não permite copiar automaticamente. Usa o endereço indicado acima.';
+      }
+    });
+    if(typeof dialog.showModal === 'function') dialog.showModal();
+    else dialog.setAttribute('open','');
+  }
+
+  document.addEventListener('click', function(event){
+    var target = event.target;
+    var button = target && target.closest ? target.closest('#' + installButtonId) : null;
+    if(!button) return;
+    event.preventDefault();
+    if(isStandalone()) { markInstalled(); return; }
+    if(!deferredInstallPrompt) { showInstallGuide(); return; }
+    var promptEvent = deferredInstallPrompt;
+    deferredInstallPrompt = null;
+    try {
+      Promise.resolve(promptEvent.prompt()).then(function(){
+        return promptEvent.userChoice;
+      }).then(function(choice){
+        if(choice && choice.outcome === 'accepted') markInstalled();
+        else document.documentElement.classList.remove('vx-install-prompt-ready');
+      }).catch(showInstallGuide);
+    } catch (_) { showInstallGuide(); }
+  });
+})();
+</script>
 <meta name="apple-mobile-web-app-title" content="VÉRIX">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -3959,6 +4057,65 @@ html body #mainMenuScreen.vx-home-screen .vx-home-footer-dot{display:block!impor
 html body #mainMenuScreen.vx-home-screen .vx-home-footer-brand strong{color:#eef5f0!important;font-size:10px!important;letter-spacing:1px!important}
 
 html body #mainMenuScreen.vx-home-screen .vx-home-footer-actions{grid-column:2!important;grid-row:1!important;display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:12px!important;min-width:0!important}
+
+/* Acesso rápido: instala o VÉRIX quando possível; caso contrário, explica como criar o atalho. */
+html body #mainMenuScreen.vx-home-screen .vx-home-install-trigger{
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;
+ flex:0 0 auto!important;min-width:0!important;min-height:34px!important;padding:0 10px!important;
+ border:1px solid #294638!important;border-radius:6px!important;background:#0c1914!important;
+ color:#b7d2c2!important;font:700 9.5px/1 Inter,"Segoe UI",Arial,sans-serif!important;
+ white-space:nowrap!important;cursor:pointer!important;box-shadow:none!important;
+ transition:background-color .15s ease,border-color .15s ease,color .15s ease!important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-install-trigger svg{display:block!important;flex:0 0 15px!important;width:15px!important;height:15px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-install-trigger:hover{border-color:#4e8e6a!important;background:#13251b!important;color:#e0f1e6!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-install-trigger:focus-visible{outline:2px solid #8de2ad!important;outline-offset:3px!important}
+html.vx-install-standalone body #mainMenuScreen.vx-home-screen #vxInstallShortcutButton{display:none!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-install-trigger{border-color:#b7d2c0!important;background:#edf6f0!important;color:#315a41!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-install-trigger:hover{border-color:#7eaf8e!important;background:#e0f1e6!important}
+html body .vx-install-guide{
+ width:min(460px,calc(100vw - 28px))!important;max-width:460px!important;max-height:min(82dvh,620px)!important;
+ margin:auto!important;padding:0!important;overflow:auto!important;border:1px solid #365746!important;
+ border-radius:14px!important;background:#0b1517!important;color:#e8f2ec!important;
+ box-shadow:0 24px 80px rgba(0,0,0,.48)!important;
+}
+html body .vx-install-guide::backdrop{background:rgba(1,7,6,.72)!important;backdrop-filter:blur(3px)!important}
+html body .vx-install-guide-panel{padding:20px!important}
+html body .vx-install-guide-head{display:flex!important;align-items:center!important;gap:12px!important;margin:0 0 15px!important}
+html body .vx-install-guide-mark{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 38px!important;width:38px!important;height:38px!important;border:1px solid #467658!important;border-radius:9px!important;background:#12271e!important;color:#bce8cb!important;font:900 19px/1 Inter,"Segoe UI",Arial,sans-serif!important}
+html body .vx-install-guide-kicker{margin-bottom:5px!important;color:#79d5a0!important;font:800 8px/1 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:1.4px!important}
+html body .vx-install-guide h2{margin:0!important;padding:0!important;color:#f0f7f2!important;font:800 19px/1.2 Inter,"Segoe UI",Arial,sans-serif!important}
+html body .vx-install-guide-close{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 30px!important;width:30px!important;height:30px!important;margin-left:auto!important;border:1px solid #2a4137!important;border-radius:7px!important;background:#101d18!important;color:#c4d7ca!important;font:400 21px/1 Arial,sans-serif!important;cursor:pointer!important}
+html body .vx-install-guide-intro{margin:0 0 14px!important;color:#b2c6b9!important;font:450 12px/1.55 Inter,"Segoe UI",Arial,sans-serif!important}
+html body .vx-install-guide-steps{padding:12px 13px!important;border:1px solid #233b30!important;border-radius:9px!important;background:#0e1b15!important;color:#d2e2d7!important;font:450 11px/1.6 Inter,"Segoe UI",Arial,sans-serif!important}
+html body .vx-install-guide-steps ol{margin:0!important;padding-left:19px!important}
+html body .vx-install-guide-steps li{padding:3px 0!important}
+html body .vx-install-guide-steps strong{color:#eff7f1!important;font-weight:750!important}
+html body .vx-install-guide-steps code{color:#8fdfaf!important;font:700 10px/1.4 Consolas,monospace!important}
+html body .vx-install-guide-address{display:flex!important;align-items:center!important;gap:8px!important;margin:13px 0 0!important;padding:9px!important;border:1px solid #2a4036!important;border-radius:8px!important;background:#0a1210!important}
+html body .vx-install-guide-address code{flex:1 1 auto!important;min-width:0!important;overflow-wrap:anywhere!important;color:#a8cdb6!important;font:500 10px/1.4 Consolas,monospace!important}
+html body .vx-install-guide-copy,html body .vx-install-guide-actions button{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:34px!important;padding:0 10px!important;border:1px solid #38674b!important;border-radius:6px!important;background:#13281b!important;color:#d6ecde!important;font:700 10px/1 Inter,"Segoe UI",Arial,sans-serif!important;white-space:nowrap!important;cursor:pointer!important}
+html body .vx-install-guide-status{min-height:14px!important;margin:8px 0 0!important;color:#8bd9a7!important;font:500 10px/1.4 Inter,"Segoe UI",Arial,sans-serif!important}
+html body .vx-install-guide-actions{display:flex!important;justify-content:flex-end!important;margin-top:8px!important}
+html body .vx-install-guide-actions button{border-color:#30453a!important;background:#101b16!important;color:#c4d5ca!important}
+html body.theme-light .vx-install-guide{border-color:#b9d0c1!important;background:#f8fcf9!important;color:#203b2a!important}
+html body.theme-light .vx-install-guide h2{color:#173d2a!important}
+html body.theme-light .vx-install-guide-intro{color:#506b5a!important}
+html body.theme-light .vx-install-guide-steps{border-color:#d2e2d7!important;background:#eef6f0!important;color:#31563d!important}
+html body.theme-light .vx-install-guide-steps strong{color:#1c422a!important}
+html body.theme-light .vx-install-guide-steps code{color:#1e7c47!important}
+html body.theme-light .vx-install-guide-address{border-color:#d2e2d7!important;background:#f0f7f2!important}
+html body.theme-light .vx-install-guide-address code{color:#315a40!important}
+@media(max-width:760px){
+ html body #mainMenuScreen.vx-home-screen .vx-home-footer-actions{flex-wrap:wrap!important;gap:7px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-install-trigger{min-height:33px!important;padding:0 8px!important;font-size:9px!important}
+ html body .vx-install-guide-panel{padding:15px!important}
+ html body .vx-install-guide h2{font-size:17px!important}
+ html body .vx-install-guide-address{align-items:stretch!important;flex-direction:column!important}
+ html body .vx-install-guide-copy{align-self:flex-start!important}
+}
+@media(prefers-reduced-motion:reduce){html body #mainMenuScreen.vx-home-screen .vx-home-install-trigger{transition:none!important}}
+
 html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;flex:0 0 auto!important;min-width:0!important;min-height:38px!important;padding:0 13px!important;border:1px solid #315b46!important;border-radius:7px!important;background:#10251c!important;color:#d2e7da!important;text-decoration:none!important;font:700 10.5px/1 Inter,"Segoe UI",Arial,sans-serif!important;white-space:nowrap!important;box-shadow:none!important;transition:background-color .16s ease,border-color .16s ease!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact svg{display:block!important;width:15px!important;height:15px!important;flex:0 0 15px!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact b{color:#92ddb2!important;font-size:12px!important;font-weight:800!important}
@@ -4337,6 +4494,7 @@ html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-service-name{
     <footer class="vx-home-footer">
   <div class="vx-home-footer-brand"><span class="vx-home-footer-dot" aria-hidden="true"></span><strong>VÉRIX</strong><span>APOIO OPERACIONAL</span></div>
   <div class="vx-home-footer-actions">
+    <button type="button" class="vx-home-install-trigger" id="vxInstallShortcutButton" aria-label="Adicionar o VÉRIX ao Ambiente de Trabalho" title="Adicionar o VÉRIX ao Ambiente de Trabalho"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4M12 7v5m-3-3 3 3 3-3"/></svg><span>Adicionar atalho</span></button>
     <a class="vx-home-footer-contact" href="mailto:verix.plataformadigital@gmail.com?subject=V%C3%89RIX%20-%20Sugest%C3%A3o%20%2F%20Erro" aria-label="Contactar a equipa VÉRIX"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg><span>Contactar a equipa</span><b aria-hidden="true">↗</b></a>
     <span class="vx-home-footer-unofficial">NÃO OFICIAL</span>
   </div>
