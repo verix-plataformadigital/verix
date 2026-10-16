@@ -2546,7 +2546,7 @@ button,input{font:inherit}button{cursor:pointer}
 /* bottom command strip */
 .bottom{position:fixed;left:94px;right:14px;display:flex;align-items:center;font-size:7px;font-weight:900;text-transform:uppercase}.bottom-left{display:flex;gap:20px}.bottom-left span:before{content:"●";margin-right:5px}.bottom-right{display:flex;align-items:center;gap:18px}.credit{text-transform:none}
 /* little tactical details */
-.corner{position:absolute;border-left:1px solid rgba(105,183,198,.48);border-top:1px solid rgba(105,183,198,.48);pointer-events:none}.corner.tl{left:7px;top:61px}.corner.br{right:7px;bottom:7px;transform:rotate(180deg)}.scan{position:absolute;left:0;right:0;pointer-events:none}@keyframes scan{0%{top:55px}100%{top:100%}}
+.corner{position:absolute;border-left:1px solid rgba(105,183,198,.48);border-top:1px solid rgba(105,183,198,.48);pointer-events:none}.corner.tl{left:7px;top:61px}.corner.br{right:7px;bottom:7px;transform:rotate(180deg)}.scan{position:absolute;left:0;right:0;pointer-events:none}
 @media(max-width:1200px){.brand{left:14px}.brand img{width:48px}.searchbar{transform:translateX(-50%);width:calc(100% - 360px)}.main{left:14px;grid-template-columns:3fr 5fr}.rail,.insurance{display:none}.bottom{left:14px}}
 .toast-notification{position:fixed;bottom:36px;right:28px;color:#fff;padding:10px 18px;font-size:11px;font-weight:900;z-index:99999;opacity:0;transform:translateY(50px);transition:.25s;pointer-events:none}.toast-notification.show{transform:translateY(0);opacity:1}
 /* HISTÓRICO OPERACIONAL */
@@ -4005,20 +4005,7 @@ html body #vxMobileTop .vx-brand-text{
   35%{transform:perspective(480px) rotateY(.8deg) skewY(.15deg) translate3d(1px,-.4px,0);background-position:0 0,54% 49%}
   68%{transform:perspective(480px) rotateY(-.6deg) skewY(-.2deg) translate3d(0,.4px,0);background-position:0 0,46% 53%}
 }
-@keyframes verix-flag-photo-wave{
-  0%,100%{
-    transform:perspective(650px) rotateY(-1.6deg) skewY(-.35deg) translate3d(-1px,0,0);
-    background-position:0 0,0 0,48% 45%;
-  }
-  30%{
-    transform:perspective(650px) rotateY(.8deg) skewY(.2deg) translate3d(1px,-.5px,0);
-    background-position:0 0,0 0,53% 49%;
-  }
-  62%{
-    transform:perspective(650px) rotateY(-.7deg) skewY(-.25deg) translate3d(0,.5px,0);
-    background-position:0 0,0 0,46% 52%;
-  }
-}
+
 @media(prefers-reduced-motion:reduce){
   html body #vxMobileTop .vx-brand::before{
     animation:verix-flag-mobile-photo-wave 6.2s ease-in-out infinite!important;
