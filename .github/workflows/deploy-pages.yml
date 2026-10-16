@@ -170,6 +170,7 @@ jobs:
           grep -q "updateViaCache: 'none'" dist/index.html
           grep -q "updateViaCache: 'none'" dist/verix-mobile.html
           test -s dist/assets/verix-emblem.svg
+          test -s dist/assets/icon-32.png
           test -s dist/assets/icon-192.png
           test -s dist/assets/icon-512.png
           grep -q '"sizes": "512x512"' dist/site.webmanifest
