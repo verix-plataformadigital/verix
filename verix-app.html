@@ -4090,390 +4090,150 @@ html body #vxMobileTop .vx-brand-text{position:relative!important;z-index:1!impo
 </style>
 
 <style id="verix-main-menu-launcher-style-v7">
-html body #mainMenuScreen.vx-home-screen{position:fixed!important;inset:0!important;z-index:1800!important;display:none!important;width:100vw!important;height:100dvh!important;margin:0!important;padding:0!important;overflow:hidden!important;box-sizing:border-box!important;color:#edf4f2!important;background:#071012!important;font-family:Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:normal!important}
-html body #mainMenuScreen.vx-home-screen.show{display:block!important;inset:0!important;overflow:hidden!important;background:#081315!important}
-html body #mainMenuScreen.vx-home-screen *{box-sizing:border-box}
-html body #mainMenuScreen.vx-home-screen .vx-home-shell{display:grid!important;width:100%!important;height:100%!important;min-height:0!important;overflow:hidden!important;background:#0a1417!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-brand-mark{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 39px!important;width:39px!important;height:39px!important;border:1px solid rgba(93,202,155,.52)!important;border-radius:10px!important;background:linear-gradient(145deg,#163a2e,#11251f)!important;color:#b2f0d0!important;font:900 19px/1 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:-.8px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-main{display:flex!important;flex-direction:column!important;min-height:0!important;height:100%!important;background:#0a1417!important;overflow:hidden!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-topbar{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:16px!important;flex:0 0 58px!important;min-width:0!important;border-bottom:1px solid #203235!important;background:#0a1417!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-contact{display:inline-flex!important;align-items:center!important;gap:9px!important;min-height:35px!important;padding:0 11px!important;border:1px solid #2b4644!important;border-radius:7px!important;background:#102321!important;color:#c6d8d2!important;text-decoration:none!important;font:700 9px/1 Arial,sans-serif!important;transition:border-color .16s ease,background .16s ease,color .16s ease!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-contact svg{width:15px!important;height:15px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-contact b{font-size:12px!important;color:#8de0b7!important;font-weight:800!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-contact:hover{border-color:#58aa86!important;background:#17332b!important;color:#f6fbf8!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-body{flex:1 1 auto!important;min-width:0!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;scrollbar-color:#284348 transparent!important;scrollbar-width:thin!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-search{display:flex!important;align-items:center!important;gap:9px!important;flex:0 1 390px!important;min-width:230px!important;height:42px!important;padding:0 10px 0 13px!important;border:1px solid #2b4244!important;border-radius:9px!important;background:#0c1b1f!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.02)!important;transition:border-color .16s ease,box-shadow .16s ease!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-search:focus-within{border-color:#5ab48b!important;box-shadow:0 0 0 3px rgba(68,165,122,.12)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-search>svg{width:17px!important;height:17px!important;flex:0 0 17px!important;color:#82a49e!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-search input{width:100%!important;min-width:0!important;height:100%!important;padding:0!important;border:0!important;outline:none!important;background:transparent!important;box-shadow:none!important;color:#ecf5f1!important;font:500 11px/1 Arial,sans-serif!important;letter-spacing:0!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-search input::placeholder{color:#799391!important;opacity:1!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-search kbd{display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 22px!important;width:22px!important;height:23px!important;border:1px solid #2c4547!important;border-radius:5px!important;background:#122629!important;color:#86a09c!important;font:750 10px/1 ui-monospace,Consolas,monospace!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-search button{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 24px!important;width:24px!important;height:24px!important;border:0!important;border-radius:5px!important;background:transparent!important;color:#b5c8c2!important;font:500 19px/1 Arial,sans-serif!important;cursor:pointer!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-search button:hover{background:#1a3033!important;color:#fff!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-group{min-width:0!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-primary-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;}
-html body #mainMenuScreen.vx-home-screen .vx-home-action{position:relative!important;display:flex!important;align-items:center!important;min-width:0!important;text-align:left!important;cursor:pointer!important;transition:transform .15s ease,border-color .15s ease,background .15s ease,box-shadow .15s ease!important;overflow:hidden!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary{gap:19px!important;border:1px solid #2e6250!important;border-radius:13px!important;background:linear-gradient(115deg,rgba(25,76,55,.70),rgba(14,33,34,.98) 68%)!important;color:#f0f7f3!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:first-child{border-color:#347f60!important;background:linear-gradient(115deg,rgba(26,91,61,.64),rgba(13,31,33,.98) 74%)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2){border-color:#6b6540!important;background:linear-gradient(115deg,rgba(91,78,37,.40),rgba(15,32,33,.98) 73%)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:hover{transform:translateY(-2px)!important;box-shadow:0 12px 32px rgba(0,0,0,.15)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:first-child:hover{border-color:#60b989!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2):hover{border-color:#b3a56d!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-icon{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 42px!important;width:42px!important;height:42px!important;border:1px solid #2b4b41!important;border-radius:10px!important;background:rgba(16,48,37,.66)!important;color:#a7e8c5!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-icon{flex-basis:54px!important;width:54px!important;height:54px!important;background:rgba(17,59,43,.56)!important;border-color:rgba(99,195,146,.42)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2) .vx-home-action-icon{color:#e4d28e!important;background:rgba(69,58,29,.35)!important;border-color:rgba(197,177,98,.42)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-icon svg{display:block!important;width:27px!important;height:27px!important;max-width:100%!important;max-height:100%!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-icon svg{width:42px!important;height:42px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-copy{display:flex!important;flex:1 1 auto!important;flex-direction:column!important;gap:6px!important;min-width:0!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-title{display:block!important;color:#edf6f1!important;font:800 13px/1.25 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:.1px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-title{font-weight:850!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-description{display:block!important;color:#a3b8b3!important;font:450 10px/1.5 Inter,"Segoe UI",Arial,sans-serif!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-description{font-size:11px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-cta{display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 auto!important;margin-left:auto!important;padding:8px 10px!important;border:1px solid #31534a!important;border-radius:7px!important;background:rgba(8,24,24,.45)!important;color:#b8e6cf!important;font:750 9px/1 Arial,sans-serif!important;white-space:nowrap!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2) .vx-home-action-cta{border-color:#5e5a3c!important;color:#e1d49d!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-secondary-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;row-gap:0!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary{gap:12px!important;border:0!important;border-bottom:1px solid #29403f!important;border-radius:0!important;background:transparent!important;color:#e9f3ef!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary:hover{background:linear-gradient(90deg,rgba(26,65,49,.26),transparent)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-icon{flex-basis:36px!important;width:36px!important;height:36px!important;border-radius:8px!important;border-color:#2a4e45!important;background:#112723!important;color:#9bd9ba!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-icon svg{width:22px!important;height:22px!important}
+/* VÉRIX HOME — identidade 2026: mate, funcional, portuguesa e sem efeitos decorativos redundantes. */
+html body #mainMenuScreen.vx-home-screen{position:fixed!important;inset:0!important;z-index:1800!important;display:none!important;width:100vw!important;height:100dvh!important;min-width:0!important;min-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important;box-sizing:border-box!important;background:#080f11!important;color:#eef4f0!important;font-family:Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:normal!important}
+html body #mainMenuScreen.vx-home-screen.show{display:block!important;overflow:hidden!important;background:#080f11!important}
+html body #mainMenuScreen.vx-home-screen:before{content:none!important;display:none!important}
+html body #mainMenuScreen.vx-home-screen *{box-sizing:border-box!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-shell{position:relative!important;isolation:isolate!important;display:flex!important;flex-direction:column!important;width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;overflow:hidden!important;background:#080f11!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-main{display:flex!important;flex:1 1 auto!important;flex-direction:column!important;width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;overflow:hidden!important;background:#080f11!important}
+/* Cabeçalho simples; o detalhe verde/vermelho identifica a marca sem imitar um painel de videojogo. */
+html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead{position:relative!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;flex:0 0 68px!important;min-height:68px!important;min-width:0!important;gap:0!important;padding:0 clamp(20px,3.5vw,54px)!important;border:0!important;border-bottom:1px solid #243b39!important;border-radius:0!important;background:#0b1517!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead:before{content:""!important;position:absolute!important;left:0!important;top:0!important;bottom:0!important;width:3px!important;background:linear-gradient(180deg,#07833c 0 59%,#cf3439 59% 100%)!important;pointer-events:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead:after{content:""!important;position:absolute!important;left:3px!important;right:0!important;bottom:0!important;height:1px!important;background:linear-gradient(90deg,rgba(89,205,147,.42),rgba(89,205,147,.08) 47%,transparent 78%)!important;pointer-events:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup{display:flex!important;align-items:center!important;gap:13px!important;min-width:0!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup .vx-home-brand-mark{position:relative!important;display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 40px!important;width:40px!important;height:40px!important;min-height:40px!important;padding:0 0 3px!important;border:1px solid #32684f!important;border-radius:10px!important;background:#12271e!important;color:#c0eed2!important;box-shadow:none!important;font:900 21px/1 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:-.8px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup .vx-home-brand-mark:after{content:""!important;position:absolute!important;left:10px!important;right:10px!important;bottom:5px!important;height:2px!important;background:linear-gradient(90deg,#07833c 0 58%,#cf3439 58% 100%)!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-line{display:flex!important;align-items:center!important;gap:12px!important;min-width:0!important;white-space:nowrap!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-line h1{margin:0!important;padding:0!important;color:#f1f6f3!important;font:850 19px/1 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:1.05px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-divider{display:block!important;width:1px!important;height:20px!important;flex:0 0 1px!important;background:#3a504a!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-service-name{color:#c0d0c8!important;font:600 12px/1.2 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:.05px!important}
+/* Grelha alinhada ao topo: as ações frequentes ganham presença, as restantes ficam claras e discretas. */
+html body #mainMenuScreen.vx-home-screen .vx-home-body{display:flex!important;flex:1 1 auto!important;flex-direction:column!important;justify-content:flex-start!important;width:100%!important;max-width:1580px!important;min-width:0!important;min-height:0!important;margin:0 auto!important;padding:clamp(24px,3.1vh,34px) clamp(24px,4vw,58px) 24px!important;gap:24px!important;overflow-x:hidden!important;overflow-y:auto!important;scrollbar-color:#314742 transparent!important;scrollbar-width:thin!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-group{display:block!important;min-width:0!important;margin:0!important;padding:0!important;border:0!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-secondary-group{margin:0!important;padding:0!important;border:0!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-primary-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:14px!important;align-items:stretch!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-secondary-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;column-gap:12px!important;row-gap:12px!important;align-items:stretch!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action{position:relative!important;display:flex!important;align-items:center!important;width:100%!important;min-width:0!important;margin:0!important;color:#edf5f0!important;text-align:left!important;font-family:inherit!important;cursor:pointer!important;overflow:hidden!important;outline:none!important;box-shadow:none!important;transform:none!important;transition:background-color .16s ease,border-color .16s ease,transform .16s ease!important}
+/* Fiscalização e cinemómetro: dois pontos de entrada imediatos, com sinalização distinta e contida. */
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary{gap:19px!important;min-height:154px!important;padding:24px 25px!important;border:1px solid #2c5b46!important;border-radius:10px!important;background:#10231c!important;color:#f0f7f2!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:before{content:""!important;position:absolute!important;left:0!important;top:0!important;bottom:0!important;width:3px!important;background:#5cd59a!important;opacity:.9!important;pointer-events:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2){border-color:#4f4b32!important;background:#1b1e18!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2):before{background:#d2bc68!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:hover{transform:translateY(-1px)!important;border-color:#58a77c!important;background:#142a21!important;box-shadow:none!important;filter:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2):hover{border-color:#b9a65d!important;background:#24251b!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-icon{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 36px!important;width:36px!important;height:36px!important;min-width:0!important;min-height:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;color:#9fe3bd!important;box-shadow:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-icon{flex-basis:52px!important;width:52px!important;height:52px!important;border:0!important;border-radius:0!important;background:transparent!important;color:#a8ebc4!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2) .vx-home-action-icon{background:transparent!important;border:0!important;color:#e0ce87!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-icon svg{display:block!important;width:24px!important;height:24px!important;max-width:100%!important;max-height:100%!important;filter:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-icon svg{width:47px!important;height:47px!important;filter:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-copy{display:flex!important;flex:1 1 auto!important;flex-direction:column!important;gap:7px!important;min-width:0!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-title{display:block!important;margin:0!important;color:#f0f6f2!important;font:800 13px/1.3 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:.05px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-title{color:#f3f8f5!important;font-size:18px!important;font-weight:850!important;letter-spacing:.1px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-description{display:block!important;margin:0!important;color:#b0c4ba!important;font:450 11px/1.5 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:0!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-description{max-width:40em!important;color:#c0d3c9!important;font-size:12px!important;line-height:1.55!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-arrow{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 auto!important;width:auto!important;height:auto!important;margin-left:auto!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;color:#80d7a9!important;font:650 21px/1 Arial,sans-serif!important;transition:transform .16s ease,color .16s ease!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-arrow{color:#b9ebce!important;font-size:25px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2) .vx-home-action-arrow{color:#e5d595!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action:hover .vx-home-action-arrow{transform:translate(2px,-1px)!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action:focus-visible{outline:2px solid #9be8bd!important;outline-offset:3px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action:active{transform:translateY(0)!important}
+/* Ferramentas complementares: superfícies mate, sem mini-cartões decorativos dentro dos cartões. */
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary{gap:12px!important;min-height:91px!important;padding:16px 15px!important;border:1px solid #233a39!important;border-radius:9px!important;background:#0e191b!important;color:#edf5f0!important;box-shadow:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary:before{content:none!important;display:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary:hover{transform:translateY(-1px)!important;border-color:#4d9470!important;background:#13231f!important;box-shadow:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-icon{flex:0 0 33px!important;width:33px!important;height:33px!important;border:0!important;border-radius:0!important;background:transparent!important;color:#8bdab0!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-icon svg{width:23px!important;height:23px!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-copy{gap:5px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-title{font-weight:850!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-description{color:#99afad!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-arrow{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 21px!important;width:21px!important;height:21px!important;border:1px solid #2a4844!important;border-radius:50%!important;color:#90d9b4!important;font:700 12px/1 Arial,sans-serif!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-empty{margin:22px 0 0!important;padding:24px 18px!important;border:1px dashed #2d4546!important;border-radius:12px!important;background:rgba(11,25,28,.55)!important;text-align:center!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-empty strong{color:#e5efea!important;font:750 14px/1.3 Arial,sans-serif!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-empty p{margin:8px 0 14px!important;color:#8fa6a2!important;font:450 12px/1.5 Arial,sans-serif!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-empty button{min-height:38px!important;padding:0 13px!important;border:1px solid #315849!important;border-radius:8px!important;background:#142c25!important;color:#a8e8c6!important;font:750 11px/1 Arial,sans-serif!important;cursor:pointer!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:16px!important;flex:0 0 45px!important;min-width:0!important;border-top:1px solid #203235!important;background:#091316!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer-brand{display:flex!important;align-items:center!important;gap:9px!important;min-width:0!important;color:#b7d2c7!important;font:800 8px/1 Arial,sans-serif!important;letter-spacing:.6px!important;white-space:nowrap!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer-dot{width:6px!important;height:6px!important;flex:0 0 6px!important;border-radius:50%!important;background:#65d1a0!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer-brand strong{color:#e8f2ed!important;font-size:9px!important;letter-spacing:1.1px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer p{margin:0!important;color:#8da5a0!important;font:450 8px/1.4 Arial,sans-serif!important;text-align:right!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer-unofficial{flex:0 0 auto!important;padding:5px 7px!important;border:1px solid #3e3d2d!important;border-radius:5px!important;background:#191b16!important;color:#d8c489!important;font:850 6px/1 Arial,sans-serif!important;letter-spacing:.8px!important;white-space:nowrap!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-title{color:#eaf3ee!important;font-size:12.5px!important;font-weight:820!important;letter-spacing:.08px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-description{color:#aebfb8!important;font-size:10.5px!important;line-height:1.45!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-arrow{color:#6daf8c!important;font-size:19px!important}
+/* Rodapé preserva o aviso de utilização e o contacto com a equipa. */
+html body #mainMenuScreen.vx-home-screen .vx-home-footer{display:flex!important;align-items:center!important;justify-content:space-between!important;flex:0 0 auto!important;min-width:0!important;min-height:60px!important;gap:clamp(10px,1.4vw,20px)!important;padding:9px clamp(20px,3.5vw,54px)!important;border:0!important;border-top:1px solid #243a38!important;border-radius:0!important;background:#091315!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-brand{display:flex!important;align-items:center!important;flex:0 0 auto!important;gap:8px!important;min-width:0!important;color:#a9beb4!important;font:750 9px/1.2 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:.55px!important;white-space:nowrap!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-dot{display:block!important;width:6px!important;height:6px!important;flex:0 0 6px!important;border-radius:50%!important;background:#67d6a0!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-brand strong{color:#eef5f0!important;font-size:10px!important;letter-spacing:1px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer p{flex:1 1 auto!important;margin:0!important;color:#a0b4aa!important;font:450 10px/1.45 Inter,"Segoe UI",Arial,sans-serif!important;text-align:center!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;flex:0 0 auto!important;min-width:0!important;min-height:38px!important;padding:0 13px!important;border:1px solid #315b46!important;border-radius:7px!important;background:#10251c!important;color:#d2e7da!important;text-decoration:none!important;font:700 10.5px/1 Inter,"Segoe UI",Arial,sans-serif!important;white-space:nowrap!important;box-shadow:none!important;transition:background-color .16s ease,border-color .16s ease!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact svg{display:block!important;width:15px!important;height:15px!important;flex:0 0 15px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact b{color:#92ddb2!important;font-size:12px!important;font-weight:800!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact:hover{border-color:#67c693!important;background:#173528!important;color:#f3faf5!important;transform:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-unofficial{flex:0 0 auto!important;margin:0!important;padding:5px 8px!important;border:1px solid #4c482e!important;border-radius:4px!important;background:#191b15!important;color:#e0d39a!important;font:850 7px/1 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:.75px!important;white-space:nowrap!important}
+/* Tema claro: conservar legibilidade quando ativado nas definições. */
+html body.theme-light #mainMenuScreen.vx-home-screen,html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-shell,html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-main{background:#f1f5f2!important;color:#203229!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead{background:#fbfdfb!important;border-bottom-color:#d5e1d9!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-brand-line h1{color:#193327!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-service-name{color:#52695d!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-brand-divider{background:#c6d5cc!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-brand-lockup .vx-home-brand-mark{background:#e1f1e7!important;border-color:#81b89b!important;color:#1d6946!important;box-shadow:none!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-action-primary{background:#e6f3ea!important;border-color:#85bda0!important;color:#183b29!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-title{color:#183b29!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-description{color:#496455!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2){background:#f4f0e3!important;border-color:#c8bb88!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2) .vx-home-action-title{color:#3a3520!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2) .vx-home-action-description{color:#676044!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-action-secondary{background:#fff!important;border-color:#d4e0d8!important;color:#20362a!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-title{color:#20362a!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-description{color:#5a7064!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-action-secondary:hover{background:#f5faf6!important;border-color:#83b99a!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-footer{background:#fbfdfb!important;border-top-color:#d5e1d9!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-footer-brand{color:#52695d!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-footer-brand strong{color:#23382c!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-footer p{color:#566a5f!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-footer-contact{background:#e7f2eb!important;border-color:#a7cbb5!important;color:#244b34!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-footer-unofficial{background:#f8f3df!important;border-color:#d4c78f!important;color:#5a4d1c!important}
+/* Tablet e janelas médias. */
 @media(max-width:1120px){
- html body #mainMenuScreen.vx-home-screen .vx-home-secondary-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;column-gap:14px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-action-primary{gap:12px!important;padding:17px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-cta{display:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-body{max-width:100%!important;padding:24px 26px!important;gap:19px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-primary-grid{gap:12px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary{min-height:138px!important;padding:21px!important;gap:13px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-secondary-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary{min-height:82px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer{padding-left:26px!important;padding-right:26px!important}
 }
 @media(max-width:760px){
- html body #mainMenuScreen.vx-home-screen .vx-home-shell{grid-template-columns:minmax(0,1fr)!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-topbar{height:50px!important;}
- html body #mainMenuScreen.vx-home-screen .vx-home-contact{min-height:31px!important;padding:0 8px!important;font-size:8px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-search{flex:0 0 42px!important;min-width:0!important;width:100%!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-primary-grid{grid-template-columns:minmax(0,1fr)!important;gap:10px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-action-primary{min-height:108px!important;padding:14px!important;gap:12px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-icon{flex-basis:43px!important;width:43px!important;height:43px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-icon svg{width:37px!important;height:37px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-cta{display:none!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-secondary-grid{grid-template-columns:minmax(0,1fr)!important;column-gap:0!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary{min-height:70px!important;padding:10px 2px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-title{font-size:10px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-footer{flex:0 0 auto!important;min-height:50px!important;padding:10px 14px!important;gap:10px!important;flex-wrap:wrap!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-footer p{order:3;flex-basis:100%!important;font-size:8px!important;text-align:left!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-footer-unofficial{margin-left:auto!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead{flex:0 0 59px!important;min-height:59px!important;padding:0 16px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup{gap:9px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup .vx-home-brand-mark{flex-basis:36px!important;width:36px!important;height:36px!important;min-height:36px!important;border-radius:9px!important;font-size:18px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-line{gap:7px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-line h1{font-size:16px!important;letter-spacing:.7px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-divider{height:16px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-service-name{font-size:11px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-body{justify-content:flex-start!important;max-width:100%!important;padding:19px 14px 22px!important;gap:16px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-primary-grid{grid-template-columns:minmax(0,1fr)!important;gap:9px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary{min-height:104px!important;padding:16px!important;gap:13px!important;border-radius:9px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-icon{flex-basis:43px!important;width:43px!important;height:43px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-icon svg{width:39px!important;height:39px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-title{font-size:15px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-description{font-size:11px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-arrow{font-size:21px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-secondary-grid{grid-template-columns:minmax(0,1fr)!important;gap:7px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary{min-height:70px!important;padding:12px 13px!important;gap:12px!important;border-radius:8px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-icon{flex-basis:31px!important;width:31px!important;height:31px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-title{font-size:12px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-description{font-size:10.5px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer{align-items:center!important;justify-content:space-between!important;flex-wrap:wrap!important;min-height:0!important;padding:11px 14px!important;gap:9px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-brand{order:0!important;flex-basis:100%!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact{order:1!important;min-height:35px!important;padding:0 11px!important;font-size:10px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-unofficial{order:2!important;margin-left:auto!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer p{order:3!important;flex:0 0 100%!important;text-align:left!important;font-size:9px!important;line-height:1.4!important}
 }
 @media(max-width:380px){
- html body #mainMenuScreen.vx-home-screen .vx-home-contact span{display:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-line{gap:6px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-line h1{font-size:15px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-service-name{font-size:10px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary{padding:14px!important;gap:10px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact{min-height:33px!important;padding:0 9px!important}
 }
-@media(max-height:760px) and (min-width:761px){
- html body #mainMenuScreen.vx-home-screen .vx-home-topbar{flex-basis:50px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-body{padding-top:18px!important;padding-bottom:10px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-action-primary{min-height:126px!important;padding-top:14px!important;padding-bottom:14px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary{min-height:66px!important;padding-top:10px!important;padding-bottom:10px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-group{margin-bottom:18px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-footer{flex-basis:42px!important}
-}
-@media(prefers-reduced-motion:reduce){
-html body #mainMenuScreen.vx-home-screen .vx-home-action, html body #mainMenuScreen.vx-home-screen .vx-home-contact {transition:none!important}
-}
-
-/* Keep hidden cards and panels hidden after all layout rules. */
-html body #mainMenuScreen.vx-home-screen [hidden]{display:none!important}
-
-/* Main menu identity: remove active-section chrome and make the brand the top-level anchor. */
-html body #mainMenuScreen.vx-home-screen .vx-home-shell{grid-template-columns:minmax(0,1fr)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-main{width:100%!important;min-width:0!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-topbar{flex-basis:72px!important;padding:0 clamp(20px,3.2vw,52px)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-topbar .vx-home-brand-mark{flex:0 0 42px!important;width:42px!important;height:42px!important;font-size:21px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-body{width:100%!important;max-width:1580px!important;margin:0 auto!important;}
-html body #mainMenuScreen.vx-home-screen .vx-home-primary-grid{gap:17px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary{min-height:150px!important;padding:25px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-title{font-size:16px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-secondary-grid{column-gap:24px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary{min-height:80px!important;padding:13px 5px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-title{font-size:11px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-description{font-size:10px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer{padding:0 clamp(20px,3.2vw,52px)!important}
-@media(max-width:1120px){
- html body #mainMenuScreen.vx-home-screen .vx-home-shell{grid-template-columns:minmax(0,1fr)!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-body{padding-left:26px!important;padding-right:26px!important}
-}
-@media(max-width:760px){
- html body #mainMenuScreen.vx-home-screen .vx-home-topbar{flex-basis:62px!important;padding:0 16px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-topbar .vx-home-brand-mark{flex-basis:38px!important;width:38px!important;height:38px!important}
-}
-
-/* VÉRIX — restrained horizontal application bar */
-html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead{
-  position:relative!important;display:flex!important;align-items:center!important;justify-content:space-between!important;
-  gap:clamp(14px,1.8vw,28px)!important;flex:0 0 80px!important;min-height:80px!important;
-  padding:0 clamp(22px,3vw,48px)!important;border-bottom:1px solid #263e3c!important;
-  background:linear-gradient(100deg,#0d1b1e 0%,#0a1518 60%,#0d191a 100%)!important;box-shadow:none!important;
-}
-html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead:after{
-  content:""!important;position:absolute!important;left:0!important;right:0!important;bottom:-1px!important;height:1px!important;
-  background:linear-gradient(90deg,#63c99d 0%,rgba(86,181,143,.38) 42%,rgba(185,163,94,.18) 78%,transparent 100%)!important;pointer-events:none!important;
-}
-html body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup{
-  display:flex!important;align-items:center!important;gap:12px!important;flex:0 0 auto!important;min-width:0!important;
-}
-html body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup .vx-home-brand-mark{
-  display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 42px!important;width:42px!important;height:42px!important;
-  border:1px solid rgba(95,202,153,.48)!important;border-radius:10px!important;background:linear-gradient(145deg,#173d30,#10261f)!important;
-  color:#b6eccd!important;font:900 21px/1 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:-.7px!important;
-}
-html body #mainMenuScreen.vx-home-screen .vx-home-brand-line{
-  display:flex!important;align-items:center!important;gap:12px!important;min-width:0!important;white-space:nowrap!important;
-}
-html body #mainMenuScreen.vx-home-screen .vx-home-brand-line h1{
-  margin:0!important;padding:0!important;color:#eff6f2!important;font:850 18px/1 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:1.35px!important;
-}
-html body #mainMenuScreen.vx-home-screen .vx-home-brand-divider{
-  display:block!important;flex:0 0 1px!important;width:1px!important;height:24px!important;background:#36524b!important;
-}
-html body #mainMenuScreen.vx-home-screen .vx-home-service-name{
-  display:block!important;color:#c1d5cb!important;font:600 14px/1.2 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:.08px!important;
-}
-html body #mainMenuScreen.vx-home-screen .vx-home-result-status{
-  position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;
-  clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;
-}
-html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead .vx-home-search{
-  flex:1 1 360px!important;min-width:180px!important;max-width:430px!important;width:auto!important;height:42px!important;
-  margin-left:auto!important;border:1px solid #2a4544!important;border-radius:8px!important;background:rgba(5,18,20,.65)!important;box-shadow:none!important;
-}
-html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead .vx-home-search input{font-size:11px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead .vx-home-contact{
-  display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;flex:0 0 auto!important;
-  min-height:40px!important;padding:0 12px!important;border:1px solid #304c44!important;border-radius:7px!important;
-  background:#10251f!important;color:#c5dbd0!important;font:700 10px/1 Arial,sans-serif!important;
-}
-html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead .vx-home-contact:hover{
-  border-color:#5aa780!important;background:#173429!important;color:#eff9f3!important;
-}
-html body #mainMenuScreen.vx-home-screen .vx-home-body{padding:26px clamp(22px,3vw,48px) 22px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-group{margin:0!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-secondary-group{
-  margin-top:24px!important;padding-top:20px!important;border-top:1px solid #243b39!important;
-}
-@media(max-width:1120px){
- html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead{gap:12px!important;padding:0 22px!important;flex-basis:76px!important;min-height:76px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup .vx-home-brand-mark{flex-basis:40px!important;width:40px!important;height:40px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-brand-line{gap:9px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-brand-line h1{font-size:17px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-service-name{font-size:12px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead .vx-home-search{flex-basis:260px!important;min-width:145px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead .vx-home-contact span,
- html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead .vx-home-contact b{display:none!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead .vx-home-contact{width:40px!important;min-width:40px!important;padding:0!important}
-}
-@media(max-width:760px){
- html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead{
-   display:grid!important;grid-template-columns:minmax(0,1fr) 42px!important;grid-template-areas:"brand contact" "search search"!important;
-   row-gap:12px!important;column-gap:12px!important;flex-basis:auto!important;min-height:0!important;padding:13px 16px 15px!important;
- }
- html body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup{grid-area:brand!important;gap:10px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup .vx-home-brand-mark{flex-basis:38px!important;width:38px!important;height:38px!important;border-radius:9px!important;font-size:18px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-brand-line{gap:7px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-brand-line h1{font-size:15px!important;letter-spacing:.8px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-brand-divider{height:19px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-service-name{font-size:11px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead .vx-home-contact{grid-area:contact!important;width:42px!important;min-width:42px!important;height:40px!important;min-height:40px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead .vx-home-search{grid-area:search!important;flex:none!important;width:100%!important;min-width:0!important;max-width:none!important;height:43px!important;margin:0!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-search kbd{display:none!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-body{padding:18px 16px 20px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-secondary-group{margin-top:18px!important;padding-top:14px!important}
-}
-@media(max-width:370px){
- html body #mainMenuScreen.vx-home-screen .vx-home-brand-line{gap:5px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-brand-line h1{font-size:14px!important;letter-spacing:.5px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-service-name{font-size:10px!important}
-}
-
-/* VÉRIX contemporary interface polish v7 — sharper hierarchy, subtle depth, tactile feedback. */
-html body #mainMenuScreen.vx-home-screen.show{background:#071012!important;background-image:radial-gradient(ellipse at 9% 4%,rgba(39,135,91,.16),transparent 36%),radial-gradient(ellipse at 92% 22%,rgba(118,99,42,.09),transparent 34%),linear-gradient(135deg,#081315,#0a1719 52%,#081214)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-main{background:radial-gradient(ellipse at 8% 10%,rgba(43,135,96,.11),transparent 34%),radial-gradient(ellipse at 88% 20%,rgba(134,113,47,.075),transparent 31%),linear-gradient(145deg,#0a1719,#0b1719 48%,#081214)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead{background:linear-gradient(105deg,rgba(13,29,30,.97),rgba(8,20,22,.94) 58%,rgba(13,25,24,.96))!important;border-bottom-color:rgba(91,151,128,.3)!important;box-shadow:0 10px 35px rgba(0,0,0,.13)!important;backdrop-filter:blur(16px)!important;-webkit-backdrop-filter:blur(16px)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead:after{height:1px!important;opacity:.8!important;background:linear-gradient(90deg,#6ae4a9,rgba(62,151,119,.3) 40%,rgba(196,177,104,.3) 72%,transparent)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup .vx-home-brand-mark{position:relative!important;overflow:hidden!important;border-color:rgba(112,225,168,.62)!important;background:linear-gradient(145deg,#1b4b37,#123025 54%,#0f251f)!important;color:#b6f1cf!important;box-shadow:0 0 0 4px rgba(72,166,118,.055),inset 0 1px 0 rgba(255,255,255,.11),0 7px 18px rgba(0,0,0,.22)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup .vx-home-brand-mark:after{content:""!important;position:absolute!important;top:-14px!important;right:-10px!important;width:25px!important;height:70px!important;transform:rotate(32deg)!important;background:rgba(190,255,218,.045)!important;pointer-events:none!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-brand-line h1{color:#f4faf6!important;letter-spacing:1.55px!important;text-shadow:0 1px 14px rgba(120,223,171,.08)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-service-name{color:#d1e2d8!important;font-weight:620!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead .vx-home-search{border-color:rgba(80,129,118,.45)!important;background:rgba(5,17,19,.68)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 5px 16px rgba(0,0,0,.08)!important;transition:border-color .18s ease,background .18s ease,box-shadow .18s ease!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead .vx-home-search:focus-within{border-color:#5ecb98!important;background:rgba(8,27,23,.88)!important;box-shadow:0 0 0 3px rgba(78,196,137,.12),0 8px 24px rgba(0,0,0,.14)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead .vx-home-search input{color:#f0f7f3!important;font-size:12px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead .vx-home-search input::placeholder{color:#8da9a2!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead .vx-home-contact{border-color:rgba(80,143,113,.48)!important;background:linear-gradient(135deg,rgba(22,57,41,.91),rgba(13,36,29,.94))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 5px 16px rgba(0,0,0,.1)!important;transition:transform .18s ease,border-color .18s ease,background .18s ease,box-shadow .18s ease!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead .vx-home-contact:hover{transform:translateY(-1px)!important;border-color:#64c895!important;background:linear-gradient(135deg,#1c4b35,#123327)!important;box-shadow:0 7px 20px rgba(0,0,0,.15)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-body{padding-top:27px!important;padding-bottom:30px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-primary-grid{gap:18px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary{position:relative!important;isolation:isolate!important;min-height:176px!important;padding:27px!important;gap:22px!important;border:1px solid rgba(79,168,124,.58)!important;border-radius:16px!important;background:radial-gradient(ellipse at 0% 0%,rgba(43,156,102,.23),transparent 60%),linear-gradient(122deg,#14392b,#0b1f1f 68%,#0a1b1d)!important;box-shadow:inset 0 1px 0 rgba(235,255,244,.055),0 10px 30px rgba(0,0,0,.11)!important;transition:transform .2s cubic-bezier(.2,.7,.2,1),border-color .2s ease,box-shadow .2s ease,filter .2s ease!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:before{content:""!important;position:absolute!important;z-index:-1!important;inset:0!important;border-radius:inherit!important;pointer-events:none!important;background:linear-gradient(112deg,rgba(135,250,186,.055),transparent 38%,rgba(255,255,255,.012) 68%,transparent)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:after{content:""!important;position:absolute!important;left:20px!important;top:0!important;width:86px!important;height:2px!important;border-radius:0 0 3px 3px!important;background:linear-gradient(90deg,#7fe4ad,rgba(127,228,173,0))!important;opacity:.85!important;pointer-events:none!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:first-child{border-color:rgba(67,190,130,.66)!important;background:radial-gradient(ellipse at 0% 0%,rgba(45,177,112,.28),transparent 62%),linear-gradient(122deg,#133b2c,#0d2424 66%,#0b1b1e)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2){border-color:rgba(177,153,79,.65)!important;background:radial-gradient(ellipse at 0% 0%,rgba(184,149,54,.22),transparent 62%),linear-gradient(122deg,#29291d,#171f20 62%,#0c1b1e)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2):after{background:linear-gradient(90deg,#e4cd7b,rgba(228,205,123,0))!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:hover{transform:translateY(-3px)!important;filter:brightness(1.07)!important;box-shadow:inset 0 1px 0 rgba(235,255,244,.07),0 18px 38px rgba(0,0,0,.24),0 0 22px rgba(61,163,111,.055)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2):hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 18px 38px rgba(0,0,0,.24),0 0 24px rgba(190,164,73,.06)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-icon{position:relative!important;flex-basis:60px!important;width:60px!important;height:60px!important;border-radius:15px!important;border-color:rgba(100,220,159,.46)!important;background:linear-gradient(145deg,rgba(28,92,61,.78),rgba(12,42,31,.78))!important;color:#b6f3d0!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 5px 16px rgba(0,0,0,.13)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-icon svg{width:44px!important;height:44px!important;filter:drop-shadow(0 0 8px rgba(95,227,159,.10))!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2) .vx-home-action-icon{border-color:rgba(213,190,103,.49)!important;background:linear-gradient(145deg,rgba(94,78,33,.62),rgba(46,42,25,.72))!important;color:#f0dc91!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-copy{gap:8px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-title{color:#f2faf5!important;font-size:17px!important;letter-spacing:.2px!important;font-weight:850!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-description{max-width:38em!important;color:#b7cdc4!important;font-size:12px!important;line-height:1.6!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-cta{min-height:36px!important;padding:0 13px!important;border-radius:8px!important;border-color:rgba(94,171,130,.48)!important;background:rgba(7,23,20,.55)!important;color:#c9f0db!important;font-size:10px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.035)!important;transition:transform .18s ease,background .18s ease,border-color .18s ease!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2) .vx-home-action-cta{border-color:rgba(192,170,92,.49)!important;background:rgba(29,26,17,.52)!important;color:#f0e1a8!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:hover .vx-home-action-cta{transform:translateX(2px)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-secondary-group{margin-top:28px!important;padding-top:0!important;border-top:0!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-secondary-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;column-gap:15px!important;row-gap:12px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary{position:relative!important;isolation:isolate!important;overflow:hidden!important;min-height:92px!important;padding:16px!important;gap:13px!important;border:1px solid rgba(69,111,101,.32)!important;border-radius:12px!important;background:linear-gradient(145deg,rgba(17,36,36,.89),rgba(10,25,28,.94))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.025),0 5px 18px rgba(0,0,0,.055)!important;transition:transform .18s cubic-bezier(.2,.7,.2,1),border-color .18s ease,background .18s ease,box-shadow .18s ease!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary:before{content:""!important;position:absolute!important;z-index:-1!important;inset:0!important;pointer-events:none!important;border-radius:inherit!important;background:radial-gradient(ellipse at 0% 0%,rgba(70,176,125,.095),transparent 70%)!important;opacity:.6!important;transition:opacity .18s ease!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary:hover{transform:translateY(-2px)!important;border-color:rgba(89,190,139,.65)!important;background:linear-gradient(145deg,rgba(19,47,41,.97),rgba(11,29,30,.98))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.045),0 12px 25px rgba(0,0,0,.16)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary:hover:before{opacity:1!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-icon{flex-basis:42px!important;width:42px!important;height:42px!important;border-radius:11px!important;border-color:rgba(82,164,128,.46)!important;background:linear-gradient(145deg,rgba(26,66,51,.79),rgba(13,35,30,.89))!important;color:#a9e9c7!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)!important;transition:background .18s ease,border-color .18s ease,color .18s ease!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-icon svg{width:24px!important;height:24px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-copy{gap:6px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-title{color:#ecf6f0!important;font-size:12px!important;font-weight:820!important;letter-spacing:.12px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-description{color:#a8beb6!important;font-size:10px!important;line-height:1.45!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-arrow{flex-basis:25px!important;width:25px!important;height:25px!important;border-color:rgba(73,137,117,.53)!important;background:rgba(8,25,25,.44)!important;color:#9ae2bb!important;transition:transform .18s ease,border-color .18s ease,background .18s ease!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary:hover .vx-home-action-arrow{transform:translate(2px,-2px)!important;border-color:#65c896!important;background:rgba(23,59,42,.75)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action:focus-visible{outline:2px solid #9ce9c1!important;outline-offset:3px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer{background:rgba(5,15,17,.82)!important;border-top-color:rgba(77,125,111,.27)!important;backdrop-filter:blur(10px)!important;-webkit-backdrop-filter:blur(10px)!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer p{color:#9eb3ad!important;font-size:9px!important}
-@media(max-width:1120px){
- html body #mainMenuScreen.vx-home-screen .vx-home-action-primary{min-height:158px!important;padding:20px!important;gap:14px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-cta{min-height:32px!important;padding:0 9px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-secondary-grid{column-gap:11px!important;row-gap:10px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary{padding:13px!important;gap:10px!important;min-height:86px!important}
-}
-@media(max-width:760px){
- html body #mainMenuScreen.vx-home-screen .vx-home-body{padding-top:18px!important;padding-bottom:20px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-primary-grid{grid-template-columns:minmax(0,1fr)!important;gap:11px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-action-primary{min-height:116px!important;padding:16px!important;gap:12px!important;border-radius:13px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-icon{flex-basis:46px!important;width:46px!important;height:46px!important;border-radius:12px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-icon svg{width:35px!important;height:35px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-title{font-size:14px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-description{font-size:10px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-cta{display:none!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-secondary-group{margin-top:16px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-secondary-grid{grid-template-columns:minmax(0,1fr)!important;gap:8px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary{min-height:78px!important;padding:12px!important;gap:11px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-title{font-size:11px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-description{font-size:9px!important}
+@media(max-height:650px) and (min-width:761px){
+html body #mainMenuScreen.vx-home-screen .vx-home-body{justify-content:flex-start!important;padding-top:18px!important;padding-bottom:18px!important;gap:14px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary{min-height:124px!important;padding:20px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary{min-height:76px!important;padding:12px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer{min-height:52px!important}
 }
 @media(prefers-reduced-motion:reduce){
- html body #mainMenuScreen.vx-home-screen .vx-home-action,html body #mainMenuScreen.vx-home-screen .vx-home-contact,html body #mainMenuScreen.vx-home-screen .vx-home-search,html body #mainMenuScreen.vx-home-screen .vx-home-action-cta,html body #mainMenuScreen.vx-home-screen .vx-home-action-arrow{transition:none!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-action:hover,html body #mainMenuScreen.vx-home-screen .vx-home-contact:hover{transform:none!important}
-}
-
-/* VÉRIX v7 — brand-led masthead and contact action in the footer. */
-html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead{
- position:relative!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;
- flex:0 0 74px!important;min-height:74px!important;gap:0!important;padding:0 clamp(22px,3.2vw,50px)!important;
- background:linear-gradient(110deg,#0c1a1d 0%,#0b1719 54%,#0b1718 100%)!important;
- border-bottom:1px solid rgba(83,139,119,.31)!important;box-shadow:0 8px 24px rgba(0,0,0,.12)!important;
- backdrop-filter:blur(14px)!important;-webkit-backdrop-filter:blur(14px)!important;
-}
-html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead:before{
- content:""!important;position:absolute!important;left:0!important;top:0!important;bottom:0!important;width:3px!important;
- background:linear-gradient(180deg,#78e6ad 0%,#25835b 58%,rgba(37,131,91,0) 100%)!important;
-}
-html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead:after{
- content:""!important;position:absolute!important;left:0!important;right:0!important;bottom:-1px!important;height:1px!important;
- background:linear-gradient(90deg,rgba(105,224,165,.8),rgba(56,147,112,.28) 38%,rgba(184,164,97,.14) 68%,transparent)!important;pointer-events:none!important;
-}
-html body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup{display:flex!important;align-items:center!important;gap:13px!important;min-width:0!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup .vx-home-brand-mark{
- flex:0 0 43px!important;width:43px!important;height:43px!important;border-radius:12px!important;border:1px solid rgba(105,211,160,.58)!important;
- background:linear-gradient(145deg,#194530,#10291f)!important;color:#bdf2d2!important;
- box-shadow:0 0 0 4px rgba(73,174,122,.045),inset 0 1px 0 rgba(255,255,255,.09)!important;font-size:21px!important;
-}
-html body #mainMenuScreen.vx-home-screen .vx-home-brand-line{display:flex!important;align-items:center!important;gap:13px!important;min-width:0!important;white-space:nowrap!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-brand-line h1{
- margin:0!important;padding:0!important;color:#f3f8f5!important;font:850 18px/1 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:1.45px!important;
-}
-html body #mainMenuScreen.vx-home-screen .vx-home-brand-divider{
- display:block!important;flex:0 0 1px!important;width:1px!important;height:25px!important;background:linear-gradient(180deg,transparent,#52746a 24%,#52746a 76%,transparent)!important;
-}
-html body #mainMenuScreen.vx-home-screen .vx-home-service-name{color:#c7d9d0!important;font:600 14px/1.2 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:.08px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-body{padding-top:26px!important;padding-bottom:28px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-primary-arrow{
- display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 32px!important;width:32px!important;height:32px!important;
- margin-left:auto!important;border:1px solid rgba(94,171,130,.46)!important;border-radius:10px!important;background:rgba(7,23,20,.32)!important;
- color:#b8ead0!important;font:700 17px/1 Arial,sans-serif!important;transition:transform .18s ease,border-color .18s ease,background .18s ease!important;
-}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2) .vx-home-primary-arrow{
- border-color:rgba(192,170,92,.46)!important;background:rgba(29,26,17,.3)!important;color:#eddfa8!important;
-}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:hover .vx-home-primary-arrow{
- transform:translate(2px,-1px)!important;border-color:#66c995!important;background:rgba(17,54,37,.68)!important;
-}
-html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2):hover .vx-home-primary-arrow{
- border-color:#c5ad62!important;background:rgba(68,57,26,.52)!important;
-}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer{
- display:flex!important;align-items:center!important;gap:clamp(10px,1.4vw,20px)!important;flex:0 0 auto!important;min-height:62px!important;
- padding:10px clamp(22px,3.2vw,50px)!important;background:linear-gradient(100deg,rgba(6,17,19,.97),rgba(8,19,21,.97))!important;
- border-top:1px solid rgba(76,126,112,.3)!important;backdrop-filter:blur(12px)!important;-webkit-backdrop-filter:blur(12px)!important;
-}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer-brand{flex:0 0 auto!important;gap:8px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer p{
- flex:1 1 auto!important;margin:0!important;color:#91aaa2!important;font-size:9px!important;line-height:1.4!important;text-align:center!important;
-}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact{
- display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;flex:0 0 auto!important;
- min-height:35px!important;padding:0 12px!important;border:1px solid rgba(82,149,115,.46)!important;border-radius:8px!important;
- background:linear-gradient(135deg,rgba(22,57,41,.86),rgba(13,34,28,.94))!important;color:#c6e0d2!important;
- text-decoration:none!important;font:700 10px/1 Arial,sans-serif!important;white-space:nowrap!important;
- transition:transform .18s ease,border-color .18s ease,background .18s ease!important;
-}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact svg{width:15px!important;height:15px!important;flex:0 0 15px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact b{color:#91e0b4!important;font-size:12px!important}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact:hover{
- transform:translateY(-1px)!important;border-color:#65c995!important;background:linear-gradient(135deg,#1c4b35,#123327)!important;color:#f1faf5!important;
-}
-html body #mainMenuScreen.vx-home-screen .vx-home-footer-unofficial{flex:0 0 auto!important}
-@media(max-width:1120px){
- html body #mainMenuScreen.vx-home-screen .vx-home-footer{gap:11px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-footer p{font-size:8px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact{padding:0 9px!important}
-}
-@media(max-width:760px){
- html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead{
-  display:flex!important;align-items:center!important;justify-content:flex-start!important;flex:0 0 67px!important;min-height:67px!important;padding:0 16px!important;
- }
- html body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup{gap:10px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup .vx-home-brand-mark{flex-basis:38px!important;width:38px!important;height:38px!important;border-radius:10px!important;font-size:18px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-brand-line{gap:8px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-brand-line h1{font-size:15px!important;letter-spacing:.9px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-brand-divider{height:20px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-service-name{font-size:11px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-body{padding:18px 16px 20px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-footer{align-items:center!important;justify-content:space-between!important;flex-wrap:wrap!important;gap:9px!important;min-height:0!important;padding:11px 14px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-footer-brand{order:0!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact{order:1!important;min-height:33px!important;padding:0 9px!important;font-size:9px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-footer-unofficial{order:2!important;margin-left:auto!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-footer p{order:3!important;flex-basis:100%!important;text-align:left!important;font-size:8px!important}
-}
-@media(max-width:390px){
- html body #mainMenuScreen.vx-home-screen .vx-home-brand-line{gap:6px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-brand-line h1{font-size:14px!important;letter-spacing:.6px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-service-name{font-size:10px!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact span{display:none!important}
- html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact{width:35px!important;min-width:35px!important;padding:0!important}
-}
-@media(prefers-reduced-motion:reduce){
- html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact,html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-primary-arrow{transition:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action,html body #mainMenuScreen.vx-home-screen .vx-home-action-arrow,html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact{transition:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action:hover,html body #mainMenuScreen.vx-home-screen .vx-home-action:active{transform:none!important}
 }
 </style>
 </head><body>
@@ -9776,48 +9536,41 @@ html body .main-menu-screen {
 
  --ease:cubic-bezier(.16,1,.3,1);
  --font-mono:"Consolas","Courier New",monospace;
-}
-/* ===== ATMOSPHERE ===== */
+}/* ===== ATMOSPHERE ===== */
 html,body{
  background:#010406 !important;
  color:var(--white) !important;
-}
-html body .cinematic-bg{
+}html body .cinematic-bg{
  background:
  radial-gradient(ellipse 90% 55% at 50% -15%, rgba(0,180,160,.14) 0%, transparent 50%),
  radial-gradient(ellipse 50% 40% at 100% 100%, rgba(180,0,40,.10) 0%, transparent 45%),
  radial-gradient(ellipse 40% 35% at 0% 80%, rgba(0,100,140,.12) 0%, transparent 40%),
  linear-gradient(180deg, #030a10 0%, #010406 40%, #020810 100%) !important;
-}
-/* tactical grid */
+}/* tactical grid */
 html body .cinematic-bg::before{
  content:"";
  position:absolute; inset:0; pointer-events:none; z-index:0;
  mask-image:radial-gradient(ellipse 70% 60% at 50% 40%, #000 0%, transparent 80%);
-}
-html body .cinematic-bg::after{
+}html body .cinematic-bg::after{
  content:"";
  position:absolute; inset:0; pointer-events:none;
  background:
  repeating-linear-gradient(0deg, transparent 0 2px, rgba(0,0,0,.12) 2px 3px);
  opacity:.35;
  mix-blend-mode:multiply;
-}
-/* CRT scanlines + vignette */
+}/* CRT scanlines + vignette */
 html body:before{
  opacity:.18 !important;
  background:
  repeating-linear-gradient(0deg, rgba(0,240,255,.03) 0 1px, transparent 1px 3px) !important;
  z-index:92 !important;
-}
-html body:after{
+}html body:after{
  background:
  radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,.75) 100%),
  linear-gradient(180deg, rgba(0,240,255,.03), transparent 8%, transparent 92%, rgba(255,42,74,.04)) !important;
  z-index:91 !important;
  pointer-events:none;
-}
-/* ===== COMMAND HEADER — classified bar ===== */
+}/* ===== COMMAND HEADER — classified bar ===== */
 html body .command{
  background:
  linear-gradient(180deg, rgba(8,22,32,.97), rgba(2,10,16,.98)) !important;
@@ -9826,14 +9579,12 @@ html body .command{
  -webkit-backdrop-filter:blur(16px) saturate(1.2);
  border-radius:4px !important;
  clip-path:polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
-}
-html body .command:before{
+}html body .command:before{
  opacity:.5 !important;
  background:
  linear-gradient(120deg, transparent 40%, rgba(255,42,74,.12) 42%, transparent 44%, rgba(0,229,160,.1) 48%, transparent 50%),
  repeating-linear-gradient(90deg, rgba(0,240,255,.04) 0 1px, transparent 1px 32px) !important;
-}
-html body .command:after{
+}html body .command:after{
  background:linear-gradient(90deg,
  transparent 0%,
  var(--cyan) 8%,
@@ -9846,9 +9597,7 @@ html body .command:after{
 @keyframes intelBarPulse{
  0%,100%{ opacity:.85; filter:brightness(1); }
  50%{ opacity:1; filter:brightness(1.25); }
-}
-
-/* Search bar — terminal input */
+}/* Search bar — terminal input */
 html body .searchbar{
  background:rgba(0,8,12,.88) !important;
  border:1px solid rgba(0,240,255,.32) !important;
@@ -9858,14 +9607,12 @@ html body .searchbar{
  0 0 0 1px rgba(0,0,0,.5) !important;
  border-radius:2px !important;
  clip-path:polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
-}
-html body .field label{
+}html body .field label{
  color:var(--cyan) !important;
  font-family:var(--font-mono) !important;
  letter-spacing:1.5px !important;
  text-shadow:0 0 8px rgba(0,240,255,.3) !important;
-}
-html body .field input{
+}html body .field input{
  background:linear-gradient(180deg, #ffffff, #e8eef0) !important;
  color:#0a0a0a !important;
  border:1px solid rgba(0,240,255,.45) !important;
@@ -9877,31 +9624,25 @@ html body .field input{
  border-radius:2px !important;
  -webkit-text-fill-color:#0a0a0a !important;
  caret-color:#0a0a0a !important;
-}
-html body .field input:focus{
+}html body .field input:focus{
  border-color:var(--cyan) !important;
  box-shadow:0 0 0 2px rgba(0,240,255,.3), 0 0 20px rgba(0,240,255,.18), inset 0 2px 4px rgba(0,0,0,.1) !important;
  transform:translateY(-1px);
  color:#0a0a0a !important;
  -webkit-text-fill-color:#0a0a0a !important;
-}
-html body .field input::placeholder{
+}html body .field input::placeholder{
  color:#4a5560 !important;
  -webkit-text-fill-color:#4a5560 !important;
  opacity:1 !important;
  letter-spacing:1px;
  text-shadow:none !important;
-}
-/* Chrome autofill: keep black text, no yellow flash */
-html body .field input:-webkit-autofill,
-html body .field input:-webkit-autofill:hover,
-html body .field input:-webkit-autofill:focus{
+}/* Chrome autofill: keep black text, no yellow flash */
+html body .field input:-webkit-autofill,html body .field input:-webkit-autofill:hover,html body .field input:-webkit-autofill:focus{
  -webkit-text-fill-color:#0a0a0a !important;
  caret-color:#0a0a0a !important;
  box-shadow:inset 0 0 0 1000px #f0f4f5 !important;
  transition:background-color 99999s ease-out;
-}
-html body .consult{
+}html body .consult{
  background:linear-gradient(180deg, #ff3a58, #b01028) !important;
  border:1px solid #ff6a80 !important;
  color:#fff !important;
@@ -9912,14 +9653,11 @@ html body .consult{
  border-radius:2px !important;
  clip-path:polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
  transition:filter .18s, transform .15s, box-shadow .18s !important;
-}
-html body .consult:hover{
+}html body .consult:hover{
  box-shadow:0 0 36px rgba(255,42,74,.5), 0 6px 0 #600818 !important;
-}
-html body .consult:active{
+}html body .consult:active{
  box-shadow:0 0 16px rgba(255,42,74,.3), 0 2px 0 #600818 !important;
-}
-html body .tool{
+}html body .tool{
  background:linear-gradient(180deg, #0e2430, #061018) !important;
  border:1px solid rgba(0,240,255,.28) !important;
  color:var(--cyan) !important;
@@ -9928,96 +9666,79 @@ html body .tool{
  border-radius:2px !important;
  box-shadow:0 0 12px rgba(0,240,255,.06) !important;
  transition:all .18s var(--ease) !important;
-}
-html body .tool:hover{
+}html body .tool:hover{
  border-color:var(--cyan) !important;
  color:#fff !important;
  text-shadow:0 0 8px rgba(0,240,255,.5);
-}
-html body .tool.green{
+}html body .tool.green{
  background:linear-gradient(180deg, #00b878, #006648) !important;
  border-color:var(--green) !important;
  color:#fff !important;
  box-shadow:0 0 16px rgba(0,229,160,.25) !important;
-}
-html body .time{
+}html body .time{
  font-family:var(--font-mono) !important;
  color:rgba(0,240,255,.55) !important;
  letter-spacing:1.5px !important;
  text-shadow:0 0 8px rgba(0,240,255,.2) !important;
-}
-/* ===== SIDE RAIL — tactical nav ===== */
+}/* ===== SIDE RAIL — tactical nav ===== */
 html body .rail{
  background:linear-gradient(180deg, rgba(4,16,24,.98), rgba(1,6,10,.99)) !important;
  border:1px solid rgba(0,240,255,.22) !important;
  border-radius:2px !important;
  clip-path:polygon(0 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%);
-}
-html body .rail-item{
+}html body .rail-item{
  border-radius:2px !important;
  border:1px solid transparent !important;
  font-family:var(--font-mono) !important;
  letter-spacing:.8px !important;
-}
-html body .rail-item:hover{
+}html body .rail-item:hover{
  color:var(--cyan) !important;
  border-color:rgba(0,240,255,.25) !important;
-}
-html body .rail-item.active{
+}html body .rail-item.active{
  color:#fff !important;
  background:linear-gradient(90deg, rgba(255,42,74,.4), rgba(80,8,20,.2)) !important;
  border-color:rgba(255,42,74,.5) !important;
  text-shadow:0 0 10px rgba(255,42,74,.4);
-}
-html body .rail-item.selected{
+}html body .rail-item.selected{
  background:linear-gradient(90deg, rgba(0,229,160,.3), rgba(0,60,40,.15)) !important;
  border-color:rgba(0,229,160,.45) !important;
  box-shadow:inset 3px 0 0 var(--green), 0 0 20px rgba(0,229,160,.12) !important;
  color:#fff !important;
-}
-html body .rail-item:hover .rail-modern-ico{
+}html body .rail-item:hover .rail-modern-ico{
  filter:drop-shadow(0 0 8px rgba(0,240,255,.6));
  transform:scale(1.1);
-}
-/* ===== MAIN PANELS — intel screens ===== */
+}/* ===== MAIN PANELS — intel screens ===== */
 html body .panel{
  background:linear-gradient(165deg, #06141c 0%, #030a10 100%) !important;
  border:1px solid rgba(0,240,255,.2) !important;
  border-radius:2px !important;
  clip-path:polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
-}
-html body .panel:hover{
+}html body .panel:hover{
  border-color:rgba(0,240,255,.35) !important;
-}
-html body .head.red{
+}html body .head.red{
  background:linear-gradient(105deg, #4a0610 0%, #c8102e 40%, #ff2a4a 55%, #8a0a1f 100%) !important;
  border-bottom:2px solid var(--cyan) !important;
  box-shadow:0 0 20px rgba(255,42,74,.2) !important;
-}
-html body .head.green{
+}html body .head.green{
  background:linear-gradient(105deg, #003828 0%, #00a86b 40%, #00e5a0 55%, #006b45 100%) !important;
  border-bottom:2px solid var(--cyan) !important;
  box-shadow:0 0 20px rgba(0,229,160,.2) !important;
-}
-html body .head-title{
+}html body .head-title{
  font-family:var(--font-mono) !important;
  letter-spacing:2.5px !important;
  text-shadow:0 0 16px rgba(255,255,255,.25), 0 2px 6px #000 !important;
-}
-html body .head-title:before{
+}html body .head-title:before{
  content:"▸ " !important;
  opacity:.7;
  color:var(--cyan);
-}
-html body .head-tag{
+}html body .head-tag{
  font-family:var(--font-mono) !important;
  background:rgba(0,0,0,.35) !important;
  border:1px solid rgba(0,240,255,.3) !important;
  color:var(--cyan) !important;
  text-shadow:0 0 8px rgba(0,240,255,.4) !important;
  letter-spacing:1.5px !important;
-}
-html body .head-tag:before{
+}html body .head-tag:before{
  color:var(--green) !important;
  text-shadow:0 0 8px rgba(0,229,160,.6) !important;
  animation:intelBlink 1.8s step-end infinite;
@@ -10025,123 +9746,87 @@ html body .head-tag:before{
 @keyframes intelBlink{
  0%,100%{ opacity:1; }
  50%{ opacity:.3; }
-}
-html body .scan{
+}html body .scan{
  background:linear-gradient(90deg, transparent, var(--cyan), var(--green), var(--cyan), transparent) !important;
-}
-
-html body .corner{
+}html body .corner{
  border-color:var(--cyan) !important;
  opacity:.8;
-}
-html body .spinner{
+}html body .spinner{
  border-width:2px !important;
  border-color:rgba(0,240,255,.12) !important;
  border-top-color:var(--red) !important;
  border-right-color:var(--cyan) !important;
  box-shadow:0 0 28px rgba(0,240,255,.25), 0 0 12px rgba(255,42,74,.2) !important;
-}
-/* ===== OVERLAYS / MODALS ===== */
-html body .module-overlay,
-html body .history-overlay,
-html body .legal-notice-overlay{
+}/* ===== OVERLAYS / MODALS ===== */
+html body .module-overlay,html body .history-overlay,html body .legal-notice-overlay{
  background:rgba(0,2,6,.88) !important;
  backdrop-filter:blur(14px) saturate(1.15) !important;
  -webkit-backdrop-filter:blur(14px) saturate(1.15) !important;
-}
-html body .module-window,
-html body .history-window,
-html body .legal-notice-window{
+}html body .module-window,html body .history-window,html body .legal-notice-window{
  border:1px solid rgba(0,240,255,.3) !important;
  background:linear-gradient(160deg, #061820 0%, #02080c 100%) !important;
  border-radius:2px !important;
  clip-path:polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
-}
-html body .module-top,
-html body .history-top,
-html body .legal-notice-top{
+}html body .module-top,html body .history-top,html body .legal-notice-top{
  background:linear-gradient(90deg,
  rgba(255,42,74,.25) 0%,
  rgba(4,16,24,.2) 40%,
  rgba(0,229,160,.18) 100%) !important;
  border-bottom:1px solid rgba(0,240,255,.2) !important;
-}
-html body .module-title,
-html body .history-title,
-html body .legal-notice-title{
+}html body .module-title,html body .history-title,html body .legal-notice-title{
  font-family:var(--font-mono) !important;
  letter-spacing:2.5px !important;
  text-shadow:0 0 12px rgba(0,240,255,.25) !important;
-}
-html body .module-sub,
-html body .history-sub,
-html body .legal-notice-sub{
+}html body .module-sub,html body .history-sub,html body .legal-notice-sub{
  color:var(--cyan) !important;
  font-family:var(--font-mono) !important;
  opacity:.7;
-}
-html body .module-close,
-html body .history-close,
-html body .legal-notice-close{
+}html body .module-close,html body .history-close,html body .legal-notice-close{
  border:1px solid rgba(0,240,255,.25) !important;
  background:rgba(0,20,30,.6) !important;
  color:var(--cyan) !important;
  border-radius:2px !important;
  transition:all .18s ease !important;
-}
-html body .module-close:hover,
-html body .history-close:hover,
-html body .legal-notice-close:hover{
+}html body .module-close:hover,html body .history-close:hover,html body .legal-notice-close:hover{
  background:var(--red) !important;
  border-color:#ff6a80 !important;
  color:#fff !important;
  box-shadow:0 0 20px rgba(255,42,74,.4) !important;
  transform:scale(1.06);
-}
-/html body .leg-card-new, html body .module-card{
+}/html body .leg-card-new,html body .module-card{
  border:1px solid rgba(0,240,255,.15) !important;
  background:linear-gradient(135deg, rgba(6,20,28,.95), rgba(2,10,14,.97)) !important;
  transition:all .2s var(--ease) !important;
  border-radius:2px !important;
-}
-html body .leg-card-new:hover, html body .module-card:hover{
+}html body .leg-card-new:hover,html body .module-card:hover{
  border-color:rgba(0,240,255,.45) !important;
  box-shadow:0 8px 28px rgba(0,0,0,.35), 0 0 20px rgba(0,240,255,.08) !important;
  transform:translateY(-2px);
-}
-html body .leg-category{
+}html body .leg-category{
  clip-path:polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
  transition:all .22s var(--ease) !important;
-}
-html body .leg-category.red{
+}html body .leg-category.red{
  box-shadow:0 0 30px rgba(255,42,74,.12) !important;
-}
-html body .leg-category.green{
+}html body .leg-category.green{
  box-shadow:0 0 30px rgba(0,229,160,.12) !important;
-}
-/* ===== INSURANCE / STATUS ===== */
+}/* ===== INSURANCE / STATUS ===== */
 html body .insurance .status.ok{
  color:var(--green) !important;
  text-shadow:0 0 24px rgba(0,229,160,.5), 0 0 8px rgba(0,229,160,.3) !important;
  font-family:var(--font-mono) !important;
  letter-spacing:2px !important;
-}
-html body .insurance .status.no{
+}html body .insurance .status.no{
  color:var(--red) !important;
  text-shadow:0 0 24px rgba(255,42,74,.5), 0 0 8px rgba(255,42,74,.3) !important;
  font-family:var(--font-mono) !important;
  letter-spacing:2px !important;
-}
-html body .insurance .status.wait,
-html body .insurance .status.warn{
+}html body .insurance .status.wait,html body .insurance .status.warn{
  font-family:var(--font-mono) !important;
  letter-spacing:1.5px !important;
-}
-/* ===== ASF RATE WIDGET ===== */
+}/* ===== ASF RATE WIDGET ===== */
 html body .insurance .asf-rate-widget{
  font-family:var(--font-mono) !important;
-}
-/* ===== TOAST / NOTICES ===== */
+}/* ===== TOAST / NOTICES ===== */
 html body .toast-notification{
  background:linear-gradient(180deg, #00b878, #006648) !important;
  border:1px solid var(--green) !important;
@@ -10151,46 +9836,35 @@ html body .toast-notification{
  font-family:var(--font-mono) !important;
  letter-spacing:1.5px !important;
  color:rgba(0,240,255,.45) !important;
-}
-html body .bottom-left span:before{
+}html body .bottom-left span:before{
  color:var(--green) !important;
  text-shadow:0 0 8px var(--green);
  animation:intelBlink 2.2s step-end infinite;
-}
-/* ===== SCROLLBARS ===== */
-html body *::-webkit-scrollbar{ width:7px; height:7px; }
-html body *::-webkit-scrollbar-track{ background:rgba(0,8,12,.6); }
-html body *::-webkit-scrollbar-thumb{
+}/* ===== SCROLLBARS ===== */
+html body *::-webkit-scrollbar{ width:7px; height:7px; }html body *::-webkit-scrollbar-track{ background:rgba(0,8,12,.6); }html body *::-webkit-scrollbar-thumb{
  background:linear-gradient(180deg, rgba(0,240,255,.35), rgba(0,229,160,.3));
  border-radius:1px;
  border:1px solid rgba(0,0,0,.3);
-}
-html body *::-webkit-scrollbar-thumb:hover{
+}html body *::-webkit-scrollbar-thumb:hover{
  background:linear-gradient(180deg, rgba(0,240,255,.55), rgba(0,229,160,.45));
  box-shadow:0 0 8px rgba(0,240,255,.3);
-}
-/* ===== SELECTION / FOCUS ===== */
+}/* ===== SELECTION / FOCUS ===== */
 html body ::selection{
  background:rgba(0,240,255,.3);
  color:#fff;
  text-shadow:none;
-}
-html body button:focus-visible,
-html body input:focus-visible{
+}html body button:focus-visible,html body input:focus-visible{
  outline:2px solid rgba(0,240,255,.7);
  outline-offset:2px;
-}
-/* ===== HISTORY ROWS ===== */
+}/* ===== HISTORY ROWS ===== */
 html body .history-row{
  border:1px solid rgba(0,240,255,.12) !important;
  background:linear-gradient(90deg, rgba(6,20,28,.9), rgba(3,12,18,.88)) !important;
  border-radius:2px !important;
-}
-html body .history-row:hover{
+}html body .history-row:hover{
  border-color:rgba(0,229,160,.5) !important;
  background:linear-gradient(90deg, rgba(0,80,55,.25), rgba(6,20,28,.92)) !important;
-}
-html body .plate-mini{
+}html body .plate-mini{
  background:#0a1820 !important;
  color:var(--cyan) !important;
  border:1px solid rgba(0,240,255,.35) !important;
@@ -10200,20 +9874,15 @@ html body .plate-mini{
  box-shadow:inset 0 0 12px rgba(0,240,255,.08) !important;
 }
 /* ===== REDUCED MOTION ===== */
-@media (prefers-reduced-motion: reduce){
-html body .scan, html body .spinner, html body .command:after, html body .head-tag:before, html body .bottom-left span:before { animation:none !important; }
-html body .rail-item, html body .consult, html body .tool { transition:none !important; }
-}
-/* Contador ASF — barra full-bleed, encaixada, efeito 3D */
+@media (prefers-reduced-motion: reduce){html body .scan,html body .spinner,html body .command:after,html body .head-tag:before,html body .bottom-left span:before{ animation:none !important; }html body .rail-item,html body .consult,html body .tool{ transition:none !important; }
+}/* Contador ASF — barra full-bleed, encaixada, efeito 3D */
 html body .insurance{
  position:relative!important;
  overflow:hidden!important;
-}
-html body .insurance .insurance-body{
+}html body .insurance .insurance-body{
  padding-bottom:54px!important;
  box-sizing:border-box!important;
-}
-html body .insurance .asf-rate-widget{
+}html body .insurance .asf-rate-widget{
  position:absolute!important;
  bottom:0!important;
  top:auto!important;
@@ -10239,8 +9908,7 @@ html body .insurance .asf-rate-widget{
  text-align:left!important;
  pointer-events:none!important;
  z-index:25!important;
-}
-/* sulco 3D superior */
+}/* sulco 3D superior */
 html body .insurance .asf-rate-widget::before{
  content:""!important;
  position:absolute!important;
@@ -10254,8 +9922,7 @@ html body .insurance .asf-rate-widget::before{
  transparent 100%)!important;
  box-shadow:0 0 10px rgba(0,240,255,.25)!important;
  pointer-events:none!important;
-}
-html body .insurance .asf-rate-label{
+}html body .insurance .asf-rate-label{
  flex:0 0 auto!important;
  display:flex!important;
  align-items:center!important;
@@ -10271,8 +9938,7 @@ html body .insurance .asf-rate-label{
  line-height:1!important;
  position:relative!important;
  z-index:1!important;
-}
-html body .insurance .asf-rate-dot{
+}html body .insurance .asf-rate-dot{
  width:8px!important;
  height:8px!important;
  margin:0!important;
@@ -10283,16 +9949,13 @@ html body .insurance .asf-rate-dot{
  0 0 10px rgba(39,216,135,.65),
  inset 0 1px 1px rgba(255,255,255,.4)!important;
  flex-shrink:0!important;
-}
-html body .insurance .asf-rate-widget.warn .asf-rate-dot{
+}html body .insurance .asf-rate-widget.warn .asf-rate-dot{
  background:#e4b927!important;
  box-shadow:0 0 0 2px rgba(228,185,39,.2), 0 0 10px rgba(228,185,39,.6), inset 0 1px 1px rgba(255,255,255,.35)!important;
-}
-html body .insurance .asf-rate-widget.high .asf-rate-dot{
+}html body .insurance .asf-rate-widget.high .asf-rate-dot{
  background:#ff2a4a!important;
  box-shadow:0 0 0 2px rgba(255,42,74,.2), 0 0 10px rgba(255,42,74,.55), inset 0 1px 1px rgba(255,255,255,.3)!important;
-}
-html body .insurance .asf-rate-main{
+}html body .insurance .asf-rate-main{
  flex:0 0 auto!important;
  margin:0!important;
  padding:5px 14px!important;
@@ -10313,29 +9976,25 @@ html body .insurance .asf-rate-main{
  white-space:nowrap!important;
  position:relative!important;
  z-index:1!important;
-}
-html body .insurance .asf-rate-main strong{
+}html body .insurance .asf-rate-main strong{
  font-size:14px!important;
  font-weight:900!important;
  color:#8eb0b8!important;
  letter-spacing:.6px!important;
  text-shadow:0 1px 0 rgba(0,0,0,.5)!important;
-}
-html body .insurance .asf-rate-widget.warn .asf-rate-main{
+}html body .insurance .asf-rate-widget.warn .asf-rate-main{
  color:#f0c94a!important;
  text-shadow:0 0 12px rgba(228,185,39,.4), 0 1px 0 rgba(0,0,0,.5)!important;
  background:linear-gradient(180deg, rgba(228,185,39,.18) 0%, rgba(90,70,10,.22) 100%)!important;
  border-color:rgba(228,185,39,.45)!important;
  box-shadow:0 2px 0 rgba(0,0,0,.45), 0 4px 12px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.12), 0 0 16px rgba(228,185,39,.15)!important;
-}
-html body .insurance .asf-rate-widget.high .asf-rate-main{
+}html body .insurance .asf-rate-widget.high .asf-rate-main{
  color:#ff5a70!important;
  text-shadow:0 0 12px rgba(255,42,74,.45), 0 1px 0 rgba(0,0,0,.5)!important;
  background:linear-gradient(180deg, rgba(200,16,46,.22) 0%, rgba(80,8,20,.28) 100%)!important;
  border-color:rgba(255,42,74,.45)!important;
  box-shadow:0 2px 0 rgba(0,0,0,.45), 0 4px 12px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.1), 0 0 16px rgba(255,42,74,.18)!important;
-}
-html body .insurance .asf-rate-sub{
+}html body .insurance .asf-rate-sub{
  flex:1 1 auto!important;
  min-width:0!important;
  margin:0!important;
@@ -10351,15 +10010,8 @@ html body .insurance .asf-rate-sub{
  position:relative!important;
  z-index:1!important;
 }
-@media(max-width:900px){
- html body .insurance .asf-rate-widget{height:48px!important;padding:0 10px!important;gap:8px!important;}
- html body .insurance .asf-rate-main{font-size:17px!important;padding:4px 10px!important;}
- html body .insurance .asf-rate-main strong{font-size:12px!important;}
- html body .insurance .asf-rate-label{font-size:9px!important;}
- html body .insurance .asf-rate-sub{font-size:9px!important;}
- html body .insurance .insurance-body{padding-bottom:52px!important;}
-}
-html body .insurance .asf-rate-widget{
+@media(max-width:900px){html body .insurance .asf-rate-widget{height:48px!important;padding:0 10px!important;gap:8px!important;}html body .insurance .asf-rate-main{font-size:17px!important;padding:4px 10px!important;}html body .insurance .asf-rate-main strong{font-size:12px!important;}html body .insurance .asf-rate-label{font-size:9px!important;}html body .insurance .asf-rate-sub{font-size:9px!important;}html body .insurance .insurance-body{padding-bottom:52px!important;}
+}html body .insurance .asf-rate-widget{
  left:0!important; right:0!important; width:100%!important;
  flex-direction:row!important;
  align-items:center!important;
@@ -10368,8 +10020,7 @@ html body .insurance .asf-rate-widget{
  max-height:50px!important;
  overflow:hidden!important;
  border-radius:0!important;
-}
-/* ================================================================
+}/* ================================================================
  VÉRIX — EFEITOS 3D / HOLO / DEPTH (consola + menus)
  Camada visual apenas — não altera lógica operacional
  ================================================================ */
@@ -10379,93 +10030,64 @@ html body .insurance .asf-rate-widget{
 html body .verix-holo-scan{
  pointer-events:none;
  position:fixed; inset:0; 
-}
-
-/* --- Header command: profundidade --- */
+}/* --- Header command: profundidade --- */
 html body .command{
  transition:box-shadow .35s ease, border-color .35s ease, transform .25s ease;
-}
-html body .command:hover{
+}html body .command:hover{
  box-shadow:
  0 28px 70px rgba(0,0,0,.65),
  0 0 50px rgba(0,240,255,.1),
  inset 0 1px 0 rgba(0,240,255,.18),
  inset 0 -1px 0 rgba(255,42,74,.12) !important;
-}
-
-/* Inputs com relevo */
+}/* Inputs com relevo */
 html body .field input{
  transition:transform .2s ease, box-shadow .25s ease, border-color .2s ease !important;
-}
-html body .field input:hover{
+}html body .field input:hover{
  box-shadow:inset 0 2px 4px rgba(0,0,0,.12), 0 0 18px rgba(0,240,255,.15) !important;
-}
-html body .consult,
-html body .tool{
+}html body .consult,html body .tool{
  transition:transform .18s cubic-bezier(.16,1,.3,1), box-shadow .22s ease, filter .18s ease !important;
-}
-html body .rail-item.active{
+}html body .rail-item.active{
  box-shadow:
  inset 3px 0 0 #ff2a4a,
  0 0 28px rgba(255,42,74,.25),
  0 6px 16px rgba(0,0,0,.3) !important;
-}
-/* --- Painéis principais: ecrãs flutuantes --- */
-html body .head.red,
-html body .head.green{
+}/* --- Painéis principais: ecrãs flutuantes --- */
+html body .head.red,html body .head.green{
  position:relative;
  z-index:3;
  overflow:hidden;
-}
-html body .head.red::after,
-html body .head.green::after{
+}html body .head.red::after,html body .head.green::after{
  content:"";
  position:absolute; inset:0;
  background:linear-gradient(105deg, transparent 40%, rgba(255,255,255,.18) 50%, transparent 60%);
  background-size:200% 100%;
 pointer-events:none;
-}
-
-/* Scan line mais viva nos painéis */
+}/* Scan line mais viva nos painéis */
 html body .scan{
  opacity:.28 !important;
  height:2px !important;
  box-shadow:0 0 20px rgba(0,240,255,.8), 0 0 6px #fff !important;
-}
-/* Brand pulse holográfico */
+}/* Brand pulse holográfico */
 
-/html body .module-card, html body .leg-card-new, html body .leg-category{
+/html body .module-card,html body .leg-card-new,html body .leg-category{
  transform-style:preserve-3d;
  transition:transform .25s cubic-bezier(.16,1,.3,1), box-shadow .25s ease, border-color .2s ease, filter .2s ease !important;
-}
-html body .module-card:hover, html body .leg-card-new:hover{
+}html body .module-card:hover,html body .leg-card-new:hover{
  transform:translateY(-5px) translateZ(8px) !important;
  box-shadow:0 16px 36px rgba(0,0,0,.4), 0 0 28px rgba(0,240,255,.12) !important;
-}
-/* --- Overlays / janelas --- */
+}/* --- Overlays / janelas --- */
 
 /* Botões genéricos com depth */
-html body button.tool,
-html body .copy-btn-new,
-html body .copy-desc-new,
-html body .copy-all-new,
-html body .imt-retry-btn,
-html body .history-close,
-html body .module-close{
+html body button.tool,html body .copy-btn-new,html body .copy-desc-new,html body .copy-all-new,html body .imt-retry-btn,html body .history-close,html body .module-close{
  transition:transform .15s ease, box-shadow .2s ease, filter .15s ease !important;
-}
-html body .copy-btn-new:hover,
-html body .copy-desc-new:hover,
-html body .copy-all-new:hover{
+}html body .copy-btn-new:hover,html body .copy-desc-new:hover,html body .copy-all-new:hover{
  transform:translateY(-2px);
  box-shadow:0 6px 16px rgba(0,0,0,.35), 0 0 16px rgba(0,180,220,.2);
  filter:brightness(1.12);
-}
-/* History rows */
+}/* History rows */
 html body .history-row{
  transition:transform .18s ease, box-shadow .2s ease, border-color .18s ease !important;
-}
-/* Toast 3D */
+}/* Toast 3D */
 html body .toast-notification.show{
  box-shadow:
  0 12px 32px rgba(0,0,0,.5),
@@ -10489,11 +10111,9 @@ html body .toast-notification.show{
  50%{ opacity:1; }
 }
 /* Reduced motion */
-@media (prefers-reduced-motion: reduce){
-html body .cinematic-bg, html body .cinematic-bg::before, html body .command:after, html body .head.red::after, html body .head.green::after, html body .scan, html body #asfRateWidget, html body .corner, html body .verix-holo-scan {
+@media (prefers-reduced-motion: reduce){html body .cinematic-bg,html body .cinematic-bg::before,html body .command:after,html body .head.red::after,html body .head.green::after,html body .scan,html body #asfRateWidget,html body .corner,html body .verix-holo-scan{
  animation:none !important;
- }
-html body .panel:hover, html body .rail-item:hover {
+ }html body .panel:hover,html body .rail-item:hover{
  transform:none !important;
  }
 }
