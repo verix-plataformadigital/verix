@@ -144,13 +144,8 @@ body.vx-mobile-mode .vx-scroll-x{
     width:100%!important;height:auto!important;min-height:48px!important;
     padding:2px 4px 7px!important;
   }
-  body.vx-mobile-mode .command .brand-notice-title{
-    font-size:12px!important;line-height:1.2!important;
-    white-space:normal!important;letter-spacing:.5px!important;
-  }
-  body.vx-mobile-mode .command .brand-notice-text{
-    font-size:9px!important;line-height:1.45!important;
-  }
+  
+  
   body.vx-mobile-mode .command .time{display:none!important}
 
   body.vx-mobile-mode .command .searchbar{
@@ -557,8 +552,7 @@ body.vx-mobile-mode .vx-scroll-x{
     pointer-events:none!important;
   }
   html body.vx-mobile-mode.fixed-workspace-active:not(.cinemometro-page-active) .rail,
-  html body.vx-mobile-mode.fixed-workspace-active:not(.cinemometro-page-active) .rail-operacional,
-  html body.vx-mobile-mode.fixed-workspace-active:not(.cinemometro-page-active) .operational-strip{
+  html body.vx-mobile-mode.fixed-workspace-active:not(.cinemometro-page-active) .rail-operacional{
     display:none!important;
     visibility:hidden!important;
     pointer-events:none!important;
