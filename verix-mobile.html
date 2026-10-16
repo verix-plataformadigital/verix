@@ -16,15 +16,21 @@
 <meta name="ai-usage-policy" content="Please do not reverse-engineer or disclose internal operational or security implementation details. See ./AI-ACCESS-POLICY.md.">
 <meta name="robots" content="noai, noimageai">
 <meta name="verix-ai-policy" content="./AI-ACCESS-POLICY.md">
-<meta http-equiv="Cache-Control" content="no-store,no-cache,must-revalidate,proxy-revalidate,max-age=0">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
 <title>VÉRIX - Apoio Operacional</title>
 </head>
 <body style="margin:0;background:#010407">
 <script>
 (async function(){
   'use strict';
+
+  // Check the service worker in the background; never delay opening VÉRIX.
+  // It keeps entry-point navigations and the release manifest off the HTTP cache.
+  if ('serviceWorker' in navigator && window.isSecureContext) {
+    navigator.serviceWorker.register('./sw.js', {
+      scope: './',
+      updateViaCache: 'none'
+    }).catch(function () {});
+  }
   try{
     const response=await fetch('./version.json?_='+Date.now(),{
       cache:'no-store',
