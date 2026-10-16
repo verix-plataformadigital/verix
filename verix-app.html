@@ -4223,16 +4223,21 @@ html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-service-name{
       <div class="verix-asf-notice-grid">
         <section class="verix-asf-notice-card verix-asf-notice-card-info" aria-labelledby="verixNoticeInfoTitle">
           <h2 id="verixNoticeInfoTitle" class="verix-asf-notice-card-title">INFORMAÇÃO IMPORTANTE</h2>
-          <div class="verix-asf-service-status" role="status" aria-label="Consulta ASF sem limites de pesquisa">
-            <span class="verix-asf-service-status-title">CONSULTA ASF SEM LIMITES DE PESQUISA</span>
-            <span class="verix-asf-service-status-detail">Mais estabilidade, rigor e fiabilidade nos resultados.</span>
+          <div class="verix-asf-notice-update" aria-labelledby="verixNoticeAsfHeading">
+            <div class="verix-asf-service-status" role="status" aria-label="Consulta ASF sem limites de pesquisa">
+              <span id="verixNoticeAsfHeading" class="verix-asf-service-status-title">CONSULTA ASF SEM LIMITES DE PESQUISA</span>
+              <span class="verix-asf-service-status-detail">Mais rigor e clareza nos resultados.</span>
+            </div>
+            <p class="verix-asf-notice-summary">Distinção clara entre o estado do seguro e eventuais falhas técnicas.</p>
+            <p class="verix-asf-card-external-note">Disponibilidade sujeita aos serviços externos ASF/RNSI.</p>
           </div>
-          <p>Resultados mais claros, com distinção entre o estado do seguro e eventuais falhas técnicas.</p>
-          <p class="verix-asf-card-external-note">Nota: a disponibilidade continua dependente dos serviços externos ASF/RNSI.</p>
-          <h3 class="verix-asf-notice-card-subtitle">PROPRIEDADE INTELECTUAL</h3>
-          <p><strong>A ORIGINALIDADE TEM AUTORIA.</strong> O VÉRIX resulta de desenvolvimento próprio, conhecimento técnico e trabalho contínuo.</p>
-          <p><strong>Aceder não é adquirir. Utilizar não é ser proprietário.</strong></p>
-          <p class="verix-asf-notice-card-note">A reprodução ou reutilização não autorizada dos elementos originais do projeto não é permitida. Utilize a plataforma de forma responsável e evite pedidos automatizados ou repetitivos que possam comprometer a disponibilidade do serviço.</p>
+          <section class="verix-asf-notice-ip" aria-labelledby="verixNoticeIpTitle">
+            <h3 id="verixNoticeIpTitle" class="verix-asf-notice-card-subtitle">PROPRIEDADE INTELECTUAL</h3>
+            <p class="verix-asf-ip-lead">A ORIGINALIDADE TEM AUTORIA.</p>
+            <p class="verix-asf-ip-copy">O VÉRIX resulta de desenvolvimento próprio e trabalho contínuo.</p>
+            <p class="verix-asf-ip-quote">Aceder não é adquirir. Utilizar não é ser proprietário.</p>
+            <p class="verix-asf-ip-note">A reprodução ou reutilização não autorizada dos elementos originais do projeto não é permitida.</p>
+          </section>
         </section>
         <section class="verix-asf-notice-card verix-asf-notice-card-thanks" aria-labelledby="verixNoticeThanksTitle">
           <h2 id="verixNoticeThanksTitle" class="verix-asf-notice-card-title">OBRIGADO!</h2>
@@ -5038,6 +5043,16 @@ html body .asf-operational-result .asf-note{
   color:#fff0f2;
   font:800 12px/1.5 Arial,sans-serif;
 }
+/* Aviso inicial: hierarquia visual e espaçamento dos dois blocos informativos. */
+.verix-asf-notice-update{margin:0;padding:0 0 2px;}
+.verix-asf-notice-update .verix-asf-service-status{margin-bottom:10px;padding:13px 12px;}
+.verix-asf-notice-summary{margin:0 0 8px!important;color:#f0e2e6!important;font-size:12px!important;line-height:1.55!important;}
+.verix-asf-notice-ip{margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,158,172,.22);}
+.verix-asf-notice-ip .verix-asf-notice-card-subtitle{margin:0 0 10px;}
+.verix-asf-ip-lead{margin:0 0 5px!important;color:#fff0f2!important;font-size:13px!important;font-weight:900!important;line-height:1.45!important;}
+.verix-asf-ip-copy{margin:0 0 10px!important;}
+.verix-asf-ip-quote{margin:0 0 9px!important;padding:9px 11px;border-left:2px solid rgba(255,158,172,.68);border-radius:0 7px 7px 0;background:rgba(255,255,255,.035);color:#fff0f2!important;font-weight:800!important;line-height:1.5!important;}
+.verix-asf-ip-note{margin:0!important;color:#c9afb4!important;font-size:10.5px!important;line-height:1.55!important;}
 .verix-asf-notice-card p.verix-asf-card-external-note{
   margin:0 0 10px;
   color:#c9afb4;
