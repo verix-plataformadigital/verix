@@ -17608,6 +17608,310 @@ html body #seguroResult .asf-app.asf-app-no .asf-actions button{
   }
 }
 
+
+
+/* VÉRIX-ASF-PT-PLATE-REDESIGN-2026 — APRESENTAÇÃO APENAS; MOTOR ASF INALTERADO */
+html body #seguroResult {
+  color:#162a24!important;
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Arial,sans-serif!important;
+}
+html body #seguroResult .asf-app {
+  width:100%!important;max-width:620px!important;margin:0 auto!important;
+  gap:12px!important;padding:0 0 6px!important;
+}
+html body #seguroResult .asf-app .asf-note {
+  border-radius:10px!important;padding:11px 13px!important;
+  font-size:10px!important;line-height:1.5!important;font-weight:650!important;
+}
+
+/* Seguro encontrado: verde escuro, contrastes simples e matrícula portuguesa realçada. */
+html body #seguroResult .asf-app.asf-app-ok .asf-success-hero {
+  position:relative!important;isolation:isolate!important;overflow:hidden!important;
+  display:grid!important;grid-template-columns:48px minmax(0,1fr) auto!important;
+  align-items:center!important;gap:12px!important;min-height:96px!important;
+  padding:16px!important;border:1px solid #16895a!important;border-left:5px solid #24d38b!important;
+  border-radius:15px!important;
+  background:linear-gradient(118deg,#064d34 0%,#08774c 58%,#06452f 100%)!important;
+  box-shadow:0 7px 18px rgba(4,91,57,.16)!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-success-hero:before {
+  content:""!important;position:absolute!important;inset:0!important;z-index:-1!important;
+  background:linear-gradient(115deg,rgba(255,255,255,.045),transparent 55%)!important;
+  pointer-events:none!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-success-badge {
+  width:44px!important;height:44px!important;border-radius:13px!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  border:1px solid rgba(255,255,255,.6)!important;
+  background:#d5ffeb!important;color:#087448!important;
+  font-size:26px!important;font-weight:950!important;
+  box-shadow:none!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-success-title {
+  color:#fff!important;font-size:clamp(17px,1.6vw,22px)!important;
+  font-weight:900!important;letter-spacing:.35px!important;line-height:1.13!important;
+  text-shadow:none!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-success-sub {
+  margin-top:5px!important;color:#d1f7e5!important;
+  font-size:9px!important;line-height:1.45!important;font-weight:750!important;
+  letter-spacing:.55px!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-success-plate,
+html body #seguroResult .asf-app.asf-app-ok .asf-success-plate span {
+  box-sizing:border-box!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-success-plate {
+  position:relative!important;display:flex!important;align-items:center!important;justify-content:center!important;
+  min-width:140px!important;min-height:43px!important;margin:0!important;
+  padding:7px 10px 7px 38px!important;overflow:hidden!important;
+  border:1px solid #23372e!important;border-radius:6px!important;
+  background:linear-gradient(180deg,#fff 0%,#f4f7f5 100%)!important;
+  box-shadow:0 2px 0 rgba(0,0,0,.18),inset 0 1px 0 #fff!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-success-plate:before,
+html body #seguroResult .asf-app.asf-app-ok .asf-success-plate:after {
+  position:absolute!important;left:0!important;width:27px!important;text-align:center!important;
+  box-sizing:border-box!important;pointer-events:none!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-success-plate:before {
+  content:"★\A★\A★"!important;top:2px!important;height:28px!important;padding-top:1px!important;
+  white-space:pre!important;line-height:8px!important;
+  background:#164a94!important;color:#ffd84a!important;font-size:8px!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-success-plate:after {
+  content:"P"!important;bottom:1px!important;height:10px!important;
+  background:#164a94!important;color:#fff!important;font-size:7px!important;
+  font-weight:950!important;line-height:9px!important;letter-spacing:.5px!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-success-plate span {
+  color:#101c17!important;font-size:16px!important;font-weight:950!important;
+  letter-spacing:1.15px!important;white-space:nowrap!important;
+}
+
+/* Situação e validade: informação imediata, sem excesso de efeitos. */
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-status {
+  display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  align-items:center!important;gap:12px!important;padding:12px 14px!important;
+  border:1px solid #b9e4cf!important;border-left:4px solid #0b9961!important;
+  border-radius:11px!important;background:#f0fbf5!important;box-shadow:none!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-status:after {display:none!important;}
+html body #seguroResult .asf-app.asf-app-ok .asf-op-kicker {
+  display:block!important;margin-bottom:4px!important;color:#577368!important;
+  font-size:8px!important;font-weight:850!important;letter-spacing:1px!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-status strong {
+  display:block!important;color:#087447!important;font-size:12px!important;
+  font-weight:950!important;line-height:1.3!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-status .asf-op-validity {
+  border-left:1px solid #cde8da!important;padding-left:12px!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-card {
+  overflow:hidden!important;border:1px solid #dce7e1!important;border-radius:12px!important;
+  background:#fff!important;box-shadow:0 4px 13px rgba(20,59,42,.045)!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-card:before {
+  height:3px!important;background:linear-gradient(90deg,#08764b,#27c783)!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-card .asf-detail-head {
+  gap:10px!important;padding:12px!important;background:#f8fcfa!important;
+  border-bottom:1px solid #e7efea!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-card .asf-detail-kicker {
+  color:#078052!important;font-size:8px!important;letter-spacing:1.1px!important;font-weight:950!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-card .asf-detail-head-text strong {
+  color:#172c23!important;font-size:11px!important;line-height:1.45!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-result .asf-row-emphasis {
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  gap:12px!important;padding:10px 13px!important;border-bottom:1px solid #edf2ef!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-result .asf-row-emphasis .k {
+  flex:0 0 26%!important;color:#6b7e75!important;font-size:8px!important;
+  font-weight:850!important;letter-spacing:.7px!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-result .asf-row-emphasis .v {
+  max-width:74%!important;color:#1b3026!important;font-size:10px!important;
+  font-weight:800!important;overflow-wrap:anywhere!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-dates-grid {
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:8px!important;margin:10px!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-date-box {
+  min-width:0!important;min-height:56px!important;padding:10px 11px!important;
+  border:1px solid #dce7e1!important;border-radius:9px!important;background:#fafcfb!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-date-box .k {
+  display:block!important;color:#6b7e75!important;font-size:8px!important;
+  font-weight:850!important;letter-spacing:.7px!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-date-box strong {
+  display:block!important;margin-top:5px!important;color:#263b31!important;
+  font-size:13px!important;font-weight:900!important;overflow-wrap:anywhere!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-date-box.valid {
+  border-color:#a9dfc5!important;background:#effbf5!important;box-shadow:none!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-date-box.valid strong {color:#087b4d!important;}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-actions .aux-btn.secondary {
+  min-height:40px!important;padding:11px 16px!important;border:1px solid #08794d!important;
+  border-radius:9px!important;background:#08794d!important;color:#fff!important;
+  font-size:10px!important;font-weight:900!important;box-shadow:none!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-note {
+  border:1px solid #dcebe2!important;border-left:3px solid #179d68!important;
+  background:#f7fcf9!important;color:#536f62!important;
+}
+
+/* Sem registo ASF: faixa vermelha inequívoca e matrícula em formato de chapa portuguesa. */
+html body #seguroResult .asf-app.asf-app-no .asf-app-plate {
+  display:flex!important;flex-direction:row!important;align-items:center!important;
+  justify-content:space-between!important;gap:10px!important;
+  padding:11px 13px!important;border:1px solid #eed2d6!important;
+  border-left:4px solid #cb263c!important;border-radius:11px!important;
+  background:#fff8f8!important;box-shadow:none!important;
+}
+html body #seguroResult .asf-app.asf-app-no .asf-app-plate-label {
+  color:#8d4650!important;font-size:9px!important;font-weight:900!important;
+  letter-spacing:1px!important;text-transform:uppercase!important;
+}
+html body #seguroResult .asf-app.asf-app-no .asf-app-plate-badge {
+  position:relative!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  flex-shrink:0!important;min-width:145px!important;min-height:43px!important;
+  box-sizing:border-box!important;overflow:hidden!important;
+  padding:7px 10px 7px 38px!important;border:1px solid #29332e!important;border-radius:6px!important;
+  background:linear-gradient(180deg,#fff 0%,#f5f6f5 100%)!important;color:#111c17!important;
+  font-size:16px!important;font-weight:950!important;letter-spacing:1.2px!important;
+  box-shadow:0 2px 0 rgba(125,20,37,.13),inset 0 1px 0 #fff!important;white-space:nowrap!important;
+}
+html body #seguroResult .asf-app.asf-app-no .asf-app-plate-badge:before {
+  content:"★\A★\A★\AP"!important;position:absolute!important;left:0!important;top:0!important;bottom:0!important;
+  display:block!important;width:27px!important;padding-top:3px!important;box-sizing:border-box!important;
+  white-space:pre!important;text-align:center!important;line-height:8px!important;
+  background:#164a94!important;color:#ffd84a!important;font-size:8px!important;font-weight:950!important;
+}
+html body #seguroResult .asf-app.asf-app-no .asf-status-card.no {
+  position:relative!important;isolation:isolate!important;overflow:hidden!important;
+  display:grid!important;grid-template-columns:47px minmax(0,1fr)!important;
+  align-items:center!important;gap:3px 12px!important;min-height:98px!important;
+  padding:16px!important;border:1px solid #c92c41!important;border-left:5px solid #f35b6d!important;
+  border-radius:13px!important;text-align:left!important;
+  background:linear-gradient(112deg,#8f192c 0%,#c4243c 57%,#94172d 100%)!important;
+  color:#fff!important;box-shadow:0 7px 18px rgba(157,24,46,.15)!important;
+}
+html body #seguroResult .asf-app.asf-app-no .asf-status-card.no:after {
+  content:""!important;position:absolute!important;z-index:-1!important;right:-34px!important;bottom:-57px!important;
+  width:140px!important;height:140px!important;border:1px solid rgba(255,255,255,.12)!important;
+  border-radius:50%!important;pointer-events:none!important;
+}
+html body #seguroResult .asf-app.asf-app-no .asf-status-card.no .asf-status-icon {
+  grid-column:1!important;grid-row:1 / span 2!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  width:43px!important;height:43px!important;border-radius:12px!important;
+  border:1px solid rgba(255,255,255,.5)!important;background:#ffe4e7!important;color:#a91d32!important;
+  font-size:23px!important;box-shadow:none!important;
+}
+html body #seguroResult .asf-app.asf-app-no .asf-status-card.no .asf-status-title {
+  grid-column:2!important;grid-row:1!important;align-self:end!important;
+  color:#fff!important;font-size:0!important;font-weight:950!important;
+  letter-spacing:.3px!important;text-shadow:none!important;
+}
+html body #seguroResult .asf-app.asf-app-no .asf-status-card.no .asf-status-title:after {
+  content:"SEM SEGURO VÁLIDO"!important;display:block!important;
+  color:#fff!important;font-size:clamp(16px,1.5vw,21px)!important;line-height:1.13!important;
+}
+html body #seguroResult .asf-app.asf-app-no .asf-status-card.no .asf-status-sub {
+  grid-column:2!important;grid-row:2!important;margin:4px 0 0!important;
+  color:#ffe3e7!important;font-size:10px!important;font-weight:700!important;
+  line-height:1.45!important;opacity:1!important;
+}
+html body #seguroResult .asf-app.asf-app-no .asf-note {
+  border:1px solid #f0d6da!important;border-left:3px solid #c92c41!important;
+  background:#fff8f8!important;color:#80424b!important;
+}
+html body #seguroResult .asf-app.asf-app-no .asf-actions .aux-btn,
+html body #seguroResult .asf-app.asf-app-no .asf-actions button {
+  min-height:39px!important;padding:10px 14px!important;border:1px solid #c92c41!important;
+  border-radius:9px!important;background:#fff!important;color:#a11f34!important;
+  font-size:10px!important;font-weight:900!important;box-shadow:none!important;
+}
+
+/* Consulta inconclusiva: amarelo/âmbar, sem a confundir com ausência de seguro. */
+html body #seguroResult .asf-app.asf-app-warn .asf-status-card.warn {
+  border:1px solid #d6a83f!important;border-left:5px solid #e6b638!important;
+  border-radius:13px!important;background:#fff8e6!important;box-shadow:none!important;color:#5b4511!important;
+}
+html body #seguroResult .asf-app.asf-app-warn .asf-status-card.warn .asf-status-icon {
+  background:#f5d77f!important;color:#674900!important;box-shadow:none!important;
+}
+html body #seguroResult .asf-app.asf-app-warn .asf-status-card.warn .asf-status-title {color:#694b06!important;}
+html body #seguroResult .asf-app.asf-app-warn .asf-status-card.warn .asf-status-sub {color:#75612d!important;opacity:1!important;}
+
+/* Telemóvel e tablet: sem cortes, mantendo a chapa legível. */
+@media(max-width:560px) {
+  html body #seguroResult {padding:9px!important;}
+  html body #seguroResult .asf-app {gap:9px!important;}
+  html body #seguroResult .asf-app.asf-app-ok .asf-success-hero {
+    grid-template-columns:40px minmax(0,1fr)!important;gap:10px!important;
+    min-height:0!important;padding:12px!important;border-radius:12px!important;
+  }
+  html body #seguroResult .asf-app.asf-app-ok .asf-success-badge {
+    width:38px!important;height:38px!important;border-radius:11px!important;font-size:22px!important;
+  }
+  html body #seguroResult .asf-app.asf-app-ok .asf-success-title {font-size:16px!important;}
+  html body #seguroResult .asf-app.asf-app-ok .asf-success-sub {font-size:8px!important;letter-spacing:.35px!important;}
+  html body #seguroResult .asf-app.asf-app-ok .asf-success-plate {
+    grid-column:1/-1!important;justify-self:start!important;min-width:142px!important;
+    min-height:40px!important;margin:0 0 0 48px!important;padding-top:6px!important;padding-bottom:6px!important;
+  }
+  html body #seguroResult .asf-app.asf-app-ok .asf-success-plate span {font-size:15px!important;}
+  html body #seguroResult .asf-app.asf-app-ok .asf-operational-status {
+    grid-template-columns:minmax(0,1fr)!important;gap:8px!important;padding:11px!important;
+  }
+  html body #seguroResult .asf-app.asf-app-ok .asf-operational-status .asf-op-validity {
+    border-left:0!important;border-top:1px solid #cde8da!important;padding:8px 0 0!important;
+  }
+  html body #seguroResult .asf-app.asf-app-ok .asf-operational-result .asf-row-emphasis {padding:10px!important;}
+  html body #seguroResult .asf-app.asf-app-ok .asf-operational-result .asf-row-emphasis .k {flex-basis:30%!important;}
+  html body #seguroResult .asf-app.asf-app-ok .asf-operational-result .asf-row-emphasis .v {max-width:70%!important;font-size:10px!important;}
+  html body #seguroResult .asf-app.asf-app-ok .asf-dates-grid {grid-template-columns:minmax(0,1fr)!important;gap:7px!important;}
+  html body #seguroResult .asf-app.asf-app-ok .asf-date-box {min-height:0!important;padding:10px!important;}
+  html body #seguroResult .asf-app.asf-app-ok .asf-date-box strong {font-size:13px!important;}
+  html body #seguroResult .asf-app.asf-app-no .asf-app-plate {
+    flex-direction:row!important;align-items:center!important;justify-content:space-between!important;
+    gap:7px!important;padding:9px!important;
+  }
+  html body #seguroResult .asf-app.asf-app-no .asf-app-plate-label {font-size:8px!important;letter-spacing:.6px!important;}
+  html body #seguroResult .asf-app.asf-app-no .asf-app-plate-badge {
+    min-width:132px!important;min-height:39px!important;padding:6px 8px 6px 35px!important;
+    font-size:14px!important;letter-spacing:.8px!important;
+  }
+  html body #seguroResult .asf-app.asf-app-no .asf-status-card.no {
+    grid-template-columns:39px minmax(0,1fr)!important;gap:3px 10px!important;
+    min-height:0!important;padding:13px 11px!important;border-radius:12px!important;
+  }
+  html body #seguroResult .asf-app.asf-app-no .asf-status-card.no .asf-status-icon {
+    width:37px!important;height:37px!important;border-radius:10px!important;font-size:20px!important;
+  }
+  html body #seguroResult .asf-app.asf-app-no .asf-status-card.no .asf-status-title:after {font-size:15px!important;}
+  html body #seguroResult .asf-app.asf-app-no .asf-status-card.no .asf-status-sub {font-size:9px!important;}
+  html body #seguroResult .asf-app .asf-actions .aux-btn,
+  html body #seguroResult .asf-app .asf-actions button,
+  html body #seguroResult .asf-app .asf-operational-actions .aux-btn {width:100%!important;justify-content:center!important;}
+}
+@media(min-width:561px) and (max-width:900px) {
+  html body #seguroResult .asf-app.asf-app-ok .asf-success-hero {grid-template-columns:44px minmax(0,1fr) auto!important;padding:14px!important;gap:10px!important;}
+  html body #seguroResult .asf-app.asf-app-ok .asf-success-plate {min-width:130px!important;padding-left:36px!important;}
+}
+@media(prefers-reduced-motion:reduce) {
+  html body #seguroResult * {animation:none!important;transition:none!important;}
+}
+/* Fim da camada visual ASF — não altera consultas, resposta ASF ou histórico. */
+
 </style>
 </body>
 </html>
