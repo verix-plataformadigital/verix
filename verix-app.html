@@ -353,7 +353,7 @@ let ultimaMatriculaLivrete = "";
  // Primeiro verificamos se o servidor RNSI está acessível. Só depois
  // carregamos o conteúdo no iframe. Assim, quando a rede RNSI não está
  // disponível, o Chrome não substitui o nosso aviso pela página de erro.
- const IPO_IMT_MODE = true; // IMT usa atribuição direta como IPO_2.2
+ 
   const IMT_TIMEOUT_MS = 12000;
  const imtTimers = {};
 let imtQuerySequence = 0;
@@ -407,7 +407,7 @@ let imtQuerySequence = 0;
   if (!overlay || !frame) return;
 
   const queryId = window.__VERIX_CURRENT_QUERY_ID || null;
-  const sourceName = source || (frameId === 'reboqueFrame' ? 'livrete' : 'inspecao');
+  
   const requestSequence = Number(sequence || imtQuerySequence || 0);
 
   mostrarLoading(frameId, overlayId);
@@ -2854,10 +2854,7 @@ button,input{font:inherit}button{cursor:pointer}
 @media(max-width:1050px){.main{height:calc(100vh - 210px)!important;}}
 /* 10.27 — substituir apenas a imagem da marca pelo aviso; pesquisa mantém o layout 10.21 */
 /* A caixa de pesquisa NÃO é alterada nesta versão. */
-@media(max-width:1200px){
- 
- 
- .command .brand-notice-title,.command .brand-notice-text{max-width:340px!important;}}
+
 .cin-session-operator{
  width:100%%; box-sizing:border-box;
  display:grid!important; grid-template-columns:220px minmax(0,1fr)!important; gap:14px!important;
@@ -2986,7 +2983,7 @@ button,input{font:inherit}button{cursor:pointer}
 }
 
 /* Ajuda geral removida: a informação está implícita no valor preenchido. */
-#cinLimiteFonte:empty,#cinV47Help:empty,#cinRegimeHelp:empty{display:none!important}
+#cinLimiteFonte:empty,#cinV47Help:empty{display:none!important}
 @media(max-width:1050px){
  .cin-active-device-top{gap:8px!important}
 }
@@ -4332,11 +4329,11 @@ html body .main-menu-screen.show .main-menu-v74-grid-small .mm74-label{font-size
  html body .main-menu-screen.show .main-menu-v74-title{height:48px!important;min-height:48px!important;font-size:19px!important;letter-spacing:2px!important}
  html body .main-menu-screen.show .main-menu-v74-title:after{display:none!important}
  
- html body .main-menu-screen.show .verix-system-symbol{justify-self:center!important}
- html body .main-menu-screen.show .verix-system-heading-rule{justify-content:center!important;}
- html body .main-menu-screen.show .verix-system-update{white-space:normal!important;flex-direction:column!important;gap:2px!important}
- html body .main-menu-screen.show .verix-system-update span:before{display:none!important}
- html body .main-menu-screen.show .verix-system-contact{justify-content:center!important}
+ 
+ 
+ 
+ 
+ 
  html body .main-menu-screen.show .main-menu-v74-grid-big{margin-top:28px!important}
  html body .main-menu-screen.show .main-menu-v74-grid-big .mm74-card{height:140px!important;min-height:140px!important}
  html body .main-menu-screen.show .main-menu-v74-grid-small{width:100%!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:none!important;margin-top:28px!important}
@@ -4838,7 +4835,7 @@ html body #vxMobileTop .verix-pt-flag{
   <span class="pt-plate-country">P</span>
 </span><input id="MatriculaReboque" name="verix_plate_r" placeholder="L-121212" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" data-lpignore="true" data-form-type="other" oninput="formatMatriculaReboque(this)"></div></div><button class="consult" type="submit">⌕ &nbsp; CONSULTAR</button></form></div> <div class="command-right-zone" aria-label="Ações da consulta">
   <div class="command-actions-primary">
-    <button id="verixMenuReturnButton" class="verix-menu-return" type="button" onclick="mostrarMenuPrincipal()" aria-label="Voltar ao menu principal" title="Voltar ao menu principal">
+    <button id="verixMenuReturnButton" type="button" onclick="mostrarMenuPrincipal()" aria-label="Voltar ao menu principal" title="Voltar ao menu principal">
   <span class="verix-menu-return-icon" aria-hidden="true">
     <svg viewBox="0 0 24 24" focusable="false">
       <path d="M19 12H5M12 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
@@ -4861,7 +4858,7 @@ html body #vxMobileTop .verix-pt-flag{
 </div>
 
 <div class="bottom"><div class="bottom-left"></div><div class="bottom-right"><div class="credit"><strong></strong><br><br></div></div></div>
-<div id="mainMenuScreen" class="main-menu-screen" aria-label="Menu principal"> <div class="main-menu-v74-shell"> <div class="main-menu-v74-title verix-main-title"> <span class="verix-brand">VÉRIX</span> <span class="verix-menu-label">MENU PRINCIPAL</span> </div> <div class="main-menu-v74-grid-big"> <button class="mm74-card mm74-inspec" type="button" onclick="abrirConsultaPrincipal()"> <span class="mm74-icon mm74-tech-icon mm74-car-icon" aria-hidden="true"><svg viewBox="0 0 160 120" role="img"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M34 77h92l-5-27c-2-11-11-19-22-21H61c-11 2-20 10-22 21l-5 27Z"/><path d="M46 50h68l-7-12c-2-4-7-6-12-6H65c-5 0-10 2-12 6l-7 12Z"/><path d="M34 77h92"/><circle cx="51" cy="84" r="10"/><circle cx="109" cy="84" r="10"/><path d="M59 67h42"/><path d="M45 61h9m57 0h-9"/><path d="M75 36v14m10-14v14"/><rect x="69" y="26" width="22" height="7" rx="2"/><path d="M126 69h9m-9 8h9"/></g><circle cx="80" cy="60" r="54" opacity=".11"/></svg></span><span class="mm74-label">INSPEÇÕES / SEGURO</span> </button> <button class="mm74-card mm74-radar" type="button" onclick="abrirModulo('cinemometro',this)"> <span class="mm74-icon mm74-radar-icon mm74-tech-icon" aria-hidden="true"><svg viewBox="0 0 160 120" role="img"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="78" cy="39" r="23"/><circle cx="78" cy="39" r="9"/><path d="M78 16v46m-23-23h46"/><path d="M61 58l-18 30h70L95 58"/><path d="M67 88l-5 18m27-18 5 18"/><path d="M43 88h68"/><path d="M29 18h18m-18 8h11M118 18h13m-13 8h20"/><path d="M112 50c10 3 17 9 21 18"/></g><circle cx="78" cy="39" r="50" opacity=".10"/><path d="M25 39h20" opacity=".25"/><path d="M111 39h20" opacity=".25"/></svg></span><span class="mm74-label">CINEMÓMETRO</span> </button> </div> <div class="main-menu-v74-grid-small"> <button class="mm74-card mm74-leg" type="button" onclick="abrirModulo('legislacao',this)"><span class="mm74-icon">▤</span><span class="mm74-label">LEGISLAÇÃO</span></button> <button class="mm74-card mm74-extra mm74-alcool" type="button" onclick="abrirModulo('alcoolExcel',this)"><span class="mm74-icon">◉</span><span class="mm74-label">ÁLCOOL / DEDUÇÕES</span></button> <button class="mm74-card mm74-extra" type="button" onclick="abrirModulo('codigosDistrito',this)"><span class="mm74-icon">#</span><span class="mm74-label">CÓDIGOS DISTRITO</span></button> <button class="mm74-card mm74-tools" type="button" onclick="abrirModulo('ferramentas',this)"><span class="mm74-icon">⚒</span><span class="mm74-label">FERRAMENTAS</span></button> <button class="mm74-card mm74-info" type="button" onclick="abrirModulo('informacoes',this)"><span class="mm74-icon">ⓘ</span><span class="mm74-label">INFORMAÇÕES</span></button> <button class="mm74-card mm74-settings" type="button" onclick="abrirModulo('definicoes',this)"><span class="mm74-icon">⚙</span><span class="mm74-label">DEFINIÇÕES</span></button> </div> <footer class="verix-footer-v2" aria-label="Estado, contacto e aviso de utilização">
+<div id="mainMenuScreen" class="main-menu-screen" aria-label="Menu principal"> <div class="main-menu-v74-shell"> <div class="main-menu-v74-title verix-main-title"> <span class="verix-brand">VÉRIX</span> <span class="verix-menu-label">MENU PRINCIPAL</span> </div> <div class="main-menu-v74-grid-big"> <button class="mm74-card mm74-inspec" type="button" onclick="abrirConsultaPrincipal()"> <span class="mm74-icon mm74-tech-icon mm74-car-icon" aria-hidden="true"><svg viewBox="0 0 160 120" role="img"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M34 77h92l-5-27c-2-11-11-19-22-21H61c-11 2-20 10-22 21l-5 27Z"/><path d="M46 50h68l-7-12c-2-4-7-6-12-6H65c-5 0-10 2-12 6l-7 12Z"/><path d="M34 77h92"/><circle cx="51" cy="84" r="10"/><circle cx="109" cy="84" r="10"/><path d="M59 67h42"/><path d="M45 61h9m57 0h-9"/><path d="M75 36v14m10-14v14"/><rect x="69" y="26" width="22" height="7" rx="2"/><path d="M126 69h9m-9 8h9"/></g><circle cx="80" cy="60" r="54" opacity=".11"/></svg></span><span class="mm74-label">INSPEÇÕES / SEGURO</span> </button> <button class="mm74-card mm74-radar" type="button" onclick="abrirModulo('cinemometro',this)"> <span class="mm74-icon mm74-radar-icon mm74-tech-icon" aria-hidden="true"><svg viewBox="0 0 160 120" role="img"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="78" cy="39" r="23"/><circle cx="78" cy="39" r="9"/><path d="M78 16v46m-23-23h46"/><path d="M61 58l-18 30h70L95 58"/><path d="M67 88l-5 18m27-18 5 18"/><path d="M43 88h68"/><path d="M29 18h18m-18 8h11M118 18h13m-13 8h20"/><path d="M112 50c10 3 17 9 21 18"/></g><circle cx="78" cy="39" r="50" opacity=".10"/><path d="M25 39h20" opacity=".25"/><path d="M111 39h20" opacity=".25"/></svg></span><span class="mm74-label">CINEMÓMETRO</span> </button> </div> <div class="main-menu-v74-grid-small"> <button class="mm74-card mm74-leg" type="button" onclick="abrirModulo('legislacao',this)"><span class="mm74-icon">▤</span><span class="mm74-label">LEGISLAÇÃO</span></button> <button class="mm74-card mm74-extra" type="button" onclick="abrirModulo('alcoolExcel',this)"><span class="mm74-icon">◉</span><span class="mm74-label">ÁLCOOL / DEDUÇÕES</span></button> <button class="mm74-card mm74-extra" type="button" onclick="abrirModulo('codigosDistrito',this)"><span class="mm74-icon">#</span><span class="mm74-label">CÓDIGOS DISTRITO</span></button> <button class="mm74-card mm74-tools" type="button" onclick="abrirModulo('ferramentas',this)"><span class="mm74-icon">⚒</span><span class="mm74-label">FERRAMENTAS</span></button> <button class="mm74-card mm74-info" type="button" onclick="abrirModulo('informacoes',this)"><span class="mm74-icon">ⓘ</span><span class="mm74-label">INFORMAÇÕES</span></button> <button class="mm74-card mm74-settings" type="button" onclick="abrirModulo('definicoes',this)"><span class="mm74-icon">⚙</span><span class="mm74-label">DEFINIÇÕES</span></button> </div> <footer class="verix-footer-v2" aria-label="Estado, contacto e aviso de utilização">
   <div class="verix-footer-v2-main">
     <div class="vf2-brand">
       <span class="vf2-status-dot" aria-hidden="true"></span>
@@ -4902,7 +4899,7 @@ html body #vxMobileTop .verix-pt-flag{
 </div>
 <div id="legalNoticeOverlay" class="legal-notice-overlay" onclick="fecharAvisoLegalFora(event)" aria-hidden="true"> <div class="legal-notice-window" role="dialog" aria-modal="true" aria-labelledby="legalNoticeTitle"> <div class="legal-notice-top"> <div><div id="legalNoticeTitle" class="legal-notice-title">AVISO LEGAL</div><div class="legal-notice-sub">VÉRIX // CONDIÇÕES DE UTILIZAÇÃO</div></div> <button class="legal-notice-close" type="button" onclick="fecharAvisoLegal()" aria-label="Fechar aviso legal">×</button> </div> <div class="legal-notice-body"> <p>Esta aplicação não está afiliada a entidades governamentais ou outras entidades oficiais.</p> <p>A utilização desta aplicação não dispensa a consulta dos documentos originais no <a href="https://diariodarepublica.pt/" target="_blank" rel="noopener noreferrer">Diário da República</a>.</p> <p>A aplicação é fornecida &quot;como está&quot;, sem garantias de exatidão, atualidade ou completude. Pode conter erros ou estar desatualizada.</p> <p>Esta aplicação destina-se apenas a apoio e consulta informativa.</p> <p>A utilização da informação fornecida, sem observar os pressupostos mencionados, é de inteira responsabilidade do utilizador.</p> <div class="legal-notice-version"><span>Versão</span><strong>1.5</strong></div> </div> </div>
 </div>
-<div id="historyOverlay" class="history-overlay" onclick="fecharHistoricoFora(event)"> <div class="history-window"> <div class="history-top"> <div><div class="history-title">HISTÓRICO DE CONSULTAS</div><div class="history-sub">ÚLTIMAS 100 PESQUISAS // ARMAZENAMENTO LOCAL</div></div> <button class="history-close" onclick="fecharHistorico()" title="Voltar à consulta">← &nbsp; CONSULTA</button> </div> <div class="history-body"> <div id="historyList" class="history-list-scroll"></div> <div class="history-footer"><button type="button" class="history-return" onclick="fecharHistorico()">← &nbsp; RETOMAR CONSULTA</button><span id="historyCount" class="history-count">0 / 100 REGISTOS</span><button class="history-clear" onclick="limparHistorico()">LIMPAR HISTÓRICO</button></div> </div> </div>
+<div id="historyOverlay" class="history-overlay" onclick="fecharHistoricoFora(event)"> <div class="history-window"> <div class="history-top"> <div><div class="history-title">HISTÓRICO DE CONSULTAS</div><div class="history-sub">ÚLTIMAS 100 PESQUISAS // ARMAZENAMENTO LOCAL</div></div> <button class="history-close" onclick="fecharHistorico()" title="Voltar à consulta">← &nbsp; CONSULTA</button> </div> <div class="history-body"> <div id="historyList" class="history-list-scroll"></div> <div class="history-footer"><button type="button"  onclick="fecharHistorico()">← &nbsp; RETOMAR CONSULTA</button><span id="historyCount" class="history-count">0 / 100 REGISTOS</span><button class="history-clear" onclick="limparHistorico()">LIMPAR HISTÓRICO</button></div> </div> </div>
 </div>
 <div id="cinCopyToast" class="cin-copy-toast" aria-live="polite"></div>
 <div id="toastNotification" class="toast-notification"></div>
@@ -5200,21 +5197,13 @@ html body #asfRateWidget #asfRateCountdown[data-state="wait"]{
     font-size:8px!important;
   }
 
-  html body #asfRateWidget .asf-rate-metric{
-    padding:4px 7px!important;
-  }
+  
 
-  html body #asfRateWidget .asf-rate-metric > span{
-    font-size:6.7px!important;
-  }
+  
 
-  html body #asfRateWidget .asf-rate-metric > strong{
-    font-size:13px!important;
-  }
+  
 
-  html body #asfRateWidget .asf-rate-window > strong b{
-    font-size:9px!important;
-  }
+  
 }
 
 @media(max-width:560px){
@@ -5973,7 +5962,7 @@ html.verix-low-power .verix-holo-scan{
  const originalOpen=window.abrirModulo;
  window.abrirModulo=function(nome,el){originalOpen.call(this,nome,el);if(nome==='legislacao'){setTimeout(ensureLegUI,0);}};
 
- const originalFilter=window.filtrarLegislacao;
+ 
  window.filtrarLegislacao=function(valor,keepFav){
  const raw=String(valor??'');
  const q=searchNorm(raw);
@@ -6065,7 +6054,7 @@ const alias={
 };
 const normalize10=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 function expandedQuery10(v){let q=normalize10(v);Object.keys(alias).forEach(k=>{if(q.includes(normalize10(k)))q+=' '+normalize10(alias[k]);});return q;}
-const oldEnsure=window.VÉRIX10?.ensureLegUI;
+
 // Improve the search matcher without changing the visible wording.
 const oldFilter=window.filtrarLegislacao;
 window.filtrarLegislacao=function(valor){
@@ -10046,7 +10035,7 @@ body.main-menu-active .main-menu-screen:before{content:"";position:absolute;inse
 
 
 /* tech marks */
-.main-menu-v74-shell>div:not(.main-menu-v74-title):not(.main-menu-v74-grid-big):not(.main-menu-v74-grid-small):not(.main-menu-v74-footer):not(.verix-system-message-card){display:none!important;}
+.main-menu-v74-shell>div:not(.main-menu-v74-title):not(.main-menu-v74-grid-big):not(.main-menu-v74-grid-small){display:none!important;}
 @media(max-width:900px){
  .main-menu-v74-title:after{display:none}.main-menu-v74-grid-big{grid-template-columns:1fr!important}.main-menu-v74-grid-small{max-width:620px!important}.main-menu-v74-shell{justify-content:flex-start!important;gap:16px!important}
  
@@ -10270,8 +10259,8 @@ html body.fixed-workspace-active #consultationBackBtn::after{
  html body.fixed-workspace-active:not(.cinemometro-page-active) .command{height:104px!important;}
  html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand{height:88px!important;}
  html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-notice{height:88px!important;}
- html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-notice-title{font-size:12px!important;}
- html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-notice-text{font-size:7px!important;}
+ 
+ 
  html body.fixed-workspace-active:not(.cinemometro-page-active) .command .tools{top:42px!important;}
  html body.fixed-workspace-active:not(.cinemometro-page-active) #consultationBackBtn{top:5px!important;height:26px!important;width:94px!important;min-width:94px!important;}
  html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active{top:116px!important;bottom:42px!important;gap:7px!important;}
@@ -12181,7 +12170,7 @@ html body #asfRateWidget .asf-rate-label{
 html body #asfRateWidget.high .asf-rate-dot{ background:#ff3d5a!important; box-shadow:0 0 8px rgba(255,61,90,.7)!important; }
 html body #asfRateWidget.warn .asf-rate-dot{ background:#ffc933!important; box-shadow:0 0 8px rgba(255,201,51,.7)!important; }
 
-html body #asfRateMain.asf-rate-main,
+
 html body #asfRateWidget .asf-rate-main{
  grid-column:2!important;
  margin:0!important;
@@ -12238,7 +12227,7 @@ html body #asfRateWidget.cooldown #asfRateCountdown{
  color:#ffc44a!important;
  animation:asfCdPulse .9s ease-in-out infinite!important;
 }
-html body #asfRateSub.asf-rate-sub,
+
 html body #asfRateWidget .asf-rate-sub{
  grid-column:4!important;
  margin:0!important; padding:0 2px 0 0!important;
@@ -14253,30 +14242,7 @@ html body .main-menu-screen.show .main-menu-v74-grid-small{
 
 
 /* Tablet/mobile */
-@media(max-width:900px){
- html body .main-menu-screen.show .verix-system-message-card{
- width:100%!important;
- min-height:0!important;
- padding:13px 14px 12px!important;
- grid-template-columns:32px minmax(0,1fr)!important;
- grid-template-rows:auto auto auto auto!important;
- grid-template-areas:
- "symbol heading"
- "update update"
- "contact contact"
- "disclaimer motto"!important;
- gap:7px 11px!important;
- }
- html body .main-menu-screen.show .verix-system-symbol{
- width:27px!important;height:27px!important;font-size:14px!important;
- }
- html body .main-menu-screen.show .verix-system-heading-rule{
- font-size:11px!important;
- letter-spacing:.9px!important;
- }
- html body .main-menu-screen.show .verix-system-update{text-align:left!important}
- html body .main-menu-screen.show .verix-system-update strong{font-size:8.8px!important}
- html body .main-menu-screen.show .verix-system-update span{font-size:7.8px!important}}
+
 /* ==========================================================
    VÉRIX ASF — LAYOUT FINAL
    Um único trilho horizontal: CONTROLO | JANELA | PRÓXIMA | CACHE
@@ -14399,22 +14365,13 @@ html body .main.consultation-fixed-active .panel.insurance #asfRateWidget .asf-r
     padding:3px 4px!important;
   }
 
-  html body .main.consultation-fixed-active .panel.insurance #asfRateWidget .asf-rate-metric{
-    padding:4px 4px!important;
-    gap:3px!important;
-  }
+  
 
-  html body .main.consultation-fixed-active .panel.insurance #asfRateWidget .asf-rate-metric > span{
-    font-size:5.6px!important;
-  }
+  
 
-  html body .main.consultation-fixed-active .panel.insurance #asfRateWidget .asf-rate-metric > strong{
-    font-size:10px!important;
-  }
+  
 
-  html body .main.consultation-fixed-active .panel.insurance #asfRateWidget .asf-rate-window > strong b{
-    font-size:6.5px!important;
-  }
+  
 }
 
 @media (max-width:430px){
@@ -14843,7 +14800,7 @@ html body .toast-notification {
   */
   var SPLASH_MS = 1200;
   var FADE_MS = 250;
-  var NOTICE_DELAY_MS = 80;
+  
   var started = (typeof window.__verixSplashStarted === 'number') ? window.__verixSplashStarted : performance.now();
   var finished = false;
 
@@ -16244,38 +16201,7 @@ html body.consultation-screen-active:not(.main-menu-active):not(.history-page-ac
 
 
 /* Tablets: information stacks cleanly instead of crushing the text. */
-@media(max-width:1000px){
-  html body.main-menu-screen.show .main-menu-v74-shell > .verix-system-message-card{
-    flex:0 0 auto!important;
-    height:auto!important;
-    min-height:0!important;
-    max-height:none!important;
-    margin:22px 0 0!important;
-    padding:16px 14px 12px 48px!important;
-    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
-    grid-template-rows:auto auto auto!important;
-    grid-template-areas:"heading heading" "update update" "contact contact" "disclaimer disclaimer"!important;
-    gap:11px!important;
-  }
-  html body.main-menu-screen.show .verix-system-message-card .verix-system-symbol{
-    left:11px!important;
-    top:14px!important;
-    width:25px!important;
-    height:25px!important;
-  }
-  html body.main-menu-screen.show .verix-system-message-card .verix-system-update,
-  html body.main-menu-screen.show .verix-system-message-card .verix-system-contact{
-    padding:0!important;
-    border-left:0!important;
-  }
-  html body.main-menu-screen.show .verix-system-message-card .verix-system-update strong{
-    font-size:9px!important;
-  }
-  html body.main-menu-screen.show .verix-system-message-card .verix-system-update span,
-  html body.main-menu-screen.show .verix-system-message-card .verix-system-contact-copy{
-    font-size:8px!important;
-  }
-}
+
 
 
 /* Rodapé reconstruído em HTML: barra de estado, contacto e aviso independente. */
