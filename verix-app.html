@@ -4588,6 +4588,9 @@ html body #mainMenuScreen.vx-home-screen .vx-home-footer-unofficial{flex:0 0 aut
 @media(prefers-reduced-motion:reduce){
  html body #mainMenuScreen.vx-home-screen .vx-home-action,html body #mainMenuScreen.vx-home-screen .vx-home-contact,html body #mainMenuScreen.vx-home-screen .vx-home-filter{transition:none!important}
 }
+
+/* Keep hidden cards and panels hidden after all layout rules. */
+html body #mainMenuScreen.vx-home-screen [hidden]{display:none!important}
 </style>
 </head><body>
 <script id="verix-splash-clock">(function(){try{window.__verixSplashStarted=performance.now();}catch(e){window.__verixSplashStarted=Date.now();}})();</script>
