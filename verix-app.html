@@ -4255,7 +4255,7 @@ html body .command .brand-notice::after{
     linear-gradient(0deg,rgba(2,7,9,.66) 0%,rgba(2,7,9,.02) 48%,rgba(2,7,9,.18) 100%),
     url("https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Bandera_portuguesa_%283771095401%29.jpg/1280px-Bandera_portuguesa_%283771095401%29.jpg")!important;
   background-size:100% 100%,100% 100%,cover!important;
-  background-position:0 0,0 0,49% 47%!important;
+  background-position:0 0,0 0,49% 47%;
   background-repeat:no-repeat!important;
   opacity:.9!important;
   filter:url(#verix-flag-wave-filter) saturate(1.13) contrast(1.08) brightness(.82)!important;
@@ -4309,11 +4309,11 @@ html body #vxMobileTop .vx-brand::before{
     linear-gradient(90deg,rgba(7,12,16,.02) 0%,rgba(7,12,16,.03) 58%,rgba(7,12,16,.96) 100%),
     url("https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Bandera_portuguesa_%283771095401%29.jpg/1280px-Bandera_portuguesa_%283771095401%29.jpg")!important;
   background-size:100% 100%,cover!important;
-  background-position:0 0,50% 46%!important;
+  background-position:0 0,50% 46%;
   background-repeat:no-repeat!important;
   opacity:.96!important;
   filter:url(#verix-flag-wave-filter) saturate(1.12) contrast(1.06) brightness(.9)!important;
-  animation:verix-flag-photo-wave 6.2s ease-in-out infinite!important;
+  animation:verix-flag-mobile-photo-wave 6.2s ease-in-out infinite!important;
   will-change:transform,background-position!important;
 }
 html body #vxMobileTop .vx-brand-text{
@@ -4323,6 +4323,11 @@ html body #vxMobileTop .vx-brand-text{
   min-width:0!important;
   white-space:nowrap!important;
   text-shadow:0 2px 5px rgba(0,0,0,.95)!important;
+}
+@keyframes verix-flag-mobile-photo-wave{
+  0%,100%{transform:perspective(480px) rotateY(-1deg) skewY(-.3deg) translate3d(-1px,0,0);background-position:0 0,47% 44%}
+  35%{transform:perspective(480px) rotateY(.8deg) skewY(.15deg) translate3d(1px,-.4px,0);background-position:0 0,54% 49%}
+  68%{transform:perspective(480px) rotateY(-.6deg) skewY(-.2deg) translate3d(0,.4px,0);background-position:0 0,46% 53%}
 }
 @keyframes verix-flag-photo-wave{
   0%,100%{
@@ -4355,6 +4360,9 @@ html body #vxMobileTop .vx-brand-text{
   html body .command .brand-notice::after,
   html body #vxMobileTop .vx-brand::before{
     animation:verix-flag-photo-wave 6.2s ease-in-out infinite!important;
+  }
+  html body #vxMobileTop .vx-brand::before{
+    animation:verix-flag-mobile-photo-wave 6.2s ease-in-out infinite!important;
   }
 }
 </style>
@@ -15881,6 +15889,7 @@ html body #seguroResult .asf-app.asf-negative-operational .asf-negative-source-d
   </filter>
 </svg>
 <a class="verix-flag-attribution" tabindex="0" aria-label="Crédito da fotografia da bandeira: Montserrat Labiaga Ferrer, CC BY 2.0, via Wikimedia Commons" title="Fotografia de Montserrat Labiaga Ferrer — CC BY 2.0 — Wikimedia Commons" href="https://commons.wikimedia.org/wiki/File:Bandera_portuguesa_(3771095401).jpg" target="_blank" rel="noopener noreferrer">Crédito da fotografia da bandeira</a>
+<a class="verix-flag-attribution" tabindex="0" aria-label="Licença da fotografia da bandeira: Creative Commons Attribution 2.0" title="Licença CC BY 2.0" href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">Licença da fotografia da bandeira</a>
 
 </body>
 </html>
