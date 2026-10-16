@@ -4379,6 +4379,70 @@ html body #vxMobileTop .vx-brand-text{
  color:#fff!important;z-index:2147483647!important;border:1px solid #3cb987!important;
 }
 </style>
+<style id="verix-flag-watermark-refinement">
+/* Bandeira como marca de água fotográfica: discreta, sem moldura nem corte duro. */
+html body .command .brand-notice::before{display:none!important}
+html body .command .brand-notice::after{
+  content:""!important;position:absolute!important;z-index:0!important;pointer-events:none!important;
+  left:-23px!important;top:-8px!important;bottom:-4px!important;
+  width:min(255px,calc(58vw - 24px))!important;border:0!important;border-radius:0!important;box-shadow:none!important;
+  background-image:
+    linear-gradient(90deg,rgba(2,7,10,.18) 0%,rgba(2,7,10,.35) 34%,rgba(2,7,10,.68) 64%,rgba(2,7,10,.98) 100%),
+    linear-gradient(180deg,rgba(2,7,10,.46) 0%,rgba(2,7,10,.03) 43%,rgba(2,7,10,.58) 100%),
+    url("https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Bandera_portuguesa_%283771095401%29.jpg/1280px-Bandera_portuguesa_%283771095401%29.jpg")!important;
+  background-size:100% 100%,100% 100%,cover!important;
+  background-position:0 0,0 0,4% 47%;background-repeat:no-repeat!important;
+  opacity:.49!important;filter:url(#verix-flag-wave-filter) saturate(.78) contrast(.96) brightness(.82)!important;
+  -webkit-mask-image:linear-gradient(90deg,#000 0%,rgba(0,0,0,.86) 28%,rgba(0,0,0,.38) 61%,transparent 100%)!important;
+  mask-image:linear-gradient(90deg,#000 0%,rgba(0,0,0,.86) 28%,rgba(0,0,0,.38) 61%,transparent 100%)!important;
+  transform-origin:0 50%!important;animation:verix-flag-watermark-wave 8.5s ease-in-out infinite!important;
+  will-change:background-position,transform!important;
+}
+html body .command .brand-notice>*{position:relative!important;z-index:1!important}
+html body .command .brand-lockup-line,
+html body .command .brand-lockup-subtitle,
+html body .command .brand-lockup-values,
+html body .command .brand-lockup-footer{text-shadow:0 1px 3px rgba(0,0,0,.92)!important}
+@keyframes verix-flag-watermark-wave{
+  0%,100%{transform:perspective(900px) rotateY(-.5deg) translate3d(-1px,0,0) scaleX(1);background-position:0 0,0 0,2% 46%}
+  33%{transform:perspective(900px) rotateY(.4deg) translate3d(1px,-.3px,0) scaleX(1.005);background-position:0 0,0 0,7% 49%}
+  68%{transform:perspective(900px) rotateY(-.25deg) translate3d(0,.3px,0) scaleX(.998);background-position:0 0,0 0,3% 52%}
+}
+html body #vxMobileTop .vx-brand{
+  position:relative!important;display:flex!important;align-items:center!important;min-width:0!important;
+  padding-left:66px!important;overflow:hidden!important;isolation:isolate!important;background:transparent!important;
+}
+html body #vxMobileTop .vx-brand::before{
+  content:""!important;position:absolute!important;z-index:0!important;pointer-events:none!important;
+  left:-5px!important;top:-3px!important;bottom:-3px!important;width:72px!important;border:0!important;border-radius:0!important;
+  background-image:
+    linear-gradient(90deg,rgba(7,12,16,.12) 0%,rgba(7,12,16,.34) 48%,rgba(7,12,16,.98) 100%),
+    linear-gradient(180deg,rgba(7,12,16,.38),transparent 42%,rgba(7,12,16,.48)),
+    url("https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Bandera_portuguesa_%283771095401%29.jpg/1280px-Bandera_portuguesa_%283771095401%29.jpg")!important;
+  background-size:100% 100%,100% 100%,cover!important;background-position:0 0,0 0,4% 48%;background-repeat:no-repeat!important;
+  opacity:.5!important;filter:saturate(.78) contrast(.95) brightness(.8)!important;
+  -webkit-mask-image:linear-gradient(90deg,#000 0%,rgba(0,0,0,.75) 42%,transparent 100%)!important;
+  mask-image:linear-gradient(90deg,#000 0%,rgba(0,0,0,.75) 42%,transparent 100%)!important;
+  animation:verix-flag-mobile-watermark-wave 8.5s ease-in-out infinite!important;will-change:background-position,transform!important;
+}
+html body #vxMobileTop .vx-brand-text{position:relative!important;z-index:1!important;text-shadow:0 1px 4px rgba(0,0,0,.95)!important}
+@keyframes verix-flag-mobile-watermark-wave{
+  0%,100%{transform:translateX(-.4px) skewY(-.15deg);background-position:0 0,0 0,0 47%}
+  50%{transform:translateX(.7px) skewY(.15deg);background-position:0 0,0 0,7% 52%}
+}
+@media(max-width:760px){
+  html body .command .brand-notice::after{left:-12px!important;top:-4px!important;bottom:-2px!important;width:min(215px,calc(51vw - 14px))!important;opacity:.38!important}
+}
+@media(max-width:380px){
+  html body #vxMobileTop .vx-brand{padding-left:55px!important}
+  html body #vxMobileTop .vx-brand::before{width:60px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  html body .command .brand-notice::after,
+  html body #vxMobileTop .vx-brand::before{animation:none!important}
+}
+</style>
+
 </head><body>
 <script id="verix-splash-clock">(function(){try{window.__verixSplashStarted=performance.now();}catch(e){window.__verixSplashStarted=Date.now();}})();</script>
 <div id="opsBootOverlay" aria-hidden="false">
