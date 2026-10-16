@@ -208,7 +208,7 @@ const nav=findNavigation();
 
 const top=document.createElement('div');
 top.id='vxMobileTop';
-top.innerHTML='<div class="vx-brand"><span class="vx-brand-text">VÉRIX <b>///</b> MOBILE</span></div><button type="button" id="vxMobileBack" class="vx-mobile-back" aria-label="Voltar ao menu anterior" title="Voltar ao menu anterior"><span aria-hidden="true">←</span><span>Voltar</span></button><button type="button" id="vxMobileMenu" aria-label="Abrir menu">☰</button>'
+top.innerHTML='<div class="vx-brand"><span class="vx-brand-text">VÉRIX <b>///</b> MOBILE</span></div><button type="button" id="vxMobileBack" class="vx-mobile-back" aria-label="Voltar ao menu anterior" title="Voltar ao menu anterior"><span aria-hidden="true">←</span><span>Voltar</span></button><button type="button" id="vxMobileMenu" aria-label="Abrir menu">☰</button>';
 document.body.appendChild(top);
 
 function syncMobileBackState(){
