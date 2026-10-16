@@ -231,6 +231,18 @@ for (const f of ["verix-mobile.css", "verix-mobile.js"]) {
   }
 }
 
+// VÉRIX brand assets: keep favicon, app icons and manifest in the published bundle.
+for (const f of ["favicon.svg", "site.webmanifest", "assets/verix-emblem.svg", "assets/icon-192.png", "assets/icon-512.png"]) {
+  const src = path.join(ROOT, f);
+  if (fs.existsSync(src)) {
+    const out = path.join(OUTPUT_DIR, f);
+    fs.mkdirSync(path.dirname(out), { recursive: true });
+    fs.copyFileSync(src, out);
+  } else {
+    throw new Error("Required VÉRIX brand asset missing: " + f);
+  }
+}
+
 // Release-time runtime invariants. These critical blocks are intentionally
 // excluded from heavy obfuscation and must survive packaging unchanged enough
 // to expose their endpoint, heartbeat and security runtime markers.

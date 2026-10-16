@@ -10,6 +10,9 @@ on:
       - "verix-mobile.html"
       - "verix-mobile.js"
       - "verix-mobile.css"
+      - "favicon.svg"
+      - "site.webmanifest"
+      - "assets/**"
       - "AI-ACCESS-POLICY.md"
       - "robots.txt"
       - "package.json"
@@ -151,6 +154,18 @@ jobs:
 
       - name: Ensure .nojekyll in dist
         run: touch dist/.nojekyll
+
+      - name: Verify VÉRIX brand assets
+        shell: bash
+        run: |
+          test -s dist/favicon.svg
+          test -s dist/site.webmanifest
+          test -s dist/assets/verix-emblem.svg
+          test -s dist/assets/icon-192.png
+          test -s dist/assets/icon-512.png
+          grep -q 'rel="manifest"' dist/verix-app.html
+          grep -q 'rel="icon"' dist/verix-app.html
+          grep -q 'verix-emblem.svg' dist/verix-app.html
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
