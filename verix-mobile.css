@@ -524,15 +524,8 @@ body.vx-mobile-mode .vx-scroll-x{
     visibility:hidden!important;
     pointer-events:none!important;
   }
-}
 
-
-/* MOBILE VIEWPORT FIX
-   A perspectiva aplicada globalmente ao body faz com que elementos fixed usem
-   o body como bloco de referência. No layout mobile, cuja altura é automática,
-   isso pode cortar o aviso inicial e outros overlays ao tamanho do conteúdo.
-   O efeito 3D mantém-se no desktop. */
-@media (max-width:1199px){
+  /* Viewport e aviso inicial — regras partilhadas para mobile/tablet. */
   html body{
     perspective:none!important;
     perspective-origin:initial!important;
@@ -573,4 +566,7 @@ body.vx-mobile-mode .vx-scroll-x{
     overscroll-behavior:contain!important;
     -webkit-overflow-scrolling:touch!important;
   }
+
 }
+
+
