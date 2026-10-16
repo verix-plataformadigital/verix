@@ -836,11 +836,11 @@ function hourGrid(id,rows){
  host.innerHTML=
   '<div class="hourly-highlights">'+
    '<div class="hourly-highlight"><span>Pico de consultas</span><strong>'+esc(peakConsultText)+'</strong><small>Pedidos de consulta iniciados nessa hora.</small></div>'+
-   '<div class="hourly-highlight"><span>Pico de instalações ativas estimadas</span><strong>'+esc(peakActiveText)+'</strong><small>Instalações distintas com uma interação real nessa hora.</small></div>'+
+   '<div class="hourly-highlight"><span>Pico de utilizadores ativos (estimados)</span><strong>'+esc(peakActiveText)+'</strong><small>Instalações distintas com uma interação real nessa hora.</small></div>'+
   '</div>'+
   '<div class="hourly-series-grid">'+
    buildSeries('consultations','Consultas de seguro','Pedidos iniciados em cada hora.','consultations',peakConsult,'consultas')+
-   buildSeries('users','Instalações ativas','Instalações com uma interação real por hora.','presence',peakActive,'instalações ativas')+
+   buildSeries('users','Utilizadores ativos (estimados)','Instalações distintas com interação real por hora. Abrir o browser ou enviar heartbeat não conta.','presence',peakActive,'instalações ativas')+
   '</div>'+
   '<div class="hour-note">Período apresentado: '+esc(dateShort(rangeStart)+' '+exactTime(rangeStart)+' – '+dateShort(rangeEnd)+' '+exactTime(rangeEnd))+'. A linha vertical marca a mudança de dia. O primeiro e o último bloco podem ser parciais.</div>'+
   '<details class="hourly-data"><summary>Mostrar tabela com os valores exatos</summary><div class="table-wrap"><table class="table"><thead><tr><th scope="col">Data</th><th scope="col">Hora</th><th scope="col">Consultas</th><th scope="col">Instalações ativas (estim.)</th></tr></thead><tbody>'+dataRows+'</tbody></table></div></details>';
