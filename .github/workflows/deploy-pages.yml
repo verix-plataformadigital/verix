@@ -162,7 +162,13 @@ jobs:
           test -s dist/favicon.svg
           test -s dist/site.webmanifest
           test -s dist/sw.js
-          grep -q "event.respondWith(fetch(event.request))" dist/sw.js
+          node --check dist/sw.js
+          grep -q "request.mode === 'navigate'" dist/sw.js
+          grep -q "cache: 'no-store'" dist/sw.js
+          grep -q "navigator.serviceWorker.register('./sw.js'" dist/index.html
+          grep -q "navigator.serviceWorker.register('./sw.js'" dist/verix-mobile.html
+          grep -q "updateViaCache: 'none'" dist/index.html
+          grep -q "updateViaCache: 'none'" dist/verix-mobile.html
           test -s dist/assets/verix-emblem.svg
           test -s dist/assets/icon-192.png
           test -s dist/assets/icon-512.png
