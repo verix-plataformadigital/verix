@@ -85,13 +85,11 @@ body.vx-mobile-mode .vx-scroll-x{
 #vxMobileBar .vx-icon{display:block;font-size:17px;line-height:18px;margin-bottom:2px}
 #vxMobileTop{
   position:fixed;
-  left:0;
-  right:0;
-  top:0;
+  inset:0 0 auto;
   z-index:2147482999;
   display:none;
   align-items:center;
-
+  gap:6px!important;
   padding:calc(7px + var(--vx-safe-top)) 10px 7px;
   min-height:52px;
   background:rgba(7,12,16,.94);
@@ -102,8 +100,9 @@ body.vx-mobile-mode .vx-scroll-x{
 #vxMobileTop .vx-brand{
   flex:1;
   min-width:0;
-  font:950 15px/1 Arial,Helvetica,sans-serif;
-
+  font:950 clamp(12px,3.5vw,14px)/1 Arial,Helvetica,sans-serif!important;
+  letter-spacing:.8px!important;
+  white-space:nowrap!important;
   color:#fff;
 }
 #vxMobileTop .vx-brand b{color:#66dbe9}
@@ -147,14 +146,26 @@ body.vx-mobile-mode .vx-scroll-x{
   body.vx-mobile-mode .command .time{display:none!important}
 
   body.vx-mobile-mode .command .searchbar{
-
+    display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
+    position:relative!important;
+    inset:auto!important;
+    transform:none!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    height:auto!important;
+    margin:8px 0 0!important;
     padding:10px!important;
-
+    box-sizing:border-box!important;
+    overflow:visible!important;
   }
   body.vx-mobile-mode .command .searchbar form{
-
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
     gap:8px!important;
-
+    width:100%!important;
   }
   body.vx-mobile-mode .command .field{
     width:100%!important;
@@ -192,15 +203,20 @@ body.vx-mobile-mode .vx-scroll-x{
     margin:10px 0 0!important;
     padding:0 10px!important;
 
+    display:grid!important;
     grid-template-columns:minmax(0,1fr)!important;
     grid-auto-rows:auto!important;
     gap:10px!important;
+    visibility:visible!important;
+    opacity:1!important;
   }
   body.vx-mobile-mode .main .panel{
     width:100%!important;
     min-width:0!important;
     height:340px!important;
     min-height:340px!important;
+    visibility:visible!important;
+    opacity:1!important;
   }
   body.vx-mobile-mode .main .panel.insurance{
     display:block!important;
@@ -254,9 +270,6 @@ body.vx-mobile-mode .vx-scroll-x{
   body.vx-mobile-mode .main .insurance{display:block!important;grid-column:1/-1!important;}
 }
 @media (max-width:767px){
-  body.vx-mobile-mode{
-    padding-top:58px!important;
-  }
   #vxMobileTop,#vxMobileBar{display:flex}
   body.vx-mobile-mode:not(.main-menu-active) :is(main,section,article,aside,nav,.main,.content,.wrap,.panel,.card,.modal,.dialog,.grid,.toolbar,.row){
     max-width:100%!important;
@@ -312,45 +325,7 @@ body.vx-mobile-mode .vx-scroll-x{
   }
 }
 
-/* Mobile hotfix: keep the registration search and consultation workspace visible. */
-@media (max-width:767px){
-  body.vx-mobile-mode .command .searchbar{
-    display:block!important;
-    visibility:visible!important;
-    opacity:1!important;
-    position:relative!important;
-    inset:auto!important;
-    transform:none!important;
-    width:100%!important;
-    min-width:0!important;
-    max-width:100%!important;
-    height:auto!important;
-    margin:8px 0 0!important;
-  }
-  body.vx-mobile-mode .command .searchbar form{
-    display:grid!important;
-    grid-template-columns:minmax(0,1fr)!important;
-    width:100%!important;
-  }
-  body.vx-mobile-mode .main{
-    display:grid!important;
-    visibility:visible!important;
-    opacity:1!important;
-  }
-  body.vx-mobile-mode .main .panel{
-    visibility:visible!important;
-    opacity:1!important;
-  }
-}
-
-/* Mobile navigation and registration layout hotfix — high-specificity overrides
-   for the legacy fixed-workspace rules that otherwise hide the plate search. */
-#vxMobileTop{gap:6px!important;}
-#vxMobileTop .vx-brand{
-  font-size:clamp(12px,3.5vw,14px)!important;
-  letter-spacing:.8px!important;
-  white-space:nowrap!important;
-}
+/* Navegação mobile: apenas regras específicas para o botão voltar e ecrãs muito estreitos. */
 #vxMobileTop .vx-mobile-back{
   display:inline-flex!important;
   flex:0 0 auto!important;
