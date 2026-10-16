@@ -4333,6 +4333,46 @@ html body #mainMenuScreen.vx-home-screen .vx-home-footer-unofficial{flex:0 0 aut
 
 /* Keep hidden cards and panels hidden after all layout rules. */
 html body #mainMenuScreen.vx-home-screen [hidden]{display:none!important}
+
+/* Main menu identity: remove active-section chrome and make the brand the top-level anchor. */
+html body #mainMenuScreen.vx-home-screen .vx-home-shell{grid-template-columns:minmax(0,1fr)!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-sidebar{display:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-main{width:100%!important;min-width:0!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-topbar{flex-basis:72px!important;padding:0 clamp(20px,3.2vw,52px)!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-topbar .vx-home-brand{display:flex!important;align-items:center!important;gap:12px!important;min-width:0!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-topbar .vx-home-brand-mark{flex:0 0 42px!important;width:42px!important;height:42px!important;font-size:21px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-topbar .vx-home-brand-copy strong{font-size:16px!important;letter-spacing:1.7px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-topbar .vx-home-brand-copy small{font-size:8px!important;letter-spacing:1.3px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-body{width:100%!important;max-width:1580px!important;margin:0 auto!important;padding:30px clamp(20px,3.2vw,52px) 24px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-eyebrow{font-size:9px!important;letter-spacing:1.9px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-hero h1{font-size:clamp(27px,2.7vw,36px)!important;letter-spacing:-1px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-hero p{font-size:13px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-toolbar{display:flex!important;align-items:center!important;justify-content:flex-end!important;min-height:30px!important;margin:0 0 21px!important;padding:0 0 12px!important;border-bottom:1px solid #213438!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-filters{display:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-result-count{font-size:9px!important;color:#9bb4ad!important;letter-spacing:.3px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-group-heading h2{font-size:13px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-group-heading>span{font-size:8px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-primary-grid{gap:17px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary{min-height:150px!important;padding:25px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-title{font-size:16px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-secondary-grid{column-gap:24px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary{min-height:80px!important;padding:13px 5px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-title{font-size:11px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-description{font-size:10px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer{padding:0 clamp(20px,3.2vw,52px)!important}
+@media(max-width:1120px){
+ html body #mainMenuScreen.vx-home-screen .vx-home-shell{grid-template-columns:minmax(0,1fr)!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-sidebar{display:none!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-body{padding-left:26px!important;padding-right:26px!important}
+}
+@media(max-width:760px){
+ html body #mainMenuScreen.vx-home-screen .vx-home-topbar{flex-basis:62px!important;padding:0 16px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-topbar .vx-home-brand-mark{flex-basis:38px!important;width:38px!important;height:38px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-topbar .vx-home-brand-copy strong{font-size:14px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-topbar .vx-home-brand-copy small{font-size:7px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-body{padding:24px 16px 20px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-toolbar{justify-content:flex-start!important;margin-bottom:16px!important}
+}
 </style>
 </head><body>
 <script id="verix-splash-clock">(function(){try{window.__verixSplashStarted=performance.now();}catch(e){window.__verixSplashStarted=Date.now();}})();</script>
@@ -4435,31 +4475,22 @@ html body #mainMenuScreen.vx-home-screen [hidden]{display:none!important}
 <div class="bottom"><div class="bottom-left"></div><div class="bottom-right"><div class="credit"><strong></strong><br><br></div></div></div>
 <div id="mainMenuScreen" class="main-menu-screen vx-home-screen" aria-label="Menu principal">
 <div class="vx-home-shell">
-  <aside class="vx-home-sidebar" aria-label="Identidade e aviso da plataforma">
-    <div class="vx-home-brand"><span class="vx-home-brand-mark" aria-hidden="true">V</span><span class="vx-home-brand-copy"><strong>VÉRIX</strong><small>APOIO OPERACIONAL</small></span></div>
-    <div class="vx-home-sidebar-rule"></div>
-    <div class="vx-home-side-caption">PLATAFORMA</div>
-    <div class="vx-home-side-context"><span class="vx-home-side-context-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span><span><strong>Centro operacional</strong><small>Consultas e utilitários</small></span></div>
-    <div class="vx-home-sidebar-spacer"></div>
-    <div class="vx-home-sidebar-notice"><span class="vx-home-notice-label">NOTA DE UTILIZAÇÃO</span><p>Ferramenta de apoio. Confirma sempre os dados nas fontes oficiais antes de atuar.</p><span class="vx-home-unofficial">NÃO OFICIAL</span></div>
-    <div class="vx-home-sidebar-foot"><span aria-hidden="true"></span>VÉRIX · PLATAFORMA DIGITAL</div>
-  </aside>
   <main class="vx-home-main">
     <header class="vx-home-topbar">
-      <div class="vx-home-breadcrumb"><span>VÉRIX</span><span class="vx-home-breadcrumb-sep">/</span><span>PAINEL OPERACIONAL</span></div>
+      <div class="vx-home-brand"><span class="vx-home-brand-mark" aria-hidden="true">V</span><span class="vx-home-brand-copy"><strong>VÉRIX</strong><small>APOIO OPERACIONAL</small></span></div>
       <a class="vx-home-contact" href="mailto:verix.plataformadigital@gmail.com?subject=V%C3%89RIX%20-%20Sugest%C3%A3o%20%2F%20Erro" aria-label="Contactar a equipa VÉRIX"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg><span>Contactar a equipa</span><b aria-hidden="true">↗</b></a>
     </header>
     <div class="vx-home-body">
       <section class="vx-home-hero" aria-label="Introdução e pesquisa">
-        <div class="vx-home-hero-copy"><span class="vx-home-eyebrow">ACESSO OPERACIONAL</span><h1>O que precisas de fazer?</h1><p>Fiscalização e ferramentas de apoio ao serviço, num só lugar.</p></div>
+        <div class="vx-home-hero-copy"><span class="vx-home-eyebrow">MENU PRINCIPAL</span><h1>O que precisas de fazer?</h1><p>Acesso direto às ferramentas de fiscalização e apoio operacional.</p></div>
         <div class="vx-home-search" role="search"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg><input id="vxHomeSearch" type="search" autocomplete="off" spellcheck="false" aria-label="Pesquisar ferramentas do VÉRIX" placeholder="Pesquisar ferramenta…" /><kbd aria-hidden="true">/</kbd><button id="vxHomeSearchClear" type="button" aria-label="Limpar pesquisa" title="Limpar pesquisa" hidden>×</button></div>
       </section>
-      <div class="vx-home-toolbar"><div class="vx-home-filters" role="group" aria-label="Filtrar ferramentas"><button class="vx-home-filter is-active" type="button" data-vx-home-filter="all" aria-pressed="true">Todas <span>08</span></button><button class="vx-home-filter" type="button" data-vx-home-filter="primary" aria-pressed="false">Principais <span>02</span></button><button class="vx-home-filter" type="button" data-vx-home-filter="support" aria-pressed="false">Apoio <span>06</span></button></div><span id="vxHomeResultCount" class="vx-home-result-count" role="status" aria-live="polite">8 ferramentas</span></div>
-      <section class="vx-home-group" data-vx-home-group-panel="primary" aria-labelledby="vxHomePrimaryHeading"><div class="vx-home-group-heading"><h2 id="vxHomePrimaryHeading">Fiscalização prioritária</h2><span>ACESSO DIRETO</span></div><div class="vx-home-primary-grid">
+      <div class="vx-home-toolbar"><span id="vxHomeResultCount" class="vx-home-result-count" role="status" aria-live="polite">8 ferramentas disponíveis</span></div>
+      <section class="vx-home-group" data-vx-home-group-panel="primary" aria-labelledby="vxHomePrimaryHeading"><div class="vx-home-group-heading"><h2 id="vxHomePrimaryHeading">Acesso direto</h2><span>ACESSO DIRETO</span></div><div class="vx-home-primary-grid">
 <button type="button" class="vx-home-action vx-home-action-primary" data-vx-home-action="1" data-vx-home-group="primary" data-vx-home-search="fiscalizacao fiscalização viatura seguro automovel automóvel inspeção inspeções periodica periódica matricula matrícula asf imt" aria-label="FISCALIZAÇÃO" onclick="abrirConsultaPrincipal()"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 160 120" role="img"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M34 77h92l-5-27c-2-11-11-19-22-21H61c-11 2-20 10-22 21l-5 27Z"/><path d="M46 50h68l-7-12c-2-4-7-6-12-6H65c-5 0-10 2-12 6l-7 12Z"/><path d="M34 77h92"/><circle cx="51" cy="84" r="10"/><circle cx="109" cy="84" r="10"/><path d="M59 67h42"/><path d="M45 61h9m57 0h-9"/><path d="M75 36v14m10-14v14"/><rect x="69" y="26" width="22" height="7" rx="2"/><path d="M126 69h9m-9 8h9"/></g><circle cx="80" cy="60" r="54" opacity=".11"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">FISCALIZAÇÃO</span><span class="vx-home-action-description">Consultar seguro, inspeção e dados da viatura.</span></span><span class="vx-home-action-cta" aria-hidden="true">Abrir módulo&nbsp; ↗</span></button>
 <button type="button" class="vx-home-action vx-home-action-primary" data-vx-home-action="1" data-vx-home-group="primary" data-vx-home-search="cinemometro cinemómetro velocidade radar fiscalizacao fiscalização erro maximo admissivel ema" aria-label="CINEMÓMETRO" onclick="abrirModulo('cinemometro',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 160 120" role="img"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="78" cy="39" r="23"/><circle cx="78" cy="39" r="9"/><path d="M78 16v46m-23-23h46"/><path d="M61 58l-18 30h70L95 58"/><path d="M67 88l-5 18m27-18 5 18"/><path d="M43 88h68"/><path d="M29 18h18m-18 8h11M118 18h13m-13 8h20"/><path d="M112 50c10 3 17 9 21 18"/></g><circle cx="78" cy="39" r="50" opacity=".10"/><path d="M25 39h20" opacity=".25"/><path d="M111 39h20" opacity=".25"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">CINEMÓMETRO</span><span class="vx-home-action-description">Efetuar cálculos e verificações de velocidade.</span></span><span class="vx-home-action-cta" aria-hidden="true">Abrir módulo&nbsp; ↗</span></button>
       </div></section>
-      <section class="vx-home-group vx-home-secondary-group" data-vx-home-group-panel="support" aria-labelledby="vxHomeSupportHeading"><div class="vx-home-group-heading"><h2 id="vxHomeSupportHeading">Ferramentas complementares</h2><span>06 MÓDULOS</span></div><div class="vx-home-secondary-grid">
+      <section class="vx-home-group vx-home-secondary-group" data-vx-home-group-panel="support" aria-labelledby="vxHomeSupportHeading"><div class="vx-home-group-heading"><h2 id="vxHomeSupportHeading">Mais ferramentas</h2><span>06 MÓDULOS</span></div><div class="vx-home-secondary-grid">
 <button type="button" class="vx-home-action vx-home-action-secondary" data-vx-home-action="1" data-vx-home-group="support" data-vx-home-search="legislacao legislação infracoes infrações artigos codigo da estrada código da estrada coimas dr" aria-label="LEGISLAÇÃO" onclick="abrirModulo('legislacao',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5h10.5A3.5 3.5 0 0 1 19 8v11H8a3 3 0 0 1-3-3z"/><path d="M8 4.5v11.8A2.7 2.7 0 0 0 10.7 19M9 8h6M9 11h6M9 14h4"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">LEGISLAÇÃO</span><span class="vx-home-action-description">Pesquisar infrações, artigos e enquadramentos legais.</span></span><span class="vx-home-action-arrow" aria-hidden="true">↗</span></button>
 <button type="button" class="vx-home-action vx-home-action-secondary" data-vx-home-action="1" data-vx-home-group="support" data-vx-home-search="alcool álcool alcoolemia deducoes deduções taxa sangue ar expirado" aria-label="ÁLCOOL / DEDUÇÕES" onclick="abrirModulo('alcoolExcel',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v5l-4.2 7.1A3.8 3.8 0 0 0 9.1 21h5.8a3.8 3.8 0 0 0 3.3-5.9L14 8V3"/><path d="M7.8 15h8.4M10 12h4"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">ÁLCOOL / DEDUÇÕES</span><span class="vx-home-action-description">Consultar tabelas de alcoolemia e cálculos de deduções.</span></span><span class="vx-home-action-arrow" aria-hidden="true">↗</span></button>
 <button type="button" class="vx-home-action vx-home-action-secondary" data-vx-home-action="1" data-vx-home-group="support" data-vx-home-search="codigos códigos distrito matricula matrícula portugal" aria-label="CÓDIGOS DISTRITO" onclick="abrirModulo('codigosDistrito',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3 6.5 21M17.5 3 15 21M3 9h18M2 15h18"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">CÓDIGOS DISTRITO</span><span class="vx-home-action-description">Identificar o distrito através dos códigos de matrícula.</span></span><span class="vx-home-action-arrow" aria-hidden="true">↗</span></button>
@@ -4548,6 +4579,7 @@ html body #mainMenuScreen.vx-home-screen [hidden]{display:none!important}
 })();
 </script>
 </div>
+
 <div id="moduleOverlay" class="module-overlay" onclick="fecharModuloFora(event)"> <div class="module-window"> <div class="module-top"><div><div id="moduleTitle" class="module-title">MÓDULO OPERACIONAL</div><div id="moduleSub" class="module-sub">VÉRIX // OPERAÇÕES</div></div><button class="module-close" onclick="fecharModulo()">×</button></div> <div id="moduleBody" class="module-body"></div> </div>
 </div>
 <div id="legalNoticeOverlay" class="legal-notice-overlay" onclick="fecharAvisoLegalFora(event)" aria-hidden="true"> <div class="legal-notice-window" role="dialog" aria-modal="true" aria-labelledby="legalNoticeTitle"> <div class="legal-notice-top"> <div><div id="legalNoticeTitle" class="legal-notice-title">AVISO LEGAL</div><div class="legal-notice-sub">VÉRIX // CONDIÇÕES DE UTILIZAÇÃO</div></div> <button class="legal-notice-close" type="button" onclick="fecharAvisoLegal()" aria-label="Fechar aviso legal">×</button> </div> <div class="legal-notice-body"> <p>Esta aplicação não está afiliada a entidades governamentais ou outras entidades oficiais.</p> <p>A utilização desta aplicação não dispensa a consulta dos documentos originais no <a href="https://diariodarepublica.pt/" target="_blank" rel="noopener noreferrer">Diário da República</a>.</p> <p>A aplicação é fornecida &quot;como está&quot;, sem garantias de exatidão, atualidade ou completude. Pode conter erros ou estar desatualizada.</p> <p>Esta aplicação destina-se apenas a apoio e consulta informativa.</p> <p>A utilização da informação fornecida, sem observar os pressupostos mencionados, é de inteira responsabilidade do utilizador.</p> <div class="legal-notice-version"><span>Versão</span><strong>1.5</strong></div> </div> </div>
