@@ -5963,56 +5963,6 @@ html.verix-low-power .verix-holo-scan{
  window.abrirModulo=function(nome,el){originalOpen.call(this,nome,el);if(nome==='legislacao'){setTimeout(ensureLegUI,0);}};
 
  
- window.filtrarLegislacao=function(valor,keepFav){
- const raw=String(valor??'');
- const q=searchNorm(raw);
- const tokens=searchTokens(raw);
- const favBtn=document.querySelector('.leg-search-fav'); const onlyFav=favBtn?.dataset.onlyFav==='1'; const favs=favSet();
- const panels=[...document.querySelectorAll('.leg-category-panel')]; const buttons=[...document.querySelectorAll('.leg-category-grid .leg-category')];
- let total=0,firstPanel=null,firstCard=null;
-
- const cardSearchText=c=>searchNorm([
- c.querySelector('h3')?.textContent||'',
- c.querySelector('.leg-code-box')?.textContent||'',
- c.querySelector('.leg-meta-grid')?.textContent||c.querySelector('.leg-meta')?.textContent||'',
- c.querySelector('.leg-description-new')?.textContent||'',
- c.textContent||''
- ].join(' '));
-
- const matches=(text)=>{
- if(!tokens.length) return true;
- // Todas as palavras pesquisadas têm de existir, mas a ordem não importa.
- return tokens.every(t=>text.includes(t));
- };
-
- panels.forEach(p=>{
- let found=0;
- p.querySelectorAll('.leg-card-new').forEach(c=>{
- const text=cardSearchText(c);
- const match=matches(text); const favOk=!onlyFav || favs.has(cardKey(c)); const ok=match&&favOk;
- c.style.display=ok?'':'none'; if(ok){found++;total++;if(!firstCard)firstCard=c;}
- });
- p.classList.toggle('open',!!q&&found>0);
- if(found&&!firstPanel)firstPanel=p;
- });
- buttons.forEach(b=>{
- const m=(b.getAttribute('onclick')||'').match(/alternarCategoriaLeg\('([^']+)'/);const target=m?document.getElementById(m[1]):null;const has=!!(target&&target.querySelector('.leg-card-new:not([style*="display: none"])'));
- b.style.display=(q||onlyFav)?(has?'':'none'):'';b.classList.toggle('active',(q||onlyFav)&&has);
- });
- const grid=document.querySelector('.leg-category-grid');if(grid)grid.style.display=(q||onlyFav)?(buttons.some(b=>b.style.display!=='none')?'':'none'):'';
- const intro=document.querySelector('.leg-intro-new');if(intro)intro.style.display=q||onlyFav?'none':'';
- const rc=document.getElementById('legResultCount');if(rc)rc.textContent=String(total);
- const rm=document.getElementById('legResultMode');if(rm)rm.textContent=onlyFav?'APENAS FAVORITOS':(q?'RESULTADOS DA PESQUISA':'TODAS AS INFRAÇÕES');
- if(q||onlyFav){
- const bc=document.getElementById('legBreadcrumb');if(bc){const txt=document.getElementById('legBreadcrumbText');txt.textContent=q?'PESQUISA: '+valor:(onlyFav?'FAVORITOS':'');bc.classList.add('show');}
- if(firstCard)setTimeout(()=>firstCard.scrollIntoView({behavior:'smooth',block:'nearest'}),60);
- }else{
- const bc=document.getElementById('legBreadcrumb');if(bc)bc.classList.remove('show');
- }
- if(!q&&!onlyFav) { panels.forEach(p=>p.querySelectorAll('.leg-card-new').forEach(c=>c.style.display='')); buttons.forEach(b=>{b.style.display='';b.classList.remove('active');}); if(grid)grid.style.display=''; }
- return total;
- };
-
  const originalToggle=window.alternarCategoriaLeg;
  window.alternarCategoriaLeg=function(id,botao){
  const panel=document.getElementById(id); if(!panel)return;
@@ -6056,7 +6006,7 @@ const normalize10=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'
 function expandedQuery10(v){let q=normalize10(v);Object.keys(alias).forEach(k=>{if(q.includes(normalize10(k)))q+=' '+normalize10(alias[k]);});return q;}
 
 // Improve the search matcher without changing the visible wording.
-const oldFilter=window.filtrarLegislacao;
+
 window.filtrarLegislacao=function(valor){
  const raw=String(valor??'');
  const q=expandedQuery10(raw);
