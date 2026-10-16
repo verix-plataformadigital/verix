@@ -1,9 +1,10 @@
 'use strict';
 
 /*
- * VÉRIX installability worker.
- * Network-only: no cache of HTML, scripts, styles, telemetry, vehicle lookups,
- * or responses from official authorities. The current update model stays authoritative.
+ * VÉRIX freshness worker.
+ * No Cache Storage is used. It only forces fresh network requests for page
+ * navigations and the deployment manifest. Other requests (including external
+ * insurance/IMT services and telemetry) keep their original browser behavior.
  */
 self.addEventListener('install', function(event) {
   event.waitUntil(self.skipWaiting());
@@ -14,6 +15,15 @@ self.addEventListener('activate', function(event) {
 });
 
 self.addEventListener('fetch', function(event) {
-  if (event.request.method !== 'GET') return;
-  event.respondWith(fetch(event.request));
+  const request = event.request;
+  if (request.method !== 'GET') return;
+
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return;
+
+  const isNavigation = request.mode === 'navigate';
+  const isReleaseManifest = url.pathname.endsWith('/version.json');
+  if (!isNavigation && !isReleaseManifest) return;
+
+  event.respondWith(fetch(request, { cache: 'no-store' }));
 });
