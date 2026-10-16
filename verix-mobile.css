@@ -264,7 +264,7 @@ body.vx-mobile-mode .vx-scroll-x{
     padding-top:58px!important;
   }
   #vxMobileTop,#vxMobileBar{display:flex}
-  body.vx-mobile-mode :is(main,section,article,aside,nav,.main,.shell,.content,.wrap,.panel,.card,.modal,.dialog,.grid,.toolbar,.topbar,.row){
+  body.vx-mobile-mode :is(main,section,article,aside,nav,.main,.content,.wrap,.panel,.card,.modal,.dialog,.grid,.toolbar,.row){
     max-width:100%!important;
   }
   body.vx-mobile-mode .grid{
