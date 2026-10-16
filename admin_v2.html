@@ -262,6 +262,76 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
  .error-tools #errorSearchCount{text-align:left}
  .table th,.table td{padding:8px 7px}
 }
+
+/* Usage page — hierarchy, compact chronology and readable chart labels */
+.usage-page-head{align-items:center}
+.usage-period-caption{flex:0 1 auto;max-width:360px;padding:8px 11px;border:1px solid #d8e5e8;border-radius:9px;background:#f8fbfc;color:#46616a;font-size:10px;line-height:1.45}
+.usage-kpis{margin-bottom:14px}
+.usage-kpis .card{min-height:112px;padding:16px}
+.usage-kpis .card .label{font-size:10px;line-height:1.35;letter-spacing:.55px;color:#586e76}
+.usage-kpis .card .value{font-size:clamp(26px,2.1vw,33px);margin-top:8px;font-variant-numeric:tabular-nums}
+.usage-kpis .card .note{font-size:10px;line-height:1.45;color:#53676e}
+.usage-hour-panel{margin-bottom:14px}
+.usage-hour-panel>.panel-head{align-items:flex-start;padding:15px 17px}
+.usage-hour-panel>.panel-head>span{flex:0 0 auto;padding:6px 8px;border:1px solid #d9e8eb;border-radius:7px;background:#f6fafb;color:#526b73;font-size:9px;font-weight:900}
+.usage-panel-copy{margin:4px 0 0;color:#64777e;font-size:10px;font-weight:400;line-height:1.45}
+.usage-hour-panel .panel-body{padding:16px}
+.hour-grid{gap:14px}
+.hourly-highlights{gap:12px;margin-bottom:14px}
+.hourly-highlight{padding:12px 14px;background:#f7fbfc;border-color:#d7e5e8}
+.hourly-highlight span{font-size:10px;letter-spacing:.35px}
+.hourly-highlight strong{font-size:17px;line-height:1.3}
+.hourly-highlight small{font-size:10px;line-height:1.45}
+.hourly-series-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;align-items:stretch}
+.hourly-series{min-width:0;padding:13px;border:1px solid #e0e9ec;border-radius:11px;background:#fcfefe}
+.hourly-series-head{display:block;margin-bottom:13px}
+.hourly-series-title{font-size:12px;color:#203b43}
+.hourly-series-subtitle{display:block;margin-top:4px;font-size:10px;line-height:1.45}
+.hourly-timeline-wrap{min-width:0;overflow-x:auto;padding:2px 0 8px;scrollbar-color:#a8c1c7 #f0f5f6;scrollbar-width:thin}
+.hourly-timeline{display:grid;grid-template-columns:repeat(var(--hour-count,24),minmax(0,1fr));gap:4px;align-items:end;min-width:620px}
+.hourly-bar-col{min-width:0;padding:0 1px;gap:6px}
+.hourly-bar-col.is-new-day{border-left:2px solid #9bbfc6;margin-left:2px;padding-left:5px}
+.hourly-bar-track{height:86px;padding:0 1px;background:linear-gradient(to top,rgba(221,233,236,.25) 1px,transparent 1px);background-size:100% 25%;border-bottom:1px solid #b8cbd0}
+.hourly-bar{width:100%;max-width:19px;min-width:4px;background:#078797;border-radius:4px 4px 1px 1px}
+.hourly-series.presence .hourly-bar{background:#4778ae}
+.hourly-bar-col.is-peak .hourly-bar{background:#173f49}
+.hourly-series.presence .hourly-bar-col.is-peak .hourly-bar{background:#244b7b}
+.hourly-hour{font-size:9px;min-height:13px;color:#344f57;font-variant-numeric:tabular-nums}
+.hour-note{margin:12px 0 0;font-size:10px;line-height:1.5;color:#405c64;border-left-color:#7ec7d0;background:#f6fbfc}
+.hourly-data{margin-top:12px}
+.hourly-data summary{padding:12px 0 3px;font-size:11px}
+.hourly-data .table th,.hourly-data .table td{font-size:11px;padding:9px 10px}
+.usage-detail-grid{gap:14px;align-items:stretch;margin-top:0}
+.usage-detail-grid>.panel{min-width:0}
+.usage-detail-grid .panel-head{align-items:flex-start;min-height:66px;padding:13px 16px}
+.usage-detail-grid .panel-head>span{flex:0 0 auto;padding:5px 7px;border-radius:7px;background:#f4f8f9;font-size:9px;color:#526b73;font-weight:850}
+.usage-detail-grid .panel-body{padding:16px;min-width:0}
+.usage-modules{gap:13px}
+.usage-modules .bar-row{grid-template-columns:minmax(100px,155px) minmax(70px,1fr) 55px;gap:10px}
+.usage-modules .bar-label{font-size:11px;line-height:1.3;color:#334d55;white-space:normal;overflow-wrap:anywhere}
+.usage-modules .track{height:11px;background:#edf3f4}
+.usage-modules .fill{background:linear-gradient(90deg,#54c8d3,#078c9b)}
+.usage-modules .num{font-size:11px;font-variant-numeric:tabular-nums}
+#usageDaily.chart{height:186px;gap:4px;padding:12px 4px 7px;align-items:flex-end;overflow:hidden}
+#usageDaily .chart-col{min-width:0;gap:7px;padding:0 1px}
+#usageDaily .chart-bar{width:100%;max-width:26px;border-radius:5px 5px 1px 1px;background:linear-gradient(180deg,#66cbd5,#078c9b)}
+#usageDaily .chart-label{font-size:9px;line-height:1.2;color:#526b73;transform:none;transform-origin:center;margin-top:1px;font-variant-numeric:tabular-nums}
+.usage-footnote{margin-top:14px;padding:11px 13px;border:1px solid #e0e8eb;border-radius:9px;background:#f7fafb;color:#596f76;font-size:10px;line-height:1.55}
+.usage-footnote strong{color:#27464f}
+@media(max-width:1280px){.hourly-series-grid{grid-template-columns:1fr}.hourly-timeline{min-width:700px}}
+@media(max-width:980px){.usage-period-caption{max-width:none}.usage-detail-grid{grid-template-columns:1fr}#usageDaily.chart{height:178px}}
+@media(max-width:650px){
+ .usage-page-head{align-items:flex-start}.usage-period-caption{font-size:10px;padding:7px 9px}
+ .usage-kpis .card{min-height:100px;padding:12px}.usage-kpis .card .value{font-size:25px}
+ .usage-hour-panel>.panel-head{gap:8px;padding:12px}.usage-hour-panel .panel-body{padding:10px}
+ .hourly-highlights{grid-template-columns:1fr;gap:8px}.hourly-highlight{padding:10px 12px}.hourly-highlight strong{font-size:15px}
+ .hourly-series{padding:10px}.hourly-timeline{min-width:690px}.hourly-bar-track{height:78px}
+ .usage-detail-grid .panel-head{padding:12px}.usage-detail-grid .panel-body{padding:12px}
+ .usage-modules{gap:12px}.usage-modules .bar-row{grid-template-columns:minmax(90px,120px) minmax(48px,1fr) 42px;gap:7px}
+ .usage-modules .bar-label,.usage-modules .num{font-size:10px}
+ #usageDaily.chart{height:156px;padding-left:0;padding-right:0;gap:3px}#usageDaily .chart-col{padding:0}#usageDaily .chart-label{font-size:8px}
+ .usage-footnote{font-size:10px}
+}
 </style>
 </head>
 <body>
@@ -466,14 +536,35 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
       </section>
 
       <section class="page" data-page="usage">
-        <div class="page-head"><div><h2>Utilização</h2><p>Quantas instalações usam o VÉRIX e como distribuem a utilização.</p></div></div>
-        <div class="grid g4" id="usageCards"></div>
-        <div class="grid g2" style="margin-top:12px">
-          <div class="panel"><div class="panel-head"><h3>MÓDULOS MAIS USADOS</h3><span>30 DIAS</span></div><div class="panel-body"><div id="usageModules" class="bar-list"></div></div></div>
-          <div class="panel"><div class="panel-head"><h3>CONSULTAS E UTILIZAÇÃO POR HORA</h3><span>ÚLTIMAS 24 H</span></div><div class="panel-body"><div id="usageHours" class="hour-grid"></div><div class="hour-note">Consultas = pedidos de seguro iniciados. Utilizadores ativos estimados = instalações distintas com uma interação real nessa hora (consulta, módulo ou ferramenta). Abrir o browser ou enviar heartbeat não conta; o número não identifica pessoas únicas.</div></div></div>
+        <div class="page-head usage-page-head">
+          <div><h2>Utilização</h2><p>Atividade, horários de maior movimento e módulos mais utilizados.</p></div>
+          <div class="usage-period-caption">Os indicadores gerais seguem o período selecionado no topo.</div>
         </div>
-        <div class="panel" style="margin-top:12px"><div class="panel-head"><h3>ATIVIDADE DIÁRIA</h3><span>30 DIAS</span></div><div id="usageDaily" class="chart"></div></div>
-        
+        <div class="grid g4 primary-kpis usage-kpis" id="usageCards"></div>
+        <div class="panel usage-hour-panel">
+          <div class="panel-head">
+            <div><h3>HORÁRIOS DE MAIOR MOVIMENTO</h3><p class="usage-panel-copy">Compara pedidos de seguro com instalações que tiveram atividade real em cada hora.</p></div>
+            <span>ÚLTIMAS 24 H</span>
+          </div>
+          <div class="panel-body"><div id="usageHours" class="hour-grid"></div></div>
+        </div>
+        <div class="grid g2 usage-detail-grid">
+          <div class="panel">
+            <div class="panel-head">
+              <div><h3>MÓDULOS MAIS UTILIZADOS</h3><p class="usage-panel-copy">Ordenados pelo volume de eventos registados.</p></div>
+              <span>ÚLTIMOS 30 DIAS</span>
+            </div>
+            <div class="panel-body"><div id="usageModules" class="bar-list usage-modules"></div></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <div><h3>EVOLUÇÃO DIÁRIA</h3><p class="usage-panel-copy">Instalações ativas por dia — útil para comparar dias de maior e menor movimento.</p></div>
+              <span>ÚLTIMOS 30 DIAS</span>
+            </div>
+            <div class="panel-body"><div id="usageDaily" class="chart" role="group" aria-label="Gráfico de instalações ativas por dia"></div></div>
+          </div>
+        </div>
+        <div class="usage-footnote"><strong>Como interpretar:</strong> os cartões respeitam o período selecionado no topo; os módulos e a evolução diária usam os últimos 30 dias. “Instalações ativas” é uma estimativa de instalações com interação, não uma contagem de pessoas únicas. “Ações registadas” inclui eventos de utilização, não apenas consultas.</div>
       </section>
 
       <section class="page" data-page="errors">
@@ -692,23 +783,31 @@ function applyPlateErrorSearch(){
  const empty=$('plateErrorSearchEmpty');if(empty)empty.classList.toggle('hidden',!(query&&rows.length>0&&matches===0));
 }
 function barList(id,rows,tone=''){const host=$(id);if(!host)return;if(!rows?.length){host.innerHTML='<div class="empty">Sem dados suficientes.</div>';return}const max=Math.max(1,...rows.map(x=>Number(x.value)||0));host.innerHTML=rows.slice(0,12).map(x=>'<div class="bar-row"><div class="bar-label" title="'+esc(x.label)+'">'+esc(x.label)+'</div><div class="track"><div class="fill '+tone+'" style="width:'+Math.max(2,(Number(x.value)||0)/max*100)+'%"></div></div><div class="num">'+fmt(x.value)+'</div></div>').join('')}
-function monthlyChart(id,rows,key){const host=$(id);if(!host)return;if(!rows?.length){host.innerHTML='<div class="empty" style="width:100%">Sem dados suficientes.</div>';return}const vals=rows.map(x=>Number(x[key]||0));const max=Math.max(1,...vals);host.setAttribute('role','group');host.setAttribute('aria-label','Atividade diária. Foca uma barra para consultar o dia e o valor.');host.innerHTML=rows.map((x,index)=>{const label=String(x.day_key||'');const value=fmt(x[key]||0);const unit=key==='users'?'instalações':key==='lookups'?'consultas':key;const showTick=index===0||index===rows.length-1||index%5===0;return '<div class="chart-col" tabindex="0" role="img" aria-label="'+esc(label+': '+value+' '+unit)+'" title="'+esc(label+' · '+value+' '+unit)+'"><div class="chart-bar" aria-hidden="true" style="height:'+Math.max(3,(Number(x[key]||0)/max)*100)+'%"></div><div class="chart-label" aria-hidden="true">'+(showTick?esc(label.slice(8)):'')+'</div></div>'}).join('')}
+function monthlyChart(id,rows,key){
+ const host=$(id);if(!host)return;
+ if(!rows?.length){host.innerHTML='<div class="empty" style="width:100%">Sem dados suficientes.</div>';return}
+ const max=Math.max(1,...rows.map(x=>Number(x[key]||0))),isUsage=id==='usageDaily';
+ host.setAttribute('role','group');host.setAttribute('aria-label','Atividade diária. Foca uma barra para consultar o dia e o valor.');
+ host.innerHTML=rows.map((x,index)=>{
+  const label=String(x.day_key||''),value=fmt(x[key]||0),unit=key==='users'?'instalações':key==='lookups'?'consultas':key;
+  const showTick=index===0||index===rows.length-1||index%5===0;
+  let tick=label.slice(8);
+  if(isUsage&&/^\d{4}-\d{2}-\d{2}$/.test(label)){const date=new Date(label+'T12:00:00');tick=new Intl.DateTimeFormat('pt-PT',{day:'2-digit',month:'short'}).format(date).replace('.','')}
+  return '<div class="chart-col" tabindex="0" role="img" aria-label="'+esc(label+': '+value+' '+unit)+'" title="'+esc(label+' · '+value+' '+unit)+'"><div class="chart-bar" aria-hidden="true" style="height:'+Math.max(3,(Number(x[key]||0)/max)*100)+'%"></div><div class="chart-label" aria-hidden="true">'+(showTick?esc(tick):'')+'</div></div>';
+ }).join('');
+}
 function hourGrid(id,rows){
  const host=$(id);if(!host)return;
  if(!Array.isArray(rows)||!rows.length){host.innerHTML='<div class="empty">Sem dados horários disponíveis.</div>';return}
  const asNumber=value=>{const n=Number(value||0);return Number.isFinite(n)?Math.max(0,n):0};
  const dateOf=x=>{if(!x?.bucket_start)return null;const date=new Date(x.bucket_start);return Number.isFinite(date.getTime())?date:null};
  const raw=rows.map(x=>({date:dateOf(x),consultations:asNumber(x.consultations),users:asNumber(x.active_users??x.users),actions:asNumber(x.actions),sessions:asNumber(x.sessions)})).filter(x=>x.date);
- if(!raw.length){
-  host.innerHTML='<div class="empty">O serviço ainda não enviou a data de cada hora. Atualiza o painel depois de concluída a atualização dos dados.</div>';
-  return;
- }
+ if(!raw.length){host.innerHTML='<div class="empty">O serviço ainda não enviou a data de cada hora. Atualiza o painel depois de concluída a atualização dos dados.</div>';return}
  raw.sort((a,b)=>a.date-b.date);
  const parts=(date,options,locale='pt-PT')=>new Intl.DateTimeFormat(locale,{timeZone:'Europe/Lisbon',...options}).formatToParts(date);
  const partMap=(date,options,locale='pt-PT')=>Object.fromEntries(parts(date,options,locale).map(x=>[x.type,x.value]));
  const dateKey=date=>{const p=partMap(date,{year:'numeric',month:'2-digit',day:'2-digit'},'en-GB');return p.year+'-'+p.month+'-'+p.day};
  const dateShort=date=>new Intl.DateTimeFormat('pt-PT',{timeZone:'Europe/Lisbon',day:'2-digit',month:'2-digit',year:'numeric'}).format(date);
- const dateLong=date=>new Intl.DateTimeFormat('pt-PT',{timeZone:'Europe/Lisbon',weekday:'long',day:'2-digit',month:'long',year:'numeric'}).format(date).replace(/^./,s=>s.toLocaleUpperCase('pt-PT'));
  const hourOf=date=>partMap(date,{hour:'2-digit',hourCycle:'h23'}).hour;
  const hourLabel=date=>hourOf(date)+'h';
  const exactTime=date=>new Intl.DateTimeFormat('pt-PT',{timeZone:'Europe/Lisbon',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(date);
@@ -719,36 +818,32 @@ function hourGrid(id,rows){
  const describeBucket=x=>dateShort(x.date)+' · '+displayHour(x)+' ('+hourOf(x.date)+':00–'+hourOf(x.date)+':59)';
  const peakFor=key=>raw.reduce((best,x)=>x[key]>best[key]?x:best,raw[0]);
  const peakConsult=peakFor('consultations'),peakActive=peakFor('users');
- const peakText=(item,key,suffix)=>item[key]>0?fmt(item[key])+' · '+dateShort(item.date)+' às '+displayHour(item):'Sem '+suffix;
- const peakConsultText=peakText(peakConsult,'consultations','consultas');
- const peakActiveText=peakText(peakActive,'users','atividade real');
+ const peakText=(item,suffix)=>item.consultations>0&&suffix==='consultas'?fmt(item.consultations)+' · '+dateShort(item.date)+' às '+displayHour(item):item.users>0&&suffix==='atividade real'?fmt(item.users)+' · '+dateShort(item.date)+' às '+displayHour(item):'Sem '+suffix;
+ const peakConsultText=peakText(peakConsult,'consultas'),peakActiveText=peakText(peakActive,'atividade real');
  const buildSeries=(key,title,subtitle,kind,peak,unit)=>{
   const max=Math.max(1,...raw.map(x=>x[key]));
-  const peakValue=peak[key];
-  const byDay=new Map();
-  raw.forEach(x=>{const k=dateKey(x.date);if(!byDay.has(k))byDay.set(k,[]);byDay.get(k).push(x)});
-  const dayGroups=[...byDay.values()].map(dayRows=>{
-   const bars=dayRows.map((x,index)=>{
-    const value=x[key],isPeak=value>0&&value===peakValue,barHeight=value>0?Math.max(3,(value/max)*100):0;
-    const detail=describeBucket(x)+' · '+fmt(value)+' '+unit;
-    const tick=index%3===0||index===dayRows.length-1?displayHour(x):'';
-    return '<div class="hourly-bar-col'+(isPeak?' is-peak':'')+'" tabindex="0" role="img" aria-label="'+esc(detail)+'" title="'+esc(detail)+'"><div class="hourly-bar-track"><span class="hourly-bar" aria-hidden="true" style="height:'+barHeight+'%"></span></div><span class="hourly-hour" aria-hidden="true">'+esc(tick)+'</span></div>';
-   }).join('');
-   return '<div class="hourly-day-group"><div class="hourly-day-heading"><span class="hourly-day-label">'+esc(dateLong(dayRows[0].date))+'</span><span class="hourly-day-count">'+dayRows.length+' blocos horários</span></div><div class="hourly-bars" role="group" aria-label="'+esc(title+' em '+dateShort(dayRows[0].date))+'">'+bars+'</div></div>';
+  const bars=raw.map((x,index)=>{
+   const value=x[key],isPeak=value>0&&value===peak[key],isNewDay=index>0&&dateKey(raw[index-1].date)!==dateKey(x.date);
+   const barHeight=value>0?Math.max(3,(value/max)*100):0,detail=describeBucket(x)+' · '+fmt(value)+' '+unit;
+   const tick=index%3===0||index===raw.length-1||isNewDay?displayHour(x):'';
+   const cls='hourly-bar-col'+(isPeak?' is-peak':'')+(isNewDay?' is-new-day':'');
+   return '<div class="'+cls+'" tabindex="0" role="img" aria-label="'+esc(detail)+'" title="'+esc(detail)+'"><div class="hourly-bar-track"><span class="hourly-bar" aria-hidden="true" style="height:'+barHeight+'%"></span></div><span class="hourly-hour" aria-hidden="true">'+esc(tick)+'</span></div>';
   }).join('');
-  return '<div class="hourly-series '+kind+'"><div class="hourly-series-head"><div><span class="hourly-series-title">'+title+'</span><span class="hourly-series-subtitle">'+subtitle+'</span></div><span class="hourly-series-peak">Pico: '+esc(peakValue>0?fmt(peakValue)+' · '+dateShort(peak.date)+' às '+displayHour(peak):'Sem movimento')+'</span></div>'+dayGroups+'</div>';
+  return '<div class="hourly-series '+kind+'"><div class="hourly-series-head"><span class="hourly-series-title">'+title+'</span><span class="hourly-series-subtitle">'+subtitle+'</span></div><div class="hourly-timeline-wrap"><div class="hourly-timeline" style="--hour-count:'+raw.length+'" role="group" aria-label="'+esc(title+' por hora')+'">'+bars+'</div></div></div>';
  };
  const dataRows=raw.map(x=>'<tr>'+td('<strong>'+esc(dateShort(x.date))+'</strong>')+td(esc(displayHour(x)))+td(fmt(x.consultations))+td(fmt(x.users))+'</tr>').join('');
  const rangeStart=raw[0].date,rangeEnd=raw[raw.length-1].date;
  host.innerHTML=
   '<div class="hourly-highlights">'+
    '<div class="hourly-highlight"><span>Pico de consultas</span><strong>'+esc(peakConsultText)+'</strong><small>Pedidos de consulta iniciados nessa hora.</small></div>'+
-   '<div class="hourly-highlight"><span>Pico de utilizadores ativos</span><strong>'+esc(peakActiveText)+'</strong><small>Instalações distintas com uma interação real nessa hora.</small></div>'+
+   '<div class="hourly-highlight"><span>Pico de instalações ativas estimadas</span><strong>'+esc(peakActiveText)+'</strong><small>Instalações distintas com uma interação real nessa hora.</small></div>'+
   '</div>'+
-  '<div class="hour-note">Cada grupo mostra a data a que pertencem as horas. Período dos registos: '+esc(dateShort(rangeStart)+' '+exactTime(rangeStart)+'–'+dateShort(rangeEnd)+' '+exactTime(rangeEnd))+'. O primeiro e o último bloco podem ser parciais.</div>'+
-  buildSeries('consultations','Consultas de seguro','Pedidos iniciados por hora.','consultations',peakConsult,'consultas')+
-  buildSeries('users','Utilizadores ativos (estimados)','Instalações com pelo menos uma interação real nessa hora.','presence',peakActive,'instalações ativas')+
-  '<details class="hourly-data"><summary>Ver valores exatos por data e hora</summary><div class="table-wrap"><table class="table"><thead><tr><th>Data</th><th>Hora</th><th>Consultas</th><th>Instalações ativas (estim.)</th></tr></thead><tbody>'+dataRows+'</tbody></table></div></details>';
+  '<div class="hourly-series-grid">'+
+   buildSeries('consultations','Consultas de seguro','Pedidos iniciados em cada hora.','consultations',peakConsult,'consultas')+
+   buildSeries('users','Instalações ativas','Instalações com uma interação real por hora.','presence',peakActive,'instalações ativas')+
+  '</div>'+
+  '<div class="hour-note">Período apresentado: '+esc(dateShort(rangeStart)+' '+exactTime(rangeStart)+' – '+dateShort(rangeEnd)+' '+exactTime(rangeEnd))+'. A linha vertical marca a mudança de dia. O primeiro e o último bloco podem ser parciais.</div>'+
+  '<details class="hourly-data"><summary>Mostrar tabela com os valores exatos</summary><div class="table-wrap"><table class="table"><thead><tr><th scope="col">Data</th><th scope="col">Hora</th><th scope="col">Consultas</th><th scope="col">Instalações ativas (estim.)</th></tr></thead><tbody>'+dataRows+'</tbody></table></div></details>';
 }
 function token(){return sessionStorage.getItem(TOKEN_KEY)||''}
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.remove('hidden');clearTimeout(window.__toastTimer);window.__toastTimer=setTimeout(()=>t.classList.add('hidden'),2200)}
@@ -1126,16 +1221,21 @@ function renderLegislation(d){
  barList('legActivity',act.map(x=>({label:x[0],value:x[1]})));
 }
 function renderUsage(d){
- const a=d.analytics||{},o=a.overview||{},r=a.retention||{},u=a.usage||{},s=u.sessions?.[currentPeriod]||{};
- $('usageCards').innerHTML=
-  card('INSTALAÇÕES',num(o['unique_'+currentPeriod]),'Instalações com atividade.','cyan')+
-  card('NOVOS',num(r[currentPeriod]?.new),'Primeira aparição no período.')+
-  card('INSTALAÇÕES QUE REGRESSARAM',num(r[currentPeriod]?.returning),'Já tinham aparecido antes.','green')+
-  card('AÇÕES REGISTADAS',num(o['events_'+currentPeriod]),'Eventos de utilização.');
- barList('usageModules',(u.modules||[]).map(x=>({label:x.module,value:x.qty})));
- hourGrid('usageHours',u.hourly||[]);
- monthlyChart('usageDaily',u.daily||[],'users');
-}
+  const a=d.analytics||{},o=a.overview||{},r=a.retention||{},u=a.usage||{};
+  $('usageCards').innerHTML=
+   card('INSTALAÇÕES',num(o['unique_'+currentPeriod]),'Instalações com atividade no período.','cyan')+
+   card('NOVAS INSTALAÇÕES',num(r[currentPeriod]?.new),'Primeira aparição no período selecionado.')+
+   card('INSTALAÇÕES RECORRENTES',num(r[currentPeriod]?.returning),'Já tinham aparecido antes.','green')+
+   card('AÇÕES REGISTADAS',num(o['events_'+currentPeriod]),'Eventos de utilização registados.');
+  const moduleLabels={consulta:'Consulta de seguro',legislacao:'Legislação',ferramentas:'Ferramentas',cinemometro:'Cinemómetro',alcoolexcel:'Tabela de álcool',codigosdistrito:'Códigos de distrito',definicoes:'Definições',informacoes:'Informações'};
+  const modules=(u.modules||[]).slice().sort((a,b)=>(Number(b.qty)||0)-(Number(a.qty)||0)).map(x=>{
+   const key=String(x.module||'').toLocaleLowerCase('pt-PT');
+   return {label:moduleLabels[key]||String(x.module||'Outro'),value:x.qty};
+  });
+  barList('usageModules',modules);
+  hourGrid('usageHours',u.hourly||[]);
+  monthlyChart('usageDaily',u.daily||[],'users');
+ }
 function renderErrors(d){
  const e=d.analytics?.errors||{},inv=d.investigation||{},q=period(),te=d.analytics?.telemetry||{};
  const appVersion=String(inv.current_app_version||d.current_app_version||"");
