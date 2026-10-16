@@ -550,3 +550,52 @@ body.vx-mobile-mode .vx-scroll-x{
     pointer-events:none!important;
   }
 }
+
+
+/* MOBILE VIEWPORT FIX
+   A perspectiva aplicada globalmente ao body faz com que elementos fixed usem
+   o body como bloco de referência. No layout mobile, cuja altura é automática,
+   isso pode cortar o aviso inicial e outros overlays ao tamanho do conteúdo.
+   O efeito 3D mantém-se no desktop. */
+@media (max-width:1199px){
+  html body{
+    perspective:none!important;
+    perspective-origin:initial!important;
+  }
+  .verix-asf-notice-overlay,
+  #opsBootOverlay,
+  #mainMenuScreen.vx-home-screen{
+    position:fixed!important;
+    inset:0!important;
+    width:100vw!important;
+    height:100vh!important;
+    height:100dvh!important;
+  }
+  .verix-asf-notice-overlay{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    box-sizing:border-box!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    padding:calc(12px + env(safe-area-inset-top,0px)) 10px calc(12px + env(safe-area-inset-bottom,0px))!important;
+    -webkit-overflow-scrolling:touch!important;
+    overscroll-behavior:contain!important;
+  }
+  .verix-asf-notice-overlay[aria-hidden="true"]{display:none!important;}
+  .verix-asf-notice-window{
+    flex:0 0 auto!important;
+    width:min(560px,100%)!important;
+    height:auto!important;
+    max-height:calc(100dvh - 24px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))!important;
+    min-height:0!important;
+  }
+  .verix-asf-notice-body{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    overscroll-behavior:contain!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+}
