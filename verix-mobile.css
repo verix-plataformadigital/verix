@@ -91,7 +91,7 @@ body.vx-mobile-mode .vx-scroll-x{
   z-index:2147482999;
   display:none;
   align-items:center;
-  
+
   padding:calc(7px + var(--vx-safe-top)) 10px 7px;
   min-height:52px;
   background:rgba(7,12,16,.94);
@@ -103,7 +103,7 @@ body.vx-mobile-mode .vx-scroll-x{
   flex:1;
   min-width:0;
   font:950 15px/1 Arial,Helvetica,sans-serif;
-  
+
   color:#fff;
 }
 #vxMobileTop .vx-brand b{color:#66dbe9}
@@ -116,7 +116,6 @@ body.vx-mobile-mode .vx-scroll-x{
   border-radius:11px;
   font-size:18px;
 }
-
 
 @media (max-width:767px){
   html,body,body.vx-mobile-mode{
@@ -144,23 +143,18 @@ body.vx-mobile-mode .vx-scroll-x{
     width:100%!important;height:auto!important;min-height:48px!important;
     padding:2px 4px 7px!important;
   }
-  
-  
+
   body.vx-mobile-mode .command .time{display:none!important}
 
   body.vx-mobile-mode .command .searchbar{
-    
-    
-    
-    
+
     padding:10px!important;
-    
+
   }
   body.vx-mobile-mode .command .searchbar form{
-    
-    
+
     gap:8px!important;
-    
+
   }
   body.vx-mobile-mode .command .field{
     width:100%!important;
@@ -197,7 +191,7 @@ body.vx-mobile-mode .vx-scroll-x{
     width:100%!important;height:auto!important;min-height:0!important;
     margin:10px 0 0!important;
     padding:0 10px!important;
-    
+
     grid-template-columns:minmax(0,1fr)!important;
     grid-auto-rows:auto!important;
     gap:10px!important;
@@ -264,25 +258,25 @@ body.vx-mobile-mode .vx-scroll-x{
     padding-top:58px!important;
   }
   #vxMobileTop,#vxMobileBar{display:flex}
-  body.vx-mobile-mode :is(main,section,article,aside,nav,.main,.content,.wrap,.panel,.card,.modal,.dialog,.grid,.toolbar,.row){
+  body.vx-mobile-mode:not(.main-menu-active) :is(main,section,article,aside,nav,.main,.content,.wrap,.panel,.card,.modal,.dialog,.grid,.toolbar,.row){
     max-width:100%!important;
   }
-  body.vx-mobile-mode :is(.grid){
+  body.vx-mobile-mode:not(.main-menu-active) :is(.grid){
     grid-template-columns:minmax(0,1fr)!important;
   }
-  body.vx-mobile-mode :is(.row,.toolbar){
+  body.vx-mobile-mode:not(.main-menu-active) :is(.row,.toolbar){
     flex-wrap:wrap!important;
   }
-  body.vx-mobile-mode :is(.sidebar,[class*="sidebar"],aside,[role="navigation"]){
+  body.vx-mobile-mode:not(.main-menu-active) :is(.sidebar,[class*="sidebar"],aside,[role="navigation"]){
     display:none!important;
   }
-  body.vx-mobile-mode :is(.main,[class*="main"]){
+  body.vx-mobile-mode:not(.main-menu-active) :is(.main,[class*="main"]){
     margin-left:0!important;
     width:100%!important;
     padding-left:10px!important;
     padding-right:10px!important;
   }
-  body.vx-mobile-mode :is(.modal,.dialog,[role="dialog"]){
+  body.vx-mobile-mode:not(.main-menu-active) :is(.modal,.dialog,[role="dialog"]){
     width:min(100% - 20px,520px)!important;
     max-height:calc(100dvh - 80px)!important;
     overflow:auto!important;
@@ -293,10 +287,10 @@ body.vx-mobile-mode .vx-scroll-x{
     padding-bottom:12px!important;
     padding-top:0!important;
   }
-  body.vx-mobile-mode :is(.grid){
+  body.vx-mobile-mode:not(.main-menu-active) :is(.grid){
     grid-template-columns:repeat(2,minmax(0,1fr))!important;
   }
-  body.vx-mobile-mode :is(.main,[class*="main"]){
+  body.vx-mobile-mode:not(.main-menu-active) :is(.main,[class*="main"]){
     margin-left:0!important;
     width:100%!important;
     padding-left:18px!important;
@@ -305,7 +299,7 @@ body.vx-mobile-mode .vx-scroll-x{
 }
 @media (orientation:landscape) and (max-width:767px){
   body.vx-mobile-mode{--vx-mobile-bar:58px}
-  body.vx-mobile-mode :is(.grid){
+  body.vx-mobile-mode:not(.main-menu-active) :is(.grid){
     grid-template-columns:repeat(2,minmax(0,1fr))!important;
   }
 }
@@ -348,7 +342,6 @@ body.vx-mobile-mode .vx-scroll-x{
     opacity:1!important;
   }
 }
-
 
 /* Mobile navigation and registration layout hotfix — high-specificity overrides
    for the legacy fixed-workspace rules that otherwise hide the plate search. */
@@ -440,7 +433,6 @@ body.vx-mobile-mode .vx-scroll-x{
     background:rgba(7,12,16,.97)!important;
   }
 }
-
 
 /* Mobile/tablet consultation stack: ASF first, then inspection, then vehicle document. */
 @media (max-width:1199px){
@@ -557,16 +549,4 @@ body.vx-mobile-mode .vx-scroll-x{
     visibility:hidden!important;
     pointer-events:none!important;
   }
-}
-
-
-/* VÉRIX home launcher — hide secondary mobile navigation while the main menu is open.
-   The new home screen already provides category navigation; keeping the mobile
-   header and shortcut bar visible here would create a second competing menu. */
-html body.main-menu-active #vxMobileTop,
-html body.main-menu-active #vxMobileBar,
-html body.main-menu-active #vxMobileOverlay{
-  display:none!important;
-  visibility:hidden!important;
-  pointer-events:none!important;
 }

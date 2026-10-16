@@ -118,9 +118,17 @@ function normalizeMobileLayout(root=document.body){
 
   // Work only within the changed layout region where possible. The previous
   // observer re-scanned every node in the document for each DOM mutation.
-  const all=root===document.body
+  const protectedFromNormalization=(el)=>{
+    if(!el || el.nodeType!==1) return false;
+    if(el.id==='mainMenuScreen') return true;
+    return !!(el.closest && el.closest('#mainMenuScreen,#vxMobileTop,#vxMobileBar,#vxMobileOverlay'));
+  };
+  // The launcher owns its responsive layout; do not inject inline overrides into it.
+  if(protectedFromNormalization(root)) return;
+  const all=(root===document.body
     ? [...root.querySelectorAll('*')]
-    : [root,...root.querySelectorAll('*')];
+    : [root,...root.querySelectorAll('*')]
+  ).filter(el=>!protectedFromNormalization(el));
   const patches=new Map();
   const patch=(el,prop,value)=>{
     if(el.style[prop]===value) return;
