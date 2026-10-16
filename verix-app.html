@@ -1716,7 +1716,7 @@ function submitConjunto(event) {
     var fim = formatarDataPT(valorCampo(n, ['endDate', 'validTo'], ''));
     var logo = valorCampo(n, ['logo'], '');
     var diasRestantes = calcularDiasRestantesASF(fim);
-    var validadeTexto = diasRestantes == null ? 'VALIDADE NÃO DETERMINADA' : (diasRestantes >= 0 ? ('VÁLIDO · ' + diasRestantes + ' ' + (diasRestantes === 1 ? 'DIA' : 'DIAS')) : ('EXPIRADO · ' + Math.abs(diasRestantes) + ' ' + (Math.abs(diasRestantes) === 1 ? 'DIA' : 'DIAS')));
+    var validadeTexto = diasRestantes == null ? 'DATA NÃO DISPONÍVEL' : (diasRestantes === 0 ? 'TERMINA HOJE' : (diasRestantes > 0 ? (diasRestantes + (diasRestantes === 1 ? ' DIA RESTANTE' : ' DIAS RESTANTES')) : ('EXPIRADO HÁ ' + Math.abs(diasRestantes) + (Math.abs(diasRestantes) === 1 ? ' DIA' : ' DIAS'))));
     var validadeClasse = diasRestantes == null ? 'unknown' : (diasRestantes >= 0 ? 'valid' : 'expired');
     var logoHtml = (logo && !/default\.png/i.test(logo))
       ? '<div class="asf-logo-wrap"><img class="asf-logo" src="' + escapeHtml(logo) + '" alt="" onerror="this.parentNode.style.display=\'none\'"></div>'
@@ -1725,12 +1725,12 @@ function submitConjunto(event) {
       + '<div class="asf-app asf-app-ok asf-operational-result">'
       +   '<div class="asf-success-hero">'
       +     '<div class="asf-success-badge">✓</div>'
-      +     '<div class="asf-success-copy"><div class="asf-success-title">SEGURO ATIVO</div><div class="asf-success-sub">REGISTO ENCONTRADO NO CANAL ASF · SITUAÇÃO OPERACIONAL</div></div>'
+      +     '<div class="asf-success-copy"><div class="asf-success-kicker">RESULTADO DA CONSULTA ASF</div><div class="asf-success-title">' + (diasRestantes == null ? 'REGISTO ENCONTRADO' : (diasRestantes < 0 ? 'SEGURO EXPIRADO' : (diasRestantes === 0 ? 'SEGURO VÁLIDO ATÉ HOJE' : 'SEGURO VÁLIDO'))) + '</div><div class="asf-success-sub">' + (diasRestantes == null ? 'REGISTO ENCONTRADO · VALIDADE POR CONFIRMAR' : (diasRestantes < 0 ? 'A DATA DE VALIDADE JÁ FOI ULTRAPASSADA' : (diasRestantes === 0 ? 'A DATA DE VALIDADE TERMINA HOJE' : 'REGISTO ASF ENCONTRADO · PRAZO EM VIGOR'))) + '</div></div>'
       +     '<div class="asf-success-plate"><span>' + escapeHtml(matShow) + '</span></div>'
       +   '</div>'
       +   '<div class="asf-operational-status ' + validadeClasse + '">'
-      +     '<div><span class="asf-op-kicker">SITUAÇÃO</span><strong>' + (diasRestantes != null && diasRestantes < 0 ? 'SEGURO EXPIRADO' : 'SEGURO VÁLIDO') + '</strong></div>'
-      +     '<div class="asf-op-validity"><span class="asf-op-kicker">VALIDADE</span><strong>' + escapeHtml(validadeTexto) + '</strong></div>'
+      +     '<div><span class="asf-op-kicker">SITUAÇÃO</span><strong>' + (diasRestantes == null ? 'VALIDADE POR CONFIRMAR' : (diasRestantes < 0 ? 'SEGURO EXPIRADO' : 'SEGURO VÁLIDO')) + '</strong></div>'
+      +     '<div class="asf-op-validity"><span class="asf-op-kicker">PRAZO DE VALIDADE</span><strong>' + escapeHtml(validadeTexto) + '</strong></div>'
       +   '</div>'
       +   '<div class="asf-detail-card asf-operational-card">'
       +     '<div class="asf-detail-head">' + logoHtml + '<div class="asf-detail-head-text"><span class="asf-detail-kicker">DADOS DO SEGURO</span><strong>' + escapeHtml(entity) + '</strong></div></div>'
@@ -1739,11 +1739,11 @@ function submitConjunto(event) {
       +       '<div class="asf-row asf-row-emphasis"><span class="k">APÓLICE</span><span class="v asf-mono">' + escapeHtml(policy) + '</span></div>'
       +       '<div class="asf-dates-grid">'
       +         '<div class="asf-date-box"><span class="k">INÍCIO</span><strong>' + escapeHtml(ini || '—') + '</strong></div>'
-      +         '<div class="asf-date-box valid"><span class="k">VÁLIDO ATÉ</span><strong>' + escapeHtml(fim || '—') + '</strong></div>'
+      +         '<div class="asf-date-box ' + validadeClasse + '"><span class="k">' + (diasRestantes == null ? 'VALIDADE' : (diasRestantes < 0 ? 'EXPIRADO EM' : (diasRestantes === 0 ? 'VÁLIDO ATÉ HOJE' : 'VÁLIDO ATÉ'))) + '</span><strong>' + escapeHtml(fim || '—') + '</strong></div>'
       +       '</div>'
       +     '</div>'
       +   '</div>'
-      +   '<div class="asf-operational-actions"><button type="button" class="aux-btn secondary" onclick="verificarSeguro()">CONSULTA OFICIAL ASF</button></div>'
+      +   '<div class="asf-operational-actions"><button type="button" class="aux-btn secondary" onclick="verificarSeguro()">ABRIR CONSULTA OFICIAL ASF</button></div>'
       +   '<div class="asf-note">Fonte: canal ASF · Confirme pelos meios oficiais da sua instituição</div>'
       + '</div>';
   }
@@ -18138,6 +18138,92 @@ html body #seguroResult .asf-app.asf-operational-result:has(.asf-operational-sta
   html body #seguroResult .asf-app.asf-app-ok * {animation:none!important;transition:none!important;}
 }
 /* Fim VÉRIX-ASF-GREEN-RELAYOUT-V3. */
+
+
+
+/* VÉRIX-ASF-OPERATIONAL-PRO-2026 — hierarquia operacional e estados coerentes */
+html body #seguroResult .asf-app.asf-app-ok{width:100%!important;max-width:620px!important;box-sizing:border-box!important;gap:9px!important;padding:9px!important;border:1px solid #b7ddc8!important;border-radius:14px!important;background:linear-gradient(155deg,#f5fcf7,#fff 58%,#edf9f1)!important;box-shadow:0 4px 16px rgba(0,91,51,.07)!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-success-hero{display:grid!important;grid-template-columns:42px minmax(0,1fr)!important;grid-template-rows:auto auto!important;align-items:center!important;gap:9px 11px!important;min-height:0!important;padding:14px!important;border:1px solid #08774b!important;border-left:5px solid #24d18a!important;border-radius:12px!important;background:linear-gradient(118deg,#064d33,#08774b 60%,#075437)!important;box-shadow:0 4px 10px rgba(0,91,54,.12)!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-success-badge{grid-column:1!important;grid-row:1!important;width:40px!important;height:40px!important;display:flex!important;align-items:center!important;justify-content:center!important;border:1px solid #c4f7dc!important;border-radius:11px!important;background:#e3fff0!important;color:#087448!important;font-size:24px!important;font-weight:950!important;box-shadow:none!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-success-copy{grid-column:2!important;grid-row:1!important;min-width:0!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-success-kicker{display:block!important;margin:0 0 4px!important;color:#a8efc9!important;font-size:8px!important;font-weight:900!important;line-height:1.2!important;letter-spacing:1.05px!important;text-transform:uppercase!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-success-title{color:#fff!important;font-size:clamp(17px,1.6vw,22px)!important;font-weight:950!important;letter-spacing:.1px!important;line-height:1.12!important;text-shadow:none!important;overflow-wrap:anywhere!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-success-sub{margin-top:4px!important;color:#d2f5e1!important;font-size:9px!important;line-height:1.4!important;font-weight:700!important;letter-spacing:.25px!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-success-plate{grid-column:1/-1!important;grid-row:2!important;justify-self:center!important;position:relative!important;display:flex!important;align-items:center!important;justify-content:center!important;box-sizing:border-box!important;width:min(100%,250px)!important;min-width:0!important;height:55px!important;margin:1px 0 0!important;padding:8px 12px 8px 43px!important;overflow:hidden!important;border:2px solid #27372e!important;border-radius:6px!important;background:linear-gradient(#fff,#f2f5f3)!important;box-shadow:0 2px 0 rgba(0,0,0,.18),inset 0 1px 0 #fff!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-success-plate:before{left:0!important;top:0!important;bottom:0!important;width:33px!important;height:auto!important;display:block!important;box-sizing:border-box!important;padding-top:6px!important;content:"★\A★ ★\A★ ★"!important;white-space:pre!important;text-align:center!important;line-height:10px!important;background:#164a94!important;color:#ffdb55!important;font-size:9px!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-success-plate:after{left:0!important;bottom:0!important;width:33px!important;height:12px!important;content:"P"!important;background:#164a94!important;color:#fff!important;font-size:8px!important;font-weight:950!important;line-height:11px!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-success-plate span{color:#14251c!important;font-size:22px!important;font-weight:950!important;letter-spacing:1.6px!important;white-space:nowrap!important;line-height:1!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-status{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;align-items:stretch!important;gap:10px!important;padding:11px 12px!important;border:1px solid #b9ddc8!important;border-left:4px solid #0a9258!important;border-radius:10px!important;background:#edf9f1!important;box-shadow:none!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-status:after{display:none!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-op-kicker{display:block!important;margin-bottom:4px!important;color:#47715b!important;font-size:8px!important;font-weight:900!important;letter-spacing:.75px!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-status strong{display:block!important;color:#075c38!important;font-size:11px!important;font-weight:950!important;line-height:1.35!important;overflow-wrap:anywhere!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-status .asf-op-validity{border-left:1px solid #c6e2d1!important;padding-left:11px!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-card{overflow:hidden!important;border:1px solid #cbded2!important;border-radius:11px!important;background:#fff!important;box-shadow:0 3px 10px rgba(0,67,37,.045)!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-card:before{height:3px!important;background:#07824f!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-card .asf-detail-head{display:flex!important;align-items:center!important;gap:10px!important;padding:11px 12px!important;border-bottom:1px solid #c5e3d0!important;background:#087047!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-card .asf-detail-kicker{display:block!important;color:#baf2d2!important;font-size:8px!important;letter-spacing:1.05px!important;font-weight:950!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-card .asf-detail-head-text strong{display:block!important;margin-top:3px!important;color:#fff!important;font-size:11px!important;line-height:1.4!important;font-weight:850!important;overflow-wrap:anywhere!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-card .asf-detail-head .asf-logo-wrap{flex-shrink:0!important;background:#fff!important;border:1px solid #c5e8d4!important;border-radius:8px!important;padding:5px!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-card .asf-detail-head .asf-logo{max-width:34px!important;max-height:34px!important;object-fit:contain!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-rows{display:flex!important;flex-direction:column!important;gap:0!important;background:#fff!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-rows>.asf-row-emphasis:first-child{display:none!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-rows>.asf-dates-grid{order:2!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;margin:9px!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-rows>.asf-row-emphasis:nth-child(2){order:3!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;padding:9px 12px!important;border-top:1px solid #d9eae0!important;border-bottom:0!important;background:#f4faf6!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-rows>.asf-row-emphasis:nth-child(2) .k{flex:0 0 25%!important;color:#52705f!important;font-size:8px!important;font-weight:900!important;letter-spacing:.65px!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-rows>.asf-row-emphasis:nth-child(2) .v{max-width:75%!important;color:#075c39!important;font:900 11px/1.35 ui-monospace,SFMono-Regular,Consolas,monospace!important;letter-spacing:.45px!important;overflow-wrap:anywhere!important;text-align:right!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-date-box{min-width:0!important;min-height:56px!important;box-sizing:border-box!important;padding:9px 10px!important;border:1px solid #d3e5da!important;border-radius:8px!important;background:#f7fbf8!important;box-shadow:none!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-date-box .k{display:block!important;color:#55715f!important;font-size:8px!important;font-weight:900!important;letter-spacing:.55px!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-date-box strong{display:block!important;margin-top:5px!important;color:#193d2a!important;font-size:13px!important;font-weight:950!important;overflow-wrap:anywhere!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-date-box.valid{border-color:#9bd2b0!important;background:#eaf8ef!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-date-box.valid strong{color:#087247!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-date-box.expired{border-color:#e7b5bd!important;background:#fff0f2!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-date-box.expired .k,
+html body #seguroResult .asf-app.asf-app-ok .asf-date-box.expired strong{color:#a51e32!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-date-box.unknown{border-color:#e5d19b!important;background:#fff8e6!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-date-box.unknown .k,
+html body #seguroResult .asf-app.asf-app-ok .asf-date-box.unknown strong{color:#77570a!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-actions{display:block!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-actions .aux-btn.secondary{display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;min-height:42px!important;padding:11px 15px!important;border:1px solid #046b40!important;border-radius:9px!important;background:#087448!important;color:#fff!important;font-size:10px!important;font-weight:950!important;letter-spacing:.35px!important;box-shadow:none!important}
+html body #seguroResult .asf-app.asf-app-ok .asf-note{padding:9px 11px!important;border:1px solid #d1e5d8!important;border-left:3px solid #168353!important;border-radius:8px!important;background:#f5faf7!important;color:#486553!important;font-size:9px!important;font-weight:700!important;line-height:1.45!important}
+html body #seguroResult .asf-app.asf-operational-result:has(.asf-operational-status.expired) .asf-success-hero{border-color:#c92c41!important;border-left-color:#f35b6d!important;background:linear-gradient(118deg,#811629,#b81f37 60%,#741126)!important}
+html body #seguroResult .asf-app.asf-operational-result:has(.asf-operational-status.expired) .asf-success-badge{border-color:#ffd9df!important;background:#ffe5e8!important;color:#a51e32!important}
+html body #seguroResult .asf-app.asf-operational-result:has(.asf-operational-status.expired) .asf-success-kicker,
+html body #seguroResult .asf-app.asf-operational-result:has(.asf-operational-status.expired) .asf-success-sub{color:#ffe0e5!important}
+html body #seguroResult .asf-app.asf-operational-result:has(.asf-operational-status.expired) .asf-operational-status{border-color:#e8b8c0!important;border-left-color:#c3263c!important;background:#fff0f2!important}
+html body #seguroResult .asf-app.asf-operational-result:has(.asf-operational-status.expired) .asf-operational-status strong{color:#a51e32!important}
+html body #seguroResult .asf-app.asf-operational-result:has(.asf-operational-status.unknown) .asf-success-hero{border-color:#d2a437!important;border-left-color:#e8b939!important;background:linear-gradient(118deg,#5d4a12,#806315 60%,#5d480e)!important}
+html body #seguroResult .asf-app.asf-operational-result:has(.asf-operational-status.unknown) .asf-success-badge{border-color:#fff0bd!important;background:#fff0bd!important;color:#6c5108!important}
+html body #seguroResult .asf-app.asf-operational-result:has(.asf-operational-status.unknown) .asf-success-kicker,
+html body #seguroResult .asf-app.asf-operational-result:has(.asf-operational-status.unknown) .asf-success-sub{color:#fff1c6!important}
+html body #seguroResult .asf-app.asf-operational-result:has(.asf-operational-status.unknown) .asf-operational-status{border-color:#e7d3a0!important;border-left-color:#c69a2d!important;background:#fff8e7!important}
+html body #seguroResult .asf-app.asf-operational-result:has(.asf-operational-status.unknown) .asf-operational-status strong{color:#725510!important}
+@media(max-width:560px){
+ html body #seguroResult .asf-app.asf-app-ok{padding:7px!important;gap:8px!important;border-radius:12px!important}
+ html body #seguroResult .asf-app.asf-app-ok .asf-success-hero{grid-template-columns:36px minmax(0,1fr)!important;gap:8px!important;padding:11px!important}
+ html body #seguroResult .asf-app.asf-app-ok .asf-success-badge{width:35px!important;height:35px!important;border-radius:10px!important;font-size:21px!important}
+ html body #seguroResult .asf-app.asf-app-ok .asf-success-kicker{font-size:7px!important;letter-spacing:.8px!important}
+ html body #seguroResult .asf-app.asf-app-ok .asf-success-title{font-size:16px!important;line-height:1.15!important}
+ html body #seguroResult .asf-app.asf-app-ok .asf-success-sub{font-size:8px!important;letter-spacing:.1px!important}
+ html body #seguroResult .asf-app.asf-app-ok .asf-success-plate{width:min(100%,230px)!important;height:50px!important;padding-left:39px!important}
+ html body #seguroResult .asf-app.asf-app-ok .asf-success-plate:before,
+ html body #seguroResult .asf-app.asf-app-ok .asf-success-plate:after{width:30px!important}
+ html body #seguroResult .asf-app.asf-app-ok .asf-success-plate span{font-size:19px!important;letter-spacing:1.1px!important}
+ html body #seguroResult .asf-app.asf-app-ok .asf-operational-status{gap:7px!important;padding:10px!important}
+ html body #seguroResult .asf-app.asf-app-ok .asf-op-kicker{font-size:7px!important;letter-spacing:.45px!important}
+ html body #seguroResult .asf-app.asf-app-ok .asf-operational-status strong{font-size:10px!important}
+ html body #seguroResult .asf-app.asf-app-ok .asf-operational-status .asf-op-validity{padding-left:8px!important}
+ html body #seguroResult .asf-app.asf-app-ok .asf-operational-card .asf-detail-head{padding:10px!important;gap:8px!important}
+ html body #seguroResult .asf-app.asf-app-ok .asf-operational-card .asf-detail-head-text strong{font-size:10px!important}
+ html body #seguroResult .asf-app.asf-app-ok .asf-rows>.asf-dates-grid{gap:6px!important;margin:8px!important}
+ html body #seguroResult .asf-app.asf-app-ok .asf-date-box{min-height:52px!important;padding:8px!important}
+ html body #seguroResult .asf-app.asf-app-ok .asf-date-box .k{font-size:7px!important;letter-spacing:.25px!important}
+ html body #seguroResult .asf-app.asf-app-ok .asf-date-box strong{font-size:12px!important}
+ html body #seguroResult .asf-app.asf-app-ok .asf-rows>.asf-row-emphasis:nth-child(2){padding:9px 10px!important}
+ html body #seguroResult .asf-app.asf-app-ok .asf-rows>.asf-row-emphasis:nth-child(2) .k{font-size:7px!important}
+ html body #seguroResult .asf-app.asf-app-ok .asf-rows>.asf-row-emphasis:nth-child(2) .v{font-size:10px!important}
+}
+@media(prefers-reduced-motion:reduce){html body #seguroResult .asf-app.asf-app-ok *{animation:none!important;transition:none!important}}
+/* Fim VÉRIX-ASF-OPERATIONAL-PRO-2026. */
 
 </style>
 </body>
