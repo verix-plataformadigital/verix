@@ -208,7 +208,57 @@ const nav=findNavigation();
 
 const top=document.createElement('div');
 top.id='vxMobileTop';
-top.innerHTML='<div class="vx-brand"><span class="verix-pt-flag" role="img" aria-label="Bandeira de Portugal"><svg viewBox="0 0 40 26" aria-hidden="true" focusable="false"><g fill="none" stroke="#f6cf4a" stroke-width="1.05"><circle cx="16" cy="13" r="7.1"/><path d="M16 5.9C12.7 8.5 12.7 17.5 16 20.1M16 5.9C19.3 8.5 19.3 17.5 16 20.1M9.2 13h13.6M10.3 9.1c3.7 2.1 7.7 2.1 11.4 0M10.3 16.9c3.7-2.1 7.7-2.1 11.4 0"/></g><path d="M11.8 7.8h8.4l-.7 7.1c-.4 2.3-2.4 3.6-3.5 4.1-1.1-.5-3.1-1.8-3.5-4.1z" fill="#fff9e8" stroke="#b7192a" stroke-width=".9"/><g fill="#064b9b"><path d="M15.4 9.1h1.2v1.5l-.6.35-.6-.35zM13.5 11.2h1.2v1.5l-.6.35-.6-.35zM17.3 11.2h1.2v1.5l-.6.35-.6-.35zM14.2 13.2h1.2v1.5l-.6.35-.6-.35zM16.6 13.2h1.2v1.5l-.6.35-.6-.35z"/></g><g fill="#fff"><circle cx="16" cy="9.8" r=".25"/><circle cx="14.1" cy="11.9" r=".25"/><circle cx="17.9" cy="11.9" r=".25"/><circle cx="14.8" cy="13.9" r=".25"/><circle cx="17.2" cy="13.9" r=".25"/></g></svg></span><span class="vx-brand-text">VÉRIX <b>///</b> MOBILE</span></div><button type="button" id="vxMobileBack" class="vx-mobile-back" aria-label="Voltar ao menu anterior" title="Voltar ao menu anterior"><span aria-hidden="true">←</span><span>Voltar</span></button><button type="button" id="vxMobileMenu" aria-label="Abrir menu">☰</button>';
+top.innerHTML='<div class="vx-brand"><span class="verix-pt-flag" role="img" aria-label="Bandeira de Portugal"><svg viewBox="0 0 78 52" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="verix-flag-fabric-mobile" x="-16%" y="-20%" width="132%" height="140%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.018 0.11" numOctaves="2" seed="7" result="fabricNoise">
+        <animate attributeName="baseFrequency" values="0.018 0.11;0.032 0.17;0.014 0.09;0.018 0.11" dur="5.2s" repeatCount="indefinite"/>
+      </feTurbulence>
+      <feDisplacementMap in="SourceGraphic" in2="fabricNoise" scale="5" xChannelSelector="R" yChannelSelector="G">
+        <animate attributeName="scale" values="3;9;5;11;3" dur="4.6s" repeatCount="indefinite"/>
+      </feDisplacementMap>
+    </filter>
+    <clipPath id="verix-flag-fabric-mobile-shape">
+      <path d="M0 7 C7 1 13 5 20 4 S33 2 39 5 S53 2 60 4 S72 2 78 5 L78 44 C70 49 63 43 55 46 S40 47 32 45 S16 49 8 45 L0 44 Z"/>
+    </clipPath>
+    <linearGradient id="verix-flag-fabric-mobile-metal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity=".30"/>
+      <stop offset=".25" stop-color="#fff" stop-opacity="0"/>
+      <stop offset=".58" stop-color="#06130d" stop-opacity=".22"/>
+      <stop offset=".78" stop-color="#fff" stop-opacity=".19"/>
+      <stop offset="1" stop-color="#000" stop-opacity=".25"/>
+      <animate attributeName="x1" values="0;1;0" dur="4.8s" repeatCount="indefinite"/>
+      <animate attributeName="x2" values="1;0;1" dur="4.8s" repeatCount="indefinite"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#verix-flag-fabric-mobile)">
+    <g clip-path="url(#verix-flag-fabric-mobile-shape)">
+      <rect width="78" height="52" fill="#ff0000"/>
+      <rect width="31.2" height="52" fill="#006600"/>
+      <g stroke="#f5d24d" stroke-width="1.05" fill="none" opacity=".98">
+        <circle cx="31.2" cy="26" r="13.1"/>
+        <ellipse cx="31.2" cy="26" rx="5.1" ry="13.1"/>
+        <ellipse cx="31.2" cy="26" rx="13.1" ry="5.0"/>
+        <path d="M19.4 19.9 Q31.2 26 43 19.9 M19.4 32.1 Q31.2 26 43 32.1 M31.2 12.9 V39.1"/>
+      </g>
+      <path d="M23.3 17.2 L39.1 17.2 L38.2 28.2 C37.6 33.1 33.9 36.2 31.2 37.6 C28.5 36.2 24.8 33.1 24.2 28.2 Z" fill="#fff8e7" stroke="#b11b2b" stroke-width="1.1"/>
+      <g fill="#0648a0" stroke="#fff" stroke-width=".45">
+        <path d="M30 20.1 h2.4 v3.2 l-1.2 .7 -1.2-.7z"/>
+        <path d="M26.3 23.1 h2.4 v3.2 l-1.2 .7 -1.2-.7z"/>
+        <path d="M34 23.1 h2.4 v3.2 l-1.2 .7 -1.2-.7z"/>
+        <path d="M30 25.3 h2.4 v3.2 l-1.2 .7 -1.2-.7z"/>
+        <path d="M30 29.1 h2.4 v3.2 l-1.2 .7 -1.2-.7z"/>
+      </g>
+      <g fill="#d9a326" stroke="#643d0e" stroke-width=".45">
+        <path d="M23.4 13.4 l2.2 2.1 -1.1 1.1 -2.2-2.1z"/>
+        <path d="M39.1 14 l-2.1 2.2 -1.2-1.1 2.1-2.2z"/>
+        <path d="M23 34.5 l2.3-2.1 1 1.2-2.1 2z"/>
+        <path d="M39.2 34.5 l-2.2-2 -1 1.2 2.1 2z"/>
+      </g>
+      <path d="M0 7 C7 1 13 5 20 4 S33 2 39 5 S53 2 60 4 S72 2 78 5 L78 44 C70 49 63 43 55 46 S40 47 32 45 S16 49 8 45 L0 44 Z" fill="url(#verix-flag-fabric-mobile-metal)"/>
+    </g>
+  </g>
+</svg></span><span class="vx-brand-text">VÉRIX <b>///</b> MOBILE</span></div><button type="button" id="vxMobileBack" class="vx-mobile-back" aria-label="Voltar ao menu anterior" title="Voltar ao menu anterior"><span aria-hidden="true">←</span><span>Voltar</span></button><button type="button" id="vxMobileMenu" aria-label="Abrir menu">☰</button>';
 document.body.appendChild(top);
 
 function syncMobileBackState(){
