@@ -4040,6 +4040,31 @@ html body #mainMenuScreen.vx-home-screen .vx-home-action,html body #mainMenuScre
 html body #mainMenuScreen.vx-home-screen .vx-home-action:hover,html body #mainMenuScreen.vx-home-screen .vx-home-action:active{transform:none!important}
 }
 
+
+/* Valores institucionais — assinatura visual no espaço central do rodapé. */
+html body #mainMenuScreen.vx-home-screen .vx-home-footer .vx-home-footer-motto{
+ display:flex!important;align-items:center!important;justify-content:center!important;gap:clamp(8px,1.4vw,18px)!important;
+ flex:1 1 auto!important;min-width:0!important;margin:0!important;padding:0 8px!important;
+ color:#e2ede6!important;font:850 12px/1.2 Inter,"Segoe UI",Arial,sans-serif!important;
+ letter-spacing:1.75px!important;text-align:center!important;white-space:nowrap!important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer .vx-home-footer-motto span{
+ color:#65dba0!important;font-size:15px!important;font-weight:950!important;
+ text-shadow:0 0 10px rgba(101,219,160,.20)!important;
+}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-footer .vx-home-footer-motto{color:#244d35!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-footer .vx-home-footer-motto span{color:#16834a!important;text-shadow:none!important}
+@media(max-width:760px){
+ html body #mainMenuScreen.vx-home-screen .vx-home-footer .vx-home-footer-motto{
+  order:3!important;flex:0 0 100%!important;justify-content:center!important;
+  padding:5px 0!important;font-size:10px!important;letter-spacing:1.05px!important;white-space:normal!important;
+ }
+ html body #mainMenuScreen.vx-home-screen .vx-home-footer .vx-home-footer-motto span{font-size:12px!important}
+}
+@media(max-width:380px){
+ html body #mainMenuScreen.vx-home-screen .vx-home-footer .vx-home-footer-motto{gap:7px!important;font-size:9px!important;letter-spacing:.65px!important}
+}
+
 /* Legenda de teclado do menu principal — discreta, responsiva e consistente. */
 html body #mainMenuScreen.vx-home-screen .vx-home-footer{flex-wrap:wrap!important;min-height:0!important;padding-top:8px!important;padding-bottom:6px!important}
 html body #mainMenuScreen.vx-home-screen .vx-home-shortcuts{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 100%!important;order:5!important;gap:clamp(12px,2vw,24px)!important;min-width:0!important;margin:1px 0 0!important;padding:8px 0 0!important;border-top:1px solid rgba(70,100,85,.34)!important}
@@ -4299,7 +4324,7 @@ html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-service-name{
 <button type="button" class="vx-home-action vx-home-action-secondary" data-vx-home-action="1" data-vx-home-group="support" aria-label="DEFINIÇÕES" onclick="abrirModulo('definicoes',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19 13.5a7.6 7.6 0 0 0 0-3l1.6-1.2-1.7-3-1.9.7a7 7 0 0 0-2.6-1.5L14 3.5h-4l-.4 2a7 7 0 0 0-2.6 1.5l-1.9-.7-1.7 3L5 10.5a7.6 7.6 0 0 0 0 3l-1.6 1.2 1.7 3 1.9-.7a7 7 0 0 0 2.6 1.5l.4 2h4l.4-2a7 7 0 0 0 2.6-1.5l1.9.7 1.7-3z"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">DEFINIÇÕES</span><span class="vx-home-action-description">Preferências e opções disponíveis da aplicação.</span></span><span class="vx-home-action-arrow" aria-hidden="true">↗</span></button>
       </div></section>
       </div>
-    <footer class="vx-home-footer"><div class="vx-home-footer-brand"><span class="vx-home-footer-dot" aria-hidden="true"></span><strong>VÉRIX</strong><span>APOIO OPERACIONAL</span></div><p>Confirma sempre a legislação e os dados nas fontes oficiais antes da utilização em serviço.</p><a class="vx-home-footer-contact" href="mailto:verix.plataformadigital@gmail.com?subject=V%C3%89RIX%20-%20Sugest%C3%A3o%20%2F%20Erro" aria-label="Contactar a equipa VÉRIX"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg><span>Contactar a equipa</span><b aria-hidden="true">↗</b></a>
+    <footer class="vx-home-footer"><div class="vx-home-footer-brand"><span class="vx-home-footer-dot" aria-hidden="true"></span><strong>VÉRIX</strong><span>APOIO OPERACIONAL</span></div><p class="vx-home-footer-motto" aria-label="Valores: Isenção, Firmeza e Cortesia">ISENÇÃO <span aria-hidden="true">*</span> FIRMEZA <span aria-hidden="true">*</span> CORTESIA</p><a class="vx-home-footer-contact" href="mailto:verix.plataformadigital@gmail.com?subject=V%C3%89RIX%20-%20Sugest%C3%A3o%20%2F%20Erro" aria-label="Contactar a equipa VÉRIX"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg><span>Contactar a equipa</span><b aria-hidden="true">↗</b></a>
   <span class="vx-home-footer-unofficial">NÃO OFICIAL</span><div class="vx-home-shortcuts" role="note" aria-label="Atalhos de teclado"><span class="vx-home-shortcut"><kbd>Esc</kbd><span>Voltar / fechar</span></span><span class="vx-home-shortcut"><kbd>Enter</kbd><span>Consultar / confirmar</span></span><span class="vx-home-shortcut"><kbd>Tab</kbd><span>Navegar</span></span></div></footer>
   </main>
 </div>
