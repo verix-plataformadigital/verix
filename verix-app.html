@@ -17912,6 +17912,233 @@ html body #seguroResult .asf-app.asf-app-warn .asf-status-card.warn .asf-status-
 }
 /* Fim da camada visual ASF — não altera consultas, resposta ASF ou histórico. */
 
+
+
+/* VÉRIX-ASF-GREEN-RELAYOUT-V3 — reorganização visual apenas; motor ASF intocado */
+html body #seguroResult .asf-app.asf-app-ok {
+  width:100%!important;max-width:620px!important;box-sizing:border-box!important;
+  gap:10px!important;padding:10px!important;border:1px solid #b5e8ce!important;
+  border-radius:16px!important;
+  background:linear-gradient(150deg,#e6fff0 0%,#f7fff9 48%,#e9fff2 100%)!important;
+  box-shadow:0 5px 18px rgba(0,112,65,.09),inset 0 0 0 1px rgba(255,255,255,.8)!important;
+}
+
+/* PRIMEIRO BLOCO: estado verde, mensagem em destaque e matrícula numa chapa maior, abaixo. */
+html body #seguroResult .asf-app.asf-app-ok .asf-success-hero {
+  display:grid!important;grid-template-columns:43px minmax(0,1fr)!important;
+  grid-template-rows:auto auto!important;align-items:center!important;
+  gap:10px 11px!important;min-height:0!important;padding:15px!important;
+  border:1px solid #08764b!important;border-left:5px solid #28e096!important;
+  border-radius:13px!important;
+  background:linear-gradient(125deg,#075537 0%,#08794b 60%,#064a31 100%)!important;
+  box-shadow:0 5px 12px rgba(0,93,55,.13),inset 0 1px 0 rgba(255,255,255,.14)!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-success-hero:before {
+  content:""!important;position:absolute!important;inset:0!important;z-index:-1!important;
+  pointer-events:none!important;background:linear-gradient(110deg,rgba(255,255,255,.06),transparent 58%)!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-success-badge {
+  grid-column:1!important;grid-row:1!important;width:41px!important;height:41px!important;
+  border-radius:12px!important;border:1px solid #b9ffdc!important;
+  background:linear-gradient(145deg,#effff7,#baf9d8)!important;color:#087447!important;
+  font-size:25px!important;font-weight:950!important;box-shadow:none!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-success-copy {
+  grid-column:2!important;grid-row:1!important;min-width:0!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-success-title {
+  color:#fff!important;font-size:clamp(17px,1.6vw,22px)!important;
+  font-weight:950!important;letter-spacing:.35px!important;line-height:1.12!important;text-shadow:none!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-success-sub {
+  margin-top:4px!important;color:#d1f9e4!important;font-size:9px!important;
+  line-height:1.45!important;font-weight:750!important;letter-spacing:.55px!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-success-plate {
+  grid-column:1/-1!important;grid-row:2!important;justify-self:center!important;align-self:center!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  position:relative!important;box-sizing:border-box!important;overflow:hidden!important;
+  width:min(100%,245px)!important;min-width:0!important;height:56px!important;
+  margin:1px 0 0!important;padding:8px 12px 8px 44px!important;
+  border:2px solid #1a3327!important;border-radius:7px!important;
+  background:linear-gradient(180deg,#fff 0%,#f1f5f2 100%)!important;
+  box-shadow:0 3px 0 rgba(0,0,0,.17),inset 0 1px 0 #fff!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-success-plate:before {
+  left:0!important;top:0!important;bottom:0!important;width:34px!important;height:auto!important;
+  display:block!important;box-sizing:border-box!important;padding-top:7px!important;
+  content:"★\A★ ★\A★ ★"!important;white-space:pre!important;text-align:center!important;
+  line-height:10px!important;background:#164a94!important;color:#ffdb55!important;font-size:9px!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-success-plate:after {
+  left:0!important;bottom:0!important;width:34px!important;height:12px!important;
+  content:"P"!important;background:#164a94!important;color:#fff!important;
+  font-size:8px!important;font-weight:950!important;line-height:11px!important;letter-spacing:.6px!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-success-plate span {
+  color:#14251c!important;font-size:22px!important;font-weight:950!important;
+  letter-spacing:1.8px!important;white-space:nowrap!important;line-height:1!important;
+}
+
+/* SEGUNDO BLOCO: a validade é apresentada como um resumo verde imediato. */
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-status {
+  display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  align-items:center!important;gap:10px!important;padding:12px 13px!important;
+  border:1px solid #9adbb9!important;border-left:4px solid #07975b!important;
+  border-radius:11px!important;background:linear-gradient(110deg,#cef8df,#eafff2 58%,#d8fbe6)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.95)!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-status:after {display:none!important;}
+html body #seguroResult .asf-app.asf-app-ok .asf-op-kicker {
+  display:block!important;margin-bottom:4px!important;color:#467361!important;
+  font-size:8px!important;font-weight:900!important;letter-spacing:1px!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-status strong {
+  display:block!important;color:#006a40!important;font-size:12px!important;
+  font-weight:950!important;line-height:1.3!important;overflow-wrap:anywhere!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-status .asf-op-validity {
+  border-left:1px solid #a9dfc1!important;padding-left:11px!important;
+}
+
+/* TERCEIRO BLOCO: seguradora num cabeçalho verde; removida a repetição do nome abaixo. */
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-card {
+  overflow:hidden!important;border:1px solid #b8e1cb!important;border-radius:12px!important;
+  background:#fff!important;box-shadow:0 4px 12px rgba(0,85,49,.055)!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-card:before {
+  height:3px!important;background:linear-gradient(90deg,#075b38,#0b9e61,#5adba0)!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-card .asf-detail-head {
+  display:flex!important;align-items:center!important;gap:11px!important;padding:13px!important;
+  border-bottom:1px solid #b8e6cb!important;
+  background:linear-gradient(110deg,#087249 0%,#075437 100%)!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-card .asf-detail-kicker {
+  display:block!important;color:#aaffd0!important;font-size:8px!important;
+  letter-spacing:1.1px!important;font-weight:950!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-card .asf-detail-head-text strong {
+  display:block!important;margin-top:3px!important;color:#fff!important;
+  font-size:11px!important;line-height:1.45!important;font-weight:850!important;overflow-wrap:anywhere!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-card .asf-detail-head .asf-logo-wrap {
+  flex-shrink:0!important;background:#fff!important;border:1px solid #c5e8d4!important;
+  border-radius:9px!important;padding:5px!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-card .asf-detail-head .asf-logo {
+  max-width:34px!important;max-height:34px!important;object-fit:contain!important;
+}
+
+/* Datas passam a surgir antes da apólice; não se repete "SEGURADORA" no corpo do cartão. */
+html body #seguroResult .asf-app.asf-app-ok .asf-rows {
+  display:flex!important;flex-direction:column!important;gap:0!important;background:#fff!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-rows > .asf-row-emphasis:first-child {display:none!important;}
+html body #seguroResult .asf-app.asf-app-ok .asf-rows > .asf-dates-grid {
+  order:2!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:8px!important;margin:10px!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-rows > .asf-row-emphasis:nth-child(2) {
+  order:3!important;display:flex!important;align-items:center!important;justify-content:space-between!important;
+  gap:10px!important;padding:10px 13px!important;border-top:1px solid #e0f0e6!important;
+  border-bottom:0!important;background:#f4fcf7!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-rows > .asf-row-emphasis:nth-child(2) .k {
+  flex:0 0 25%!important;color:#4d7964!important;font-size:8px!important;
+  font-weight:900!important;letter-spacing:.8px!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-rows > .asf-row-emphasis:nth-child(2) .v {
+  max-width:75%!important;color:#075c39!important;font-size:11px!important;
+  font-weight:900!important;overflow-wrap:anywhere!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-date-box {
+  min-width:0!important;min-height:58px!important;box-sizing:border-box!important;
+  padding:10px!important;border:1px solid #c8e8d5!important;border-radius:9px!important;
+  background:#f5fcf8!important;box-shadow:none!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-date-box .k {
+  display:block!important;color:#4d7964!important;font-size:8px!important;
+  font-weight:900!important;letter-spacing:.7px!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-date-box strong {
+  display:block!important;margin-top:5px!important;color:#153e2c!important;
+  font-size:13px!important;font-weight:950!important;overflow-wrap:anywhere!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-date-box.valid {
+  border-color:#84d2a9!important;background:linear-gradient(135deg,#d9fbe7,#edfff4)!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-date-box.valid strong {color:#007645!important;}
+
+/* Ação principal verde e aviso mais discreto. */
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-actions {display:block!important;}
+html body #seguroResult .asf-app.asf-app-ok .asf-operational-actions .aux-btn.secondary {
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  width:100%!important;min-height:42px!important;padding:11px 15px!important;
+  border:1px solid #047746!important;border-radius:10px!important;
+  background:linear-gradient(110deg,#098653,#00683f)!important;color:#fff!important;
+  font-size:10px!important;font-weight:950!important;letter-spacing:.4px!important;
+  box-shadow:0 4px 9px rgba(0,112,65,.14),inset 0 1px 0 rgba(255,255,255,.18)!important;
+}
+html body #seguroResult .asf-app.asf-app-ok .asf-note {
+  padding:10px 12px!important;border:1px solid #c7e8d5!important;border-left:3px solid #0a995c!important;
+  border-radius:9px!important;background:#f3fcf7!important;color:#426c56!important;
+  font-size:9px!important;font-weight:700!important;line-height:1.45!important;
+}
+
+/* Seguro expirado mantém deliberadamente a codificação vermelha — não confundir com seguro válido. */
+html body #seguroResult .asf-app.asf-operational-result:has(.asf-operational-status.expired) .asf-success-hero {
+  border-color:#ce3046!important;border-left-color:#f35a6e!important;
+  background:linear-gradient(120deg,#8f192c 0%,#c4243c 58%,#741126 100%)!important;
+  box-shadow:0 5px 13px rgba(157,24,46,.14)!important;
+}
+html body #seguroResult .asf-app.asf-operational-result:has(.asf-operational-status.expired) .asf-success-badge {
+  border-color:#ffd9df!important;background:#ffe4e8!important;color:#aa1d32!important;
+}
+html body #seguroResult .asf-app.asf-operational-result:has(.asf-operational-status.expired) .asf-success-sub {color:#ffe0e5!important;}
+html body #seguroResult .asf-app.asf-operational-result:has(.asf-operational-status.expired) .asf-operational-status {
+  border-color:#edb8c0!important;border-left-color:#cb263c!important;
+  background:linear-gradient(110deg,#ffe3e7,#fff1f3)!important;
+}
+html body #seguroResult .asf-app.asf-operational-result:has(.asf-operational-status.expired) .asf-operational-status strong {color:#a51e32!important;}
+html body #seguroResult .asf-app.asf-operational-result:has(.asf-operational-status.expired) .asf-date-box.valid {
+  border-color:#efb9c1!important;background:#fff0f2!important;
+}
+html body #seguroResult .asf-app.asf-operational-result:has(.asf-operational-status.expired) .asf-date-box.valid strong {color:#a51e32!important;}
+
+/* Responsivo: placa centrada, datas lado a lado e texto sem cortes em telemóveis. */
+@media(max-width:560px) {
+  html body #seguroResult .asf-app.asf-app-ok {padding:8px!important;gap:8px!important;border-radius:13px!important;}
+  html body #seguroResult .asf-app.asf-app-ok .asf-success-hero {
+    grid-template-columns:37px minmax(0,1fr)!important;gap:9px!important;padding:11px!important;
+  }
+  html body #seguroResult .asf-app.asf-app-ok .asf-success-badge {width:36px!important;height:36px!important;font-size:21px!important;border-radius:10px!important;}
+  html body #seguroResult .asf-app.asf-app-ok .asf-success-title {font-size:16px!important;}
+  html body #seguroResult .asf-app.asf-app-ok .asf-success-sub {font-size:8px!important;letter-spacing:.25px!important;}
+  html body #seguroResult .asf-app.asf-app-ok .asf-success-plate {width:min(100%,230px)!important;height:51px!important;padding-left:40px!important;}
+  html body #seguroResult .asf-app.asf-app-ok .asf-success-plate:before,
+  html body #seguroResult .asf-app.asf-app-ok .asf-success-plate:after {width:31px!important;}
+  html body #seguroResult .asf-app.asf-app-ok .asf-success-plate span {font-size:20px!important;letter-spacing:1.3px!important;}
+  html body #seguroResult .asf-app.asf-app-ok .asf-operational-status {gap:7px!important;padding:10px!important;}
+  html body #seguroResult .asf-app.asf-app-ok .asf-op-kicker {font-size:7px!important;letter-spacing:.7px!important;}
+  html body #seguroResult .asf-app.asf-app-ok .asf-operational-status strong {font-size:10px!important;}
+  html body #seguroResult .asf-app.asf-app-ok .asf-operational-status .asf-op-validity {padding-left:8px!important;}
+  html body #seguroResult .asf-app.asf-app-ok .asf-operational-card .asf-detail-head {padding:11px!important;gap:9px!important;}
+  html body #seguroResult .asf-app.asf-app-ok .asf-operational-card .asf-detail-head-text strong {font-size:10px!important;}
+  html body #seguroResult .asf-app.asf-app-ok .asf-rows > .asf-dates-grid {gap:6px!important;margin:8px!important;}
+  html body #seguroResult .asf-app.asf-app-ok .asf-date-box {min-height:53px!important;padding:8px!important;}
+  html body #seguroResult .asf-app.asf-app-ok .asf-date-box .k {font-size:7px!important;letter-spacing:.35px!important;}
+  html body #seguroResult .asf-app.asf-app-ok .asf-date-box strong {font-size:12px!important;}
+  html body #seguroResult .asf-app.asf-app-ok .asf-rows > .asf-row-emphasis:nth-child(2) {padding:9px 10px!important;}
+  html body #seguroResult .asf-app.asf-app-ok .asf-rows > .asf-row-emphasis:nth-child(2) .k {font-size:7px!important;}
+  html body #seguroResult .asf-app.asf-app-ok .asf-rows > .asf-row-emphasis:nth-child(2) .v {font-size:10px!important;}
+  html body #seguroResult .asf-app.asf-app-ok .asf-operational-actions .aux-btn.secondary {min-height:40px!important;}
+}
+@media(prefers-reduced-motion:reduce) {
+  html body #seguroResult .asf-app.asf-app-ok * {animation:none!important;transition:none!important;}
+}
+/* Fim VÉRIX-ASF-GREEN-RELAYOUT-V3. */
+
 </style>
 </body>
 </html>
