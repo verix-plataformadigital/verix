@@ -4089,7 +4089,7 @@ html body #vxMobileTop .vx-brand-text{position:relative!important;z-index:1!impo
 }
 </style>
 
-<style id="verix-main-menu-launcher-style-v6">
+<style id="verix-main-menu-launcher-style-v7">
 html body #mainMenuScreen.vx-home-screen{position:fixed!important;inset:0!important;z-index:1800!important;display:none!important;width:100vw!important;height:100dvh!important;margin:0!important;padding:0!important;overflow:hidden!important;box-sizing:border-box!important;color:#edf4f2!important;background:#071012!important;font-family:Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:normal!important}
 html body #mainMenuScreen.vx-home-screen.show{display:block!important;inset:0!important;overflow:hidden!important;background:#081315!important}
 html body #mainMenuScreen.vx-home-screen *{box-sizing:border-box}
@@ -4375,6 +4375,106 @@ html body #mainMenuScreen.vx-home-screen .vx-home-footer p{color:#9eb3ad!importa
  html body #mainMenuScreen.vx-home-screen .vx-home-action,html body #mainMenuScreen.vx-home-screen .vx-home-contact,html body #mainMenuScreen.vx-home-screen .vx-home-search,html body #mainMenuScreen.vx-home-screen .vx-home-action-cta,html body #mainMenuScreen.vx-home-screen .vx-home-action-arrow{transition:none!important}
  html body #mainMenuScreen.vx-home-screen .vx-home-action:hover,html body #mainMenuScreen.vx-home-screen .vx-home-contact:hover{transform:none!important}
 }
+
+/* VÉRIX v7 — brand-led masthead and contact action in the footer. */
+html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead{
+ position:relative!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;
+ flex:0 0 74px!important;min-height:74px!important;gap:0!important;padding:0 clamp(22px,3.2vw,50px)!important;
+ background:linear-gradient(110deg,#0c1a1d 0%,#0b1719 54%,#0b1718 100%)!important;
+ border-bottom:1px solid rgba(83,139,119,.31)!important;box-shadow:0 8px 24px rgba(0,0,0,.12)!important;
+ backdrop-filter:blur(14px)!important;-webkit-backdrop-filter:blur(14px)!important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead:before{
+ content:""!important;position:absolute!important;left:0!important;top:0!important;bottom:0!important;width:3px!important;
+ background:linear-gradient(180deg,#78e6ad 0%,#25835b 58%,rgba(37,131,91,0) 100%)!important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead:after{
+ content:""!important;position:absolute!important;left:0!important;right:0!important;bottom:-1px!important;height:1px!important;
+ background:linear-gradient(90deg,rgba(105,224,165,.8),rgba(56,147,112,.28) 38%,rgba(184,164,97,.14) 68%,transparent)!important;pointer-events:none!important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup{display:flex!important;align-items:center!important;gap:13px!important;min-width:0!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup .vx-home-brand-mark{
+ flex:0 0 43px!important;width:43px!important;height:43px!important;border-radius:12px!important;border:1px solid rgba(105,211,160,.58)!important;
+ background:linear-gradient(145deg,#194530,#10291f)!important;color:#bdf2d2!important;
+ box-shadow:0 0 0 4px rgba(73,174,122,.045),inset 0 1px 0 rgba(255,255,255,.09)!important;font-size:21px!important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-line{display:flex!important;align-items:center!important;gap:13px!important;min-width:0!important;white-space:nowrap!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-line h1{
+ margin:0!important;padding:0!important;color:#f3f8f5!important;font:850 18px/1 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:1.45px!important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-divider{
+ display:block!important;flex:0 0 1px!important;width:1px!important;height:25px!important;background:linear-gradient(180deg,transparent,#52746a 24%,#52746a 76%,transparent)!important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-service-name{color:#c7d9d0!important;font:600 14px/1.2 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:.08px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-body{padding-top:26px!important;padding-bottom:28px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-primary-arrow{
+ display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 32px!important;width:32px!important;height:32px!important;
+ margin-left:auto!important;border:1px solid rgba(94,171,130,.46)!important;border-radius:10px!important;background:rgba(7,23,20,.32)!important;
+ color:#b8ead0!important;font:700 17px/1 Arial,sans-serif!important;transition:transform .18s ease,border-color .18s ease,background .18s ease!important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2) .vx-home-primary-arrow{
+ border-color:rgba(192,170,92,.46)!important;background:rgba(29,26,17,.3)!important;color:#eddfa8!important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:hover .vx-home-primary-arrow{
+ transform:translate(2px,-1px)!important;border-color:#66c995!important;background:rgba(17,54,37,.68)!important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2):hover .vx-home-primary-arrow{
+ border-color:#c5ad62!important;background:rgba(68,57,26,.52)!important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer{
+ display:flex!important;align-items:center!important;gap:clamp(10px,1.4vw,20px)!important;flex:0 0 auto!important;min-height:62px!important;
+ padding:10px clamp(22px,3.2vw,50px)!important;background:linear-gradient(100deg,rgba(6,17,19,.97),rgba(8,19,21,.97))!important;
+ border-top:1px solid rgba(76,126,112,.3)!important;backdrop-filter:blur(12px)!important;-webkit-backdrop-filter:blur(12px)!important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-brand{flex:0 0 auto!important;gap:8px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer p{
+ flex:1 1 auto!important;margin:0!important;color:#91aaa2!important;font-size:9px!important;line-height:1.4!important;text-align:center!important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact{
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;flex:0 0 auto!important;
+ min-height:35px!important;padding:0 12px!important;border:1px solid rgba(82,149,115,.46)!important;border-radius:8px!important;
+ background:linear-gradient(135deg,rgba(22,57,41,.86),rgba(13,34,28,.94))!important;color:#c6e0d2!important;
+ text-decoration:none!important;font:700 10px/1 Arial,sans-serif!important;white-space:nowrap!important;
+ transition:transform .18s ease,border-color .18s ease,background .18s ease!important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact svg{width:15px!important;height:15px!important;flex:0 0 15px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact b{color:#91e0b4!important;font-size:12px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact:hover{
+ transform:translateY(-1px)!important;border-color:#65c995!important;background:linear-gradient(135deg,#1c4b35,#123327)!important;color:#f1faf5!important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-unofficial{flex:0 0 auto!important}
+@media(max-width:1120px){
+ html body #mainMenuScreen.vx-home-screen .vx-home-footer{gap:11px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-footer p{font-size:8px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact{padding:0 9px!important}
+}
+@media(max-width:760px){
+ html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead{
+  display:flex!important;align-items:center!important;justify-content:flex-start!important;flex:0 0 67px!important;min-height:67px!important;padding:0 16px!important;
+ }
+ html body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup{gap:10px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup .vx-home-brand-mark{flex-basis:38px!important;width:38px!important;height:38px!important;border-radius:10px!important;font-size:18px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-brand-line{gap:8px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-brand-line h1{font-size:15px!important;letter-spacing:.9px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-brand-divider{height:20px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-service-name{font-size:11px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-body{padding:18px 16px 20px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-footer{align-items:center!important;justify-content:space-between!important;flex-wrap:wrap!important;gap:9px!important;min-height:0!important;padding:11px 14px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-footer-brand{order:0!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact{order:1!important;min-height:33px!important;padding:0 9px!important;font-size:9px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-footer-unofficial{order:2!important;margin-left:auto!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-footer p{order:3!important;flex-basis:100%!important;text-align:left!important;font-size:8px!important}
+}
+@media(max-width:390px){
+ html body #mainMenuScreen.vx-home-screen .vx-home-brand-line{gap:6px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-brand-line h1{font-size:14px!important;letter-spacing:.6px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-service-name{font-size:10px!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact span{display:none!important}
+ html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact{width:35px!important;min-width:35px!important;padding:0!important}
+}
+@media(prefers-reduced-motion:reduce){
+ html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact,html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-primary-arrow{transition:none!important}
+}
 </style>
 </head><body>
 <script id="verix-splash-clock">(function(){try{window.__verixSplashStarted=performance.now();}catch(e){window.__verixSplashStarted=Date.now();}})();</script>
@@ -4478,111 +4578,32 @@ html body #mainMenuScreen.vx-home-screen .vx-home-footer p{color:#9eb3ad!importa
 <div id="mainMenuScreen" class="main-menu-screen vx-home-screen" aria-label="Menu principal">
 <div class="vx-home-shell">
   <main class="vx-home-main">
-    <header class="vx-home-topbar vx-home-masthead">
-  <div class="vx-home-brand-lockup" aria-label="VÉRIX — Apoio Operacional">
+    <header class="vx-home-topbar vx-home-masthead" aria-label="Cabeçalho VÉRIX"><div class="vx-home-brand-lockup" aria-label="VÉRIX — Apoio Operacional">
   <span class="vx-home-brand-mark" aria-hidden="true">V</span>
   <span class="vx-home-brand-line"><h1>VÉRIX</h1><span class="vx-home-brand-divider" aria-hidden="true"></span><span class="vx-home-service-name">Apoio Operacional</span></span>
-</div>
-  <span id="vxHomeResultCount" class="vx-home-result-status" role="status" aria-live="polite">8 ferramentas disponíveis</span>
-  <div class="vx-home-search" role="search"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg><input id="vxHomeSearch" type="search" autocomplete="off" spellcheck="false" aria-label="Pesquisar ferramentas do VÉRIX" placeholder="Pesquisar ferramentas…" /><kbd aria-hidden="true">/</kbd><button id="vxHomeSearchClear" type="button" aria-label="Limpar pesquisa" title="Limpar pesquisa" hidden>×</button></div>
-  <a class="vx-home-contact" href="mailto:verix.plataformadigital@gmail.com?subject=V%C3%89RIX%20-%20Sugest%C3%A3o%20%2F%20Erro" aria-label="Contactar a equipa VÉRIX"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg><span>Contactar a equipa</span><b aria-hidden="true">↗</b></a>
-</header>
+</div></header>
     <div class="vx-home-body">
       
       
       <section class="vx-home-group" data-vx-home-group-panel="primary" aria-label="Ferramentas principais"><div class="vx-home-primary-grid">
-<button type="button" class="vx-home-action vx-home-action-primary" data-vx-home-action="1" data-vx-home-group="primary" data-vx-home-search="fiscalizacao fiscalização viatura seguro automovel automóvel inspeção inspeções periodica periódica matricula matrícula asf imt" aria-label="FISCALIZAÇÃO" onclick="abrirConsultaPrincipal()"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 160 120" role="img"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M34 77h92l-5-27c-2-11-11-19-22-21H61c-11 2-20 10-22 21l-5 27Z"/><path d="M46 50h68l-7-12c-2-4-7-6-12-6H65c-5 0-10 2-12 6l-7 12Z"/><path d="M34 77h92"/><circle cx="51" cy="84" r="10"/><circle cx="109" cy="84" r="10"/><path d="M59 67h42"/><path d="M45 61h9m57 0h-9"/><path d="M75 36v14m10-14v14"/><rect x="69" y="26" width="22" height="7" rx="2"/><path d="M126 69h9m-9 8h9"/></g><circle cx="80" cy="60" r="54" opacity=".11"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">FISCALIZAÇÃO</span><span class="vx-home-action-description">Consultar seguro, inspeção e dados da viatura.</span></span><span class="vx-home-action-cta" aria-hidden="true">Abrir módulo&nbsp; ↗</span></button>
-<button type="button" class="vx-home-action vx-home-action-primary" data-vx-home-action="1" data-vx-home-group="primary" data-vx-home-search="cinemometro cinemómetro velocidade radar fiscalizacao fiscalização erro maximo admissivel ema" aria-label="CINEMÓMETRO" onclick="abrirModulo('cinemometro',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 160 120" role="img"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="78" cy="39" r="23"/><circle cx="78" cy="39" r="9"/><path d="M78 16v46m-23-23h46"/><path d="M61 58l-18 30h70L95 58"/><path d="M67 88l-5 18m27-18 5 18"/><path d="M43 88h68"/><path d="M29 18h18m-18 8h11M118 18h13m-13 8h20"/><path d="M112 50c10 3 17 9 21 18"/></g><circle cx="78" cy="39" r="50" opacity=".10"/><path d="M25 39h20" opacity=".25"/><path d="M111 39h20" opacity=".25"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">CINEMÓMETRO</span><span class="vx-home-action-description">Efetuar cálculos e verificações de velocidade.</span></span><span class="vx-home-action-cta" aria-hidden="true">Abrir módulo&nbsp; ↗</span></button>
+<button type="button" class="vx-home-action vx-home-action-primary" data-vx-home-action="1" data-vx-home-group="primary" aria-label="FISCALIZAÇÃO" onclick="abrirConsultaPrincipal()"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 160 120" role="img"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M34 77h92l-5-27c-2-11-11-19-22-21H61c-11 2-20 10-22 21l-5 27Z"/><path d="M46 50h68l-7-12c-2-4-7-6-12-6H65c-5 0-10 2-12 6l-7 12Z"/><path d="M34 77h92"/><circle cx="51" cy="84" r="10"/><circle cx="109" cy="84" r="10"/><path d="M59 67h42"/><path d="M45 61h9m57 0h-9"/><path d="M75 36v14m10-14v14"/><rect x="69" y="26" width="22" height="7" rx="2"/><path d="M126 69h9m-9 8h9"/></g><circle cx="80" cy="60" r="54" opacity=".11"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">FISCALIZAÇÃO</span><span class="vx-home-action-description">Consultar seguro, inspeção e dados da viatura.</span></span><span class="vx-home-action-arrow vx-home-primary-arrow" aria-hidden="true">↗</span></button>
+<button type="button" class="vx-home-action vx-home-action-primary" data-vx-home-action="1" data-vx-home-group="primary" aria-label="CINEMÓMETRO" onclick="abrirModulo('cinemometro',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 160 120" role="img"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="78" cy="39" r="23"/><circle cx="78" cy="39" r="9"/><path d="M78 16v46m-23-23h46"/><path d="M61 58l-18 30h70L95 58"/><path d="M67 88l-5 18m27-18 5 18"/><path d="M43 88h68"/><path d="M29 18h18m-18 8h11M118 18h13m-13 8h20"/><path d="M112 50c10 3 17 9 21 18"/></g><circle cx="78" cy="39" r="50" opacity=".10"/><path d="M25 39h20" opacity=".25"/><path d="M111 39h20" opacity=".25"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">CINEMÓMETRO</span><span class="vx-home-action-description">Efetuar cálculos e verificações de velocidade.</span></span><span class="vx-home-action-arrow vx-home-primary-arrow" aria-hidden="true">↗</span></button>
       </div></section>
       <section class="vx-home-group vx-home-secondary-group" data-vx-home-group-panel="support" aria-label="Ferramentas complementares"><div class="vx-home-secondary-grid">
-<button type="button" class="vx-home-action vx-home-action-secondary" data-vx-home-action="1" data-vx-home-group="support" data-vx-home-search="legislacao legislação infracoes infrações artigos codigo da estrada código da estrada coimas dr" aria-label="LEGISLAÇÃO" onclick="abrirModulo('legislacao',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5h10.5A3.5 3.5 0 0 1 19 8v11H8a3 3 0 0 1-3-3z"/><path d="M8 4.5v11.8A2.7 2.7 0 0 0 10.7 19M9 8h6M9 11h6M9 14h4"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">LEGISLAÇÃO</span><span class="vx-home-action-description">Pesquisar infrações, artigos e enquadramentos legais.</span></span><span class="vx-home-action-arrow" aria-hidden="true">↗</span></button>
-<button type="button" class="vx-home-action vx-home-action-secondary" data-vx-home-action="1" data-vx-home-group="support" data-vx-home-search="alcool álcool alcoolemia deducoes deduções taxa sangue ar expirado" aria-label="ÁLCOOL / DEDUÇÕES" onclick="abrirModulo('alcoolExcel',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v5l-4.2 7.1A3.8 3.8 0 0 0 9.1 21h5.8a3.8 3.8 0 0 0 3.3-5.9L14 8V3"/><path d="M7.8 15h8.4M10 12h4"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">ÁLCOOL / DEDUÇÕES</span><span class="vx-home-action-description">Consultar tabelas de alcoolemia e cálculos de deduções.</span></span><span class="vx-home-action-arrow" aria-hidden="true">↗</span></button>
-<button type="button" class="vx-home-action vx-home-action-secondary" data-vx-home-action="1" data-vx-home-group="support" data-vx-home-search="codigos códigos distrito matricula matrícula portugal" aria-label="CÓDIGOS DISTRITO" onclick="abrirModulo('codigosDistrito',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3 6.5 21M17.5 3 15 21M3 9h18M2 15h18"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">CÓDIGOS DISTRITO</span><span class="vx-home-action-description">Identificar o distrito através dos códigos de matrícula.</span></span><span class="vx-home-action-arrow" aria-hidden="true">↗</span></button>
-<button type="button" class="vx-home-action vx-home-action-secondary" data-vx-home-action="1" data-vx-home-group="support" data-vx-home-search="ferramentas utilitarios utilitários calculadora conversor apoio" aria-label="FERRAMENTAS" onclick="abrirModulo('ferramentas',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 6.2a4 4 0 0 0-5.3 5.3L3.8 17a2 2 0 0 0 2.9 2.9l5.5-5.4a4 4 0 0 0 5.3-5.3l-2.4 2.4-3-3z"/><path d="m14 14 5.8 5.8"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">FERRAMENTAS</span><span class="vx-home-action-description">Utilitários complementares de apoio ao serviço.</span></span><span class="vx-home-action-arrow" aria-hidden="true">↗</span></button>
-<button type="button" class="vx-home-action vx-home-action-secondary" data-vx-home-action="1" data-vx-home-group="support" data-vx-home-search="informacoes informações ajuda instrucoes instruções funcionamento" aria-label="INFORMAÇÕES" onclick="abrirModulo('informacoes',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 10.5v5M12 7.5h.01"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">INFORMAÇÕES</span><span class="vx-home-action-description">Ajuda de utilização e informação sobre a plataforma.</span></span><span class="vx-home-action-arrow" aria-hidden="true">↗</span></button>
-<button type="button" class="vx-home-action vx-home-action-secondary" data-vx-home-action="1" data-vx-home-group="support" data-vx-home-search="definicoes definições preferencias preferências configuracao configuração" aria-label="DEFINIÇÕES" onclick="abrirModulo('definicoes',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19 13.5a7.6 7.6 0 0 0 0-3l1.6-1.2-1.7-3-1.9.7a7 7 0 0 0-2.6-1.5L14 3.5h-4l-.4 2a7 7 0 0 0-2.6 1.5l-1.9-.7-1.7 3L5 10.5a7.6 7.6 0 0 0 0 3l-1.6 1.2 1.7 3 1.9-.7a7 7 0 0 0 2.6 1.5l.4 2h4l.4-2a7 7 0 0 0 2.6-1.5l1.9.7 1.7-3z"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">DEFINIÇÕES</span><span class="vx-home-action-description">Preferências e opções disponíveis da aplicação.</span></span><span class="vx-home-action-arrow" aria-hidden="true">↗</span></button>
+<button type="button" class="vx-home-action vx-home-action-secondary" data-vx-home-action="1" data-vx-home-group="support" aria-label="LEGISLAÇÃO" onclick="abrirModulo('legislacao',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5h10.5A3.5 3.5 0 0 1 19 8v11H8a3 3 0 0 1-3-3z"/><path d="M8 4.5v11.8A2.7 2.7 0 0 0 10.7 19M9 8h6M9 11h6M9 14h4"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">LEGISLAÇÃO</span><span class="vx-home-action-description">Pesquisar infrações, artigos e enquadramentos legais.</span></span><span class="vx-home-action-arrow" aria-hidden="true">↗</span></button>
+<button type="button" class="vx-home-action vx-home-action-secondary" data-vx-home-action="1" data-vx-home-group="support" aria-label="ÁLCOOL / DEDUÇÕES" onclick="abrirModulo('alcoolExcel',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v5l-4.2 7.1A3.8 3.8 0 0 0 9.1 21h5.8a3.8 3.8 0 0 0 3.3-5.9L14 8V3"/><path d="M7.8 15h8.4M10 12h4"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">ÁLCOOL / DEDUÇÕES</span><span class="vx-home-action-description">Consultar tabelas de alcoolemia e cálculos de deduções.</span></span><span class="vx-home-action-arrow" aria-hidden="true">↗</span></button>
+<button type="button" class="vx-home-action vx-home-action-secondary" data-vx-home-action="1" data-vx-home-group="support" aria-label="CÓDIGOS DISTRITO" onclick="abrirModulo('codigosDistrito',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3 6.5 21M17.5 3 15 21M3 9h18M2 15h18"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">CÓDIGOS DISTRITO</span><span class="vx-home-action-description">Identificar o distrito através dos códigos de matrícula.</span></span><span class="vx-home-action-arrow" aria-hidden="true">↗</span></button>
+<button type="button" class="vx-home-action vx-home-action-secondary" data-vx-home-action="1" data-vx-home-group="support" aria-label="FERRAMENTAS" onclick="abrirModulo('ferramentas',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 6.2a4 4 0 0 0-5.3 5.3L3.8 17a2 2 0 0 0 2.9 2.9l5.5-5.4a4 4 0 0 0 5.3-5.3l-2.4 2.4-3-3z"/><path d="m14 14 5.8 5.8"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">FERRAMENTAS</span><span class="vx-home-action-description">Utilitários complementares de apoio ao serviço.</span></span><span class="vx-home-action-arrow" aria-hidden="true">↗</span></button>
+<button type="button" class="vx-home-action vx-home-action-secondary" data-vx-home-action="1" data-vx-home-group="support" aria-label="INFORMAÇÕES" onclick="abrirModulo('informacoes',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 10.5v5M12 7.5h.01"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">INFORMAÇÕES</span><span class="vx-home-action-description">Ajuda de utilização e informação sobre a plataforma.</span></span><span class="vx-home-action-arrow" aria-hidden="true">↗</span></button>
+<button type="button" class="vx-home-action vx-home-action-secondary" data-vx-home-action="1" data-vx-home-group="support" aria-label="DEFINIÇÕES" onclick="abrirModulo('definicoes',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19 13.5a7.6 7.6 0 0 0 0-3l1.6-1.2-1.7-3-1.9.7a7 7 0 0 0-2.6-1.5L14 3.5h-4l-.4 2a7 7 0 0 0-2.6 1.5l-1.9-.7-1.7 3L5 10.5a7.6 7.6 0 0 0 0 3l-1.6 1.2 1.7 3 1.9-.7a7 7 0 0 0 2.6 1.5l.4 2h4l.4-2a7 7 0 0 0 2.6-1.5l1.9.7 1.7-3z"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">DEFINIÇÕES</span><span class="vx-home-action-description">Preferências e opções disponíveis da aplicação.</span></span><span class="vx-home-action-arrow" aria-hidden="true">↗</span></button>
       </div></section>
-      <div class="vx-home-empty" id="vxHomeEmpty" hidden><strong>Não encontrámos ferramentas</strong><p>Tenta outro termo ou limpa a pesquisa.</p><button type="button" id="vxHomeReset">Limpar pesquisa</button></div>
-    </div>
-    <footer class="vx-home-footer"><div class="vx-home-footer-brand"><span class="vx-home-footer-dot" aria-hidden="true"></span><strong>VÉRIX</strong><span>APOIO OPERACIONAL</span></div><p>Confirma sempre a legislação e os dados nas fontes oficiais antes da utilização em serviço.</p><span class="vx-home-footer-unofficial">NÃO OFICIAL</span></footer>
+      </div>
+    <footer class="vx-home-footer"><div class="vx-home-footer-brand"><span class="vx-home-footer-dot" aria-hidden="true"></span><strong>VÉRIX</strong><span>APOIO OPERACIONAL</span></div><p>Confirma sempre a legislação e os dados nas fontes oficiais antes da utilização em serviço.</p><a class="vx-home-footer-contact" href="mailto:verix.plataformadigital@gmail.com?subject=V%C3%89RIX%20-%20Sugest%C3%A3o%20%2F%20Erro" aria-label="Contactar a equipa VÉRIX"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg><span>Contactar a equipa</span><b aria-hidden="true">↗</b></a>
+  <span class="vx-home-footer-unofficial">NÃO OFICIAL</span></footer>
   </main>
 </div>
-<script id="verix-main-menu-launcher-script-v6">
-(function(){
-  'use strict';
-  var root=document.getElementById('mainMenuScreen');
-  if(!root||root.getAttribute('data-vx-launcher-bound')==='1') return;
-  root.setAttribute('data-vx-launcher-bound','1');
-  var input=root.querySelector('#vxHomeSearch');
-  var clearButton=root.querySelector('#vxHomeSearchClear');
-  var resetButton=root.querySelector('#vxHomeReset');
-  var resultCount=root.querySelector('#vxHomeResultCount');
-  var emptyState=root.querySelector('#vxHomeEmpty');
-  var actions=Array.prototype.slice.call(root.querySelectorAll('[data-vx-home-action]'));
-  var filters=Array.prototype.slice.call(root.querySelectorAll('[data-vx-home-filter]'));
-  var panels=Array.prototype.slice.call(root.querySelectorAll('[data-vx-home-group-panel]'));
-  var activeFilter='all';
-  function normalise(value){
-    return String(value||'').toLocaleLowerCase('pt-PT').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
-  }
-  function applyFilters(){
-    var query=normalise(input?input.value:'');
-    var shown=0;
-    actions.forEach(function(action){
-      var group=action.getAttribute('data-vx-home-group');
-      var searchable=normalise((action.textContent||'')+' '+(action.getAttribute('data-vx-home-search')||''));
-      var visible=(activeFilter==='all'||activeFilter===group)&&(!query||searchable.indexOf(query)!==-1);
-      action.hidden=!visible;
-      if(visible) shown++;
-    });
-    panels.forEach(function(panel){
-      var panelGroup=panel.getAttribute('data-vx-home-group-panel');
-      var any=actions.some(function(action){return !action.hidden&&action.getAttribute('data-vx-home-group')===panelGroup;});
-      panel.hidden=!any;
-    });
-    if(resultCount) resultCount.textContent=shown===1?'1 ferramenta':(shown+' ferramentas');
-    if(emptyState) emptyState.hidden=shown!==0;
-    if(clearButton) clearButton.hidden=!(input&&input.value);
-    filters.forEach(function(filter){
-      var selected=filter.getAttribute('data-vx-home-filter')===activeFilter;
-      filter.classList.toggle('is-active',selected);
-      filter.setAttribute('aria-pressed',selected?'true':'false');
-    });
-  }
-  filters.forEach(function(filter){
-    filter.addEventListener('click',function(){
-      activeFilter=filter.getAttribute('data-vx-home-filter')||'all';
-      applyFilters();
-    });
-  });
-  if(input){
-    input.addEventListener('input',applyFilters);
-    input.addEventListener('keydown',function(event){
-      if(event.key==='Escape'){
-        if(input.value){input.value='';applyFilters();event.preventDefault();}
-        else input.blur();
-      }else if(event.key==='Enter'){
-        var visible=actions.filter(function(action){return !action.hidden;});
-        if(visible.length===1){visible[0].click();event.preventDefault();}
-      }
-    });
-  }
-  function clearSearch(){
-    if(input){input.value='';activeFilter='all';applyFilters();input.focus();}
-  }
-  if(clearButton) clearButton.addEventListener('click',clearSearch);
-  if(resetButton) resetButton.addEventListener('click',clearSearch);
-  document.addEventListener('keydown',function(event){
-    if(!root.classList.contains('show')) return;
-    var target=event.target;
-    var tag=target&&target.tagName?target.tagName.toLowerCase():'';
-    var isTyping=tag==='input'||tag==='textarea'||tag==='select'||(target&&target.isContentEditable);
-    if(event.key==='/'&&!isTyping&&input){event.preventDefault();input.focus();}
-  });
-  applyFilters();
-})();
-</script>
 </div>
+
 
 <div id="moduleOverlay" class="module-overlay" onclick="fecharModuloFora(event)"> <div class="module-window"> <div class="module-top"><div><div id="moduleTitle" class="module-title">MÓDULO OPERACIONAL</div><div id="moduleSub" class="module-sub">VÉRIX // OPERAÇÕES</div></div><button class="module-close" onclick="fecharModulo()">×</button></div> <div id="moduleBody" class="module-body"></div> </div>
 </div>
