@@ -6911,7 +6911,7 @@ html body.fixed-workspace-active:not(.cinemometro-page-active) .time{
  // Não envolve nem substitui abrirModulo. A navegação fica a cargo da função base e dos patches estáveis anteriores.
  // Apenas garante que o estado visual do módulo não herda classes antigas.
  document.addEventListener('click', function(e){
- const btn=e.target && e.target.closest && e.target.closest('.mm74-card');
+ const btn=e.target && e.target.closest && e.target.closest('.vx-home-action');
  if(!btn) return;
  const ov=document.getElementById('moduleOverlay');
  const win=ov && ov.querySelector('.module-window');
@@ -6998,7 +6998,7 @@ body.theme-light .settings-factory-reset{background:linear-gradient(90deg,rgba(1
  } catch(e) {}
  // Smooth appear for main menu cards
  try {
- var cards = document.querySelectorAll('.mm74-card');
+ var cards = document.querySelectorAll('.vx-home-action');
  cards.forEach(function(c, i){
  c.style.opacity = '0';
  c.style.transform = 'translateY(12px)';
