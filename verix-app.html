@@ -353,7 +353,7 @@ let ultimaMatriculaLivrete = "";
  // Primeiro verificamos se o servidor RNSI está acessível. Só depois
  // carregamos o conteúdo no iframe. Assim, quando a rede RNSI não está
  // disponível, o Chrome não substitui o nosso aviso pela página de erro.
- const IPO_IMT_MODE = true; // IMT usa atribuição direta como IPO_2.2
+ 
   const IMT_TIMEOUT_MS = 12000;
  const imtTimers = {};
 let imtQuerySequence = 0;
@@ -407,7 +407,7 @@ let imtQuerySequence = 0;
   if (!overlay || !frame) return;
 
   const queryId = window.__VERIX_CURRENT_QUERY_ID || null;
-  const sourceName = source || (frameId === 'reboqueFrame' ? 'livrete' : 'inspecao');
+  
   const requestSequence = Number(sequence || imtQuerySequence || 0);
 
   mostrarLoading(frameId, overlayId);
@@ -5920,7 +5920,7 @@ html.verix-low-power .verix-holo-scan{
  const originalOpen=window.abrirModulo;
  window.abrirModulo=function(nome,el){originalOpen.call(this,nome,el);if(nome==='legislacao'){setTimeout(ensureLegUI,0);}};
 
- const originalFilter=window.filtrarLegislacao;
+ 
  window.filtrarLegislacao=function(valor,keepFav){
  const raw=String(valor??'');
  const q=searchNorm(raw);
@@ -6012,7 +6012,7 @@ const alias={
 };
 const normalize10=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 function expandedQuery10(v){let q=normalize10(v);Object.keys(alias).forEach(k=>{if(q.includes(normalize10(k)))q+=' '+normalize10(alias[k]);});return q;}
-const oldEnsure=window.VÉRIX10?.ensureLegUI;
+
 // Improve the search matcher without changing the visible wording.
 const oldFilter=window.filtrarLegislacao;
 window.filtrarLegislacao=function(valor){
@@ -14758,7 +14758,7 @@ html body .toast-notification {
   */
   var SPLASH_MS = 1200;
   var FADE_MS = 250;
-  var NOTICE_DELAY_MS = 80;
+  
   var started = (typeof window.__verixSplashStarted === 'number') ? window.__verixSplashStarted : performance.now();
   var finished = false;
 
