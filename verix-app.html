@@ -250,10 +250,10 @@
 </script><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VÉRIX - Apoio Operacional</title>
 <meta name="description" content="VÉRIX - Apoio Operacional. Sistema de apoio ao serviço operacional.">
 <meta name="theme-color" content="#0b1517">
-<link rel="icon" href="./favicon.svg?v=20261016" type="image/svg+xml">
-<link rel="icon" href="./assets/icon-192.png?v=20261016" type="image/png" sizes="192x192">
-<link rel="apple-touch-icon" href="./assets/icon-192.png?v=20261016">
-<link rel="manifest" href="./site.webmanifest?v=20261016">
+<link rel="icon" href="./favicon.svg?v=20261017" type="image/svg+xml">
+<link rel="icon" href="./assets/icon-192.png?v=20261017" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="./assets/icon-192.png?v=20261017">
+<link rel="manifest" href="./site.webmanifest?v=20261017">
 <script id="vx-install-shortcut-runtime">
 (function(){
   'use strict';
@@ -291,9 +291,9 @@
     var isChrome = /Chrome\//i.test(ua) && !isEdge;
     var steps;
     if(isEdge){
-      steps = '<ol><li>Abre o menu <strong>⋯</strong> do Edge.</li><li>Escolhe <strong>Aplicações → Instalar este site como aplicação</strong>.</li><li>Depois abre <code>edge://apps</code>, entra em <strong>Detalhes</strong> do VÉRIX e escolhe <strong>Criar atalho de Ambiente de Trabalho</strong>.</li></ol>';
+      steps = '<ol><li>Abre o menu <strong>⋯</strong> do Edge.</li><li>Escolhe <strong>Aplicações → Instalar este site como aplicação</strong>.</li><li>Na janela final, escolhe <strong>Criar atalho do Ambiente de Trabalho</strong>. Se não aparecer, abre <code>edge://apps</code> → <strong>Detalhes</strong> → <strong>Criar atalho de Ambiente de Trabalho</strong>.</li></ol>';
     } else if(isChrome){
-      steps = '<ol><li>Abre o menu <strong>⋮</strong> do Chrome.</li><li>Escolhe <strong>Transmitir, guardar e partilhar → Instalar página como aplicação</strong>.</li><li>Se precisares, abre <code>chrome://apps</code>, clica com o botão direito no VÉRIX e escolhe <strong>Criar atalho</strong>.</li></ol>';
+      steps = '<ol><li>Abre o menu <strong>⋮</strong> do Chrome.</li><li>Escolhe <strong>Transmitir, guardar e partilhar → Instalar página como aplicação</strong>.</li><li>Confirma <strong>Instalar</strong>. No Windows, o Chrome cria normalmente o atalho do PWA; se não aparecer, abre <code>chrome://apps</code> e cria-o a partir do VÉRIX.</li></ol>';
     } else {
       steps = '<ol><li>Abre o menu do teu navegador e procura <strong>Instalar este site como aplicação</strong>.</li><li>Se não houver essa opção, no Ambiente de Trabalho clica com o botão direito → <strong>Novo → Atalho</strong>.</li><li>Cola o endereço abaixo e dá ao atalho o nome <strong>VÉRIX</strong>.</li></ol>';
     }
@@ -303,7 +303,7 @@
     dialog.setAttribute('aria-labelledby','vxInstallGuideTitle');
     dialog.innerHTML = '<section class="vx-install-guide-panel">' +
       '<header class="vx-install-guide-head"><span class="vx-install-guide-mark" aria-hidden="true">V</span><div><div class="vx-install-guide-kicker">ACESSO RÁPIDO</div><h2 id="vxInstallGuideTitle">Adicionar o VÉRIX</h2></div><button type="button" class="vx-install-guide-close" data-vx-guide-close aria-label="Fechar">×</button></header>' +
-      '<p class="vx-install-guide-intro">Cria um atalho no Ambiente de Trabalho para abrir o VÉRIX sem teres de procurar o endereço.</p>' +
+      '<p class="vx-install-guide-intro">A instalação direta ainda não está disponível neste momento. Usa os passos abaixo; depois da instalação, o VÉRIX abre numa janela própria.</p>' +
       '<div class="vx-install-guide-steps">' + steps + '</div>' +
       '<div class="vx-install-guide-address"><code>verix-plataformadigital.github.io/verix/</code><button type="button" class="vx-install-guide-copy" data-vx-copy-link>Copiar endereço</button></div>' +
       '<p class="vx-install-guide-status" data-vx-guide-status role="status" aria-live="polite"></p>' +
