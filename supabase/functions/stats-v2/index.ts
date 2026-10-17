@@ -764,7 +764,8 @@ Deno.serve(async (req) => {
       }),
       resetState(),
       rpc("verix2_consulted_installations_3m",{p_now:now}),
-      rpc("verix2_admin_hourly_active_interactions",{p_now:now})
+      rpc("verix2_admin_hourly_active_interactions",{p_now:now}),
+      rpc("verix2_admin_live_presence",{p_now:now})
     ]);
 
     const errors:any = {};
@@ -773,12 +774,16 @@ Deno.serve(async (req) => {
     const recentConsultedRaw = settled[2].status==="fulfilled" ? settled[2].value : null;
     const activeHourlyRaw = settled[3].status==="fulfilled" ? settled[3].value : null;
     const activeHourly = Array.isArray(activeHourlyRaw) ? activeHourlyRaw : [];
+    const livePresenceRaw = settled[4].status==="fulfilled" ? settled[4].value : null;
+    const livePresence = livePresenceRaw && typeof livePresenceRaw==="object" && !Array.isArray(livePresenceRaw)
+      ? livePresenceRaw
+      : {};
     const recentConsultedNumeric = recentConsultedRaw==null ? null : Number(recentConsultedRaw);
     const recentConsulted3m = recentConsultedNumeric!==null && Number.isFinite(recentConsultedNumeric)
       ? recentConsultedNumeric
       : null;
 
-    for(const [i,name] of [[0,"dashboard"],[1,"reset"],[2,"recent_query_presence"],[3,"active_hourly_usage"]] as const) {
+    for(const [i,name] of [[0,"dashboard"],[1,"reset"],[2,"recent_query_presence"],[3,"active_hourly_usage"],[4,"live_presence"]] as const) {
       if(settled[i].status==="rejected") {
         const reason:any=settled[i].reason;
         errors[name]=String(reason?.message||reason);
@@ -790,6 +795,7 @@ Deno.serve(async (req) => {
       : {};
     const overviewForAdmin = {
       ...(analyticsObj.overview && typeof analyticsObj.overview==="object" ? analyticsObj.overview : {}),
+      ...livePresence,
       consulted_3m:recentConsulted3m
     };
     const usageObj = analyticsObj.usage && typeof analyticsObj.usage==="object"
