@@ -872,7 +872,8 @@ function switchPage(page){
   $('pageTitle').textContent=meta[0];
   $('pageSubtitle').textContent=meta[1];
   window.scrollTo({top:0});
-  if(latestData&&detailCache.analytics)renderCurrentPage(latestData);
+  if(latestData&&page==='dashboard')renderDashboard(latestData);
+  else if(latestData&&detailCache.analytics)renderCurrentPage(latestData);
   ensurePageDetail(page);
 }
 function detailEndpoint(kind){
