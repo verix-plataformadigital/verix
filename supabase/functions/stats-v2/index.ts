@@ -209,19 +209,25 @@ function sessionPattern(rows){
   };
 }
 
-async function resetBaselineStart(): Promise<string> {
-  const q=new URLSearchParams({select:"reset_all_at",singleton:"eq.true",limit:"1"});
-  const r=await fetch(supabaseUrl+"/rest/v1/verix2_dashboard_state?"+q.toString(),{headers:{apikey:serviceKey,Authorization:"Bearer "+serviceKey}});
-  const t=await r.text();
-  if(!r.ok) throw new Error("reset_baseline:"+t);
-  const rows=t?JSON.parse(t):[];
-  return rows?.[0]?.reset_all_at || "1970-01-01T00:00:00Z";
-}
-async function windowStartAfterReset(hours:number): Promise<string> {
-  const startAt=await resetBaselineStart();
-  const baseline=Date.parse(startAt);
-  const rolling=Date.now()-hours*60*60*1000;
-  return new Date(Math.max(rolling,Number.isFinite(baseline)?baseline:0)).toISOString();
+function windowStartTodayLisbon(now: string): string {
+  const instant = new Date(now);
+  const fmt = (date: Date) => Object.fromEntries(new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Lisbon", year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23"
+  }).formatToParts(date).map(part => [part.type, part.value]));
+  const today = fmt(instant);
+  const targetWall = Date.UTC(Number(today.year), Number(today.month) - 1, Number(today.day), 0, 0, 0, 0);
+  let candidate = targetWall;
+  // Resolve the Lisbon offset instead of assuming UTC+0/+1; this also handles DST transitions.
+  for (let i = 0; i < 4; i++) {
+    const local = fmt(new Date(candidate));
+    const representedWall = Date.UTC(Number(local.year), Number(local.month) - 1, Number(local.day),
+      Number(local.hour), Number(local.minute), Number(local.second), 0);
+    const delta = targetWall - representedWall;
+    if (delta === 0) break;
+    candidate += delta;
+  }
+  return new Date(candidate).toISOString();
 }
 async function loadInsuranceNoCases(now:string){
   // PostgREST can cap an individual response at 1,000 rows. Page until the
@@ -284,7 +290,7 @@ function buildErrorPlateCases(rows:any[],plateOf:(e:any)=>string,validPortuguese
 async function loadErrorInvestigation24h(now:string){
   const pageSize=1000, maxPages=100;
   const rows:any[]=[];
-  const startAt=await windowStartAfterReset(24);
+  const startAt=windowStartTodayLisbon(now);
   for(let page=0;page<maxPages;page++){
     const qs = new URLSearchParams();
     qs.set("select","event_id,occurred_at,event,installation_id,query_id,app_version,browser,metadata");
@@ -409,7 +415,7 @@ async function loadCinemometerAnalytics24h(now:string){
   const qs = new URLSearchParams();
   qs.set("select","occurred_at,event,session_id,installation_id,app_version,browser,metadata");
   qs.set("event","in.(cinemometer_speed_entry,cinemometer_calculation,cinemometer_copy_code,cinemometer_copy_text,cinemometer_copy_location,cinemometer_profile_select,cinemometer_profile_new,cinemometer_profile_duplicate,cinemometer_profile_delete,cinemometer_profile_save)");
-  qs.set("occurred_at","gte." + await windowStartAfterReset(24));
+  qs.set("occurred_at","gte." + windowStartTodayLisbon(now));
   qs.set("order","occurred_at.asc");
   qs.set("limit","5000");
   const rr=await fetch(supabaseUrl+"/rest/v1/verix2_events?"+qs.toString(),{headers:{apikey:serviceKey,Authorization:"Bearer "+serviceKey}});
@@ -734,7 +740,8 @@ Deno.serve(async (req) => {
       "admin-simple-2026-10-13-r13",
       "admin-simple-2026-10-13-r14",
       "admin-simple-2026-10-13-r15",
-      "admin-simple-2026-10-14-r16"
+      "admin-simple-2026-10-14-r16",
+      "admin-simple-2026-10-17-r17"
     ].includes(statsCacheKey);
 
     if(!forceRefresh && cachedStats && cachedStats.key===statsCacheKey && (Date.now()-cachedStats.at)<STATS_CACHE_MS) {
