@@ -978,100 +978,75 @@ async function ensureTotalLoaded(){
 }
 async function ensurePageDetail(page){
  if(!latestData||!token()||page==='dashboard')return;
- if(currentPeriod==='total'&&!detailCache.total){
-  const loaded=await ensureTotalLoaded();
-  if(!loaded)return;
- }
+
+ // Paint immediately from the latest cached payload; load independent details together.
  renderCurrentPage(latestData);
+ const jobs=[];
 
- // Load only the additional metrics required by each tab; never block these tabs
- // on the legacy whole-history analytics function.
+ if(currentPeriod==='total'&&!detailCache.total)jobs.push(ensureTotalLoaded());
+
  if(['legislation','insights','performance','system','insurance'].includes(page)){
-  const loaded=await ensureAuxiliaryLoaded();
-  if(!loaded)return;
-  if(currentPage===page)renderCurrentPage(latestData);
+  jobs.push(ensureAuxiliaryLoaded());
+ }
+ if(['insurance','performance'].includes(page)&&!detailCache.total){
+  jobs.push(ensureTotalLoaded());
  }
 
- if(['insurance','performance'].includes(page)&&!detailCache.total){
-  const loadedTotal=await ensureTotalLoaded();
-  if(!loadedTotal)return;
-  if(currentPage===page)renderCurrentPage(latestData);
- }
  if(page==='insurance'){
-  await Promise.all([ensureInsuranceNoCases(),ensureDiagnostics()]);
-  if(currentPage===page)renderInsurance(latestData);
-  return;
+  if(!detailCache.insurance&&!detailBusy.insurance)jobs.push(ensureInsuranceNoCases());
+  if(!detailCache.diagnostics&&!detailBusy.diagnostics)jobs.push(ensureDiagnostics());
  }
  if(page==='performance'){
-  await ensureDiagnostics();
-  if(currentPage===page)renderPerformance(latestData);
-  return;
+  if(!detailCache.diagnostics&&!detailBusy.diagnostics)jobs.push(ensureDiagnostics());
  }
- if(page==='insights'){
-  if(!detailCache.speed&&!detailBusy.speed){
-   detailBusy.speed=true;
-   try{
-    const d=await request(detailEndpoint('speed'));
-    latestData={...latestData,cinemometer:d.cinemometer||{}};
-    detailCache.speed=true;
-   }catch(e){
-    toast('Não foi possível carregar os dados do Cinemómetro para Insights: '+e.message);
-   }finally{
-    detailBusy.speed=false;
-   }
-  }
-  if(currentPage===page)renderInsights(latestData);
-  return;
- }
- if(page==='legislation'){
-  if(currentPage===page)renderLegislation(latestData);
-  return;
- }
- if(page==='errors'){
-  if(detailCache.errors||detailBusy.errors)return;
+
+ if(page==='errors'&&!detailCache.errors&&!detailBusy.errors){
   detailBusy.errors=true;
   latestData={...latestData,errorsLoadState:'loading'};
   if(currentPage===page)renderErrors(latestData);
-  try{
-   const [detail,summary]=await Promise.all([
-    request(detailEndpoint('errors')),
-    request(detailEndpoint('errors-summary'))
-   ]);
-   if(!latestData)return;
-   latestData={...latestData,
-    investigation:detail.investigation||{},
-    errorsLoadState:'loaded',
-    analytics:{...(latestData.analytics||{}),
-     errors:{...((latestData.analytics||{}).errors||{}),...(summary.errors||{})}}
-   };
-   detailCache.errors=true;
-   if(currentPage===page)renderErrors(latestData);
-  }catch(e){
-   if(latestData)latestData={...latestData,errorsLoadState:'failed',errorsLoadError:String(e?.message||e)};
-   if(currentPage===page)renderErrors(latestData);
-   toast('Não foi possível carregar a análise de erros: '+e.message);
-  }finally{
-   detailBusy.errors=false;
-  }
-  return;
+  jobs.push((async()=>{
+   try{
+    const [detail,summary]=await Promise.all([
+     request(detailEndpoint('errors')),
+     request(detailEndpoint('errors-summary'))
+    ]);
+    if(!latestData)return;
+    latestData={...latestData,
+     investigation:detail.investigation||{},
+     errorsLoadState:'loaded',
+     analytics:{...(latestData.analytics||{}),
+      errors:{...((latestData.analytics||{}).errors||{}),...(summary.errors||{})}}
+    };
+    detailCache.errors=true;
+   }catch(e){
+    if(latestData)latestData={...latestData,errorsLoadState:'failed',errorsLoadError:String(e?.message||e)};
+    toast('Não foi possível carregar a análise de erros: '+e.message);
+   }finally{
+    detailBusy.errors=false;
+   }
+  })());
  }
 
- const kind=page==='speed'?'speed':page==='system'?'system':'';
- if(!kind||detailCache[kind]||detailBusy[kind])return;
- detailBusy[kind]=true;
- try{
-  const d=await request(detailEndpoint(kind));
-  if(kind==='speed')latestData={...latestData,cinemometer:d.cinemometer||{}};
-  if(kind==='system')latestData={...latestData,lifetime:d.lifetime||{}};
-  detailCache[kind]=true;
-  if(currentPage!==page)return;
-  if(kind==='speed')renderSpeed(latestData);
-  if(kind==='system')renderSystem(latestData);
- }catch(e){
-  toast('Não foi possível carregar os detalhes: '+e.message);
- }finally{
-  detailBusy[kind]=false;
+ const kind=page==='speed'||page==='insights'?'speed':page==='system'?'system':'';
+ if(kind&&!detailCache[kind]&&!detailBusy[kind]){
+  detailBusy[kind]=true;
+  jobs.push((async()=>{
+   try{
+    const d=await request(detailEndpoint(kind));
+    if(!latestData)return;
+    if(kind==='speed')latestData={...latestData,cinemometer:d.cinemometer||{}};
+    if(kind==='system')latestData={...latestData,lifetime:d.lifetime||{}};
+    detailCache[kind]=true;
+   }catch(e){
+    toast('Não foi possível carregar os detalhes: '+e.message);
+   }finally{
+    detailBusy[kind]=false;
+   }
+  })());
  }
+
+ await Promise.all(jobs);
+ if(currentPage===page&&latestData)renderCurrentPage(latestData);
 }
 
 function renderDashboard(d){
