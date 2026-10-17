@@ -509,6 +509,7 @@ const ANALYTICS_CACHE_MS = 300000;
 const DETAIL_CACHE_MS = 30000;
 const AUXILIARY_CACHE_MS = 60000;
 const SYSTEM_CACHE_MS = 60000;
+const USAGE_CACHE_MS = 300000;
 const detailResponseCache = new Map<string,{at:number;body:string}>();
 
 function getDetailCache(key:string,ttl:number,req:Request,forceRefresh=false):Response|null {
@@ -615,6 +616,20 @@ Deno.serve(async (req) => {
         return new Response(body,{status:200,headers:{"Content-Type":"application/json",...corsHeaders(req),"X-Verix-Detail-Cache":"MISS"}});
       } catch(error) {
         return json({ok:false,error:"auxiliary_detail_failed",detail:String((error as Error)?.message||error)},500,req);
+      }
+    }
+
+    if(req.method==="GET" && detail==="usage") {
+      const cached=getDetailCache("usage",USAGE_CACHE_MS,req,forceRefresh);
+      if(cached)return cached;
+      const now=new Date().toISOString();
+      try {
+        const usage=await rpc("verix2_admin_usage_detail_fast",{p_now:now});
+        const body=JSON.stringify({ok:true,detail:"usage",generatedAt:now,usage});
+        setDetailCache("usage",body);
+        return new Response(body,{status:200,headers:{"Content-Type":"application/json",...corsHeaders(req),"X-Verix-Detail-Cache":"MISS"}});
+      } catch(error) {
+        return json({ok:false,error:"usage_detail_failed",detail:String((error as Error)?.message||error)},500,req);
       }
     }
 
