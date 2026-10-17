@@ -1435,15 +1435,19 @@ async function loadDashboard(forceFresh=false){
   ));
   const d=preserveDetailed?mergeFreshDashboard(previous,fresh):fresh;
   latestData=d;
-  if(fresh.dashboardOnly&&!preserveDetailed){
-   // The fast endpoint only returns dashboard metrics. Invalidate detail flags only
-   // when there is no retained detailed payload, not on every 30-second poll.
-   detailCache.analytics=false;
-   detailCache.auxiliary=false;detailCache.total=false;detailCache.diagnostics=false;
-   detailCache.speed=false;detailCache.errors=false;detailCache.system=false;detailCache.insurance=false;
-   if(currentPeriod!=='total')renderDashboard(d);
+  if(fresh.dashboardOnly){
+   if(!preserveDetailed){
+    // The fast endpoint only returns dashboard metrics. Invalidate detail flags
+    // only when there is no retained detailed payload.
+    detailCache.analytics=false;
+    detailCache.auxiliary=false;detailCache.total=false;detailCache.diagnostics=false;
+    detailCache.speed=false;detailCache.errors=false;detailCache.system=false;detailCache.insurance=false;
+   }
+   // Do not rebuild heavy detail tables on every dashboard poll. Live summary
+   // cards are repainted only while the dashboard itself is visible.
+   if(currentPage==='dashboard'&&currentPeriod!=='total')renderDashboard(d);
   }else{
-   if(!fresh.dashboardOnly)detailCache.analytics=true;
+   detailCache.analytics=true;
    renderCurrentPage(d);
   }
   const partial=Object.keys(d.errors||{}).length>0;
