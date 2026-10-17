@@ -593,8 +593,7 @@ SELECT jsonb_build_object(
   'telemetry',(SELECT data FROM telemetry),
   'events',(SELECT data FROM top_events)
 );
-$function$
-
+$function$;
 
 CREATE OR REPLACE FUNCTION public.verix2_admin_dashboard(p_now timestamp with time zone DEFAULT now())
  RETURNS jsonb
@@ -800,8 +799,7 @@ SELECT jsonb_build_object('generated_at',p_now,
  'errors',jsonb_build_object('plates',coalesce((SELECT jsonb_agg(to_jsonb(x) ORDER BY x.qty DESC) FROM err_plates x),'[]'::jsonb)),
  'usage',jsonb_build_object('modules',(SELECT data FROM modules),'sessions',(SELECT data FROM session_metrics),'daily',(SELECT data FROM daily),'hourly',(SELECT data FROM hourly))
 );
-$function$
-
+$function$;
 
 CREATE OR REPLACE FUNCTION public.verix2_admin_errors_fast(p_now timestamp with time zone DEFAULT now())
  RETURNS jsonb
@@ -881,8 +879,7 @@ SELECT jsonb_build_object(
  'signatures',coalesce((SELECT jsonb_agg(to_jsonb(x) ORDER BY x.qty DESC) FROM err_signatures x),'[]'::jsonb),
  'plates',coalesce((SELECT jsonb_agg(to_jsonb(x) ORDER BY x.qty DESC) FROM err_plates x),'[]'::jsonb)
 );
-$function$
-
+$function$;
 
 CREATE OR REPLACE FUNCTION public.verix2_admin_hourly_active_interactions(p_now timestamp with time zone DEFAULT now())
  RETURNS jsonb
@@ -981,5 +978,4 @@ SELECT coalesce(
 FROM hours h
 LEFT JOIN consultations c USING (bucket_start)
 LEFT JOIN active_use a USING (bucket_start);
-$function$
-
+$function$;
