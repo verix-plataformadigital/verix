@@ -906,7 +906,8 @@ async function ensureDiagnostics(){
   if(!latestData)return;
   latestData={...latestData,diagnostics:d.diagnostics||{}};
   detailCache.diagnostics=true;
-  // The active tab is repainted once its parallel detail requests settle.
+  // Only repaint the tabs that consume ASF diagnostics; avoid work in hidden tabs.
+  if(currentPage==='insurance'||currentPage==='performance')renderCurrentPage(latestData);
  }catch(e){
   toast('Não foi possível carregar os diagnósticos ASF: '+e.message);
  }finally{
@@ -987,7 +988,7 @@ async function ensurePageDetail(page){
 
  if(currentPeriod==='total'&&!detailCache.total)jobs.push(ensureTotalLoaded());
 
- if(['legislation','insights','performance','system','insurance'].includes(page)){
+ if(['legislation','insights','performance','insurance'].includes(page)){
   jobs.push(ensureAuxiliaryLoaded());
  }
  if(['insurance','performance'].includes(page)&&!detailCache.total){
@@ -1037,7 +1038,12 @@ async function ensurePageDetail(page){
     const d=await request(detailEndpoint(kind));
     if(!latestData)return;
     if(kind==='speed')latestData={...latestData,cinemometer:d.cinemometer||{}};
-    if(kind==='system')latestData={...latestData,lifetime:d.lifetime||{}};
+    if(kind==='system')latestData={
+     ...latestData,
+     lifetime:d.lifetime||{},
+     systemTelemetryAvailable:d.telemetryAvailable!==false,
+     analytics:{...(latestData.analytics||{}),telemetry:d.telemetry||{}}
+    };
     detailCache[kind]=true;
    }catch(e){
     toast('Não foi possível carregar os detalhes: '+e.message);
@@ -1371,7 +1377,7 @@ function renderInsights(d){
  $('insightNotes').innerHTML='<div class="explain"><strong>Leitura responsável:</strong> estes indicadores descrevem eventos agregados no período e dependem da cobertura da telemetria. Uma média, concentração ou sequência observada não permite inferir causa nem identificar uma operação individual. Os padrões de Cinemómetro são heurísticas estatísticas, não prova de irregularidade.</div>';
 }
 function renderSystem(d){
- const life=d.lifetime||{},tel=d.analytics?.telemetry||{},o=d.analytics?.overview||{}; const partial=Object.keys(d.errors||{}).length>0;
+ const life=d.lifetime||{},tel=d.analytics?.telemetry||{},o=d.analytics?.overview||{}; const partial=Object.keys(d.errors||{}).length>0||d.systemTelemetryAvailable===false;
  $('systemCards').innerHTML=
   card('BACKEND',partial?'PARCIAL':'ONLINE',partial?'Alguns dados não ficaram disponíveis.':'Última atualização concluída.',partial?'amber':'green')+
   card('VERSÃO',esc(d.current_app_version||'—'),'Versão da aplicação apresentada no painel.','cyan')+
