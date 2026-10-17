@@ -378,7 +378,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
         <div class="top-actions">
           <div class="status"><i id="statusDot" class="dot"></i><span id="backendBadge">A ligar…</span></div>
           <div class="periods" id="periods">
-            <button class="active" data-period="24h">24 H</button>
+            <button class="active" data-period="24h" title="Hoje, desde as 00:00">HOJE</button>
             <button data-period="7d">7 DIAS</button>
             <button data-period="30d">30 DIAS</button>
             <button data-period="total">HISTÓRICO TOTAL</button>
@@ -643,7 +643,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
           <div class="panel"><div class="panel-head"><h3>HISTÓRICO</h3><span>NÃO É APAGADO</span></div><div class="panel-body" id="systemHistory"></div></div>
         </div>
         <div style="margin-top:12px" class="reset">
-          <div><b>Reiniciar indicadores e histórico</b><span>Define um novo marco para 24 H, 7 dias, 30 dias e Histórico total. Os eventos antigos não são apagados; ficam fora dos novos indicadores.</span><div id="reset24hStatus" style="margin-top:5px;font-size:9px;color:#6e644d">Marco atual: —</div></div>
+          <div><b>Reiniciar indicadores e histórico</b><span>Define um novo marco para 7 dias, 30 dias e Histórico total. O indicador HOJE conta sempre desde as 00:00; os eventos antigos não são apagados.</span><div id="reset24hStatus" style="margin-top:5px;font-size:9px;color:#6e644d">Marco atual: —</div></div>
           <button id="reset24hBtn" type="button">REINICIAR TUDO</button>
         </div>
       </section>
@@ -661,7 +661,7 @@ const STATS_API=API_ORIGIN+'stats-v2?v='+encodeURIComponent(ADMIN_CACHE);
 const TOKEN_KEY='VERIX_ADMIN_V2_TOKEN';
 const REFRESH_MS=60000;
 
-let currentPeriod='24h',currentPage='dashboard',latestData=null,refreshTimer=null,dashboardBusy=false,auxiliaryLoadPromise=null,totalLoadPromise=null,forceDetailRefresh=false,lastDashboardSuccessAt=0;
+let currentPeriod='24h',currentPage='dashboard',latestData=null,refreshTimer=null,dashboardBusy=false,auxiliaryLoadPromise=null,totalLoadPromise=null,forceDetailRefresh=false,lastDashboardSuccessAt=0,lastDashboardDayKey='',auxiliaryLoadedDay='';
 const detailCache={analytics:false,auxiliary:false,total:false,diagnostics:false,speed:false,errors:false,system:false,insurance:false};
 const detailBusy={auxiliary:false,total:false,diagnostics:false,speed:false,errors:false,system:false,insurance:false};
 
@@ -670,6 +670,8 @@ const fmt=v=>v==null||v===''||!Number.isFinite(Number(v))?'—':Number(v).toLoca
 const num=v=>v==null?'—':fmt(v);
 const pct=v=>v==null||!Number.isFinite(Number(v))?'—':Number(v).toFixed(1).replace('.',',')+'%';
 const datePT=v=>v?new Date(v).toLocaleString('pt-PT'):'—';
+function lisbonDayKey(){const p=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Lisbon',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()).map(x=>[x.type,x.value]));return p.year+'-'+p.month+'-'+p.day;}
+function lisbonClockParts(){return Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Lisbon',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date()).map(x=>[x.type,x.value]));}
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
 function mergeFreshDashboard(previous,fresh){
  const merge=(oldValue,newValue)=>{
@@ -918,15 +920,23 @@ function mergeAuxiliaryAnalytics(auxiliary){
 }
 async function ensureAuxiliaryLoaded(){
  if(!latestData||!token())return false;
+ const todayKey=lisbonDayKey();
+ const dayChanged=!!auxiliaryLoadedDay&&auxiliaryLoadedDay!==todayKey;
+ if(dayChanged)detailCache.auxiliary=false;
  if(detailCache.auxiliary)return true;
  if(auxiliaryLoadPromise)return auxiliaryLoadPromise;
  detailBusy.auxiliary=true;
  auxiliaryLoadPromise=(async()=>{
   try{
-   const payload=await request(detailEndpoint('auxiliary'));
+   const clock=lisbonClockParts();
+   const atDayStart=clock.hour==='00'&&Number(clock.minute)<=5;
+   const mustFetchFresh=forceDetailRefresh||dayChanged||atDayStart;
+   const endpoint=detailEndpoint('auxiliary');
+   const payload=await request(mustFetchFresh&&!forceDetailRefresh?endpoint+'&fresh=1':endpoint);
    if(!latestData)return false;
    mergeAuxiliaryAnalytics(payload.auxiliary||{});
    detailCache.auxiliary=true;
+   auxiliaryLoadedDay=todayKey;
    return true;
   }catch(e){
    toast('Não foi possível carregar as métricas auxiliares: '+e.message);
@@ -1064,7 +1074,7 @@ function renderDashboard(d){
  const contradictory=Number(p.contradictory||0),duplicateFinals=Number(p.duplicate_finals||0);
  const decisions=insured+uninsured,completionRate=lookups?Math.min(100,100*fin/lookups):null;
  const uninsuredRate=decisions?100*uninsured/decisions:null,errorRate=fin?100*errs/fin:null;
- const labelPeriod=currentPeriod==='24h'?'últimas 24 horas':currentPeriod==='7d'?'últimos 7 dias':currentPeriod==='30d'?'últimos 30 dias':'histórico total';
+ const labelPeriod=currentPeriod==='24h'?'hoje (desde as 00:00)':currentPeriod==='7d'?'últimos 7 dias':currentPeriod==='30d'?'últimos 30 dias':'histórico total';
  $('dashCards').innerHTML=
   card('CONSULTAS INICIADAS',num(lookups),'Pedidos de consulta nas '+labelPeriod+'.','blue')+
   card('RESULTADOS CONCLUÍDOS',num(fin),pct(completionRate)+' das consultas iniciadas.','green')+
@@ -1150,7 +1160,7 @@ function renderInsurance(d){
  const p=period(),a=d.analytics||{},yes=Number(p.insured||0),no=Number(p.uninsured||0),err=Number(p.errors||0),started=Number(p.started||0),fin=Number(p.finals||0),dec=yes+no;
  const errorRate=fin?100*err/fin:null,noRate=dec?100*no/dec:null;
  $('insuranceUpdated').textContent='Dados atualizados em '+datePT(d.generatedAt);
- $('insurancePeriodLabel').textContent=currentPeriod==='total'?'HISTÓRICO TOTAL':currentPeriod.toUpperCase();
+ $('insurancePeriodLabel').textContent=currentPeriod==='total'?'HISTÓRICO TOTAL':currentPeriod==='24h'?'HOJE · DESDE 00:00':currentPeriod.toUpperCase();
  $('insuranceCards').innerHTML=
   card('CONSULTAS',num(started),'Pedidos iniciados.','cyan')+
   card('RESULTADOS',num(fin),'Consultas com resultado conhecido.')+
@@ -1390,7 +1400,8 @@ function renderCurrentPage(d=latestData){
 }
 async function loadDashboard(forceFresh=false){
  if(dashboardBusy)return null;
- if(!forceFresh&&latestData&&Date.now()-lastDashboardSuccessAt<20000)return latestData;
+ const todayKey=lisbonDayKey();
+ if(!forceFresh&&latestData&&Date.now()-lastDashboardSuccessAt<20000&&lastDashboardDayKey===todayKey)return latestData;
  dashboardBusy=true;
  const previous=latestData;
  if(!previous)renderLoadingState();
@@ -1398,6 +1409,7 @@ async function loadDashboard(forceFresh=false){
  try{
   const fresh=await request(forceFresh?STATS_API+'&fresh=1':STATS_API);
   lastDashboardSuccessAt=Date.now();
+  lastDashboardDayKey=lisbonDayKey();
   const preserveDetailed=!!(fresh.dashboardOnly&&previous&&previous.analytics&&(
    detailCache.analytics||detailCache.auxiliary||detailCache.total||detailCache.diagnostics||
    detailCache.speed||detailCache.errors||detailCache.system||detailCache.insurance
