@@ -707,8 +707,17 @@ Deno.serve(async (req) => {
       if(cached)return cached;
       const now = new Date().toISOString();
       try {
-        const lifetime=await loadLifetime(now);
-        const body=JSON.stringify({ok:true,detail:"system",generatedAt:now,lifetime});
+        const [lifetimeResult,telemetryResult]=await Promise.allSettled([
+          loadLifetime(now),
+          rpc("verix2_admin_system_telemetry_fast",{p_now:now})
+        ]);
+        if(lifetimeResult.status==="rejected")throw lifetimeResult.reason;
+        const lifetime=lifetimeResult.value;
+        const telemetry=telemetryResult.status==="fulfilled" ? telemetryResult.value : {};
+        const body=JSON.stringify({
+          ok:true,detail:"system",generatedAt:now,lifetime,telemetry,
+          telemetryAvailable:telemetryResult.status==="fulfilled"
+        });
         setDetailCache("system",body);
         return new Response(body,{status:200,headers:{"Content-Type":"application/json",...corsHeaders(req),"X-Verix-Detail-Cache":"MISS"}});
       } catch(error) {
