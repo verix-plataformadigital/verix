@@ -624,8 +624,17 @@ Deno.serve(async (req) => {
       if(cached)return cached;
       const now=new Date().toISOString();
       try {
-        const usage=await rpc("verix2_admin_usage_detail_fast",{p_now:now});
-        const body=JSON.stringify({ok:true,detail:"usage",generatedAt:now,usage});
+        const [usageResult,hourlyResult]=await Promise.allSettled([
+          rpc("verix2_admin_usage_detail_fast",{p_now:now}),
+          rpc("verix2_admin_hourly_active_interactions",{p_now:now})
+        ]);
+        if(usageResult.status==="rejected")throw usageResult.reason;
+        const usage=usageResult.value && typeof usageResult.value==="object" ? usageResult.value : {};
+        const hourly=hourlyResult.status==="fulfilled" && Array.isArray(hourlyResult.value) ? hourlyResult.value : [];
+        const body=JSON.stringify({
+          ok:true,detail:"usage",generatedAt:now,usage:{...usage,hourly},
+          hourlyAvailable:hourlyResult.status==="fulfilled"
+        });
         setDetailCache("usage",body);
         return new Response(body,{status:200,headers:{"Content-Type":"application/json",...corsHeaders(req),"X-Verix-Detail-Cache":"MISS"}});
       } catch(error) {
@@ -803,7 +812,6 @@ Deno.serve(async (req) => {
       }),
       resetState(),
       rpc("verix2_consulted_installations_3m",{p_now:now}),
-      rpc("verix2_admin_hourly_active_interactions",{p_now:now}),
       rpc("verix2_admin_live_presence",{p_now:now})
     ]);
 
@@ -811,9 +819,7 @@ Deno.serve(async (req) => {
     const analytics = settled[0].status==="fulfilled" ? settled[0].value : {};
     const resetAt = settled[1].status==="fulfilled" ? settled[1].value : null;
     const recentConsultedRaw = settled[2].status==="fulfilled" ? settled[2].value : null;
-    const activeHourlyRaw = settled[3].status==="fulfilled" ? settled[3].value : null;
-    const activeHourly = Array.isArray(activeHourlyRaw) ? activeHourlyRaw : [];
-    const livePresenceRaw = settled[4].status==="fulfilled" ? settled[4].value : null;
+    const livePresenceRaw = settled[3].status==="fulfilled" ? settled[3].value : null;
     const livePresence = livePresenceRaw && typeof livePresenceRaw==="object" && !Array.isArray(livePresenceRaw)
       ? livePresenceRaw
       : {};
@@ -822,7 +828,7 @@ Deno.serve(async (req) => {
       ? recentConsultedNumeric
       : null;
 
-    for(const [i,name] of [[0,"dashboard"],[1,"reset"],[2,"recent_query_presence"],[3,"active_hourly_usage"],[4,"live_presence"]] as const) {
+    for(const [i,name] of [[0,"dashboard"],[1,"reset"],[2,"recent_query_presence"],[3,"live_presence"]] as const) {
       if(settled[i].status==="rejected") {
         const reason:any=settled[i].reason;
         errors[name]=String(reason?.message||reason);
@@ -840,11 +846,11 @@ Deno.serve(async (req) => {
     const usageObj = analyticsObj.usage && typeof analyticsObj.usage==="object"
       ? analyticsObj.usage
       : {};
-    // Never fall back to app_open/heartbeat counts: those include idle browser tabs.
-    // If the active-use RPC fails, show no hourly data instead of a misleading number.
+    // Hourly interaction groups are loaded only when Usage/Trends is opened.
+    // Keep the default dashboard payload compact.
     const usageForAdmin = {
       ...usageObj,
-      hourly:activeHourly
+      hourly:[]
     };
     const analyticsForAdmin = {
       ...analyticsObj,
