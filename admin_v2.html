@@ -1409,7 +1409,7 @@ async function loadDashboard(forceFresh=false){
  try{
   const fresh=await request(forceFresh?STATS_API+'&fresh=1':STATS_API);
   lastDashboardSuccessAt=Date.now();
-  lastDashboardDayKey=lisbonDayKey();
+  lastDashboardDayKey=todayKey;
   const preserveDetailed=!!(fresh.dashboardOnly&&previous&&previous.analytics&&(
    detailCache.analytics||detailCache.auxiliary||detailCache.total||detailCache.diagnostics||
    detailCache.speed||detailCache.errors||detailCache.system||detailCache.insurance
