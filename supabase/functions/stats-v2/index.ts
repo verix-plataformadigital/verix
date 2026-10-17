@@ -846,11 +846,10 @@ Deno.serve(async (req) => {
     const usageObj = analyticsObj.usage && typeof analyticsObj.usage==="object"
       ? analyticsObj.usage
       : {};
-    // Hourly interaction groups are loaded only when Usage/Trends is opened.
-    // Keep the default dashboard payload compact.
+    // Daily trends, sessions and hourly activity are loaded only when Usage/Trends is opened.
+    // Omit these fields here so a background summary poll cannot erase already-loaded detail.
     const usageForAdmin = {
-      ...usageObj,
-      hourly:[]
+      ...usageObj
     };
     const analyticsForAdmin = {
       ...analyticsObj,
