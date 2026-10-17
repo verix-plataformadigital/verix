@@ -229,35 +229,41 @@ function windowStartTodayLisbon(now: string): string {
   }
   return new Date(candidate).toISOString();
 }
-async function loadInsuranceNoCases(now:string){
-  // PostgREST can cap an individual response at 1,000 rows. Page until the
-  // complete unexpired 90-day register has been read, rather than silently
-  // showing only the most recent 1,000 consultations.
-  const pageSize = 1000;
-  const maxPages = 100;
-  const cases:any[] = [];
-  for(let page=0; page<maxPages; page++){
+async function loadInsuranceNoCases(now:string, pageLimit?:number, pageOffset=0){
+  async function fetchPage(limit:number,offset:number){
     const qs = new URLSearchParams();
     qs.set("select","event_id,matricula,occurred_at,expires_at");
     qs.set("expires_at","gt."+now);
     qs.set("order","occurred_at.desc,event_id.desc");
-    qs.set("limit",String(pageSize));
-    qs.set("offset",String(page*pageSize));
+    qs.set("limit",String(limit));
+    qs.set("offset",String(offset));
     const response = await fetch(supabaseUrl+"/rest/v1/verix_insurance_no_cases?"+qs.toString(),{
       headers:{apikey:serviceKey,Authorization:"Bearer "+serviceKey}
     });
     const text = await response.text();
     if(!response.ok) throw new Error("insurance_no_cases:"+text);
-    const pageRows:any[] = text ? JSON.parse(text) : [];
-    if(!Array.isArray(pageRows)) throw new Error("insurance_no_cases:invalid_page");
-    cases.push(...pageRows);
-    if(pageRows.length<pageSize) return cases;
+    const rows:any[] = text ? JSON.parse(text) : [];
+    if(!Array.isArray(rows)) throw new Error("insurance_no_cases:invalid_page");
+    return rows;
   }
-  // Never report a truncated list as complete if an unusually large register
-  // exceeds the explicit safety bound.
+
+  // New Admin clients load only one page initially, then fetch more on demand.
+  // Older clients that omit pagination parameters retain the complete-list contract.
+  if(pageLimit!==undefined){
+    const safeLimit=Math.max(1,Math.min(101,Math.floor(Number(pageLimit)||101)));
+    const safeOffset=Math.max(0,Math.min(1000000,Math.floor(Number(pageOffset)||0)));
+    return await fetchPage(safeLimit,safeOffset);
+  }
+
+  const pageSize=1000, maxPages=100;
+  const cases:any[]=[];
+  for(let page=0;page<maxPages;page++){
+    const rows=await fetchPage(pageSize,page*pageSize);
+    cases.push(...rows);
+    if(rows.length<pageSize)return cases;
+  }
   throw new Error("insurance_no_cases_page_limit");
 }
-
 function buildErrorPlateCases(rows:any[],plateOf:(e:any)=>string,validPortuguesePlate:(value:unknown)=>boolean,shortId:(value:any)=>string){
   const errorPlateByQuery=new Map<string,{event:any;matricula:string}>();
   for(const e of rows){
@@ -562,13 +568,22 @@ Deno.serve(async (req) => {
 
     // This plate list is only served after the admin token has been validated.
     if(req.method==="GET" && detail==="insurance-no-cases") {
-      const cached=getDetailCache("insurance-no-cases",DETAIL_CACHE_MS,req,forceRefresh);
+      const paged=url.searchParams.has("limit")||url.searchParams.has("offset");
+      const rawLimit=Number(url.searchParams.get("limit")||101);
+      const rawOffset=Number(url.searchParams.get("offset")||0);
+      const pageLimit=paged?Math.max(1,Math.min(101,Number.isFinite(rawLimit)?Math.floor(rawLimit):101)):undefined;
+      const pageOffset=paged?Math.max(0,Math.min(1000000,Number.isFinite(rawOffset)?Math.floor(rawOffset):0)):0;
+      const cacheKey=paged ? `insurance-no-cases:${pageLimit}:${pageOffset}` : "insurance-no-cases:all";
+      const cached=getDetailCache(cacheKey,DETAIL_CACHE_MS,req,forceRefresh);
       if(cached)return cached;
       const now = new Date().toISOString();
       try {
-        const cases = await loadInsuranceNoCases(now);
-        const body=JSON.stringify({ok:true,detail:"insurance-no-cases",generatedAt:now,cases});
-        setDetailCache("insurance-no-cases",body);
+        const loaded = await loadInsuranceNoCases(now,pageLimit,pageOffset);
+        const cases=paged?loaded.slice(0,100):loaded;
+        const hasMore=paged&&loaded.length>100;
+        const nextOffset=paged?pageOffset+cases.length:null;
+        const body=JSON.stringify({ok:true,detail:"insurance-no-cases",generatedAt:now,cases,hasMore,nextOffset});
+        setDetailCache(cacheKey,body);
         return new Response(body,{status:200,headers:{"Content-Type":"application/json",...corsHeaders(req),"X-Verix-Detail-Cache":"MISS"}});
       } catch(error) {
         return json({ok:false,error:"insurance_no_cases_failed"},500,req);
