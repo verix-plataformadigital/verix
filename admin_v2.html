@@ -425,7 +425,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
           <div class="dashboard-accordion-body">
             <div class="grid g2">
                       <div class="panel">
-                        <div class="panel-head"><h3>CONSULTAS COM ERRO NA CONSULTA ASF</h3><span>ÚLTIMAS 24 H · CONSULTAS COM ERRO</span></div>
+                        <div class="panel-head"><h3>CONSULTAS COM ERRO NA CONSULTA ASF</h3><span>HOJE · DESDE 00:00 · CONSULTAS COM ERRO</span></div>
                         <div class="panel-body">
                           <p class="dashboard-explainer">Um erro técnico não confirma ausência de seguro. Consulta a hora, o tipo de erro e os detalhes antes de tirar conclusões.</p>
                           <div id="dashboardErrorPlates" class="table-wrap"><div class="empty">A carregar matrículas com erro…</div></div>
@@ -452,7 +452,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
                         <div id="dashDaily" class="chart"></div>
                       </div>
                       <div class="panel">
-                        <div class="panel-head"><h3>CONSULTAS E UTILIZAÇÃO POR HORA</h3><span>ÚLTIMAS 24 H</span></div>
+                        <div class="panel-head"><h3>CONSULTAS E UTILIZAÇÃO POR HORA</h3><span>HOJE · DESDE 00:00</span></div>
                         <div class="panel-body"><div id="dashHours" class="hour-grid"></div><div class="hour-note">Consultas = pedidos de seguro iniciados. Utilizadores ativos estimados = instalações distintas com uma interação real nessa hora (consulta, módulo ou ferramenta). Abrir o browser ou enviar heartbeat não conta; o número não identifica pessoas únicas.</div></div>
                       </div>
                     </div>
@@ -475,7 +475,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
         </div>
 
         <div class="grid g2" style="margin-top:12px">
-          <div class="panel"><div class="panel-head"><h3>PROBLEMAS MAIS FREQUENTES</h3><span>ÚLTIMAS 24 H</span></div><div class="panel-body"><div id="insuranceErrors" class="bar-list"></div></div></div>
+          <div class="panel"><div class="panel-head"><h3>PROBLEMAS MAIS FREQUENTES</h3><span>HOJE · DESDE 00:00</span></div><div class="panel-body"><div id="insuranceErrors" class="bar-list"></div></div></div>
           <div class="panel">
             <div class="panel-head"><h3>MATRÍCULAS COM ERROS</h3><span>CONSULTAS DISTINTAS</span></div>
             <div class="error-tools" style="margin:10px 12px 0">
@@ -509,7 +509,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
         <div class="grid g4" id="speedCards"></div>
 
         <div class="grid g2" style="margin-top:12px">
-          <div class="panel"><div class="panel-head"><h3>DISTRIBUIÇÃO DAS VELOCIDADES</h3><span>ÚLTIMAS 24 H</span></div><div class="panel-body"><div id="speedDistribution"></div></div></div>
+          <div class="panel"><div class="panel-head"><h3>DISTRIBUIÇÃO DAS VELOCIDADES</h3><span>HOJE · DESDE 00:00</span></div><div class="panel-body"><div id="speedDistribution"></div></div></div>
           <div class="panel"><div class="panel-head"><h3>PADRÕES OBSERVADOS</h3><span>NÃO SÃO PROVA DE IRREGULARIDADE</span></div><div class="panel-body" id="speedPatterns"></div></div>
         </div>
 
@@ -544,7 +544,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
         <div class="panel usage-hour-panel">
           <div class="panel-head">
             <div><h3>HORÁRIOS DE MAIOR MOVIMENTO</h3><p class="usage-panel-copy">Compara pedidos de seguro com instalações que tiveram atividade real em cada hora.</p></div>
-            <span>ÚLTIMAS 24 H</span>
+            <span>HOJE · DESDE 00:00</span>
           </div>
           <div class="panel-body"><div id="usageHours" class="hour-grid"></div></div>
         </div>
@@ -577,7 +577,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
         <div id="errorSearchEmpty" class="empty error-search-empty hidden" role="status">Não foram encontrados resultados. Experimenta outros termos.</div>
         <div class="grid g4" id="errorCards"></div>
         <div class="grid g2" style="margin-top:12px">
-          <div class="panel"><div class="panel-head"><h3>QUE TIPOS DE ERRO ESTÃO A APARECER?</h3><span>24 H</span></div><div id="errorTypes" class="table-wrap"></div></div>
+          <div class="panel"><div class="panel-head"><h3>QUE TIPOS DE ERRO ESTÃO A APARECER?</h3><span>HOJE · DESDE 00:00</span></div><div id="errorTypes" class="table-wrap"></div></div>
           <div class="panel"><div class="panel-head"><h3>QUANDO ACONTECEM?</h3><span>PIQUES DE 5 MINUTOS</span></div><div id="errorBursts" class="table-wrap"></div></div>
         </div>
         <div class="panel" style="margin-top:12px">
@@ -585,11 +585,11 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
           <div class="panel-body" id="errorReading"></div>
         </div>
         <div class="grid g2" style="margin-top:12px">
-          <div class="panel"><div class="panel-head"><h3>INSTALAÇÕES MAIS AFETADAS</h3><span>24 H</span></div><div id="errorInstallations" class="table-wrap"></div></div>
-          <div class="panel"><div class="panel-head"><h3>ASSINATURAS REPETIDAS</h3><span>24 H</span></div><div id="errorSignatures" class="table-wrap"></div></div>
+          <div class="panel"><div class="panel-head"><h3>INSTALAÇÕES MAIS AFETADAS</h3><span>HOJE · DESDE 00:00</span></div><div id="errorInstallations" class="table-wrap"></div></div>
+          <div class="panel"><div class="panel-head"><h3>ASSINATURAS REPETIDAS</h3><span>HOJE · DESDE 00:00</span></div><div id="errorSignatures" class="table-wrap"></div></div>
         </div>
         <div class="panel" style="margin-top:12px">
-          <div class="panel-head"><h3>CONSULTAS COM ERRO NA CONSULTA ASF</h3><span id="errorPlatesCount">24 H</span></div>
+          <div class="panel-head"><h3>CONSULTAS COM ERRO NA CONSULTA ASF</h3><span id="errorPlatesCount">HOJE · DESDE 00:00</span></div>
           <div class="panel-body">
             <p>Consultas ASF com erro em todas as versões. A lista mostra apenas matrículas completas com formato português reconhecido. Um erro técnico não significa que o veículo não tenha seguro.</p>
             <div style="display:flex;justify-content:flex-end;margin:0 0 10px"><button type="button" onclick="refreshCurrentData()" style="border:1px solid #d9e0e4;background:#fff;color:#33464e;border-radius:8px;padding:7px 10px;font-size:10px;font-weight:900">ATUALIZAR LISTA</button></div>
@@ -612,7 +612,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
           <div class="panel"><div class="panel-head"><h3>VOLUME E CONCLUSÃO</h3><span>PERÍODO SELECIONADO</span></div><div class="panel-body" id="performanceQuality"></div></div>
         </div>
         <div class="panel" style="margin-top:12px">
-          <div class="panel-head"><h3>COMPARAÇÃO TEMPORAL</h3><span>24 H · 7 DIAS · 30 DIAS</span></div>
+          <div class="panel-head"><h3>COMPARAÇÃO TEMPORAL</h3><span>HOJE · 7 DIAS · 30 DIAS</span></div>
           <div id="insuranceCompare" class="table-wrap"></div>
         </div>
         <div class="panel" style="margin-top:12px">
@@ -630,7 +630,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
         </div>
         <div class="grid g2" style="margin-top:12px">
           <div class="panel"><div class="panel-head"><h3>ITENS DE LEGISLAÇÃO MAIS COPIADOS</h3><span>DADOS REGISTADOS</span></div><div id="insightLegislation" class="table-wrap"></div></div>
-          <div class="panel"><div class="panel-head"><h3>DISTRIBUIÇÃO OBSERVADA DAS VELOCIDADES</h3><span>ÚLTIMAS 24 H</span></div><div class="panel-body"><div id="insightSpeedDistribution"></div></div></div>
+          <div class="panel"><div class="panel-head"><h3>DISTRIBUIÇÃO OBSERVADA DAS VELOCIDADES</h3><span>HOJE · DESDE 00:00</span></div><div class="panel-body"><div id="insightSpeedDistribution"></div></div></div>
         </div>
         <div class="panel" style="margin-top:12px"><div class="panel-head"><h3>NOTA METODOLÓGICA</h3><span>LEITURA RESPONSÁVEL</span></div><div class="panel-body" id="insightNotes"></div></div>
       </section>
@@ -655,7 +655,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
 
 <script>
 const API_ORIGIN='https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/';
-const ADMIN_CACHE='admin-simple-2026-10-14-r16';
+const ADMIN_CACHE='admin-simple-2026-10-17-r17';
 const AUTH_API=API_ORIGIN+'admin-auth-v2?v='+encodeURIComponent(ADMIN_CACHE);
 const STATS_API=API_ORIGIN+'stats-v2?v='+encodeURIComponent(ADMIN_CACHE);
 const TOKEN_KEY='VERIX_ADMIN_V2_TOKEN';
@@ -887,6 +887,9 @@ async function ensureInsuranceNoCases(){
   if(latestData)renderInsuranceNoCases(d.cases||[]);
   detailCache.insurance=true;
  }catch(e){
+  const message='<div class="empty">Não foi possível carregar a lista “Sem registo”. A lista não está vazia; os dados estão temporariamente indisponíveis. Tenta ATUALIZAR.</div>';
+  if($('insuranceNoCases'))$('insuranceNoCases').innerHTML=message;
+  if($('dashboardNoCases'))$('dashboardNoCases').innerHTML=message;
   toast('Não foi possível carregar as matrículas sem registo: '+e.message);
  }finally{
   detailBusy.insurance=false;
@@ -1026,6 +1029,8 @@ async function ensurePageDetail(page){
  if(page==='errors'){
   if(detailCache.errors||detailBusy.errors)return;
   detailBusy.errors=true;
+  latestData={...latestData,errorsLoadState:'loading'};
+  if(currentPage===page)renderErrors(latestData);
   try{
    const [detail,summary]=await Promise.all([
     request(detailEndpoint('errors')),
@@ -1034,12 +1039,15 @@ async function ensurePageDetail(page){
    if(!latestData)return;
    latestData={...latestData,
     investigation:detail.investigation||{},
+    errorsLoadState:'loaded',
     analytics:{...(latestData.analytics||{}),
      errors:{...((latestData.analytics||{}).errors||{}),...(summary.errors||{})}}
    };
    detailCache.errors=true;
    if(currentPage===page)renderErrors(latestData);
   }catch(e){
+   if(latestData)latestData={...latestData,errorsLoadState:'failed',errorsLoadError:String(e?.message||e)};
+   if(currentPage===page)renderErrors(latestData);
    toast('Não foi possível carregar a análise de erros: '+e.message);
   }finally{
    detailBusy.errors=false;
@@ -1193,7 +1201,7 @@ function renderSpeed(d){
  const calc=Number(s.calculations||s.calculations_24h||0),sessions=Number(s.sessions||0),compat=Number(s.sessions_compatible||0),atyp=Number(s.sessions_atypical||0),p50=s.speed_p50??s.p50_24h,avg=s.speed_avg??s.avg_24h,min=s.speed_min??s.min_24h,max=s.max_24h;
  const hasData=calc>0||sessions>0||Number(s.raw_calculation_events||0)>0||(Array.isArray(c.recent_sessions)&&c.recent_sessions.length>0)||(Array.isArray(a.speed?.distribution_24h)&&a.speed.distribution_24h.length>0);
  $('speedCards').innerHTML=
-  card('CÁLCULOS',hasData?num(calc):'—',hasData?'Últimas 24 horas.':'Sem dados suficientes para este período.','cyan')+
+  card('CÁLCULOS',hasData?num(calc):'—',hasData?'Hoje, desde as 00:00.':'Sem dados suficientes para este período.','cyan')+
   card('VELOCIDADE MÉDIA',avg==null?'—':fmt(avg)+' km/h','Média das velocidades disponíveis.')+
   card('VELOCIDADE MEDIANA',p50==null?'—':fmt(p50)+' km/h','Valor central.','blue')+
   card('MÍNIMO / MÁXIMO',min==null?'—':fmt(min)+' / '+fmt(max)+' km/h','Valores observados.');
@@ -1247,62 +1255,73 @@ function renderUsage(d){
   monthlyChart('usageDaily',u.daily||[],'users');
  }
 function renderErrors(d){
- const e=d.analytics?.errors||{},inv=d.investigation||{},q=period(),te=d.analytics?.telemetry||{};
+ if(d.errorsLoadState!=='loaded'){
+  const failed=d.errorsLoadState==='failed';
+  const title=failed?'DADOS DE ERROS INDISPONÍVEIS':'A CARREGAR DADOS DE ERROS';
+  const message=failed
+   ?'Não foi possível obter os dados deste separador. Os traços indicam indisponibilidade, não ausência de erros. Tenta ATUALIZAR.'
+   :'A obter os dados de hoje, desde as 00:00.';
+  $('errorCards').innerHTML=
+   card('CONSULTAS COM ERRO · HOJE','—',message,'red')+
+   card('EVENTOS DE ERRO · HOJE','—',message,'amber')+
+   card('CONSULTAS COM ERRO DA VERSÃO ATUAL','—',message)+
+   card('EVENTOS DE ERRO DA VERSÃO ATUAL','—',message)+
+   card('INSTALAÇÕES AFETADAS','—',message)+
+   card('MATRÍCULAS VÁLIDAS AFETADAS','—',message);
+  const empty='<div class="empty">'+esc(title+'. '+message)+'</div>';
+  ['errorTypes','errorBursts','errorReading','errorInstallations','errorSignatures','errorPlates','errorTechnical'].forEach(id=>{const el=$(id);if(el)el.innerHTML=empty;});
+  const plateCount=$('errorPlatesCount');if(plateCount)plateCount.textContent=failed?'INDISPONÍVEL':'A CARREGAR';
+  return;
+ }
+ const e=d.analytics?.errors||{},inv=d.investigation||{};
  const appVersion=String(inv.current_app_version||d.current_app_version||"");
  const versionLabel=appVersion?esc(appVersion):"ATUAL";
  const versionPhrase=appVersion?"na versão "+esc(appVersion):"na versão atual";
- const total=Number(inv.error_queries_24h ?? (e.types||[]).reduce((s,x)=>s+Number(x.qty||0),0));
+ const totalRaw=inv.error_queries_24h ?? ((e.types||[]).length ? (e.types||[]).reduce((sum,x)=>sum+Number(x.qty||0),0) : 0);
+ const total=Number(totalRaw);
  $('errorCards').innerHTML=
-  card('CONSULTAS COM ERRO NAS 24 H',num(total),'Consultas distintas em todas as versões.','red')+
-  card('EVENTOS DE ERRO NAS 24 H',num(inv.errors_24h),'Eventos técnicos brutos; podem repetir.','amber')+
-  card('CONSULTAS COM ERRO DA VERSÃO '+versionLabel,num(inv.current_version_errors),'Consultas distintas da versão atual.')+
+  card('CONSULTAS COM ERRO · HOJE',num(total),'Consultas distintas desde as 00:00.','red')+
+  card('EVENTOS DE ERRO · HOJE',num(inv.errors_24h),'Eventos técnicos brutos; podem repetir.','amber')+
+  card('CONSULTAS COM ERRO DA VERSÃO '+versionLabel,num(inv.current_version_errors),'Consultas distintas na versão atual.')+
   card('EVENTOS DE ERRO DA VERSÃO '+versionLabel,num(inv.current_version_error_events),'Eventos técnicos brutos da versão atual.')+
-  card('INSTALAÇÕES AFETADAS',num(inv.current_version_installations),'Onde apareceu uma consulta com erro nesta versão.')+
-  card('MATRÍCULAS VÁLIDAS AFETADAS',num(inv.current_version_plates),'Matrículas com formato válido capturadas nos erros.');
+  card('INSTALAÇÕES AFETADAS',num(inv.current_version_installations),'Instalações com erro hoje.')+
+  card('MATRÍCULAS VÁLIDAS AFETADAS',num(inv.current_version_plates),'Matrículas em erros registados hoje.');
  $('errorTypes').innerHTML=table(['TIPO / INTERPRETAÇÃO','CONSULTAS','EVENTOS','ÚLTIMO REGISTO'],(e.types||[]).map(x=>'<tr>'+td('<span class="tag red">'+esc(asfErrorLabel(x.kind))+'</span><div class="error-kind-code">'+esc(x.kind||'Desconhecido')+'</div><div class="error-kind-note">'+esc(asfErrorNote(x.kind))+'</div>')+td('<strong>'+fmt(x.qty)+'</strong>')+td(fmt(x.event_qty??x.qty))+td(datePT(x.last_at))+'</tr>'));
  const bursts=inv.current_version_bursts_5m||[];$('errorBursts').innerHTML=table(['HORA','CONSULTAS','EVENTOS'],bursts.slice(0,12).map(x=>'<tr>'+td('<strong>'+datePT(x.start)+'</strong>')+td('<strong>'+fmt(x.count)+'</strong>')+td(fmt(x.event_count??x.count))+'</tr>'));
- $('errorReading').innerHTML=buildErrorReading(d);
+ $('errorReading').innerHTML=buildErrorReading();
  $('errorInstallations').innerHTML=table(['INSTALAÇÃO','CONSULTAS','EVENTOS'],(e.installations||[]).slice(0,15).map(x=>'<tr>'+td('<strong>'+esc(x.installation_id||'—')+'</strong>')+td(fmt(x.qty))+td(fmt(x.event_qty??x.qty))+'</tr>'));
  $('errorSignatures').innerHTML=table(['TIPO','CONSULTAS','EVENTOS','INSTALAÇÕES'],(e.signatures||[]).slice(0,15).map(x=>'<tr>'+td('<span class="tag red">'+esc(asfErrorLabel(x.kind))+'</span><div class="error-kind-code">'+esc(x.kind||'—')+'</div>')+td(fmt(x.qty))+td(fmt(x.event_qty??x.qty))+td(fmt(x.installs))+'</tr>'));
  const plateCases=inv.error_plate_cases_24h||inv.current_version_plate_cases||[];
  const plateCount=$('errorPlatesCount');
- if(plateCount)plateCount.textContent='ATÉ '+fmt(plateCases.length)+' CASOS · 24 H';
+ if(plateCount)plateCount.textContent='ATÉ '+fmt(plateCases.length)+' CASOS · HOJE';
  $('errorPlates').innerHTML=plateCases.length?table(['MATRÍCULA','DATA E HORA','TIPO DE ERRO','HTTP / MENSAGEM','BROWSER','VERSÃO / BUILD'],plateCases.map(x=>{
    const http=x.http_status==null?'—':'HTTP '+fmt(x.http_status);
    const message=x.error_message?'<div class="error-kind-note">'+esc(x.error_message)+'</div>':'';
    const build=x.build_id?'<div class="error-kind-code">'+esc(String(x.build_id).slice(0,18))+'</div>':'';
    return '<tr>'+td('<strong>'+esc(x.matricula||'—')+'</strong>')+td(datePT(x.occurred_at))+td('<span class="tag red" title="'+esc(asfErrorNote(x.error_type))+'">'+esc(asfErrorLabel(x.error_type))+'</span><div class="error-kind-code">'+esc(x.error_type||'—')+'</div>')+td(http+message)+td(esc(x.browser||'—'))+td(esc(x.app_version||'—')+build)+'</tr>';
-})):'<div class="empty">Não há matrículas portuguesas válidas associadas a erros ASF nas últimas 24 horas.</div>';
+})):'<div class="empty">Não há matrículas portuguesas válidas associadas a erros ASF hoje, desde as 00:00.</div>';
  const recent=inv.latest_current_version||[];
-  const errorContext=x=>{
-   const attempts=Array.isArray(x.attempts)?x.attempts:[];
-   const online=x.client_online===false?'Browser indicava offline':x.client_online===true?'Browser indicava online':'Estado de rede não registado';
-   let context='';
-   if(x.error_type==='http_400'){
-    context='Entrada capturada: '+(x.captured_plate_length==null?'comprimento desconhecido':fmt(x.captured_plate_length)+' caracteres')+'. O relay rejeitou-a antes da ASF.';
-   }else if(x.error_type==='security_auth'){
-    context=online+'. Não houve tentativa ASF; a falha ocorreu na autorização/ligação do VÉRIX.';
-   }else if(x.error_type==='http_null'){
-    context='Sem estado HTTP recebido. '+online+'.';
-   }else{
-    context=online+'.';
-   }
-   const attemptsText=attempts.length
-    ?attempts.map(t=>asfErrorLabel(t.type)+(t.status!=null?' · HTTP '+fmt(t.status):'')+(t.duration_ms!=null?' · '+fmt(t.duration_ms)+' ms':'')+(t.response_bytes!=null?' · '+fmt(t.response_bytes)+' B':'')).join(' → ')
-    :'Sem tentativas ASF registadas.';
-   const network=x.client_effective_type?'Rede: '+x.client_effective_type+(x.client_rtt_ms!=null?' · RTT '+fmt(x.client_rtt_ms)+' ms':'')+'. ':'';
-   return '<div class="error-context">'+esc(context)+'</div><div class="error-context-detail">'+esc(network+attemptsText)+'</div>';
-  };
-  $('errorTechnical').innerHTML=recent.length?'<table class="table"><thead><tr><th>Hora</th><th>Browser</th><th>Transporte</th><th>Tipo</th><th>HTTP</th><th>ASF ms</th><th>Relay ms</th><th>Contexto e tentativas</th><th>Hash</th></tr></thead><tbody>'+recent.slice(0,15).map(x=>'<tr>'+td(datePT(x.occurred_at))+td(esc(x.browser||'—'))+td(esc(x.transport||'—'))+td('<span title="'+esc(asfErrorNote(x.error_type))+'">'+esc(asfErrorLabel(x.error_type))+'</span><div class="error-kind-code">'+esc(x.error_type||'—')+'</div>')+td(x.http_status==null?'—':fmt(x.http_status))+td(x.duration_ms==null?'—':fmt(x.duration_ms)+' ms')+td(x.relay_latency_ms==null?'—':fmt(x.relay_latency_ms)+' ms')+td(errorContext(x))+td(esc(x.response_hash||'—'))+'</tr>').join('')+'</tbody></table>':'<div class="empty">Sem incidentes recentes.</div>';
- function buildErrorReading(data){
-   const n=Number(inv.current_version_errors||0),inst=Number(inv.current_version_installations||0),hashes=Number(inv.current_version_hashes||0);
-   const types=(e.types||[]).slice().sort((a,b)=>Number(b.qty||0)-Number(a.qty||0));
-   const top=types[0];
-   let html='';
-   if(!n) html+='<div class="goodbox"><strong>Não existem erros '+versionPhrase+' nas últimas 24 horas.</strong><br>A janela atual não mostra um incidente ativo.</div>';
-   else html+='<div class="warnbox"><strong>Existem '+fmt(n)+' falhas '+versionPhrase+' nas últimas 24 horas.</strong><br>Foram observadas em '+fmt(inst)+' instalações e '+fmt(hashes)+' assinaturas de resposta. Isto mostra concentração técnica; não determina sozinho a causa.</div>';
-   if(top) html+='<div style="margin-top:10px" class="explain"><strong>Tipo mais frequente:</strong> '+esc(top.kind||'desconhecido')+' · '+fmt(top.qty)+' ocorrências.<br><strong>Como ler:</strong> devemos cruzar hora, instalação, browser e resposta antes de atribuir a origem do problema.</div>';
-   return html;
+ const errorContext=x=>{
+  const attempts=Array.isArray(x.attempts)?x.attempts:[];
+  const online=x.client_online===false?'Browser indicava offline':x.client_online===true?'Browser indicava online':'Estado de rede não registado';
+  let context='';
+  if(x.error_type==='http_400')context='Entrada capturada: '+(x.captured_plate_length==null?'comprimento desconhecido':fmt(x.captured_plate_length)+' caracteres')+'. O relay rejeitou-a antes da ASF.';
+  else if(x.error_type==='security_auth')context=online+'. Não houve tentativa ASF; a falha ocorreu na autorização/ligação do VÉRIX.';
+  else if(x.error_type==='http_null')context='Sem estado HTTP recebido. '+online+'.';
+  else context=online+'.';
+  const attemptsText=attempts.length?attempts.map(t=>asfErrorLabel(t.type)+(t.status!=null?' · HTTP '+fmt(t.status):'')+(t.duration_ms!=null?' · '+fmt(t.duration_ms)+' ms':'')+(t.response_bytes!=null?' · '+fmt(t.response_bytes)+' B':'')).join(' → '):'Sem tentativas ASF registadas.';
+  const network=x.client_effective_type?'Rede: '+x.client_effective_type+(x.client_rtt_ms!=null?' · RTT '+fmt(x.client_rtt_ms)+' ms':'')+'. ':'';
+  return '<div class="error-context">'+esc(context)+'</div><div class="error-context-detail">'+esc(network+attemptsText)+'</div>';
+ };
+ $('errorTechnical').innerHTML=recent.length?'<table class="table"><thead><tr><th>Hora</th><th>Browser</th><th>Transporte</th><th>Tipo</th><th>HTTP</th><th>ASF ms</th><th>Relay ms</th><th>Contexto e tentativas</th><th>Hash</th></tr></thead><tbody>'+recent.slice(0,15).map(x=>'<tr>'+td(datePT(x.occurred_at))+td(esc(x.browser||'—'))+td(esc(x.transport||'—'))+td('<span title="'+esc(asfErrorNote(x.error_type))+'">'+esc(asfErrorLabel(x.error_type))+'</span><div class="error-kind-code">'+esc(x.error_type||'—')+'</div>')+td(x.http_status==null?'—':fmt(x.http_status))+td(x.duration_ms==null?'—':fmt(x.duration_ms)+' ms')+td(x.relay_latency_ms==null?'—':fmt(x.relay_latency_ms)+' ms')+td(errorContext(x))+td(esc(x.response_hash||'—'))+'</tr>').join('')+'</tbody></table>':'<div class="empty">Sem incidentes registados hoje, desde as 00:00.</div>';
+ function buildErrorReading(){
+  const n=Number(inv.current_version_errors||0),inst=Number(inv.current_version_installations||0),hashes=Number(inv.current_version_hashes||0);
+  const types=(e.types||[]).slice().sort((a,b)=>Number(b.qty||0)-Number(a.qty||0));
+  const top=types[0];let html='';
+  if(!n)html+='<div class="goodbox"><strong>Não existem erros '+versionPhrase+' hoje, desde as 00:00.</strong><br>Não foram observados erros no período diário selecionado.</div>';
+  else html+='<div class="warnbox"><strong>Existem '+fmt(n)+' falhas '+versionPhrase+' hoje, desde as 00:00.</strong><br>Foram observadas em '+fmt(inst)+' instalações e '+fmt(hashes)+' assinaturas de resposta. Isto mostra concentração técnica; não determina sozinho a causa.</div>';
+  if(top)html+='<div style="margin-top:10px" class="explain"><strong>Tipo mais frequente:</strong> '+esc(top.kind||'desconhecido')+' · '+fmt(top.qty)+' ocorrências.<br><strong>Como ler:</strong> devemos cruzar hora, instalação, browser e resposta antes de atribuir a origem do problema.</div>';
+  return html;
  }
  applyErrorSearch();
 }
@@ -1350,11 +1369,11 @@ function renderInsights(d){
  const median=val(summary,'p50_24h','speed_p50')??val(c,'analytics_speed_p50_24h')??val(c,'speed_p50','p50_24h');
  $('insightCards').innerHTML=
   card('MÓDULO MAIS USADO · 30 DIAS',topModule?esc(topModule.module||'—'):'—',topModule?fmt(topModule.qty)+' ações registadas.':'Sem dados suficientes.','cyan')+
-  card('HORA COM MAIS CONSULTAS · 24 H',topHour?String(topHour.hour_num??'').padStart(2,'0')+'h':'—',topHour?fmt(topHour.consultations)+' consultas iniciadas.':'Sem dados suficientes.')+
+  card('HORA COM MAIS CONSULTAS · HOJE',topHour?String(topHour.hour_num??'').padStart(2,'0')+'h':'—',topHour?fmt(topHour.consultations)+' consultas iniciadas.':'Sem dados suficientes.')+
   card('DIA COM MAIS CONSULTAS · 30 DIAS',topDay?esc(topDay.day_key||'—'):'—',topDay?fmt(topDay.lookups)+' consultas registadas.':'Sem dados suficientes.')+
   card('ITEM MAIS COPIADO · 30 DIAS',topLaw?esc(topLaw.item_label||topLaw.item_id||'—'):'—',topLaw?fmt(topLaw.qty)+' ações de cópia registadas.':'Sem dados suficientes.')+
-  card('VELOCIDADE MÉDIA · 24 H',avg==null?'—':fmt(avg)+' km/h','Média dos valores disponíveis.')+
-  card('VELOCIDADE MEDIANA · 24 H',median==null?'—':fmt(median)+' km/h','Mediana dos valores disponíveis.','blue');
+  card('VELOCIDADE MÉDIA · HOJE',avg==null?'—':fmt(avg)+' km/h','Média dos valores disponíveis.')+
+  card('VELOCIDADE MEDIANA · HOJE',median==null?'—':fmt(median)+' km/h','Mediana dos valores disponíveis.','blue');
  barList('insightModules',modules.map(x=>({label:x.module||'—',value:x.qty})));
  hourGrid('insightHours',u.hourly||[]);
  $('insightLegislation').innerHTML=table(['ITEM','CÓPIAS','CÓDIGO','DESCRIÇÃO'],laws.slice(0,12).map(x=>'<tr>'+td('<strong>'+esc(x.item_label||x.item_id||'—')+'</strong>')+td(fmt(x.qty))+td(fmt(x.code_qty))+td(fmt(x.desc_qty))+'</tr>'));
