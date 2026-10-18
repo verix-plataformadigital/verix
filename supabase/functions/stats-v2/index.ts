@@ -232,11 +232,11 @@ function windowStartTodayLisbon(now: string): string {
 async function loadInsuranceNoCases(now:string, pageLimit?:number, pageOffset=0){
   async function fetchPage(limit:number,offset:number){
     const qs = new URLSearchParams();
-    qs.set("select","event_id,matricula,occurred_at,expires_at");
+    qs.set("select","event_id,matricula,occurred_at,created_at,expires_at");
     qs.set("expires_at","gt."+now);
-    // Operational plate detail is visible for only 24 hours. Existing database rows are
-    // untouched by this filter; old rows simply stop appearing in the live list.
-    qs.set("occurred_at","gte."+new Date(Date.parse(now)-24*60*60*1000).toISOString());
+    // The 24-hour window starts when the server records the result, not when an
+    // offline client originally generated its event. Existing rows are not rewritten.
+    qs.set("created_at","gte."+new Date(Date.parse(now)-24*60*60*1000).toISOString());
     qs.set("order","occurred_at.desc,event_id.desc");
     qs.set("limit",String(limit));
     qs.set("offset",String(offset));
