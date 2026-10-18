@@ -425,6 +425,28 @@ BEGIN
 END;
 $function$;
 
+CREATE OR REPLACE FUNCTION public.verix2_admin_live_activity_v3(
+  p_now timestamptz DEFAULT now()
+)
+RETURNS jsonb
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path TO public, pg_catalog
+AS $function$
+SELECT jsonb_build_object(
+  'consultations',
+  count(DISTINCT e.query_id) FILTER (WHERE e.query_id IS NOT NULL),
+  'activeInstallations',
+  count(DISTINCT e.installation_id) FILTER (WHERE e.installation_id IS NOT NULL)
+)
+FROM public.verix2_events e
+WHERE e.event = 'vehicle_lookup'
+  AND e.query_id IS NOT NULL
+  AND e.occurred_at >= p_now - interval '3 minutes'
+  AND e.occurred_at <= p_now + interval '30 seconds';
+$function$;
+
 CREATE OR REPLACE FUNCTION public.verix2_admin_error_ledger_v3(
   p_period text DEFAULT 'today',
   p_now timestamptz DEFAULT now(),
@@ -571,9 +593,11 @@ $function$;
 REVOKE ALL ON FUNCTION public.verix2_admin_dashboard_v3_compute(timestamptz) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.verix2_admin_dashboard_v3(timestamptz, boolean) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.verix2_admin_error_ledger_v3(text, timestamptz, integer, integer) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.verix2_admin_live_activity_v3(timestamptz) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.verix2_admin_dashboard_v3_compute(timestamptz) TO service_role;
 GRANT EXECUTE ON FUNCTION public.verix2_admin_dashboard_v3(timestamptz, boolean) TO service_role;
 GRANT EXECUTE ON FUNCTION public.verix2_admin_error_ledger_v3(text, timestamptz, integer, integer) TO service_role;
+GRANT EXECUTE ON FUNCTION public.verix2_admin_live_activity_v3(timestamptz) TO service_role;
 
 -- Replace the expensive forced refresh with the compact V3 cache refresher.
 -- The job identity and existing telemetry rows are preserved.
