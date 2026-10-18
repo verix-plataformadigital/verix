@@ -569,4 +569,89 @@ body.vx-mobile-mode .vx-scroll-x{
 
 }
 
+/* Mobile full-viewport alignment hotfix (2026-10-18). */
+@media (max-width:1199px){
+  html:has(body.vx-mobile-mode),
+  body.vx-mobile-mode{
+    width:100vw!important;
+    min-width:100vw!important;
+    max-width:none!important;
+    margin:0!important;
+    transform:none!important;
+    translate:none!important;
+    scale:1!important;
+    zoom:1!important;
+    perspective:none!important;
+    filter:none!important;
+    box-sizing:border-box!important;
+  }
+
+  /* A transformed/contained wrapper makes position:fixed behave like a small panel.
+     Remove those containing-block effects only from wrappers holding app-level layers. */
+  body.vx-mobile-mode:has(.verix-asf-notice-overlay),
+  body.vx-mobile-mode:has(#opsBootOverlay),
+  body.vx-mobile-mode:has(#mainMenuScreen.vx-home-screen),
+  body.vx-mobile-mode *:has(.verix-asf-notice-overlay),
+  body.vx-mobile-mode *:has(#opsBootOverlay),
+  body.vx-mobile-mode *:has(#mainMenuScreen.vx-home-screen){
+    transform:none!important;
+    translate:none!important;
+    scale:1!important;
+    zoom:1!important;
+    perspective:none!important;
+    filter:none!important;
+    contain:none!important;
+    will-change:auto!important;
+  }
+
+  .verix-asf-notice-overlay,
+  #opsBootOverlay,
+  #mainMenuScreen.vx-home-screen,
+  #vxMobileOverlay{
+    position:fixed!important;
+    inset:0!important;
+    top:0!important;
+    right:0!important;
+    bottom:0!important;
+    left:0!important;
+    width:100vw!important;
+    min-width:100vw!important;
+    max-width:none!important;
+    height:100vh!important;
+    height:100dvh!important;
+    margin:0!important;
+    transform:none!important;
+    translate:none!important;
+    scale:1!important;
+    zoom:1!important;
+    box-sizing:border-box!important;
+  }
+
+  .verix-asf-notice-overlay{
+    align-items:center!important;
+    justify-content:center!important;
+    padding-left:max(10px,env(safe-area-inset-left,0px))!important;
+    padding-right:max(10px,env(safe-area-inset-right,0px))!important;
+  }
+
+  .verix-asf-notice-window{
+    width:min(560px,calc(100vw - 24px - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px)))!important;
+    min-width:0!important;
+    max-width:calc(100vw - 24px - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px))!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+    box-sizing:border-box!important;
+  }
+
+  #vxMobileTop,
+  #vxMobileBar{
+    left:0!important;
+    right:0!important;
+    width:100vw!important;
+    min-width:100vw!important;
+    max-width:none!important;
+    margin:0!important;
+    transform:none!important;
+  }
+}
 
