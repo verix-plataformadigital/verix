@@ -229,7 +229,7 @@ assert.match(hourlyMigration, /count\(DISTINCT e\.installation_id\) FILTER/, "ho
 assert.match(hourlyMigration, /e\.event IN \('app_open','heartbeat'\)/, "hourly presence must use app-open/heartbeat events");
 assert.ok(admin.includes("Consultas e utilizadores por hora"), "dashboard must describe hourly consultations and active-use metrics");
 assert.ok(admin.includes("Atividade em cada hora do dia"), "usage page must describe hourly activity");
-assert.match(admin, /count\(DISTINCT e\.query_id\)/, "the backend contract must deduplicate consultations by query ID");
+assert.match(adminV3Migration, /count\(DISTINCT e\.query_id\)/, "the backend contract must deduplicate consultations by query ID");
 assert.ok(admin.includes("activeUsers"), "hourly chart must use the active-installation count");
 
 assert.ok(app.includes("function cinTelemetrySnapshot()"), "Cinemometer telemetry must construct a structured snapshot");
@@ -252,7 +252,7 @@ assert.match(adminV3Migration, /interval '24 hours'/, "new no-record plate detai
 assert.doesNotMatch(adminV3Migration, /DELETE FROM public\.verix_insurance_no_cases|UPDATE public\.verix_insurance_no_cases|TRUNCATE/i, "migration must not rewrite or delete existing plate records");
 assert.match(stats, /detail === "dashboard-v3"/);
 assert.match(stats, /detail === "error-ledger-v3"/);
-assert.match(stats, /created_at/g, "no-record visibility window must be based on server receipt time");
+assert.ok(stats.includes('qs.set("created_at","gte."+new Date(Date.parse(now)-24*60*60*1000).toISOString());'), "no-record visibility window must be based on server receipt time");
 const adminInlineScript = admin.match(/<script>([\s\S]*?)<\/script>/);
 assert.ok(adminInlineScript, "new Admin must have one executable script block");
 assert.doesNotThrow(() => new Function(adminInlineScript[1]), "new Admin JavaScript must parse");
