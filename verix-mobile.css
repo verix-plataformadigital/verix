@@ -527,60 +527,11 @@ body.vx-mobile-mode .vx-scroll-x{
 
 }
 
-/* Camadas de ecrã completo — uma única definição responsiva.
-   O aviso e o arranque são irmãos diretos de body. A sua geometria deve
-   depender da janela, não da altura do conteúdo nem de transformações 3D. */
+
+/* Arranque e aviso inicial: apenas regras de conteúdo responsivo.
+   O posicionamento fixed usa o viewport porque a perspetiva 3D foi retirada
+   do body em dispositivos móveis, na folha de estilos de origem. */
 @media (max-width:1199px){
-  html,
-  body,
-  body.vx-mobile-mode{
-    width:100%!important;
-    min-width:0!important;
-    max-width:100%!important;
-    margin:0!important;
-    box-sizing:border-box!important;
-    transform:none!important;
-    translate:none!important;
-    scale:1!important;
-    zoom:1!important;
-    perspective:none!important;
-    filter:none!important;
-    contain:none!important;
-    content-visibility:visible!important;
-    will-change:auto!important;
-  }
-
-  html,
-  body.vx-mobile-mode{
-    overflow-x:hidden!important;
-  }
-
-  html body #opsBootOverlay,
-  html body .verix-asf-notice-overlay,
-  html body #mainMenuScreen.vx-home-screen{
-    position:fixed!important;
-    inset:0!important;
-    top:0!important;
-    right:0!important;
-    bottom:0!important;
-    left:0!important;
-    width:auto!important;
-    min-width:0!important;
-    max-width:none!important;
-    height:auto!important;
-    min-height:0!important;
-    max-height:none!important;
-    margin:0!important;
-    box-sizing:border-box!important;
-    transform:none!important;
-    translate:none!important;
-    scale:1!important;
-    zoom:1!important;
-  }
-
-  /* Splash: texto contido na largura real do telemóvel e centrado.
-     Evita que o tamanho intrínseco e o letter-spacing empurrem o título
-     para fora do ecrã. */
   html body #opsBootOverlay{
     display:flex!important;
     flex-direction:column!important;
@@ -631,10 +582,7 @@ body.vx-mobile-mode .vx-scroll-x{
     margin:8px auto 0!important;
   }
 
-  /* Aviso: centrado quando cabe; alinhado ao início e deslocável quando
-     o conteúdo excede a altura útil. Nenhuma parte fica presa fora do ecrã. */
   html body .verix-asf-notice-overlay{
-    display:flex!important;
     align-items:center!important;
     align-items:safe center!important;
     justify-content:center!important;
@@ -646,12 +594,7 @@ body.vx-mobile-mode .vx-scroll-x{
     overscroll-behavior:contain!important;
   }
 
-  html body .verix-asf-notice-overlay[aria-hidden="true"]{
-    display:none!important;
-  }
-
   html body .verix-asf-notice-window{
-    position:relative!important;
     display:flex!important;
     flex:0 1 auto!important;
     flex-direction:column!important;
@@ -696,16 +639,5 @@ body.vx-mobile-mode .vx-scroll-x{
     min-width:0!important;
     max-width:100%!important;
     overflow-wrap:anywhere!important;
-  }
-
-  #vxMobileTop,
-  #vxMobileBar{
-    left:0!important;
-    right:0!important;
-    width:auto!important;
-    min-width:0!important;
-    max-width:none!important;
-    margin:0!important;
-    transform:none!important;
   }
 }
