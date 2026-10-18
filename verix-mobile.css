@@ -628,8 +628,6 @@ body.vx-mobile-mode .vx-scroll-x{
   }
 
   .verix-asf-notice-overlay{
-    align-items:center!important;
-    justify-content:center!important;
     padding-left:max(10px,env(safe-area-inset-left,0px))!important;
     padding-right:max(10px,env(safe-area-inset-right,0px))!important;
   }
