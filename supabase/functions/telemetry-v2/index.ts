@@ -468,7 +468,7 @@ Deno.serve(async (req: Request) => {
         }
 
         const installationKey = await hmacHex(`installation:${installationId}`);
-        if (!(await consumeRate(`vehicle:${installationKey}`, 30)) {
+        if (!(await consumeRate(`vehicle:${installationKey}`, 30))) {
           blockedLookupQueries.set(queryId, { reason: "rate_limited", retryable: true });
           rejectEvent(x, "rate_limited", true);
           continue;
