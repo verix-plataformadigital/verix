@@ -26,6 +26,7 @@ assert.match(admin, /d\.current_app_version/);
 
 assert.match(endpoint, /db\.rpc\(\s*["']verix2_ingest_telemetry["']/);
 assert.match(endpoint, /p_events:\s*events/);
+assert.ok(endpoint.includes('if (!(await consumeRate(`vehicle:${installationKey}`, 30))) {'), "vehicle rate-limit guard must remain syntactically balanced");
 assert.match(endpoint, /const blockedLookupQueries = new Map/);
 assert.match(endpoint, /event === "vehicle_insurance_pending" && \(!queryId \|\| !appVersion\)/, "pending events require a query ID and app version");
 assert.match(endpoint, /const consultationOutcomeEvents = events\.filter/);
