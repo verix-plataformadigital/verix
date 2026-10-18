@@ -221,7 +221,7 @@ button:focus-visible,input:focus-visible{outline:3px solid #69b9d0;outline-offse
       <div class="content-grid">
         <article class="panel wide">
           <div class="panel-head">
-            <div><h2>Consultas e utilizadores por hora</h2><p>As 24 horas do dia selecionado. As barras representam consultas iniciadas e instalações com uma ação real em cada hora.</p></div>
+            <div><h2>Consultas e utilizadores por hora</h2><p>As 24 horas de hoje, desde as 00:00 em Lisboa. As barras representam consultas iniciadas e instalações com uma ação real em cada hora.</p></div>
             <span class="panel-tag">Hora de Lisboa</span>
           </div>
           <div class="legend"><span><i class="legend-dot consults"></i>Consultas iniciadas</span><span><i class="legend-dot users"></i>Utilizadores ativos estimados</span></div>
@@ -306,7 +306,7 @@ const PAGE_TEXT={
  insurance:['Consultas de seguro','Resultados ASF, percentagens sem registo e lista operacional das últimas 24 horas.'],
  activity:['Utilização por hora','Atividade por instalações distintas, consultas por hora e presença por consultas recentes.'],
  legislation:['Legislação copiada','Elementos mais copiados e utilização comprovada pelo evento de cópia.'],
- errors:['Erros técnicos','Causas, matrículas consultadas, tempos, respostas HTTP e tentativas de ligação disponíveis.']
+ errors:['Erros técnicos','Causas, matrículas consultadas, tempos, respostas HTTP e tentativas de ligação disponíveis. Um erro técnico não significa que o veículo não tenha seguro.']
 };
 const PERIODS=[{key:'today',label:'Hoje',startLabel:'desde as 00:00'},{key:'week',label:'7 dias',startLabel:'últimos 7 dias'},{key:'total',label:'Histórico Total',startLabel:'últimos 365 dias'}];
 const $=id=>document.getElementById(id);
@@ -468,7 +468,7 @@ function renderHourly(chartId,tableId,noteId){
   host.setAttribute('aria-label','Consultas e instalações ativas por hora. '+rows.map(r=>String(r.hour)+' horas: '+fmt(r.consultations)+' consultas, '+fmt(r.activeUsers)+' instalações').join('; '));
   const tableRows=rows.map(r=>[String(r.hour)+'h',fmt(r.consultations),fmt(r.activeUsers)]);
   $(tableId).replaceChildren(makeTable(['Hora','Consultas iniciadas','Instalações ativas'],tableRows));
-  if(noteId){const i=dashboardData.ranges&&dashboardData.ranges.today;$ (noteId).textContent='Período: '+(i?prettyDate(i.start)+' – '+prettyDate(i.end):'hoje, desde a meia-noite de Lisboa')+'. O primeiro e o último bloco podem ser parciais.';}
+  if(noteId){const i=dashboardData.ranges&&dashboardData.ranges.today;$(noteId).textContent='Período: '+(i?prettyDate(i.start)+' – '+prettyDate(i.end):'hoje, desde a meia-noite de Lisboa')+'. O primeiro e o último bloco podem ser parciais.';}
 }
 function renderLegislationItems(items){
   const rows=items.map(x=>[x.label||x.itemId||'(iteme sem identificação)',x.copyType||'desconhecido',fmt(x.copies),fmt(x.users)]);
