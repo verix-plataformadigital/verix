@@ -234,6 +234,9 @@ async function loadInsuranceNoCases(now:string, pageLimit?:number, pageOffset=0)
     const qs = new URLSearchParams();
     qs.set("select","event_id,matricula,occurred_at,expires_at");
     qs.set("expires_at","gt."+now);
+    // Operational plate detail is visible for only 24 hours. Existing database rows are
+    // untouched by this filter; old rows simply stop appearing in the live list.
+    qs.set("occurred_at","gte."+new Date(Date.parse(now)-24*60*60*1000).toISOString());
     qs.set("order","occurred_at.desc,event_id.desc");
     qs.set("limit",String(limit));
     qs.set("offset",String(offset));
@@ -566,6 +569,40 @@ Deno.serve(async (req) => {
     const url = new URL(req.url);
     const detail = url.searchParams.get("detail") || "";
     const forceRefresh = url.searchParams.get("fresh") === "1";
+
+    // V3 dashboard contract: compact period aggregates are precomputed and cached in PostgreSQL.
+    if(req.method === "GET" && detail === "dashboard-v3") {
+      const now = new Date().toISOString();
+      try {
+        const metrics = await rpc("verix2_admin_dashboard_v3", {
+          p_now: now,
+          p_force_refresh: forceRefresh
+        });
+        return json({ok:true,detail:"dashboard-v3",generatedAt:now,data:metrics},200,req);
+      } catch(error) {
+        return json({ok:false,error:"dashboard_v3_failed",detail:String((error as Error)?.message||error)},500,req);
+      }
+    }
+
+    // Detailed error ledger: raw response bodies, request headers and caller stacks are never exposed.
+    if(req.method === "GET" && detail === "error-ledger-v3") {
+      const requestedPeriod = url.searchParams.get("period") || "today";
+      const period = ["today","week","total"].includes(requestedPeriod) ? requestedPeriod : "today";
+      const limit = Math.max(1,Math.min(200,Math.floor(Number(url.searchParams.get("limit") || 50))));
+      const offset = Math.max(0,Math.min(1000000,Math.floor(Number(url.searchParams.get("offset") || 0))));
+      const now = new Date().toISOString();
+      try {
+        const ledger = await rpc("verix2_admin_error_ledger_v3", {
+          p_period: period,
+          p_now: now,
+          p_limit: limit,
+          p_offset: offset
+        });
+        return json({ok:true,detail:"error-ledger-v3",generatedAt:now,data:ledger},200,req);
+      } catch(error) {
+        return json({ok:false,error:"error_ledger_v3_failed",detail:String((error as Error)?.message||error)},500,req);
+      }
+    }
 
     // This plate list is only served after the admin token has been validated.
     if(req.method==="GET" && detail==="insurance-no-cases") {
