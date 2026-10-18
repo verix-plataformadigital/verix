@@ -39,9 +39,10 @@ html,body{margin:0;width:100%;height:100%;background:#010407;overflow:hidden}
   }
   const ua=navigator.userAgent||'';
   const coarse=window.matchMedia && window.matchMedia('(pointer:coarse)').matches;
-  const narrow=window.innerWidth<=1199;
   const mobileUA=/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(ua);
-  const isMobile=mobileUA || coarse || narrow;
+  // A janela estreita, o zoom do browser ou a escala do Windows não tornam um PC num telemóvel.
+  // Só usamos a rota móvel por UA móvel ou por toque primário num viewport de tablet.
+  const isMobile=mobileUA || (coarse && window.innerWidth<=1199);
   const fallback=isMobile?'./verix-mobile.html':'./verix-app.html';
   try{
     // Always ask GitHub Pages for the current deployment manifest; never trust a cached copy.
