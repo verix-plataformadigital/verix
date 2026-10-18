@@ -105,35 +105,35 @@ button{cursor:pointer}
 .chart-bar{width:100%;max-width:22px;border-radius:7px 7px 2px 2px;background:linear-gradient(180deg,#75d6df,#12889a);min-height:3px}
 .chart-label{font-size:7px;color:#7c8e94;white-space:nowrap;transform:rotate(-50deg);transform-origin:center;margin-top:8px}
 .hour-grid{display:grid;gap:14px;min-width:0}
-.hourly-highlights{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-bottom:15px}
+.hourly-highlights{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;}
 .hourly-highlight{min-width:0;padding:11px 12px;border:1px solid #d7e5e8;border-radius:11px;background:#f5fafb}
-.hourly-highlight span{display:block;color:#425d65;font-size:9px;font-weight:900;letter-spacing:.45px;text-transform:uppercase}
-.hourly-highlight strong{display:block;margin-top:5px;color:#143f48;font-size:16px;line-height:1.25;font-variant-numeric:tabular-nums}
-.hourly-highlight small{display:block;margin-top:3px;color:#526a71;font-size:10px;line-height:1.35}
-.hourly-series{min-width:0;padding-top:13px;border-top:1px solid #e3ecee}
-.hourly-series-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:9px}
-.hourly-series-title{display:block;color:#263c42;font-size:12px;font-weight:900;line-height:1.3}
-.hourly-series-subtitle{display:block;margin-top:3px;color:#526a71;font-size:10px;line-height:1.35}
-.hourly-series-peak{flex:0 0 auto;padding:5px 8px;border-radius:7px;background:#edf5f6;color:#244f58;font-size:10px;font-weight:850;white-space:nowrap;font-variant-numeric:tabular-nums}
-.hourly-day-group{margin-top:10px;padding:10px;border:1px solid #e0eaed;border-radius:10px;background:#fbfdfd}
-.hourly-day-group:first-child{margin-top:0}
-.hourly-day-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}
-.hourly-day-label{color:#294951;font-size:10px;font-weight:900;text-transform:capitalize}
-.hourly-day-count{color:#5b7076;font-size:9px;font-weight:700;white-space:nowrap}
-.hourly-bars{display:grid;grid-template-columns:repeat(24,minmax(0,1fr));align-items:end;gap:3px;min-width:0}
-.hourly-bar-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;min-width:0;border-radius:5px;outline-offset:2px}
+.hourly-highlight span{display:block;color:#425d65;font-weight:900;text-transform:uppercase}
+.hourly-highlight strong{display:block;margin-top:5px;color:#143f48;font-variant-numeric:tabular-nums}
+.hourly-highlight small{display:block;margin-top:3px;color:#526a71;}
+.hourly-series{padding-top:13px;border-top:1px solid #e3ecee}
+.hourly-series-head{align-items:flex-start;justify-content:space-between;gap:10px;}
+.hourly-series-title{display:block;font-weight:900;line-height:1.3}
+.hourly-series-subtitle{color:#526a71;}
+
+
+
+
+
+
+
+.hourly-bar-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;border-radius:5px;outline-offset:2px}
 .hourly-bar-col:focus-visible{outline:2px solid #087f8d}
-.hourly-bar-track{display:flex;align-items:flex-end;justify-content:center;box-sizing:border-box;width:100%;height:70px;padding:0 2px;border-bottom:1px solid #cbd9dd}
-.hourly-bar{display:block;width:100%;max-width:15px;min-width:3px;height:0;border-radius:4px 4px 1px 1px;background:#087f8d}
+.hourly-bar-track{display:flex;align-items:flex-end;justify-content:center;box-sizing:border-box;width:100%;padding:0 2px;border-bottom:1px solid #cbd9dd}
+.hourly-bar{display:block;height:0;border-radius:4px 4px 1px 1px;background:#087f8d}
 .hourly-series.presence .hourly-bar{background:#426da6}
 .hourly-bar-col.is-peak .hourly-bar{background:#153f49}
 .hourly-series.presence .hourly-bar-col.is-peak .hourly-bar{background:#244a78}
-.hourly-hour{display:block;min-height:11px;color:#425a61;font-size:8px;font-weight:750;line-height:1.2;text-align:center;white-space:nowrap}
-.hourly-data{margin-top:10px;border-top:1px solid #e8eff1}
-.hourly-data summary{padding:9px 0 2px;color:#34525a;font-size:10px;font-weight:850;cursor:pointer}
+.hourly-hour{display:block;font-weight:750;line-height:1.2;text-align:center;white-space:nowrap}
+.hourly-data{border-top:1px solid #e8eff1}
+.hourly-data summary{padding:9px 0 2px;color:#34525a;font-weight:850;cursor:pointer}
 .hourly-data .table{margin-top:8px}
-.hourly-data .table th,.hourly-data .table td{font-size:10px;padding:8px}
-.hour-note{margin:10px 0 2px;padding:9px 10px;border-left:3px solid #9bcfd4;border-radius:0 7px 7px 0;background:#f5fafb;color:#425c63;font-size:10px;line-height:1.5}
+.hourly-data .table th,.hourly-data .table td{padding:8px}
+.hour-note{margin:10px 0 2px;padding:9px 10px;border-left:3px solid #9bcfd4;border-radius:0 7px 7px 0;background:#f5fafb;}
 
 .kpi-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.mini{padding:11px 12px;background:#f8fafb;border:1px solid #e8edef;border-radius:10px}.mini b{display:block;font-size:10px}.mini span{display:block;margin-top:4px;color:#6e8087;font-size:8px}
 .table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:9px 10px;border-bottom:1px solid #edf0f2;text-align:left;font-size:9px}.table th{font-size:8px;color:#7c8c92;text-transform:uppercase;letter-spacing:.5px}.table td strong{font-weight:950}.tag{display:inline-block;padding:3px 7px;border-radius:999px;background:#edf7f8;color:#007e8c;font-size:7px;font-weight:900}.tag.red{background:#fff0f2;color:#be3349}.tag.amber{background:#fff7e6;color:#986500}
@@ -250,11 +250,11 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
  .chart{height:135px}
  .hourly-highlights{gap:7px}
  .hourly-highlight{padding:9px 10px}
- .hourly-highlight strong{font-size:14px}
+ .hourly-highlight strong{}
  .hourly-series-head{gap:6px}
- .hourly-series-peak{font-size:9px;padding:5px 6px}
- .hourly-bars{gap:2px}
- .hourly-bar-track{height:58px;padding:0 1px}
+ 
+ 
+ .hourly-bar-track{padding:0 1px}
  .hourly-hour{font-size:7px}
  .bar-row{grid-template-columns:100px 1fr 44px}
  .page-head{align-items:flex-start;flex-direction:column}
