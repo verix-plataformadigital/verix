@@ -222,44 +222,21 @@ document.body.appendChild(bar);
 
 const overlay=document.createElement('div');
 overlay.id='vxMobileOverlay';
-overlay.style.cssText='display:none;position:fixed;inset:0;z-index:2147482998;background:rgba(0,0,0,.48);';
 document.body.appendChild(overlay);
 
 function closeDrawer(){
-  if(nav && nav.root){
-    nav.root.classList.remove('vx-mobile-drawer');
-    nav.root.style.removeProperty('display');
-    nav.root.style.removeProperty('position');
-    nav.root.style.removeProperty('inset');
-    nav.root.style.removeProperty('z-index');
-    nav.root.style.removeProperty('width');
-    nav.root.style.removeProperty('max-width');
-    nav.root.style.removeProperty('overflow');
-    nav.root.style.removeProperty('background');
-    nav.root.style.removeProperty('box-shadow');
-  }
-  overlay.style.display='none';
+  if(nav && nav.root) nav.root.classList.remove('vx-mobile-drawer');
+  overlay.classList.remove('is-open');
 }
 
 function openDrawer(){
   if(!nav || !nav.root) return;
   nav.root.classList.add('vx-mobile-drawer');
-  nav.root.style.display='block';
-  nav.root.style.position='fixed';
-  nav.root.style.top='56px';
-  nav.root.style.left='8px';
-  nav.root.style.bottom='calc(72px + env(safe-area-inset-bottom,0px))';
-  nav.root.style.width='min(86vw,340px)';
-  nav.root.style.maxWidth='340px';
-  nav.root.style.overflow='auto';
-  nav.root.style.zIndex='2147482999';
-  nav.root.style.background='var(--bg,#0d151a)';
-  nav.root.style.boxShadow='0 20px 50px rgba(0,0,0,.45)';
-  overlay.style.display='block';
+  overlay.classList.add('is-open');
 }
 
 document.getElementById('vxMobileMenu').addEventListener('click',()=>{
-  const visible=overlay.style.display==='block';
+  const visible=overlay.classList.contains('is-open');
   if(visible) closeDrawer(); else openDrawer();
 });
 overlay.addEventListener('click',closeDrawer);
@@ -281,7 +258,7 @@ if(nav){
   menuBtn.type='button';
   menuBtn.innerHTML='<span class="vx-icon">☰</span>Menu';
   menuBtn.addEventListener('click',()=>{
-    const visible=overlay.style.display==='block';
+    const visible=overlay.classList.contains('is-open');
     if(visible) closeDrawer(); else openDrawer();
   });
   bar.appendChild(menuBtn);
