@@ -412,6 +412,8 @@ Deno.serve(async (req: Request) => {
 
     const events: any[] = [];
     const insuranceNoCases: any[] = [];
+    const sourceEventById = new Map<string, any>();
+    const blockedLookupQueries = new Map<string, { reason: string; retryable: boolean }>();
 
     for (const x of input) {
       const event = cleanText(x?.event, 80);
@@ -450,15 +452,27 @@ Deno.serve(async (req: Request) => {
 
       if (event === "vehicle_lookup") {
         // Uma consulta precisa de instalação, query e versão; sessão/tab podem faltar.
-        if (!queryId || !appVersion) { rejectEvent(x, "missing_query_id_or_version"); continue; }
+        if (!queryId || !appVersion) {
+          if (queryId) blockedLookupQueries.set(queryId, { reason: "missing_query_id_or_version", retryable: false });
+          rejectEvent(x, "missing_query_id_or_version");
+          continue;
+        }
 
         const d = x?.occurredAt ? new Date(x.occurredAt) : new Date();
         const now = Date.now();
         const ts = d.getTime();
-        if (!Number.isFinite(ts) || ts < now - 24 * 60 * 60 * 1000 || ts > now + 5 * 60 * 1000) { rejectEvent(x, "invalid_or_stale_timestamp"); continue; }
+        if (!Number.isFinite(ts) || ts < now - 24 * 60 * 60 * 1000 || ts > now + 5 * 60 * 1000) {
+          if (queryId) blockedLookupQueries.set(queryId, { reason: "invalid_or_stale_timestamp", retryable: false });
+          rejectEvent(x, "invalid_or_stale_timestamp");
+          continue;
+        }
 
         const installationKey = await hmacHex(`installation:${installationId}`);
-        if (!(await consumeRate(`vehicle:${installationKey}`, 30))) { rejectEvent(x, "rate_limited", true); continue; }
+        if (!(await consumeRate(`vehicle:${installationKey}`, 30)) {
+          blockedLookupQueries.set(queryId, { reason: "rate_limited", retryable: true });
+          rejectEvent(x, "rate_limited", true);
+          continue;
+        }
       }
 
       if (event === "imt_loaded") {
@@ -498,6 +512,51 @@ Deno.serve(async (req: Request) => {
         browser: cleanText(x?.browser, 40),
         metadata
       });
+      sourceEventById.set(eventId, x);
+    }
+
+    // Keep consultation telemetry atomic at the query level. If a start event
+    // was rejected (for example by rate limiting), do not commit its pending/final
+    // siblings by themselves. First check whether that query already has a stored
+    // lookup from a previous attempt; this preserves idempotent retry behavior.
+    if (blockedLookupQueries.size && events.some((event: any) =>
+      blockedLookupQueries.has(String(event.query_id || "")) &&
+      ["vehicle_insurance_pending", "vehicle_insurance_yes", "vehicle_insurance_no", "vehicle_insurance_error"].includes(event.event)
+    )) {
+      const candidateQueryIds = [...new Set(events
+        .filter((event: any) =>
+          blockedLookupQueries.has(String(event.query_id || "")) &&
+          ["vehicle_insurance_pending", "vehicle_insurance_yes", "vehicle_insurance_no", "vehicle_insurance_error"].includes(event.event)
+        )
+        .map((event: any) => String(event.query_id)))];
+      const { data: storedLookups, error: lookupReadError } = await db
+        .from("verix2_events")
+        .select("query_id")
+        .eq("event", "vehicle_lookup")
+        .in("query_id", candidateQueryIds);
+      if (lookupReadError) throw new Error("telemetry_lookup_integrity:" + lookupReadError.message);
+      const storedLookupIds = new Set((storedLookups || []).map((row: any) => String(row.query_id || "")));
+      const acceptedLookupIds = new Set(events
+        .filter((event: any) => event.event === "vehicle_lookup" && event.query_id)
+        .map((event: any) => String(event.query_id)));
+      const blockedDependentEventIds = new Set<string>();
+      for (const event of events) {
+        if (!["vehicle_insurance_pending", "vehicle_insurance_yes", "vehicle_insurance_no", "vehicle_insurance_error"].includes(event.event)) continue;
+        const queryId = String(event.query_id || "");
+        const state = blockedLookupQueries.get(queryId);
+        if (!state || acceptedLookupIds.has(queryId) || storedLookupIds.has(queryId)) continue;
+        const sourceEvent = sourceEventById.get(event.event_id);
+        if (sourceEvent) rejectEvent(sourceEvent, "lookup_not_accepted", state.retryable);
+        blockedDependentEventIds.add(event.event_id);
+      }
+      if (blockedDependentEventIds.size) {
+        for (let i = events.length - 1; i >= 0; i--) {
+          if (blockedDependentEventIds.has(events[i].event_id)) events.splice(i, 1);
+        }
+        for (let i = insuranceNoCases.length - 1; i >= 0; i--) {
+          if (blockedDependentEventIds.has(insuranceNoCases[i].event_id)) insuranceNoCases.splice(i, 1);
+        }
+      }
     }
 
     if (!events.length) {
