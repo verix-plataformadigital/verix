@@ -1,10 +1,11 @@
 (function(){
 'use strict';
 
-const vxMobileViewport = (
-  (window.matchMedia && window.matchMedia('(max-width:1199px)').matches) ||
-    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(navigator.userAgent||'')
-);
+const vxMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(navigator.userAgent||'');
+const vxCoarsePointer = !!(window.matchMedia && window.matchMedia('(pointer:coarse)').matches);
+// A narrow CSS viewport can result from Windows DPI scaling or browser zoom on a PC.
+// Do not switch a mouse-operated desktop into the mobile layout for that reason alone.
+const vxMobileViewport = vxMobileUA || (vxCoarsePointer && window.innerWidth <= 1199);
 if(!vxMobileViewport) return;
 
 function esc(text){
