@@ -574,10 +574,21 @@ Deno.serve(async (req) => {
     if(req.method === "GET" && detail === "dashboard-v3") {
       const now = new Date().toISOString();
       try {
-        const metrics = await rpc("verix2_admin_dashboard_v3", {
-          p_now: now,
-          p_force_refresh: forceRefresh
-        });
+        const [cachedMetrics, liveActivity] = await Promise.all([
+          rpc("verix2_admin_dashboard_v3", {
+            p_now: now,
+            p_force_refresh: forceRefresh
+          }),
+          rpc("verix2_admin_live_activity_v3", { p_now: now })
+        ]);
+        const metrics = {
+          ...cachedMetrics,
+          users: {
+            ...(cachedMetrics?.users || {}),
+            consultationsLast3Minutes: Number(liveActivity?.consultations || 0),
+            activeInstallationsLast3Minutes: Number(liveActivity?.activeInstallations || 0)
+          }
+        };
         return json({ok:true,detail:"dashboard-v3",generatedAt:now,data:metrics},200,req);
       } catch(error) {
         return json({ok:false,error:"dashboard_v3_failed",detail:String((error as Error)?.message||error)},500,req);
