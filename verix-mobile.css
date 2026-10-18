@@ -525,133 +525,119 @@ body.vx-mobile-mode .vx-scroll-x{
     pointer-events:none!important;
   }
 
-  /* Viewport e aviso inicial — regras partilhadas para mobile/tablet. */
-  html body{
-    perspective:none!important;
-    perspective-origin:initial!important;
-  }
-  .verix-asf-notice-overlay,
-  #opsBootOverlay,
-  #mainMenuScreen.vx-home-screen{
-    position:fixed!important;
-    inset:0!important;
-    width:100vw!important;
-    height:100vh!important;
-    height:100dvh!important;
-  }
-  .verix-asf-notice-overlay{
+}
+
+
+/* Arranque e aviso inicial: apenas regras de conteúdo responsivo.
+   O posicionamento fixed usa o viewport porque a perspetiva 3D foi retirada
+   do body em dispositivos móveis, na folha de estilos de origem. */
+@media (max-width:1199px){
+  html body #opsBootOverlay{
     display:flex!important;
+    flex-direction:column!important;
     align-items:center!important;
     justify-content:center!important;
-    box-sizing:border-box!important;
+    gap:14px!important;
+    padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px))!important;
     overflow-x:hidden!important;
     overflow-y:auto!important;
-    padding:calc(12px + env(safe-area-inset-top,0px)) 10px calc(12px + env(safe-area-inset-bottom,0px))!important;
+    text-align:center!important;
+  }
+
+  html body #opsBootOverlay .ops-boot-title{
+    display:block!important;
+    flex:0 1 auto!important;
+    width:min(100%,480px)!important;
+    min-width:0!important;
+    max-width:100%!important;
+    margin:0 auto!important;
+    padding:0!important;
+    text-align:center!important;
+    white-space:normal!important;
+    overflow-wrap:normal!important;
+    word-break:normal!important;
+    font-size:clamp(20px,5.4vw,24px)!important;
+    line-height:1.25!important;
+    letter-spacing:clamp(1.2px,1vw,3px)!important;
+  }
+
+  html body #opsBootOverlay .ops-boot-sub{
+    display:block!important;
+    width:min(100%,430px)!important;
+    min-width:0!important;
+    max-width:100%!important;
+    margin:0 auto!important;
+    text-align:center!important;
+    white-space:normal!important;
+    overflow-wrap:break-word!important;
+    font-size:clamp(10px,2.7vw,12px)!important;
+    line-height:1.55!important;
+    letter-spacing:clamp(.5px,.5vw,1.5px)!important;
+  }
+
+  html body #opsBootOverlay .ops-boot-bar{
+    flex:0 0 auto!important;
+    width:min(280px,100%)!important;
+    max-width:100%!important;
+    margin:8px auto 0!important;
+  }
+
+  html body .verix-asf-notice-overlay{
+    align-items:center!important;
+    align-items:safe center!important;
+    justify-content:center!important;
+    justify-content:safe center!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    padding:calc(12px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))!important;
     -webkit-overflow-scrolling:touch!important;
     overscroll-behavior:contain!important;
   }
-  .verix-asf-notice-overlay[aria-hidden="true"]{display:none!important;}
-  .verix-asf-notice-window{
-    flex:0 0 auto!important;
+
+  html body .verix-asf-notice-window{
+    display:flex!important;
+    flex:0 1 auto!important;
+    flex-direction:column!important;
     width:min(560px,100%)!important;
+    min-width:0!important;
+    max-width:100%!important;
     height:auto!important;
     max-height:calc(100dvh - 24px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))!important;
     min-height:0!important;
+    margin:auto!important;
+    overflow:hidden!important;
+    box-sizing:border-box!important;
   }
-  .verix-asf-notice-body{
+
+  html body .verix-asf-notice-top,
+  html body .verix-asf-notice-footer{
+    flex:0 0 auto!important;
+    min-width:0!important;
+  }
+
+  html body .verix-asf-notice-body{
     flex:1 1 auto!important;
+    min-width:0!important;
     min-height:0!important;
+    width:100%!important;
+    max-width:100%!important;
     overflow-x:hidden!important;
     overflow-y:auto!important;
     overscroll-behavior:contain!important;
     -webkit-overflow-scrolling:touch!important;
   }
 
-}
-
-/* Mobile full-viewport alignment hotfix (2026-10-18). */
-@media (max-width:1199px){
-  html:has(body.vx-mobile-mode),
-  body.vx-mobile-mode{
-    width:100vw!important;
-    min-width:100vw!important;
-    max-width:none!important;
-    margin:0!important;
-    transform:none!important;
-    translate:none!important;
-    scale:1!important;
-    zoom:1!important;
-    perspective:none!important;
-    filter:none!important;
-    box-sizing:border-box!important;
+  html body .verix-asf-notice-grid{
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-auto-rows:auto!important;
+    width:100%!important;
+    height:auto!important;
+    min-height:0!important;
   }
 
-  /* A transformed/contained wrapper makes position:fixed behave like a small panel.
-     Remove those containing-block effects only from wrappers holding app-level layers. */
-  body.vx-mobile-mode:has(.verix-asf-notice-overlay),
-  body.vx-mobile-mode:has(#opsBootOverlay),
-  body.vx-mobile-mode:has(#mainMenuScreen.vx-home-screen),
-  body.vx-mobile-mode *:has(.verix-asf-notice-overlay),
-  body.vx-mobile-mode *:has(#opsBootOverlay),
-  body.vx-mobile-mode *:has(#mainMenuScreen.vx-home-screen){
-    transform:none!important;
-    translate:none!important;
-    scale:1!important;
-    zoom:1!important;
-    perspective:none!important;
-    filter:none!important;
-    contain:none!important;
-    will-change:auto!important;
-  }
-
-  .verix-asf-notice-overlay,
-  #opsBootOverlay,
-  #mainMenuScreen.vx-home-screen,
-  #vxMobileOverlay{
-    position:fixed!important;
-    inset:0!important;
-    top:0!important;
-    right:0!important;
-    bottom:0!important;
-    left:0!important;
-    width:100vw!important;
-    min-width:100vw!important;
-    max-width:none!important;
-    height:100vh!important;
-    height:100dvh!important;
-    margin:0!important;
-    transform:none!important;
-    translate:none!important;
-    scale:1!important;
-    zoom:1!important;
-    box-sizing:border-box!important;
-  }
-
-  .verix-asf-notice-overlay{
-    align-items:center!important;
-    justify-content:center!important;
-    padding-left:max(10px,env(safe-area-inset-left,0px))!important;
-    padding-right:max(10px,env(safe-area-inset-right,0px))!important;
-  }
-
-  .verix-asf-notice-window{
-    width:min(560px,calc(100vw - 24px - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px)))!important;
+  html body .verix-asf-notice-card{
     min-width:0!important;
-    max-width:calc(100vw - 24px - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px))!important;
-    margin-left:auto!important;
-    margin-right:auto!important;
-    box-sizing:border-box!important;
-  }
-
-  #vxMobileTop,
-  #vxMobileBar{
-    left:0!important;
-    right:0!important;
-    width:100vw!important;
-    min-width:100vw!important;
-    max-width:none!important;
-    margin:0!important;
-    transform:none!important;
+    max-width:100%!important;
+    overflow-wrap:anywhere!important;
   }
 }
-

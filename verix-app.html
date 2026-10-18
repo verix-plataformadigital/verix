@@ -9949,9 +9949,14 @@ html body #asfRateWidget .asf-rate-sub{
  VÉRIX — 007 / BLACK OPS / HOLO 4D EXTREME
  Animacoes intensas · holograma · profundidade · classified
  ================================================================ */
-html body{
- perspective:1600px;
- perspective-origin:50% 40%;
+/* Profundidade 3D apenas no desktop.
+   perspective num ancestral altera o bloco de referência dos elementos fixed;
+   nos dispositivos móveis, os overlays têm de seguir o viewport real. */
+@media (min-width:1200px){
+ html body{
+  perspective:1600px;
+  perspective-origin:50% 40%;
+ }
 }
 /* --- Ambient fog + hex pulse --- */
 html body .cinematic-bg{
