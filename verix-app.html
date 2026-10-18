@@ -477,148 +477,47 @@ let ultimaMatriculaLivrete = "";
  input.value = value;
  }
 
- // Monitorização das consultas IMT internas.
- // Primeiro verificamos se o servidor RNSI está acessível. Só depois
- // carregamos o conteúdo no iframe. Assim, quando a rede RNSI não está
- // disponível, o Chrome não substitui o nosso aviso pela página de erro.
- 
-  const IMT_TIMEOUT_MS = 12000;
- const imtTimers = {};
+ // IMT — carregamento direto, seguindo o comportamento simples validado no HTML de referência.
+// Não inferir falha de rede a partir de about:blank, do estado cross-origin ou de um timeout.
+// Os navegadores não expõem de forma fiável os erros de navegação de uma iframe.
 let imtQuerySequence = 0;
 
- function mostrarLoading(frameId, overlayId) {
- const overlay = document.getElementById(overlayId);
- const frame = document.getElementById(frameId);
- if (!overlay || !frame) return;
-
- clearTimeout(imtTimers[frameId]);
- overlay.classList.remove('imt-offline-state');
- overlay.innerHTML = `<div class="spinner"></div>A CARREGAR CONSULTA<div><small>IMT • ACESSO À REDE RNSI</small></div>`;
- overlay.style.display = 'flex';
- frame.style.zIndex = '2';
- }
-
- function occultarLoading(frameId, overlayId) {
- clearTimeout(imtTimers[frameId]);
- const overlay = document.getElementById(overlayId);
- const frame = document.getElementById(frameId);
- if (!overlay || !frame) return;
- overlay.classList.remove('imt-offline-state');
- overlay.style.display = 'none';
- frame.style.zIndex = '2';
- }
-
- function mostrarErroRedeIMT(frameId, overlayId) {
- const overlay = document.getElementById(overlayId);
- const frame = document.getElementById(frameId);
- if (!overlay || !frame) return;
-
- clearTimeout(imtTimers[frameId]);
- overlay.classList.add('imt-offline-state');
- const httpsPage = /^https:/i.test(String(location.protocol || ''));
- overlay.innerHTML = `
-   <div class="imt-offline-card" role="alert" aria-live="polite">
-     <div class="imt-offline-topline"><span class="imt-offline-icon">⚠</span><span class="imt-offline-badge">RNSI // SEM ACESSO</span></div>
-     <div class="imt-offline-title">SEM ACESSO À REDE RNSI</div>
-     <div class="imt-offline-text">Não foi possível carregar a consulta IMT neste posto.</div>
-     <div class="imt-offline-sub">${httpsPage ? 'Esta página está em HTTPS e o endereço interno RNSI usa HTTP. O navegador pode bloquear o iframe por conteúdo misto. Abra o VÉRIX como ficheiro local/ambiente HTTP ou use um endereço publicado no mesmo ambiente da rede RNSI.' : 'Confirme o acesso deste computador à rede RNSI e ao endereço consultapsp.imtt.external.rnsi.local.'}</div>
-     <button type="button" class="imt-retry-btn" onclick="repetirConsultaIMT()">↻ &nbsp; TENTAR NOVAMENTE</button>
-   </div>
- `;
- overlay.style.display = 'flex';
- frame.style.zIndex = '2';
- }
-
- function carregarConsultaIMT(frameId, overlayId, url, source, sequence) {
+function carregarConsultaIMT(frameId, overlayId, url, source, sequence) {
   const overlay = document.getElementById(overlayId);
   const frame = document.getElementById(frameId);
   if (!overlay || !frame) return;
 
-  const queryId = window.__VERIX_CURRENT_QUERY_ID || null;
-  
   const requestSequence = Number(sequence || imtQuerySequence || 0);
 
-  mostrarLoading(frameId, overlayId);
-  clearTimeout(imtTimers[frameId]);
+  overlay.classList.remove('imt-offline-state');
+  overlay.innerHTML = `<div class="spinner"></div>A CARREGAR CONSULTA<div><small>IMT • ACESSO À REDE RNSI</small></div>`;
+  overlay.style.display = 'flex';
+  frame.style.zIndex = '2';
 
-  let concluida = false;
-  let loadCheckTimer = null;
-  let loadStartedAt = Date.now();
-
-  const terminou = () => {
-    if (concluida) return;
-    concluida = true;
-    clearTimeout(imtTimers[frameId]);
-    if (loadCheckTimer) clearTimeout(loadCheckTimer);
-
-    if (requestSequence !== imtQuerySequence) return;
-    occultarLoading(frameId, overlayId);
-  };
-
-  const verificarCarga = () => {
-    if (concluida) return;
-
-    // Em cross-origin, ler a localização gera SecurityError. Isso é esperado e
-    // significa que a navegação chegou ao documento remoto. Só consideramos
-    // suspeito o caso em que o frame continua em about:blank.
-    let href = '';
-    let sameOrigin = false;
-    try {
-      href = String(frame.contentWindow && frame.contentWindow.location && frame.contentWindow.location.href || '');
-      sameOrigin = true;
-    } catch (_) {
-      // Cross-origin: navegação remota presumida concluída.
-    }
-
-    if (sameOrigin && (!href || /^about:blank$/i.test(href))) {
-      var elapsed = Date.now() - loadStartedAt;
-      if (elapsed < 1500) {
-        loadCheckTimer = setTimeout(verificarCarga, 250);
-        return;
-      }
-      if (requestSequence === imtQuerySequence) mostrarErroRedeIMT(frameId, overlayId);
-      concluida = true;
-      clearTimeout(imtTimers[frameId]);
-      return;
-    }
-
-    terminou();
-  };
-
-  // Mesmo comportamento do IPO: URL direta no iframe.
+  // No mesmo padrão do HTML de referência: só retirar o carregamento quando
+  // a navegação da própria iframe dispara load. Não alterar o canal ASF.
   frame.onload = function () {
-    // Aguarda ligeiramente para não confundir o about:blank inicial com o
-    // documento final, sobretudo no Chromium/Windows.
-    loadCheckTimer = setTimeout(verificarCarga, 180);
+    if (requestSequence !== imtQuerySequence) return;
+    overlay.classList.remove('imt-offline-state');
+    overlay.style.display = 'none';
+    frame.style.zIndex = '2';
   };
-
-  // Só falha de navegação do próprio iframe/rede.
-  frame.onerror = () => {
-    if (concluida) return;
-    concluida = true;
-    clearTimeout(imtTimers[frameId]);
-    if (requestSequence === imtQuerySequence) {
-      mostrarErroRedeIMT(frameId, overlayId);
-    }
-  };
-
-  imtTimers[frameId] = setTimeout(() => {
-    if (concluida) return;
-    concluida = true;
-    if (requestSequence === imtQuerySequence) {
-      mostrarErroRedeIMT(frameId, overlayId);
-    }
-  }, IMT_TIMEOUT_MS);
 
   try {
     frame.removeAttribute('loading');
     frame.src = url;
-  } catch (_) {
-    concluida = true;
-    clearTimeout(imtTimers[frameId]);
-    if (requestSequence === imtQuerySequence) {
-      mostrarErroRedeIMT(frameId, overlayId);
-    }
+  } catch (error) {
+    console.error('[IMT] Não foi possível iniciar a navegação:', error);
+    if (requestSequence !== imtQuerySequence) return;
+    overlay.classList.add('imt-offline-state');
+    overlay.innerHTML = `
+      <div class="imt-offline-card" role="alert" aria-live="polite">
+        <div class="imt-offline-title">NÃO FOI POSSÍVEL INICIAR A CONSULTA</div>
+        <div class="imt-offline-text">O navegador não conseguiu iniciar a abertura da página IMT.</div>
+        <button type="button" class="imt-retry-btn" onclick="repetirConsultaIMT()">↻ &nbsp; TENTAR NOVAMENTE</button>
+      </div>
+    `;
+    overlay.style.display = 'flex';
   }
 }
 
