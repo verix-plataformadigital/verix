@@ -475,6 +475,12 @@ Deno.serve(async (req: Request) => {
         }
       }
 
+      if (event === "vehicle_insurance_pending" && (!queryId || !appVersion)) {
+        if (queryId) blockedLookupQueries.set(queryId, { reason: "missing_query_id_or_version", retryable: false });
+        rejectEvent(x, "missing_query_id_or_version");
+        continue;
+      }
+
       if (event === "imt_loaded") {
         if (!queryId || !appVersion || metadata.resultConfirmed !== true) { rejectEvent(x, "unconfirmed_imt_result"); continue; }
       }
@@ -515,40 +521,39 @@ Deno.serve(async (req: Request) => {
       sourceEventById.set(eventId, x);
     }
 
-    // Keep consultation telemetry atomic at the query level. If a start event
-    // was rejected (for example by rate limiting), do not commit its pending/final
-    // siblings by themselves. First check whether that query already has a stored
-    // lookup from a previous attempt; this preserves idempotent retry behavior.
-    if (blockedLookupQueries.size && events.some((event: any) =>
-      blockedLookupQueries.has(String(event.query_id || "")) &&
+    // A pending/final outcome is only valid when its lookup exists or is accepted
+    // in this batch. This also handles split batches and replayed queues.
+    const consultationOutcomeEvents = events.filter((event: any) =>
       ["vehicle_insurance_pending", "vehicle_insurance_yes", "vehicle_insurance_no", "vehicle_insurance_error"].includes(event.event)
-    )) {
-      const candidateQueryIds = [...new Set(events
-        .filter((event: any) =>
-          blockedLookupQueries.has(String(event.query_id || "")) &&
-          ["vehicle_insurance_pending", "vehicle_insurance_yes", "vehicle_insurance_no", "vehicle_insurance_error"].includes(event.event)
-        )
-        .map((event: any) => String(event.query_id)))];
+      && event.query_id
+    );
+    const lookupIdsInBatch = new Set(events
+      .filter((event: any) => event.event === "vehicle_lookup" && event.query_id)
+      .map((event: any) => String(event.query_id)));
+    const candidateQueryIds = [...new Set(consultationOutcomeEvents
+      .map((event: any) => String(event.query_id))
+      .filter((queryId: string) => blockedLookupQueries.has(queryId) || !lookupIdsInBatch.has(queryId)))];
+
+    if (candidateQueryIds.length) {
       const { data: storedLookups, error: lookupReadError } = await db
         .from("verix2_events")
         .select("query_id")
         .eq("event", "vehicle_lookup")
         .in("query_id", candidateQueryIds);
       if (lookupReadError) throw new Error("telemetry_lookup_integrity:" + lookupReadError.message);
+
       const storedLookupIds = new Set((storedLookups || []).map((row: any) => String(row.query_id || "")));
-      const acceptedLookupIds = new Set(events
-        .filter((event: any) => event.event === "vehicle_lookup" && event.query_id)
-        .map((event: any) => String(event.query_id)));
       const blockedDependentEventIds = new Set<string>();
-      for (const event of events) {
-        if (!["vehicle_insurance_pending", "vehicle_insurance_yes", "vehicle_insurance_no", "vehicle_insurance_error"].includes(event.event)) continue;
+      for (const event of consultationOutcomeEvents) {
         const queryId = String(event.query_id || "");
         const state = blockedLookupQueries.get(queryId);
-        if (!state || acceptedLookupIds.has(queryId) || storedLookupIds.has(queryId)) continue;
+        if (lookupIdsInBatch.has(queryId) || storedLookupIds.has(queryId)) continue;
+
         const sourceEvent = sourceEventById.get(event.event_id);
-        if (sourceEvent) rejectEvent(sourceEvent, "lookup_not_accepted", state.retryable);
+        if (sourceEvent) rejectEvent(sourceEvent, state?.reason === "rate_limited" ? "lookup_not_accepted" : "lookup_missing", !!state?.retryable);
         blockedDependentEventIds.add(event.event_id);
       }
+
       if (blockedDependentEventIds.size) {
         for (let i = events.length - 1; i >= 0; i--) {
           if (blockedDependentEventIds.has(events[i].event_id)) events.splice(i, 1);
