@@ -28,11 +28,9 @@ DECLARE
   deleted_events bigint := 0;
   deleted_rate_limits bigint := 0;
 BEGIN
-  -- No rows are deleted by this migration itself. Future scheduled runs only
-  -- expire raw telemetry older than 365 days; the Admin history uses this window.
-  DELETE FROM public.verix2_events WHERE occurred_at < p_before;
-  GET DIAGNOSTICS deleted_events = ROW_COUNT;
-
+  -- Preserve all raw telemetry rows. The Admin's initial "Histórico Total"
+  -- reports a rolling 365-day window, but this maintenance function must not
+  -- destroy older events or overwrite historical data.
   DELETE FROM public.verix2_rate_limits WHERE window_started < now() - interval '24 hours';
   GET DIAGNOSTICS deleted_rate_limits = ROW_COUNT;
 
@@ -392,7 +390,7 @@ BEGIN
 
   IF v_has_cache
      AND NOT coalesce(p_force_refresh, false)
-     AND v_refreshed_at >= clock_timestamp() - interval '90 seconds' THEN
+     AND v_refreshed_at >= clock_timestamp() - interval '6 minutes' THEN
     RETURN v_payload;
   END IF;
 
@@ -411,7 +409,7 @@ BEGIN
 
   IF v_has_cache
      AND NOT coalesce(p_force_refresh, false)
-     AND v_refreshed_at >= clock_timestamp() - interval '90 seconds' THEN
+     AND v_refreshed_at >= clock_timestamp() - interval '6 minutes' THEN
     RETURN v_payload;
   END IF;
 
@@ -591,7 +589,7 @@ BEGIN
     LOOP
       PERFORM cron.alter_job(
         job_id := r.jobid,
-        schedule := '* * * * *',
+        schedule := '*/5 * * * *',
         command := 'SELECT public.verix2_admin_dashboard_v3(now(), true);'
       );
     END LOOP;
