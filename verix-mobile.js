@@ -103,178 +103,60 @@ document.querySelectorAll('table').forEach(table=>{
   wrap.appendChild(table);
 });
 
-/* Ajuste responsivo de recurso para conteúdo dinâmico.
-   A normalização é limitada ao módulo/área afetada, em vez de percorrer todo o body. */
-const mobileStyleOverrides=new WeakMap();
-
-function stylePropertyName(prop){
-  return prop.replace(/[A-Z]/g,char=>'-'+char.toLowerCase());
-}
-
-function restoreMobileOverrides(root){
+/* Conteúdo dinâmico mobile: apenas semântica e scroll de tabelas.
+   O layout é definido pelo CSS; não escrevemos estilos inline nem medimos
+   repetidamente todos os elementos após cada mutação. */
+function prepareMobileSubtree(root){
   if(!root || root.nodeType!==1) return;
-  const elements=[root,...root.querySelectorAll('*')];
-  elements.forEach(el=>{
-    const state=mobileStyleOverrides.get(el);
-    if(!state) return;
-    state.forEach((saved,prop)=>{
-      const cssName=stylePropertyName(prop);
-      if(el.style[prop]!==saved.applied) return;
-      if(saved.originalValue){
-        el.style.setProperty(cssName,saved.originalValue,saved.originalPriority);
-      }else{
-        el.style.removeProperty(cssName);
-      }
-    });
-    mobileStyleOverrides.delete(el);
+
+  const fields=[];
+  if(root.matches && root.matches('input,textarea,select')) fields.push(root);
+  if(root.querySelectorAll) fields.push(...root.querySelectorAll('input,textarea,select'));
+  fields.forEach(el=>{
+    const hint=[el.placeholder,el.name,el.id,el.getAttribute('aria-label')].join(' ').toLowerCase();
+    if(/matr[ií]cula|placa|ve[ií]culo|license|registration/.test(hint)){
+      el.setAttribute('inputmode','text');
+      el.setAttribute('autocapitalize','characters');
+      el.setAttribute('spellcheck','false');
+    }
+  });
+
+  const tables=[];
+  if(root.matches && root.matches('table')) tables.push(root);
+  if(root.querySelectorAll) tables.push(...root.querySelectorAll('table'));
+  tables.forEach(table=>{
+    if(!table.parentNode || (table.parentElement && table.parentElement.classList.contains('vx-scroll-x'))) return;
+    const wrapper=document.createElement('div');
+    wrapper.className='vx-scroll-x';
+    table.parentNode.insertBefore(wrapper,table);
+    wrapper.appendChild(table);
   });
 }
 
-function normalizeMobileLayout(root,resetPatches=false){
-  if(!root || root.nodeType!==1) return;
-  const vw=Math.max(document.documentElement.clientWidth||0,window.innerWidth||0);
-
-  // Restore inline values owned by this normalizer so they cannot leak across
-  // device rotation or a switch from mobile/tablet to desktop width.
-  if(resetPatches || vw>1199) restoreMobileOverrides(root);
-  if(vw>1199) return;
-
-  const protectedFromNormalization=el=>!!(el && el.nodeType===1 &&
-    (el.id==='mainMenuScreen' ||
-     (el.closest && el.closest('#mainMenuScreen,#vxMobileTop,#vxMobileBar,#vxMobileOverlay'))));
-  if(protectedFromNormalization(root)) return;
-
-  const all=[root,...root.querySelectorAll('*')].filter(el=>!protectedFromNormalization(el));
-  const patches=new Map();
-  const patch=(el,prop,value)=>{
-    const current=el.style[prop];
-    const saved=mobileStyleOverrides.get(el);
-    if(current===value){
-      if(saved && saved.has(prop) && saved.get(prop).applied!==value){
-        saved.delete(prop);
-        if(!saved.size) mobileStyleOverrides.delete(el);
-      }
-      return;
-    }
-    let styles=patches.get(el);
-    if(!styles){styles={};patches.set(el,styles);}
-    styles[prop]=value;
-  };
-
-  // Read the affected region first, then write styles once per element.
-  for(const el of all){
-    const cs=getComputedStyle(el);
-    const rect=el.getBoundingClientRect();
-
-    if(rect.width>vw+2){
-      patch(el,'maxWidth','100%');
-      patch(el,'width','100%');
-    }
-
-    if(cs.display==='grid'){
-      const cols=cs.gridTemplateColumns;
-      const children=[...el.children].filter(child=>getComputedStyle(child).display!=='none');
-      if(children.length>=2 && children.length<=6 && rect.width>=vw*.72){
-        const rects=children.map(child=>child.getBoundingClientRect());
-        const top=rects[0]?.top||0;
-        const bottom=rects[0]?.bottom||0;
-        const firstRow=rects.filter(item=>item.top<bottom && item.bottom>top);
-        const wide=firstRow.length>=2 && firstRow.reduce((sum,item)=>sum+item.width,0)>vw*.72;
-        if(wide || /repeat\(|minmax|\b1fr\b/.test(cols)){
-          patch(el,'gridTemplateColumns','minmax(0,1fr)');
-          patch(el,'gridTemplateRows','none');
-        }
-      }
-    }
-
-    if(cs.display==='flex' && cs.flexDirection==='row'){
-      const children=[...el.children].filter(child=>getComputedStyle(child).display!=='none');
-      if(children.length===2 && rect.width>=vw*.72){
-        const rects=children.map(child=>child.getBoundingClientRect());
-        if(rects.every(item=>item.width>vw*.22) && Math.abs(rects[0].top-rects[1].top)<80){
-          patch(el,'flexDirection','column');
-          patch(el,'alignItems','stretch');
-        }
-      }
-    }
-  }
-
-  patches.forEach((styles,el)=>{
-    let saved=mobileStyleOverrides.get(el);
-    if(!saved){saved=new Map();mobileStyleOverrides.set(el,saved);}
-    Object.entries(styles).forEach(([prop,value])=>{
-      const cssName=stylePropertyName(prop);
-      if(!saved.has(prop)){
-        saved.set(prop,{
-          originalValue:el.style.getPropertyValue(cssName),
-          originalPriority:el.style.getPropertyPriority(cssName),
-          applied:value
-        });
-      }else{
-        const prior=saved.get(prop);
-        if(el.style[prop]!==prior.applied){
-          prior.originalValue=el.style.getPropertyValue(cssName);
-          prior.originalPriority=el.style.getPropertyPriority(cssName);
-        }
-        prior.applied=value;
-        saved.set(prop,prior);
-      }
-      el.style[prop]=value;
-    });
-  });
-}
-
-function normalizationRegions(){
-  const candidates=[
-    document.querySelector('.command'),
-    document.querySelector('.main'),
-    document.getElementById('moduleBody'),
-    document.querySelector('.history-body')
-  ].filter(Boolean);
-  return [...new Set(candidates)].filter(root=>
-    !candidates.some(other=>other!==root && other.contains(root))
-  );
-}
-
-function normalizeKnownRegions(resetPatches=false){
-  normalizationRegions().forEach(root=>normalizeMobileLayout(root,resetPatches));
-}
-
-const pendingLayoutRoots=new Set();
-
-function layoutRegionFor(target){
-  let node=target;
-  if(!node || node.nodeType!==1) node=node?.parentElement;
-  if(!node || node===document.body || node===document.documentElement) return null;
-  if(node.closest && node.closest('#mainMenuScreen,#vxMobileTop,#vxMobileBar,#vxMobileOverlay')) return null;
-  return (node.closest && node.closest('#moduleBody,.module-body,.history-body,.main,.command')) || node;
-}
-
-function queueLayoutNormalization(records){
+/* Só analisamos nós adicionados. Não há MutationObserver a medir a página,
+   a alterar largura/grelhas nem a disputar o layout com as regras CSS. */
+function handleMobileContentAdded(records){
+  const candidates=new Set();
   for(const record of records||[]){
-    const region=layoutRegionFor(record.target);
-    if(region) pendingLayoutRoots.add(region);
+    for(const node of record.addedNodes||[]){
+      if(node && node.nodeType===1) candidates.add(node);
+    }
   }
-  if(!pendingLayoutRoots.size) return;
+  if(!candidates.size) return;
 
-  clearTimeout(window.__vxMobileLayoutTimer);
-  window.__vxMobileLayoutTimer=setTimeout(()=>{
-    const roots=[...pendingLayoutRoots];
-    pendingLayoutRoots.clear();
-    const targets=roots.filter(root=>!roots.some(other=>other!==root && other.contains(root)));
-    targets.forEach(root=>normalizeMobileLayout(root));
-  },60);
+  const roots=[...candidates].filter(node=>{
+    let parent=node.parentElement;
+    while(parent && parent!==document.body){
+      if(candidates.has(parent)) return false;
+      parent=parent.parentElement;
+    }
+    return true;
+  });
+  roots.forEach(prepareMobileSubtree);
 }
 
-requestAnimationFrame(()=>normalizeKnownRegions());
-
-const observer=new MutationObserver(queueLayoutNormalization);
-observer.observe(document.body,{childList:true,subtree:true});
-
-window.addEventListener('resize',()=>{
-  clearTimeout(window.__vxMobileResizeTimer);
-  window.__vxMobileResizeTimer=setTimeout(()=>normalizeKnownRegions(true),120);
-},{passive:true});
+const mobileContentObserver=new MutationObserver(handleMobileContentAdded);
+mobileContentObserver.observe(document.body,{childList:true,subtree:true});
 
 const nav=findNavigation();
 
