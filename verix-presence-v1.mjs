@@ -9,7 +9,7 @@ import { createClient } from '@supabase/supabase-js';
   var ACTIVE_WINDOW_MS = 120000;
   var TRACK_MIN_INTERVAL_MS = 30000;
   var URGENT_TRACK_MIN_INTERVAL_MS = 2500;
-  var ADMIN = /(?:^|\/)admin_v2\.html$/i.test(String(window.location.pathname || ''));
+  var ADMIN = /(?:^|\\/)admin_v2\\.html$/i.test(String(window.location.pathname || '')) || /(?:^|\\/)verix-admin-pwa\\//i.test(String(window.location.pathname || '')) || /[?&]app=verix-admin-edge-v1(?:&|$)/i.test(String(window.location.search || ''));
 
   var snapshot = {
     status: ADMIN ? 'locked' : 'connecting',
