@@ -499,8 +499,7 @@ Deno.serve(async (req: Request) => {
         insuranceNoCases.push({
           event_id: eventId,
           matricula: noInsurancePlate,
-          occurred_at: occurredAt,
-          expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+          occurred_at: occurredAt
         });
       }
 
