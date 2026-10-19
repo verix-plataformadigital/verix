@@ -292,14 +292,16 @@ jobs:
             curl --fail --silent --show-error --retry 12 --retry-delay 3 --retry-all-errors --connect-timeout 10 --max-time 30 "${PAGES_BASE}${asset}" -o /dev/null
           done
 
-          # The Supabase APIs retain GitHub Pages in their existing CORS allowlists.
-          curl --fail --silent --show-error --retry 5 --retry-delay 2 --retry-all-errors --connect-timeout 10 --max-time 20 -X OPTIONS \
-            -H "Origin: ${PAGES_ORIGIN}" \
-            -H "Access-Control-Request-Method: POST" \
-            -H "Access-Control-Request-Headers: content-type" \
-            -D /tmp/verix-admin-auth-cors.txt -o /dev/null \
-            "https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/admin-auth-v2"
-          grep -Fqi "access-control-allow-origin: ${PAGES_ORIGIN}" /tmp/verix-admin-auth-cors.txt
+          # All Admin APIs must permit the GitHub Pages origin.
+          for endpoint in admin-auth-v2 stats-v2 telemetry-v2; do
+            curl --fail --silent --show-error --retry 5 --retry-delay 2 --retry-all-errors --connect-timeout 10 --max-time 20 -X OPTIONS \
+              -H "Origin: ${PAGES_ORIGIN}" \
+              -H "Access-Control-Request-Method: POST" \
+              -H "Access-Control-Request-Headers: content-type" \
+              -D /tmp/verix-admin-cors.txt -o /dev/null \
+              "https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/${endpoint}"
+            grep -Fqi "access-control-allow-origin: ${PAGES_ORIGIN}" /tmp/verix-admin-cors.txt
+          done
 
           curl --fail --silent --show-error --retry 12 --retry-delay 3 --retry-all-errors --connect-timeout 10 --max-time 30 \
             "${PAGES_BASE}admin_v2.html?ci=verix-admin-entry-v5" -o /tmp/verix-admin-entry.html
