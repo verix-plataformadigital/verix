@@ -256,6 +256,9 @@ assert.match(adminV3Migration, /meta_ev AS MATERIALIZED/, "large client/forensic
 assert.match(adminV3Migration, /AND e\.event IN \('vehicle_insurance_error', 'legislation_copy'\)/, "only error and legislation-copy rows should carry event metadata in the aggregate query");
 assert.match(adminV3Migration, /schedule := '\*\/5 \* \* \* \*'/, "shared dashboard refresh must run every five minutes, not every minute");
 assert.match(adminV3Migration, /interval '6 minutes'/, "cached metrics must remain available between scheduled refreshes");
+assert.match(adminV3Migration, /WHERE a\.ordinality <= 8/, "the error ledger must cap diagnostic attempt details");
+assert.match(adminV3Migration, /'message', left\(a\.value->>'message', 300\)/, "error messages must be length-bounded");
+assert.doesNotMatch(adminV3Migration, /'rawResponse'\s*,|'requestBody'\s*,|'requestHeaders'\s*,|'callerStack'\s*,/, "the detailed error API must not expose raw requests, headers, or call stacks");
 assert.match(stats, /detail === "dashboard-v3"/);
 assert.match(stats, /detail === "error-ledger-v3"/);
 assert.ok(stats.includes('qs.set("created_at","gte."+new Date(Date.parse(now)-24*60*60*1000).toISOString());'), "no-record visibility window must be based on server receipt time");
