@@ -187,12 +187,6 @@ jobs:
           test -s dist/admin/assets/icon-32.png
           test -s dist/admin/verix-presence-v1.js
           test -s dist/admin/AI-ACCESS-POLICY.md
-          test -s dist/admin/assets/admin-icon-192.png
-          test -s dist/admin/assets/admin-icon-512.png
-          test -s dist/admin/assets/admin-icon.svg
-          test -s dist/admin/assets/icon-32.png
-          test -s dist/admin/verix-presence-v1.js
-          test -s dist/admin/AI-ACCESS-POLICY.md
           node -e "const fs=require('fs'); const a=JSON.parse(fs.readFileSync('dist/admin/manifest.webmanifest')); if(a.id!=='/verix/admin-v4/'||a.start_url!=='./index.html?app=verix-admin-v4'||a.scope!=='./') process.exit(1)"
           test -s dist/admin/sw.js
           node --check dist/admin/sw.js
