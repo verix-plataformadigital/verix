@@ -589,10 +589,151 @@ SELECT jsonb_build_object(
       'appVersion', f.app_version,
       'browser', f.browser,
       'deviceType', f.device_type,
-      'attempts', CASE WHEN jsonb_typeof(f.attempts) = 'array' THEN f.attempts ELSE '[]'::jsonb END,
-      'graphqlMessages', CASE WHEN jsonb_typeof(f.graphql_messages) = 'array' THEN f.graphql_messages ELSE '[]'::jsonb END,
-      'clientContext', CASE WHEN jsonb_typeof(f.client_context) = 'object' THEN f.client_context ELSE '{}'::jsonb END,
-      'networkError', f.network_error
+      'attempts', coalesce((
+        SELECT jsonb_agg(
+          jsonb_strip_nulls(jsonb_build_object(
+            'method', left(a.value->>'method', 20),
+            'transport', left(a.value->>'transport', 40),
+            'status', CASE WHEN a.value->>'status' ~ '^[0-9]{3}
+    ) ORDER BY f.occurred_at DESC, f.event_id DESC)
+    FROM page f
+  ), '[]'::jsonb)
+)
+FROM b CROSS JOIN counts c;
+$function$;
+
+REVOKE ALL ON FUNCTION public.verix2_admin_dashboard_v3_compute(timestamptz) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.verix2_admin_dashboard_v3(timestamptz, boolean) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.verix2_admin_error_ledger_v3(text, timestamptz, integer, integer) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.verix2_admin_live_activity_v3(timestamptz) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.verix2_admin_dashboard_v3_compute(timestamptz) TO service_role;
+GRANT EXECUTE ON FUNCTION public.verix2_admin_dashboard_v3(timestamptz, boolean) TO service_role;
+GRANT EXECUTE ON FUNCTION public.verix2_admin_error_ledger_v3(text, timestamptz, integer, integer) TO service_role;
+GRANT EXECUTE ON FUNCTION public.verix2_admin_live_activity_v3(timestamptz) TO service_role;
+
+-- Replace the expensive forced refresh with the compact V3 cache refresher.
+-- The job identity and existing telemetry rows are preserved.
+DO $block$
+DECLARE
+  r record;
+BEGIN
+  IF to_regclass('cron.job') IS NOT NULL THEN
+    FOR r IN
+      SELECT jobid
+      FROM cron.job
+      WHERE command ILIKE '%verix2_admin_dashboard_cached%'
+    LOOP
+      PERFORM cron.alter_job(
+        job_id := r.jobid,
+        schedule := '*/5 * * * *',
+        command := 'SELECT public.verix2_admin_dashboard_v3(now(), true);'
+      );
+    END LOOP;
+  END IF;
+END;
+$block$;
+ THEN (a.value->>'status')::integer ELSE NULL END,
+            'durationMs', CASE WHEN a.value->>'durationMs' ~ '^[0-9]+([.][0-9]+)?
+    ) ORDER BY f.occurred_at DESC, f.event_id DESC)
+    FROM page f
+  ), '[]'::jsonb)
+)
+FROM b CROSS JOIN counts c;
+$function$;
+
+REVOKE ALL ON FUNCTION public.verix2_admin_dashboard_v3_compute(timestamptz) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.verix2_admin_dashboard_v3(timestamptz, boolean) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.verix2_admin_error_ledger_v3(text, timestamptz, integer, integer) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.verix2_admin_live_activity_v3(timestamptz) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.verix2_admin_dashboard_v3_compute(timestamptz) TO service_role;
+GRANT EXECUTE ON FUNCTION public.verix2_admin_dashboard_v3(timestamptz, boolean) TO service_role;
+GRANT EXECUTE ON FUNCTION public.verix2_admin_error_ledger_v3(text, timestamptz, integer, integer) TO service_role;
+GRANT EXECUTE ON FUNCTION public.verix2_admin_live_activity_v3(timestamptz) TO service_role;
+
+-- Replace the expensive forced refresh with the compact V3 cache refresher.
+-- The job identity and existing telemetry rows are preserved.
+DO $block$
+DECLARE
+  r record;
+BEGIN
+  IF to_regclass('cron.job') IS NOT NULL THEN
+    FOR r IN
+      SELECT jobid
+      FROM cron.job
+      WHERE command ILIKE '%verix2_admin_dashboard_cached%'
+    LOOP
+      PERFORM cron.alter_job(
+        job_id := r.jobid,
+        schedule := '*/5 * * * *',
+        command := 'SELECT public.verix2_admin_dashboard_v3(now(), true);'
+      );
+    END LOOP;
+  END IF;
+END;
+$block$;
+ THEN (a.value->>'durationMs')::numeric ELSE NULL END,
+            'responseBytes', CASE WHEN a.value->>'responseBytes' ~ '^[0-9]+
+    ) ORDER BY f.occurred_at DESC, f.event_id DESC)
+    FROM page f
+  ), '[]'::jsonb)
+)
+FROM b CROSS JOIN counts c;
+$function$;
+
+REVOKE ALL ON FUNCTION public.verix2_admin_dashboard_v3_compute(timestamptz) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.verix2_admin_dashboard_v3(timestamptz, boolean) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.verix2_admin_error_ledger_v3(text, timestamptz, integer, integer) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.verix2_admin_live_activity_v3(timestamptz) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.verix2_admin_dashboard_v3_compute(timestamptz) TO service_role;
+GRANT EXECUTE ON FUNCTION public.verix2_admin_dashboard_v3(timestamptz, boolean) TO service_role;
+GRANT EXECUTE ON FUNCTION public.verix2_admin_error_ledger_v3(text, timestamptz, integer, integer) TO service_role;
+GRANT EXECUTE ON FUNCTION public.verix2_admin_live_activity_v3(timestamptz) TO service_role;
+
+-- Replace the expensive forced refresh with the compact V3 cache refresher.
+-- The job identity and existing telemetry rows are preserved.
+DO $block$
+DECLARE
+  r record;
+BEGIN
+  IF to_regclass('cron.job') IS NOT NULL THEN
+    FOR r IN
+      SELECT jobid
+      FROM cron.job
+      WHERE command ILIKE '%verix2_admin_dashboard_cached%'
+    LOOP
+      PERFORM cron.alter_job(
+        job_id := r.jobid,
+        schedule := '*/5 * * * *',
+        command := 'SELECT public.verix2_admin_dashboard_v3(now(), true);'
+      );
+    END LOOP;
+  END IF;
+END;
+$block$;
+ THEN (a.value->>'responseBytes')::bigint ELSE NULL END,
+            'responseContentType', left(a.value->>'responseContentType', 120),
+            'responseHash', left(a.value->>'responseHash', 128),
+            'errorType', left(a.value->>'errorType', 100),
+            'message', left(a.value->>'message', 300),
+            'statusText', left(a.value->>'statusText', 120)
+          )) ORDER BY a.ordinality
+        )
+        FROM jsonb_array_elements(
+          CASE WHEN jsonb_typeof(f.attempts) = 'array' THEN f.attempts ELSE '[]'::jsonb END
+        ) WITH ORDINALITY AS a(value, ordinality)
+        WHERE a.ordinality <= 8
+      ), '[]'::jsonb),
+      'graphqlMessages', coalesce((
+        SELECT jsonb_agg(
+          left(coalesce(m.value #>> '{}', m.value::text), 300)
+          ORDER BY m.ordinality
+        )
+        FROM jsonb_array_elements(
+          CASE WHEN jsonb_typeof(f.graphql_messages) = 'array' THEN f.graphql_messages ELSE '[]'::jsonb END
+        ) WITH ORDINALITY AS m(value, ordinality)
+        WHERE m.ordinality <= 12
+      ), '[]'::jsonb),
+      'networkError', left(f.network_error, 300)
     ) ORDER BY f.occurred_at DESC, f.event_id DESC)
     FROM page f
   ), '[]'::jsonb)
