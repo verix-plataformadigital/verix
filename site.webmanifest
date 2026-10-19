@@ -2,7 +2,7 @@
   "name": "VÉRIX — Apoio Operacional",
   "short_name": "VÉRIX",
   "description": "Sistema de apoio ao serviço operacional.",
-  "id": "./",
+  "id": "/verix/operational/",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

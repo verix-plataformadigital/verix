@@ -115,7 +115,7 @@ jobs:
           const fs = require('node:fs');
           const path = require('node:path');
           const manifest = JSON.parse(fs.readFileSync('dist/admin.webmanifest', 'utf8'));
-          if (manifest.id !== '/verix/admin/index.html' ||
+          if (manifest.id !== '/verix/admin/' ||
               manifest.start_url !== './admin/index.html' ||
               manifest.scope !== './admin/' ||
               manifest.display !== 'standalone') {

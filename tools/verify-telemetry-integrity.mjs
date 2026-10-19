@@ -48,7 +48,7 @@ assert.ok(admin.includes("navigator.serviceWorker.register('./sw.js'"), "Admin m
 assert.ok(admin.includes("./admin/index.html"), "mobile visits to the legacy Admin URL must redirect to its isolated PWA path");
 assert.equal(adminManifest.start_url, "./admin/index.html", "installed Admin launches directly at the sign-in page");
 assert.equal(adminManifest.scope, "./admin/", "Admin PWA scope must be narrower than the operational app scope");
-assert.equal(adminManifest.id, "/verix/admin/index.html", "Admin PWA identity must differ from the operational VÉRIX app");
+assert.equal(adminManifest.id, "/verix/admin/", "Admin PWA identity must differ from the operational VÉRIX app");
 assert.equal(adminManifest.display, "standalone", "Admin PWA opens without browser chrome when supported");
 assert.ok(serviceWorker.includes("isAdminManifest") && serviceWorker.includes("fetch(request, { cache: 'no-store' })"), "Admin navigation and manifest must not be cached");
 assert.match(admin, /id="livePresenceCards"/, "Admin must show dedicated realtime presence metrics");
