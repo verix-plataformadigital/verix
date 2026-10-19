@@ -274,17 +274,29 @@ for (const f of ["favicon.svg", "site.webmanifest", "admin.webmanifest", "sw.js"
   let adminPwaSource = fs.readFileSync(sourcePath, "utf8");
   adminPwaSource = adminPwaSource.replace(/<link rel="manifest" href="[^"]*admin\.webmanifest[^"]*">\s*/i, "");
   adminPwaSource = adminPwaSource.replace(/href="\.\/favicon\.svg/g, 'href="../assets/admin-icon.svg');
-  adminPwaSource = adminPwaSource.replace(/href="\.\/assets\/icon-192\.png[^"]*"/g, 'href="../assets/admin-icon-192.png?v=20261019-admin3"');
+  adminPwaSource = adminPwaSource.replace(/href="\.\/assets\/icon-192\.png[^"]*"/g, 'href="../assets/admin-icon-192.png?v=20261019-admin4"');
   adminPwaSource = adminPwaSource.replace(/\.\/assets\//g, "../assets/");
   adminPwaSource = adminPwaSource.replace(/src="\.\/verix-presence-v1\.js/g, 'src="../verix-presence-v1.js');
   adminPwaSource = adminPwaSource.replace(/(src="\.\.\/verix-presence-v1\.js\?v=)[^"]+/g, "$1" + encodeURIComponent(String(BUILD_ID)));
   adminPwaSource = adminPwaSource.replace(/\.\/AI-ACCESS-POLICY\.md/g, "../AI-ACCESS-POLICY.md");
   if (!/<\/head>/i.test(adminPwaSource)) throw new Error("Admin source has no closing head");
-  adminPwaSource = adminPwaSource.replace(/<\/head>/i, '  <link rel="icon" href="../assets/admin-icon-512.png?v=20261019-admin3" type="image/png" sizes="512x512">\n  <link rel="manifest" href="../admin.webmanifest?v=20261019-admin3">\n</head>');
+  adminPwaSource = adminPwaSource.replace(/<\/head>/i, '  <link rel="icon" href="../assets/admin-icon-512.png?v=20261019-admin4" type="image/png" sizes="512x512">\n  <link rel="manifest" href="./manifest.webmanifest?v=20261019-admin4">\n</head>');
   const { html: builtAdminPwa } = obfuscateHtml(adminPwaSource, "admin/index.html");
   const adminPwaDir = path.join(OUTPUT_DIR, "admin");
   fs.mkdirSync(adminPwaDir, { recursive: true });
   fs.writeFileSync(path.join(adminPwaDir, "index.html"), builtAdminPwa, "utf8");
+  // Keep the Admin install manifest inside the Admin scope. This gives Android
+  // a distinct manifest URL in addition to a distinct app ID and start URL,
+  // including compatibility with older WebAPK identity matching.
+  const adminManifest = JSON.parse(fs.readFileSync(path.join(ROOT, "admin.webmanifest"), "utf8"));
+  adminManifest.id = "/verix/admin-v4/";
+  adminManifest.start_url = "./index.html?app=verix-admin-v4";
+  adminManifest.scope = "./";
+  adminManifest.icons = (adminManifest.icons || []).map(icon => ({
+    ...icon,
+    src: String(icon.src).replace(/^\.\/assets\//, "../assets/").replace(/\?v=[^&]+$/, "?v=20261019-admin4")
+  }));
+  fs.writeFileSync(path.join(adminPwaDir, "manifest.webmanifest"), JSON.stringify(adminManifest, null, 2) + "\\n", "utf8");
   // This worker's URL and scope stay inside /admin/ instead of claiming the root operational app.
   fs.copyFileSync(path.join(OUTPUT_DIR, "sw.js"), path.join(adminPwaDir, "sw.js"));
 }
