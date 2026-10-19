@@ -172,6 +172,10 @@ jobs:
         run: |
           test -s dist/favicon.svg
           test -s dist/site.webmanifest
+          test -s dist/admin.webmanifest
+          grep -q 'href="./admin.webmanifest?v=20261019"' dist/admin_v2.html
+          grep -q '"start_url": "./admin_v2.html"' dist/admin.webmanifest
+          grep -q "isAdminManifest" dist/sw.js
           test -s dist/sw.js
           node --check dist/sw.js
           grep -q "request.mode === 'navigate'" dist/sw.js
