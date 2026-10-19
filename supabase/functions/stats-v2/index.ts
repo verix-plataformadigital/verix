@@ -588,7 +588,11 @@ Deno.serve(async (req:Request) => {
           users: {
             ...(cachedMetrics?.users || {}),
             consultationsLast3Minutes: Number(liveActivity?.consultations || 0),
-            activeInstallationsLast3Minutes: Number(liveActivity?.activeInstallations || 0)
+            activeInstallationsLast3Minutes: Number(liveActivity?.activeInstallations || 0),
+            onlineNow: Number(liveActivity?.onlineNow || 0),
+            consultationsInProgress: Number(liveActivity?.consultationsInProgress || 0),
+            activeInstallationsLastHour: Number(liveActivity?.activeInstallationsLastHour || 0),
+            registeredInstallations: Number(liveActivity?.registeredInstallations || 0)
           }
         };
         return json({ok:true,detail:"dashboard-v3",generatedAt:now,data:metrics},200,req);
