@@ -31,9 +31,9 @@ assert.match(admin, /id="livePresenceCards"/, "Admin must show dedicated realtim
 assert.match(admin, /Online agora/, "Admin must show the current online-installation count");
 assert.match(admin, /id="livePresenceOnline"/, "Admin must display online presence");
 assert.match(admin, /id="livePresenceActive"/, "Admin must display recent active installations");
-assert.match(admin, /A consultar veículos/, "Admin must show installations with consultations in progress");
+assert.match(admin, /Instalações a consultar/, "Admin must show installations with consultations in progress and make the unit explicit");
 assert.match(admin, /id="livePresenceConsulting"/, "Admin must bind the in-progress query installation count");
-assert.match(admin, /Online na última hora/, "Admin must show distinct installations seen or active in the last hour");
+assert.match(admin, /Vistas na última hora/, "Admin must label last-hour sightings without implying that the installations remain online");
 assert.match(admin, /id="livePresenceHour"/, "Admin must bind the last-hour installation count");
 assert.doesNotMatch(admin, /liveUsers\.onlineNow/, "Admin must not use the stale heartbeat-derived online count");
 assert.match(app, /verix-presence-v1\.js\?v=/, "desktop/mobile app must load realtime presence runtime");
@@ -48,7 +48,7 @@ assert.equal((livePresence.match(/trackedChannel !== channel/g) || []).length, 2
 assert.doesNotMatch(livePresence, /track\((?:true|false)\)/, "no presence update may bypass the global 30-second throttle");
 assert.match(livePresence, /scheduleReconnect\(32000\)/, "track failures must wait beyond the 30-second rate-limit window before reconnecting");
 assert.match(livePresence, /window\.addEventListener\('pageshow'/, "presence must rejoin after browser back-forward cache restores a page");
-assert.match(admin, /Instalações com consultas · última hora/, "Admin must retain the distinct installations that consulted vehicles during the last hour");
+assert.match(admin, /Instalações com consulta · última hora/, "Admin must retain the distinct installations that consulted vehicles during the last hour");
 assert.match(stats, /installationsSeenLastHour: Number\(liveSummary\?\.installationsSeenLastHour \|\| 0\)/, "stats must expose the distinct last-hour presence metric");
 assert.match(stats, /installationsQueryingNow: Number\(liveSummary\?\.installationsQueryingNow \|\| 0\)/, "stats must expose the distinct installations with consultations in progress");
 assert.doesNotMatch(stats, /onlineNow: Number\(liveSummary|onlineSessions: Number\(liveSummary|activeNow: Number\(liveSummary/, "stats must not keep legacy heartbeat-based online estimates");
@@ -63,6 +63,13 @@ assert.match(admin, /Histórico Total/, "new Admin must expose the history perio
 assert.match(admin, /data-period="today"/);
 assert.match(admin, /data-period="week"/);
 assert.match(admin, /data-period="total"/);
+assert.match(admin, /Estado operacional — tempo real/, "the Overview must explicitly separate current state from period-based metrics");
+assert.match(admin, /Indicadores do período selecionado/, "the Overview must label selected-period metrics separately");
+assert.match(admin, /Janelas móveis/, "the Overview must disclose rolling-window metrics separately");
+assert.match(admin, /Base acumulada da aplicação/, "the registered-installation count must be identified as an all-time base total");
+assert.match(admin, /todayHourlyPanel[^>]*hidden|todayHourlyPanel/, "today-only hourly chart must have its own conditional panel");
+assert.doesNotMatch(admin, /Métricas por período|Resumo por período/, "the Admin must not mix three historical windows into a page whose global period selector is active");
+
 
 assert.match(endpoint, /db\.rpc\(\s*["']verix2_ingest_telemetry["']/);
 assert.match(endpoint, /p_events:\s*events/);
@@ -171,8 +178,8 @@ assert.match(presenceMigration, /'online_now',\(SELECT count\(\*\)/, "online_now
 assert.match(presenceMigration, /last_presence >= p_now-interval '90 seconds'/, "online presence must expire after the heartbeat lease");
 assert.match(presenceMigration, /event IN \('app_open','heartbeat','session_close'\)/, "online presence must use lifecycle events only");
 assert.match(presenceMigration, /last_close IS NULL OR last_presence > last_close/, "a later close event must remove a session from the active count");
-assert.ok(admin.includes("Consultas nos últimos 3 min"), "Admin must expose consultation-based activity over three minutes");
-assert.ok(admin.includes("Instalações ativas nos últimos 3 min"), "Admin must distinguish active installations from browser sessions");
+assert.ok(admin.includes("Consultas iniciadas · últimos 3 min"), "Admin must expose consultation-based activity over three minutes in a separately labelled rolling window");
+assert.ok(admin.includes("Instalações a consultar · últimos 3 min"), "Admin must distinguish installations starting consultations in a rolling window from period metrics");
 assert.ok(admin.includes("Aberturas da aplicação e heartbeats não contam como utilização"), "active-use metrics must explicitly exclude passive browser presence");
 assert.ok(stats.includes('rpc("verix2_consulted_installations_3m",{p_now:now})'), "stats must request query-based online presence");
 assert.ok(stats.includes("consulted_3m:recentConsulted3m"), "stats must return query-based online presence separately from browser sessions");
@@ -264,8 +271,8 @@ assert.match(hourlyMigration, /count\(DISTINCT e\.query_id\) FILTER/, "hourly co
 assert.match(hourlyMigration, /e\.event='vehicle_lookup'/, "hourly consultations must count actual lookup starts");
 assert.match(hourlyMigration, /count\(DISTINCT e\.installation_id\) FILTER/, "hourly presence must count distinct installations");
 assert.match(hourlyMigration, /e\.event IN \('app_open','heartbeat'\)/, "hourly presence must use app-open/heartbeat events");
-assert.ok(admin.includes("Consultas e utilizadores por hora"), "dashboard must describe hourly consultations and active-use metrics");
-assert.ok(admin.includes("Atividade em cada hora do dia"), "usage page must describe hourly activity");
+assert.ok(admin.includes("Distribuição horária de hoje"), "dashboard must identify the hourly chart as today-only and avoid showing it for other selected periods");
+assert.ok(admin.includes("Distribuição horária de hoje"), "usage page must identify its chart as today-only");
 assert.match(adminV3Migration, /count\(DISTINCT e\.query_id\)/, "the backend contract must deduplicate consultations by query ID");
 assert.ok(admin.includes("activeUsers"), "hourly chart must use the active-installation count");
 
