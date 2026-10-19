@@ -19,6 +19,7 @@ const adminV3ErrorJoinMigration = fs.readFileSync("supabase/migrations/202610191
 const adminHistoryResetMigration = fs.readFileSync("supabase/migrations/20261019063600_admin_total_history_since_stable_reset.sql", "utf8");
 const adminV3TotalResetMigration = fs.readFileSync("supabase/migrations/20261019110344_admin_v3_total_since_reset.sql", "utf8");
 const adminV3RecoverLegacyConsultationsMigration = fs.readFileSync("supabase/migrations/20261019114442_admin_v3_recover_legacy_orphan_consultations.sql", "utf8");
+const adminV3RestoreInputClassificationMigration = fs.readFileSync("supabase/migrations/20261019120225_admin_v3_restore_invalid_input_classification.sql", "utf8");
 const adminLiveSummaryStreamlinedMigration = fs.readFileSync("supabase/migrations/20261019111618_admin_live_summary_remove_in_progress.sql", "utf8");
 const adminErrorClassificationMigration = fs.readFileSync("supabase/migrations/20261019070000_admin_filter_user_input_invalid_plates.sql", "utf8");
 const packageConfig = JSON.parse(fs.readFileSync("package.json", "utf8"));
@@ -341,6 +342,11 @@ assert.ok(adminV3TotalResetMigration.includes("ranges,total,start"), "the total-
 assert.match(adminV3RecoverLegacyConsultationsMigration, /query_start_candidates AS[\s\S]*?event = 'vehicle_insurance_pending'[\s\S]*?NOT EXISTS[\s\S]*?l\.event = 'vehicle_lookup'/, "historic pending IDs are recovered only when no lookup exists anywhere");
 assert.match(adminV3RecoverLegacyConsultationsMigration, /insurance,total,consultations/, "legacy consultation recovery must validate the actual Admin total");
 assert.doesNotMatch(adminV3RecoverLegacyConsultationsMigration, /DELETE FROM public\.verix2_events|TRUNCATE TABLE public\.verix2_events/i, "legacy consultation recovery must preserve raw telemetry");
+assert.ok(adminV3RestoreInputClassificationMigration.includes("error_candidate_rows AS MATERIALIZED") && adminV3RestoreInputClassificationMigration.includes("error_classified AS MATERIALIZED"), "Admin error counters must explicitly classify invalid plate input");
+assert.ok(adminV3RestoreInputClassificationMigration.includes("AND NOT q.user_input_invalid") && adminV3RestoreInputClassificationMigration.includes("'userInputInvalidConsultations'"), "invalid-format HTTP 400 consultations must be excluded from technical-error counts and reported separately");
+assert.ok(adminV3RestoreInputClassificationMigration.includes("SET work_mem TO '64MB'") === false, "dynamic restoration must preserve the existing live function rather than hard-code a separate query implementation");
+assert.ok(adminV3RestoreInputClassificationMigration.includes("query_start_candidates") === false, "error classification patch must not replace the existing history-start logic");
+
 
 assert.match(adminErrorClassificationMigration, /verix2_admin_plate_format_valid/, "admin error classification must validate Portuguese plate formats");
 assert.ok(adminErrorClassificationMigration.includes("v = 'AA00AA'"), "the filter must exclude only the reserved first current-format combination, not all 00 center blocks");
