@@ -112,27 +112,27 @@ async function rpc(name: string, body: Record<string,unknown>) {
 
 
 
-function n(v){const x=Number(v);return Number.isFinite(x)?x:null;}
-function cinSnapshotOf(e){
+function n(v:unknown):number|null{const x=Number(v);return Number.isFinite(x)?x:null;}
+function cinSnapshotOf(e:any):any{
   const c=e?.metadata?.cin;
   return c && typeof c==="object" && !Array.isArray(c) ? c : null;
 }
-function percentile(values,p){
-  const a=values.filter(Number.isFinite).sort((x,y)=>x-y);
+function percentile(values:number[],p:number):number|null{
+  const a=values.filter((value:number)=>Number.isFinite(value)).sort((x:number,y:number)=>x-y);
   if(!a.length)return null;
   const i=(a.length-1)*p, lo=Math.floor(i), hi=Math.ceil(i);
   return lo===hi?a[lo]:a[lo]+(a[hi]-a[lo])*(i-lo);
 }
-function sessionPattern(rows){
+function sessionPattern(rows:any[]){
   const speedRows=rows.filter((e:any)=>e.event==="cinemometer_speed_entry" && cinSnapshotOf(e)?.velocidade_registada!=null);
   const calculationRows=rows.filter((e:any)=>e.event==="cinemometer_calculation" && cinSnapshotOf(e)?.velocidade_registada!=null);
   const measurements=speedRows.length?speedRows:calculationRows;
-  const speeds=measurements.map((e:any)=>Number(cinSnapshotOf(e).velocidade_registada)).filter(Number.isFinite);
+  const speeds:number[]=measurements.map((e:any)=>Number(cinSnapshotOf(e).velocidade_registada)).filter((value:number)=>Number.isFinite(value));
   const unique=[...new Set(speeds)];
-  const times=measurements.map((e:any)=>new Date(e.occurred_at).getTime()).filter(Number.isFinite).sort((a,b)=>a-b);
+  const times:number[]=measurements.map((e:any)=>new Date(e.occurred_at).getTime()).filter((value:number)=>Number.isFinite(value)).sort((a:number,b:number)=>a-b);
   const intervals=[]; for(let i=1;i<times.length;i++) intervals.push((times[i]-times[i-1])/1000);
-  const round5=speeds.length?100*speeds.filter(v=>v%5===0).length/speeds.length:null;
-  const round10=speeds.length?100*speeds.filter(v=>v%10===0).length/speeds.length:null;
+  const round5=speeds.length?100*speeds.filter((v:number)=>v%5===0).length/speeds.length:null;
+  const round10=speeds.length?100*speeds.filter((v:number)=>v%10===0).length/speeds.length:null;
   const repeats=speeds.length>1?100*(1-unique.length/speeds.length):0;
   let monotonic=true, direction=0;
   for(let i=1;i<speeds.length;i++){
@@ -443,13 +443,13 @@ async function loadCinemometerAnalytics24h(now:string){
   const speedEntries=events.filter((e:any)=>e.event==="cinemometer_speed_entry" && cinSnapshotOf(e)?.velocidade_registada!=null);
   const calcEvents=events.filter((e:any)=>e.event==="cinemometer_calculation" && cinSnapshotOf(e)?.velocidade_registada!=null);
   const measurementEvents=speedEntries.length?speedEntries:calcEvents;
-  const speeds=measurementEvents.map((e:any)=>Number(cinSnapshotOf(e).velocidade_registada)).filter(Number.isFinite);
-  const analyticsSpeedValues=events
+  const speeds:number[]=measurementEvents.map((e:any)=>Number(cinSnapshotOf(e).velocidade_registada)).filter((value:number)=>Number.isFinite(value));
+  const analyticsSpeedValues:number[]=events
     .filter((e:any)=>["cinemometer_speed_entry","cinemometer_calculation"].includes(e.event) && cinSnapshotOf(e)?.velocidade_registada!=null)
     .map((e:any)=>String(cinSnapshotOf(e).velocidade_registada))
     .filter((v:string)=>/^[0-9]+(\\.[0-9]+)?$/.test(v))
     .map(Number)
-    .filter(Number.isFinite);
+    .filter((value:number)=>Number.isFinite(value));
   const distributionMap=new Map<number,number>();
   for(const speed of analyticsSpeedValues){
     const bucket=Math.floor(speed/10)*10;
@@ -552,7 +552,7 @@ async function resetState() {
   return {reset_24h_at:rows?.[0]?.reset_24h_at||null,reset_all_at:rows?.[0]?.reset_all_at||null};
 }
 
-Deno.serve(async (req) => {
+Deno.serve(async (req:Request) => {
   if(req.method==="OPTIONS") {
     return new Response(null,{status:204,headers:corsHeaders(req)});
   }
