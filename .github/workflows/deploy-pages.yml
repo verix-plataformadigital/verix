@@ -239,13 +239,30 @@ jobs:
           fs.cpSync(source, dest, { recursive: true, force: true });
           const htmlPath = dest + '/index.html';
           let html = fs.readFileSync(htmlPath, 'utf8');
-          html = html.replace(/<link\b[^>]*\brel=["']manifest["'][^>]*>\s*/gi, '');
-          if (/<link\b[^>]*\brel=["']manifest["']/i.test(html)) throw new Error('Admin proxy source must not advertise a PWA manifest on GitHub Pages');
+          const manifestLink = '<link rel="manifest" href="./manifest.webmanifest?v=verix-admin-proxy-v1">';
+          if (!/<link\b[^>]*\brel=["']manifest["'][^>]*>/i.test(html)) throw new Error('Standalone Admin source must include a manifest link before proxy adaptation');
+          html = html.replace(/<link\b[^>]*\brel=["']manifest["'][^>]*>\s*/gi, manifestLink + '\n');
+          if (!html.includes(manifestLink)) throw new Error('Admin proxy must link its own isolated PWA manifest');
           fs.writeFileSync(htmlPath, html, 'utf8');
+
+          const manifestPath = dest + '/manifest.webmanifest';
+          const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+          manifest.id = './';
+          manifest.start_url = './index.html?app=verix-admin-proxy-v1';
+          manifest.scope = './';
+          manifest.name = 'VÉRIX Admin — Monitorização Operacional';
+          manifest.short_name = 'VÉRIX Admin';
+          manifest.display = 'standalone';
+          manifest.icons = [
+            { src: './assets/admin-icon-192.png?v=20261019-admin4', sizes: '192x192', type: 'image/png', purpose: 'any' },
+            { src: './assets/admin-icon-512.png?v=20261019-admin4', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+          ];
+          fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n', 'utf8');
+
           for (const file of ['index.html','manifest.webmanifest','sw.js','verix-presence-v1.js','AI-ACCESS-POLICY.md','assets/admin-icon-192.png','assets/admin-icon-512.png']) {
             if (!fs.existsSync(dest + '/' + file)) throw new Error('Admin proxy asset missing: ' + file);
           }
-          console.log('Copied standalone Admin runtime to non-installable GitHub Pages source for same-origin proxy');
+          console.log('Copied standalone Admin runtime with its own isolated install identity and service-worker scope');
           NODE
 
       - name: Validate separately scoped Admin PWA
@@ -269,8 +286,13 @@ jobs:
           const rootAdmin = fs.readFileSync('dist/admin_v2.html', 'utf8');
           const sourceHtml = fs.readFileSync('admin_v2.html', 'utf8');
           const proxyHtml = fs.readFileSync('dist/admin-proxy/index.html', 'utf8');
+          const proxyManifest = JSON.parse(fs.readFileSync('dist/admin-proxy/manifest.webmanifest', 'utf8'));
+          const operationalManifest = JSON.parse(fs.readFileSync('dist/site.webmanifest', 'utf8'));
           const edgeProxy = fs.readFileSync('supabase/functions/verix-admin-pwa/index.ts', 'utf8');
-          if (proxyHtml.includes('rel="manifest" href="./manifest.webmanifest')) throw new Error('GitHub Pages proxy source must not advertise the Admin PWA manifest');
+          if (!proxyHtml.includes('rel="manifest" href="./manifest.webmanifest?v=verix-admin-proxy-v1"')) throw new Error('Admin proxy must advertise its own manifest');
+          if (proxyManifest.id !== './' || proxyManifest.start_url !== './index.html?app=verix-admin-proxy-v1' || proxyManifest.scope !== './' || proxyManifest.display !== 'standalone') throw new Error('Admin proxy PWA identity, start URL, scope or display is invalid');
+          if (proxyManifest.id === operationalManifest.id || proxyManifest.start_url === operationalManifest.start_url) throw new Error('Admin proxy PWA identity must differ from the VÉRIX Operational PWA');
+          if (!proxyManifest.icons.some(icon => icon.src.includes('admin-icon-192.png')) || !proxyManifest.icons.some(icon => icon.src.includes('admin-icon-512.png'))) throw new Error('Admin proxy must use Admin-only 192px and 512px icons');
           if (!proxyHtml.includes('id="installAdminApp"') || !proxyHtml.includes('beforeinstallprompt')) throw new Error('Standalone Admin source bundle is incomplete');
           if (!edgeProxy.includes('UPSTREAM_ROOT') || !edgeProxy.includes('rewriteManifest') || !edgeProxy.includes('verix-admin-pwa')) throw new Error('Supabase Admin origin proxy source is missing or incomplete');
           for (const file of ['dist/admin-proxy/manifest.webmanifest','dist/admin-proxy/sw.js','dist/admin-proxy/verix-presence-v1.js','dist/admin-proxy/AI-ACCESS-POLICY.md','dist/admin-proxy/assets/admin-icon-192.png','dist/admin-proxy/assets/admin-icon-512.png']) {
@@ -284,7 +306,7 @@ jobs:
             if (!html.includes(required)) throw new Error('Admin page element missing: ' + required);
           }
           if (html.includes('rel="manifest" href="./manifest.webmanifest?v=20261019-admin4"')) throw new Error('GitHub Pages must not link an installable Admin manifest on the shared Operational origin');
-          if (!sourceHtml.includes('isSharedGithubPagesOrigin') || !sourceHtml.includes('Instalação do Admin desativada neste domínio partilhado')) throw new Error('Admin install button must be blocked on the shared GitHub Pages origin');
+          if (!sourceHtml.includes('isSharedGithubPagesOrigin') || !sourceHtml.includes('Instalação do Admin desativada neste domínio partilhado') || !sourceHtml.includes('isAdminProxyPath')) throw new Error('Admin install guard must block the shared root but allow the isolated Admin proxy path');
           if (html.includes('id="installAdminLogin"')) throw new Error('Install button must not appear on the pre-login screen');
           const appStart = html.indexOf('<div id="app"');
           const installPos = html.indexOf('id="installAdminApp"');
