@@ -39,8 +39,11 @@ assert.doesNotMatch(stats, /app14|["\']1\.4["\']/i, "stats must not hard-code th
 assert.doesNotMatch(admin, /VERSÃO 1\.4|ERROS DA 1\.4|app14|versão 1\.4/i, "Admin must not display or consume obsolete 1.4 error metrics");
 assert.match(admin, /detail=dashboard-v3/, "new Admin must consume the V3 dashboard contract");
 assert.ok(adminPwaEntry.includes('rel="manifest" href="../admin.webmanifest?v=20261019"'), "dedicated Admin entry must reference its separate installable manifest");
-assert.ok(adminPwaEntry.includes('id="installAdminLogin"'), "Admin install control must be on its sign-in screen");
-assert.ok(!adminPwaEntry.includes('id="installAdminApp"'), "Admin install control must not appear inside the dashboard");
+assert.ok(!adminPwaEntry.includes('id="installAdminLogin"'), "Admin install control must not appear on the sign-in screen");
+assert.ok(adminPwaEntry.includes('id="installAdminApp"'), "Admin install control must be available inside the authenticated dashboard");
+const adminAppStart = adminPwaEntry.indexOf('<div id="app"');
+const adminInstallPosition = adminPwaEntry.indexOf('id="installAdminApp"');
+assert.ok(adminAppStart >= 0 && adminInstallPosition > adminAppStart, "Admin install control must be inside the authenticated application");
 assert.ok(admin.includes("navigator.serviceWorker.register('./sw.js'"), "Admin must register the fresh-navigation service worker when opened directly");
 assert.ok(admin.includes("./admin/index.html"), "mobile visits to the legacy Admin URL must redirect to its isolated PWA path");
 assert.equal(adminManifest.start_url, "./admin/index.html", "installed Admin launches directly at the sign-in page");
