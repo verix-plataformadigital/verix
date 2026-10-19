@@ -15,9 +15,10 @@
   var host = String(window.location.hostname || '');
   var pathname = String(window.location.pathname || '');
   var sharedGithubPages = /(^|\.)github\.io$/i.test(host);
+  // The /admin-proxy/ copy must render as static HTML on GitHub Pages.
+  // Do not redirect it to Supabase: shared *.supabase.co domains rewrite HTML to text/plain.
   var legacyAdminEntry = /\/admin_v2\.html$/i.test(pathname) ||
-    /\/admin\/(?:index\.html)?$/i.test(pathname) ||
-    /\/admin-proxy\/index\.html$/i.test(pathname);
+    /\/admin\/(?:index\.html)?$/i.test(pathname);
   if (sharedGithubPages && legacyAdminEntry) {
     var target = 'https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/verix-admin-pwa/index.html';
     window.location.replace(target + window.location.search + window.location.hash);
