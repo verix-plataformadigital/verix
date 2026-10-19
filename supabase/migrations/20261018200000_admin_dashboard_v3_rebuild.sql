@@ -1,7 +1,6 @@
 -- VÉRIX Admin V3: efficient metrics, a 365-day history window, and a 24-hour operational plate registry.
--- This migration never deletes plate/event content. Existing no-record rows get only
--- an earlier expires_at where required by the 24-hour policy; their other fields stay intact.
--- The existing expiry cleanup job removes expired plate details after the retention window.
+-- This migration preserves event rows and plate contents.
+-- Existing plate details are given a 24-hour expiry; the scheduled expiry job removes them later.
 -- Scheduled event cleanup is extended to 365 days so the requested history remains available.
 
 CREATE TABLE IF NOT EXISTS public.verix2_admin_v3_cache (
@@ -17,8 +16,8 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.verix2_admin_v3_cache TO se
 ALTER TABLE public.verix_insurance_no_cases
   ALTER COLUMN expires_at SET DEFAULT (now() + interval '24 hours');
 
--- Enforce the new TTL for existing operational plate details without deleting rows
--- or changing their plate/timestamps. The existing expiry job performs the deletion.
+-- Enforce the 24-hour operational retention for existing rows without deleting
+-- records or changing their matricula/occurred_at/created_at values.
 UPDATE public.verix_insurance_no_cases
 SET expires_at = LEAST(expires_at, created_at + interval '24 hours')
 WHERE expires_at > created_at + interval '24 hours';
@@ -601,123 +600,9 @@ SELECT jsonb_build_object(
           jsonb_strip_nulls(jsonb_build_object(
             'method', left(a.value->>'method', 20),
             'transport', left(a.value->>'transport', 40),
-            'status', CASE WHEN a.value->>'status' ~ '^[0-9]{3}
-    ) ORDER BY f.occurred_at DESC, f.event_id DESC)
-    FROM page f
-  ), '[]'::jsonb)
-)
-FROM b CROSS JOIN counts c;
-$function$;
-
-REVOKE ALL ON FUNCTION public.verix2_admin_dashboard_v3_compute(timestamptz) FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON FUNCTION public.verix2_admin_dashboard_v3(timestamptz, boolean) FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON FUNCTION public.verix2_admin_error_ledger_v3(text, timestamptz, integer, integer) FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON FUNCTION public.verix2_admin_live_activity_v3(timestamptz) FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.verix2_admin_dashboard_v3_compute(timestamptz) TO service_role;
-GRANT EXECUTE ON FUNCTION public.verix2_admin_dashboard_v3(timestamptz, boolean) TO service_role;
-GRANT EXECUTE ON FUNCTION public.verix2_admin_error_ledger_v3(text, timestamptz, integer, integer) TO service_role;
-GRANT EXECUTE ON FUNCTION public.verix2_admin_live_activity_v3(timestamptz) TO service_role;
-
--- Replace the expensive forced refresh with the compact V3 cache refresher.
--- The job identity and existing telemetry rows are preserved.
-DO $block$
-DECLARE
-  r record;
-BEGIN
-  IF to_regclass('cron.job') IS NOT NULL THEN
-    FOR r IN
-      SELECT jobid
-      FROM cron.job
-      WHERE command ILIKE '%verix2_admin_dashboard_cached%'
-    LOOP
-      PERFORM cron.alter_job(
-        job_id := r.jobid,
-        schedule := '*/5 * * * *',
-        command := 'SELECT public.verix2_admin_dashboard_v3(now(), true);'
-      );
-    END LOOP;
-  END IF;
-END;
-$block$;
- THEN (a.value->>'status')::integer ELSE NULL END,
-            'durationMs', CASE WHEN a.value->>'durationMs' ~ '^[0-9]+([.][0-9]+)?
-    ) ORDER BY f.occurred_at DESC, f.event_id DESC)
-    FROM page f
-  ), '[]'::jsonb)
-)
-FROM b CROSS JOIN counts c;
-$function$;
-
-REVOKE ALL ON FUNCTION public.verix2_admin_dashboard_v3_compute(timestamptz) FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON FUNCTION public.verix2_admin_dashboard_v3(timestamptz, boolean) FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON FUNCTION public.verix2_admin_error_ledger_v3(text, timestamptz, integer, integer) FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON FUNCTION public.verix2_admin_live_activity_v3(timestamptz) FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.verix2_admin_dashboard_v3_compute(timestamptz) TO service_role;
-GRANT EXECUTE ON FUNCTION public.verix2_admin_dashboard_v3(timestamptz, boolean) TO service_role;
-GRANT EXECUTE ON FUNCTION public.verix2_admin_error_ledger_v3(text, timestamptz, integer, integer) TO service_role;
-GRANT EXECUTE ON FUNCTION public.verix2_admin_live_activity_v3(timestamptz) TO service_role;
-
--- Replace the expensive forced refresh with the compact V3 cache refresher.
--- The job identity and existing telemetry rows are preserved.
-DO $block$
-DECLARE
-  r record;
-BEGIN
-  IF to_regclass('cron.job') IS NOT NULL THEN
-    FOR r IN
-      SELECT jobid
-      FROM cron.job
-      WHERE command ILIKE '%verix2_admin_dashboard_cached%'
-    LOOP
-      PERFORM cron.alter_job(
-        job_id := r.jobid,
-        schedule := '*/5 * * * *',
-        command := 'SELECT public.verix2_admin_dashboard_v3(now(), true);'
-      );
-    END LOOP;
-  END IF;
-END;
-$block$;
- THEN (a.value->>'durationMs')::numeric ELSE NULL END,
-            'responseBytes', CASE WHEN a.value->>'responseBytes' ~ '^[0-9]+
-    ) ORDER BY f.occurred_at DESC, f.event_id DESC)
-    FROM page f
-  ), '[]'::jsonb)
-)
-FROM b CROSS JOIN counts c;
-$function$;
-
-REVOKE ALL ON FUNCTION public.verix2_admin_dashboard_v3_compute(timestamptz) FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON FUNCTION public.verix2_admin_dashboard_v3(timestamptz, boolean) FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON FUNCTION public.verix2_admin_error_ledger_v3(text, timestamptz, integer, integer) FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON FUNCTION public.verix2_admin_live_activity_v3(timestamptz) FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.verix2_admin_dashboard_v3_compute(timestamptz) TO service_role;
-GRANT EXECUTE ON FUNCTION public.verix2_admin_dashboard_v3(timestamptz, boolean) TO service_role;
-GRANT EXECUTE ON FUNCTION public.verix2_admin_error_ledger_v3(text, timestamptz, integer, integer) TO service_role;
-GRANT EXECUTE ON FUNCTION public.verix2_admin_live_activity_v3(timestamptz) TO service_role;
-
--- Replace the expensive forced refresh with the compact V3 cache refresher.
--- The job identity and existing telemetry rows are preserved.
-DO $block$
-DECLARE
-  r record;
-BEGIN
-  IF to_regclass('cron.job') IS NOT NULL THEN
-    FOR r IN
-      SELECT jobid
-      FROM cron.job
-      WHERE command ILIKE '%verix2_admin_dashboard_cached%'
-    LOOP
-      PERFORM cron.alter_job(
-        job_id := r.jobid,
-        schedule := '*/5 * * * *',
-        command := 'SELECT public.verix2_admin_dashboard_v3(now(), true);'
-      );
-    END LOOP;
-  END IF;
-END;
-$block$;
- THEN (a.value->>'responseBytes')::bigint ELSE NULL END,
+            'status', CASE WHEN a.value->>'status' ~ '^[0-9]{3}$' THEN (a.value->>'status')::integer ELSE NULL END,
+            'durationMs', CASE WHEN a.value->>'durationMs' ~ '^[0-9]+([.][0-9]+)?$' THEN (a.value->>'durationMs')::numeric ELSE NULL END,
+            'responseBytes', CASE WHEN a.value->>'responseBytes' ~ '^[0-9]+$' THEN (a.value->>'responseBytes')::bigint ELSE NULL END,
             'responseContentType', left(a.value->>'responseContentType', 120),
             'responseHash', left(a.value->>'responseHash', 128),
             'errorType', left(a.value->>'errorType', 100),
