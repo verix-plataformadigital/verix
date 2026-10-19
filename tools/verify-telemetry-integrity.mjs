@@ -15,6 +15,7 @@ const insuranceNoCasesMigration = fs.readFileSync("supabase/migrations/202610090
 const stalePendingMigration = fs.readFileSync("supabase/migrations/20261018092000_fix_stale_pending_query_status.sql", "utf8");
 const errorPlateCountMigration = fs.readFileSync("supabase/migrations/20261009092500_deduplicate_error_plate_consultations.sql", "utf8");
 const adminV3Migration = fs.readFileSync("supabase/migrations/20261018200000_admin_dashboard_v3_rebuild.sql", "utf8");
+const adminV3ErrorJoinMigration = fs.readFileSync("supabase/migrations/20261019103810_optimize_admin_v3_error_event_join.sql", "utf8");
 const adminHistoryResetMigration = fs.readFileSync("supabase/migrations/20261019063600_admin_total_history_since_stable_reset.sql", "utf8");
 const adminErrorClassificationMigration = fs.readFileSync("supabase/migrations/20261019070000_admin_filter_user_input_invalid_plates.sql", "utf8");
 const packageConfig = JSON.parse(fs.readFileSync("package.json", "utf8"));
@@ -281,6 +282,8 @@ assert.doesNotMatch(snapshot, /cinSessaoOperadorNome|cinSessaoOperadorNo|cinSess
 
 // V3 Admin regression contract: period semantics, safe data visibility, and the new metrics API.
 assert.match(adminV3Migration, /verix2_admin_dashboard_v3_compute/);
+assert.match(adminV3ErrorJoinMigration, /error_event_rows AS \([\s\S]*?LEFT JOIN meta_ev e ON e\.event = 'vehicle_insurance_error'\s+AND e\.occurred_at >= p\.start_at AND e\.occurred_at < p\.end_at/, "Admin V3 error summaries must filter to error events before joining period aggregates");
+assert.doesNotMatch(adminV3ErrorJoinMigration, /error_event_rows AS \([\s\S]*?LEFT JOIN ev e ON e\.occurred_at >= p\.start_at/, "Admin V3 error summaries must not join every telemetry event for an error-only aggregate");
 assert.match(adminV3Migration, /verix2_admin_dashboard_v3\(/);
 assert.match(adminV3Migration, /verix2_admin_error_ledger_v3/);
 assert.match(adminV3Migration, /interval '365 days'/, "history retention must support the yearly window");
