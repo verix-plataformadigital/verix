@@ -1,6 +1,7 @@
 declare const Deno: any;
 
 const ALLOWED_ORIGINS = new Set([
+  "https://onilkakbgpklxvxuxmks.supabase.co",
   "https://verix-plataformadigital.github.io",
   "https://verix.vxops.workers.dev",
   "http://localhost",

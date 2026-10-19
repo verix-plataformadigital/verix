@@ -9,6 +9,9 @@ verify_jwt = false
 [functions.admin-auth-v2]
 verify_jwt = false
 
+[functions.verix-admin-pwa]
+verify_jwt = false
+
 [functions.asf-proxy-v1]
 verify_jwt = false
 
