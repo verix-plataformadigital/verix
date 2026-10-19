@@ -50,7 +50,13 @@ const adminAppStart = adminPwaEntry.indexOf('<div id="app"');
 const adminInstallPosition = adminPwaEntry.indexOf('id="installAdminApp"');
 assert.ok(adminAppStart >= 0 && adminInstallPosition > adminAppStart, "Admin install control must be inside the authenticated application");
 assert.ok(admin.includes("navigator.serviceWorker.register('./sw.js'"), "Admin must register the fresh-navigation service worker when opened directly");
-assert.ok(admin.includes("./admin/index.html"), "mobile visits to the legacy Admin URL must redirect to its isolated PWA path");
+assert.ok(admin.includes("functions/v1/verix-admin-pwa/index.html"), "legacy Admin entry must redirect to the independent Supabase origin");
+const adminOriginProxy = fs.readFileSync("supabase/functions/verix-admin-pwa/index.ts", "utf8");
+assert.ok(adminOriginProxy.includes("UPSTREAM_ROOT") && adminOriginProxy.includes("rewriteHtml") && adminOriginProxy.includes("rewriteManifest"), "Supabase edge proxy must serve and rewrite the isolated Admin PWA");
+for (const file of ["supabase/functions/admin-auth-v2/index.ts","supabase/functions/stats-v2/index.ts","supabase/functions/telemetry-v2/index.ts"]) {
+  assert.ok(fs.readFileSync(file, "utf8").includes('"https://onilkakbgpklxvxuxmks.supabase.co"'), "backend CORS allowlist must include the isolated Admin origin: " + file);
+}
+assert.ok(livePresence.includes("verix-admin-pwa") && livePresence.includes("verix-admin-edge-v1"), "live presence must classify the isolated Admin separately");
 assert.equal(adminManifest.start_url, "./admin/index.html?app=verix-admin-v4", "installed Admin launches directly at the sign-in page");
 assert.equal(adminManifest.scope, "./admin/", "Admin PWA scope must be narrower than the operational app scope");
 assert.equal(adminManifest.id, "/verix/admin-v4/", "Admin PWA identity must differ from the operational VÉRIX app");
