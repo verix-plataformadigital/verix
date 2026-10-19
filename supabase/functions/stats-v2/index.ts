@@ -574,19 +574,15 @@ Deno.serve(async (req:Request) => {
     if(req.method === "GET" && detail === "dashboard-v3") {
       const now = new Date().toISOString();
       try {
-        const [cachedMetrics, liveActivity, liveSummary] = await Promise.all([
+        const [cachedMetrics, liveSummary] = await Promise.all([
           rpc("verix2_admin_dashboard_v3", { p_now: now, p_force_refresh: false }),
-          rpc("verix2_admin_live_activity_v3", { p_now: now }),
           rpc("verix2_admin_live_summary_v1", { p_now: now })
         ]);
         const metrics = {
           ...cachedMetrics,
           users: {
             ...(cachedMetrics?.users || {}),
-            consultationsLast3Minutes: Number(liveActivity?.consultations || 0),
-            activeInstallationsLast3Minutes: Number(liveActivity?.activeInstallations || 0),
-            consultationsInProgress: Number(liveSummary?.consultationsInProgress || 0),
-            installationsQueryingNow: Number(liveSummary?.installationsQueryingNow || 0),
+            consultationsLast3Minutes: Number(liveSummary?.consultationsLast3Minutes || 0),
             installationsConsultedLastHour: Number(liveSummary?.installationsConsultedLastHour || 0),
             installationsSeenLastHour: Number(liveSummary?.installationsSeenLastHour || 0),
             registeredInstallations: Number(liveSummary?.registeredInstallations || 0)
