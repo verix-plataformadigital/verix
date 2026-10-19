@@ -128,6 +128,7 @@ jobs:
             throw new Error('Admin manifest must advertise dedicated PNG icons at 192px and 512px');
           }
           const adminEntry = fs.readFileSync('dist/admin/index.html', 'utf8');
+          const sourceHtml = fs.readFileSync('admin_v2.html', 'utf8');
           const scopedAdminManifest = JSON.parse(fs.readFileSync('dist/admin/manifest.webmanifest', 'utf8'));
           if (scopedAdminManifest.id !== '/verix/admin-v4/' || scopedAdminManifest.start_url !== './index.html?app=verix-admin-v4' || scopedAdminManifest.scope !== './') throw new Error('Nested Admin manifest identity/start_url/scope is invalid');
           if (scopedAdminManifest.id === operationalManifest.id || scopedAdminManifest.start_url === operationalManifest.start_url) throw new Error('Admin and Operational identities/start URLs must differ');
@@ -152,7 +153,6 @@ jobs:
             const installPos = html.indexOf('id="installAdminApp"');
             if (appStart < 0 || installPos < appStart) throw new Error('Admin install control must be inside authenticated UI: ' + file);
           }
-          for (const file of ['dist/admin/index.html','dist/admin/manifest.webmanifest','dist/admin/sw.js','dist/admin/verix-presence-v1.js','dist/admin/AI-ACCESS-POLICY.md','dist/admin/assets/admin-icon-192.png','dist/admin/assets/admin-icon-512.png','dist/admin/assets/admin-icon.svg']) { if (!fs.existsSync(file)) throw new Error('Admin bundle is not self-contained for separate-origin hosting: ' + file); }
           for (const file of ['dist/admin/index.html','dist/admin/manifest.webmanifest','dist/admin/sw.js','dist/admin/verix-presence-v1.js','dist/admin/AI-ACCESS-POLICY.md','dist/admin/assets/admin-icon-192.png','dist/admin/assets/admin-icon-512.png','dist/admin/assets/admin-icon.svg']) { if (!fs.existsSync(file)) throw new Error('Admin bundle is not self-contained for separate-origin hosting: ' + file); }
           if (!fs.existsSync('dist/admin/index.html') || !fs.existsSync('dist/admin/manifest.webmanifest') || !fs.existsSync('dist/admin/sw.js')) {
             throw new Error('Dedicated Admin PWA entry or worker missing');
