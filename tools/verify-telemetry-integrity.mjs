@@ -46,7 +46,7 @@ const dailyTrendMigration = fs.readFileSync("supabase/migrations/20261019181805_
 assert.ok(dailyTrendMigration.includes("uniqueInstallations30d") && dailyTrendMigration.includes("activeInstallations") && dailyTrendMigration.includes("consultations"), "daily trend migration must supply total distinct installations and daily consultation/install counts");
 assert.ok(!adminPwaEntry.includes('rel="manifest" href="./manifest.webmanifest?v=20261019-admin4"'), "GitHub Pages Admin must not expose an installable PWA on the shared Operational origin");
 assert.ok(admin.includes("isSharedGithubPagesOrigin"), "Admin installation must be blocked on the shared GitHub Pages origin");
-assert.ok(admin.includes("Instalação do Admin desativada neste domínio partilhado"), "Admin must explain why installation is disabled on the shared origin");
+assert.ok(admin.includes("Instalação desativada neste domínio partilhado"), "Admin must explain why installation is disabled on the shared origin");
 assert.ok(fs.existsSync("vercel.json") && fs.readFileSync("vercel.json", "utf8").includes("VERIX_ADMIN_PWA_HOST=1 npm run build:secure"), "Dedicated Vercel build must enable the Admin manifest only on its own origin");
 assert.ok(!adminPwaEntry.includes('id="installAdminLogin"'), "Admin install control must not appear on the sign-in screen");
 assert.ok(adminPwaEntry.includes('id="installAdminApp"'), "Admin install control must be available inside the authenticated dashboard");
@@ -54,7 +54,7 @@ const adminAppStart = adminPwaEntry.indexOf('<div id="app"');
 const adminInstallPosition = adminPwaEntry.indexOf('id="installAdminApp"');
 assert.ok(adminAppStart >= 0 && adminInstallPosition > adminAppStart, "Admin install control must be inside the authenticated application");
 assert.ok(admin.includes("navigator.serviceWorker.register('./sw.js'"), "Admin must register the fresh-navigation service worker when opened directly");
-assert.ok(!admin.includes("functions/v1/verix-admin-pwa/index.html"), "Admin page navigation must stay on static HTML because Supabase rewrites Edge Function HTML to text/plain");
+assert.ok(admin.includes("https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/verix-admin-pwa/index.html") && admin.includes("window.location.replace(destination)") && admin.includes("isAdminEntry"), "GitHub Pages Admin entry must redirect to the isolated origin");
 const adminOriginProxy = fs.readFileSync("supabase/functions/verix-admin-pwa/index.ts", "utf8");
 assert.ok(adminOriginProxy.includes("UPSTREAM_ROOT") && adminOriginProxy.includes("rewriteHtml") && adminOriginProxy.includes("rewriteManifest"), "Supabase edge proxy must serve and rewrite the isolated Admin PWA");
 for (const file of ["supabase/functions/admin-auth-v2/index.ts","supabase/functions/stats-v2/index.ts","supabase/functions/telemetry-v2/index.ts"]) {
