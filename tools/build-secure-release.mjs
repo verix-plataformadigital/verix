@@ -275,24 +275,20 @@ for (const f of ["favicon.svg", "site.webmanifest", "admin.webmanifest", "sw.js"
   let adminPwaSource = fs.readFileSync(sourcePath, "utf8");
   adminPwaSource = adminPwaSource.replace(/<link rel="manifest" href="[^"]*admin\.webmanifest[^"]*">\s*/i, "");
   adminPwaSource = adminPwaSource.replace(/href="\.\/favicon\.svg/g, 'href="../assets/admin-icon.svg');
-  adminPwaSource = adminPwaSource.replace(/href="\.\/assets\/icon-192\.png[^"]*"/g, 'href="../assets/admin-icon-192.png?v=20261019-admin4"');
+  adminPwaSource = adminPwaSource.replace(/href="\.\/assets\/icon-192\.png[^"]*"/g, 'href="../assets/admin-icon-192.png?v=20261019-admin5"');
   adminPwaSource = adminPwaSource.replace(/\.\/assets\//g, "../assets/");
   adminPwaSource = adminPwaSource.replace(/src="\.\/verix-presence-v1\.js/g, 'src="../verix-presence-v1.js');
   adminPwaSource = adminPwaSource.replace(/(src="\.\.\/verix-presence-v1\.js\?v=)[^"]+/g, "$1" + encodeURIComponent(String(BUILD_ID)));
   adminPwaSource = adminPwaSource.replace(/\.\/AI-ACCESS-POLICY\.md/g, "../AI-ACCESS-POLICY.md");
   if (!/<\/head>/i.test(adminPwaSource)) throw new Error("Admin source has no closing head");
   const adminPwaHeadLinks = [
-    '  <link rel="icon" href="../assets/admin-icon-512.png?v=20261019-admin4" type="image/png" sizes="512x512">'
+    '  <link rel="icon" href="../assets/admin-icon-512.png?v=20261019-admin5" type="image/png" sizes="512x512">',
+    '  <link rel="manifest" href="./manifest.webmanifest?v=20261019-admin5">'
   ];
-  // GitHub Pages shares the Operational origin, so it must not advertise an installable Admin PWA.
-  // The separate hosting project sets VERIX_ADMIN_PWA_HOST=1 to enable its own manifest link.
-  if (process.env.VERIX_ADMIN_PWA_HOST === "1") {
-    adminPwaHeadLinks.push('  <link rel="manifest" href="./manifest.webmanifest?v=20261019-admin4">');
-  }
+  // GitHub Pages hosts both apps on one origin. A unique manifest ID plus the
+  // narrower /admin/ scope keeps the Admin install distinct from VÉRIX Operational.
   adminPwaSource = adminPwaSource.replace(/<\/head>/i, adminPwaHeadLinks.join("\n") + "\n</head>");
-  const adminPwaIsStandalone = process.env.VERIX_ADMIN_PWA_HOST === "1";
-  const adminObfuscationOptions = adminPwaIsStandalone ? { domainLock: [] } : null;
-  const { html: builtAdminPwa } = obfuscateHtml(adminPwaSource, "admin/index.html", adminObfuscationOptions);
+  const { html: builtAdminPwa } = obfuscateHtml(adminPwaSource, "admin/index.html");
   const adminPwaDir = path.join(OUTPUT_DIR, "admin");
   fs.mkdirSync(adminPwaDir, { recursive: true });
   fs.writeFileSync(path.join(adminPwaDir, "index.html"), builtAdminPwa, "utf8");
@@ -300,12 +296,12 @@ for (const f of ["favicon.svg", "site.webmanifest", "admin.webmanifest", "sw.js"
   // a distinct manifest URL in addition to a distinct app ID and start URL,
   // including compatibility with older WebAPK identity matching.
   const adminManifest = JSON.parse(fs.readFileSync(path.join(ROOT, "admin.webmanifest"), "utf8"));
-  adminManifest.id = "/verix/admin-v4/";
-  adminManifest.start_url = "./index.html?app=verix-admin-v4";
+  adminManifest.id = "/verix/admin/";
+  adminManifest.start_url = "./index.html?app=verix-admin-v5";
   adminManifest.scope = "./";
   adminManifest.icons = (adminManifest.icons || []).map(icon => ({
     ...icon,
-    src: String(icon.src).replace(/^\.\/assets\//, "../assets/").replace(/\?v=[^&]+$/, "?v=20261019-admin4")
+    src: String(icon.src).replace(/^\.\/assets\//, "../assets/").replace(/\?v=[^&]+$/, "?v=20261019-admin5")
   }));
   fs.writeFileSync(path.join(adminPwaDir, "manifest.webmanifest"), JSON.stringify(adminManifest, null, 2) + "\n", "utf8");
   // Make the Admin output independently deployable at the root of a different origin.
