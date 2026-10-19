@@ -54,7 +54,7 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
 .primary-button:disabled,.secondary-button:disabled,.pager-button:disabled{opacity:.55;cursor:wait}
 .login-card .primary-button{width:100%;margin-top:14px}
 .install-button{display:none;align-items:center;justify-content:center;gap:7px;min-height:40px}
-.login-card .install-button{width:100%;margin-top:8px}
+
 .install-help{margin:8px 0 0;color:var(--muted);font-size:11px;line-height:1.5}
 .login-error{min-height:22px;color:var(--red);font-size:12px;margin-top:8px}
 
@@ -352,8 +352,6 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
     <label class="sr-only" for="password">Password de administração</label>
     <input id="password" class="text-input" type="password" autocomplete="current-password" placeholder="Introduza a password" required>
     <button id="loginButton" class="primary-button" type="submit">Entrar no painel</button>
-    <button id="installAdminLogin" class="secondary-button install-button" type="button">⇧ Instalar VÉRIX Admin</button>
-    <p class="install-help" role="status" aria-live="polite" hidden></p>
     <div id="loginError" class="login-error" role="alert" aria-live="polite"></div>
   </form>
 </section>
@@ -387,9 +385,11 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
       <div class="top-actions">
         <span id="backendStatus" class="status-pill"><span class="status-dot" aria-hidden="true"></span><span id="backendStatusText">A ligar</span></span>
         <button id="refreshBtn" class="secondary-button" type="button">↻ Atualizar</button>
+        <button id="installAdminApp" class="secondary-button install-button" type="button">⇧ Instalar VÉRIX Admin</button>
         <button id="logoutBtn" class="ghost-button" type="button">Sair</button>
       </div>
     </header>
+    <p class="install-help" role="status" aria-live="polite" hidden></p>
     <section class="period-bar" aria-label="Período das métricas">
       <div class="period-description"><strong>Período</strong><br><span id="periodCaption">Hoje · desde as 00:00</span><small id="aggregateUpdatedAt" class="aggregate-freshness">Dados agregados até —</small></div>
       <div id="periodControls" class="period-controls">
