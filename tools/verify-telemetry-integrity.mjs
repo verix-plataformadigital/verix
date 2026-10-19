@@ -44,26 +44,23 @@ assert.ok(admin.includes("Evolução diária — últimos 30 dias") && admin.inc
 assert.ok(stats.includes('detail === "daily-trend-30d"') && stats.includes('verix2_admin_daily_trend_30d'), "Admin stats endpoint must expose the authenticated 30-day trend payload");
 const dailyTrendMigration = fs.readFileSync("supabase/migrations/20261019181805_admin_daily_trend_30d_unique_total.sql", "utf8");
 assert.ok(dailyTrendMigration.includes("uniqueInstallations30d") && dailyTrendMigration.includes("activeInstallations") && dailyTrendMigration.includes("consultations"), "daily trend migration must supply total distinct installations and daily consultation/install counts");
-assert.ok(!adminPwaEntry.includes('rel="manifest" href="./manifest.webmanifest?v=20261019-admin4"'), "GitHub Pages Admin must not expose an installable PWA on the shared Operational origin");
-assert.ok(admin.includes("isSharedGithubPagesOrigin"), "Admin installation must be blocked on the shared GitHub Pages origin");
-assert.ok(admin.includes("Instalação desativada neste domínio partilhado"), "Admin must explain why installation is disabled on the shared origin");
-assert.ok(fs.existsSync("vercel.json") && fs.readFileSync("vercel.json", "utf8").includes("VERIX_ADMIN_PWA_HOST=1 npm run build:secure"), "Dedicated Vercel build must enable the Admin manifest only on its own origin");
+assert.ok(adminPwaEntry.includes('rel="manifest" href="./manifest.webmanifest?v=20261019-admin5"'), "GitHub Pages Admin must link its own manifest under /admin/");
+assert.ok(admin.includes("isSharedGithubPagesOrigin") && admin.includes("isAdminScopedPath"), "Admin installation guard must allow installation only from its dedicated /admin/ path");
+assert.ok(admin.includes("VERIX_ADMIN_PWA_INSTALLED_V5"), "Admin installation flag must be versioned so old same-origin attempts cannot hide the new install control");
 assert.ok(!adminPwaEntry.includes('id="installAdminLogin"'), "Admin install control must not appear on the sign-in screen");
 assert.ok(adminPwaEntry.includes('id="installAdminApp"'), "Admin install control must be available inside the authenticated dashboard");
 const adminAppStart = adminPwaEntry.indexOf('<div id="app"');
 const adminInstallPosition = adminPwaEntry.indexOf('id="installAdminApp"');
 assert.ok(adminAppStart >= 0 && adminInstallPosition > adminAppStart, "Admin install control must be inside the authenticated application");
 assert.ok(admin.includes("navigator.serviceWorker.register('./sw.js'"), "Admin must register the fresh-navigation service worker when opened directly");
-assert.ok(admin.includes("https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/verix-admin-pwa/index.html") && admin.includes("window.location.replace(destination)") && admin.includes("isAdminEntry"), "GitHub Pages Admin entry must redirect to the isolated origin");
-const adminOriginProxy = fs.readFileSync("supabase/functions/verix-admin-pwa/index.ts", "utf8");
-assert.ok(adminOriginProxy.includes("UPSTREAM_ROOT") && adminOriginProxy.includes("rewriteHtml") && adminOriginProxy.includes("rewriteManifest"), "Supabase edge proxy must serve and rewrite the isolated Admin PWA");
+assert.ok(admin.includes("new URL('./admin/'") && admin.includes("window.location.replace(destination.toString())") && admin.includes("isAdminEntry"), "GitHub Pages Admin entry must route into the dedicated /admin/ path");
 for (const file of ["supabase/functions/admin-auth-v2/index.ts","supabase/functions/stats-v2/index.ts","supabase/functions/telemetry-v2/index.ts"]) {
   assert.ok(fs.readFileSync(file, "utf8").includes('"https://onilkakbgpklxvxuxmks.supabase.co"'), "backend CORS allowlist must include the isolated Admin origin: " + file);
 }
 assert.ok(livePresence.includes("verix-admin-pwa") && livePresence.includes("verix-admin-edge-v1"), "live presence must classify the isolated Admin separately");
-assert.equal(adminManifest.start_url, "./admin/index.html?app=verix-admin-v4", "installed Admin launches directly at the sign-in page");
+assert.equal(adminManifest.start_url, "./admin/index.html?app=verix-admin-v5", "installed Admin launches directly at the sign-in page");
 assert.equal(adminManifest.scope, "./admin/", "Admin PWA scope must be narrower than the operational app scope");
-assert.equal(adminManifest.id, "/verix/admin-v4/", "Admin PWA identity must differ from the operational VÉRIX app");
+assert.equal(adminManifest.id, "/verix/admin/", "Admin PWA identity must differ from the operational VÉRIX app");
 assert.equal(operationalManifest.id, "/verix/operational-v4/", "Operational PWA must use its explicit stable install identity");
 assert.notEqual(adminManifest.id, operationalManifest.id, "Admin and Operational install identities must not collide");
 assert.equal(operationalManifest.start_url, "./index.html?app=verix-operational-v4", "Operational start URL must have a unique fallback identity");
@@ -71,11 +68,11 @@ assert.ok(scopedAdminManifest, "Admin must have a separate manifest file within 
 assert.ok(fs.existsSync("dist/admin/verix-presence-v1.js"), "Admin bundle must include its own presence runtime for separate-origin hosting");
 assert.ok(fs.existsSync("dist/admin/AI-ACCESS-POLICY.md"), "Admin bundle must include policy document for separate-origin hosting");
 assert.ok(fs.existsSync("dist/admin/assets/admin-icon-192.png") && fs.existsSync("dist/admin/assets/admin-icon-512.png"), "Admin bundle must include its own install icons");
-assert.equal(scopedAdminManifest.id, "/verix/admin-v4/", "Admin-scoped manifest must use the distinct Admin ID");
-assert.equal(scopedAdminManifest.start_url, "./index.html?app=verix-admin-v4", "Admin-scoped manifest must use its unique launch URL");
+assert.equal(scopedAdminManifest.id, "/verix/admin/", "Admin-scoped manifest must use the distinct Admin ID");
+assert.equal(scopedAdminManifest.start_url, "./index.html?app=verix-admin-v5", "Admin-scoped manifest must use its unique launch URL");
 assert.equal(scopedAdminManifest.scope, "./", "Admin-scoped manifest scope must be restricted to /admin/");
 assert.notEqual(scopedAdminManifest.start_url, operationalManifest.start_url, "Admin and Operational fallback launch URLs must differ");
-assert.ok(!adminPwaEntry.includes("manifest.webmanifest?v=20261019-admin4"), "Shared-origin Admin entry must not link an installable manifest");
+assert.ok(adminPwaEntry.includes("manifest.webmanifest?v=20261019-admin5"), "GitHub Pages Admin entry must link its own installable manifest");
 assert.equal(adminManifest.display, "standalone", "Admin PWA opens without browser chrome when supported");
 assert.ok(serviceWorker.includes("isAdminManifest") && serviceWorker.includes("fetch(request, { cache: 'no-store' })"), "Admin navigation and manifest must not be cached");
 assert.match(admin, /id="livePresenceCards"/, "Admin must show dedicated realtime presence metrics");
