@@ -17,6 +17,7 @@ const overviewOptimizationMigration = fs.readFileSync("supabase/migrations/20261
 const insuranceNoCasesMigration = fs.readFileSync("supabase/migrations/20261009080000_insurance_no_cases.sql", "utf8");
 const insurance24hRetentionMigration = fs.readFileSync("supabase/migrations/20261019125854_insurance_no_cases_24h_retention.sql", "utf8");
 const adminManifest = JSON.parse(fs.readFileSync("admin.webmanifest", "utf8"));
+const operationalManifest = JSON.parse(fs.readFileSync("site.webmanifest", "utf8"));
 const serviceWorker = fs.readFileSync("sw.js", "utf8");
 const stalePendingMigration = fs.readFileSync("supabase/migrations/20261018092000_fix_stale_pending_query_status.sql", "utf8");
 const errorPlateCountMigration = fs.readFileSync("supabase/migrations/20261009092500_deduplicate_error_plate_consultations.sql", "utf8");
@@ -38,7 +39,7 @@ assert.match(stats, /current_app_version:CURRENT_APP_VERSION/);
 assert.doesNotMatch(stats, /app14|["\']1\.4["\']/i, "stats must not hard-code the obsolete version filter");
 assert.doesNotMatch(admin, /VERSÃO 1\.4|ERROS DA 1\.4|app14|versão 1\.4/i, "Admin must not display or consume obsolete 1.4 error metrics");
 assert.match(admin, /detail=dashboard-v3/, "new Admin must consume the V3 dashboard contract");
-assert.ok(adminPwaEntry.includes('rel="manifest" href="../admin.webmanifest?v=20261019-admin2"'), "dedicated Admin entry must reference its separate installable manifest");
+assert.ok(adminPwaEntry.includes('rel="manifest" href="../admin.webmanifest?v=20261019-admin3"'), "dedicated Admin entry must reference its separate installable manifest");
 assert.ok(!adminPwaEntry.includes('id="installAdminLogin"'), "Admin install control must not appear on the sign-in screen");
 assert.ok(adminPwaEntry.includes('id="installAdminApp"'), "Admin install control must be available inside the authenticated dashboard");
 const adminAppStart = adminPwaEntry.indexOf('<div id="app"');
@@ -49,6 +50,9 @@ assert.ok(admin.includes("./admin/index.html"), "mobile visits to the legacy Adm
 assert.equal(adminManifest.start_url, "./admin/index.html", "installed Admin launches directly at the sign-in page");
 assert.equal(adminManifest.scope, "./admin/", "Admin PWA scope must be narrower than the operational app scope");
 assert.equal(adminManifest.id, "/verix/admin/", "Admin PWA identity must differ from the operational VÉRIX app");
+assert.equal(operationalManifest.id, "/verix/operational/", "Operational PWA must use its explicit stable install identity");
+assert.notEqual(adminManifest.id, operationalManifest.id, "Admin and Operational install identities must not collide");
+assert.ok(adminPwaEntry.includes("admin.webmanifest?v=20261019-admin3"), "Admin entry must request the refreshed manifest URL");
 assert.equal(adminManifest.display, "standalone", "Admin PWA opens without browser chrome when supported");
 assert.ok(serviceWorker.includes("isAdminManifest") && serviceWorker.includes("fetch(request, { cache: 'no-store' })"), "Admin navigation and manifest must not be cached");
 assert.match(admin, /id="livePresenceCards"/, "Admin must show dedicated realtime presence metrics");

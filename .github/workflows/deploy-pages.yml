@@ -81,8 +81,10 @@ jobs:
           test -s dist/verix-mobile.js
           node -e "const v=JSON.parse(require('fs').readFileSync('dist/version.json','utf8')); if(typeof v.buildId!=='string'||!v.buildId) process.exit(1)"
           grep -q "version.json?_=" dist/index.html
+          grep -q 'site.webmanifest?v=20261019-op2' dist/index.html
           grep -q "cache:'no-store'" dist/index.html
           grep -q "version.json?_=" dist/verix-mobile.html
+          grep -q 'site.webmanifest?v=20261019-op2' dist/verix-mobile.html
           grep -q "./verix-mobile.html" dist/index.html
           grep -q "./verix-app.html" dist/verix-mobile.html
 
@@ -174,7 +176,7 @@ jobs:
           test -s dist/site.webmanifest
           node -e "const fs=require('fs'); const o=JSON.parse(fs.readFileSync('dist/site.webmanifest')); const a=JSON.parse(fs.readFileSync('dist/admin.webmanifest')); if(o.id!=='/verix/operational/'||a.id!=='/verix/admin/'||o.id===a.id) process.exit(1); if(o.scope!=='./'||a.scope!=='./admin/') process.exit(1)"
           test -s dist/admin.webmanifest
-          grep -q 'href="../admin.webmanifest?v=20261019-admin2"' dist/admin/index.html
+          grep -q 'href="../admin.webmanifest?v=20261019-admin3"' dist/admin/index.html
           grep -q '"start_url": "./admin/index.html"' dist/admin.webmanifest
           grep -q '"scope": "./admin/"' dist/admin.webmanifest
           test -s dist/admin/index.html
@@ -220,7 +222,7 @@ jobs:
           const rootAdmin = fs.readFileSync('dist/admin_v2.html', 'utf8');
           const sourceHtml = fs.readFileSync('admin_v2.html', 'utf8');
           for (const required of [
-            'rel="manifest" href="../admin.webmanifest?v=20261019-admin2"',
+            'rel="manifest" href="../admin.webmanifest?v=20261019-admin3"',
             'id="installAdminApp"',
             'beforeinstallprompt',
             '../verix-presence-v1.js'
