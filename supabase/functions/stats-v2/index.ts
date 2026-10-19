@@ -586,6 +586,8 @@ Deno.serve(async (req:Request) => {
             consultationsLast3Minutes: Number(liveActivity?.consultations || 0),
             activeInstallationsLast3Minutes: Number(liveActivity?.activeInstallations || 0),
             onlineNow: Number(liveSummary?.onlineNow || 0),
+            onlineSessions: Number(liveSummary?.onlineSessions || 0),
+            activeNow: Number(liveSummary?.activeNow || 0),
             consultationsInProgress: Number(liveSummary?.consultationsInProgress || 0),
             installationsConsultedLastHour: Number(liveSummary?.installationsConsultedLastHour || 0),
             registeredInstallations: Number(liveSummary?.registeredInstallations || 0),
