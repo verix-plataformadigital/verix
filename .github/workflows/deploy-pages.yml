@@ -268,6 +268,14 @@ jobs:
           const html = fs.readFileSync('dist/admin/index.html', 'utf8');
           const rootAdmin = fs.readFileSync('dist/admin_v2.html', 'utf8');
           const sourceHtml = fs.readFileSync('admin_v2.html', 'utf8');
+          const proxyHtml = fs.readFileSync('dist/admin-proxy/index.html', 'utf8');
+          const edgeProxy = fs.readFileSync('supabase/functions/verix-admin-pwa/index.ts', 'utf8');
+          if (proxyHtml.includes('rel="manifest" href="./manifest.webmanifest')) throw new Error('GitHub Pages proxy source must not advertise the Admin PWA manifest');
+          if (!proxyHtml.includes('id="installAdminApp"') || !proxyHtml.includes('beforeinstallprompt')) throw new Error('Standalone Admin source bundle is incomplete');
+          if (!edgeProxy.includes('UPSTREAM_ROOT') || !edgeProxy.includes('rewriteManifest') || !edgeProxy.includes('verix-admin-pwa')) throw new Error('Supabase Admin origin proxy source is missing or incomplete');
+          for (const file of ['dist/admin-proxy/manifest.webmanifest','dist/admin-proxy/sw.js','dist/admin-proxy/verix-presence-v1.js','dist/admin-proxy/AI-ACCESS-POLICY.md','dist/admin-proxy/assets/admin-icon-192.png','dist/admin-proxy/assets/admin-icon-512.png']) {
+            if (!fs.existsSync(file)) throw new Error('Supabase Admin proxy source file missing: ' + file);
+          }
           for (const required of [
             'id="installAdminApp"',
             'beforeinstallprompt',
@@ -282,8 +290,11 @@ jobs:
           const installPos = html.indexOf('id="installAdminApp"');
           if (appStart < 0 || installPos < appStart) throw new Error('Install button must be inside the authenticated Admin application');
           if (rootAdmin.includes('rel="manifest" href="./admin.webmanifest')) throw new Error('Root admin page must not claim the installable admin manifest');
-          if (!rootAdmin.includes('./admin/index.html') || !sourceHtml.includes('Adicionar ao ecrã principal')) {
-            throw new Error('Mobile redirect or install fallback instructions missing from Admin source');
+          if (!rootAdmin.includes('functions/v1/verix-admin-pwa/index.html') || !sourceHtml.includes('functions/v1/verix-admin-pwa/index.html')) {
+            throw new Error('GitHub Pages Admin entry points must route to the independent Supabase origin');
+          }
+          if (!sourceHtml.includes('Adicionar ao ecrã principal')) {
+            throw new Error('Install fallback instructions missing from Admin source');
           }
           if (!manifest.icons.some(icon => icon.src.includes('admin-icon-192.png')) || !manifest.icons.some(icon => icon.src.includes('admin-icon-512.png'))) throw new Error('Admin manifest must use distinct raster icons at 192px and 512px');
           for (const icon of nestedManifest.icons || []) {
@@ -303,7 +314,7 @@ jobs:
           const adminPresence = fs.readFileSync('dist/admin/index.html', 'utf8');
           if (!adminPresence.includes('../verix-presence-v1.js') || !fs.existsSync('dist/admin/verix-presence-v1.js')) throw new Error('Admin presence runtime must be bundled for separate-origin hosting');
           if (!fs.existsSync('vercel.json')) throw new Error('Separate-origin Vercel deployment configuration is missing');
-          console.log('Separate Admin manifest URL, unique identities, authenticated install, self-contained assets and separate-origin config: OK');
+          console.log('Admin proxy source, separate-origin routing, authenticated install and self-contained assets: OK');
           NODE
 
       - name: Upload Pages artifact
