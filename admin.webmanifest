@@ -1,18 +1,32 @@
 {
-  "id": "./admin_v2.html",
+  "id": "./admin_v2.html?app=verix-admin",
   "name": "VÉRIX Admin — Monitorização Operacional",
   "short_name": "VÉRIX Admin",
   "description": "Painel de administração e observabilidade operacional do VÉRIX.",
-  "start_url": "./admin_v2.html",
-  "scope": "./",
+  "start_url": "./admin_v2.html?source=installed-admin",
+  "scope": "./admin_v2.html",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#f3f6f8",
   "theme_color": "#17262e",
   "icons": [
-    {"src": "./assets/icon-512.png?v=20261019", "sizes": "512x512", "type": "image/png", "purpose": "any"},
-    {"src": "./assets/icon-192.png?v=20261019", "sizes": "192x192", "type": "image/png", "purpose": "any"},
-    {"src": "./assets/icon-32.png?v=20261019", "sizes": "32x32", "type": "image/png", "purpose": "any"},
-    {"src": "./assets/verix-emblem.svg?v=20261019", "sizes": "any", "type": "image/svg+xml", "purpose": "any"}
+    {
+      "src": "./assets/admin-icon-192.png?v=20261019",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/admin-icon-512.png?v=20261019",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/admin-icon.svg?v=20261019",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
   ]
 }
