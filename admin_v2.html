@@ -187,7 +187,7 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
     </section>
 
     <section id="page-errors" class="page" aria-labelledby="pageTitle">
-      <div class="section-heading"><div><h2>Registo técnico de erros</h2><p>Eventos de erro, consultas afetadas, versões, transportes e diagnósticos disponíveis. Os detalhes não expõem corpos brutos de pedidos, cabeçalhos ou stacks.</p></div></div>
+      <div class="section-heading"><div><h2>Registo técnico de erros</h2><p>Respostas HTTP 400 com uma matrícula capturada fora dos formatos portugueses reconhecidos são separadas das falhas técnicas. O formato não reconhecido não prova que o veículo não exista; consultas sem evidência suficiente continuam no registo técnico.</p></div></div>
       <div id="errorCards" class="metric-grid"></div>
       <article class="panel">
         <div class="panel-head"><div><h2>Consultas com erro e respetivas causas</h2><p>O registo contém apenas os campos técnicos necessários à análise operacional.</p></div><span id="errorCountTag" class="panel-tag">—</span></div>
@@ -215,7 +215,7 @@ const PAGE_TEXT={
  insurance:['Consultas de seguro','Resultados ASF, percentagens sem registo e lista operacional das últimas 24 horas.'],
  activity:['Utilização por hora','Atividade por instalações distintas, consultas por hora e presença por consultas recentes.'],
  legislation:['Legislação copiada','Elementos mais copiados e utilização comprovada pelo evento de cópia.'],
- errors:['Erros técnicos','Causas, matrículas consultadas, tempos, respostas HTTP e tentativas de ligação disponíveis. Um erro técnico não significa que o veículo não tenha seguro.']
+ errors:['Erros técnicos','Falhas técnicas separadas de erros de formato da matrícula. Um erro técnico não significa que o veículo não tenha seguro.']
 };
 const PERIODS=[{key:'today',label:'Hoje',startLabel:'desde as 00:00'},{key:'week',label:'7 dias',startLabel:'últimos 7 dias'},{key:'total',label:'Histórico Total',startLabel:'desde o reset da versão estável'}];
 const $=id=>document.getElementById(id);
@@ -229,7 +229,7 @@ const prettyDate=v=>{if(!v)return '—';const d=new Date(v);return Number.isFini
 const shortTime=v=>{if(!v)return '—';const d=new Date(v);return Number.isFinite(d.getTime())?shortTimeFmt.format(d):'—';};
 let token=sessionStorage.getItem(TOKEN_KEY)||'';
 let currentPeriod='today',currentPage='dashboard',dashboardData=null;
-let dashboardBusy=false,errorBusy=false,errorOffset=0,errorPageSize=50,errorLedger={items:[],totalEvents:0,uniqueConsultations:0,installations:0,hasMore:false};
+let dashboardBusy=false,errorBusy=false,errorOffset=0,errorPageSize=50,errorLedger={items:[],totalEvents:0,uniqueConsultations:0,installations:0,excludedUserInputEvents:0,excludedUserInputConsultations:0,hasMore:false};
 let caseRows=[],caseOffset=0,caseHasMore=false,caseBusy=false;
 let refreshTimer=null,noticeTimer=null,lastUpdated=null;
 function setStatus(mode,label){const el=$('backendStatus');el.className='status-pill '+mode;$('backendStatusText').textContent=label;}
@@ -266,7 +266,7 @@ async function login(password){
 }
 function logout(){
   token='';sessionStorage.removeItem(TOKEN_KEY);if(refreshTimer)clearInterval(refreshTimer);refreshTimer=null;
-  dashboardData=null;caseRows=[];errorLedger={items:[],totalEvents:0,uniqueConsultations:0,installations:0,hasMore:false};
+  dashboardData=null;caseRows=[];errorLedger={items:[],totalEvents:0,uniqueConsultations:0,installations:0,excludedUserInputEvents:0,excludedUserInputConsultations:0,hasMore:false};
   $('app').hidden=true;$('loginScreen').hidden=false;$('password').value='';$('loginError').textContent='';setStatus('','Sessão encerrada');
 }
 function periodLabel(key){const found=PERIODS.find(x=>x.key===key);return found?found.label:'Histórico Total';}
@@ -313,7 +313,7 @@ function renderAll(){
     ['Resultados finais únicos',fmt(insurance.finals),'Só conta uma consulta com um resultado final único.','green'],
     ['Com seguro',fmt(insurance.insured),'Resultado positivo registado pela consulta.','green'],
     ['Sem registo de seguro',fmt(insurance.uninsured),pct(insurance.uninsuredPct)+' das decisões válidas.','amber'],
-    ['Consultas com erro',fmt(insurance.errors),pct(insurance.errorPct)+' dos resultados finais únicos.','red'],
+    ['Consultas com erro técnico',fmt(insurance.errors),pct(insurance.errorPct)+' das consultas finais, excluindo entradas mal formatadas.','red'],
     ['Instalações ativas',fmt(users.activeInstallations),'Instalações distintas com consultas ou ações reais.','blue'],
     ['Consultas nos últimos 3 min',fmt(liveUsers.consultationsLast3Minutes),'Consultas iniciadas nos últimos três minutos.','accent'],
     ['Legislação copiada',fmt(legislation.copies),'Eventos de cópia confirmados no período.','blue']
@@ -345,10 +345,10 @@ function renderAll(){
   ]);
   renderLegislationItems(legislation.topItems||[]);
   appendCards('errorCards',[
-    ['Eventos de erro',fmt(errors.events),'Eventos técnicos recebidos no período.','red'],
-    ['Consultas distintas com erro',fmt(errors.consultations),'Consultas distintas associadas a eventos de erro.','amber'],
-    ['Instalações afetadas',fmt(errors.installations),'Instalações técnicas que enviaram erros.','blue'],
-    ['Consultas classificadas com erro',fmt(insurance.errors),'Resultados finais de consulta classificados como erro.','red']
+    ['Eventos de erro técnico',fmt(errors.events),'Falhas técnicas; HTTP 400 por formato de matrícula inválido não entra neste total.','red'],
+    ['Consultas com falha técnica',fmt(errors.consultations),'Consultas distintas afetadas por falhas técnicas.','amber'],
+    ['Formato PT não reconhecido (excluído)',fmt(errors.userInputInvalidConsultations),'Consultas com HTTP 400 e matrícula capturada não reconhecida como série portuguesa.',''],
+    ['Instalações afetadas',fmt(errors.installations),'Instalações técnicas que enviaram erros.','blue']
   ]);
   if(currentPage==='errors')renderErrorLedger();
   $('lastUpdated').textContent='Dados agregados atualizados: '+prettyDate(dashboardData.generatedAt||new Date().toISOString())+' · histórico desde o reset global registado.';
@@ -439,7 +439,7 @@ async function loadErrors(){
   if(errorBusy||!token)return;errorBusy=true;
   try{
     const url=STATS_API+'&detail=error-ledger-v3&period='+encodeURIComponent(currentPeriod)+'&limit='+errorPageSize+'&offset='+errorOffset;
-    const res=await request(url);errorLedger=res.data||{items:[],totalEvents:0,uniqueConsultations:0,installations:0,hasMore:false};renderErrorLedger();
+    const res=await request(url);errorLedger=res.data||{items:[],totalEvents:0,uniqueConsultations:0,installations:0,excludedUserInputEvents:0,excludedUserInputConsultations:0,hasMore:false};renderErrorLedger();
   }catch(e){showNotice('Não foi possível carregar o registo detalhado de erros: '+e.message,'error');showEmpty('errorPlates','Os erros estão temporariamente indisponíveis; isto não significa que não existam erros.');}
   finally{errorBusy=false;}
 }
@@ -454,8 +454,8 @@ function renderErrorLedger(){
   const query=$('errorSearch').value.trim().toLocaleLowerCase('pt-PT');
   const items=Array.isArray(errorLedger.items)?errorLedger.items:[];
   const filtered=items.filter(x=>[x.plate,x.errorType,x.cause,x.appVersion,x.buildId,x.browser,x.transport,x.networkError].some(v=>String(v||'').toLocaleLowerCase('pt-PT').includes(query)));
-  $('errorCountTag').textContent=fmt(errorLedger.totalEvents)+' eventos';
-  $('errorPageInfo').textContent='A mostrar '+fmt(Math.min(errorOffset+items.length,errorLedger.totalEvents))+' de '+fmt(errorLedger.totalEvents)+' eventos · '+fmt(errorLedger.uniqueConsultations)+' consultas distintas · '+fmt(errorLedger.installations)+' instalações.';
+  $('errorCountTag').textContent=fmt(errorLedger.totalEvents)+' erros técnicos';
+  $('errorPageInfo').textContent='A mostrar '+fmt(Math.min(errorOffset+items.length,errorLedger.totalEvents))+' de '+fmt(errorLedger.totalEvents)+' erros técnicos · '+fmt(errorLedger.uniqueConsultations)+' consultas distintas · '+fmt(errorLedger.installations)+' instalações. Separados da falha técnica: '+fmt(errorLedger.excludedUserInputEvents)+' eventos / '+fmt(errorLedger.excludedUserInputConsultations)+' consultas com formato PT não reconhecido.';
   $('errorPrev').disabled=errorOffset===0||errorBusy;
   $('errorNext').disabled=!errorLedger.hasMore||errorBusy;
   if(!filtered.length){showEmpty('errorPlates',query?'Não há erros nesta página que correspondam ao filtro.':'Não existem eventos de erro registados neste período.');return;}
