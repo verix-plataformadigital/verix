@@ -76,11 +76,11 @@ jobs:
             const adminId = new URL(admin.id || admin.start_url, 'https://verix.invalid/').href;
             if (opId === adminId) throw new Error('Operational and Admin PWA IDs collide in ' + (root || 'source'));
             if (!admin.start_url.includes('admin_v2.html') || !admin.scope.includes('admin_v2.html')) throw new Error('Admin PWA start URL/scope is not isolated');
-            if (!admin.icons.some(x => x.src.includes('admin-icon-192.png')) || !admin.icons.some(x => x.src.includes('admin-icon-512.png'))) throw new Error('Admin PWA icons are incomplete');
+            if (!admin.icons.some(x => x.src.includes('admin-icon.svg')) || !admin.icons.some(x => x.src.includes('icon-192.png')) || !admin.icons.some(x => x.src.includes('icon-512.png'))) throw new Error('Admin PWA icons are incomplete');
             const html = fs.readFileSync(p + 'admin_v2.html', 'utf8');
             if (/id=["']installAdminLogin["']/.test(html)) throw new Error('Admin installation must not appear before login');
             if ((html.match(/id=["']installAdminApp["']/g) || []).length !== 1) throw new Error('Expected exactly one authenticated Admin install control');
-            if (!html.includes('admin.webmanifest') || !html.includes('admin-sw.js')) throw new Error('Admin must use its own manifest and service worker');
+            if (!html.includes('admin.webmanifest') || !html.includes('admin-sw.js') || !html.includes('assets/admin-icon.svg')) throw new Error('Admin must use its own manifest, icon and service worker');
             if (!fs.existsSync(p + 'admin-sw.js')) throw new Error('Admin service worker missing');
           }
           check('');
