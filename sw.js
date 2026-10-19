@@ -23,7 +23,8 @@ self.addEventListener('fetch', function(event) {
 
   const isNavigation = request.mode === 'navigate';
   const isReleaseManifest = url.pathname.endsWith('/version.json');
-  if (!isNavigation && !isReleaseManifest) return;
+  const isAdminManifest = url.pathname.endsWith('/admin.webmanifest');
+  if (!isNavigation && !isReleaseManifest && !isAdminManifest) return;
 
   event.respondWith(fetch(request, { cache: 'no-store' }));
 });
