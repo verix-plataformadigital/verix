@@ -207,14 +207,17 @@ jobs:
             throw new Error('Admin PWA manifest identity or launch settings are invalid');
           }
           const html = fs.readFileSync('dist/admin_v2.html', 'utf8');
+          const sourceHtml = fs.readFileSync('admin_v2.html', 'utf8');
           for (const required of [
             'rel="manifest" href="./admin.webmanifest?v=20261019"',
             'id="installAdminLogin"',
             'id="installAdminApp"',
-            'beforeinstallprompt',
-            'Adicionar ao ecrã principal'
+            'beforeinstallprompt'
           ]) {
-            if (!html.includes(required)) throw new Error('Admin PWA element missing: ' + required);
+            if (!html.includes(required)) throw new Error('Admin PWA element missing from release: ' + required);
+          }
+          if (!sourceHtml.includes('Adicionar ao ecrã principal')) {
+            throw new Error('Admin PWA fallback instructions are missing from source');
           }
           for (const icon of manifest.icons || []) {
             const iconPath = path.join('dist', icon.src.split('?')[0]);
