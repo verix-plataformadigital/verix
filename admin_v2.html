@@ -70,8 +70,10 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
 @media(max-width:850px){.app-shell{display:block}.sidebar{padding:10px 12px;gap:9px}.sidebar-brand{display:flex;align-items:center;justify-content:space-between;padding:2px 4px 10px}.sidebar-brand p{margin:0}.sidebar-brand .brand-mark{font-size:15px}.main-nav{display:flex;overflow-x:auto;gap:4px;padding:0 0 2px;scrollbar-width:thin}.nav-caption,.sidebar-foot{display:none}.nav-button{width:auto;min-width:max-content;min-height:36px;padding:7px 10px;font-size:11px}.nav-icon{width:auto}.main-area{padding:20px 17px 28px}.content-grid{grid-template-columns:minmax(0,1fr);gap:20px}.panel.wide{grid-column:auto}.period-bar{align-items:flex-start}.period-controls{width:100%}.period-button{flex:1}.hourly-chart{gap:2px}.hour-slot{grid-template-rows:85px 16px}.bar-pair{height:85px}.hour-label{font-size:8px}}
 @media(max-width:520px){.topbar{display:block;padding-bottom:16px;margin-bottom:18px}.top-actions{justify-content:flex-start;margin-top:12px}.metric-grid{grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:22px}.metric-card{padding:12px 11px}.metric-card:nth-child(2n){border-right:0}.metric-card:nth-last-child(-n+2){border-bottom:0}.metric-label{font-size:9px}.metric-value{font-size:24px}.metric-note{font-size:10px}.panel{padding-top:15px}.quality-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.quality-item{border-bottom:1px solid var(--line)}.quality-item:nth-child(2n){border-right:0}.quality-item:last-child{border-bottom:0}.error-top{display:block}.error-time{text-align:left;margin-top:5px}.error-facts{grid-template-columns:repeat(2,minmax(0,1fr))}.login-card{padding:23px}.sidebar-brand p{display:none}.main-area{padding:17px 13px 24px}.period-description{width:100%}.period-button{padding:6px 7px;font-size:11px}.panel-head{gap:8px}.panel-tag{white-space:normal;text-align:right}.hourly-chart{gap:1px}.hour-slot{grid-template-rows:72px 15px;gap:4px}.bar-pair{height:72px}.hour-label{font-size:7px}.section-heading{display:block}.error-fact:nth-child(2n){border-right:0}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
-.live-presence-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
-@media(max-width:850px){.live-presence-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.live-presence-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.live-presence-grid .metric-card:nth-child(3n){border-right:0}
+.live-presence-grid .metric-card{border-bottom:0}
+@media(max-width:850px){.live-presence-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.live-presence-grid .metric-card{border-bottom:1px solid var(--line)}.live-presence-grid .metric-card:nth-child(2n){border-right:0}.live-presence-grid .metric-card:nth-last-child(-n+2){border-bottom:0}}
 @media(max-width:520px){.live-presence-grid{grid-template-columns:minmax(0,1fr)}.live-presence-grid .metric-card{border-right:0;border-bottom:1px solid var(--line)}.live-presence-grid .metric-card:last-child{border-bottom:0}}
 </style>
 </head>
@@ -139,7 +141,6 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
       <div id="livePresenceCards" class="metric-grid live-presence-grid" aria-live="polite">
         <article class="metric-card blue"><div class="metric-label">Online agora</div><div class="metric-value" id="livePresenceOnline">—</div><div class="metric-note">Instalações distintas com ligação Realtime ativa, deduplicadas entre separadores. Não equivale a pessoas únicas.</div></article>
         <article class="metric-card green"><div class="metric-label">A trabalhar agora</div><div class="metric-value" id="livePresenceActive">—</div><div class="metric-note">Instalações online, com a aplicação visível e interação nos últimos dois minutos.</div></article>
-        <article class="metric-card accent"><div class="metric-label">Instalações a consultar</div><div class="metric-value" id="livePresenceConsulting">—</div><div class="metric-note">Instalações com consulta iniciada recentemente e sem resultado final recebido.</div></article>
         <article class="metric-card blue"><div class="metric-label">Vistas na última hora</div><div class="metric-value" id="livePresenceHour">—</div><div class="metric-note">Instalações com presença ou atividade registada nos últimos 60 minutos; podem já estar desligadas.</div></article>
       </div>
       <div class="refresh-time" id="livePresenceUpdated">A aguardar ligação de presença.</div>
@@ -184,8 +185,6 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
     </section>
 
     <section id="page-activity" class="page" aria-labelledby="pageTitle">
-      <div class="section-heading"><div><h2>Atividade recente — janelas móveis</h2><p>Estes contadores são sempre dos últimos três minutos; não mudam quando escolhes Hoje, 7 dias ou Histórico Total.</p></div></div>
-      <div id="activityLiveCards" class="metric-grid"></div>
       <div class="section-heading compact-heading"><div><h2>Utilização no período selecionado</h2><p>Os indicadores seguintes usam exclusivamente o período escolhido no seletor superior. Aberturas da aplicação e heartbeats não contam como utilização real.</p></div></div>
       <div id="activityCards" class="metric-grid"></div>
       <article id="activityHourlyPanel" class="panel">
@@ -361,7 +360,6 @@ function renderAll(){
   const errors=getPeriodData(dashboardData.errors,currentPeriod);
   const liveUsers=dashboardData.users||{};
   const setOperationalPresenceValue=(id,value)=>{const el=$(id);if(el)el.textContent=fmt(value);};
-  setOperationalPresenceValue('livePresenceConsulting',liveUsers.installationsQueryingNow);
   setOperationalPresenceValue('livePresenceHour',liveUsers.installationsSeenLastHour);
   const baseNote=$('baseInstallationsNote');
   if(baseNote)baseNote.textContent='Base acumulada da aplicação: '+fmt(liveUsers.registeredInstallations)+' instalações registadas. Este total não depende do período selecionado.';
@@ -370,7 +368,6 @@ function renderAll(){
   const activityHourlyPanel=$('activityHourlyPanel');
   if(activityHourlyPanel)activityHourlyPanel.hidden=currentPeriod!=='today';
   appendCards('overviewLiveCards',[
-    ['Consultas em curso',fmt(liveUsers.consultationsInProgress),'Número de consultas sem resultado final recebido; não é uma contagem de instalações.','accent'],
     ['Consultas iniciadas · últimos 3 min',fmt(liveUsers.consultationsLast3Minutes),'Consultas iniciadas numa janela móvel de três minutos.','accent'],
     ['Instalações com consulta · última hora',fmt(liveUsers.installationsConsultedLastHour),'Instalações distintas com consultas recebidas nos últimos 60 minutos.','blue']
   ]);
@@ -392,10 +389,6 @@ function renderAll(){
     ['Sem registo',fmt(insurance.uninsured),pct(insurance.uninsuredPct)+' das decisões válidas do período.','amber'],
     ['Erros por consulta',fmt(insurance.errors),pct(insurance.errorPct)+' dos finais únicos no período.','red'],
     ['Eventos de erro',fmt(insurance.errorEvents),'Eventos brutos; podem diferir do número de consultas concluídas.','red']
-  ]);
-  appendCards('activityLiveCards',[
-    ['Consultas iniciadas · últimos 3 min',fmt(liveUsers.consultationsLast3Minutes),'Janela móvel; independente do período histórico.','accent'],
-    ['Instalações a consultar · últimos 3 min',fmt(liveUsers.activeInstallationsLast3Minutes),'Instalações distintas que iniciaram consulta nos últimos três minutos.','blue']
   ]);
   appendCards('activityCards',[
     ['Instalações ativas',fmt(users.activeInstallations),'Instalações distintas com utilização real no período selecionado.','blue'],
