@@ -252,6 +252,8 @@ assert.match(adminV3Migration, /interval '24 hours'/, "new no-record plate detai
 assert.doesNotMatch(adminV3Migration, /DELETE FROM public\.verix_insurance_no_cases|UPDATE public\.verix_insurance_no_cases|TRUNCATE/i, "migration must not rewrite or delete existing plate records");
 assert.doesNotMatch(adminV3Migration, /DELETE FROM public\.verix2_events|TRUNCATE TABLE public\.verix2_events/i, "migration must preserve all raw telemetry events");
 assert.match(adminV3Migration, /verix2_admin_live_activity_v3/, "three-minute active consultations must be computed separately from the cached dashboard");
+assert.match(adminV3Migration, /meta_ev AS MATERIALIZED/, "large client/forensics JSON must be excluded from the main dashboard activity CTE");
+assert.match(adminV3Migration, /AND e\.event IN \('vehicle_insurance_error', 'legislation_copy'\)/, "only error and legislation-copy rows should carry event metadata in the aggregate query");
 assert.match(adminV3Migration, /schedule := '\*\/5 \* \* \* \*'/, "shared dashboard refresh must run every five minutes, not every minute");
 assert.match(adminV3Migration, /interval '6 minutes'/, "cached metrics must remain available between scheduled refreshes");
 assert.match(stats, /detail === "dashboard-v3"/);
