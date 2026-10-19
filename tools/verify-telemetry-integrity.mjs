@@ -62,7 +62,8 @@ assert.match(livePresence, /track\(true\)/, "urgent activity must bypass only th
 assert.match(livePresence, /function scheduleReconnect\(delayMs\)/, "presence must attempt to recover a broken Realtime connection with bounded cooldowns");
 assert.match(livePresence, /pendingTrackTimer/, "activity bursts must be coalesced into one delayed presence update");
 assert.equal((livePresence.match(/trackedChannel !== channel/g) || []).length, 2, "late track callbacks must not affect a replacement presence channel");
-assert.doesNotMatch(livePresence, /track\((?:true|false)\)/, "no presence update may bypass the global 30-second throttle");
+assert.match(livePresence, /if \(!forceNow && lastTrackAt && elapsed < TRACK_MIN_INTERVAL_MS\)/, "ordinary background presence updates must retain the 30-second throttle");
+assert.match(livePresence, /if \(forceNow && pendingTrackTimer !== null\)/, "urgent presence updates must cancel a queued throttled update before sending");
 assert.match(livePresence, /scheduleReconnect\(32000\)/, "track failures must wait beyond the 30-second rate-limit window before reconnecting");
 assert.match(livePresence, /window\.addEventListener\('pageshow'/, "presence must rejoin after browser back-forward cache restores a page");
 assert.match(admin, /Instalações com consulta · última hora/, "Admin must retain the distinct installations that consulted vehicles during the last hour");
