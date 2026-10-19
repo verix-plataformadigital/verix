@@ -36,6 +36,7 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
 .status-pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:6px;padding:7px 9px;background:#fff;color:var(--muted);font-size:11px;font-weight:650;white-space:nowrap}.status-dot{width:6px;height:6px;border-radius:50%;background:#aeb8bc}.status-pill.online .status-dot{background:#398264}.status-pill.loading .status-dot{background:#bd8a29}.status-pill.offline .status-dot{background:#b44950}
 .period-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:0 0 10px;background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:0;margin-bottom:14px}
 .period-help{display:block;margin-top:4px;font-size:10px;line-height:1.4;color:var(--muted);max-width:680px}
+.aggregate-freshness{display:block;margin-top:3px;font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
 .period-description{font-size:11px;color:var(--muted)}.period-description strong{font-size:12px;color:var(--ink);font-weight:700}.period-controls{display:flex;gap:3px;flex-wrap:wrap}
 .period-button{background:transparent;color:#68757a;border:1px solid transparent;min-height:33px;padding:6px 12px;font-size:12px}
 .period-button:hover{background:#eef2f3}.period-button[aria-pressed="true"]{background:#e9f2f2;border-color:#d5e5e4;color:#175e61}
@@ -127,7 +128,7 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
     </header>
 
     <section class="period-bar" aria-label="Período das métricas">
-      <div class="period-description"><strong>Período</strong><br><span id="periodCaption">Hoje · desde as 00:00</span></div>
+      <div class="period-description"><strong>Período</strong><br><span id="periodCaption">Hoje · desde as 00:00</span><small id="aggregateUpdatedAt" class="aggregate-freshness">Dados agregados até —</small></div>
       <div id="periodControls" class="period-controls">
         <button type="button" class="period-button" data-period="today" aria-pressed="true">Hoje</button>
         <button type="button" class="period-button" data-period="week" aria-pressed="false">7 dias</button>
@@ -175,7 +176,6 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
           <div id="queryQuality" class="quality-grid"></div>
         </article>
       </div>
-      <div class="refresh-time" id="lastUpdated">Ainda sem atualização.</div>
     </section>
 
     <section id="page-insurance" class="page" aria-labelledby="pageTitle">
@@ -363,6 +363,8 @@ function renderAll(){
   const resetPoint=$('historyResetPoint');
   if(resetPoint)resetPoint.textContent=historyResetTimestamp();
   periodCaption();
+  const aggregateFreshness=$('aggregateUpdatedAt');
+  if(aggregateFreshness)aggregateFreshness.textContent='Dados históricos até '+prettyDate(dashboardData.generatedAt||new Date().toISOString());
   const insurance=getPeriodData(dashboardData.insurance,currentPeriod);
   const users=getPeriodData(dashboardData.users&&dashboardData.users.periods,currentPeriod);
   const legislation=getPeriodData(dashboardData.legislation,currentPeriod);
@@ -417,7 +419,6 @@ function renderAll(){
     ['Instalações afetadas',fmt(errors.installations),'Instalações técnicas que enviaram erros.','blue']
   ]);
   if(currentPage==='errors')renderErrorLedger();
-  $('lastUpdated').textContent='Dados agregados atualizados: '+prettyDate(dashboardData.generatedAt||new Date().toISOString())+' · histórico desde o reset global registado.';
 }
 function renderQuality(insurance){
   const host=$('queryQuality');host.replaceChildren();
