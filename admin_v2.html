@@ -300,6 +300,8 @@ function setPeriod(key){
 function getPeriodData(root,key){return root&&root[key] ? root[key] : {};}
 function renderAll(){
   if(!dashboardData)return;
+  const resetPoint=$('historyResetPoint');
+  if(resetPoint)resetPoint.textContent=historyResetTimestamp();
   periodCaption();
   const insurance=getPeriodData(dashboardData.insurance,currentPeriod);
   const users=getPeriodData(dashboardData.users&&dashboardData.users.periods,currentPeriod);
