@@ -173,7 +173,7 @@ jobs:
           test -s dist/favicon.svg
           test -s dist/site.webmanifest
           test -s dist/admin.webmanifest
-          grep -q 'href="../admin.webmanifest?v=20261019"' dist/admin/index.html
+          grep -q 'href="../admin.webmanifest?v=20261019-admin2"' dist/admin/index.html
           grep -q '"start_url": "./admin/index.html"' dist/admin.webmanifest
           grep -q '"scope": "./admin/"' dist/admin.webmanifest
           test -s dist/admin/index.html
@@ -193,7 +193,10 @@ jobs:
           test -s dist/assets/icon-192.png
           test -s dist/assets/icon-512.png
           test -s dist/assets/admin-icon.svg
-          grep -q "admin-icon.svg" dist/admin.webmanifest
+          test -s dist/assets/admin-icon-192.png
+          test -s dist/assets/admin-icon-512.png
+          grep -q "admin-icon-192.png" dist/admin.webmanifest
+          grep -q "admin-icon-512.png" dist/admin.webmanifest
           grep -q '"sizes": "512x512"' dist/site.webmanifest
           grep -q 'rel="manifest"' dist/verix-app.html
           grep -q 'rel="icon"' dist/verix-app.html
@@ -216,7 +219,7 @@ jobs:
           const rootAdmin = fs.readFileSync('dist/admin_v2.html', 'utf8');
           const sourceHtml = fs.readFileSync('admin_v2.html', 'utf8');
           for (const required of [
-            'rel="manifest" href="../admin.webmanifest?v=20261019"',
+            'rel="manifest" href="../admin.webmanifest?v=20261019-admin2"',
             'id="installAdminApp"',
             'beforeinstallprompt',
             '../verix-presence-v1.js'
@@ -231,7 +234,7 @@ jobs:
           if (!rootAdmin.includes('./admin/index.html') || !sourceHtml.includes('Adicionar ao ecrã principal')) {
             throw new Error('Mobile redirect or install fallback instructions missing from Admin source');
           }
-          if (!manifest.icons.some(icon => icon.src.includes('admin-icon.svg'))) throw new Error('Admin manifest must use its distinct icon');
+          if (!manifest.icons.some(icon => icon.src.includes('admin-icon-192.png')) || !manifest.icons.some(icon => icon.src.includes('admin-icon-512.png'))) throw new Error('Admin manifest must use distinct raster icons at 192px and 512px');
           for (const icon of manifest.icons || []) {
             const iconPath = path.join('dist', icon.src.split('?')[0]);
             if (!fs.existsSync(iconPath)) throw new Error('Admin PWA icon missing: ' + iconPath);
