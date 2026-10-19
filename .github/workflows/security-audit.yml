@@ -148,6 +148,7 @@ jobs:
             if (appStart < 0 || installPos < appStart) throw new Error('Admin install control must be inside authenticated UI: ' + file);
           }
           for (const file of ['dist/admin/index.html','dist/admin/manifest.webmanifest','dist/admin/sw.js','dist/admin/verix-presence-v1.js','dist/admin/AI-ACCESS-POLICY.md','dist/admin/assets/admin-icon-192.png','dist/admin/assets/admin-icon-512.png','dist/admin/assets/admin-icon.svg']) { if (!fs.existsSync(file)) throw new Error('Admin bundle is not self-contained for separate-origin hosting: ' + file); }
+          for (const file of ['dist/admin/index.html','dist/admin/manifest.webmanifest','dist/admin/sw.js','dist/admin/verix-presence-v1.js','dist/admin/AI-ACCESS-POLICY.md','dist/admin/assets/admin-icon-192.png','dist/admin/assets/admin-icon-512.png','dist/admin/assets/admin-icon.svg']) { if (!fs.existsSync(file)) throw new Error('Admin bundle is not self-contained for separate-origin hosting: ' + file); }
           if (!fs.existsSync('dist/admin/index.html') || !fs.existsSync('dist/admin/manifest.webmanifest') || !fs.existsSync('dist/admin/sw.js')) {
             throw new Error('Dedicated Admin PWA entry or worker missing');
           }
