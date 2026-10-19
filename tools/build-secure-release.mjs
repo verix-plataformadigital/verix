@@ -296,7 +296,7 @@ for (const f of ["favicon.svg", "site.webmanifest", "admin.webmanifest", "sw.js"
     ...icon,
     src: String(icon.src).replace(/^\.\/assets\//, "../assets/").replace(/\?v=[^&]+$/, "?v=20261019-admin4")
   }));
-  fs.writeFileSync(path.join(adminPwaDir, "manifest.webmanifest"), JSON.stringify(adminManifest, null, 2) + "\\n", "utf8");
+  fs.writeFileSync(path.join(adminPwaDir, "manifest.webmanifest"), JSON.stringify(adminManifest, null, 2) + "\n", "utf8");
   // This worker's URL and scope stay inside /admin/ instead of claiming the root operational app.
   fs.copyFileSync(path.join(OUTPUT_DIR, "sw.js"), path.join(adminPwaDir, "sw.js"));
 }
