@@ -13,6 +13,7 @@ const stalePendingMigration = fs.readFileSync("supabase/migrations/2026101809200
 const errorPlateCountMigration = fs.readFileSync("supabase/migrations/20261009092500_deduplicate_error_plate_consultations.sql", "utf8");
 const adminV3Migration = fs.readFileSync("supabase/migrations/20261018200000_admin_dashboard_v3_rebuild.sql", "utf8");
 const adminHistoryResetMigration = fs.readFileSync("supabase/migrations/20261019063600_admin_total_history_since_stable_reset.sql", "utf8");
+const adminErrorClassificationMigration = fs.readFileSync("supabase/migrations/20261019070000_admin_filter_user_input_invalid_plates.sql", "utf8");
 const packageConfig = JSON.parse(fs.readFileSync("package.json", "utf8"));
 const currentAppVersion = packageConfig.version.split(".").slice(0, 2).join(".");
 assert.ok(stats.includes('const CURRENT_APP_VERSION = "' + currentAppVersion + '"'), "stats current version must match package.json major.minor");
@@ -273,6 +274,12 @@ assert.ok(admin.includes("desde o reset da versão estável") && admin.includes(
 assert.ok(adminHistoryResetMigration.includes("SELECT reset_all_at FROM public.verix2_admin_dashboard_cache WHERE singleton = true"), "total history must read its saved reset timestamp");
 assert.ok(adminHistoryResetMigration.includes("AS total_start"), "dashboard total metrics must use the reset timestamp as their lower bound");
 assert.ok(adminHistoryResetMigration.includes("ELSE coalesce((SELECT reset_all_at FROM public.verix2_admin_dashboard_cache"), "the paginated error ledger must use the same reset timestamp");
+assert.match(adminErrorClassificationMigration, /verix2_admin_plate_format_valid/, "admin error classification must validate Portuguese plate formats");
+assert.ok(adminErrorClassificationMigration.includes("v = 'AA00AA'"), "the filter must exclude only the reserved first current-format combination, not all 00 center blocks");
+assert.ok(adminErrorClassificationMigration.includes("c.error_type = 'http_400'") && adminErrorClassificationMigration.includes("c.http_status_raw = '400'"), "only explicit HTTP 400 events qualify for the invalid-input exclusion");
+assert.ok(adminErrorClassificationMigration.includes("c.has_plate_input") && adminErrorClassificationMigration.includes("NOT c.has_valid_plate_format"), "the filter must require a captured but malformed plate");
+assert.ok(adminErrorClassificationMigration.includes("'userInputInvalidConsultations'") && adminErrorClassificationMigration.includes("'excludedUserInputConsultations'"), "invalid user input counts must remain visible separately");
+assert.ok(admin.includes("Matrículas mal formatadas excluídas") && admin.includes("erros técnicos"), "the Admin must present the distinction between invalid-input and technical errors");
 
 console.log("PASS: telemetry integrity, Admin V3 period and error contracts, and frontend JavaScript syntax.");
 
