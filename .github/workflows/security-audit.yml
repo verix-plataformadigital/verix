@@ -6,7 +6,6 @@ on:
 
 permissions:
   contents: read
-  security-events: write
 
 jobs:
   audit:
@@ -14,6 +13,38 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Validate Supabase configuration syntax and required function settings
+        shell: bash
+        run: |
+          python - <<'PY'
+          import tomllib
+          from pathlib import Path
+
+          path = Path("supabase/config.toml")
+          config = tomllib.loads(path.read_text(encoding="utf-8"))
+          functions = config.get("functions", {})
+          required = {
+              "telemetry-v2",
+              "stats-v2",
+              "admin-auth-v2",
+              "asf-proxy-v1",
+              "verix-gate-v1",
+          }
+          missing = sorted(required - functions.keys())
+          if missing:
+              raise SystemExit(f"Missing Supabase function sections: {missing}")
+          unexpected = sorted(
+              name for name in required
+              if functions[name].get("verify_jwt") is not False
+          )
+          if unexpected:
+              raise SystemExit(
+                  "Expected explicit verify_jwt = false settings for "
+                  f"custom-token-protected functions: {unexpected}"
+              )
+          print("Supabase TOML syntax and required function settings: OK")
+          PY
 
       - name: Build secure release
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
