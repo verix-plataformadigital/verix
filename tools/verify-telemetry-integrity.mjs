@@ -39,7 +39,7 @@ assert.match(app, /verix-presence-v1\.js\?v=/, "desktop/mobile app must load rea
 assert.match(livePresence, /from ['"]@supabase\/supabase-js['"]/, "presence source must use the official Supabase SDK");
 assert.match(livePresence, /presenceState\(\)/, "Admin counts must come from current Realtime Presence state");
 assert.match(livePresence, /ACTIVE_WINDOW_MS = 120000/, "active now must require recent activity");
-assert.match(livePresence, /channel\.track\(currentPayload\(\)\)/, "app must publish live presence to Realtime");
+assert.match(livePresence, /trackedChannel\.track\(currentPayload\(\)\)/, "app must publish live presence using the channel that initiated the call");
 assert.match(livePresence, /TRACK_MIN_INTERVAL_MS = 30000/, "presence updates must be throttled to avoid high-frequency channel sync");
 assert.match(livePresence, /function scheduleReconnect\(delayMs\)/, "presence must attempt to recover a broken Realtime connection with bounded cooldowns");
 assert.match(livePresence, /pendingTrackTimer/, "activity bursts must be coalesced into one delayed presence update");
