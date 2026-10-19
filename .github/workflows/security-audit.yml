@@ -116,9 +116,9 @@ jobs:
           const path = require('node:path');
           const manifest = JSON.parse(fs.readFileSync('dist/admin.webmanifest', 'utf8'));
           const operationalManifest = JSON.parse(fs.readFileSync('dist/site.webmanifest', 'utf8'));
-          if (operationalManifest.id !== '/verix/operational/' || operationalManifest.scope !== './') throw new Error('Operational manifest identity or scope is invalid');
-          if (manifest.id !== '/verix/admin/' ||
-              manifest.start_url !== './admin/index.html' ||
+          if (operationalManifest.id !== '/verix/operational-v4/' || operationalManifest.scope !== './') throw new Error('Operational manifest identity or scope is invalid');
+          if (manifest.id !== '/verix/admin-v4/' ||
+              manifest.start_url !== './admin/index.html?app=verix-admin-v4' ||
               manifest.scope !== './admin/' ||
               manifest.display !== 'standalone') {
             throw new Error('Admin PWA identity/scope must remain isolated under /admin/');
@@ -128,8 +128,11 @@ jobs:
             throw new Error('Admin manifest must advertise dedicated PNG icons at 192px and 512px');
           }
           const adminEntry = fs.readFileSync('dist/admin/index.html', 'utf8');
-          if (!fs.readFileSync('dist/index.html', 'utf8').includes('site.webmanifest?v=20261019-op2') || !fs.readFileSync('dist/verix-mobile.html', 'utf8').includes('site.webmanifest?v=20261019-op2')) throw new Error('Operational entry points must fetch the refreshed manifest URL');
-          if (!adminEntry.includes('rel="manifest" href="../admin.webmanifest?v=20261019-admin3"')) {
+          const scopedAdminManifest = JSON.parse(fs.readFileSync('dist/admin/manifest.webmanifest', 'utf8'));
+          if (scopedAdminManifest.id !== '/verix/admin-v4/' || scopedAdminManifest.start_url !== './index.html?app=verix-admin-v4' || scopedAdminManifest.scope !== './') throw new Error('Nested Admin manifest identity/start_url/scope is invalid');
+          if (scopedAdminManifest.id === operationalManifest.id || scopedAdminManifest.start_url === operationalManifest.start_url) throw new Error('Admin and Operational identities/start URLs must differ');
+          if (!fs.readFileSync('dist/index.html', 'utf8').includes('site.webmanifest?v=20261019-op3') || !fs.readFileSync('dist/verix-mobile.html', 'utf8').includes('site.webmanifest?v=20261019-op3')) throw new Error('Operational entry points must fetch the refreshed manifest URL');
+          if (!adminEntry.includes('rel="manifest" href="./manifest.webmanifest?v=20261019-admin4"')) {
             throw new Error('Admin entry must use the cache-busted separate manifest URL');
           }
           for (const icon of manifest.icons || []) {
@@ -144,7 +147,7 @@ jobs:
             const installPos = html.indexOf('id="installAdminApp"');
             if (appStart < 0 || installPos < appStart) throw new Error('Admin install control must be inside authenticated UI: ' + file);
           }
-          if (!fs.existsSync('dist/admin/index.html') || !fs.existsSync('dist/admin/sw.js')) {
+          if (!fs.existsSync('dist/admin/index.html') || !fs.existsSync('dist/admin/manifest.webmanifest') || !fs.existsSync('dist/admin/sw.js')) {
             throw new Error('Dedicated Admin PWA entry or worker missing');
           }
           console.log('Admin PWA identity, icons and post-login installation control: OK');
