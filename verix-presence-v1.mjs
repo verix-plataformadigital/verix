@@ -11,7 +11,7 @@ import { createClient } from '@supabase/supabase-js';
   var URGENT_TRACK_MIN_INTERVAL_MS = 2500;
   var currentPath = String(window.location.pathname || '');
   var currentQuery = String(window.location.search || '');
-  var ADMIN = currentPath.endsWith('/admin_v2.html') || currentPath.indexOf('/verix-admin-pwa/') >= 0 || /[?&]app=verix-admin-edge-v1(?:&|$)/i.test(currentQuery);
+  var ADMIN = currentPath.endsWith('/admin_v2.html') || /\/admin\/(?:index\.html)?$/i.test(currentPath) || currentPath.indexOf('/verix-admin-pwa/') >= 0 || /[?&]app=verix-admin-edge-v1(?:&|$)/i.test(currentQuery) || /[?&]app=verix-admin-v5(?:&|$)/i.test(currentQuery);
 
   var snapshot = {
     status: ADMIN ? 'locked' : 'connecting',
