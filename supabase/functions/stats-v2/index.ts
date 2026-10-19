@@ -575,9 +575,11 @@ Deno.serve(async (req) => {
       const now = new Date().toISOString();
       try {
         const [cachedMetrics, liveActivity] = await Promise.all([
+          // Even the manual browser refresh reads the shared cache. A forced
+          // recomputation is reserved for the scheduled refresher, not user clicks.
           rpc("verix2_admin_dashboard_v3", {
             p_now: now,
-            p_force_refresh: forceRefresh
+            p_force_refresh: false
           }),
           rpc("verix2_admin_live_activity_v3", { p_now: now })
         ]);
