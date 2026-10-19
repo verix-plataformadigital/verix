@@ -574,14 +574,10 @@ Deno.serve(async (req:Request) => {
     if(req.method === "GET" && detail === "dashboard-v3") {
       const now = new Date().toISOString();
       try {
-        const [cachedMetrics, liveActivity] = await Promise.all([
-          // Even the manual browser refresh reads the shared cache. A forced
-          // recomputation is reserved for the scheduled refresher, not user clicks.
-          rpc("verix2_admin_dashboard_v3", {
-            p_now: now,
-            p_force_refresh: false
-          }),
-          rpc("verix2_admin_live_activity_v3", { p_now: now })
+        const [cachedMetrics, liveActivity, liveSummary] = await Promise.all([
+          rpc("verix2_admin_dashboard_v3", { p_now: now, p_force_refresh: false }),
+          rpc("verix2_admin_live_activity_v3", { p_now: now }),
+          rpc("verix2_admin_live_summary_v1", { p_now: now })
         ]);
         const metrics = {
           ...cachedMetrics,
@@ -589,10 +585,11 @@ Deno.serve(async (req:Request) => {
             ...(cachedMetrics?.users || {}),
             consultationsLast3Minutes: Number(liveActivity?.consultations || 0),
             activeInstallationsLast3Minutes: Number(liveActivity?.activeInstallations || 0),
-            onlineNow: Number(liveActivity?.onlineNow || 0),
-            consultationsInProgress: Number(liveActivity?.consultationsInProgress || 0),
-            activeInstallationsLastHour: Number(liveActivity?.activeInstallationsLastHour || 0),
-            registeredInstallations: Number(liveActivity?.registeredInstallations || 0)
+            onlineNow: Number(liveSummary?.onlineNow || 0),
+            consultationsInProgress: Number(liveSummary?.consultationsInProgress || 0),
+            installationsConsultedLastHour: Number(liveSummary?.installationsConsultedLastHour || 0),
+            registeredInstallations: Number(liveSummary?.registeredInstallations || 0),
+            livePresenceObservedAt: liveSummary?.observedAt || now
           }
         };
         return json({ok:true,detail:"dashboard-v3",generatedAt:now,data:metrics},200,req);
