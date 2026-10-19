@@ -48,6 +48,7 @@ assert.match(livePresence, /scheduleReconnect\(32000\)/, "track failures must wa
 assert.match(livePresence, /window\.addEventListener\('pageshow'/, "presence must rejoin after browser back-forward cache restores a page");
 assert.match(admin, /Instalações com consultas · última hora/, "Admin must retain the distinct installations that consulted vehicles during the last hour");
 assert.match(stats, /installationsSeenLastHour: Number\(liveSummary\?\.installationsSeenLastHour \|\| 0\)/, "stats must expose the distinct last-hour presence metric");
+assert.match(stats, /installationsQueryingNow: Number\(liveSummary\?\.installationsQueryingNow \|\| 0\)/, "stats must expose the distinct installations with consultations in progress");
 assert.doesNotMatch(stats, /onlineNow: Number\(liveSummary|onlineSessions: Number\(liveSummary|activeNow: Number\(liveSummary/, "stats must not keep legacy heartbeat-based online estimates");
 assert.match(livePresenceCleanupMigration, /'installationsSeenLastHour'/, "database summary must retain a separate last-hour presence receipt count");
 assert.match(livePresenceOperationalMetricsMigration, /'installationsQueryingNow'/, "database summary must count installations with consultations in progress");
