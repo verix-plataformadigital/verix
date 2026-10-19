@@ -108,7 +108,7 @@ jobs:
               print(f"HTML structural validation: OK — {path}")
           PY
 
-      - name: Validate Admin PWA separation and post-login install control
+      - name: Validate GitHub Pages Admin PWA separation and post-login install control
         shell: bash
         run: |
           node - <<'NODE'
@@ -116,60 +116,53 @@ jobs:
           const path = require('node:path');
           const manifest = JSON.parse(fs.readFileSync('dist/admin.webmanifest', 'utf8'));
           const operationalManifest = JSON.parse(fs.readFileSync('dist/site.webmanifest', 'utf8'));
+          const scopedAdminManifest = JSON.parse(fs.readFileSync('dist/admin/manifest.webmanifest', 'utf8'));
+          const adminEntry = fs.readFileSync('dist/admin/index.html', 'utf8');
+          const sourceHtml = fs.readFileSync('admin_v2.html', 'utf8');
           if (operationalManifest.id !== '/verix/operational-v4/' || operationalManifest.scope !== './') throw new Error('Operational manifest identity or scope is invalid');
-          if (manifest.id !== '/verix/admin-v4/' ||
-              manifest.start_url !== './admin/index.html?app=verix-admin-v4' ||
+          if (manifest.id !== '/verix/admin/' ||
+              manifest.start_url !== './admin/index.html?app=verix-admin-v5' ||
               manifest.scope !== './admin/' ||
               manifest.display !== 'standalone') {
-            throw new Error('Admin PWA identity/scope must remain isolated under /admin/');
+            throw new Error('Admin PWA must have its own install identity and restricted /admin/ scope');
           }
+          if (scopedAdminManifest.id !== '/verix/admin/' ||
+              scopedAdminManifest.start_url !== './index.html?app=verix-admin-v5' ||
+              scopedAdminManifest.scope !== './') throw new Error('Nested Admin manifest identity/start_url/scope is invalid');
+          if (scopedAdminManifest.id === operationalManifest.id || scopedAdminManifest.start_url === operationalManifest.start_url) throw new Error('Admin and Operational identities/start URLs must differ');
+          if (!adminEntry.includes('rel="manifest" href="./manifest.webmanifest?v=20261019-admin5"')) throw new Error('GitHub Pages /admin/ entry must link the Admin manifest');
           if (!manifest.icons.some(icon => icon.src.includes('admin-icon-192.png') && icon.type === 'image/png') ||
               !manifest.icons.some(icon => icon.src.includes('admin-icon-512.png') && icon.type === 'image/png')) {
             throw new Error('Admin manifest must advertise dedicated PNG icons at 192px and 512px');
           }
-          const adminEntry = fs.readFileSync('dist/admin/index.html', 'utf8');
-          const sourceHtml = fs.readFileSync('admin_v2.html', 'utf8');
-          const adminOriginProxy = fs.readFileSync('supabase/functions/verix-admin-pwa/index.ts', 'utf8');
-          const scopedAdminManifest = JSON.parse(fs.readFileSync('dist/admin/manifest.webmanifest', 'utf8'));
-          if (scopedAdminManifest.id !== '/verix/admin-v4/' || scopedAdminManifest.start_url !== './index.html?app=verix-admin-v4' || scopedAdminManifest.scope !== './') throw new Error('Nested Admin manifest identity/start_url/scope is invalid');
-          if (scopedAdminManifest.id === operationalManifest.id || scopedAdminManifest.start_url === operationalManifest.start_url) throw new Error('Admin and Operational identities/start URLs must differ');
-          if (!fs.readFileSync('dist/index.html', 'utf8').includes('site.webmanifest?v=20261019-op3') || !fs.readFileSync('dist/verix-mobile.html', 'utf8').includes('site.webmanifest?v=20261019-op3')) throw new Error('Operational entry points must fetch the refreshed manifest URL');
-          if (adminEntry.includes('rel="manifest" href="./manifest.webmanifest?v=20261019-admin4"')) {
-            throw new Error('GitHub Pages Admin must not advertise an installable PWA on the shared Operational origin');
+          if (!sourceHtml.includes("new URL('./admin/'") ||
+              !sourceHtml.includes('window.location.replace(destination.toString())') ||
+              sourceHtml.includes('functions/v1/verix-admin-pwa/index.html')) {
+            throw new Error('Legacy Admin entry must route to the GitHub Pages /admin/ path, not Supabase HTML hosting');
           }
-          const vercelConfig = JSON.parse(fs.readFileSync('vercel.json', 'utf8'));
-          if (vercelConfig.buildCommand !== 'VERIX_ADMIN_PWA_HOST=1 npm run build:secure' || vercelConfig.outputDirectory !== 'dist/admin') {
-            throw new Error('Standalone Admin build settings are invalid');
-          }
-          if (!sourceHtml.includes('functions/v1/verix-admin-pwa/index.html') ||
-              !adminOriginProxy.includes('UPSTREAM_ROOT') ||
-              !adminOriginProxy.includes('rewriteHtml') ||
-              !adminOriginProxy.includes('rewriteManifest')) {
-            throw new Error('Admin must route to the isolated Supabase origin through the static proxy');
-          }
+          if (!sourceHtml.includes('isAdminScopedPath') || !sourceHtml.includes('VERIX_ADMIN_PWA_INSTALLED_V5')) throw new Error('GitHub Admin install guard or versioned installed flag is missing');
           for (const file of ['supabase/functions/admin-auth-v2/index.ts','supabase/functions/stats-v2/index.ts','supabase/functions/telemetry-v2/index.ts']) {
-            if (!fs.readFileSync(file, 'utf8').includes('https://onilkakbgpklxvxuxmks.supabase.co')) {
-              throw new Error('Isolated Admin origin missing from backend CORS allowlist: ' + file);
+            if (!fs.readFileSync(file, 'utf8').includes('https://verix-plataformadigital.github.io')) {
+              throw new Error('GitHub Pages origin missing from backend CORS allowlist: ' + file);
             }
           }
-          for (const icon of manifest.icons || []) {
-            const iconPath = path.join('dist', icon.src.split('?')[0]);
-            if (!fs.existsSync(iconPath)) throw new Error('Admin PWA icon missing: ' + iconPath);
+          for (const icon of scopedAdminManifest.icons || []) {
+            const iconPath = path.join('dist/admin', icon.src.split('?')[0]);
+            const rootIconPath = path.join('dist', icon.src.split('?')[0]);
+            if (!fs.existsSync(iconPath) && !fs.existsSync(rootIconPath)) throw new Error('Admin icon missing from GitHub Pages output: ' + icon.src);
           }
           for (const file of ['admin_v2.html', 'dist/admin/index.html']) {
             const html = fs.readFileSync(file, 'utf8');
             if (html.includes('id="installAdminLogin"')) throw new Error('Install control is visible in the pre-login screen: ' + file);
-          if (file === 'dist/admin/index.html' && !sourceHtml.includes('isSharedGithubPagesOrigin')) throw new Error('Shared-origin Admin install guard is missing');
             if ((html.match(/id="installAdminApp"/g) || []).length !== 1) throw new Error('Expected one Admin install control: ' + file);
             const appStart = html.indexOf('<div id="app"');
             const installPos = html.indexOf('id="installAdminApp"');
             if (appStart < 0 || installPos < appStart) throw new Error('Admin install control must be inside authenticated UI: ' + file);
           }
-          for (const file of ['dist/admin/index.html','dist/admin/manifest.webmanifest','dist/admin/sw.js','dist/admin/verix-presence-v1.js','dist/admin/AI-ACCESS-POLICY.md','dist/admin/assets/admin-icon-192.png','dist/admin/assets/admin-icon-512.png','dist/admin/assets/admin-icon.svg']) { if (!fs.existsSync(file)) throw new Error('Admin bundle is not self-contained for separate-origin hosting: ' + file); }
-          if (!fs.existsSync('dist/admin/index.html') || !fs.existsSync('dist/admin/manifest.webmanifest') || !fs.existsSync('dist/admin/sw.js')) {
-            throw new Error('Dedicated Admin PWA entry or worker missing');
+          for (const file of ['dist/admin/index.html','dist/admin/manifest.webmanifest','dist/admin/sw.js','dist/admin/verix-presence-v1.js','dist/admin/AI-ACCESS-POLICY.md','dist/admin/assets/admin-icon-192.png','dist/admin/assets/admin-icon-512.png','dist/admin/assets/admin-icon.svg']) {
+            if (!fs.existsSync(file)) throw new Error('GitHub Pages Admin bundle asset missing: ' + file);
           }
-          console.log('Admin PWA identity, icons and post-login installation control: OK');
+          console.log('GitHub Pages Admin PWA identity, scope, icons and post-login install control: OK');
           NODE
 
       - name: Verify release does not contain source maps
