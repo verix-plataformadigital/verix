@@ -157,6 +157,21 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
 .hourly-values summary:before{display:inline-grid;place-items:center;width:19px;height:19px;color:var(--accent);border:1px solid var(--line);border-radius:5px;font-size:13px;line-height:1;content:"+"}
 .hourly-values[open] summary:before{content:"−"}
 .hourly-table-content{margin-top:7px}
+.daily-trend-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin:0 0 15px}
+.daily-trend-summary .metric-card{min-height:108px}
+.daily-trend-summary .metric-value{font-size:clamp(22px,1.9vw,30px)}
+.daily-trend-chart{width:100%;overflow-x:auto;border-bottom:1px solid var(--line)}
+.daily-trend-svg{display:block;width:100%;min-width:820px;height:auto;overflow:visible}
+.daily-trend-svg text{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
+.daily-trend-grid{stroke:#e4ecef;stroke-width:1}
+.daily-trend-axis-label{fill:#65757e;font-size:12px}
+.daily-trend-date-label{fill:#65757e;font-size:11px}
+.daily-trend-consults{fill:none;stroke:var(--accent);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.daily-trend-users{fill:none;stroke:var(--blue);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.daily-trend-point-consults{fill:#fff;stroke:var(--accent);stroke-width:2}
+.daily-trend-point-users{fill:#fff;stroke:var(--blue);stroke-width:2}
+.daily-trend-note{margin:11px 0 0;color:var(--muted);font-size:11px;line-height:1.5}
+.daily-trend-legend{margin-bottom:8px}
 .table-wrap{width:100%;overflow:auto;border:1px solid var(--line);border-radius:9px}
 .data-table{width:100%;min-width:520px;border-collapse:collapse;font-size:12.5px}
 .data-table th{color:#51636c;background:#eef3f5;text-align:left;font-size:10.5px;font-weight:800;letter-spacing:.045em;text-transform:uppercase}
@@ -254,6 +269,7 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
   .main-area{padding:22px 20px 30px}
   #overviewCards,#insuranceCards,#legislationCards,#errorCards{grid-template-columns:repeat(2,minmax(0,1fr))}
   #activityCards{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #dailyTrendSummary{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(max-width:850px){
   .install-button{display:inline-flex}
@@ -286,7 +302,7 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
   .period-description{width:100%}
   .period-controls{display:grid;width:100%;grid-template-columns:repeat(3,minmax(0,1fr))}
   .period-button{padding:7px 5px;font-size:10.5px}
-  #overviewCards,#insuranceCards,#legislationCards,#errorCards,#activityCards,#overviewLiveCards{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #overviewCards,#insuranceCards,#legislationCards,#errorCards,#activityCards,#overviewLiveCards,#dailyTrendSummary{grid-template-columns:repeat(2,minmax(0,1fr))}
   #livePresenceCards{grid-template-columns:1fr}
   .metric-grid{gap:9px;margin-bottom:18px}
   .metric-card{min-height:124px;padding:13px 11px 12px 14px;border-radius:10px}
@@ -453,6 +469,25 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
     <section id="page-activity" class="page" aria-labelledby="pageTitle">
       <div class="section-heading compact-heading"><div><h2>Utilização no período selecionado</h2><p>Os indicadores seguintes usam exclusivamente o período escolhido no seletor superior. Aberturas da aplicação e heartbeats não contam como utilização real.</p></div></div>
       <div id="activityCards" class="metric-grid"></div>
+      <article id="dailyTrendPanel" class="panel" style="margin-bottom:16px">
+        <div class="panel-head">
+          <div><h2>Evolução diária — últimos 30 dias</h2><p>Consultas de seguro iniciadas e instalações com atividade real, dia a dia. Este histórico é independente do seletor Hoje / 7 dias / Histórico Total.</p></div>
+          <span id="dailyTrendRange" class="panel-tag">A carregar histórico…</span>
+        </div>
+        <div id="dailyTrendSummary" class="daily-trend-summary"></div>
+        <div class="legend daily-trend-legend">
+          <span><i class="legend-dot consults"></i>Consultas iniciadas · eixo esquerdo</span>
+          <span><i class="legend-dot users"></i>Instalações ativas · eixo direito</span>
+        </div>
+        <div id="dailyTrendChart" class="daily-trend-chart" role="img" aria-label="Tendência diária, últimos 30 dias">
+          <div class="empty-state">A carregar os últimos 30 dias…</div>
+        </div>
+        <details class="hourly-values">
+          <summary>Ver tabela com os valores diários exatos</summary>
+          <div id="dailyTrendTable" class="hourly-table-content"></div>
+        </details>
+        <p class="daily-trend-note">As instalações são identificadores técnicos da aplicação, não uma contagem garantida de pessoas físicas únicas. O gráfico inclui hoje, que ainda está em curso; a variação semanal compara apenas dias completos.</p>
+      </article>
       <article id="activityHourlyPanel" class="panel">
         <div class="panel-head"><div><h2>Distribuição horária de hoje</h2><p>Este gráfico só é mostrado quando o período selecionado é Hoje; mostra 00h–23h à hora de Lisboa.</p></div><span class="panel-tag">Hoje · Lisboa</span></div>
         <div class="legend"><span><i class="legend-dot consults"></i>Consultas</span><span><i class="legend-dot users"></i>Instalações ativas</span></div>
@@ -573,7 +608,7 @@ const ERROR_LEDGER_REFRESH_MS=60000;
 const PAGE_TEXT={
  dashboard:['Visão geral','Estado operacional em tempo real separado dos indicadores do período selecionado.'],
  insurance:['Consultas de seguro','Resultados do período escolhido e lista operacional recente apresentada separadamente.'],
- activity:['Utilização por hora','Atividade recente em janelas móveis e utilização no período selecionado, sem misturar os dois.'],
+ activity:['Utilização por hora','Histórico diário dos últimos 30 dias e distribuição horária de hoje.'],
  legislation:['Legislação copiada','Elementos mais copiados e utilização comprovada pelo evento de cópia, no período selecionado.'],
  errors:['Erros técnicos','Falhas técnicas separadas de erros de formato da matrícula. Um erro técnico não significa que o veículo não tenha seguro.']
 };
@@ -590,6 +625,7 @@ const shortTime=v=>{if(!v)return '—';const d=new Date(v);return Number.isFinit
 let token=sessionStorage.getItem(TOKEN_KEY)||'';
 let currentPeriod='today',currentPage='dashboard',dashboardData=null;
 let dashboardBusy=false,errorBusy=false,errorOffset=0,errorPageSize=50,errorLedger={items:[],totalEvents:0,uniqueConsultations:0,installations:0,excludedUserInputEvents:0,excludedUserInputConsultations:0,hasMore:false};
+let dailyTrendData=null,dailyTrendLoadedAt=0,dailyTrendBusy=false;
 let caseRows=[],caseOffset=0,caseHasMore=false,caseBusy=false;
 let refreshTimer=null,noticeTimer=null,lastUpdated=null,lastErrorRefreshAt=0;
 function setStatus(mode,label){const el=$('backendStatus');el.className='status-pill '+mode;$('backendStatusText').textContent=label;}
@@ -626,7 +662,7 @@ async function login(password){
 }
 function logout(){
   token='';sessionStorage.removeItem(TOKEN_KEY);if(refreshTimer)clearInterval(refreshTimer);refreshTimer=null;
-  dashboardData=null;caseRows=[];errorLedger={items:[],totalEvents:0,uniqueConsultations:0,installations:0,excludedUserInputEvents:0,excludedUserInputConsultations:0,hasMore:false};
+  dashboardData=null;caseRows=[];dailyTrendData=null;dailyTrendLoadedAt=0;errorLedger={items:[],totalEvents:0,uniqueConsultations:0,installations:0,excludedUserInputEvents:0,excludedUserInputConsultations:0,hasMore:false};
   $('app').hidden=true;$('loginScreen').hidden=false;$('password').value='';$('loginError').textContent='';setStatus('','Sessão encerrada');
 }
 function periodLabel(key){const found=PERIODS.find(x=>x.key===key);return found?found.label:'Histórico Total';}
@@ -652,6 +688,7 @@ function activePage(page){
   $('pageTitle').textContent=PAGE_TEXT[page][0];$('pageSubtitle').textContent=PAGE_TEXT[page][1];
   if(dashboardData)renderAll();
   if(page==='insurance'&&$('insuranceCasesDisclosure').open)loadInsuranceCases(0,false);
+  if(page==='activity')loadDailyTrend(false);
   if(page==='errors'){errorOffset=0;loadErrors();}
 }
 function setPeriod(key){
@@ -741,6 +778,7 @@ function renderAll(){
     ['Consultas de seguro iniciadas',fmt(insurance.consultations),'Consultas iniciadas no período selecionado.','accent']
   ]);
   renderHourly('activityHourlyChart','activityHourlyTable',null);
+  renderDailyTrend();
   appendCards('legislationCards',[
     ['Cópias no período',fmt(legislation.copies),'Ação explícita de cópia registada pela telemetria.','accent'],
     ['Instalações que copiaram',fmt(legislation.users),'Instalações distintas com pelo menos uma cópia.','blue'],
@@ -760,6 +798,128 @@ function renderQuality(insurance){
   [['Pendentes',insurance.pending],['Incompletas',insurance.incomplete],['Contraditórias',insurance.contradictory],['Finais duplicados',insurance.duplicateFinals],['Eventos de erro',insurance.errorEvents],['Finais únicos',insurance.finals]].forEach(item=>{
     const box=document.createElement('div');box.className='quality-item';const label=document.createElement('span');label.textContent=item[0];const val=document.createElement('strong');val.textContent=fmt(item[1]);box.append(label,val);host.appendChild(box);
   });
+}
+function trendSvgElement(name,attrs,text){
+  const node=document.createElementNS('http://www.w3.org/2000/svg',name);
+  Object.keys(attrs||{}).forEach(key=>node.setAttribute(key,String(attrs[key])));
+  if(text!==undefined)node.textContent=String(text);
+  return node;
+}
+function trendDayParts(value){
+  const match=String(value||'').match(/^(\\d{4})-(\\d{2})-(\\d{2})$/);
+  return match?{year:Number(match[1]),month:Number(match[2]),day:Number(match[3])}:null;
+}
+function trendShortDate(value){
+  const p=trendDayParts(value);if(!p)return String(value||'—');
+  const months=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  return String(p.day).padStart(2,'0')+' '+months[p.month-1];
+}
+function trendLongDate(value){
+  const p=trendDayParts(value);return p?String(p.day).padStart(2,'0')+'/'+String(p.month).padStart(2,'0')+'/'+p.year:String(value||'—');
+}
+function trendNiceAxisMax(value){
+  const target=Math.max(10,Number(value)||0)/4;
+  const magnitude=Math.pow(10,Math.floor(Math.log10(target)));
+  const steps=[1,1.5,2,2.5,3,4,5,6,7,8,9,10];
+  const step=steps.find(n=>n*magnitude>=target)||10;
+  return step*magnitude*4;
+}
+function renderDailyTrend(){
+  const summary=$('dailyTrendSummary'),chart=$('dailyTrendChart'),table=$('dailyTrendTable'),range=$('dailyTrendRange');
+  if(!summary||!chart||!table||!range)return;
+  if(!dailyTrendData||!Array.isArray(dailyTrendData.days)){
+    summary.replaceChildren();
+    if(!dailyTrendBusy)showEmpty('dailyTrendChart','O histórico diário ainda não foi carregado. Abre o separador Utilização para consultar os últimos 30 dias.');
+    range.textContent='Histórico diário';return;
+  }
+  const rows=dailyTrendData.days.map(row=>({
+    day:String(row.day||''),
+    consultations:Math.max(0,Math.trunc(Number(row.consultations)||0)),
+    activeInstallations:Math.max(0,Math.trunc(Number(row.activeInstallations)||0))
+  })).filter(row=>trendDayParts(row.day)).slice(-30);
+  if(!rows.length){showEmpty('dailyTrendChart','Não há dias válidos para representar.');summary.replaceChildren();table.replaceChildren();return;}
+  const totalConsultations=rows.reduce((sum,row)=>sum+row.consultations,0);
+  const uniqueInstallations=Math.max(0,Math.trunc(Number(dailyTrendData.uniqueInstallations30d)||0));
+  const avgConsultations=Math.round(totalConsultations/rows.length);
+  // Exclude today, which is a partial day, from the week-over-week comparison.
+  const completed=rows.slice(0,-1);
+  const recent7=completed.slice(-7);
+  const prior7=completed.slice(-14,-7);
+  const recentTotal=recent7.reduce((sum,row)=>sum+row.consultations,0);
+  const priorTotal=prior7.reduce((sum,row)=>sum+row.consultations,0);
+  let variation='Sem base',variationNote='Não existe uma semana anterior comparável.';
+  let variationTone='';
+  if(prior7.length===7&&priorTotal>0){
+    const change=((recentTotal-priorTotal)/priorTotal)*100;
+    variation=(change>0?'+':'')+change.toLocaleString('pt-PT',{minimumFractionDigits:1,maximumFractionDigits:1})+'%';
+    variationTone=change>0?'green':change<0?'red':'';
+    variationNote='7 dias completos face aos 7 dias completos anteriores: '+fmt(recentTotal)+' vs. '+fmt(priorTotal)+' consultas.';
+  }else if(prior7.length===7&&priorTotal===0&&recentTotal>0){
+    variation='Novo';variationTone='green';variationNote='Houve consultas nos últimos 7 dias completos e nenhuma nos 7 dias anteriores.';
+  }else if(prior7.length===7){
+    variation='0,0%';variationNote='Sem consultas nas duas janelas semanais.';
+  }
+  summary.replaceChildren(
+    metricCard('Consultas · 30 dias',fmt(totalConsultations),'Total de consultas iniciadas no período.','accent'),
+    metricCard('Instalações distintas · 30 dias',fmt(uniqueInstallations),'Identificadores com pelo menos uma ação real no período.','blue'),
+    metricCard('Média de consultas / dia',fmt(avgConsultations),'Média sobre os 30 dias, incluindo dias sem registos.',''),
+    metricCard('Variação semanal',variation,variationNote,variationTone)
+  );
+  range.textContent=trendShortDate(rows[0].day)+' – '+trendShortDate(rows[rows.length-1].day)+' · Lisboa';
+  chart.replaceChildren();
+  const width=1080,height=320,left=65,right=62,top=20,bottom=48;
+  const plotW=width-left-right,plotH=height-top-bottom;
+  const maxConsult=trendNiceAxisMax(Math.max(...rows.map(row=>row.consultations)));
+  const maxUsers=trendNiceAxisMax(Math.max(...rows.map(row=>row.activeInstallations)));
+  const xAt=i=>left+(rows.length<=1?plotW/2:(i/(rows.length-1))*plotW);
+  const yConsult=v=>top+plotH-(v/maxConsult)*plotH;
+  const yUsers=v=>top+plotH-(v/maxUsers)*plotH;
+  const svg=trendSvgElement('svg',{viewBox:'0 0 '+width+' '+height,class:'daily-trend-svg',role:'img','aria-label':'Últimos 30 dias: consultas por dia na escala esquerda e instalações ativas por dia na escala direita.'});
+  svg.appendChild(trendSvgElement('title',{},'Consultas e instalações ativas — '+trendLongDate(rows[0].day)+' a '+trendLongDate(rows[rows.length-1].day)));
+  for(let i=0;i<=4;i++){
+    const y=top+(i/4)*plotH;
+    const consultTick=Math.round(maxConsult*(4-i)/4);
+    const userTick=Math.round(maxUsers*(4-i)/4);
+    svg.appendChild(trendSvgElement('line',{x1:left,y1:y,x2:width-right,y2:y,class:'daily-trend-grid'}));
+    svg.appendChild(trendSvgElement('text',{x:left-10,y:y+4,'text-anchor':'end',class:'daily-trend-axis-label'},fmt(consultTick)));
+    svg.appendChild(trendSvgElement('text',{x:width-right+10,y:y+4,'text-anchor':'start',class:'daily-trend-axis-label'},fmt(userTick)));
+  }
+  svg.appendChild(trendSvgElement('text',{x:left,y:12,class:'daily-trend-axis-label'},'Consultas'));
+  svg.appendChild(trendSvgElement('text',{x:width-right,y:12,'text-anchor':'end',class:'daily-trend-axis-label'},'Instalações'));
+  const consultPath=rows.map((row,i)=>(i?'L ':'M ')+xAt(i).toFixed(2)+' '+yConsult(row.consultations).toFixed(2)).join(' ');
+  const usersPath=rows.map((row,i)=>(i?'L ':'M ')+xAt(i).toFixed(2)+' '+yUsers(row.activeInstallations).toFixed(2)).join(' ');
+  svg.appendChild(trendSvgElement('path',{d:consultPath,class:'daily-trend-consults'}));
+  svg.appendChild(trendSvgElement('path',{d:usersPath,class:'daily-trend-users'}));
+  rows.forEach((row,i)=>{
+    const title=trendLongDate(row.day)+' · Consultas: '+fmt(row.consultations)+' · Instalações ativas: '+fmt(row.activeInstallations);
+    const c=trendSvgElement('circle',{cx:xAt(i),cy:yConsult(row.consultations),r:3.2,class:'daily-trend-point-consults',tabindex:0});
+    c.appendChild(trendSvgElement('title',{},title));svg.appendChild(c);
+    const u=trendSvgElement('circle',{cx:xAt(i),cy:yUsers(row.activeInstallations),r:3.2,class:'daily-trend-point-users',tabindex:0});
+    u.appendChild(trendSvgElement('title',{},title));svg.appendChild(u);
+  });
+  rows.forEach((row,i)=>{
+    if(i!==0&&i%5!==0&&i!==rows.length-1)return;
+    const anchor=i===0?'start':i===rows.length-1?'end':'middle';
+    svg.appendChild(trendSvgElement('text',{x:xAt(i),y:height-19,'text-anchor':anchor,class:'daily-trend-date-label'},trendShortDate(row.day)));
+  });
+  chart.appendChild(svg);
+  const tableRows=rows.map(row=>[trendLongDate(row.day),fmt(row.consultations),fmt(row.activeInstallations)]);
+  table.replaceChildren(makeTable(['Data','Consultas iniciadas','Instalações ativas'],tableRows));
+}
+async function loadDailyTrend(force){
+  if(!token||dailyTrendBusy)return;
+  if(!force&&dailyTrendData&&Date.now()-dailyTrendLoadedAt<300000){renderDailyTrend();return;}
+  dailyTrendBusy=true;
+  if(!dailyTrendData)showEmpty('dailyTrendChart','A carregar os últimos 30 dias…');
+  try{
+    const url=STATS_API+'&detail=daily-trend-30d'+(force?'&fresh=1':'');
+    const result=await request(url);
+    if(!result.data||!Array.isArray(result.data.days)||result.data.days.length!==30)throw new Error('A resposta não contém 30 dias de histórico.');
+    dailyTrendData=result.data;dailyTrendLoadedAt=Date.now();renderDailyTrend();
+  }catch(error){
+    if(!dailyTrendData)showEmpty('dailyTrendChart','Não foi possível carregar o histórico diário: '+(error.message||'erro desconhecido')+'. Tenta atualizar.');
+    showNotice('Histórico diário indisponível: '+(error.message||'erro desconhecido'),'warning');
+  }finally{dailyTrendBusy=false;}
 }
 function renderHourly(chartId,tableId,noteId){
   const rows=Array.isArray(dashboardData.hourly)?dashboardData.hourly:[];
@@ -798,6 +958,7 @@ async function loadDashboard(force){
     const res=await request(url);
     if(!res.data)throw new Error('A resposta do dashboard não contém métricas.');
     dashboardData=res.data;renderAll();setStatus('online','Backend online');lastUpdated=Date.now();
+    if(currentPage==='activity')await loadDailyTrend(force);
     if(currentPage==='insurance')loadInsuranceCases(0,false);
     if(currentPage==='errors'&&(force||Date.now()-lastErrorRefreshAt>=ERROR_LEDGER_REFRESH_MS)){errorOffset=0;loadErrors();}
   }catch(e){setStatus('offline','Dados indisponíveis');showNotice('Não foi possível atualizar as métricas: '+e.message,'error');if(!dashboardData)showEmpty('overviewCards','Os dados não estão disponíveis. Tente atualizar novamente.');}

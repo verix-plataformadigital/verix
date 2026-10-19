@@ -628,6 +628,24 @@ Deno.serve(async (req:Request) => {
       }
     }
 
+    // Admin daily trend: load only when the Usage page is opened; database and response are cached.
+    if(req.method === "GET" && detail === "daily-trend-30d") {
+      const cached = getDetailCache("daily-trend-30d", USAGE_CACHE_MS, req, forceRefresh);
+      if(cached) return cached;
+      const now = new Date().toISOString();
+      try {
+        const trend = await rpc("verix2_admin_daily_trend_30d", { p_now: now });
+        if(!trend || !Array.isArray(trend.days) || trend.days.length !== 30) {
+          throw new Error("daily_trend_invalid_payload");
+        }
+        const body = JSON.stringify({ok:true,detail:"daily-trend-30d",generatedAt:now,data:trend});
+        setDetailCache("daily-trend-30d",body);
+        return new Response(body,{status:200,headers:{"Content-Type":"application/json",...corsHeaders(req),"X-Verix-Detail-Cache":"MISS"}});
+      } catch(error) {
+        return json({ok:false,error:"daily_trend_30d_failed",detail:String((error as Error)?.message||error)},500,req);
+      }
+    }
+
     // Detailed error ledger: raw response bodies, request headers and caller stacks are never exposed.
     if(req.method === "GET" && detail === "error-ledger-v3") {
       const requestedPeriod = url.searchParams.get("period") || "today";
