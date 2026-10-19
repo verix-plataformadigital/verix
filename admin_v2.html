@@ -505,6 +505,9 @@ if('serviceWorker' in navigator&&window.isSecureContext){navigator.serviceWorker
 // Dedicated installation controls for the VÉRIX Admin PWA.
 const ADMIN_INSTALL_BUTTONS = Array.from(document.querySelectorAll('.install-button'));
 let deferredAdminInstallPrompt = null;
+function isSharedGithubPagesOrigin() {
+  return /(^|\.)github\.io$/i.test(String(window.location.hostname || ''));
+}
 function hasAdminInstallationFlag() {
   try { return window.localStorage.getItem('VERIX_ADMIN_PWA_INSTALLED_V1') === '1'; }
   catch (_) { return false; }
@@ -516,6 +519,11 @@ function setAdminInstallMessage(message) {
   });
 }
 function syncAdminInstallButtons() {
+  if (isSharedGithubPagesOrigin()) {
+    ADMIN_INSTALL_BUTTONS.forEach(function(button) { button.hidden = true; });
+    setAdminInstallMessage('Instalação do Admin desativada neste domínio partilhado para proteger o VÉRIX Operacional. A instalação independente será disponibilizada no endereço próprio do Admin.');
+    return;
+  }
   const installed = hasAdminInstallationFlag();
   ADMIN_INSTALL_BUTTONS.forEach(function(button) { button.hidden = installed; });
   if (installed) setAdminInstallMessage('VÉRIX Admin já foi instalada neste navegador.');
@@ -531,6 +539,10 @@ window.addEventListener('appinstalled', function() {
   setAdminInstallMessage('VÉRIX Admin foi instalada com sucesso.');
 });
 async function requestAdminInstall() {
+  if (isSharedGithubPagesOrigin()) {
+    setAdminInstallMessage('Não instales o Admin neste domínio partilhado: o Chrome pode associá-lo ao VÉRIX Operacional. Usa o endereço próprio do Admin quando estiver disponível.');
+    return;
+  }
   if (hasAdminInstallationFlag()) {
     setAdminInstallMessage('VÉRIX Admin já foi instalada neste navegador. Abre o respetivo ícone no ecrã principal.');
     return;

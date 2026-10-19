@@ -128,12 +128,17 @@ jobs:
             throw new Error('Admin manifest must advertise dedicated PNG icons at 192px and 512px');
           }
           const adminEntry = fs.readFileSync('dist/admin/index.html', 'utf8');
+          const sourceHtml = fs.readFileSync('admin_v2.html', 'utf8');
           const scopedAdminManifest = JSON.parse(fs.readFileSync('dist/admin/manifest.webmanifest', 'utf8'));
           if (scopedAdminManifest.id !== '/verix/admin-v4/' || scopedAdminManifest.start_url !== './index.html?app=verix-admin-v4' || scopedAdminManifest.scope !== './') throw new Error('Nested Admin manifest identity/start_url/scope is invalid');
           if (scopedAdminManifest.id === operationalManifest.id || scopedAdminManifest.start_url === operationalManifest.start_url) throw new Error('Admin and Operational identities/start URLs must differ');
           if (!fs.readFileSync('dist/index.html', 'utf8').includes('site.webmanifest?v=20261019-op3') || !fs.readFileSync('dist/verix-mobile.html', 'utf8').includes('site.webmanifest?v=20261019-op3')) throw new Error('Operational entry points must fetch the refreshed manifest URL');
-          if (!adminEntry.includes('rel="manifest" href="./manifest.webmanifest?v=20261019-admin4"')) {
-            throw new Error('Admin entry must use the cache-busted separate manifest URL');
+          if (adminEntry.includes('rel="manifest" href="./manifest.webmanifest?v=20261019-admin4"')) {
+            throw new Error('GitHub Pages Admin must not advertise an installable PWA on the shared Operational origin');
+          }
+          const vercelConfig = JSON.parse(fs.readFileSync('vercel.json', 'utf8'));
+          if (vercelConfig.buildCommand !== 'VERIX_ADMIN_PWA_HOST=1 npm run build:secure' || vercelConfig.outputDirectory !== 'dist/admin') {
+            throw new Error('Vercel must build the installable Admin only on its separate origin');
           }
           for (const icon of manifest.icons || []) {
             const iconPath = path.join('dist', icon.src.split('?')[0]);
@@ -142,12 +147,12 @@ jobs:
           for (const file of ['admin_v2.html', 'dist/admin/index.html']) {
             const html = fs.readFileSync(file, 'utf8');
             if (html.includes('id="installAdminLogin"')) throw new Error('Install control is visible in the pre-login screen: ' + file);
+          if (file === 'dist/admin/index.html' && !sourceHtml.includes('isSharedGithubPagesOrigin')) throw new Error('Shared-origin Admin install guard is missing');
             if ((html.match(/id="installAdminApp"/g) || []).length !== 1) throw new Error('Expected one Admin install control: ' + file);
             const appStart = html.indexOf('<div id="app"');
             const installPos = html.indexOf('id="installAdminApp"');
             if (appStart < 0 || installPos < appStart) throw new Error('Admin install control must be inside authenticated UI: ' + file);
           }
-          for (const file of ['dist/admin/index.html','dist/admin/manifest.webmanifest','dist/admin/sw.js','dist/admin/verix-presence-v1.js','dist/admin/AI-ACCESS-POLICY.md','dist/admin/assets/admin-icon-192.png','dist/admin/assets/admin-icon-512.png','dist/admin/assets/admin-icon.svg']) { if (!fs.existsSync(file)) throw new Error('Admin bundle is not self-contained for separate-origin hosting: ' + file); }
           for (const file of ['dist/admin/index.html','dist/admin/manifest.webmanifest','dist/admin/sw.js','dist/admin/verix-presence-v1.js','dist/admin/AI-ACCESS-POLICY.md','dist/admin/assets/admin-icon-192.png','dist/admin/assets/admin-icon-512.png','dist/admin/assets/admin-icon.svg']) { if (!fs.existsSync(file)) throw new Error('Admin bundle is not self-contained for separate-origin hosting: ' + file); }
           if (!fs.existsSync('dist/admin/index.html') || !fs.existsSync('dist/admin/manifest.webmanifest') || !fs.existsSync('dist/admin/sw.js')) {
             throw new Error('Dedicated Admin PWA entry or worker missing');

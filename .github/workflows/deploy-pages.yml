@@ -176,7 +176,10 @@ jobs:
           test -s dist/site.webmanifest
           node -e "const fs=require('fs'); const o=JSON.parse(fs.readFileSync('dist/site.webmanifest')); const a=JSON.parse(fs.readFileSync('dist/admin.webmanifest')); if(o.id!=='/verix/operational-v4/'||a.id!=='/verix/admin-v4/'||o.id===a.id) process.exit(1); if(o.scope!=='./'||a.scope!=='./admin/') process.exit(1)"
           test -s dist/admin.webmanifest
-          grep -q 'href="./manifest.webmanifest?v=20261019-admin4"' dist/admin/index.html
+          if grep -q 'rel="manifest" href="./manifest.webmanifest?v=20261019-admin4"' dist/admin/index.html; then
+            echo "GitHub Pages must not expose the Admin as an installable PWA on the Operational origin"
+            exit 1
+          fi
           grep -q '"start_url": "./admin/index.html?app=verix-admin-v4"' dist/admin.webmanifest
           grep -q '"scope": "./admin/"' dist/admin.webmanifest
           test -s dist/admin/index.html
@@ -213,6 +216,23 @@ jobs:
           grep -q 'rel="icon"' dist/verix-app.html
           grep -q 'verix-emblem.svg' dist/verix-app.html
 
+      - name: Validate dedicated-origin Admin build
+        shell: bash
+        run: |
+          VERIX_ADMIN_PWA_HOST=1 VERIX_OUTPUT_DIR=dist-vercel npm run build:secure
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const manifest = JSON.parse(fs.readFileSync('dist-vercel/admin/manifest.webmanifest', 'utf8'));
+          const html = fs.readFileSync('dist-vercel/admin/index.html', 'utf8');
+          if (!html.includes('rel="manifest" href="./manifest.webmanifest?v=20261019-admin4"')) throw new Error('Dedicated-origin Admin build must link its own installable manifest');
+          if (manifest.id !== '/verix/admin-v4/' || manifest.start_url !== './index.html?app=verix-admin-v4' || manifest.scope !== './') throw new Error('Dedicated-origin Admin manifest identity or scope is invalid');
+          for (const file of ['dist-vercel/admin/assets/admin-icon-192.png','dist-vercel/admin/assets/admin-icon-512.png','dist-vercel/admin/verix-presence-v1.js','dist-vercel/admin/AI-ACCESS-POLICY.md','dist-vercel/admin/sw.js']) {
+            if (!fs.existsSync(file)) throw new Error('Dedicated-origin Admin output is incomplete: ' + file);
+          }
+          console.log('Dedicated-origin Admin build: manifest, identity, runtime and assets OK');
+          NODE
+
       - name: Validate separately scoped Admin PWA
         shell: bash
         run: |
@@ -221,7 +241,7 @@ jobs:
           const path = require('node:path');
           const manifest = JSON.parse(fs.readFileSync('dist/admin.webmanifest', 'utf8'));
           const vercelConfig = JSON.parse(fs.readFileSync('vercel.json', 'utf8'));
-          if (vercelConfig.buildCommand !== 'npm run build:secure' || vercelConfig.outputDirectory !== 'dist/admin') throw new Error('Vercel must publish only the self-contained Admin bundle on its own origin');
+          if (vercelConfig.buildCommand !== 'VERIX_ADMIN_PWA_HOST=1 npm run build:secure' || vercelConfig.outputDirectory !== 'dist/admin') throw new Error('Vercel must publish only the self-contained Admin bundle on its own origin');
           const nestedManifest = JSON.parse(fs.readFileSync('dist/admin/manifest.webmanifest', 'utf8'));
           if (manifest.id !== '/verix/admin-v4/' ||
               manifest.start_url !== './admin/index.html?app=verix-admin-v4' ||
@@ -234,13 +254,14 @@ jobs:
           const rootAdmin = fs.readFileSync('dist/admin_v2.html', 'utf8');
           const sourceHtml = fs.readFileSync('admin_v2.html', 'utf8');
           for (const required of [
-            'rel="manifest" href="./manifest.webmanifest?v=20261019-admin4"',
             'id="installAdminApp"',
             'beforeinstallprompt',
             '../verix-presence-v1.js'
           ]) {
-            if (!html.includes(required)) throw new Error('Dedicated Admin PWA element missing: ' + required);
+            if (!html.includes(required)) throw new Error('Admin page element missing: ' + required);
           }
+          if (html.includes('rel="manifest" href="./manifest.webmanifest?v=20261019-admin4"')) throw new Error('GitHub Pages must not link an installable Admin manifest on the shared Operational origin');
+          if (!sourceHtml.includes('isSharedGithubPagesOrigin') || !sourceHtml.includes('Instalação do Admin desativada neste domínio partilhado')) throw new Error('Admin install button must be blocked on the shared GitHub Pages origin');
           if (html.includes('id="installAdminLogin"')) throw new Error('Install button must not appear on the pre-login screen');
           const appStart = html.indexOf('<div id="app"');
           const installPos = html.indexOf('id="installAdminApp"');

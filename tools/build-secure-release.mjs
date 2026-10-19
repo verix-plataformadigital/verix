@@ -5,7 +5,7 @@ import { createHash } from "node:crypto";
 import JavaScriptObfuscator from "javascript-obfuscator";
 
 const ROOT = process.cwd();
-const OUTPUT_DIR = path.join(ROOT, "dist");
+const OUTPUT_DIR = path.join(ROOT, process.env.VERIX_OUTPUT_DIR || "dist");
 
 const BUILD_ID = process.env.VERIX_BUILD_ID || `1.5-sec-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-a`;
 
@@ -94,7 +94,7 @@ const COMPATIBILITY_OPTIONS = {
   ]
 };
 
-function obfuscateHtml(html, label) {
+function obfuscateHtml(html, label, optionsOverride = null) {
   const scriptPattern = /(<script\b[^>]*>)([\s\S]*?)(<\/script>)/gi;
   let scriptCount = 0;
 
@@ -115,9 +115,10 @@ function obfuscateHtml(html, label) {
 
     scriptCount++;
     try {
-      const options = trimmed.length >= 250_000
+      const baseOptions = trimmed.length >= 250_000
         ? COMPATIBILITY_OPTIONS
         : OBFUSCATOR_OPTIONS;
+      const options = optionsOverride ? { ...baseOptions, ...optionsOverride } : baseOptions;
       const result = JavaScriptObfuscator.obfuscate(trimmed, options).getObfuscatedCode();
       return open + "\n" + result + "\n" + close;
     } catch (err) {
@@ -280,8 +281,18 @@ for (const f of ["favicon.svg", "site.webmanifest", "admin.webmanifest", "sw.js"
   adminPwaSource = adminPwaSource.replace(/(src="\.\.\/verix-presence-v1\.js\?v=)[^"]+/g, "$1" + encodeURIComponent(String(BUILD_ID)));
   adminPwaSource = adminPwaSource.replace(/\.\/AI-ACCESS-POLICY\.md/g, "../AI-ACCESS-POLICY.md");
   if (!/<\/head>/i.test(adminPwaSource)) throw new Error("Admin source has no closing head");
-  adminPwaSource = adminPwaSource.replace(/<\/head>/i, '  <link rel="icon" href="../assets/admin-icon-512.png?v=20261019-admin4" type="image/png" sizes="512x512">\n  <link rel="manifest" href="./manifest.webmanifest?v=20261019-admin4">\n</head>');
-  const { html: builtAdminPwa } = obfuscateHtml(adminPwaSource, "admin/index.html");
+  const adminPwaHeadLinks = [
+    '  <link rel="icon" href="../assets/admin-icon-512.png?v=20261019-admin4" type="image/png" sizes="512x512">'
+  ];
+  // GitHub Pages shares the Operational origin, so it must not advertise an installable Admin PWA.
+  // The separate hosting project sets VERIX_ADMIN_PWA_HOST=1 to enable its own manifest link.
+  if (process.env.VERIX_ADMIN_PWA_HOST === "1") {
+    adminPwaHeadLinks.push('  <link rel="manifest" href="./manifest.webmanifest?v=20261019-admin4">');
+  }
+  adminPwaSource = adminPwaSource.replace(/<\/head>/i, adminPwaHeadLinks.join("\n") + "\n</head>");
+  const adminPwaIsStandalone = process.env.VERIX_ADMIN_PWA_HOST === "1";
+  const adminObfuscationOptions = adminPwaIsStandalone ? { domainLock: [] } : null;
+  const { html: builtAdminPwa } = obfuscateHtml(adminPwaSource, "admin/index.html", adminObfuscationOptions);
   const adminPwaDir = path.join(OUTPUT_DIR, "admin");
   fs.mkdirSync(adminPwaDir, { recursive: true });
   fs.writeFileSync(path.join(adminPwaDir, "index.html"), builtAdminPwa, "utf8");
