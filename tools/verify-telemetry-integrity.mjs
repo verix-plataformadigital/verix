@@ -287,6 +287,9 @@ assert.ok(admin.includes("Distribuição horária de hoje"), "usage page must id
 assert.match(admin, /#overviewLiveCards\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/, "recent live metrics must not leave half the card row blank");
 assert.match(admin, /\.main-area\{min-width:0;padding:17px/, "Admin overview must use condensed vertical spacing");
 assert.match(admin, /\.base-info\{margin:-4px 0 16px;padding:0;border:0;background:transparent/, "registered installation total must be a compact note, not a full-width card");
+assert.match(admin, /id="aggregateUpdatedAt"/, "the selected-period header must show when cached historical metrics were calculated");
+assert.match(admin, /aggregateFreshness\.textContent='Dados históricos até '\+prettyDate/, "the visible freshness label must use the payload generation timestamp");
+assert.doesNotMatch(admin, /id="lastUpdated"|\$\('lastUpdated'\)/, "the old duplicate timestamp at the bottom of the page must be removed");
 assert.match(adminV3Migration, /count\(DISTINCT e\.query_id\)/, "the backend contract must deduplicate consultations by query ID");
 assert.ok(admin.includes("activeUsers"), "hourly chart must use the active-installation count");
 
