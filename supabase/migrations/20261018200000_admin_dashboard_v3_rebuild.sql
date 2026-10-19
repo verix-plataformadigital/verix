@@ -1,7 +1,7 @@
 -- VÉRIX Admin V3: efficient metrics, a 365-day history window, and a 24-hour operational plate registry.
 -- This migration preserves event rows and plate contents.
 -- Existing plate details are given a 24-hour expiry; the scheduled expiry job removes them later.
--- Scheduled event cleanup is extended to 365 days so the requested history remains available.
+-- Automatic deletion of raw events is disabled by this proposal to preserve history.
 
 CREATE TABLE IF NOT EXISTS public.verix2_admin_v3_cache (
   singleton boolean PRIMARY KEY DEFAULT true CHECK (singleton),
