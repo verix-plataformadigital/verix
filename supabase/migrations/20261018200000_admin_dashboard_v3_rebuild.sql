@@ -1,6 +1,7 @@
 -- VÉRIX Admin V3: efficient metrics, a 365-day history window, and a 24-hour operational plate registry.
--- This migration does not delete or rewrite existing event or plate rows.
--- Existing no-record rows keep their current expires_at; new rows use the 24-hour default.
+-- This migration never deletes plate/event content. Existing no-record rows get only
+-- an earlier expires_at where required by the 24-hour policy; their other fields stay intact.
+-- The existing expiry cleanup job removes expired plate details after the retention window.
 -- Scheduled event cleanup is extended to 365 days so the requested history remains available.
 
 CREATE TABLE IF NOT EXISTS public.verix2_admin_v3_cache (
@@ -15,6 +16,12 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.verix2_admin_v3_cache TO se
 
 ALTER TABLE public.verix_insurance_no_cases
   ALTER COLUMN expires_at SET DEFAULT (now() + interval '24 hours');
+
+-- Enforce the new TTL for existing operational plate details without deleting rows
+-- or changing their plate/timestamps. The existing expiry job performs the deletion.
+UPDATE public.verix_insurance_no_cases
+SET expires_at = LEAST(expires_at, created_at + interval '24 hours')
+WHERE expires_at > created_at + interval '24 hours';
 
 CREATE OR REPLACE FUNCTION public.verix2_cleanup_old_data(
   p_before timestamptz DEFAULT (now() - interval '365 days')
