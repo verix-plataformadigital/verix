@@ -9,7 +9,7 @@
 <meta name="robots" content="noai, noimageai, noindex, nofollow">
 <meta name="verix-ai-policy" content="./AI-ACCESS-POLICY.md">
 <title>VÉRIX — Administração</title>
-<!-- Keep Admin installation on a separate origin from operational VÉRIX. -->
+<!-- Keep the Admin UI on GitHub Pages, inside its own /admin/ PWA scope. -->
 <script>
 (function () {
   'use strict';
@@ -18,10 +18,10 @@
   var isGithubPages = /(^|\.)github\.io$/i.test(host);
   var isAdminEntry = /\/admin_v2\.html$/i.test(path);
   if (!isGithubPages || !isAdminEntry) return;
-  var destination = 'https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/verix-admin-pwa/index.html';
-  if (window.location.search) destination += window.location.search;
-  if (window.location.hash) destination += window.location.hash;
-  window.location.replace(destination);
+  var destination = new URL('./admin/', window.location.href);
+  destination.search = window.location.search;
+  destination.hash = window.location.hash;
+  window.location.replace(destination.toString());
 })();
 </script>
 
@@ -548,12 +548,14 @@ const ADMIN_INSTALL_BUTTONS = Array.from(document.querySelectorAll('.install-but
 let deferredAdminInstallPrompt = null;
 function isSharedGithubPagesOrigin() {
   const host = String(window.location.hostname || '');
-  // No Admin page on the shared GitHub Pages origin may offer installation.
-  // Only the Supabase-hosted Admin origin is allowed to install independently.
-  return /(^|\.)github\.io$/i.test(host);
+  const path = String(window.location.pathname || '');
+  const isGithubPages = /(^|\.)github\.io$/i.test(host);
+  const isAdminScopedPath = /\/admin(?:\/|$)/i.test(path);
+  // Allow a distinct Admin install only from its dedicated /admin/ path.
+  return isGithubPages && !isAdminScopedPath;
 }
 function hasAdminInstallationFlag() {
-  try { return window.localStorage.getItem('VERIX_ADMIN_PWA_INSTALLED_V1') === '1'; }
+  try { return window.localStorage.getItem('VERIX_ADMIN_PWA_INSTALLED_V5') === '1'; }
   catch (_) { return false; }
 }
 function setAdminInstallMessage(message) {
@@ -578,7 +580,7 @@ window.addEventListener('beforeinstallprompt', function(event) {
 });
 window.addEventListener('appinstalled', function() {
   deferredAdminInstallPrompt = null;
-  try { window.localStorage.setItem('VERIX_ADMIN_PWA_INSTALLED_V1', '1'); } catch (_) {}
+  try { window.localStorage.setItem('VERIX_ADMIN_PWA_INSTALLED_V5', '1'); } catch (_) {}
   ADMIN_INSTALL_BUTTONS.forEach(function(button) { button.hidden = true; });
   setAdminInstallMessage('VÉRIX Admin foi instalada com sucesso.');
 });
