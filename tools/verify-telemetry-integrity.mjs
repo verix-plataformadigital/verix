@@ -338,7 +338,7 @@ assert.ok(adminHistoryResetMigration.includes("AS total_start"), "dashboard tota
 assert.ok(adminHistoryResetMigration.includes("ELSE coalesce((SELECT reset_all_at FROM public.verix2_admin_dashboard_cache"), "the paginated error ledger must use the same reset timestamp");
 assert.ok(adminV3TotalResetMigration.includes("(SELECT reset_all_at FROM public.verix2_admin_dashboard_cache WHERE singleton = true)") && adminV3TotalResetMigration.includes(") AS total_start"), "the latest Admin V3 aggregate must use the saved reset timestamp instead of a rolling year as the total-history boundary");
 assert.ok(adminV3TotalResetMigration.includes("ranges,total,start"), "the total-history migration must validate the effective start boundary");
-assert.match(adminV3RecoverLegacyConsultationsMigration, /query_start_candidates AS[\\s\\S]*?event = 'vehicle_insurance_pending'[\\s\\S]*?NOT EXISTS[\\s\\S]*?l\.event = 'vehicle_lookup'/, "historic pending IDs are recovered only when no lookup exists anywhere");
+assert.match(adminV3RecoverLegacyConsultationsMigration, /query_start_candidates AS[\s\S]*?event = 'vehicle_insurance_pending'[\s\S]*?NOT EXISTS[\s\S]*?l\.event = 'vehicle_lookup'/, "historic pending IDs are recovered only when no lookup exists anywhere");
 assert.match(adminV3RecoverLegacyConsultationsMigration, /insurance,total,consultations/, "legacy consultation recovery must validate the actual Admin total");
 assert.doesNotMatch(adminV3RecoverLegacyConsultationsMigration, /DELETE FROM public\.verix2_events|TRUNCATE TABLE public\.verix2_events/i, "legacy consultation recovery must preserve raw telemetry");
 
