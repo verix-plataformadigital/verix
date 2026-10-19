@@ -36,7 +36,9 @@ recent_presence_events AS MATERIALIZED (
 presence_state AS MATERIALIZED (
   SELECT session_id, installation_id,
     max(created_at) FILTER (WHERE event IN ('app_open', 'heartbeat')) AS last_presence_received_at,
-    max(created_at) FILTER (WHERE event = 'session_close') AS last_close_received_at
+    max(created_at) FILTER (WHERE event = 'session_close') AS last_close_received_at,
+    max(occurred_at) FILTER (WHERE event IN ('app_open', 'heartbeat')) AS last_presence_occurred_at,
+    max(occurred_at) FILTER (WHERE event = 'session_close') AS last_close_occurred_at
   FROM recent_presence_events
   GROUP BY session_id, installation_id
 ),
@@ -44,7 +46,16 @@ online_sessions AS MATERIALIZED (
   SELECT session_id, installation_id
   FROM presence_state CROSS JOIN p
   WHERE last_presence_received_at >= p.n - interval '90 seconds'
-    AND (last_close_received_at IS NULL OR last_presence_received_at > last_close_received_at)
+    AND (
+      last_close_received_at IS NULL
+      OR last_presence_received_at > last_close_received_at
+      -- Multiple events accepted in the same database transaction share created_at.
+      -- Use the fresh client occurrence timestamp only to break that exact tie.
+      OR (
+        last_presence_received_at = last_close_received_at
+        AND last_presence_occurred_at > last_close_occurred_at
+      )
+    )
 ),
 presence_last_hour AS MATERIALIZED (
   SELECT DISTINCT e.session_id, e.installation_id

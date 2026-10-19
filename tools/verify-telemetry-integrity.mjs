@@ -139,6 +139,8 @@ assert.match(presenceMigration, /event IN \('app_open','heartbeat','session_clos
 assert.match(presenceMigration, /last_close IS NULL OR last_presence > last_close/, "a later close event must remove a session from the active count");
 assert.match(serverTimePresenceMigration, /e\.created_at >= p\.n - interval '90 seconds'/, "online presence must require fresh server receipt time");
 assert.match(serverTimePresenceMigration, /e\.occurred_at >= p\.n - interval '90 seconds'/, "stale queued client events must not revive online presence");
+assert.match(serverTimePresenceMigration, /last_presence_received_at = last_close_received_at[\\s\\S]*last_presence_occurred_at > last_close_occurred_at/, "a fresh app open in the same ingest batch must supersede a close event");
+
 assert.match(serverTimePresenceMigration, /'registered_installations'/, "presence RPC must expose confirmed installation identifiers");
 assert.match(serverTimePresenceMigration, /'online_installations'/, "presence RPC must distinguish online installations from sessions");
 assert.match(serverTimePresenceMigration, /'querying_sessions_now'/, "presence RPC must identify live sessions with an in-progress query");
