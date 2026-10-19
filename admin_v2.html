@@ -533,7 +533,13 @@ if('serviceWorker' in navigator&&window.isSecureContext){navigator.serviceWorker
 const ADMIN_INSTALL_BUTTONS = Array.from(document.querySelectorAll('.install-button'));
 let deferredAdminInstallPrompt = null;
 function isSharedGithubPagesOrigin() {
-  return /(^|\.)github\.io$/i.test(String(window.location.hostname || ''));
+  const host = String(window.location.hostname || '');
+  const path = String(window.location.pathname || '');
+  const isGithubPages = /(^|\\.)github\\.io$/i.test(host);
+  // The Admin proxy now has its own manifest identity and service-worker scope.
+  // The operational/root and legacy Admin paths remain non-installable here.
+  const isAdminProxyPath = /\\/verix\\/admin-proxy(?:\\/|$)/i.test(path);
+  return isGithubPages && !isAdminProxyPath;
 }
 function hasAdminInstallationFlag() {
   try { return window.localStorage.getItem('VERIX_ADMIN_PWA_INSTALLED_V1') === '1'; }
