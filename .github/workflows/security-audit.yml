@@ -132,8 +132,12 @@ jobs:
           if (scopedAdminManifest.id !== '/verix/admin-v4/' || scopedAdminManifest.start_url !== './index.html?app=verix-admin-v4' || scopedAdminManifest.scope !== './') throw new Error('Nested Admin manifest identity/start_url/scope is invalid');
           if (scopedAdminManifest.id === operationalManifest.id || scopedAdminManifest.start_url === operationalManifest.start_url) throw new Error('Admin and Operational identities/start URLs must differ');
           if (!fs.readFileSync('dist/index.html', 'utf8').includes('site.webmanifest?v=20261019-op3') || !fs.readFileSync('dist/verix-mobile.html', 'utf8').includes('site.webmanifest?v=20261019-op3')) throw new Error('Operational entry points must fetch the refreshed manifest URL');
-          if (!adminEntry.includes('rel="manifest" href="./manifest.webmanifest?v=20261019-admin4"')) {
-            throw new Error('Admin entry must use the cache-busted separate manifest URL');
+          if (adminEntry.includes('rel="manifest" href="./manifest.webmanifest?v=20261019-admin4"')) {
+            throw new Error('GitHub Pages Admin must not advertise an installable PWA on the shared Operational origin');
+          }
+          const vercelConfig = JSON.parse(fs.readFileSync('vercel.json', 'utf8'));
+          if (vercelConfig.buildCommand !== 'VERIX_ADMIN_PWA_HOST=1 npm run build:secure' || vercelConfig.outputDirectory !== 'dist/admin') {
+            throw new Error('Vercel must build the installable Admin only on its separate origin');
           }
           for (const icon of manifest.icons || []) {
             const iconPath = path.join('dist', icon.src.split('?')[0]);
@@ -142,6 +146,7 @@ jobs:
           for (const file of ['admin_v2.html', 'dist/admin/index.html']) {
             const html = fs.readFileSync(file, 'utf8');
             if (html.includes('id="installAdminLogin"')) throw new Error('Install control is visible in the pre-login screen: ' + file);
+          if (file === 'dist/admin/index.html' && !sourceHtml.includes('isSharedGithubPagesOrigin')) throw new Error('Shared-origin Admin install guard is missing');
             if ((html.match(/id="installAdminApp"/g) || []).length !== 1) throw new Error('Expected one Admin install control: ' + file);
             const appStart = html.indexOf('<div id="app"');
             const installPos = html.indexOf('id="installAdminApp"');
