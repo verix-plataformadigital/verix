@@ -55,6 +55,9 @@ assert.equal(operationalManifest.id, "/verix/operational-v4/", "Operational PWA 
 assert.notEqual(adminManifest.id, operationalManifest.id, "Admin and Operational install identities must not collide");
 assert.equal(operationalManifest.start_url, "./index.html?app=verix-operational-v4", "Operational start URL must have a unique fallback identity");
 assert.ok(scopedAdminManifest, "Admin must have a separate manifest file within its own scope");
+assert.ok(fs.existsSync("dist/admin/verix-presence-v1.js"), "Admin bundle must include its own presence runtime for separate-origin hosting");
+assert.ok(fs.existsSync("dist/admin/AI-ACCESS-POLICY.md"), "Admin bundle must include policy document for separate-origin hosting");
+assert.ok(fs.existsSync("dist/admin/assets/admin-icon-192.png") && fs.existsSync("dist/admin/assets/admin-icon-512.png"), "Admin bundle must include its own install icons");
 assert.equal(scopedAdminManifest.id, "/verix/admin-v4/", "Admin-scoped manifest must use the distinct Admin ID");
 assert.equal(scopedAdminManifest.start_url, "./index.html?app=verix-admin-v4", "Admin-scoped manifest must use its unique launch URL");
 assert.equal(scopedAdminManifest.scope, "./", "Admin-scoped manifest scope must be restricted to /admin/");
