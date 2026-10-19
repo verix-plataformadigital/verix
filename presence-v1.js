@@ -32,6 +32,7 @@
   var lastTrackAt = 0;
   var lastActivityAt = document.visibilityState === 'visible' ? Date.now() : 0;
   var activeInstallId = '';
+  var appPresenceKey = uuid('presence-tab');
   var sessionId = '';
   var tabId = '';
 
@@ -219,7 +220,7 @@
       liveChannel = supabaseClient.channel(TOPIC, {
         config: {
           private: false,
-          presence: { key: activeInstallId }
+          presence: { key: appPresenceKey }
         }
       });
       liveChannel.on('presence', { event: 'sync' }, function () {});
