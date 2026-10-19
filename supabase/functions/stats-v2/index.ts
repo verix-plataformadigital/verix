@@ -585,13 +585,10 @@ Deno.serve(async (req:Request) => {
             ...(cachedMetrics?.users || {}),
             consultationsLast3Minutes: Number(liveActivity?.consultations || 0),
             activeInstallationsLast3Minutes: Number(liveActivity?.activeInstallations || 0),
-            onlineNow: Number(liveSummary?.onlineNow || 0),
-            onlineSessions: Number(liveSummary?.onlineSessions || 0),
-            activeNow: Number(liveSummary?.activeNow || 0),
             consultationsInProgress: Number(liveSummary?.consultationsInProgress || 0),
             installationsConsultedLastHour: Number(liveSummary?.installationsConsultedLastHour || 0),
-            registeredInstallations: Number(liveSummary?.registeredInstallations || 0),
-            livePresenceObservedAt: liveSummary?.observedAt || now
+            installationsSeenLastHour: Number(liveSummary?.installationsSeenLastHour || 0),
+            registeredInstallations: Number(liveSummary?.registeredInstallations || 0)
           }
         };
         return json({ok:true,detail:"dashboard-v3",generatedAt:now,data:metrics},200,req);

@@ -7,7 +7,7 @@ import { createClient } from '@supabase/supabase-js';
   var SUPABASE_KEY = 'sb_publishable_Rr9MItsNEhKPE-aSO3jI-Q_HYUXj-yU';
   var TOPIC = 'verix-live-presence-v1';
   var ACTIVE_WINDOW_MS = 120000;
-  var TRACK_MIN_INTERVAL_MS = 15000;
+  var TRACK_MIN_INTERVAL_MS = 30000;
   var ADMIN = /(?:^|\/)admin_v2\.html$/i.test(String(window.location.pathname || ''));
 
   var snapshot = {
@@ -27,6 +27,7 @@ import { createClient } from '@supabase/supabase-js';
   var started = false;
   var starting = false;
   var activeRefreshTimer = null;
+  var reconnectTimer = null;
   var lastTrackAt = 0;
   var lastActivityAt = 0;
   var visible = document.visibilityState !== 'hidden';
@@ -257,6 +258,7 @@ import { createClient } from '@supabase/supabase-js';
             observedAt: null,
             error: String(status)
           });
+          scheduleReconnect();
         }
       });
     } catch (error) {
@@ -276,6 +278,23 @@ import { createClient } from '@supabase/supabase-js';
     }
   }
 
+  function scheduleReconnect() {
+    if (reconnectTimer !== null) return;
+    reconnectTimer = window.setTimeout(async function () {
+      reconnectTimer = null;
+      if (document.visibilityState === 'hidden') return;
+      if (ADMIN && !isAdminUnlocked()) return;
+      if (starting || started) return;
+      var previousChannel = channel;
+      channel = null;
+      subscribed = false;
+      if (client && previousChannel) {
+        try { await client.removeChannel(previousChannel); } catch (_) {}
+      }
+      start();
+    }, 4000);
+  }
+
   async function stopAdminMonitor() {
     if (!ADMIN || !channel || !client) {
       if (ADMIN && !isAdminUnlocked()) {
@@ -289,6 +308,10 @@ import { createClient } from '@supabase/supabase-js';
     }
     subscribed = false;
     started = false;
+    if (reconnectTimer !== null) {
+      clearTimeout(reconnectTimer);
+      reconnectTimer = null;
+    }
     if (activeRefreshTimer) {
       clearInterval(activeRefreshTimer);
       activeRefreshTimer = null;
@@ -329,7 +352,9 @@ import { createClient } from '@supabase/supabase-js';
 
   document.addEventListener('visibilitychange', function () {
     visible = document.visibilityState !== 'hidden';
-    if (!ADMIN) track(true);
+    if (ADMIN) return;
+    if (visible && !started && !starting) start();
+    else track(true);
   });
 
   ['pointerdown', 'keydown', 'input', 'change', 'submit', 'touchstart', 'wheel', 'focusin'].forEach(function (eventName) {
@@ -339,12 +364,27 @@ import { createClient } from '@supabase/supabase-js';
   window.addEventListener('pagehide', function () {
     subscribed = false;
     started = false;
-    if (activeRefreshTimer) clearInterval(activeRefreshTimer);
+    if (reconnectTimer !== null) {
+      clearTimeout(reconnectTimer);
+      reconnectTimer = null;
+    }
+    if (activeRefreshTimer) {
+      clearInterval(activeRefreshTimer);
+      activeRefreshTimer = null;
+    }
     if (client && channel) {
       var oldChannel = channel;
       channel = null;
       try { client.removeChannel(oldChannel); } catch (_) {}
     }
+  });
+  window.addEventListener('pageshow', function () {
+    if (ADMIN) {
+      if (isAdminUnlocked() && !started && !starting) start();
+      return;
+    }
+    if (!started && !starting) start();
+    else if (visible) track(true);
   });
 
   if (ADMIN) {

@@ -7,6 +7,7 @@ const migration = fs.readFileSync("supabase/migrations/20261009034000_repair_tel
 const admin = fs.readFileSync("admin_v2.html", "utf8");
 const app = fs.readFileSync("verix-app.html", "utf8");
 const livePresence = fs.readFileSync("verix-presence-v1.mjs", "utf8");
+const livePresenceCleanupMigration = fs.readFileSync("supabase/migrations/20261019110000_realtime_presence_metric_cleanup.sql", "utf8");
 const stats = fs.readFileSync("supabase/functions/stats-v2/index.ts", "utf8");
 const overviewOptimizationMigration = fs.readFileSync("supabase/migrations/20261014150000_optimize_admin_dashboard_fast_overview.sql", "utf8");
 const insuranceNoCasesMigration = fs.readFileSync("supabase/migrations/20261009080000_insurance_no_cases.sql", "utf8");
@@ -32,6 +33,15 @@ assert.match(livePresence, /from ['"]@supabase\/supabase-js['"]/, "presence sour
 assert.match(livePresence, /presenceState\(\)/, "Admin counts must come from current Realtime Presence state");
 assert.match(livePresence, /ACTIVE_WINDOW_MS = 120000/, "active now must require recent activity");
 assert.match(livePresence, /channel\.track\(currentPayload\(\)\)/, "app must publish live presence to Realtime");
+assert.match(livePresence, /TRACK_MIN_INTERVAL_MS = 30000/, "presence updates must be throttled to avoid high-frequency channel sync");
+assert.match(livePresence, /function scheduleReconnect\(\)/, "presence must attempt to recover a broken Realtime connection");
+assert.match(livePresence, /window\.addEventListener\('pageshow'/, "presence must rejoin after browser back-forward cache restores a page");
+assert.match(admin, /Instalações com sinal · última hora/, "Admin must show distinct installations seen by telemetry in the last hour");
+assert.match(stats, /installationsSeenLastHour: Number\(liveSummary\?\.installationsSeenLastHour \|\| 0\)/, "stats must expose the distinct last-hour presence metric");
+assert.doesNotMatch(stats, /onlineNow: Number\(liveSummary|onlineSessions: Number\(liveSummary|activeNow: Number\(liveSummary/, "stats must not keep legacy heartbeat-based online estimates");
+assert.match(livePresenceCleanupMigration, /'installationsSeenLastHour'/, "database summary must retain a separate last-hour presence receipt count");
+assert.doesNotMatch(livePresenceCleanupMigration, /'onlineNow'|'onlineSessions'|'activeNow'|'activeInstallationsLastHour'/, "legacy database presence estimates must be removed");
+assert.doesNotMatch(livePresenceCleanupMigration, /\bDELETE FROM public\.verix2_events\b|\bTRUNCATE\b|\bDROP TABLE\b/i, "presence cleanup must not delete telemetry history or tables");
 assert.match(admin, /detail=error-ledger-v3/, "new Admin must consume the paginated detailed error ledger");
 assert.match(admin, /Histórico Total/, "new Admin must expose the history period");
 assert.match(admin, /data-period="today"/);
