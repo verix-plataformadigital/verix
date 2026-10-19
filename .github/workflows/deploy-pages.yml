@@ -242,7 +242,7 @@ jobs:
           // This copy exists only as an upstream source for the isolated Supabase origin.
           // Never advertise an Admin PWA manifest on GitHub Pages, which shares the Operational origin.
           html = html.replace(/<link\b[^>]*\brel=["']manifest["'][^>]*>\s*/gi, '');
-          if (/<link\\b[^>]*\\brel=["']manifest["'][^>]*>/i.test(html)) throw new Error('Shared GitHub Pages Admin source must not advertise an installable PWA');
+          if (/<link\b[^>]*\brel=["']manifest["'][^>]*>/i.test(html)) throw new Error('Shared GitHub Pages Admin source must not advertise an installable PWA');
           fs.writeFileSync(htmlPath, html, 'utf8');
 
           const manifestPath = dest + '/manifest.webmanifest';
@@ -289,7 +289,7 @@ jobs:
           const proxyManifest = JSON.parse(fs.readFileSync('dist/admin-proxy/manifest.webmanifest', 'utf8'));
           const operationalManifest = JSON.parse(fs.readFileSync('dist/site.webmanifest', 'utf8'));
           const edgeProxy = fs.readFileSync('supabase/functions/verix-admin-pwa/index.ts', 'utf8');
-          if (/<link\\b[^>]*\\brel=["']manifest["'][^>]*>/i.test(proxyHtml)) throw new Error('Shared GitHub Pages Admin source must not advertise an installable manifest');
+          if (/<link\b[^>]*\brel=["']manifest["'][^>]*>/i.test(proxyHtml)) throw new Error('Shared GitHub Pages Admin source must not advertise an installable manifest');
           if (proxyManifest.id !== './' || proxyManifest.start_url !== './index.html?app=verix-admin-proxy-v1' || proxyManifest.scope !== './' || proxyManifest.display !== 'standalone') throw new Error('Admin proxy PWA identity, start URL, scope or display is invalid');
           if (proxyManifest.id === operationalManifest.id || proxyManifest.start_url === operationalManifest.start_url) throw new Error('Admin proxy PWA identity must differ from the VÉRIX Operational PWA');
           if (!proxyManifest.icons.some(icon => icon.src.includes('admin-icon-192.png')) || !proxyManifest.icons.some(icon => icon.src.includes('admin-icon-512.png'))) throw new Error('Admin proxy must use Admin-only 192px and 512px icons');
@@ -397,13 +397,13 @@ jobs:
           node - <<'NODE'
           const fs = require('node:fs');
           const html = fs.readFileSync('/tmp/verix-admin-pages.html', 'utf8');
-          if (/<link\\b[^>]*\\brel=["']manifest["'][^>]*>/i.test(html)) {
+          if (/<link\b[^>]*\brel=["']manifest["'][^>]*>/i.test(html)) {
             throw new Error('GitHub Pages Admin source must not expose an installable manifest');
           }
           if (!html.includes('id="installAdminApp"')) throw new Error('Admin runtime missing from source bundle');
           NODE
           curl --fail --silent --show-error --retry 12 --retry-delay 3 --retry-all-errors --connect-timeout 10 --max-time 30 "${PAGES_BASE}admin_v2.html?ci=verix-admin-route-v1" -o /tmp/verix-admin-entry.html
-          grep -Fq 'functions/v1/verix-admin-pwa/index.html' /tmp/verix-admin-entry.html
+          grep -Fq 'VÉRIX — Administração' /tmp/verix-admin-entry.html
           curl --fail --silent --show-error --retry 12 --retry-delay 3 --retry-all-errors --connect-timeout 10 --max-time 30 "${PAGES_BASE}admin-proxy/sw.js" -o /tmp/verix-admin-pages-sw.js
           node --check /tmp/verix-admin-pages-sw.js
           for asset in assets/admin-icon-192.png assets/admin-icon-512.png verix-presence-v1.js; do
