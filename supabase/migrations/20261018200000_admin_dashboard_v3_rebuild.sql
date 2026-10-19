@@ -11,17 +11,14 @@ CREATE TABLE IF NOT EXISTS public.verix2_admin_v3_cache (
 
 ALTER TABLE public.verix2_admin_v3_cache ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE public.verix2_admin_v3_cache FROM PUBLIC, anon, authenticated;
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.verix2_admin_v3_cache TO service_role;
+GRANT SELECT, INSERT, UPDATE ON TABLE public.verix2_admin_v3_cache TO service_role;
 
 ALTER TABLE public.verix_insurance_no_cases
   ALTER COLUMN expires_at SET DEFAULT (now() + interval '24 hours');
 
--- Enforce the 24-hour operational retention for existing rows without deleting
--- records or changing their matricula/occurred_at/created_at values.
-UPDATE public.verix_insurance_no_cases
-SET expires_at = LEAST(expires_at, created_at + interval '24 hours')
-WHERE expires_at > created_at + interval '24 hours';
-
+-- Existing plate rows retain their current expiry to avoid changing or deleting
+-- previously stored records. New rows receive the 24-hour default above, and the
+-- Admin API only returns records received within the last 24 hours.
 CREATE OR REPLACE FUNCTION public.verix2_cleanup_old_data(
   p_before timestamptz DEFAULT (now() - interval '365 days')
 )
