@@ -17,6 +17,7 @@ const errorPlateCountMigration = fs.readFileSync("supabase/migrations/2026100909
 const adminV3Migration = fs.readFileSync("supabase/migrations/20261018200000_admin_dashboard_v3_rebuild.sql", "utf8");
 const adminV3ErrorJoinMigration = fs.readFileSync("supabase/migrations/20261019103810_optimize_admin_v3_error_event_join.sql", "utf8");
 const adminHistoryResetMigration = fs.readFileSync("supabase/migrations/20261019063600_admin_total_history_since_stable_reset.sql", "utf8");
+const adminV3TotalResetMigration = fs.readFileSync("supabase/migrations/20261019110344_admin_v3_total_since_reset.sql", "utf8");
 const adminErrorClassificationMigration = fs.readFileSync("supabase/migrations/20261019070000_admin_filter_user_input_invalid_plates.sql", "utf8");
 const packageConfig = JSON.parse(fs.readFileSync("package.json", "utf8"));
 const currentAppVersion = packageConfig.version.split(".").slice(0, 2).join(".");
@@ -318,6 +319,8 @@ assert.ok(admin.includes("desde o reset da versão estável") && admin.includes(
 assert.ok(adminHistoryResetMigration.includes("SELECT reset_all_at FROM public.verix2_admin_dashboard_cache WHERE singleton = true"), "total history must read its saved reset timestamp");
 assert.ok(adminHistoryResetMigration.includes("AS total_start"), "dashboard total metrics must use the reset timestamp as their lower bound");
 assert.ok(adminHistoryResetMigration.includes("ELSE coalesce((SELECT reset_all_at FROM public.verix2_admin_dashboard_cache"), "the paginated error ledger must use the same reset timestamp");
+assert.ok(adminV3TotalResetMigration.includes("(SELECT reset_all_at FROM public.verix2_admin_dashboard_cache WHERE singleton = true)") && adminV3TotalResetMigration.includes(") AS total_start"), "the latest Admin V3 aggregate must use the saved reset timestamp instead of a rolling year as the total-history boundary");
+assert.ok(adminV3TotalResetMigration.includes("ranges,total,start"), "the total-history migration must validate the effective start boundary");
 assert.match(adminErrorClassificationMigration, /verix2_admin_plate_format_valid/, "admin error classification must validate Portuguese plate formats");
 assert.ok(adminErrorClassificationMigration.includes("v = 'AA00AA'"), "the filter must exclude only the reserved first current-format combination, not all 00 center blocks");
 assert.ok(adminErrorClassificationMigration.includes("c.error_type = 'http_400'") && adminErrorClassificationMigration.includes("c.http_status_raw = '400'"), "only explicit HTTP 400 events qualify for the invalid-input exclusion");
