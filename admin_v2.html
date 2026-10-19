@@ -18,7 +18,7 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
 .login-card{width:min(100%,400px);background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:30px;box-shadow:none}
 .brand-mark{display:inline-flex;align-items:center;gap:9px;font-weight:850;letter-spacing:.035em;font-size:19px}
 .brand-signal{width:9px;height:24px;border-radius:2px;background:var(--accent);box-shadow:5px 0 0 #b8d9d8}
-.login-card h1{font-size:23px;letter-spacing:-.03em;margin:24px 0 5px}.login-card p{margin:0 0 22px;color:var(--muted)}
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .field-label{display:block;font-weight:700;font-size:12px;margin:0 0 7px}.text-input{display:block;width:100%;min-height:42px;border:1px solid #cfd7da;border-radius:7px;background:#fff;padding:9px 11px;color:var(--ink)}
 .primary-button,.secondary-button,.ghost-button,.period-button,.nav-button,.pager-button{border:1px solid transparent;border-radius:7px;transition:background .12s ease,border-color .12s ease;min-height:38px;padding:8px 12px;font-weight:700}
 .primary-button{background:var(--accent);color:#fff}.primary-button:hover{background:#12686b}.secondary-button{background:#fff;color:var(--ink);border-color:var(--line)}.secondary-button:hover,.ghost-button:hover{background:#f0f3f4}
@@ -85,9 +85,7 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
 <section id="loginScreen" class="login-shell">
   <form id="loginForm" class="login-card" autocomplete="on">
     <div class="brand-mark"><span class="brand-signal" aria-hidden="true"></span><span>VÉRIX <span style="color:var(--accent)">ADMIN</span></span></div>
-    <h1>Painel de administração</h1>
-    <p>Indicadores de utilização, consultas, legislação e diagnóstico técnico.</p>
-    <label class="field-label" for="password">Password de administração</label>
+    <label class="sr-only" for="password">Password de administração</label>
     <input id="password" class="text-input" type="password" autocomplete="current-password" placeholder="Introduza a password" required>
     <button id="loginButton" class="primary-button" type="submit">Entrar no painel</button>
     <div id="loginError" class="login-error" role="alert" aria-live="polite"></div>
