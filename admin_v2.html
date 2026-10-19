@@ -44,7 +44,7 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
 .primary-button:disabled,.secondary-button:disabled,.pager-button:disabled{opacity:.55;cursor:wait}
 .login-card .primary-button{width:100%;margin-top:14px}
 .install-button{display:none;align-items:center;justify-content:center;gap:7px;min-height:40px}
-.login-card .install-button{width:100%;margin-top:8px}
+
 .install-help{margin:8px 0 0;color:var(--muted);font-size:11px;line-height:1.5}
 .login-error{min-height:22px;color:var(--red);font-size:12px;margin-top:8px}
 
@@ -326,10 +326,10 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
   *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 }
 </style>
-<link rel="icon" href="./favicon.svg?v=20261019" type="image/svg+xml" sizes="any">
-<link rel="icon" href="./assets/icon-32.png?v=20261019" type="image/png" sizes="32x32">
-<link rel="icon" href="./assets/icon-192.png?v=20261019" type="image/png" sizes="192x192">
-<link rel="apple-touch-icon" href="./assets/icon-192.png?v=20261019">
+<link rel="icon" href="./assets/admin-icon.svg?v=20261019" type="image/svg+xml" sizes="any">
+<link rel="icon" href="./assets/admin-icon-192.png?v=20261019" type="image/png" sizes="192x192">
+<link rel="icon" href="./assets/admin-icon-512.png?v=20261019" type="image/png" sizes="512x512">
+<link rel="apple-touch-icon" href="./assets/admin-icon-192.png?v=20261019">
 <link rel="manifest" href="./admin.webmanifest?v=20261019">
 <meta name="theme-color" content="#17262e">
 <meta name="apple-mobile-web-app-title" content="VÉRIX Admin">
@@ -343,8 +343,6 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
     <label class="sr-only" for="password">Password de administração</label>
     <input id="password" class="text-input" type="password" autocomplete="current-password" placeholder="Introduza a password" required>
     <button id="loginButton" class="primary-button" type="submit">Entrar no painel</button>
-    <button id="installAdminLogin" class="secondary-button install-button" type="button">⇧ Instalar VÉRIX Admin</button>
-    <p class="install-help" role="status" aria-live="polite" hidden></p>
     <div id="loginError" class="login-error" role="alert" aria-live="polite"></div>
   </form>
 </section>
@@ -494,7 +492,7 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
 <script>
 (function(){
 'use strict';
-if('serviceWorker' in navigator&&window.isSecureContext){navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'}).catch(function(){});}
+if('serviceWorker' in navigator&&window.isSecureContext){navigator.serviceWorker.register('./admin-sw.js',{scope:'./admin_v2.html',updateViaCache:'none'}).catch(function(){});}
 
 // Dedicated installation controls for the VÉRIX Admin PWA.
 const ADMIN_INSTALL_BUTTONS = Array.from(document.querySelectorAll('.install-button'));
