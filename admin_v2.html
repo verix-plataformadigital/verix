@@ -9,6 +9,16 @@
 <meta name="robots" content="noai, noimageai, noindex, nofollow">
 <meta name="verix-ai-policy" content="./AI-ACCESS-POLICY.md">
 <title>VÉRIX — Administração</title>
+<script>
+(function () {
+  'use strict';
+  var ua = navigator.userAgent || '';
+  var mobileDevice = /Android|iPhone|iPad|iPod/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints > 1);
+  if (mobileDevice && /\/admin_v2\.html$/i.test(String(window.location.pathname || ''))) {
+    window.location.replace('./admin/index.html' + window.location.search + window.location.hash);
+  }
+})();
+</script>
 <style>
 :root{
   color-scheme:light;
@@ -330,7 +340,6 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
 <link rel="icon" href="./assets/icon-32.png?v=20261019" type="image/png" sizes="32x32">
 <link rel="icon" href="./assets/icon-192.png?v=20261019" type="image/png" sizes="192x192">
 <link rel="apple-touch-icon" href="./assets/icon-192.png?v=20261019">
-<link rel="manifest" href="./admin.webmanifest?v=20261019">
 <meta name="theme-color" content="#17262e">
 <meta name="apple-mobile-web-app-title" content="VÉRIX Admin">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -378,12 +387,9 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
       <div class="top-actions">
         <span id="backendStatus" class="status-pill"><span class="status-dot" aria-hidden="true"></span><span id="backendStatusText">A ligar</span></span>
         <button id="refreshBtn" class="secondary-button" type="button">↻ Atualizar</button>
-        <button id="installAdminApp" class="secondary-button install-button" type="button">⇧ Instalar VÉRIX Admin</button>
         <button id="logoutBtn" class="ghost-button" type="button">Sair</button>
       </div>
     </header>
-    <p class="install-help" role="status" aria-live="polite" hidden></p>
-
     <section class="period-bar" aria-label="Período das métricas">
       <div class="period-description"><strong>Período</strong><br><span id="periodCaption">Hoje · desde as 00:00</span><small id="aggregateUpdatedAt" class="aggregate-freshness">Dados agregados até —</small></div>
       <div id="periodControls" class="period-controls">
@@ -499,8 +505,9 @@ if('serviceWorker' in navigator&&window.isSecureContext){navigator.serviceWorker
 // Dedicated installation controls for the VÉRIX Admin PWA.
 const ADMIN_INSTALL_BUTTONS = Array.from(document.querySelectorAll('.install-button'));
 let deferredAdminInstallPrompt = null;
-function isAdminStandalone() {
-  return !!((window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true);
+function hasAdminInstallationFlag() {
+  try { return window.localStorage.getItem('VERIX_ADMIN_PWA_INSTALLED_V1') === '1'; }
+  catch (_) { return false; }
 }
 function setAdminInstallMessage(message) {
   document.querySelectorAll('.install-help').forEach(function(node) {
@@ -509,9 +516,9 @@ function setAdminInstallMessage(message) {
   });
 }
 function syncAdminInstallButtons() {
-  const installed = isAdminStandalone();
+  const installed = hasAdminInstallationFlag();
   ADMIN_INSTALL_BUTTONS.forEach(function(button) { button.hidden = installed; });
-  if (installed) setAdminInstallMessage('Estás a usar a aplicação VÉRIX Admin instalada.');
+  if (installed) setAdminInstallMessage('VÉRIX Admin já foi instalada neste navegador.');
 }
 window.addEventListener('beforeinstallprompt', function(event) {
   event.preventDefault();
@@ -519,12 +526,13 @@ window.addEventListener('beforeinstallprompt', function(event) {
 });
 window.addEventListener('appinstalled', function() {
   deferredAdminInstallPrompt = null;
+  try { window.localStorage.setItem('VERIX_ADMIN_PWA_INSTALLED_V1', '1'); } catch (_) {}
   ADMIN_INSTALL_BUTTONS.forEach(function(button) { button.hidden = true; });
   setAdminInstallMessage('VÉRIX Admin foi instalada com sucesso.');
 });
 async function requestAdminInstall() {
-  if (isAdminStandalone()) {
-    setAdminInstallMessage('Estás a usar a aplicação VÉRIX Admin instalada.');
+  if (hasAdminInstallationFlag()) {
+    setAdminInstallMessage('VÉRIX Admin já foi instalada neste navegador. Abre o respetivo ícone no ecrã principal.');
     return;
   }
   if (deferredAdminInstallPrompt) {

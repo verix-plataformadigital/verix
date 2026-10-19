@@ -5,6 +5,9 @@ import vm from "node:vm";
 const endpoint = fs.readFileSync("supabase/functions/telemetry-v2/index.ts", "utf8");
 const migration = fs.readFileSync("supabase/migrations/20261009034000_repair_telemetry_integrity_and_query_metrics.sql", "utf8");
 const admin = fs.readFileSync("admin_v2.html", "utf8");
+const adminPwaEntry = fs.existsSync("dist/admin/index.html")
+  ? fs.readFileSync("dist/admin/index.html", "utf8")
+  : "";
 const app = fs.readFileSync("verix-app.html", "utf8");
 const livePresence = fs.readFileSync("verix-presence-v1.mjs", "utf8");
 const livePresenceCleanupMigration = fs.readFileSync("supabase/migrations/20261019110000_realtime_presence_metric_cleanup.sql", "utf8");
@@ -35,10 +38,14 @@ assert.match(stats, /current_app_version:CURRENT_APP_VERSION/);
 assert.doesNotMatch(stats, /app14|["\']1\.4["\']/i, "stats must not hard-code the obsolete version filter");
 assert.doesNotMatch(admin, /VERSÃO 1\.4|ERROS DA 1\.4|app14|versão 1\.4/i, "Admin must not display or consume obsolete 1.4 error metrics");
 assert.match(admin, /detail=dashboard-v3/, "new Admin must consume the V3 dashboard contract");
-assert.ok(admin.includes('rel="manifest" href="./admin.webmanifest?v=20261019"'), "Admin must reference its own installable mobile manifest");
+assert.ok(adminPwaEntry.includes('rel="manifest" href="../admin.webmanifest?v=20261019"'), "dedicated Admin entry must reference its separate installable manifest");
+assert.ok(adminPwaEntry.includes('id="installAdminLogin"'), "Admin install control must be on its sign-in screen");
+assert.ok(!adminPwaEntry.includes('id="installAdminApp"'), "Admin install control must not appear inside the dashboard");
 assert.ok(admin.includes("navigator.serviceWorker.register('./sw.js'"), "Admin must register the fresh-navigation service worker when opened directly");
-assert.equal(adminManifest.start_url, "./admin_v2.html", "installed Admin launches directly at the sign-in page");
-assert.equal(adminManifest.id, "./admin_v2.html", "Admin PWA identity differs from the main VÉRIX app");
+assert.ok(admin.includes("./admin/index.html"), "mobile visits to the legacy Admin URL must redirect to its isolated PWA path");
+assert.equal(adminManifest.start_url, "./admin/index.html", "installed Admin launches directly at the sign-in page");
+assert.equal(adminManifest.scope, "./admin/", "Admin PWA scope must be narrower than the operational app scope");
+assert.equal(adminManifest.id, "/verix/admin/index.html", "Admin PWA identity must differ from the operational VÉRIX app");
 assert.equal(adminManifest.display, "standalone", "Admin PWA opens without browser chrome when supported");
 assert.ok(serviceWorker.includes("isAdminManifest") && serviceWorker.includes("fetch(request, { cache: 'no-store' })"), "Admin navigation and manifest must not be cached");
 assert.match(admin, /id="livePresenceCards"/, "Admin must show dedicated realtime presence metrics");
