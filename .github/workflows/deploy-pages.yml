@@ -330,3 +330,41 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
+
+      - name: Smoke-test isolated Admin origin
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/verix-admin-pwa"
+          curl --fail --silent --show-error --retry 12 --retry-delay 3 --retry-all-errors --connect-timeout 10 --max-time 30 "$BASE/index.html" -o /tmp/verix-admin.html
+          grep -Fq '<link rel="manifest" href="./manifest.webmanifest?v=verix-admin-origin-1">' /tmp/verix-admin.html
+          grep -Fq 'id="installAdminApp"' /tmp/verix-admin.html
+          if grep -Fq 'rel="manifest" href="./manifest.webmanifest?v=20261019-admin4"' /tmp/verix-admin.html; then
+            echo "Admin is still linking to the shared-origin manifest"
+            exit 1
+          fi
+          curl --fail --silent --show-error --retry 12 --retry-delay 3 --retry-all-errors --connect-timeout 10 --max-time 30 "$BASE/manifest.webmanifest?v=verix-admin-origin-1" -o /tmp/verix-admin-manifest.json
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const m = JSON.parse(fs.readFileSync('/tmp/verix-admin-manifest.json', 'utf8'));
+          if (m.id !== '/functions/v1/verix-admin-pwa/' ||
+              m.start_url !== './index.html?app=verix-admin-edge-v1' ||
+              m.scope !== './') throw new Error('Live Admin manifest identity/start URL/scope is invalid');
+          if (!Array.isArray(m.icons) || !m.icons.some(x => x.src === './assets/admin-icon-192.png?v=20261019-admin4') ||
+              !m.icons.some(x => x.src === './assets/admin-icon-512.png?v=20261019-admin4')) {
+            throw new Error('Live Admin manifest does not expose its separate install icons');
+          }
+          NODE
+          curl --fail --silent --show-error --retry 12 --retry-delay 3 --retry-all-errors --connect-timeout 10 --max-time 30 "$BASE/sw.js" -o /tmp/verix-admin-sw.js
+          node --check /tmp/verix-admin-sw.js
+          for asset in assets/admin-icon-192.png assets/admin-icon-512.png verix-presence-v1.js AI-ACCESS-POLICY.md; do
+            curl --fail --silent --show-error --retry 12 --retry-delay 3 --retry-all-errors --connect-timeout 10 --max-time 30 "$BASE/$asset" -o /dev/null
+          done
+          curl --fail --silent --show-error --retry 5 --retry-delay 2 --retry-all-errors --connect-timeout 10 --max-time 20 -X OPTIONS \
+            -H "Origin: https://onilkakbgpklxvxuxmks.supabase.co" \
+            -H "Access-Control-Request-Method: POST" \
+            -H "Access-Control-Request-Headers: content-type" \
+            -D /tmp/verix-admin-auth-cors.txt -o /dev/null \
+            "https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/admin-auth-v2"
+          grep -Fqi 'access-control-allow-origin: https://onilkakbgpklxvxuxmks.supabase.co' /tmp/verix-admin-auth-cors.txt
+          echo "Isolated Admin page, manifest, service worker, icons, runtime assets and auth CORS: OK"
