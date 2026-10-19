@@ -173,8 +173,12 @@ jobs:
           test -s dist/favicon.svg
           test -s dist/site.webmanifest
           test -s dist/admin.webmanifest
-          grep -q 'href="./admin.webmanifest?v=20261019"' dist/admin_v2.html
-          grep -q '"start_url": "./admin_v2.html"' dist/admin.webmanifest
+          grep -q 'href="../admin.webmanifest?v=20261019"' dist/admin/index.html
+          grep -q '"start_url": "./admin/index.html"' dist/admin.webmanifest
+          grep -q '"scope": "./admin/"' dist/admin.webmanifest
+          test -s dist/admin/index.html
+          test -s dist/admin/sw.js
+          node --check dist/admin/sw.js
           grep -q "isAdminManifest" dist/sw.js
           test -s dist/sw.js
           node --check dist/sw.js
@@ -193,37 +197,41 @@ jobs:
           grep -q 'rel="icon"' dist/verix-app.html
           grep -q 'verix-emblem.svg' dist/verix-app.html
 
-      - name: Validate installable admin app
+      - name: Validate separately scoped Admin PWA
         shell: bash
         run: |
           node - <<'NODE'
           const fs = require('node:fs');
           const path = require('node:path');
           const manifest = JSON.parse(fs.readFileSync('dist/admin.webmanifest', 'utf8'));
-          if (manifest.id !== './admin_v2.html' ||
-              manifest.start_url !== './admin_v2.html' ||
-              manifest.scope !== './' ||
+          if (manifest.id !== '/verix/admin/index.html' ||
+              manifest.start_url !== './admin/index.html' ||
+              manifest.scope !== './admin/' ||
               manifest.display !== 'standalone') {
-            throw new Error('Admin PWA manifest identity or launch settings are invalid');
+            throw new Error('Admin PWA must have its own install identity and narrower /admin/ scope');
           }
-          const html = fs.readFileSync('dist/admin_v2.html', 'utf8');
+          const html = fs.readFileSync('dist/admin/index.html', 'utf8');
+          const rootAdmin = fs.readFileSync('dist/admin_v2.html', 'utf8');
           const sourceHtml = fs.readFileSync('admin_v2.html', 'utf8');
           for (const required of [
-            'rel="manifest" href="./admin.webmanifest?v=20261019"',
+            'rel="manifest" href="../admin.webmanifest?v=20261019"',
             'id="installAdminLogin"',
-            'id="installAdminApp"',
-            'beforeinstallprompt'
+            'beforeinstallprompt',
+            '../verix-presence-v1.js'
           ]) {
-            if (!html.includes(required)) throw new Error('Admin PWA element missing from release: ' + required);
+            if (!html.includes(required)) throw new Error('Dedicated Admin PWA element missing: ' + required);
           }
-          if (!sourceHtml.includes('Adicionar ao ecrã principal')) {
-            throw new Error('Admin PWA fallback instructions are missing from source');
+          if (html.includes('id="installAdminApp"')) throw new Error('Install button must not appear inside the Admin dashboard');
+          if (rootAdmin.includes('rel="manifest" href="./admin.webmanifest')) throw new Error('Root admin page must not claim the installable admin manifest');
+          if (!rootAdmin.includes('./admin/index.html') || !sourceHtml.includes('Adicionar ao ecrã principal')) {
+            throw new Error('Mobile redirect or install fallback instructions missing from Admin source');
           }
           for (const icon of manifest.icons || []) {
             const iconPath = path.join('dist', icon.src.split('?')[0]);
             if (!fs.existsSync(iconPath)) throw new Error('Admin PWA icon missing: ' + iconPath);
           }
-          console.log('Admin PWA manifest, launch target, install controls and icons: OK');
+          if (!fs.existsSync('dist/admin/sw.js')) throw new Error('Dedicated Admin worker is missing');
+          console.log('Separate PWA scope, manifest, login install control, worker and icons: OK');
           NODE
 
       - name: Upload Pages artifact
