@@ -411,7 +411,7 @@ import { createClient } from '@supabase/supabase-js';
     var urgent = event && (event.type === 'click' || event.type === 'submit');
     if (urgent) {
       // pointerdown may already have sent the payload for this exact gesture.
-      if (lastTrackAt && now - lastTrackAt < 1200) return;
+      if (lastTrackAt && now - lastTrackAt < 1200 && pendingTrackTimer === null) return;
       if (!lastUrgentTrackAt || now - lastUrgentTrackAt >= URGENT_TRACK_MIN_INTERVAL_MS) {
         lastUrgentTrackAt = now;
         track(true);
