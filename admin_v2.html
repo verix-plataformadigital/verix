@@ -734,8 +734,7 @@ function renderErrorLedger(){
     appendFact(facts,'Tipo de dispositivo',item.deviceType||'Não registado');
     appendFact(facts,'Esperas de fila',item.queueWaitMs===null||item.queueWaitMs===undefined?'—':fmt(item.queueWaitMs)+' ms');
     appendFact(facts,'Hash resposta',item.responseHash||'Não registado');
-    card.appendChild(facts);
-    const details=document.createElement('details');details.className='error-details';const summary=document.createElement('summary');summary.textContent='Ver diagnóstico, tentativas e contexto';details.appendChild(summary);
+    const details=document.createElement('details');details.className='error-details';const summary=document.createElement('summary');summary.textContent='Ver detalhes técnicos, tentativas e contexto';details.append(summary,facts);
     const attempts=Array.isArray(item.attempts)?item.attempts:[];
     if(attempts.length){const box=document.createElement('div');box.className='detail-block';const h=document.createElement('h4');h.textContent='Tentativas de transporte';box.appendChild(h);const ul=document.createElement('ul');attempts.slice(0,8).forEach(a=>{const li=document.createElement('li');const parts=[a.method,a.transport,a.status!==undefined&&a.status!==null?'HTTP '+a.status:null,a.durationMs!==undefined&&a.durationMs!==null?fmt(a.durationMs)+' ms':null,a.errorType,a.message].filter(Boolean);li.textContent=parts.join(' · ')||JSON.stringify(a);ul.appendChild(li);});box.appendChild(ul);details.appendChild(box);}else appendDetailsBlock(details,'Tentativas de transporte','A versão cliente não enviou a lista de tentativas.');
     const gql=Array.isArray(item.graphqlMessages)?item.graphqlMessages:[];
