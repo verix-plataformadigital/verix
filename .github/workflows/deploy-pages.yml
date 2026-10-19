@@ -215,13 +215,16 @@ jobs:
           const sourceHtml = fs.readFileSync('admin_v2.html', 'utf8');
           for (const required of [
             'rel="manifest" href="../admin.webmanifest?v=20261019"',
-            'id="installAdminLogin"',
+            'id="installAdminApp"',
             'beforeinstallprompt',
             '../verix-presence-v1.js'
           ]) {
             if (!html.includes(required)) throw new Error('Dedicated Admin PWA element missing: ' + required);
           }
-          if (html.includes('id="installAdminApp"')) throw new Error('Install button must not appear inside the Admin dashboard');
+          if (html.includes('id="installAdminLogin"')) throw new Error('Install button must not appear on the pre-login screen');
+          const appStart = html.indexOf('<div id="app"');
+          const installPos = html.indexOf('id="installAdminApp"');
+          if (appStart < 0 || installPos < appStart) throw new Error('Install button must be inside the authenticated Admin application');
           if (rootAdmin.includes('rel="manifest" href="./admin.webmanifest')) throw new Error('Root admin page must not claim the installable admin manifest');
           if (!rootAdmin.includes('./admin/index.html') || !sourceHtml.includes('Adicionar ao ecrã principal')) {
             throw new Error('Mobile redirect or install fallback instructions missing from Admin source');
@@ -231,7 +234,7 @@ jobs:
             if (!fs.existsSync(iconPath)) throw new Error('Admin PWA icon missing: ' + iconPath);
           }
           if (!fs.existsSync('dist/admin/sw.js')) throw new Error('Dedicated Admin worker is missing');
-          console.log('Separate PWA scope, manifest, login install control, worker and icons: OK');
+          console.log('Separate PWA scope, post-login install control, worker and icons: OK');
           NODE
 
       - name: Upload Pages artifact
