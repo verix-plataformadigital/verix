@@ -30,24 +30,26 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
 .nav-button{background:transparent;color:#c8d2d5;display:flex;gap:10px;align-items:center;text-align:left;width:100%;min-height:41px;border-color:transparent;padding:9px 10px;font-size:12px}
 .nav-button:hover{background:rgba(255,255,255,.055);color:#fff}.nav-button[aria-current="page"]{background:var(--nav2);border-color:rgba(255,255,255,.07);color:#fff;box-shadow:inset 2px 0 0 #65b9b7}
 .nav-icon{width:20px;text-align:center;color:#9cc9c8;font-weight:700;font-size:14px}.sidebar-foot{margin-top:auto;padding:13px 10px 0;border-top:1px solid rgba(255,255,255,.12);color:#aab8bd;font-size:10px;line-height:1.7}.sidebar-foot strong{display:block;color:#e5edef;font-size:11px;margin-bottom:4px}
-.main-area{min-width:0;padding:27px clamp(18px,3vw,42px) 34px;max-width:1800px;width:100%}
-.topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:23px;padding-bottom:21px;border-bottom:1px solid var(--line)}
+.main-area{min-width:0;padding:17px clamp(16px,2.2vw,30px) 24px;max-width:1800px;width:100%}
+.topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:14px;padding-bottom:13px;border-bottom:1px solid var(--line)}
 .eyebrow{font-size:10px;font-weight:750;letter-spacing:.1em;color:var(--accent);text-transform:uppercase;margin-bottom:6px}.topbar h1{font-size:clamp(24px,2.2vw,30px);letter-spacing:-.04em;line-height:1.15;margin:0;font-weight:750}.topbar p{color:var(--muted);font-size:12px;margin:7px 0 0;max-width:700px}.top-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap}
 .status-pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:6px;padding:7px 9px;background:#fff;color:var(--muted);font-size:11px;font-weight:650;white-space:nowrap}.status-dot{width:6px;height:6px;border-radius:50%;background:#aeb8bc}.status-pill.online .status-dot{background:#398264}.status-pill.loading .status-dot{background:#bd8a29}.status-pill.offline .status-dot{background:#b44950}
-.period-bar{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;padding:0 0 15px;background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:0;margin-bottom:22px}
+.period-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:0 0 10px;background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:0;margin-bottom:14px}
 .period-help{display:block;margin-top:4px;font-size:10px;line-height:1.4;color:var(--muted);max-width:680px}
 .period-description{font-size:11px;color:var(--muted)}.period-description strong{font-size:12px;color:var(--ink);font-weight:700}.period-controls{display:flex;gap:3px;flex-wrap:wrap}
 .period-button{background:transparent;color:#68757a;border:1px solid transparent;min-height:33px;padding:6px 12px;font-size:12px}
 .period-button:hover{background:#eef2f3}.period-button[aria-pressed="true"]{background:#e9f2f2;border-color:#d5e5e4;color:#175e61}
 .notice{padding:11px 13px;border:1px solid #d7e6e5;border-left:3px solid var(--accent);border-radius:6px;background:#f1f8f7;color:#35575a;margin-bottom:17px;font-size:12px}.notice.warning{border-color:#ead9b6;border-left-color:#bd8a29;background:#fbf7ee;color:#71561f}.notice.error{border-color:#eccfd1;border-left-color:var(--red);background:#fbf1f1;color:#8b343a}
 .page{display:none;min-width:0}.page.active{display:block}
-.compact-heading{margin-top:20px;margin-bottom:12px}.base-info{margin:-12px 0 24px;padding:10px 12px;border-left:3px solid var(--line);background:#f0f3f4;color:var(--muted);font-size:11px;line-height:1.5}
-.section-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin:5px 0 17px}.section-heading:first-child{margin-top:0}.section-heading h2{margin:0;font-size:16px;letter-spacing:-.02em;font-weight:750}.section-heading p{margin:4px 0 0;color:var(--muted);font-size:12px;max-width:850px}
-.metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin:0 0 25px;background:#fff;border:1px solid var(--line);border-radius:9px;overflow:hidden}
-.metric-card{min-width:0;background:transparent;border:0;border-right:1px solid var(--line);border-bottom:1px solid var(--line);border-radius:0;padding:16px 17px 15px;box-shadow:none}
+.compact-heading{margin-top:12px;margin-bottom:8px}
+#overviewLiveCards{grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:12px}
+.base-info{margin:-4px 0 16px;padding:0;border:0;background:transparent;color:var(--muted);font-size:10px;line-height:1.35;text-align:right}
+.section-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin:2px 0 10px}.section-heading:first-child{margin-top:0}.section-heading h2{margin:0;font-size:16px;letter-spacing:-.02em;font-weight:750}.section-heading p{margin:4px 0 0;color:var(--muted);font-size:12px;max-width:850px}
+.metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin:0 0 16px;background:#fff;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.metric-card{min-width:0;background:transparent;border:0;border-right:1px solid var(--line);border-bottom:1px solid var(--line);border-radius:0;padding:11px 14px 10px;box-shadow:none}
 .metric-card:nth-child(4n){border-right:0}.metric-card:nth-last-child(-n+4){border-bottom:0}
 .metric-label{color:#657278;font-size:10px;letter-spacing:.045em;text-transform:uppercase;font-weight:750;line-height:1.4}
-.metric-value{font-size:clamp(23px,2vw,30px);font-weight:750;letter-spacing:-.04em;margin:9px 0 5px;line-height:1.1;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.metric-value{font-size:clamp(23px,2vw,30px);font-weight:750;letter-spacing:-.04em;margin:6px 0 3px;line-height:1.1;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
 .metric-note{font-size:11px;color:var(--muted);line-height:1.45}
 .metric-card.accent,.metric-card.blue,.metric-card.amber,.metric-card.red,.metric-card.green{border-top:0}
 .metric-card.accent .metric-value{color:var(--accent)}.metric-card.blue .metric-value{color:var(--blue)}.metric-card.amber .metric-value{color:var(--amber)}.metric-card.red .metric-value{color:var(--red)}.metric-card.green .metric-value{color:var(--green)}
@@ -56,8 +58,9 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
 .panel.wide{grid-column:1/-1}.panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:15px}
 .panel-head h2,.panel-head h3{margin:0;font-size:14px;letter-spacing:-.015em;font-weight:750}.panel-head p{margin:4px 0 0;color:var(--muted);font-size:11px;max-width:900px}.panel-tag{font-size:10px;color:#637176;background:#f0f3f4;padding:4px 7px;border-radius:4px;white-space:nowrap}
 .legend{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 12px;color:var(--muted);font-size:11px}.legend span{display:flex;align-items:center;gap:6px}.legend-dot{display:inline-block;width:8px;height:8px;border-radius:2px}.legend-dot.consults{background:var(--accent)}.legend-dot.users{background:var(--blue)}
-.hourly-chart{display:grid;grid-template-columns:repeat(24,minmax(0,1fr));gap:5px;min-height:145px;align-items:end;padding:9px 0 0;border-bottom:1px solid var(--line)}
-.hour-slot{display:grid;grid-template-rows:105px 18px;gap:6px;min-width:0}.bar-pair{height:105px;display:flex;align-items:flex-end;justify-content:center;gap:2px;padding:0 1px}.hour-bar{width:calc(50% - 1px);min-width:2px;border-radius:2px 2px 0 0;min-height:0;transition:height .15s ease}.hour-bar.consults{background:var(--accent)}.hour-bar.users{background:var(--blue)}.hour-label{text-align:center;color:#7a868b;font-size:9px;white-space:nowrap;overflow:hidden}.hourly-note{color:var(--muted);font-size:11px;margin-top:11px}
+.hourly-chart{display:grid;grid-template-columns:repeat(24,minmax(0,1fr));gap:4px;min-height:145px;align-items:end;padding:5px 0 0;border-bottom:1px solid var(--line)}
+.hour-slot{display:grid;grid-template-rows:23px 88px 16px;gap:3px;min-width:0}.hour-values{display:flex;flex-direction:column;align-items:center;justify-content:end;font-size:9px;line-height:10px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden}.hour-values span{display:block;max-width:100%;overflow:hidden}.hour-values .consults-value{color:var(--accent);font-weight:750}.hour-values .users-value{color:var(--blue);font-weight:750}.bar-pair{height:88px;display:flex;align-items:flex-end;justify-content:center;gap:2px;padding:0 1px}.hour-bar{width:calc(50% - 1px);min-width:2px;border-radius:2px 2px 0 0;min-height:0;transition:height .15s ease}.hour-bar.consults{background:var(--accent)}.hour-bar.users{background:var(--blue)}.hour-label{text-align:center;color:#7a868b;font-size:9px;white-space:nowrap;overflow:hidden}.hourly-note{color:var(--muted);font-size:10px;margin-top:6px}
+.hourly-values{margin-top:8px;border-top:1px solid var(--line);padding-top:7px}.hourly-values summary{cursor:pointer;font-size:10px;font-weight:700;color:var(--muted);list-style:none;display:flex;align-items:center;gap:7px;min-height:26px;user-select:none}.hourly-values summary::-webkit-details-marker{display:none}.hourly-values summary::before{content:'+';display:inline-grid;place-items:center;width:17px;height:17px;border:1px solid var(--line);border-radius:4px;color:var(--accent);font-size:13px;line-height:1}.hourly-values[open] summary::before{content:'−'}.hourly-table-content{margin-top:7px}
 .table-wrap{width:100%;overflow:auto;border:1px solid var(--line);border-radius:7px}.data-table{width:100%;border-collapse:collapse;font-size:12px;min-width:520px}.data-table th{background:#f3f5f6;color:#5e6b71;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.045em;font-weight:750}.data-table th,.data-table td{padding:10px 11px;border-bottom:1px solid #e9edef;vertical-align:top}.data-table tbody tr:last-child td{border-bottom:0}.data-table tbody tr:hover{background:#fafbfb}.data-table .number{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}.data-table .strong{font-weight:750;color:var(--ink)}.small-muted{font-size:10px;color:var(--muted);margin-top:3px}
 .inline-badge{display:inline-flex;align-items:center;gap:5px;border-radius:4px;padding:3px 6px;font-size:10px;font-weight:750;background:#f0f3f4;color:#58676d;max-width:100%;overflow-wrap:anywhere}.inline-badge.good{background:var(--green-soft);color:var(--green)}.inline-badge.warn{background:var(--amber-soft);color:var(--amber)}.inline-badge.bad{background:var(--red-soft);color:var(--red)}.inline-badge.info{background:var(--blue-soft);color:var(--blue)}
 .quality-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border:1px solid var(--line);border-radius:7px;overflow:hidden}.quality-item{border:0;border-right:1px solid var(--line);padding:12px;min-width:0}.quality-item:last-child{border-right:0}.quality-item span{display:block;color:var(--muted);font-size:10px}.quality-item strong{display:block;font-size:20px;letter-spacing:-.03em;margin-top:5px;font-variant-numeric:tabular-nums}
@@ -124,7 +127,7 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
     </header>
 
     <section class="period-bar" aria-label="Período das métricas">
-      <div class="period-description"><strong>Período dos indicadores históricos</strong><br><span id="periodCaption">Hoje · desde as 00:00</span><small class="period-help">Controla apenas as métricas de período. O estado atual e as janelas móveis aparecem em separado.</small></div>
+      <div class="period-description"><strong>Período</strong><br><span id="periodCaption">Hoje · desde as 00:00</span></div>
       <div id="periodControls" class="period-controls">
         <button type="button" class="period-button" data-period="today" aria-pressed="true">Hoje</button>
         <button type="button" class="period-button" data-period="week" aria-pressed="false">7 dias</button>
@@ -135,37 +138,40 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
 
     <section id="page-dashboard" class="page active" aria-labelledby="pageTitle">
       <div class="section-heading" style="margin-top:0">
-        <div><h2>Estado operacional — tempo real</h2><p>Estes valores não mudam com Hoje, 7 dias ou Histórico Total. Mostram ligações, atividade e consultas em curso.</p></div>
+        <div><h2>Estado operacional</h2><p>Realtime e atividade recente.</p></div>
         <span class="status-pill loading" id="presenceConnection"><i class="status-dot" aria-hidden="true"></i><span>A ligar</span></span>
       </div>
       <div id="livePresenceCards" class="metric-grid live-presence-grid" aria-live="polite">
-        <article class="metric-card blue"><div class="metric-label">Online agora</div><div class="metric-value" id="livePresenceOnline">—</div><div class="metric-note">Instalações distintas com ligação Realtime ativa, deduplicadas entre separadores. Não equivale a pessoas únicas.</div></article>
-        <article class="metric-card green"><div class="metric-label">A trabalhar agora</div><div class="metric-value" id="livePresenceActive">—</div><div class="metric-note">Instalações online, com a aplicação visível e interação nos últimos dois minutos.</div></article>
-        <article class="metric-card blue"><div class="metric-label">Vistas na última hora</div><div class="metric-value" id="livePresenceHour">—</div><div class="metric-note">Instalações distintas com sinal de presença recebido nos últimos 60 minutos; podem já estar desligadas.</div></article>
+        <article class="metric-card blue"><div class="metric-label">Online agora</div><div class="metric-value" id="livePresenceOnline">—</div><div class="metric-note">Instalações com ligação Realtime; não equivale a pessoas únicas.</div></article>
+        <article class="metric-card green"><div class="metric-label">A trabalhar agora</div><div class="metric-value" id="livePresenceActive">—</div><div class="metric-note">Instalações online com interação nos últimos 2 min.</div></article>
+        <article class="metric-card blue"><div class="metric-label">Vistas na última hora</div><div class="metric-value" id="livePresenceHour">—</div><div class="metric-note">Instalações com sinal de presença na última hora; podem estar desligadas.</div></article>
       </div>
       <div class="refresh-time" id="livePresenceUpdated">A aguardar ligação de presença.</div>
       <div class="section-heading compact-heading">
-        <div><h2>Atividade operacional recente</h2><p>Janelas móveis: os últimos três minutos e os últimos 60 minutos, independentemente do período histórico escolhido.</p></div>
+        <div><h2>Atividade recente</h2></div>
       </div>
       <div id="overviewLiveCards" class="metric-grid"></div>
-      <p id="baseInstallationsNote" class="base-info">Base acumulada da aplicação: a aguardar total de instalações registadas.</p>
+      <p id="baseInstallationsNote" class="base-info">Instalações registadas: a carregar.</p>
       <div class="section-heading compact-heading">
-        <div><h2>Indicadores do período selecionado</h2><p>Todos os números desta secção respeitam apenas o período escolhido acima.</p></div>
+        <div><h2>Indicadores do período</h2></div>
       </div>
       <div id="overviewCards" class="metric-grid"></div>
       <div class="content-grid">
         <article id="todayHourlyPanel" class="panel wide">
           <div class="panel-head">
-            <div><h2>Distribuição horária de hoje</h2><p>Este gráfico só é mostrado quando o período selecionado é Hoje. Conta consultas iniciadas e instalações com ações reais, por hora de Lisboa.</p></div>
-            <span class="panel-tag">Hoje · Lisboa</span>
+            <div><h2>Atividade por hora</h2><p>Consultas e instalações ativas. Valores visíveis sobre cada hora.</p></div>
+            <span class="panel-tag">Lisboa</span>
           </div>
           <div class="legend"><span><i class="legend-dot consults"></i>Consultas iniciadas</span><span><i class="legend-dot users"></i>Instalações ativas</span></div>
-          <div id="hourlyChart" class="hourly-chart" role="img" aria-label="Gráfico horário de hoje: consultas e instalações ativas"></div>
+          <div id="hourlyChart" class="hourly-chart" role="img" aria-label="Gráfico horário: números junto de cada barra indicam os valores exatos"></div>
           <div id="hourlyNote" class="hourly-note">—</div>
-          <div id="hourlyTable" style="margin-top:14px"></div>
+          <details class="hourly-values">
+            <summary>Ver tabela com os valores exatos</summary>
+            <div id="hourlyTable" class="hourly-table-content"></div>
+          </details>
         </article>
         <article class="panel wide">
-          <div class="panel-head"><div><h2>Qualidade das consultas no período</h2><p>Os valores abaixo seguem o mesmo período selecionado. Uma consulta só fica concluída quando existe um único resultado final.</p></div></div>
+          <div class="panel-head"><div><h2>Qualidade das consultas</h2></div></div>
           <div id="queryQuality" class="quality-grid"></div>
         </article>
       </div>
@@ -190,8 +196,11 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
       <article id="activityHourlyPanel" class="panel">
         <div class="panel-head"><div><h2>Distribuição horária de hoje</h2><p>Este gráfico só é mostrado quando o período selecionado é Hoje; mostra 00h–23h à hora de Lisboa.</p></div><span class="panel-tag">Hoje · Lisboa</span></div>
         <div class="legend"><span><i class="legend-dot consults"></i>Consultas</span><span><i class="legend-dot users"></i>Instalações ativas</span></div>
-        <div id="activityHourlyChart" class="hourly-chart" role="img" aria-label="Gráfico de atividade de hoje por hora"></div>
-        <div id="activityHourlyTable" style="margin-top:14px"></div>
+        <div id="activityHourlyChart" class="hourly-chart" role="img" aria-label="Gráfico horário: números junto de cada barra indicam os valores exatos"></div>
+        <details class="hourly-values">
+          <summary>Ver tabela com os valores exatos</summary>
+          <div id="activityHourlyTable" class="hourly-table-content"></div>
+        </details>
       </article>
     </section>
 
@@ -368,17 +377,17 @@ function renderAll(){
   const activityHourlyPanel=$('activityHourlyPanel');
   if(activityHourlyPanel)activityHourlyPanel.hidden=currentPeriod!=='today';
   appendCards('overviewLiveCards',[
-    ['Consultas iniciadas · últimos 3 min',fmt(liveUsers.consultationsLast3Minutes),'Consultas iniciadas numa janela móvel de três minutos.','accent'],
-    ['Instalações com consulta · última hora',fmt(liveUsers.installationsConsultedLastHour),'Instalações distintas com consultas recebidas nos últimos 60 minutos.','blue']
+    ['Consultas iniciadas · últimos 3 min',fmt(liveUsers.consultationsLast3Minutes),'Consultas iniciadas nos últimos 3 min.','accent'],
+    ['Instalações com consulta · última hora',fmt(liveUsers.installationsConsultedLastHour),'Instalações que consultaram veículos na última hora.','blue']
   ]);
   appendCards('overviewCards',[
-    ['Consultas iniciadas',fmt(insurance.consultations),'Consultas de seguro iniciadas no período selecionado.','accent'],
-    ['Resultados finais únicos',fmt(insurance.finals),'Consultas com um único resultado final no período selecionado.','green'],
-    ['Com seguro',fmt(insurance.insured),'Resultado positivo registado no período selecionado.','green'],
+    ['Consultas iniciadas',fmt(insurance.consultations),'Consultas iniciadas.','accent'],
+    ['Resultados finais únicos',fmt(insurance.finals),'Consultas com resultado final único.','green'],
+    ['Com seguro',fmt(insurance.insured),'Resultado positivo.','green'],
     ['Sem registo de seguro',fmt(insurance.uninsured),pct(insurance.uninsuredPct)+' das decisões válidas do período.','amber'],
     ['Consultas com erro técnico',fmt(insurance.errors),pct(insurance.errorPct)+' das consultas finais no período, excluindo entradas mal formatadas.','red'],
-    ['Instalações ativas',fmt(users.activeInstallations),'Instalações distintas com consultas ou ações reais no período selecionado.','blue'],
-    ['Legislação copiada',fmt(legislation.copies),'Eventos de cópia confirmados no período selecionado.','blue']
+    ['Instalações ativas',fmt(users.activeInstallations),'Instalações com ações reais.','blue'],
+    ['Legislação copiada',fmt(legislation.copies),'Cópias confirmadas.','blue']
   ]);
   renderHourly('hourlyChart','hourlyTable','hourlyNote');
   renderQuality(insurance);
@@ -421,17 +430,24 @@ function renderHourly(chartId,tableId,noteId){
   const host=$(chartId);host.replaceChildren();
   const max=Math.max(1,...rows.map(x=>Math.max(Number(x.consultations)||0,Number(x.activeUsers)||0)));
   rows.forEach(r=>{
-    const slot=document.createElement('div');slot.className='hour-slot';slot.title=String(r.hour)+'h · '+fmt(r.consultations)+' consultas · '+fmt(r.activeUsers)+' instalações ativas';
+    const consultationValue=Math.max(0,Number(r.consultations)||0);
+    const activeValue=Math.max(0,Number(r.activeUsers)||0);
+    const slot=document.createElement('div');slot.className='hour-slot';slot.title=String(r.hour)+'h · '+fmt(consultationValue)+' consultas · '+fmt(activeValue)+' instalações ativas';
+    const values=document.createElement('div');values.className='hour-values';
+    const consultationLabel=document.createElement('span');consultationLabel.className='consults-value';consultationLabel.textContent=String(consultationValue);consultationLabel.setAttribute('aria-hidden','true');
+    const activeLabel=document.createElement('span');activeLabel.className='users-value';activeLabel.textContent=String(activeValue);activeLabel.setAttribute('aria-hidden','true');
+    values.append(consultationLabel,activeLabel);
     const pair=document.createElement('div');pair.className='bar-pair';
-    [['consults',r.consultations],['users',r.activeUsers]].forEach(v=>{
-      const bar=document.createElement('div');bar.className='hour-bar '+v[0];const n=Math.max(0,Number(v[1])||0);bar.style.height=(n===0?'0%':Math.max(3,n/max*100)+'%');bar.setAttribute('aria-hidden','true');pair.appendChild(bar);
+    [['consults',consultationValue],['users',activeValue]].forEach(v=>{
+      const bar=document.createElement('div');bar.className='hour-bar '+v[0];bar.dataset.value=String(v[1]);const n=v[1];bar.style.height=(n===0?'0%':Math.max(3,n/max*100)+'%');bar.setAttribute('aria-hidden','true');pair.appendChild(bar);
     });
-    const label=document.createElement('div');label.className='hour-label';label.textContent=Number(r.hourNumber)%3===0||Number(r.hourNumber)===23?String(r.hour)+'h':'';slot.append(pair,label);host.appendChild(slot);
+    const label=document.createElement('div');label.className='hour-label';label.textContent=Number(r.hourNumber)%3===0||Number(r.hourNumber)===23?String(r.hour)+'h':'';
+    slot.append(values,pair,label);host.appendChild(slot);
   });
   host.setAttribute('aria-label','Consultas e instalações ativas por hora. '+rows.map(r=>String(r.hour)+' horas: '+fmt(r.consultations)+' consultas, '+fmt(r.activeUsers)+' instalações').join('; '));
   const tableRows=rows.map(r=>[String(r.hour)+'h',fmt(r.consultations),fmt(r.activeUsers)]);
   $(tableId).replaceChildren(makeTable(['Hora','Consultas iniciadas','Instalações ativas'],tableRows));
-  if(noteId){const i=dashboardData.ranges&&dashboardData.ranges.today;$(noteId).textContent='Hoje: '+(i?prettyDate(i.start)+' – '+prettyDate(i.end):'desde a meia-noite de Lisboa')+'. Este gráfico só é mostrado quando o período selecionado é Hoje.';}
+  if(noteId){const i=dashboardData.ranges&&dashboardData.ranges.today;$(noteId).textContent=i?'Hoje · '+shortTime(i.start)+'–'+shortTime(i.end)+' (Lisboa)':'Hoje · hora de Lisboa';}
 }
 function renderLegislationItems(items){
   const rows=items.map(x=>[x.label||x.itemId||'(iteme sem identificação)',x.copyType||'desconhecido',fmt(x.copies),fmt(x.users)]);
