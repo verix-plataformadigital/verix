@@ -9,7 +9,9 @@ import { createClient } from '@supabase/supabase-js';
   var ACTIVE_WINDOW_MS = 120000;
   var TRACK_MIN_INTERVAL_MS = 30000;
   var URGENT_TRACK_MIN_INTERVAL_MS = 2500;
-  var ADMIN = /(?:^|\\/)admin_v2\\.html$/i.test(String(window.location.pathname || '')) || /(?:^|\\/)verix-admin-pwa\\//i.test(String(window.location.pathname || '')) || /[?&]app=verix-admin-edge-v1(?:&|$)/i.test(String(window.location.search || ''));
+  var currentPath = String(window.location.pathname || '');
+  var currentQuery = String(window.location.search || '');
+  var ADMIN = currentPath.endsWith('/admin_v2.html') || currentPath.indexOf('/verix-admin-pwa/') >= 0 || /[?&]app=verix-admin-edge-v1(?:&|$)/i.test(currentQuery);
 
   var snapshot = {
     status: ADMIN ? 'locked' : 'connecting',
