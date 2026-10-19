@@ -112,27 +112,27 @@ async function rpc(name: string, body: Record<string,unknown>) {
 
 
 
-function n(v){const x=Number(v);return Number.isFinite(x)?x:null;}
-function cinSnapshotOf(e){
+function n(v:unknown):number|null{const x=Number(v);return Number.isFinite(x)?x:null;}
+function cinSnapshotOf(e:any):any{
   const c=e?.metadata?.cin;
   return c && typeof c==="object" && !Array.isArray(c) ? c : null;
 }
-function percentile(values,p){
-  const a=values.filter(Number.isFinite).sort((x,y)=>x-y);
+function percentile(values:number[],p:number):number|null{
+  const a=values.filter((value:number)=>Number.isFinite(value)).sort((x:number,y:number)=>x-y);
   if(!a.length)return null;
   const i=(a.length-1)*p, lo=Math.floor(i), hi=Math.ceil(i);
   return lo===hi?a[lo]:a[lo]+(a[hi]-a[lo])*(i-lo);
 }
-function sessionPattern(rows){
+function sessionPattern(rows:any[]){
   const speedRows=rows.filter((e:any)=>e.event==="cinemometer_speed_entry" && cinSnapshotOf(e)?.velocidade_registada!=null);
   const calculationRows=rows.filter((e:any)=>e.event==="cinemometer_calculation" && cinSnapshotOf(e)?.velocidade_registada!=null);
   const measurements=speedRows.length?speedRows:calculationRows;
-  const speeds=measurements.map((e:any)=>Number(cinSnapshotOf(e).velocidade_registada)).filter(Number.isFinite);
+  const speeds:number[]=measurements.map((e:any)=>Number(cinSnapshotOf(e).velocidade_registada)).filter((value:number)=>Number.isFinite(value));
   const unique=[...new Set(speeds)];
-  const times=measurements.map((e:any)=>new Date(e.occurred_at).getTime()).filter(Number.isFinite).sort((a,b)=>a-b);
+  const times:number[]=measurements.map((e:any)=>new Date(e.occurred_at).getTime()).filter((value:number)=>Number.isFinite(value)).sort((a:number,b:number)=>a-b);
   const intervals=[]; for(let i=1;i<times.length;i++) intervals.push((times[i]-times[i-1])/1000);
-  const round5=speeds.length?100*speeds.filter(v=>v%5===0).length/speeds.length:null;
-  const round10=speeds.length?100*speeds.filter(v=>v%10===0).length/speeds.length:null;
+  const round5=speeds.length?100*speeds.filter((v:number)=>v%5===0).length/speeds.length:null;
+  const round10=speeds.length?100*speeds.filter((v:number)=>v%10===0).length/speeds.length:null;
   const repeats=speeds.length>1?100*(1-unique.length/speeds.length):0;
   let monotonic=true, direction=0;
   for(let i=1;i<speeds.length;i++){
@@ -232,8 +232,11 @@ function windowStartTodayLisbon(now: string): string {
 async function loadInsuranceNoCases(now:string, pageLimit?:number, pageOffset=0){
   async function fetchPage(limit:number,offset:number){
     const qs = new URLSearchParams();
-    qs.set("select","event_id,matricula,occurred_at,expires_at");
+    qs.set("select","event_id,matricula,occurred_at,created_at,expires_at");
     qs.set("expires_at","gt."+now);
+    // The 24-hour window starts when the server records the result, not when an
+    // offline client originally generated its event. Existing rows are not rewritten.
+    qs.set("created_at","gte."+new Date(Date.parse(now)-24*60*60*1000).toISOString());
     qs.set("order","occurred_at.desc,event_id.desc");
     qs.set("limit",String(limit));
     qs.set("offset",String(offset));
@@ -440,13 +443,13 @@ async function loadCinemometerAnalytics24h(now:string){
   const speedEntries=events.filter((e:any)=>e.event==="cinemometer_speed_entry" && cinSnapshotOf(e)?.velocidade_registada!=null);
   const calcEvents=events.filter((e:any)=>e.event==="cinemometer_calculation" && cinSnapshotOf(e)?.velocidade_registada!=null);
   const measurementEvents=speedEntries.length?speedEntries:calcEvents;
-  const speeds=measurementEvents.map((e:any)=>Number(cinSnapshotOf(e).velocidade_registada)).filter(Number.isFinite);
-  const analyticsSpeedValues=events
+  const speeds:number[]=measurementEvents.map((e:any)=>Number(cinSnapshotOf(e).velocidade_registada)).filter((value:number)=>Number.isFinite(value));
+  const analyticsSpeedValues:number[]=events
     .filter((e:any)=>["cinemometer_speed_entry","cinemometer_calculation"].includes(e.event) && cinSnapshotOf(e)?.velocidade_registada!=null)
     .map((e:any)=>String(cinSnapshotOf(e).velocidade_registada))
     .filter((v:string)=>/^[0-9]+(\\.[0-9]+)?$/.test(v))
     .map(Number)
-    .filter(Number.isFinite);
+    .filter((value:number)=>Number.isFinite(value));
   const distributionMap=new Map<number,number>();
   for(const speed of analyticsSpeedValues){
     const bucket=Math.floor(speed/10)*10;
@@ -549,7 +552,7 @@ async function resetState() {
   return {reset_24h_at:rows?.[0]?.reset_24h_at||null,reset_all_at:rows?.[0]?.reset_all_at||null};
 }
 
-Deno.serve(async (req) => {
+Deno.serve(async (req:Request) => {
   if(req.method==="OPTIONS") {
     return new Response(null,{status:204,headers:corsHeaders(req)});
   }
@@ -566,6 +569,53 @@ Deno.serve(async (req) => {
     const url = new URL(req.url);
     const detail = url.searchParams.get("detail") || "";
     const forceRefresh = url.searchParams.get("fresh") === "1";
+
+    // V3 dashboard contract: compact period aggregates are precomputed and cached in PostgreSQL.
+    if(req.method === "GET" && detail === "dashboard-v3") {
+      const now = new Date().toISOString();
+      try {
+        const [cachedMetrics, liveActivity] = await Promise.all([
+          // Even the manual browser refresh reads the shared cache. A forced
+          // recomputation is reserved for the scheduled refresher, not user clicks.
+          rpc("verix2_admin_dashboard_v3", {
+            p_now: now,
+            p_force_refresh: false
+          }),
+          rpc("verix2_admin_live_activity_v3", { p_now: now })
+        ]);
+        const metrics = {
+          ...cachedMetrics,
+          users: {
+            ...(cachedMetrics?.users || {}),
+            consultationsLast3Minutes: Number(liveActivity?.consultations || 0),
+            activeInstallationsLast3Minutes: Number(liveActivity?.activeInstallations || 0)
+          }
+        };
+        return json({ok:true,detail:"dashboard-v3",generatedAt:now,data:metrics},200,req);
+      } catch(error) {
+        return json({ok:false,error:"dashboard_v3_failed",detail:String((error as Error)?.message||error)},500,req);
+      }
+    }
+
+    // Detailed error ledger: raw response bodies, request headers and caller stacks are never exposed.
+    if(req.method === "GET" && detail === "error-ledger-v3") {
+      const requestedPeriod = url.searchParams.get("period") || "today";
+      const period = ["today","week","total"].includes(requestedPeriod) ? requestedPeriod : "today";
+      const limit = Math.max(1,Math.min(200,Math.floor(Number(url.searchParams.get("limit") || 50))));
+      const offset = Math.max(0,Math.min(1000000,Math.floor(Number(url.searchParams.get("offset") || 0))));
+      const now = new Date().toISOString();
+      try {
+        const ledger = await rpc("verix2_admin_error_ledger_v3", {
+          p_period: period,
+          p_now: now,
+          p_limit: limit,
+          p_offset: offset
+        });
+        return json({ok:true,detail:"error-ledger-v3",generatedAt:now,data:ledger},200,req);
+      } catch(error) {
+        return json({ok:false,error:"error_ledger_v3_failed",detail:String((error as Error)?.message||error)},500,req);
+      }
+    }
 
     // This plate list is only served after the admin token has been validated.
     if(req.method==="GET" && detail==="insurance-no-cases") {

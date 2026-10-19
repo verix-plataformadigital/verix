@@ -11,6 +11,7 @@ const overviewOptimizationMigration = fs.readFileSync("supabase/migrations/20261
 const insuranceNoCasesMigration = fs.readFileSync("supabase/migrations/20261009080000_insurance_no_cases.sql", "utf8");
 const stalePendingMigration = fs.readFileSync("supabase/migrations/20261018092000_fix_stale_pending_query_status.sql", "utf8");
 const errorPlateCountMigration = fs.readFileSync("supabase/migrations/20261009092500_deduplicate_error_plate_consultations.sql", "utf8");
+const adminV3Migration = fs.readFileSync("supabase/migrations/20261018200000_admin_dashboard_v3_rebuild.sql", "utf8");
 const packageConfig = JSON.parse(fs.readFileSync("package.json", "utf8"));
 const currentAppVersion = packageConfig.version.split(".").slice(0, 2).join(".");
 assert.ok(stats.includes('const CURRENT_APP_VERSION = "' + currentAppVersion + '"'), "stats current version must match package.json major.minor");
@@ -19,10 +20,12 @@ assert.match(stats, /current_version_errors:new Set\(currentVersionRows\.map/);
 assert.match(stats, /current_app_version:CURRENT_APP_VERSION/);
 assert.doesNotMatch(stats, /app14|["\']1\.4["\']/i, "stats must not hard-code the obsolete version filter");
 assert.doesNotMatch(admin, /VERSÃO 1\.4|ERROS DA 1\.4|app14|versão 1\.4/i, "Admin must not display or consume obsolete 1.4 error metrics");
-assert.match(admin, /inv\.current_version_errors/);
-assert.match(admin, /inv\.current_version_installations/);
-assert.match(admin, /inv\.current_version_plates/);
-assert.match(admin, /d\.current_app_version/);
+assert.match(admin, /detail=dashboard-v3/, "new Admin must consume the V3 dashboard contract");
+assert.match(admin, /detail=error-ledger-v3/, "new Admin must consume the paginated detailed error ledger");
+assert.match(admin, /Histórico Total/, "new Admin must expose the history period");
+assert.match(admin, /data-period="today"/);
+assert.match(admin, /data-period="week"/);
+assert.match(admin, /data-period="total"/);
 
 assert.match(endpoint, /db\.rpc\(\s*["']verix2_ingest_telemetry["']/);
 assert.match(endpoint, /p_events:\s*events/);
@@ -48,10 +51,10 @@ assert.match(stats, /qs\.set\("offset",String\(offset\)\)/, "no-record list page
 assert.match(stats, /fetchPage\(pageSize,page\*pageSize\)/, "legacy complete-list pagination must advance each page");
 assert.match(stats, /if\(rows\.length<pageSize\)return cases;/, "legacy complete-list pagination must stop after a short final page");
 assert.match(stats, /insurance_no_cases_page_limit/, "an unexpectedly huge list must fail explicitly instead of silently truncating");
-assert.match(admin, /MATRÍCULAS COM RESULTADO “SEM REGISTO”/);
+assert.match(admin, /Matrículas com resultado “sem registo”/);
 assert.match(admin, /renderInsuranceNoCases/);
-assert.match(admin, /id="errorPlates"/, "Admin must expose a dedicated ASF error-plate list");
-assert.match(admin, /current_version_plate_cases\|\|\[\]/, "Admin must render actual error plate cases");
+assert.match(admin, /id="errorPlates"/, "Admin must expose a dedicated ASF error ledger");
+assert.match(admin, /renderErrorLedger/);
 assert.match(stats, /current_version_plate_cases:plateCases/, "stats must return error plate cases to Admin");
 assert.ok(stats.includes("e?.metadata?.matriculaCapturada"), "error analytics must prefer the captured input field");
 assert.ok(stats.includes('"Não capturada"'), "error analytics must include failed queries with no captured plate");
@@ -73,7 +76,7 @@ assert.match(migration, /WHERE event='vehicle_lookup' AND query_id IS NOT NULL/)
 assert.doesNotMatch(migration, /SELECT DISTINCT ON\(query_id\)/);
 assert.equal((migration.match(/NOT EXISTS\(SELECT 1 FROM public\.verix2_events lookup_event WHERE lookup_event\.event='vehicle_lookup' AND lookup_event\.query_id=fc\.query_id\)/g) || []).length, 3, "orphan finals must be checked against all recorded lookups, not only the 30-day analytics slice");
 for (const metric of ["'pending'","'incomplete'","'contradictory'","'duplicate_finals'","'orphan_finals'"]) assert.ok(migration.includes(metric), "missing SQL metric "+metric);
-for (const label of ["Incompletas","Contraditórias","Finais duplicados","Finais órfãos","INSTALAÇÕES"]) assert.ok(admin.includes(label), "missing Admin label "+label);
+for (const label of ["Incompletas","Contraditórias","Finais duplicados","Consultas iniciadas","Instalações ativas","Legislação copiada"]) assert.ok(admin.includes(label), "missing Admin label "+label);
 
 assert.doesNotMatch(app, /\b(?:APP_VERSION|appVersion|app_version)\s*[:=]\s*["\']1\.4(?:\.\d+)?["\']/i, "production runtime must not advertise the obsolete app version");
 const telemetryStart = app.indexOf("function parseReceipt(text)");
@@ -131,11 +134,9 @@ assert.match(presenceMigration, /'online_now',\(SELECT count\(\*\)/, "online_now
 assert.match(presenceMigration, /last_presence >= p_now-interval '90 seconds'/, "online presence must expire after the heartbeat lease");
 assert.match(presenceMigration, /event IN \('app_open','heartbeat','session_close'\)/, "online presence must use lifecycle events only");
 assert.match(presenceMigration, /last_close IS NULL OR last_presence > last_close/, "a later close event must remove a session from the active count");
-assert.ok(admin.includes("BROWSERS ATIVOS"), "Admin must keep browser-session activity labelled separately");
-assert.ok(admin.includes("CONSULTAS · ÚLTIMOS 3 MIN"), "Admin must expose recent consultation activity separately");
-assert.ok(admin.includes("Instalações que iniciaram uma consulta recentemente."), "recent consultation activity must be described accurately");
-assert.ok(admin.includes("Utilizadores ativos (estimados)"), "hourly chart must label active-use estimates");
-assert.ok(admin.includes("Abrir o browser ou enviar heartbeat não conta"), "hourly metric must explicitly exclude passive browser presence");
+assert.ok(admin.includes("Consultas nos últimos 3 min"), "Admin must expose consultation-based activity over three minutes");
+assert.ok(admin.includes("Instalações ativas nos últimos 3 min"), "Admin must distinguish active installations from browser sessions");
+assert.ok(admin.includes("Aberturas da aplicação e heartbeats não contam como utilização"), "active-use metrics must explicitly exclude passive browser presence");
 assert.ok(stats.includes('rpc("verix2_consulted_installations_3m",{p_now:now})'), "stats must request query-based online presence");
 assert.ok(stats.includes("consulted_3m:recentConsulted3m"), "stats must return query-based online presence separately from browser sessions");
 assert.ok(stats.includes('[2,"recent_query_presence"]'), "a failed recent-presence query must mark the dashboard as partial");
@@ -147,8 +148,8 @@ assert.ok(activeEventsMatch, "hourly active-use migration must define an explici
 assert.ok(!/['"]app_open['"]|['"]heartbeat['"]|['"]session_close['"]/.test(activeEventsMatch[1]), "hourly active-use must exclude passive lifecycle events");
 assert.match(activeHourlyMigration, /'bucket_start', h\.bucket_start/, "each hourly metric must include its real timestamp");
 assert.match(activeHourlyMigration, /date_trunc\('hour', e\.occurred_at AT TIME ZONE 'UTC'\) AT TIME ZONE 'UTC'/, "hourly counts must use chronological hour buckets rather than hour-of-day grouping");
-assert.ok(admin.includes("hourly-bar-col") && admin.includes("is-new-day"), "hourly chart must separate dates using current bar classes");
-assert.ok(admin.includes("new Date(x.bucket_start)"), "hourly chart must read the date associated with each bucket");
+assert.ok(admin.includes("function renderHourly("), "new Admin must render hourly data through one shared chart renderer");
+assert.ok(admin.includes("r.consultations") && admin.includes("r.activeUsers"), "hourly chart must use consultation and active-installation counts");
 assert.match(stats, /admin-simple-2026-10-14-r16/, "dashboard cache contract must support the latest Admin revision");
 assert.match(recentQueryPresenceMigration, /count\(DISTINCT e\.installation_id\)/, "recent-query presence must count distinct installations");
 assert.match(recentQueryPresenceMigration, /e\.event = 'vehicle_lookup'/, "recent-query presence must count actual consultation starts");
@@ -162,7 +163,7 @@ assert.ok(errorPlateCountMigration.includes("count(*) event_qty"), "raw error ev
 assert.ok(errorPlateCountMigration.includes("^(?:[A-Z]{2}[0-9]{4}|[0-9]{4}[A-Z]{2}|[0-9]{2}[A-Z]{2}[0-9]{2}|[A-Z]{2}[0-9]{2}[A-Z]{2})$"), "error plate table must allow only complete Portuguese plate formats");
 assert.ok(endpoint.includes("function sanitizeErrorPlateMetadata("), "server must sanitize invalid error plate fragments before persistence");
 assert.ok(endpoint.includes('if (event === "vehicle_insurance_error") sanitizeErrorPlateMetadata(metadata);'), "server must apply plate validation to ASF error events");
-assert.ok(admin.includes("CONSULTAS','EVENTOS"), "Admin must distinguish consultation totals from raw event totals");
+assert.ok(admin.includes("Eventos de erro"), "Admin must distinguish raw error events from query-level errors");
 assert.ok(stats.includes("queryIds:new Set<string>()"), "error time buckets must deduplicate repeated events by query ID");
 assert.ok(stats.includes("event_count:b.events"), "error time buckets must expose raw event count separately");
 
@@ -210,9 +211,9 @@ const allVersionPlateCases = buildErrorPlateCases(errorPlateFixtures, fixturePla
 assert.equal(allVersionPlateCases.length, 2, "all versions are included and incomplete retries do not hide valid plates");
 assert.ok(allVersionPlateCases.some(item => item.query_id === "query-one" && item.matricula === "AA1234" && item.app_version === "1.4"), "a later incomplete retry must preserve the valid earlier plate");
 assert.ok(allVersionPlateCases.some(item => item.query_id === "query-two" && item.app_version === "1.3"), "valid error plates from older versions must remain visible");
-assert.ok(admin.includes("inv.error_plate_cases_24h||inv.current_version_plate_cases"), "Admin consumes all-version data with a compatibility fallback");
-assert.ok(admin.includes('onclick="refreshCurrentData()"'), "Admin exposes a manual refresh for error-plate cases");
-assert.ok(admin.includes("errorPlatesCount"), "Admin shows the count of returned error-plate cases");
+assert.ok(admin.includes("detail=error-ledger-v3"), "Admin consumes paginated all-version technical error details");
+assert.ok(admin.includes('id="refreshBtn"'), "Admin exposes a manual refresh");
+assert.ok(admin.includes("errorCountTag"), "Admin shows the count of returned error events");
 
 assert.ok(stats.includes('qs.set("offset",String(page*pageSize))'), "error investigation must page through all raw telemetry instead of truncating at 1,000 rows");
 assert.ok(stats.includes("validPortuguesePlate"), "error plate diagnostics must use complete Portuguese plate formats");
@@ -226,11 +227,10 @@ assert.match(hourlyMigration, /count\(DISTINCT e\.query_id\) FILTER/, "hourly co
 assert.match(hourlyMigration, /e\.event='vehicle_lookup'/, "hourly consultations must count actual lookup starts");
 assert.match(hourlyMigration, /count\(DISTINCT e\.installation_id\) FILTER/, "hourly presence must count distinct installations");
 assert.match(hourlyMigration, /e\.event IN \('app_open','heartbeat'\)/, "hourly presence must use app-open/heartbeat events");
-assert.ok(admin.includes("CONSULTAS E UTILIZAÇÃO POR HORA"), "dashboard must describe hourly consultations and active-use metrics");
-assert.ok(admin.includes("CONSULTAS E UTILIZAÇÃO POR HORA"), "usage page must describe the updated hourly metrics");
-assert.match(admin, /asNumber\(x\.consultations\)/, "hour chart must use consultation count");
-assert.ok(admin.includes("users:asNumber(x.active_users??x.users)"), "hour chart must use the active-installation count");
-assert.match(admin, /Hora com mais consultas/, "dashboard insight must refer to consultations, not generic actions");
+assert.ok(admin.includes("Consultas e utilizadores por hora"), "dashboard must describe hourly consultations and active-use metrics");
+assert.ok(admin.includes("Atividade em cada hora do dia"), "usage page must describe hourly activity");
+assert.match(adminV3Migration, /count\(DISTINCT e\.query_id\)/, "the backend contract must deduplicate consultations by query ID");
+assert.ok(admin.includes("activeUsers"), "hourly chart must use the active-installation count");
 
 assert.ok(app.includes("function cinTelemetrySnapshot()"), "Cinemometer telemetry must construct a structured snapshot");
 assert.ok(app.includes("out.cin = {"), "client metadata sanitizer must retain the Cinemometer snapshot");
@@ -242,7 +242,35 @@ assert.ok(snapshotStart >= 0 && snapshotEnd > snapshotStart, "Cinemometer snapsh
 const snapshot = app.slice(snapshotStart, snapshotEnd);
 assert.doesNotMatch(snapshot, /cinSessaoOperadorNome|cinSessaoOperadorNo|cinSessaoOperadorPosto|cinMarca|cinModelo|cinSerie|cinLocalidade|cinDistrito|cinVia|cinSentido|cinKm/, "telemetry snapshot must not collect operator identifiers, apparatus serials, or exact locations");
 
-console.log("PASS: atomic telemetry ingest, loss-safe beacon queue, browser presence KPI, hourly query deduplication, Cinemometer measurement metadata, and Admin labels.");
+
+// V3 Admin regression contract: period semantics, safe data visibility, and the new metrics API.
+assert.match(adminV3Migration, /verix2_admin_dashboard_v3_compute/);
+assert.match(adminV3Migration, /verix2_admin_dashboard_v3\(/);
+assert.match(adminV3Migration, /verix2_admin_error_ledger_v3/);
+assert.match(adminV3Migration, /interval '365 days'/, "history retention must support the yearly window");
+assert.match(adminV3Migration, /interval '24 hours'/, "new no-record plate details must have a 24-hour retention");
+assert.doesNotMatch(adminV3Migration, /DELETE FROM public\.verix_insurance_no_cases|TRUNCATE/i, "migration must not directly delete or truncate plate records");
+assert.match(adminV3Migration, /ALTER COLUMN expires_at SET DEFAULT \(now\(\) \+ interval '24 hours'\)/, "new plate details must expire after 24 hours");
+assert.doesNotMatch(adminV3Migration, /UPDATE public\.verix_insurance_no_cases/i, "existing plate details must not be rewritten");
+assert.doesNotMatch(adminV3Migration, /DELETE FROM public\.verix2_events|TRUNCATE TABLE public\.verix2_events/i, "migration must preserve all raw telemetry events");
+assert.match(adminV3Migration, /verix2_admin_live_activity_v3/, "three-minute active consultations must be computed separately from the cached dashboard");
+assert.match(adminV3Migration, /meta_ev AS MATERIALIZED/, "large client/forensics JSON must be excluded from the main dashboard activity CTE");
+assert.match(adminV3Migration, /AND e\.event IN \('vehicle_insurance_error', 'legislation_copy'\)/, "only error and legislation-copy rows should carry event metadata in the aggregate query");
+assert.match(adminV3Migration, /schedule := '\*\/5 \* \* \* \*'/, "shared dashboard refresh must run every five minutes, not every minute");
+assert.match(adminV3Migration, /interval '6 minutes'/, "cached metrics must remain available between scheduled refreshes");
+assert.match(adminV3Migration, /WHERE a\.ordinality <= 8/, "the error ledger must cap diagnostic attempt details");
+assert.match(adminV3Migration, /'message', left\(a\.value->>'message', 300\)/, "error messages must be length-bounded");
+assert.doesNotMatch(adminV3Migration, /'rawResponse'\s*,|'requestBody'\s*,|'requestHeaders'\s*,|'callerStack'\s*,/, "the detailed error API must not expose raw requests, headers, or call stacks");
+assert.match(stats, /detail === "dashboard-v3"/);
+assert.match(stats, /detail === "error-ledger-v3"/);
+assert.ok(stats.includes('qs.set("created_at","gte."+new Date(Date.parse(now)-24*60*60*1000).toISOString());'), "no-record visibility window must be based on server receipt time");
+const adminInlineScript = admin.match(/<script>([\s\S]*?)<\/script>/);
+assert.ok(adminInlineScript, "new Admin must have one executable script block");
+assert.doesNotThrow(() => new Function(adminInlineScript[1]), "new Admin JavaScript must parse");
+assert.ok(admin.includes("Um erro técnico não significa que o veículo não tenha seguro"), "error view must distinguish a technical failure from insurance status");
+assert.ok(admin.includes("Histórico Total · 365 dias") || admin.includes("últimos 365 dias"), "the total period must disclose its 365-day reporting window");
+
+console.log("PASS: telemetry integrity, Admin V3 period and error contracts, and frontend JavaScript syntax.");
 
 
 // Regression contract for the dashboard aggregation optimization.
