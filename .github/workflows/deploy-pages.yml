@@ -389,4 +389,34 @@ jobs:
             -D /tmp/verix-admin-auth-cors.txt -o /dev/null \
             "https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/admin-auth-v2"
           grep -Fqi 'access-control-allow-origin: https://onilkakbgpklxvxuxmks.supabase.co' /tmp/verix-admin-auth-cors.txt
-          echo "Isolated Admin page, manifest, service worker, icons, runtime assets and auth CORS: OK"
+          echo "Isolated Admin origin, service worker, icons, runtime assets and auth CORS: OK"
+
+          PAGES_BASE="${{ steps.deployment.outputs.page_url }}"
+          PAGES_BASE="${PAGES_BASE%/}/"
+          curl --fail --silent --show-error --retry 12 --retry-delay 3 --retry-all-errors --connect-timeout 10 --max-time 30 "${PAGES_BASE}admin-proxy/index.html?ci=verix-admin-proxy-v1" -o /tmp/verix-admin-pages.html
+          grep -Fq 'rel="manifest" href="./manifest.webmanifest?v=verix-admin-proxy-v1"' /tmp/verix-admin-pages.html
+          if grep -Fq 'functions/v1/verix-admin-pwa/index.html' /tmp/verix-admin-pages.html; then
+            echo "GitHub Pages Admin must not redirect to Supabase for HTML navigation"
+            exit 1
+          fi
+          curl --fail --silent --show-error --retry 12 --retry-delay 3 --retry-all-errors --connect-timeout 10 --max-time 30 "${PAGES_BASE}admin-proxy/manifest.webmanifest?v=verix-admin-proxy-v1" -o /tmp/verix-admin-pages-manifest.json
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const m = JSON.parse(fs.readFileSync('/tmp/verix-admin-pages-manifest.json', 'utf8'));
+          if (m.id !== './' ||
+              m.start_url !== './index.html?app=verix-admin-proxy-v1' ||
+              m.scope !== './' || m.display !== 'standalone') {
+            throw new Error('Published GitHub Pages Admin PWA manifest identity/start URL/scope/display is invalid');
+          }
+          if (!Array.isArray(m.icons) ||
+              !m.icons.some(x => x.src === './assets/admin-icon-192.png?v=20261019-admin4') ||
+              !m.icons.some(x => x.src === './assets/admin-icon-512.png?v=20261019-admin4')) {
+            throw new Error('Published GitHub Pages Admin manifest icons are missing');
+          }
+          NODE
+          curl --fail --silent --show-error --retry 12 --retry-delay 3 --retry-all-errors --connect-timeout 10 --max-time 30 "${PAGES_BASE}admin-proxy/sw.js" -o /tmp/verix-admin-pages-sw.js
+          node --check /tmp/verix-admin-pages-sw.js
+          for asset in assets/admin-icon-192.png assets/admin-icon-512.png verix-presence-v1.js; do
+            curl --fail --silent --show-error --retry 12 --retry-delay 3 --retry-all-errors --connect-timeout 10 --max-time 30 "${PAGES_BASE}admin-proxy/$asset" -o /dev/null
+          done
+          echo "Published GitHub Pages Admin is independently installable and scoped: OK"
