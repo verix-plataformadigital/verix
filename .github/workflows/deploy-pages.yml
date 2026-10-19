@@ -291,7 +291,6 @@ jobs:
           if (appStart < 0 || installPos < appStart) throw new Error('Install button must be inside the authenticated Admin application');
           if (rootAdmin.includes('rel="manifest" href="./admin.webmanifest')) throw new Error('Root admin page must not claim the installable admin manifest');
           if (!sourceHtml.includes('functions/v1/verix-admin-pwa/index.html')) throw new Error('GitHub Pages Admin source must route to the independent Supabase origin');
-          }
           if (!sourceHtml.includes('Adicionar ao ecrã principal')) {
             throw new Error('Install fallback instructions missing from Admin source');
           }
