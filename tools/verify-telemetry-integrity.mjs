@@ -279,7 +279,7 @@ assert.ok(adminErrorClassificationMigration.includes("v = 'AA00AA'"), "the filte
 assert.ok(adminErrorClassificationMigration.includes("c.error_type = 'http_400'") && adminErrorClassificationMigration.includes("c.http_status_raw = '400'"), "only explicit HTTP 400 events qualify for the invalid-input exclusion");
 assert.ok(adminErrorClassificationMigration.includes("c.has_plate_input") && adminErrorClassificationMigration.includes("NOT c.has_valid_plate_format"), "the filter must require a captured but malformed plate");
 assert.ok(adminErrorClassificationMigration.includes("'userInputInvalidConsultations'") && adminErrorClassificationMigration.includes("'excludedUserInputConsultations'"), "invalid user input counts must remain visible separately");
-assert.ok(admin.includes("Matrículas mal formatadas excluídas") && admin.includes("erros técnicos"), "the Admin must present the distinction between invalid-input and technical errors");
+assert.ok(admin.includes("Formato PT não reconhecido (excluído)") && admin.includes("erros técnicos"), "the Admin must present the distinction between unrecognized Portuguese plate formats and technical errors");
 
 console.log("PASS: telemetry integrity, Admin V3 period and error contracts, and frontend JavaScript syntax.");
 
