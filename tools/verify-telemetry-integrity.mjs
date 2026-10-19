@@ -55,9 +55,9 @@ assert.ok(adminAppStart >= 0 && adminInstallPosition > adminAppStart, "Admin ins
 assert.ok(admin.includes("navigator.serviceWorker.register('./sw.js'"), "Admin must register the fresh-navigation service worker when opened directly");
 assert.ok(admin.includes("new URL('./admin/'") && admin.includes("window.location.replace(destination.toString())") && admin.includes("isAdminEntry"), "GitHub Pages Admin entry must route into the dedicated /admin/ path");
 for (const file of ["supabase/functions/admin-auth-v2/index.ts","supabase/functions/stats-v2/index.ts","supabase/functions/telemetry-v2/index.ts"]) {
-  assert.ok(fs.readFileSync(file, "utf8").includes('"https://onilkakbgpklxvxuxmks.supabase.co"'), "backend CORS allowlist must include the isolated Admin origin: " + file);
+  assert.ok(fs.readFileSync(file, "utf8").includes('"https://verix-plataformadigital.github.io"'), "backend CORS allowlist must include the GitHub Pages Admin origin: " + file);
 }
-assert.ok(livePresence.includes("verix-admin-pwa") && livePresence.includes("verix-admin-edge-v1"), "live presence must classify the isolated Admin separately");
+assert.ok(livePresence.includes("verix-admin-pwa") && livePresence.includes("verix-admin-edge-v1") && livePresence.includes("verix-admin-v5") && livePresence.includes("/admin/"), "live presence must classify GitHub Pages /admin/ separately from operational VÉRIX");
 assert.equal(adminManifest.start_url, "./admin/index.html?app=verix-admin-v5", "installed Admin launches directly at the sign-in page");
 assert.equal(adminManifest.scope, "./admin/", "Admin PWA scope must be narrower than the operational app scope");
 assert.equal(adminManifest.id, "/verix/admin/", "Admin PWA identity must differ from the operational VÉRIX app");
@@ -65,8 +65,8 @@ assert.equal(operationalManifest.id, "/verix/operational-v4/", "Operational PWA 
 assert.notEqual(adminManifest.id, operationalManifest.id, "Admin and Operational install identities must not collide");
 assert.equal(operationalManifest.start_url, "./index.html?app=verix-operational-v4", "Operational start URL must have a unique fallback identity");
 assert.ok(scopedAdminManifest, "Admin must have a separate manifest file within its own scope");
-assert.ok(fs.existsSync("dist/admin/verix-presence-v1.js"), "Admin bundle must include its own presence runtime for separate-origin hosting");
-assert.ok(fs.existsSync("dist/admin/AI-ACCESS-POLICY.md"), "Admin bundle must include policy document for separate-origin hosting");
+assert.ok(fs.existsSync("dist/admin/verix-presence-v1.js"), "Admin bundle must include its own realtime-presence runtime");
+assert.ok(fs.existsSync("dist/admin/AI-ACCESS-POLICY.md"), "Admin bundle must include its own policy document");
 assert.ok(fs.existsSync("dist/admin/assets/admin-icon-192.png") && fs.existsSync("dist/admin/assets/admin-icon-512.png"), "Admin bundle must include its own install icons");
 assert.equal(scopedAdminManifest.id, "/verix/admin/", "Admin-scoped manifest must use the distinct Admin ID");
 assert.equal(scopedAdminManifest.start_url, "./index.html?app=verix-admin-v5", "Admin-scoped manifest must use its unique launch URL");
