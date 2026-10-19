@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { build as esbuildBuild } from "esbuild";
 import { createHash } from "node:crypto";
 import JavaScriptObfuscator from "javascript-obfuscator";
 
@@ -156,11 +157,17 @@ function writeSecureFile(relativeSource, relativeOutput) {
     source = source.replace(/1\.5-sec-20261008-a/g, BUILD_ID);
   }
 
-  // Give the external mobile assets a release-specific URL on every build.
-  // This prevents a browser from reusing a previous CSS/JS copy after deployment.
+  // Give external app assets a release-specific URL on every build.
+  // This prevents browsers from reusing presence code from a previous release.
   if (relativeSource === "verix-app.html") {
     source = source.replace(
       /(\.\/verix-mobile\.(?:css|js)\?v=)\d+/g,
+      "$1" + encodeURIComponent(String(BUILD_ID))
+    );
+  }
+  if (relativeSource === "verix-app.html" || relativeSource === "admin_v2.html") {
+    source = source.replace(
+      /(\.\/verix-presence-v1\.js\?v=)[^'"]+/g,
       "$1" + encodeURIComponent(String(BUILD_ID))
     );
   }
@@ -196,6 +203,23 @@ if (app) results.push(app);
 // Admin panel
 const admin = writeSecureFile("admin_v2.html", "admin_v2.html");
 if (admin) results.push(admin);
+
+// Bundle the official Supabase SDK locally so client networks do not need a third-party CDN.
+const presenceEntry = path.join(ROOT, "verix-presence-v1.mjs");
+if (!fs.existsSync(presenceEntry)) throw new Error("Required realtime presence source missing: verix-presence-v1.mjs");
+const presenceOutput = path.join(OUTPUT_DIR, "verix-presence-v1.js");
+await esbuildBuild({
+  entryPoints: [presenceEntry],
+  outfile: presenceOutput,
+  bundle: true,
+  minify: true,
+  sourcemap: false,
+  legalComments: "none",
+  platform: "browser",
+  format: "iife",
+  target: ["es2020"]
+});
+results.push({ source: "verix-presence-v1.mjs", output: "dist/verix-presence-v1.js", note: "official Supabase SDK bundled locally", size_bytes: fs.statSync(presenceOutput).size });
 
 // Lightweight entry points (no heavy obfuscation needed)
 for (const f of ["index.html", "verix-mobile.html"]) {
