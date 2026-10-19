@@ -57,7 +57,7 @@ assert.ok(admin.includes("new URL('./admin/'") && admin.includes("window.locatio
 for (const file of ["supabase/functions/admin-auth-v2/index.ts","supabase/functions/stats-v2/index.ts","supabase/functions/telemetry-v2/index.ts"]) {
   assert.ok(fs.readFileSync(file, "utf8").includes('"https://verix-plataformadigital.github.io"'), "backend CORS allowlist must include the GitHub Pages Admin origin: " + file);
 }
-assert.ok(livePresence.includes("verix-admin-pwa") && livePresence.includes("verix-admin-edge-v1") && livePresence.includes("verix-admin-v5") && livePresence.includes("/admin/"), "live presence must classify GitHub Pages /admin/ separately from operational VÉRIX");
+assert.ok(livePresence.includes("verix-admin-pwa") && livePresence.includes("verix-admin-edge-v1") && livePresence.includes("verix-admin-v5") && livePresence.includes("currentPath"), "live presence must classify GitHub Pages /admin/ separately from operational VÉRIX");
 assert.equal(adminManifest.start_url, "./admin/index.html?app=verix-admin-v5", "installed Admin launches directly at the sign-in page");
 assert.equal(adminManifest.scope, "./admin/", "Admin PWA scope must be narrower than the operational app scope");
 assert.equal(adminManifest.id, "/verix/admin/", "Admin PWA identity must differ from the operational VÉRIX app");
