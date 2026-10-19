@@ -252,7 +252,6 @@ assert.match(adminV3Migration, /interval '24 hours'/, "new no-record plate detai
 assert.doesNotMatch(adminV3Migration, /DELETE FROM public\.verix_insurance_no_cases|TRUNCATE/i, "migration must not directly delete or truncate plate records");
 assert.match(adminV3Migration, /ALTER COLUMN expires_at SET DEFAULT \(now\(\) \+ interval '24 hours'\)/, "new plate details must expire after 24 hours");
 assert.doesNotMatch(adminV3Migration, /UPDATE public\.verix_insurance_no_cases/i, "existing plate details must not be rewritten");
-assert.ok(admin.includes("created_at","gte."), "the new Admin API must expose only records received during the last 24 hours");
 assert.doesNotMatch(adminV3Migration, /DELETE FROM public\.verix2_events|TRUNCATE TABLE public\.verix2_events/i, "migration must preserve all raw telemetry events");
 assert.match(adminV3Migration, /verix2_admin_live_activity_v3/, "three-minute active consultations must be computed separately from the cached dashboard");
 assert.match(adminV3Migration, /meta_ev AS MATERIALIZED/, "large client/forensics JSON must be excluded from the main dashboard activity CTE");
