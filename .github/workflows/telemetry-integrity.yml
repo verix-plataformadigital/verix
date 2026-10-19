@@ -8,6 +8,7 @@ on:
       - "admin_v2.html"
       - "tools/verify-telemetry-integrity.mjs"
       - "verix-app.html"
+      - "presence-v1.js"
   push:
     branches:
       - "main"
@@ -36,5 +37,7 @@ jobs:
         run: deno check --no-lock supabase/functions/telemetry-v2/index.ts
       - name: Type-check Admin statistics Edge Function
         run: deno check --no-lock supabase/functions/stats-v2/index.ts
+      - name: Check Realtime presence runtime syntax
+        run: node --check presence-v1.js
       - name: Verify telemetry integrity contract
         run: node tools/verify-telemetry-integrity.mjs

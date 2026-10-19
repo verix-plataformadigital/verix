@@ -5,6 +5,7 @@ on:
     branches: ["main"]
     paths:
       - "verix-app.html"
+      - "presence-v1.js"
       - "admin_v2.html"
       - "index.html"
       - "verix-mobile.html"
@@ -65,6 +66,11 @@ jobs:
         run: |
           node --check verix-mobile.js
           node --check dist/verix-mobile.js
+          node --check presence-v1.js
+          node --check dist/presence-v1.js
+          grep -q 'presence-v1.js?v=' dist/verix-app.html
+          grep -q 'presence-v1.js?v=' dist/admin_v2.html
+          test -s dist/presence-v1.js
           grep -q "verix-fresh-mobile-assets" dist/verix-app.html
           grep -q 'id="vxMobileBack"' dist/verix-mobile.js
           grep -q "Voltar ao menu anterior" dist/verix-mobile.js

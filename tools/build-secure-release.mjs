@@ -160,7 +160,7 @@ function writeSecureFile(relativeSource, relativeOutput) {
   // This prevents a browser from reusing a previous CSS/JS copy after deployment.
   if (relativeSource === "verix-app.html") {
     source = source.replace(
-      /(\.\/verix-mobile\.(?:css|js)\?v=)\d+/g,
+      /(\.\/(?:verix-mobile\.(?:css|js)|presence-v1\.js)\?v=)[^"'\s]+/g,
       "$1" + encodeURIComponent(String(BUILD_ID))
     );
   }
@@ -224,7 +224,7 @@ for (const file of ["AI-ACCESS-POLICY.md", "robots.txt"]) {
 }
 
 // Optional mobile assets
-for (const f of ["verix-mobile.css", "verix-mobile.js"]) {
+for (const f of ["verix-mobile.css", "verix-mobile.js", "presence-v1.js"]) {
   const src = path.join(ROOT, f);
   if (fs.existsSync(src)) {
     fs.copyFileSync(src, path.join(OUTPUT_DIR, f));
