@@ -9,7 +9,21 @@
 <meta name="robots" content="noai, noimageai, noindex, nofollow">
 <meta name="verix-ai-policy" content="./AI-ACCESS-POLICY.md">
 <title>VÉRIX — Administração</title>
-<!-- Admin stays on static GitHub Pages; only API requests go to Supabase. -->
+<!-- Keep Admin installation on a separate origin from operational VÉRIX. -->
+<script>
+(function () {
+  'use strict';
+  var host = String(window.location.hostname || '');
+  var path = String(window.location.pathname || '');
+  var isGithubPages = /(^|\.)github\.io$/i.test(host);
+  var isAdminEntry = /\/admin_v2\.html$/i.test(path);
+  if (!isGithubPages || !isAdminEntry) return;
+  var destination = 'https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/verix-admin-pwa/index.html';
+  if (window.location.search) destination += window.location.search;
+  if (window.location.hash) destination += window.location.hash;
+  window.location.replace(destination);
+})();
+</script>
 
 <style>
 :root{
@@ -534,12 +548,9 @@ const ADMIN_INSTALL_BUTTONS = Array.from(document.querySelectorAll('.install-but
 let deferredAdminInstallPrompt = null;
 function isSharedGithubPagesOrigin() {
   const host = String(window.location.hostname || '');
-  const path = String(window.location.pathname || '');
-  const isGithubPages = /(^|\.)github\.io$/i.test(host);
-  // The Admin proxy now has its own manifest identity and service-worker scope.
-  // The operational/root and legacy Admin paths remain non-installable here.
-  const isAdminProxyPath = /\/verix\/admin-proxy(?:\/|$)/i.test(path);
-  return isGithubPages && !isAdminProxyPath;
+  // No Admin page on the shared GitHub Pages origin may offer installation.
+  // Only the Supabase-hosted Admin origin is allowed to install independently.
+  return /(^|\.)github\.io$/i.test(host);
 }
 function hasAdminInstallationFlag() {
   try { return window.localStorage.getItem('VERIX_ADMIN_PWA_INSTALLED_V1') === '1'; }
@@ -554,7 +565,7 @@ function setAdminInstallMessage(message) {
 function syncAdminInstallButtons() {
   if (isSharedGithubPagesOrigin()) {
     ADMIN_INSTALL_BUTTONS.forEach(function(button) { button.hidden = true; });
-    setAdminInstallMessage('Instalação do Admin desativada neste domínio partilhado para proteger o VÉRIX Operacional. A instalação independente será disponibilizada no endereço próprio do Admin.');
+    setAdminInstallMessage('Instalação desativada neste domínio partilhado. Abre a entrada Administração para aceder ao endereço independente do Admin.');
     return;
   }
   const installed = hasAdminInstallationFlag();
@@ -573,7 +584,7 @@ window.addEventListener('appinstalled', function() {
 });
 async function requestAdminInstall() {
   if (isSharedGithubPagesOrigin()) {
-    setAdminInstallMessage('Não instales o Admin neste domínio partilhado: o Chrome pode associá-lo ao VÉRIX Operacional. Usa o endereço próprio do Admin quando estiver disponível.');
+    setAdminInstallMessage('Não instales o Admin neste domínio partilhado. Abre a entrada Administração; será encaminhado para o endereço independente.');
     return;
   }
   if (hasAdminInstallationFlag()) {
