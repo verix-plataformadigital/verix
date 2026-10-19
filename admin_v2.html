@@ -67,7 +67,11 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
 @media(max-width:1180px){.metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.metric-card:nth-child(4n){border-right:1px solid var(--line)}.metric-card:nth-child(2n){border-right:0}.metric-card:nth-last-child(-n+2){border-bottom:0}.app-shell{grid-template-columns:200px minmax(0,1fr)}.error-facts{grid-template-columns:repeat(2,minmax(0,1fr))}.error-fact:nth-child(2){border-right:0}.error-fact:nth-child(-n+2){border-bottom:1px solid var(--line)}}
 @media(max-width:850px){.app-shell{display:block}.sidebar{padding:10px 12px;gap:9px}.sidebar-brand{display:flex;align-items:center;justify-content:space-between;padding:2px 4px 10px}.sidebar-brand p{margin:0}.sidebar-brand .brand-mark{font-size:15px}.main-nav{display:flex;overflow-x:auto;gap:4px;padding:0 0 2px;scrollbar-width:thin}.nav-caption,.sidebar-foot{display:none}.nav-button{width:auto;min-width:max-content;min-height:36px;padding:7px 10px;font-size:11px}.nav-icon{width:auto}.main-area{padding:20px 17px 28px}.content-grid{grid-template-columns:minmax(0,1fr);gap:20px}.panel.wide{grid-column:auto}.period-bar{align-items:flex-start}.period-controls{width:100%}.period-button{flex:1}.hourly-chart{gap:2px}.hour-slot{grid-template-rows:85px 16px}.bar-pair{height:85px}.hour-label{font-size:8px}.period-compare{grid-template-columns:minmax(0,1fr)}.compare-card{border-right:0;border-bottom:1px solid var(--line)}.compare-card:last-child{border-bottom:0}}
 @media(max-width:520px){.topbar{display:block;padding-bottom:16px;margin-bottom:18px}.top-actions{justify-content:flex-start;margin-top:12px}.metric-grid{grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:22px}.metric-card{padding:12px 11px}.metric-card:nth-child(2n){border-right:0}.metric-card:nth-last-child(-n+2){border-bottom:0}.metric-label{font-size:9px}.metric-value{font-size:24px}.metric-note{font-size:10px}.panel{padding-top:15px}.quality-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.quality-item{border-bottom:1px solid var(--line)}.quality-item:nth-child(2n){border-right:0}.quality-item:last-child{border-bottom:0}.error-top{display:block}.error-time{text-align:left;margin-top:5px}.error-facts{grid-template-columns:repeat(2,minmax(0,1fr))}.login-card{padding:23px}.sidebar-brand p{display:none}.main-area{padding:17px 13px 24px}.period-description{width:100%}.period-button{padding:6px 7px;font-size:11px}.panel-head{gap:8px}.panel-tag{white-space:normal;text-align:right}.hourly-chart{gap:1px}.hour-slot{grid-template-rows:72px 15px;gap:4px}.bar-pair{height:72px}.hour-label{font-size:7px}.section-heading{display:block}.error-fact:nth-child(2n){border-right:0}}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}</style>
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+.live-presence-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:850px){.live-presence-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.live-presence-grid{grid-template-columns:minmax(0,1fr)}.live-presence-grid .metric-card{border-right:0;border-bottom:1px solid var(--line)}.live-presence-grid .metric-card:last-child{border-bottom:0}}
+</style>
 </head>
 <body>
 <section id="loginScreen" class="login-shell">
@@ -126,6 +130,16 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
     <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
 
     <section id="page-dashboard" class="page active" aria-labelledby="pageTitle">
+      <div class="section-heading" style="margin-top:0">
+        <div><h2>Presença em tempo real</h2><p>Contagem instantânea por instalação, deduplicada entre separadores. “A trabalhar agora” exige a aplicação visível e interação nos últimos dois minutos.</p></div>
+        <span class="status-pill loading" id="presenceConnection"><i class="status-dot" aria-hidden="true"></i><span>A ligar</span></span>
+      </div>
+      <div id="livePresenceCards" class="metric-grid live-presence-grid" aria-live="polite">
+        <article class="metric-card blue"><div class="metric-label">Pessoas online · estimativa</div><div class="metric-value" id="livePresenceOnline">—</div><div class="metric-note">Instalações com ligação ativa. Sem login individual, não é uma contagem exata de pessoas.</div></article>
+        <article class="metric-card green"><div class="metric-label">A trabalhar agora</div><div class="metric-value" id="livePresenceActive">—</div><div class="metric-note">Instalações online e visíveis com interação recente nos últimos dois minutos.</div></article>
+        <article class="metric-card accent"><div class="metric-label">Separadores ligados</div><div class="metric-value" id="livePresenceTabs">—</div><div class="metric-note">Separadores ligados ao serviço de presença, para diagnóstico de duplicações.</div></article>
+      </div>
+      <div class="refresh-time" id="livePresenceUpdated">A aguardar ligação de presença.</div>
       <div id="overviewCards" class="metric-grid"></div>
       <div class="content-grid">
         <article class="panel wide">
@@ -201,6 +215,7 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
   </main>
 </div>
 
+<script src="./verix-presence-v1.js?v=20261019-realtime-presence-v1"></script>
 <script>
 (function(){
 'use strict';
@@ -298,6 +313,39 @@ function setPeriod(key){
   if(currentPage==='errors'){errorOffset=0;loadErrors();}
 }
 function getPeriodData(root,key){return root&&root[key] ? root[key] : {};}
+
+function renderLivePresence(snapshot){
+  const s=snapshot||{};
+  const ready=s.ready===true&&s.status==='connected';
+  const setValue=(id,value)=>{const el=$(id);if(el)el.textContent=value==null?'—':new Intl.NumberFormat('pt-PT').format(Number(value));};
+  setValue('livePresenceOnline',ready?s.onlineInstallations:null);
+  setValue('livePresenceActive',ready?s.activeInstallations:null);
+  setValue('livePresenceTabs',ready?s.onlineTabs:null);
+  const pill=$('presenceConnection');
+  if(pill){
+    const cls=ready?'online':(s.status==='locked'?'loading':(s.status==='unavailable'?'offline':(s.status==='reconnecting'?'offline':'loading')));
+    const label=ready?'Ligado · tempo real':(s.status==='locked'?'Inicia sessão':(s.status==='unavailable'?'Indisponível':(s.status==='reconnecting'?'A recuperar ligação':'A ligar')));
+    pill.className='status-pill '+cls;
+    const text=pill.querySelector('span:last-child');
+    if(text)text.textContent=label;
+  }
+  const updated=$('livePresenceUpdated');
+  if(updated){
+    if(ready&&s.observedAt){
+      const time=new Date(s.observedAt);
+      updated.textContent='Presença sincronizada em tempo real · última sincronização '+time.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+'.';
+    }else if(s.status==='locked'){
+      updated.textContent='Inicia sessão no Admin para estabelecer a ligação de presença.';
+    }else if(s.status==='unavailable'){
+      updated.textContent='A presença em tempo real não está disponível. Os valores não são substituídos por estimativas antigas.';
+    }else if(s.status==='reconnecting'){
+      updated.textContent='A ligação de presença foi interrompida. A contagem fica indisponível até voltar a sincronizar.';
+    }else{
+      updated.textContent='A estabelecer ligação ao serviço de presença em tempo real…';
+    }
+  }
+}
+
 function renderAll(){
   if(!dashboardData)return;
   const resetPoint=$('historyResetPoint');
@@ -308,7 +356,7 @@ function renderAll(){
   const legislation=getPeriodData(dashboardData.legislation,currentPeriod);
   const errors=getPeriodData(dashboardData.errors,currentPeriod);
   const liveUsers=dashboardData.users||{};
-  appendCards('overviewCards',[ ['Consultas iniciadas',fmt(insurance.consultations),'Consultas de seguro iniciadas no período.','accent'], ['Resultados finais únicos',fmt(insurance.finals),'Só conta uma consulta com um resultado final único.','green'], ['Com seguro',fmt(insurance.insured),'Resultado positivo registado pela consulta.','green'], ['Sem registo de seguro',fmt(insurance.uninsured),pct(insurance.uninsuredPct)+' das decisões válidas.','amber'], ['Consultas com erro técnico',fmt(insurance.errors),pct(insurance.errorPct)+' das consultas finais, excluindo entradas mal formatadas.','red'], ['Utilizadores ativos agora (estimativa)',fmt(liveUsers.activeNow),'Instalações distintas com sinal recente e uma ação operacional nos últimos 5 minutos. É uma estimativa por instalação, não uma identificação de pessoas.','green'], ['Instalações com sinal recente',fmt(liveUsers.onlineNow),'Instalações distintas com sinal recente recebido pelo servidor. Separadores da mesma instalação não são contados como pessoas diferentes.','blue'], ['Consultas em curso',fmt(liveUsers.consultationsInProgress),'Consultas iniciadas recentemente sem resultado final recebido.','accent'], ['Instalações com consultas · última hora',fmt(liveUsers.installationsConsultedLastHour),'Instalações distintas com consultas recebidas pelo servidor nos últimos 60 minutos.','blue'], ['Instalações registadas',fmt(liveUsers.registeredInstallations),'Identificadores de instalação conhecidos na base de dados; não representa pessoas únicas.','blue'], ['Instalações ativas',fmt(users.activeInstallations),'Instalações distintas com consultas ou ações reais no período selecionado.','blue'], ['Consultas nos últimos 3 min',fmt(liveUsers.consultationsLast3Minutes),'Consultas iniciadas nos últimos três minutos.','accent'], ['Legislação copiada',fmt(legislation.copies),'Eventos de cópia confirmados no período.','blue'] ]); renderHourly('hourlyChart','hourlyTable','hourlyNote');
+  appendCards('overviewCards',[ ['Consultas iniciadas',fmt(insurance.consultations),'Consultas de seguro iniciadas no período.','accent'], ['Resultados finais únicos',fmt(insurance.finals),'Só conta uma consulta com um resultado final único.','green'], ['Com seguro',fmt(insurance.insured),'Resultado positivo registado pela consulta.','green'], ['Sem registo de seguro',fmt(insurance.uninsured),pct(insurance.uninsuredPct)+' das decisões válidas.','amber'], ['Consultas com erro técnico',fmt(insurance.errors),pct(insurance.errorPct)+' das consultas finais, excluindo entradas mal formatadas.','red'],  ['Consultas em curso',fmt(liveUsers.consultationsInProgress),'Consultas iniciadas recentemente sem resultado final recebido.','accent'], ['Instalações com consultas · última hora',fmt(liveUsers.installationsConsultedLastHour),'Instalações distintas com consultas recebidas pelo servidor nos últimos 60 minutos.','blue'], ['Instalações registadas',fmt(liveUsers.registeredInstallations),'Identificadores de instalação conhecidos na base de dados; não representa pessoas únicas.','blue'], ['Instalações ativas',fmt(users.activeInstallations),'Instalações distintas com consultas ou ações reais no período selecionado.','blue'], ['Consultas nos últimos 3 min',fmt(liveUsers.consultationsLast3Minutes),'Consultas iniciadas nos últimos três minutos.','accent'], ['Legislação copiada',fmt(legislation.copies),'Eventos de cópia confirmados no período.','blue'] ]); renderHourly('hourlyChart','hourlyTable','hourlyNote');
   renderQuality(insurance);
   renderPeriodCompare();
   appendCards('insuranceCards',[
@@ -500,6 +548,7 @@ $('errorSearch').addEventListener('input',renderErrorLedger);
 $('errorPrev').addEventListener('click',()=>{errorOffset=Math.max(0,errorOffset-errorPageSize);loadErrors();});
 $('errorNext').addEventListener('click',()=>{errorOffset+=errorPageSize;loadErrors();});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&token)loadDashboard(false);});
+if(window.VERIX_LIVE_PRESENCE&&typeof window.VERIX_LIVE_PRESENCE.subscribe==='function')window.VERIX_LIVE_PRESENCE.subscribe(renderLivePresence);else window.addEventListener('verix-live-presence',function(e){renderLivePresence(e.detail);});
 if(token){$('loginScreen').hidden=true;$('app').hidden=false;loadDashboard(false);refreshTimer=setInterval(()=>{if(!document.hidden)scheduleRefresh();},REFRESH_MS);}
 })();
 </script>

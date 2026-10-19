@@ -5,6 +5,7 @@ on:
     branches: ["main"]
     paths:
       - "verix-app.html"
+      - "verix-presence-v1.mjs"
       - "admin_v2.html"
       - "index.html"
       - "verix-mobile.html"
@@ -83,6 +84,15 @@ jobs:
           grep -q "version.json?_=" dist/verix-mobile.html
           grep -q "./verix-mobile.html" dist/index.html
           grep -q "./verix-app.html" dist/verix-mobile.html
+
+      - name: Validate realtime presence bundle
+        shell: bash
+        run: |
+          test -s dist/verix-presence-v1.js
+          node --check verix-presence-v1.mjs
+          node --check dist/verix-presence-v1.js
+          grep -q 'verix-presence-v1.js?v=' dist/verix-app.html
+          grep -q 'verix-presence-v1.js?v=' dist/admin_v2.html
 
       - name: Verify secure build
         shell: bash
