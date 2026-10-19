@@ -239,8 +239,8 @@ jobs:
           fs.cpSync(source, dest, { recursive: true, force: true });
           const htmlPath = dest + '/index.html';
           let html = fs.readFileSync(htmlPath, 'utf8');
-          html = html.replace(/<link\\b[^>]*\\brel=["']manifest["'][^>]*>\\s*/gi, '');
-          if (/<link\\b[^>]*\\brel=["']manifest["']/i.test(html)) throw new Error('Admin proxy source must not advertise a PWA manifest on GitHub Pages');
+          html = html.replace(/<link\b[^>]*\brel=["']manifest["'][^>]*>\s*/gi, '');
+          if (/<link\b[^>]*\brel=["']manifest["']/i.test(html)) throw new Error('Admin proxy source must not advertise a PWA manifest on GitHub Pages');
           fs.writeFileSync(htmlPath, html, 'utf8');
           for (const file of ['index.html','manifest.webmanifest','sw.js','verix-presence-v1.js','AI-ACCESS-POLICY.md','assets/admin-icon-192.png','assets/admin-icon-512.png']) {
             if (!fs.existsSync(dest + '/' + file)) throw new Error('Admin proxy asset missing: ' + file);
