@@ -216,6 +216,29 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
 .refresh-time{font-variant-numeric:tabular-nums}
 .footer-note{margin-top:27px;padding-top:14px;color:#6d7b82;border-top:1px solid #dce5e8;font-size:11px;line-height:1.7}
 
+/* Disclosures: keep long operational lists and diagnostics compact until requested */
+.insurance-disclosure{padding:0;overflow:hidden}
+.insurance-disclosure-summary{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0;padding:17px 19px;list-style:none;cursor:pointer}
+.insurance-disclosure-summary::-webkit-details-marker{display:none}
+.insurance-disclosure-summary:after{content:"+";display:grid;place-items:center;flex:0 0 26px;width:26px;height:26px;color:var(--accent);background:var(--accent-soft);border:1px solid #d3e9e8;border-radius:7px;font-size:18px;font-weight:600;line-height:1}
+.insurance-disclosure-summary:hover{background:#f8fbfc}
+.insurance-disclosure[open]>.insurance-disclosure-summary:after{content:"−"}
+.insurance-disclosure[open]>.insurance-disclosure-summary{border-bottom:1px solid var(--line)}
+.insurance-disclosure-body{padding:16px 19px}
+.insurance-disclosure-body .list-info{margin-top:0}
+.error-card{min-width:0;padding:0;overflow:hidden;background:#fff;border:1px solid #e0e7ea;border-left:4px solid #d85c64;border-radius:11px;box-shadow:0 3px 12px rgba(22,42,53,.035)}
+.error-record{display:block;min-width:0}
+.error-record-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 15px;list-style:none;cursor:pointer}
+.error-record-summary::-webkit-details-marker{display:none}
+.error-record-summary:after{content:"+";display:grid;place-items:center;flex:0 0 25px;width:25px;height:25px;color:var(--accent);background:var(--accent-soft);border:1px solid #d3e9e8;border-radius:7px;font-size:17px;font-weight:600;line-height:1}
+.error-record[open]>.error-record-summary:after{content:"−"}
+.error-record-summary:hover{background:#f8fbfc}
+.error-record-heading{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0;flex:1}
+.error-record-summary .error-meta{margin:0}
+.error-record-summary .error-time{white-space:nowrap}
+.error-record-body{padding:0 15px 15px}
+.error-record[open]>.error-record-summary{border-bottom:1px solid #e7edef}
+
 /* Responsive layout */
 @media(max-width:1320px){
   #overviewCards{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -279,6 +302,12 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
   .error-record-heading{gap:7px}
   .error-record-summary .error-time{white-space:normal;text-align:right;margin:0}
   .error-record-body{padding:0 11px 13px}
+  .error-record-summary{align-items:flex-start;gap:8px;padding:13px 11px}
+  .error-record-heading{gap:7px}
+  .error-record-summary .error-time{white-space:normal;text-align:right;margin:0}
+  .error-record-body{padding:0 11px 13px}
+  .insurance-disclosure-summary{align-items:flex-start;gap:8px;padding:15px 12px}
+  .insurance-disclosure-body{padding:13px 12px}
   .error-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
   .error-top{display:block}
   .error-time{text-align:left;margin-top:7px}
@@ -392,13 +421,18 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
     <section id="page-insurance" class="page" aria-labelledby="pageTitle">
       <div class="section-heading"><div><h2>Resultados das consultas de seguro</h2><p>O resultado “sem registo” não deve ser interpretado isoladamente como prova conclusiva da ausência de seguro.</p></div></div>
       <div id="insuranceCards" class="metric-grid"></div>
-      <article class="panel" style="margin-top:14px">
-        <div class="panel-head"><div><h2>Matrículas com resultado “sem registo”</h2><p>Lista operacional limitada às últimas 24 horas. As linhas históricas já existentes não são alteradas por esta vista.</p></div><span class="panel-tag">Retenção operacional: 24 h</span></div>
-        <div id="insuranceCasesInfo" class="list-info">A carregar registos recentes…</div>
-        <div class="search-row"><input id="insuranceCasesSearch" class="text-input" type="search" placeholder="Filtrar matrículas carregadas" aria-label="Filtrar matrículas sem registo"></div>
-        <div id="insuranceNoCases"></div>
-        <div class="pager"><span id="insuranceCasesPageInfo">—</span><div class="pager-actions"><button id="insuranceCasesMore" class="pager-button" type="button" hidden>Carregar mais</button></div></div>
-      </article>
+      <details id="insuranceCasesDisclosure" class="panel insurance-disclosure" style="margin-top:14px">
+        <summary class="panel-head insurance-disclosure-summary">
+          <div><h2>Matrículas com resultado “sem registo”</h2><p>Lista operacional das últimas 24 horas. Expandir apenas quando for necessário consultar os registos.</p></div>
+          <span class="panel-tag">Retenção operacional: 24 h</span>
+        </summary>
+        <div class="insurance-disclosure-body">
+          <div id="insuranceCasesInfo" class="list-info">A carregar registos recentes…</div>
+          <div class="search-row"><input id="insuranceCasesSearch" class="text-input" type="search" placeholder="Filtrar matrículas carregadas" aria-label="Filtrar matrículas sem registo"></div>
+          <div id="insuranceNoCases"></div>
+          <div class="pager"><span id="insuranceCasesPageInfo">—</span><div class="pager-actions"><button id="insuranceCasesMore" class="pager-button" type="button" hidden>Carregar mais</button></div></div>
+        </div>
+      </details>
     </section>
 
     <section id="page-activity" class="page" aria-labelledby="pageTitle">
@@ -448,7 +482,8 @@ const RELEASE='admin-v3-2026-10';
 const AUTH_API=API_ORIGIN+'admin-auth-v2?v='+encodeURIComponent(RELEASE);
 const STATS_API=API_ORIGIN+'stats-v2?v='+encodeURIComponent(RELEASE);
 const TOKEN_KEY='VERIX_ADMIN_V2_TOKEN';
-const REFRESH_MS=60000;
+const REFRESH_MS=10000;
+const ERROR_LEDGER_REFRESH_MS=60000;
 const PAGE_TEXT={
  dashboard:['Visão geral','Estado operacional em tempo real separado dos indicadores do período selecionado.'],
  insurance:['Consultas de seguro','Resultados do período escolhido e lista operacional recente apresentada separadamente.'],
@@ -470,7 +505,7 @@ let token=sessionStorage.getItem(TOKEN_KEY)||'';
 let currentPeriod='today',currentPage='dashboard',dashboardData=null;
 let dashboardBusy=false,errorBusy=false,errorOffset=0,errorPageSize=50,errorLedger={items:[],totalEvents:0,uniqueConsultations:0,installations:0,excludedUserInputEvents:0,excludedUserInputConsultations:0,hasMore:false};
 let caseRows=[],caseOffset=0,caseHasMore=false,caseBusy=false;
-let refreshTimer=null,noticeTimer=null,lastUpdated=null;
+let refreshTimer=null,noticeTimer=null,lastUpdated=null,lastErrorRefreshAt=0;
 function setStatus(mode,label){const el=$('backendStatus');el.className='status-pill '+mode;$('backendStatusText').textContent=label;}
 function showNotice(message,kind){const el=$('notice');el.textContent=message;el.className='notice '+(kind||'');el.hidden=!message;if(noticeTimer)clearTimeout(noticeTimer);if(message)noticeTimer=setTimeout(()=>{el.hidden=true;},9000);}
 function clearNotice(){const el=$('notice');el.hidden=true;el.textContent='';el.className='notice';}
@@ -522,12 +557,15 @@ function periodCaption(){
   $('periodCaption').textContent=p?p.label+' · '+startLabel:'Histórico disponível';
 }
 function activePage(page){
-  if(!PAGE_TEXT[page])return;currentPage=page;
+  if(!PAGE_TEXT[page])return;
+  const previousPage=currentPage;
+  if(previousPage==='insurance'&&page!=='insurance')$('insuranceCasesDisclosure').open=false;
+  currentPage=page;
   document.querySelectorAll('.nav-button').forEach(b=>{const on=b.dataset.page===page;b.setAttribute('aria-current',on?'page':'false');});
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+page));
   $('pageTitle').textContent=PAGE_TEXT[page][0];$('pageSubtitle').textContent=PAGE_TEXT[page][1];
   if(dashboardData)renderAll();
-  if(page==='insurance')loadInsuranceCases(0,false);
+  if(page==='insurance'&&$('insuranceCasesDisclosure').open)loadInsuranceCases(0,false);
   if(page==='errors'){errorOffset=0;loadErrors();}
 }
 function setPeriod(key){
@@ -675,7 +713,7 @@ async function loadDashboard(force){
     if(!res.data)throw new Error('A resposta do dashboard não contém métricas.');
     dashboardData=res.data;renderAll();setStatus('online','Backend online');lastUpdated=Date.now();
     if(currentPage==='insurance')loadInsuranceCases(0,false);
-    if(currentPage==='errors'){errorOffset=0;loadErrors();}
+    if(currentPage==='errors'&&(force||Date.now()-lastErrorRefreshAt>=ERROR_LEDGER_REFRESH_MS)){errorOffset=0;loadErrors();}
   }catch(e){setStatus('offline','Dados indisponíveis');showNotice('Não foi possível atualizar as métricas: '+e.message,'error');if(!dashboardData)showEmpty('overviewCards','Os dados não estão disponíveis. Tente atualizar novamente.');}
   finally{dashboardBusy=false;$('refreshBtn').disabled=false;}
 }
@@ -705,7 +743,7 @@ function errorLabel(type){
   return map[String(type||'unknown')]||String(type||'Erro não classificado');
 }
 async function loadErrors(){
-  if(errorBusy||!token)return;errorBusy=true;
+  if(errorBusy||!token)return;errorBusy=true;lastErrorRefreshAt=Date.now();
   try{
     const url=STATS_API+'&detail=error-ledger-v3&period='+encodeURIComponent(currentPeriod)+'&limit='+errorPageSize+'&offset='+errorOffset;
     const res=await request(url);errorLedger=res.data||{items:[],totalEvents:0,uniqueConsultations:0,installations:0,excludedUserInputEvents:0,excludedUserInputConsultations:0,hasMore:false};renderErrorLedger();
@@ -788,6 +826,7 @@ document.querySelectorAll('.nav-button').forEach(b=>b.addEventListener('click',(
 document.querySelectorAll('.period-button').forEach(b=>b.addEventListener('click',()=>setPeriod(b.dataset.period)));
 $('refreshBtn').addEventListener('click',()=>loadDashboard(true));
 $('logoutBtn').addEventListener('click',logout);
+$('insuranceCasesDisclosure').addEventListener('toggle',function(){if(this.open&&currentPage==='insurance')loadInsuranceCases(0,false);});
 $('insuranceCasesSearch').addEventListener('input',renderInsuranceNoCases);
 $('insuranceCasesMore').addEventListener('click',()=>loadInsuranceCases(caseOffset,true));
 $('errorSearch').addEventListener('input',renderErrorLedger);

@@ -21,6 +21,7 @@ const adminV3TotalResetMigration = fs.readFileSync("supabase/migrations/20261019
 const adminV3RecoverLegacyConsultationsMigration = fs.readFileSync("supabase/migrations/20261019114442_admin_v3_recover_legacy_orphan_consultations.sql", "utf8");
 const adminV3RestoreInputClassificationMigration = fs.readFileSync("supabase/migrations/20261019120225_admin_v3_restore_invalid_input_classification.sql", "utf8");
 const adminLiveSummaryStreamlinedMigration = fs.readFileSync("supabase/migrations/20261019111618_admin_live_summary_remove_in_progress.sql", "utf8");
+const adminLiveInsuranceDeltaMigration = fs.readFileSync("supabase/migrations/20261019125025_admin_live_insurance_delta.sql", "utf8");
 const adminErrorClassificationMigration = fs.readFileSync("supabase/migrations/20261019070000_admin_filter_user_input_invalid_plates.sql", "utf8");
 const packageConfig = JSON.parse(fs.readFileSync("package.json", "utf8"));
 const currentAppVersion = packageConfig.version.split(".").slice(0, 2).join(".");
@@ -45,6 +46,9 @@ assert.match(livePresence, /presenceState\(\)/, "Admin counts must come from cur
 assert.match(livePresence, /ACTIVE_WINDOW_MS = 120000/, "active now must require recent activity");
 assert.match(livePresence, /trackedChannel\.track\(currentPayload\(\)\)/, "app must publish live presence using the channel that initiated the call");
 assert.match(livePresence, /TRACK_MIN_INTERVAL_MS = 30000/, "presence updates must be throttled to avoid high-frequency channel sync");
+assert.match(livePresence, /URGENT_TRACK_MIN_INTERVAL_MS = 2500/, "meaningful clicks can refresh activity presence without removing background throttling");
+assert.match(livePresence, /event\.type === 'click' \|\| event\.type === 'submit'/, "clicks and submits must trigger an urgent live-presence refresh");
+assert.match(livePresence, /track\(true\)/, "urgent activity must bypass only the background track cooldown");
 assert.match(livePresence, /function scheduleReconnect\(delayMs\)/, "presence must attempt to recover a broken Realtime connection with bounded cooldowns");
 assert.match(livePresence, /pendingTrackTimer/, "activity bursts must be coalesced into one delayed presence update");
 assert.equal((livePresence.match(/trackedChannel !== channel/g) || []).length, 2, "late track callbacks must not affect a replacement presence channel");
@@ -68,6 +72,10 @@ assert.doesNotMatch(livePresenceOperationalMetricsMigration, /\bDELETE FROM publ
 assert.doesNotMatch(livePresenceCleanupMigration, /'onlineNow'|'onlineSessions'|'activeNow'|'activeInstallationsLastHour'/, "legacy database presence estimates must be removed");
 assert.doesNotMatch(livePresenceCleanupMigration, /\bDELETE FROM public\.verix2_events\b|\bTRUNCATE\b|\bDROP TABLE\b/i, "presence cleanup must not delete telemetry history or tables");
 assert.match(admin, /detail=error-ledger-v3/, "new Admin must consume the paginated detailed error ledger");
+assert.match(stats, /verix2_admin_insurance_delta_v1/, "dashboard must merge recent insurance outcomes into the cached period aggregates");
+assert.match(stats, /p_force_refresh: forceRefresh/, "manual Admin refresh must request a refreshed aggregate snapshot");
+assert.ok(adminLiveInsuranceDeltaMigration.includes("candidate_ids AS MATERIALIZED") && adminLiveInsuranceDeltaMigration.includes("state_before AS") && adminLiveInsuranceDeltaMigration.includes("state_now AS"), "live insurance delta must compare cached and current query state to avoid double-counting");
+assert.ok(admin.includes('id="insuranceCasesDisclosure"') && admin.includes("insuranceCasesDisclosure').addEventListener('toggle'"), "recent no-record insurance list must load only when expanded");
 assert.match(admin, /Histórico Total/, "new Admin must expose the history period");
 assert.match(admin, /data-period="today"/);
 assert.match(admin, /data-period="week"/);
@@ -265,6 +273,7 @@ assert.equal(allVersionPlateCases.length, 2, "all versions are included and inco
 assert.ok(allVersionPlateCases.some(item => item.query_id === "query-one" && item.matricula === "AA1234" && item.app_version === "1.4"), "a later incomplete retry must preserve the valid earlier plate");
 assert.ok(allVersionPlateCases.some(item => item.query_id === "query-two" && item.app_version === "1.3"), "valid error plates from older versions must remain visible");
 assert.ok(admin.includes("detail=error-ledger-v3"), "Admin consumes paginated all-version technical error details");
+assert.ok(admin.includes("error-record-summary") && admin.includes("error-record-body"), "error records must be collapsed until their plate summary is selected");
 assert.ok(admin.includes('id="refreshBtn"'), "Admin exposes a manual refresh");
 assert.ok(admin.includes("errorCountTag"), "Admin shows the count of returned error events");
 
