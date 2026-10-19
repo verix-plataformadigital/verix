@@ -187,7 +187,7 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
     </section>
 
     <section id="page-errors" class="page" aria-labelledby="pageTitle">
-      <div class="section-heading"><div><h2>Registo técnico de erros</h2><p>As respostas HTTP 400 associadas a matrículas com formato inválido são separadas e não contam como falha técnica. Só são excluídas quando a matrícula foi capturada e o erro está claramente associado à rejeição da entrada.</p></div></div>
+      <div class="section-heading"><div><h2>Registo técnico de erros</h2><p>Respostas HTTP 400 com uma matrícula capturada fora dos formatos portugueses reconhecidos são separadas das falhas técnicas. O formato não reconhecido não prova que o veículo não exista; consultas sem evidência suficiente continuam no registo técnico.</p></div></div>
       <div id="errorCards" class="metric-grid"></div>
       <article class="panel">
         <div class="panel-head"><div><h2>Consultas com erro e respetivas causas</h2><p>O registo contém apenas os campos técnicos necessários à análise operacional.</p></div><span id="errorCountTag" class="panel-tag">—</span></div>
@@ -347,9 +347,8 @@ function renderAll(){
   appendCards('errorCards',[
     ['Eventos de erro técnico',fmt(errors.events),'Falhas técnicas; HTTP 400 por formato de matrícula inválido não entra neste total.','red'],
     ['Consultas com falha técnica',fmt(errors.consultations),'Consultas distintas afetadas por falhas técnicas.','amber'],
-    ['Matrículas mal formatadas excluídas',fmt(errors.userInputInvalidConsultations),'Consultas com HTTP 400 e formato incompatível; separadas das falhas do VÉRIX.',''],
-    ['Instalações afetadas',fmt(errors.installations),'Instalações técnicas que enviaram erros.','blue'],
-    ['Resultados finais com erro técnico',fmt(insurance.errors),'Resultados finais de consulta classificados como falha técnica.','red']
+    ['Formato PT não reconhecido (excluído)',fmt(errors.userInputInvalidConsultations),'Consultas com HTTP 400 e matrícula capturada não reconhecida como série portuguesa.',''],
+    ['Instalações afetadas',fmt(errors.installations),'Instalações técnicas que enviaram erros.','blue']
   ]);
   if(currentPage==='errors')renderErrorLedger();
   $('lastUpdated').textContent='Dados agregados atualizados: '+prettyDate(dashboardData.generatedAt||new Date().toISOString())+' · histórico desde o reset global registado.';
@@ -456,7 +455,7 @@ function renderErrorLedger(){
   const items=Array.isArray(errorLedger.items)?errorLedger.items:[];
   const filtered=items.filter(x=>[x.plate,x.errorType,x.cause,x.appVersion,x.buildId,x.browser,x.transport,x.networkError].some(v=>String(v||'').toLocaleLowerCase('pt-PT').includes(query)));
   $('errorCountTag').textContent=fmt(errorLedger.totalEvents)+' erros técnicos';
-  $('errorPageInfo').textContent='A mostrar '+fmt(Math.min(errorOffset+items.length,errorLedger.totalEvents))+' de '+fmt(errorLedger.totalEvents)+' erros técnicos · '+fmt(errorLedger.uniqueConsultations)+' consultas distintas · '+fmt(errorLedger.installations)+' instalações. Separados: '+fmt(errorLedger.excludedUserInputEvents)+' eventos / '+fmt(errorLedger.excludedUserInputConsultations)+' consultas com formato de matrícula inválido.';
+  $('errorPageInfo').textContent='A mostrar '+fmt(Math.min(errorOffset+items.length,errorLedger.totalEvents))+' de '+fmt(errorLedger.totalEvents)+' erros técnicos · '+fmt(errorLedger.uniqueConsultations)+' consultas distintas · '+fmt(errorLedger.installations)+' instalações. Separados da falha técnica: '+fmt(errorLedger.excludedUserInputEvents)+' eventos / '+fmt(errorLedger.excludedUserInputConsultations)+' consultas com formato PT não reconhecido.';
   $('errorPrev').disabled=errorOffset===0||errorBusy;
   $('errorNext').disabled=!errorLedger.hasMore||errorBusy;
   if(!filtered.length){showEmpty('errorPlates',query?'Não há erros nesta página que correspondam ao filtro.':'Não existem eventos de erro registados neste período.');return;}
