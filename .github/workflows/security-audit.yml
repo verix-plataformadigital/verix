@@ -121,6 +121,14 @@ jobs:
               manifest.display !== 'standalone') {
             throw new Error('Admin PWA identity/scope must remain isolated under /admin/');
           }
+          if (!manifest.icons.some(icon => icon.src.includes('admin-icon-192.png') && icon.type === 'image/png') ||
+              !manifest.icons.some(icon => icon.src.includes('admin-icon-512.png') && icon.type === 'image/png')) {
+            throw new Error('Admin manifest must advertise dedicated PNG icons at 192px and 512px');
+          }
+          const adminEntry = fs.readFileSync('dist/admin/index.html', 'utf8');
+          if (!adminEntry.includes('rel="manifest" href="../admin.webmanifest?v=20261019-admin2"')) {
+            throw new Error('Admin entry must use the cache-busted separate manifest URL');
+          }
           for (const icon of manifest.icons || []) {
             const iconPath = path.join('dist', icon.src.split('?')[0]);
             if (!fs.existsSync(iconPath)) throw new Error('Admin PWA icon missing: ' + iconPath);
