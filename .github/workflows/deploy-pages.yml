@@ -241,7 +241,7 @@ jobs:
           let html = fs.readFileSync(htmlPath, 'utf8');
           // This copy exists only as an upstream source for the isolated Supabase origin.
           // Never advertise an Admin PWA manifest on GitHub Pages, which shares the Operational origin.
-          html = html.replace(/<link\\b[^>]*\\brel=["']manifest["'][^>]*>\\s*/gi, '');
+          html = html.replace(/<link\b[^>]*\brel=["']manifest["'][^>]*>\s*/gi, '');
           if (/<link\\b[^>]*\\brel=["']manifest["'][^>]*>/i.test(html)) throw new Error('Shared GitHub Pages Admin source must not advertise an installable PWA');
           fs.writeFileSync(htmlPath, html, 'utf8');
 
