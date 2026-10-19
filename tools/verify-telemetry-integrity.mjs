@@ -18,6 +18,7 @@ const adminV3Migration = fs.readFileSync("supabase/migrations/20261018200000_adm
 const adminV3ErrorJoinMigration = fs.readFileSync("supabase/migrations/20261019103810_optimize_admin_v3_error_event_join.sql", "utf8");
 const adminHistoryResetMigration = fs.readFileSync("supabase/migrations/20261019063600_admin_total_history_since_stable_reset.sql", "utf8");
 const adminV3TotalResetMigration = fs.readFileSync("supabase/migrations/20261019110344_admin_v3_total_since_reset.sql", "utf8");
+const adminLiveSummaryStreamlinedMigration = fs.readFileSync("supabase/migrations/20261019111500_admin_live_summary_remove_in_progress.sql", "utf8");
 const adminErrorClassificationMigration = fs.readFileSync("supabase/migrations/20261019070000_admin_filter_user_input_invalid_plates.sql", "utf8");
 const packageConfig = JSON.parse(fs.readFileSync("package.json", "utf8"));
 const currentAppVersion = packageConfig.version.split(".").slice(0, 2).join(".");
@@ -32,8 +33,7 @@ assert.match(admin, /id="livePresenceCards"/, "Admin must show dedicated realtim
 assert.match(admin, /Online agora/, "Admin must show the current online-installation count");
 assert.match(admin, /id="livePresenceOnline"/, "Admin must display online presence");
 assert.match(admin, /id="livePresenceActive"/, "Admin must display recent active installations");
-assert.match(admin, /Instalações a consultar/, "Admin must show installations with consultations in progress and make the unit explicit");
-assert.match(admin, /id="livePresenceConsulting"/, "Admin must bind the in-progress query installation count");
+assert.doesNotMatch(admin, /Instalações a consultar|Consultas em curso|livePresenceConsulting|consultationsInProgress|installationsQueryingNow|activeInstallationsLast3Minutes/, "Admin must not display short-lived pending-query counters or duplicate three-minute installation counts");
 assert.match(admin, /Vistas na última hora/, "Admin must label last-hour sightings without implying that the installations remain online");
 assert.match(admin, /id="livePresenceHour"/, "Admin must bind the last-hour installation count");
 assert.doesNotMatch(admin, /liveUsers\.onlineNow/, "Admin must not use the stale heartbeat-derived online count");
@@ -51,7 +51,13 @@ assert.match(livePresence, /scheduleReconnect\(32000\)/, "track failures must wa
 assert.match(livePresence, /window\.addEventListener\('pageshow'/, "presence must rejoin after browser back-forward cache restores a page");
 assert.match(admin, /Instalações com consulta · última hora/, "Admin must retain the distinct installations that consulted vehicles during the last hour");
 assert.match(stats, /installationsSeenLastHour: Number\(liveSummary\?\.installationsSeenLastHour \|\| 0\)/, "stats must expose the distinct last-hour presence metric");
-assert.match(stats, /installationsQueryingNow: Number\(liveSummary\?\.installationsQueryingNow \|\| 0\)/, "stats must expose the distinct installations with consultations in progress");
+assert.match(stats, /consultationsLast3Minutes: Number\(liveSummary\?\.consultationsLast3Minutes \|\| 0\)/, "stats must expose recent query volume from the consolidated live summary");
+assert.doesNotMatch(stats, /consultationsInProgress: Number\(liveSummary|installationsQueryingNow: Number\(liveSummary|activeInstallationsLast3Minutes: Number\(liveActivity/, "stats must not return short-lived in-progress counters or the redundant active-installations query count");
+const dashboardV3Route = stats.slice(stats.indexOf('detail === "dashboard-v3"'), stats.indexOf('detail === "error-ledger-v3"'));
+assert.doesNotMatch(dashboardV3Route, /verix2_admin_live_activity_v3/, "V3 dashboard must use one consolidated live-summary RPC rather than separate redundant live queries");
+assert.match(adminLiveSummaryStreamlinedMigration, /'consultationsLast3Minutes'/, "the consolidated live summary must retain recent query volume");
+assert.match(adminLiveSummaryStreamlinedMigration, /'installationsConsultedLastHour'/, "the consolidated live summary must retain distinct installations that consulted in the last hour");
+assert.doesNotMatch(adminLiveSummaryStreamlinedMigration, /\brecent_lookups\b|\bin_progress\s+AS\s*\(/, "the current live-summary migration must not calculate fleeting in-progress queries");
 assert.doesNotMatch(stats, /onlineNow: Number\(liveSummary|onlineSessions: Number\(liveSummary|activeNow: Number\(liveSummary/, "stats must not keep legacy heartbeat-based online estimates");
 assert.match(livePresenceCleanupMigration, /'installationsSeenLastHour'/, "database summary must retain a separate last-hour presence receipt count");
 assert.match(livePresenceOperationalMetricsMigration, /'installationsQueryingNow'/, "database summary must count installations with consultations in progress");
@@ -180,7 +186,7 @@ assert.match(presenceMigration, /last_presence >= p_now-interval '90 seconds'/, 
 assert.match(presenceMigration, /event IN \('app_open','heartbeat','session_close'\)/, "online presence must use lifecycle events only");
 assert.match(presenceMigration, /last_close IS NULL OR last_presence > last_close/, "a later close event must remove a session from the active count");
 assert.ok(admin.includes("Consultas iniciadas · últimos 3 min"), "Admin must expose consultation-based activity over three minutes in a separately labelled rolling window");
-assert.ok(admin.includes("Instalações a consultar · últimos 3 min"), "Admin must distinguish installations starting consultations in a rolling window from period metrics");
+assert.doesNotMatch(admin, /Atividade recente — janelas móveis|activityLiveCards/, "the Activity page must not repeat rolling metrics already presented on the Overview");
 assert.ok(admin.includes("Aberturas da aplicação e heartbeats não contam como utilização"), "active-use metrics must explicitly exclude passive browser presence");
 assert.ok(stats.includes('rpc("verix2_consulted_installations_3m",{p_now:now})'), "stats must request query-based online presence");
 assert.ok(stats.includes("consulted_3m:recentConsulted3m"), "stats must return query-based online presence separately from browser sessions");
