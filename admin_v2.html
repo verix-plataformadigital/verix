@@ -167,7 +167,7 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
     </section>
 
     <section id="page-activity" class="page" aria-labelledby="pageTitle">
-      <div class="section-heading"><div><h2>Utilizadores ativos</h2><p>Contagem de instalações distintas com consultas ou ações efetivas. Aberturas da aplicação e heartbeats não contam como utilização.</p></div></div>
+      <div class="section-heading"><div><h2>Presença e utilização real</h2><p>Online = sinais recentes confirmados pelo servidor e timestamp de cliente recente. Consultas em curso = pedido sem resultado final. A última hora distingue presença de utilização real. Os identificadores não representam necessariamente pessoas únicas.</p></div></div>
       <div id="activityCards" class="metric-grid"></div>
       <article class="panel">
         <div class="panel-head"><div><h2>Atividade em cada hora do dia</h2><p>Consultas de seguro iniciadas e instalações com utilização real. As horas sem registos aparecem com zero.</p></div><span class="panel-tag">00h–23h</span></div>
@@ -209,7 +209,7 @@ const RELEASE='admin-v3-2026-10';
 const AUTH_API=API_ORIGIN+'admin-auth-v2?v='+encodeURIComponent(RELEASE);
 const STATS_API=API_ORIGIN+'stats-v2?v='+encodeURIComponent(RELEASE);
 const TOKEN_KEY='VERIX_ADMIN_V2_TOKEN';
-const REFRESH_MS=60000;
+const REFRESH_MS=30000;
 const PAGE_TEXT={
  dashboard:['Visão geral','Consultas concluídas, atividade real e integridade da telemetria num único ecrã.'],
  insurance:['Consultas de seguro','Resultados ASF, percentagens sem registo e lista operacional das últimas 24 horas.'],
@@ -309,12 +309,16 @@ function renderAll(){
   const errors=getPeriodData(dashboardData.errors,currentPeriod);
   const liveUsers=dashboardData.users||{};
   appendCards('overviewCards',[
+    ['Sessões online agora',fmt(liveUsers.onlineSessions),liveUsers.presenceAvailable?'Sinal aceite pelo servidor e timestamp do cliente dentro de 90 segundos.':'Presença indisponível; não apresentar zero como resultado confirmado.','accent'],
+    ['Sessões com consulta pendente',fmt(liveUsers.queryingSessionsNow),'Sessões online com consulta iniciada há até 5 minutos e sem resultado final.','blue'],
+    ['Instalações registadas',fmt(liveUsers.registeredInstallations),'Identificadores persistentes confirmados pelo servidor; não equivalem a pessoas únicas.','blue'],
+    ['Instalações ativas na última hora',fmt(liveUsers.activeInstallationsLastHour),'Instalações distintas com uma ação real no último período de 60 minutos.','accent'],
     ['Consultas iniciadas',fmt(insurance.consultations),'Consultas de seguro iniciadas no período.','accent'],
     ['Resultados finais únicos',fmt(insurance.finals),'Só conta uma consulta com um resultado final único.','green'],
     ['Com seguro',fmt(insurance.insured),'Resultado positivo registado pela consulta.','green'],
     ['Sem registo de seguro',fmt(insurance.uninsured),pct(insurance.uninsuredPct)+' das decisões válidas.','amber'],
     ['Consultas com erro técnico',fmt(insurance.errors),pct(insurance.errorPct)+' das consultas finais, excluindo entradas mal formatadas.','red'],
-    ['Instalações ativas',fmt(users.activeInstallations),'Instalações distintas com consultas ou ações reais.','blue'],
+    ['Instalações ativas',fmt(users.activeInstallations),'Instalações distintas com consultas ou ações reais no período selecionado.','blue'],
     ['Consultas nos últimos 3 min',fmt(liveUsers.consultationsLast3Minutes),'Consultas iniciadas nos últimos três minutos.','accent'],
     ['Legislação copiada',fmt(legislation.copies),'Eventos de cópia confirmados no período.','blue']
   ]);
@@ -331,6 +335,16 @@ function renderAll(){
   ]);
   renderInsurancePeriodTable();
   appendCards('activityCards',[
+    ['Instalações registadas',fmt(liveUsers.registeredInstallations),'Identificadores persistentes confirmados pelo servidor; não representam necessariamente pessoas ou atalhos instalados.','blue'],
+    ['Sessões online agora',fmt(liveUsers.onlineSessions),liveUsers.presenceAvailable?'Sinal recente aceite pelo servidor e timestamp de cliente dentro de 90 segundos.':'Presença indisponível; não interpretar como zero.','accent'],
+    ['Instalações online agora',fmt(liveUsers.onlineInstallations),'Instalações distintas com pelo menos uma sessão online.','blue'],
+    ['Sessões com consulta pendente',fmt(liveUsers.queryingSessionsNow),'Sessões online com consulta iniciada há até 5 minutos e sem resultado final.','accent'],
+    ['Consultas em curso',fmt(liveUsers.consultationsInProgress),'Pedidos sem resultado final associados a sessão online, até 5 minutos.','accent'],
+    ['Sessões vistas na última hora',fmt(liveUsers.sessionsSeenLastHour),'Sessões distintas com sinal de presença ocorrido na última hora.','blue'],
+    ['Instalações vistas na última hora',fmt(liveUsers.installationsSeenLastHour),'Instalações distintas com sinal de presença na última hora.','blue'],
+    ['Sessões com ação real na última hora',fmt(liveUsers.activeSessionsLastHour),'Sessões distintas com consultas ou operações; exclui aberturas e heartbeats.','blue'],
+    ['Instalações com ação real na última hora',fmt(liveUsers.activeInstallationsLastHour),'Instalações distintas com consultas ou operações; exclui aberturas e heartbeats.','blue'],
+    ['Consultas iniciadas na última hora',fmt(liveUsers.consultationsStartedLastHour),'Consultas distintas, deduplicadas por query_id.','accent'],
     ['Consultas nos últimos 3 min',fmt(liveUsers.consultationsLast3Minutes),'Consultas de seguro iniciadas na janela de três minutos.','accent'],
     ['Instalações ativas nos últimos 3 min',fmt(liveUsers.activeInstallationsLast3Minutes),'Instalações distintas que iniciaram uma consulta.','blue'],
     ['Instalações ativas hoje',fmt(getPeriodData(dashboardData.users&&dashboardData.users.periods,'today').activeInstallations),'Atividade real desde a meia-noite de Lisboa.','blue'],

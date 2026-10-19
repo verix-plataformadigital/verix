@@ -127,6 +127,7 @@ assert.equal(parseReceipt('{"ok":true}'), null, "HTTP 200 without an application
 assert.equal(parseReceipt('not-json'), null, "malformed receipt must not clear the queue");
 
 const presenceMigration = fs.readFileSync("supabase/migrations/20261009045708_fix_browser_presence_kpi.sql", "utf8");
+const serverTimePresenceMigration = fs.readFileSync("supabase/migrations/20261019074500_admin_live_presence_server_time.sql", "utf8");
 const recentQueryPresenceMigration = fs.readFileSync("supabase/migrations/20261010222630_consulted_installations_last_3m.sql", "utf8");
 const activeHourlyMigration = fs.readFileSync("supabase/migrations/20261013100000_hourly_usage_bucket_dates.sql", "utf8");
 assert.match(endpoint, /"session_close"/, "server must accept browser-close presence events");
@@ -136,6 +137,18 @@ assert.match(presenceMigration, /'online_now',\(SELECT count\(\*\)/, "online_now
 assert.match(presenceMigration, /last_presence >= p_now-interval '90 seconds'/, "online presence must expire after the heartbeat lease");
 assert.match(presenceMigration, /event IN \('app_open','heartbeat','session_close'\)/, "online presence must use lifecycle events only");
 assert.match(presenceMigration, /last_close IS NULL OR last_presence > last_close/, "a later close event must remove a session from the active count");
+assert.match(serverTimePresenceMigration, /e\.created_at >= p\.n - interval '90 seconds'/, "online presence must require fresh server receipt time");
+assert.match(serverTimePresenceMigration, /e\.occurred_at >= p\.n - interval '90 seconds'/, "stale queued client events must not revive online presence");
+assert.match(serverTimePresenceMigration, /'registered_installations'/, "presence RPC must expose confirmed installation identifiers");
+assert.match(serverTimePresenceMigration, /'online_installations'/, "presence RPC must distinguish online installations from sessions");
+assert.match(serverTimePresenceMigration, /'querying_sessions_now'/, "presence RPC must identify live sessions with an in-progress query");
+assert.match(serverTimePresenceMigration, /'consultations_started_last_hour'/, "presence RPC must expose deduplicated consultations over the last hour");
+assert.ok(stats.includes('rpc("verix2_admin_live_presence", { p_now: now })'), "V3 dashboard must call the live presence RPC");
+assert.ok(admin.includes("Sessões online agora"), "Admin overview must show online sessions");
+assert.ok(admin.includes("Instalações registadas"), "Admin must show server-confirmed installation identifiers");
+assert.ok(admin.includes("Consultas iniciadas na última hora"), "Admin must show rolling-hour consultations");
+assert.ok(admin.includes("const REFRESH_MS=30000;"), "live presence dashboard must refresh every 30 seconds");
+
 assert.ok(admin.includes("Consultas nos últimos 3 min"), "Admin must expose consultation-based activity over three minutes");
 assert.ok(admin.includes("Instalações ativas nos últimos 3 min"), "Admin must distinguish active installations from browser sessions");
 assert.ok(admin.includes("Aberturas da aplicação e heartbeats não contam como utilização"), "active-use metrics must explicitly exclude passive browser presence");

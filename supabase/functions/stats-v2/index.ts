@@ -574,23 +574,37 @@ Deno.serve(async (req:Request) => {
     if(req.method === "GET" && detail === "dashboard-v3") {
       const now = new Date().toISOString();
       try {
-        const [cachedMetrics, liveActivity] = await Promise.all([
-          // Even the manual browser refresh reads the shared cache. A forced
-          // recomputation is reserved for the scheduled refresher, not user clicks.
-          rpc("verix2_admin_dashboard_v3", {
-            p_now: now,
-            p_force_refresh: false
-          }),
-          rpc("verix2_admin_live_activity_v3", { p_now: now })
+        const [dashboardResult, activityResult, presenceResult] = await Promise.allSettled([
+          // Historical aggregates are shared-cached. Fresh presence is a light
+          // server-time query and must not be served from the historical cache.
+          rpc("verix2_admin_dashboard_v3", { p_now: now, p_force_refresh: false }),
+          rpc("verix2_admin_live_activity_v3", { p_now: now }),
+          rpc("verix2_admin_live_presence", { p_now: now })
         ]);
-        const metrics = {
-          ...cachedMetrics,
-          users: {
-            ...(cachedMetrics?.users || {}),
-            consultationsLast3Minutes: Number(liveActivity?.consultations || 0),
-            activeInstallationsLast3Minutes: Number(liveActivity?.activeInstallations || 0)
-          }
+        if (dashboardResult.status !== "fulfilled") throw dashboardResult.reason;
+        const cachedMetrics = dashboardResult.value;
+        const liveActivity = activityResult.status === "fulfilled" ? activityResult.value : null;
+        const livePresence = presenceResult.status === "fulfilled" && presenceResult.value
+          && typeof presenceResult.value === "object" && !Array.isArray(presenceResult.value)
+          ? presenceResult.value : null;
+        const liveUsers = {
+          ...(cachedMetrics?.users || {}),
+          consultationsLast3Minutes: liveActivity ? Number(liveActivity.consultations || 0) : null,
+          activeInstallationsLast3Minutes: liveActivity ? Number(liveActivity.activeInstallations || 0) : null,
+          presenceAvailable: !!livePresence,
+          presenceObservedAt: livePresence?.observed_at || null,
+          registeredInstallations: livePresence ? Number(livePresence.registered_installations || 0) : null,
+          onlineSessions: livePresence ? Number(livePresence.online_sessions ?? livePresence.online_now ?? 0) : null,
+          onlineInstallations: livePresence ? Number(livePresence.online_installations || 0) : null,
+          queryingSessionsNow: livePresence ? Number(livePresence.querying_sessions_now || 0) : null,
+          consultationsInProgress: livePresence ? Number(livePresence.consultations_in_progress || 0) : null,
+          sessionsSeenLastHour: livePresence ? Number(livePresence.sessions_seen_last_hour || 0) : null,
+          installationsSeenLastHour: livePresence ? Number(livePresence.installations_seen_last_hour || 0) : null,
+          activeSessionsLastHour: livePresence ? Number(livePresence.active_sessions_last_hour || 0) : null,
+          activeInstallationsLastHour: livePresence ? Number(livePresence.active_installations_last_hour || 0) : null,
+          consultationsStartedLastHour: livePresence ? Number(livePresence.consultations_started_last_hour || 0) : null
         };
+        const metrics = { ...cachedMetrics, users: liveUsers };
         return json({ok:true,detail:"dashboard-v3",generatedAt:now,data:metrics},200,req);
       } catch(error) {
         return json({ok:false,error:"dashboard_v3_failed",detail:String((error as Error)?.message||error)},500,req);
