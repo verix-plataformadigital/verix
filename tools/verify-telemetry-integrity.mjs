@@ -270,9 +270,9 @@ assert.ok(adminInlineScript, "new Admin must have one executable script block");
 assert.doesNotThrow(() => new Function(adminInlineScript[1]), "new Admin JavaScript must parse");
 assert.ok(admin.includes("Um erro técnico não significa que o veículo não tenha seguro"), "error view must distinguish a technical failure from insurance status");
 assert.ok(admin.includes("desde o reset da versão estável") && admin.includes('id="historyResetPoint"'), "the total period must disclose the stable reset point");
-assert.match(adminHistoryResetMigration, /SELECT reset_all_at FROM public\\.verix2_admin_dashboard_cache WHERE singleton = true/, "total history must read its saved reset timestamp");
-assert.match(adminHistoryResetMigration, /AS total_start/, "dashboard total metrics must use the reset timestamp as their lower bound");
-assert.match(adminHistoryResetMigration, /ELSE coalesce\\(\\(SELECT reset_all_at FROM public\\.verix2_admin_dashboard_cache/, "the paginated error ledger must use the same reset timestamp");
+assert.ok(adminHistoryResetMigration.includes("SELECT reset_all_at FROM public.verix2_admin_dashboard_cache WHERE singleton = true"), "total history must read its saved reset timestamp");
+assert.ok(adminHistoryResetMigration.includes("AS total_start"), "dashboard total metrics must use the reset timestamp as their lower bound");
+assert.ok(adminHistoryResetMigration.includes("ELSE coalesce((SELECT reset_all_at FROM public.verix2_admin_dashboard_cache"), "the paginated error ledger must use the same reset timestamp");
 
 console.log("PASS: telemetry integrity, Admin V3 period and error contracts, and frontend JavaScript syntax.");
 
