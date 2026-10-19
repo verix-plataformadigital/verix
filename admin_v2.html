@@ -506,7 +506,11 @@ if('serviceWorker' in navigator&&window.isSecureContext){navigator.serviceWorker
 const ADMIN_INSTALL_BUTTONS = Array.from(document.querySelectorAll('.install-button'));
 let deferredAdminInstallPrompt = null;
 function isSharedGithubPagesOrigin() {
-  return /(^|\\.)github\\.io$/i.test(String(window.location.hostname || ''));
+  return /(^|\.)github\.io$/i.test(String(window.location.hostname || ''));
+}
+function hasAdminInstallationFlag() {
+  try { return window.localStorage.getItem('VERIX_ADMIN_PWA_INSTALLED_V1') === '1'; }
+  catch (_) { return false; }
 }
 function setAdminInstallMessage(message) {
   document.querySelectorAll('.install-help').forEach(function(node) {
