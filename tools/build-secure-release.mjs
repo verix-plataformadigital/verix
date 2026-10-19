@@ -289,7 +289,7 @@ for (const f of ["favicon.svg", "site.webmanifest", "admin.webmanifest", "sw.js"
   if (process.env.VERIX_ADMIN_PWA_HOST === "1") {
     adminPwaHeadLinks.push('  <link rel="manifest" href="./manifest.webmanifest?v=20261019-admin4">');
   }
-  adminPwaSource = adminPwaSource.replace(/<\/head>/i, adminPwaHeadLinks.join("\\n") + "\\n</head>");
+  adminPwaSource = adminPwaSource.replace(/<\/head>/i, adminPwaHeadLinks.join("\n") + "\n</head>");
   const adminPwaIsStandalone = process.env.VERIX_ADMIN_PWA_HOST === "1";
   const adminObfuscationOptions = adminPwaIsStandalone ? { domainLock: [] } : null;
   const { html: builtAdminPwa } = obfuscateHtml(adminPwaSource, "admin/index.html", adminObfuscationOptions);
