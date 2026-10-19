@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "installCommand": "npm install --no-fund --no-audit",
-  "buildCommand": "npm run build:secure",
+  "buildCommand": "VERIX_ADMIN_PWA_HOST=1 npm run build:secure",
   "outputDirectory": "dist/admin",
   "headers": [
     {
