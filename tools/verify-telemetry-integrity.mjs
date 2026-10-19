@@ -12,6 +12,7 @@ const insuranceNoCasesMigration = fs.readFileSync("supabase/migrations/202610090
 const stalePendingMigration = fs.readFileSync("supabase/migrations/20261018092000_fix_stale_pending_query_status.sql", "utf8");
 const errorPlateCountMigration = fs.readFileSync("supabase/migrations/20261009092500_deduplicate_error_plate_consultations.sql", "utf8");
 const adminV3Migration = fs.readFileSync("supabase/migrations/20261018200000_admin_dashboard_v3_rebuild.sql", "utf8");
+const adminHistoryResetMigration = fs.readFileSync("supabase/migrations/20261019063600_admin_total_history_since_stable_reset.sql", "utf8");
 const packageConfig = JSON.parse(fs.readFileSync("package.json", "utf8"));
 const currentAppVersion = packageConfig.version.split(".").slice(0, 2).join(".");
 assert.ok(stats.includes('const CURRENT_APP_VERSION = "' + currentAppVersion + '"'), "stats current version must match package.json major.minor");
@@ -268,7 +269,10 @@ const adminInlineScript = admin.match(/<script>([\s\S]*?)<\/script>/);
 assert.ok(adminInlineScript, "new Admin must have one executable script block");
 assert.doesNotThrow(() => new Function(adminInlineScript[1]), "new Admin JavaScript must parse");
 assert.ok(admin.includes("Um erro técnico não significa que o veículo não tenha seguro"), "error view must distinguish a technical failure from insurance status");
-assert.ok(admin.includes("Histórico Total · 365 dias") || admin.includes("últimos 365 dias"), "the total period must disclose its 365-day reporting window");
+assert.ok(admin.includes("desde o reset da versão estável") && admin.includes('id="historyResetPoint"'), "the total period must disclose the stable reset point");
+assert.ok(adminHistoryResetMigration.includes("SELECT reset_all_at FROM public.verix2_admin_dashboard_cache WHERE singleton = true"), "total history must read its saved reset timestamp");
+assert.ok(adminHistoryResetMigration.includes("AS total_start"), "dashboard total metrics must use the reset timestamp as their lower bound");
+assert.ok(adminHistoryResetMigration.includes("ELSE coalesce((SELECT reset_all_at FROM public.verix2_admin_dashboard_cache"), "the paginated error ledger must use the same reset timestamp");
 
 console.log("PASS: telemetry integrity, Admin V3 period and error contracts, and frontend JavaScript syntax.");
 
