@@ -68,14 +68,24 @@ periods AS (
   SELECT 'total', total_start, report_end FROM b
 ),
 ev AS MATERIALIZED (
+  -- Keep the hot path narrow: large client/forensics JSON belongs only in the
+  -- small error/copy subsets below, not in every activity row.
   SELECT
-    e.event_id, e.installation_id, e.session_id, e.query_id, e.event,
-    e.module, e.occurred_at, e.created_at, e.app_version, e.browser,
-    e.device_type, e.metadata
+    e.event_id, e.installation_id, e.query_id, e.event, e.occurred_at
   FROM public.verix2_events e
   CROSS JOIN b
   WHERE e.occurred_at >= b.total_start
     AND e.occurred_at < b.report_end
+),
+meta_ev AS MATERIALIZED (
+  SELECT
+    e.event_id, e.installation_id, e.query_id, e.event,
+    e.occurred_at, e.metadata
+  FROM public.verix2_events e
+  CROSS JOIN b
+  WHERE e.occurred_at >= b.total_start
+    AND e.occurred_at < b.report_end
+    AND e.event IN ('vehicle_insurance_error', 'legislation_copy')
 ),
 action_events AS MATERIALIZED (
   SELECT installation_id, occurred_at
@@ -225,7 +235,7 @@ legislation_rows AS (
     count(e.event_id) AS copies,
     count(DISTINCT e.installation_id) FILTER (WHERE e.installation_id IS NOT NULL) AS users
   FROM periods p
-  LEFT JOIN ev e ON e.event = 'legislation_copy'
+  LEFT JOIN meta_ev e ON e.event = 'legislation_copy'
     AND e.occurred_at >= p.start_at AND e.occurred_at < p.end_at
   GROUP BY p.period
 ),
@@ -278,7 +288,7 @@ error_type_groups AS (
     count(*) AS events,
     count(DISTINCT e.query_id) FILTER (WHERE e.query_id IS NOT NULL) AS consultations
   FROM periods p
-  JOIN ev e ON e.event = 'vehicle_insurance_error'
+  JOIN meta_ev e ON e.event = 'vehicle_insurance_error'
     AND e.occurred_at >= p.start_at AND e.occurred_at < p.end_at
   GROUP BY p.period, error_type
 ),
