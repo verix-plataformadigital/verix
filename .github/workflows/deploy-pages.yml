@@ -15,6 +15,7 @@ on:
       - "site.webmanifest"
       - "admin.webmanifest"
       - "sw.js"
+      - "admin-sw.js"
       - "assets/**"
       - "AI-ACCESS-POLICY.md"
       - "robots.txt"
@@ -61,6 +62,30 @@ jobs:
         env:
           VERIX_BUILD_ID: "1.5-sec-${{ github.run_number }}-${{ github.sha }}"
         run: npm run build:secure
+
+      - name: Validate separate PWA identities
+        shell: bash
+        run: |
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs';
+          function check(root) {
+            const p = root ? root + '/' : '';
+            const operational = JSON.parse(fs.readFileSync(p + 'site.webmanifest', 'utf8'));
+            const admin = JSON.parse(fs.readFileSync(p + 'admin.webmanifest', 'utf8'));
+            const opId = new URL(operational.id || operational.start_url, 'https://verix.invalid/').href;
+            const adminId = new URL(admin.id || admin.start_url, 'https://verix.invalid/').href;
+            if (opId === adminId) throw new Error('Operational and Admin PWA IDs collide in ' + (root || 'source'));
+            if (!admin.start_url.includes('admin_v2.html') || !admin.scope.includes('admin_v2.html')) throw new Error('Admin PWA start URL/scope is not isolated');
+            if (!admin.icons.some(x => x.src.includes('admin-icon-192.png')) || !admin.icons.some(x => x.src.includes('admin-icon-512.png'))) throw new Error('Admin PWA icons are incomplete');
+            const html = fs.readFileSync(p + 'admin_v2.html', 'utf8');
+            if (/id=["']installAdminLogin["']/.test(html)) throw new Error('Admin installation must not appear before login');
+            if ((html.match(/id=["']installAdminApp["']/g) || []).length !== 1) throw new Error('Expected exactly one authenticated Admin install control');
+            if (!html.includes('admin.webmanifest') || !html.includes('admin-sw.js')) throw new Error('Admin must use its own manifest and service worker');
+            if (!fs.existsSync(p + 'admin-sw.js')) throw new Error('Admin service worker missing');
+          }
+          check('');
+          check('dist');
+          NODE
 
       - name: Validate mobile adapter and assets
         shell: bash
