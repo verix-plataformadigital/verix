@@ -262,7 +262,7 @@ legislation_items AS (
       ORDER BY count(*) DESC, coalesce(nullif(btrim(e.metadata->>'itemLabel'), ''), nullif(btrim(e.metadata->>'itemId'), ''), '(iteme sem identificação)')
     ) AS rank
   FROM periods p
-  JOIN ev e ON e.event = 'legislation_copy'
+  JOIN meta_ev e ON e.event = 'legislation_copy'
     AND e.occurred_at >= p.start_at AND e.occurred_at < p.end_at
   GROUP BY p.period, item_label, item_id, copy_type
 ),
