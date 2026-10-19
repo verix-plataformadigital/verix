@@ -70,9 +70,9 @@ assert.match(admin, /Histórico Total/, "new Admin must expose the history perio
 assert.match(admin, /data-period="today"/);
 assert.match(admin, /data-period="week"/);
 assert.match(admin, /data-period="total"/);
-assert.match(admin, /Estado operacional — tempo real/, "the Overview must explicitly separate current state from period-based metrics");
-assert.match(admin, /Indicadores do período selecionado/, "the Overview must label selected-period metrics separately");
-assert.match(admin, /Janelas móveis/, "the Overview must disclose rolling-window metrics separately");
+assert.match(admin, /<h2>Estado operacional<\/h2>/, "the Overview must have a compact live-state section");
+assert.match(admin, /<h2>Indicadores do período<\/h2>/, "the Overview must label selected-period metrics separately");
+assert.match(admin, /Atividade recente/, "the Overview must give rolling-window metrics their own compact section");
 assert.match(admin, /Base acumulada da aplicação/, "the registered-installation count must be identified as an all-time base total");
 assert.match(admin, /todayHourlyPanel[^>]*hidden|todayHourlyPanel/, "today-only hourly chart must have its own conditional panel");
 assert.doesNotMatch(admin, /Métricas por período|Resumo por período/, "the Admin must not mix three historical windows into a page whose global period selector is active");
