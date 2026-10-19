@@ -315,6 +315,10 @@ function renderAll(){
     ['Sem registo de seguro',fmt(insurance.uninsured),pct(insurance.uninsuredPct)+' das decisões válidas.','amber'],
     ['Consultas com erro técnico',fmt(insurance.errors),pct(insurance.errorPct)+' das consultas finais, excluindo entradas mal formatadas.','red'],
     ['Instalações ativas',fmt(users.activeInstallations),'Instalações distintas com consultas ou ações reais.','blue'],
+    ['Online agora',fmt(liveUsers.onlineNow),'Sessões com heartbeat recebido pelo servidor nos últimos 90 segundos; não equivale a pessoas únicas.','green'],
+    ['Consultas em curso',fmt(liveUsers.consultationsInProgress),'Consultas sem resultado final, apenas nas sessões com presença recente.','accent'],
+    ['Ativos na última hora',fmt(liveUsers.activeInstallationsLastHour),'Instalações distintas com uma ação real recebida pelo servidor na última hora.','blue'],
+    ['Instalações registadas',fmt(liveUsers.registeredInstallations),'Identificadores conhecidos; não são pessoas únicas nem prova de PWA instalada.','blue'],
     ['Consultas nos últimos 3 min',fmt(liveUsers.consultationsLast3Minutes),'Consultas iniciadas nos últimos três minutos.','accent'],
     ['Legislação copiada',fmt(legislation.copies),'Eventos de cópia confirmados no período.','blue']
   ]);
