@@ -187,6 +187,12 @@ jobs:
           test -s dist/admin/assets/icon-32.png
           test -s dist/admin/verix-presence-v1.js
           test -s dist/admin/AI-ACCESS-POLICY.md
+          test -s dist/admin/assets/admin-icon-192.png
+          test -s dist/admin/assets/admin-icon-512.png
+          test -s dist/admin/assets/admin-icon.svg
+          test -s dist/admin/assets/icon-32.png
+          test -s dist/admin/verix-presence-v1.js
+          test -s dist/admin/AI-ACCESS-POLICY.md
           node -e "const fs=require('fs'); const a=JSON.parse(fs.readFileSync('dist/admin/manifest.webmanifest')); if(a.id!=='/verix/admin-v4/'||a.start_url!=='./index.html?app=verix-admin-v4'||a.scope!=='./') process.exit(1)"
           test -s dist/admin/sw.js
           node --check dist/admin/sw.js
@@ -249,9 +255,9 @@ jobs:
           }
           if (!manifest.icons.some(icon => icon.src.includes('admin-icon-192.png')) || !manifest.icons.some(icon => icon.src.includes('admin-icon-512.png'))) throw new Error('Admin manifest must use distinct raster icons at 192px and 512px');
           for (const icon of nestedManifest.icons || []) {
-            const sourcePath = path.join('dist', icon.src.split('?')[0]);
+            const githubPagesPath = path.join('dist/admin', icon.src.split('?')[0]);
             const standalonePath = path.join('dist/admin', icon.src.split('?')[0].replace(/^\.\.\//, ''));
-            if (!fs.existsSync(sourcePath) || !fs.existsSync(standalonePath)) throw new Error('Admin PWA icon must exist for both GitHub Pages and separate-origin hosting: ' + icon.src);
+            if (!fs.existsSync(githubPagesPath) || !fs.existsSync(standalonePath)) throw new Error('Admin PWA icon must exist for both GitHub Pages and separate-origin hosting: ' + icon.src);
           }
           const adminBundle = fs.readFileSync('dist/admin/index.html', 'utf8');
           for (const asset of ['../assets/', '../verix-presence-v1.js', '../AI-ACCESS-POLICY.md']) {
@@ -262,7 +268,10 @@ jobs:
             if (!fs.existsSync(iconPath)) throw new Error('Admin PWA icon missing: ' + iconPath);
           }
           if (!fs.existsSync('dist/admin/sw.js')) throw new Error('Dedicated Admin worker is missing');
-          console.log('Separate Admin manifest URL, unique IDs/start URLs, post-login install control, worker and icons: OK');
+          const adminPresence = fs.readFileSync('dist/admin/index.html', 'utf8');
+          if (!adminPresence.includes('../verix-presence-v1.js') || !fs.existsSync('dist/admin/verix-presence-v1.js')) throw new Error('Admin presence runtime must be bundled for separate-origin hosting');
+          if (!fs.existsSync('vercel.json')) throw new Error('Separate-origin Vercel deployment configuration is missing');
+          console.log('Separate Admin manifest URL, unique identities, authenticated install, self-contained assets and separate-origin config: OK');
           NODE
 
       - name: Upload Pages artifact
