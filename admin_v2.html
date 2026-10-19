@@ -183,7 +183,19 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
 .pager-actions{display:flex;gap:6px}
 .empty-state{padding:26px 18px;color:var(--muted);background:#f8fafb;border:1px dashed #cddade;border-radius:10px;text-align:center;font-size:12.5px;line-height:1.6}
 .error-list{display:grid;gap:12px;border-top:0}
-.error-card{min-width:0;padding:16px 17px;background:#fff;border:1px solid #e0e7ea;border-left:4px solid #d85c64;border-radius:11px;box-shadow:0 3px 12px rgba(22,42,53,.035)}
+.error-card{min-width:0;padding:0;background:#fff;border:1px solid #e0e7ea;border-left:4px solid #d85c64;border-radius:11px;box-shadow:0 3px 12px rgba(22,42,53,.035)}
+.error-record{display:block;min-width:0}
+.error-record-summary{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 15px;list-style:none;cursor:pointer}
+.error-record-summary::-webkit-details-marker{display:none}
+.error-record-summary::after{content:'+';display:grid;place-items:center;flex:0 0 25px;width:25px;height:25px;color:var(--accent);background:var(--accent-soft);border:1px solid #d3e9e8;border-radius:7px;font-size:17px;font-weight:600;line-height:1}
+.error-record[open]>.error-record-summary::after{content:'−'}
+.error-record-summary:hover{background:#f8fbfc}
+.error-record-heading{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0;flex:1}
+.error-record-summary .error-meta{margin:0}
+.error-record-summary .error-time{white-space:nowrap}
+.error-record-body{padding:0 15px 15px}
+.error-record[open]>.error-record-summary{border-bottom:1px solid #e7edef}
+
 .error-card:hover{border-color:#d3dfe3;border-left-color:#c63f4b;box-shadow:0 6px 18px rgba(22,42,53,.06)}
 .error-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
 .error-plate{font-size:15px;font-weight:850;letter-spacing:.05em;font-variant-numeric:tabular-nums}
@@ -263,7 +275,10 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
   .quality-item:nth-child(2n){border-right:0}
   .quality-item:nth-last-child(-n+3){border-bottom:1px solid #e2e9ec}
   .quality-item:nth-last-child(-n+2){border-bottom:0}
-  .error-card{padding:13px 12px}
+  .error-record-summary{align-items:flex-start;gap:8px;padding:13px 11px}
+  .error-record-heading{gap:7px}
+  .error-record-summary .error-time{white-space:normal;text-align:right;margin:0}
+  .error-record-body{padding:0 11px 13px}
   .error-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
   .error-top{display:block}
   .error-time{text-align:left;margin-top:7px}
@@ -715,16 +730,20 @@ function renderErrorLedger(){
   if(!filtered.length){showEmpty('errorPlates',query?'Não há erros nesta página que correspondam ao filtro.':'Não existem eventos de erro registados neste período.');return;}
   filtered.forEach(item=>{
     const card=document.createElement('article');card.className='error-card';
-    const top=document.createElement('div');top.className='error-top';
-    const left=document.createElement('div');const plate=document.createElement('div');plate.className='error-plate';plate.textContent=item.plate||'Não capturada';
-    const badges=document.createElement('div');badges.className='error-meta';
+    const record=document.createElement('details');record.className='error-record';
+    const recordSummary=document.createElement('summary');recordSummary.className='error-record-summary';
+    const heading=document.createElement('span');heading.className='error-record-heading';
+    const plate=document.createElement('span');plate.className='error-plate';plate.textContent=item.plate||'Não capturada';
+    const badges=document.createElement('span');badges.className='error-meta';
     const type=document.createElement('span');type.className='inline-badge bad';type.textContent=errorLabel(item.errorType);
     const version=document.createElement('span');version.className='inline-badge info';version.textContent='Versão '+escValue(item.appVersion);
     const browser=document.createElement('span');browser.className='inline-badge';browser.textContent=escValue(item.browser);
-    badges.append(type,version,browser);left.append(plate,badges);
-    const time=document.createElement('div');time.className='error-time';time.textContent=prettyDate(item.occurredAt);
-    top.append(left,time);card.appendChild(top);
-    const cause=document.createElement('p');cause.className='error-cause';cause.textContent=item.cause||'A versão cliente não registou uma causa textual específica.';card.appendChild(cause);
+    badges.append(type,version,browser);heading.append(plate,badges);
+    const time=document.createElement('span');time.className='error-time';time.textContent=prettyDate(item.occurredAt);
+    recordSummary.append(heading,time);record.appendChild(recordSummary);
+
+    const body=document.createElement('div');body.className='error-record-body';
+    const cause=document.createElement('p');cause.className='error-cause';cause.textContent=item.cause||'A versão cliente não registou uma causa textual específica.';body.appendChild(cause);
     const facts=document.createElement('div');facts.className='error-facts';
     appendFact(facts,'HTTP',item.httpStatus===null||item.httpStatus===undefined?'Não recebido':item.httpStatus);
     appendFact(facts,'Transporte',item.transport||'Não registado');
@@ -734,15 +753,27 @@ function renderErrorLedger(){
     appendFact(facts,'Tipo de dispositivo',item.deviceType||'Não registado');
     appendFact(facts,'Esperas de fila',item.queueWaitMs===null||item.queueWaitMs===undefined?'—':fmt(item.queueWaitMs)+' ms');
     appendFact(facts,'Hash resposta',item.responseHash||'Não registado');
-    const details=document.createElement('details');details.className='error-details';const summary=document.createElement('summary');summary.textContent='Ver detalhes técnicos, tentativas e contexto';details.append(summary,facts);
+    const diagnostic=document.createElement('details');diagnostic.className='error-details';
+    const diagnosticSummary=document.createElement('summary');diagnosticSummary.textContent='Ver detalhes técnicos, tentativas e contexto';
+    diagnostic.append(diagnosticSummary,facts);
     const attempts=Array.isArray(item.attempts)?item.attempts:[];
-    if(attempts.length){const box=document.createElement('div');box.className='detail-block';const h=document.createElement('h4');h.textContent='Tentativas de transporte';box.appendChild(h);const ul=document.createElement('ul');attempts.slice(0,8).forEach(a=>{const li=document.createElement('li');const parts=[a.method,a.transport,a.status!==undefined&&a.status!==null?'HTTP '+a.status:null,a.durationMs!==undefined&&a.durationMs!==null?fmt(a.durationMs)+' ms':null,a.errorType,a.message].filter(Boolean);li.textContent=parts.join(' · ')||JSON.stringify(a);ul.appendChild(li);});box.appendChild(ul);details.appendChild(box);}else appendDetailsBlock(details,'Tentativas de transporte','A versão cliente não enviou a lista de tentativas.');
+    if(attempts.length){
+      const box=document.createElement('div');box.className='detail-block';
+      const h=document.createElement('h4');h.textContent='Tentativas de transporte';box.appendChild(h);
+      const ul=document.createElement('ul');
+      attempts.slice(0,8).forEach(a=>{
+        const li=document.createElement('li');
+        const parts=[a.method,a.transport,a.status!==undefined&&a.status!==null?'HTTP '+a.status:null,a.durationMs!==undefined&&a.durationMs!==null?fmt(a.durationMs)+' ms':null,a.errorType,a.message].filter(Boolean);
+        li.textContent=parts.join(' · ')||JSON.stringify(a);ul.appendChild(li);
+      });
+      box.appendChild(ul);diagnostic.appendChild(box);
+    }else appendDetailsBlock(diagnostic,'Tentativas de transporte','A versão cliente não enviou a lista de tentativas.');
     const gql=Array.isArray(item.graphqlMessages)?item.graphqlMessages:[];
-    if(gql.length)appendDetailsBlock(details,'Mensagens GraphQL',gql.slice(0,12).join('\n'));
-    if(item.networkError)appendDetailsBlock(details,'Erro de rede',item.networkError);
-    if(item.clientContext&&Object.keys(item.clientContext).length)appendDetailsBlock(details,'Contexto técnico do cliente',item.clientContext);
-    appendDetailsBlock(details,'Identificação de consulta','Consulta: '+(item.queryId||'não registada')+' · Instalação: '+(item.installationId||'não registada')+' · Evento: '+(item.eventId||'não registado'));
-    card.appendChild(details);host.appendChild(card);
+    if(gql.length)appendDetailsBlock(diagnostic,'Mensagens GraphQL',gql.slice(0,12).join('\\n'));
+    if(item.networkError)appendDetailsBlock(diagnostic,'Erro de rede',item.networkError);
+    if(item.clientContext&&Object.keys(item.clientContext).length)appendDetailsBlock(diagnostic,'Contexto técnico do cliente',item.clientContext);
+    appendDetailsBlock(diagnostic,'Identificação de consulta','Consulta: '+(item.queryId||'não registada')+' · Instalação: '+(item.installationId||'não registada')+' · Evento: '+(item.eventId||'não registado'));
+    body.appendChild(diagnostic);record.appendChild(body);card.appendChild(record);host.appendChild(card);
   });
   if(query)$('errorPageInfo').textContent+=' Filtro aplicado à página carregada: '+fmt(filtered.length)+' correspondências.';
 }
