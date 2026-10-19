@@ -9,6 +9,7 @@ on:
       - "tools/verify-telemetry-integrity.mjs"
       - "verix-app.html"
       - "verix-presence-v1.mjs"
+      - "tools/verify-migration-filenames.mjs"
   push:
     branches:
       - "main"
@@ -20,6 +21,7 @@ on:
       - "admin_v2.html"
       - "tools/verify-telemetry-integrity.mjs"
       - "verix-app.html"
+      - "tools/verify-migration-filenames.mjs"
 permissions:
   contents: read
 jobs:
@@ -30,6 +32,8 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "22"
+      - name: Validate migration filename uniqueness
+        run: node tools/verify-migration-filenames.mjs
       - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
         with:
           deno-version: v2.x
