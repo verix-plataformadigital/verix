@@ -115,6 +115,8 @@ jobs:
           const fs = require('node:fs');
           const path = require('node:path');
           const manifest = JSON.parse(fs.readFileSync('dist/admin.webmanifest', 'utf8'));
+          const operationalManifest = JSON.parse(fs.readFileSync('dist/site.webmanifest', 'utf8'));
+          if (operationalManifest.id !== '/verix/operational/' || operationalManifest.scope !== './') throw new Error('Operational manifest identity or scope is invalid');
           if (manifest.id !== '/verix/admin/' ||
               manifest.start_url !== './admin/index.html' ||
               manifest.scope !== './admin/' ||
@@ -126,7 +128,8 @@ jobs:
             throw new Error('Admin manifest must advertise dedicated PNG icons at 192px and 512px');
           }
           const adminEntry = fs.readFileSync('dist/admin/index.html', 'utf8');
-          if (!adminEntry.includes('rel="manifest" href="../admin.webmanifest?v=20261019-admin2"')) {
+          if (!fs.readFileSync('dist/index.html', 'utf8').includes('site.webmanifest?v=20261019-op2') || !fs.readFileSync('dist/verix-mobile.html', 'utf8').includes('site.webmanifest?v=20261019-op2')) throw new Error('Operational entry points must fetch the refreshed manifest URL');
+          if (!adminEntry.includes('rel="manifest" href="../admin.webmanifest?v=20261019-admin3"')) {
             throw new Error('Admin entry must use the cache-busted separate manifest URL');
           }
           for (const icon of manifest.icons || []) {
