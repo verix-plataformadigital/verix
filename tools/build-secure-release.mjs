@@ -267,6 +267,27 @@ for (const f of ["favicon.svg", "site.webmanifest", "admin.webmanifest", "sw.js"
   }
 }
 
+// Dedicated admin PWA entry. Its narrower /admin/ scope keeps it separate from the operational VÉRIX app.
+{
+  const sourcePath = path.join(ROOT, "admin_v2.html");
+  if (!fs.existsSync(sourcePath)) throw new Error("Required admin source missing: admin_v2.html");
+  let adminPwaSource = fs.readFileSync(sourcePath, "utf8");
+  adminPwaSource = adminPwaSource.replace(/<link rel="manifest" href="[^"]*admin\.webmanifest[^"]*">\s*/i, "");
+  adminPwaSource = adminPwaSource.replace(/href="\.\/favicon\.svg/g, 'href="../favicon.svg');
+  adminPwaSource = adminPwaSource.replace(/\.\/assets\//g, "../assets/");
+  adminPwaSource = adminPwaSource.replace(/src="\.\/verix-presence-v1\.js/g, 'src="../verix-presence-v1.js');
+  adminPwaSource = adminPwaSource.replace(/(src="\.\.\/verix-presence-v1\.js\?v=)[^"]+/g, "$1" + encodeURIComponent(String(BUILD_ID)));
+  adminPwaSource = adminPwaSource.replace(/\.\/AI-ACCESS-POLICY\.md/g, "../AI-ACCESS-POLICY.md");
+  if (!/<\/head>/i.test(adminPwaSource)) throw new Error("Admin source has no closing head");
+  adminPwaSource = adminPwaSource.replace(/<\/head>/i, '  <link rel="manifest" href="../admin.webmanifest?v=20261019">\n</head>');
+  const { html: builtAdminPwa } = obfuscateHtml(adminPwaSource, "admin/index.html");
+  const adminPwaDir = path.join(OUTPUT_DIR, "admin");
+  fs.mkdirSync(adminPwaDir, { recursive: true });
+  fs.writeFileSync(path.join(adminPwaDir, "index.html"), builtAdminPwa, "utf8");
+  // This worker's URL and scope stay inside /admin/ instead of claiming the root operational app.
+  fs.copyFileSync(path.join(OUTPUT_DIR, "sw.js"), path.join(adminPwaDir, "sw.js"));
+}
+
 // Release-time runtime invariants. These critical blocks are intentionally
 // excluded from heavy obfuscation and must survive packaging unchanged enough
 // to expose their endpoint, heartbeat and security runtime markers.
@@ -338,6 +359,11 @@ if (fs.existsSync(adminOutput)) {
   if (adminScriptsChecked === 0) {
     throw new Error("Admin panel does not contain any validated inline JavaScript");
   }
+}
+const adminPwaOutput = path.join(OUTPUT_DIR, "admin", "index.html");
+if (!fs.existsSync(adminPwaOutput)) throw new Error("Dedicated Admin PWA entry was not generated");
+if (verifyJavaScriptSyntax(adminPwaOutput) === 0) {
+  throw new Error("Admin PWA entry does not contain any validated inline JavaScript");
 }
 
 // Build manifest
