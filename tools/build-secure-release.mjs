@@ -297,7 +297,16 @@ for (const f of ["favicon.svg", "site.webmanifest", "admin.webmanifest", "sw.js"
     src: String(icon.src).replace(/^\.\/assets\//, "../assets/").replace(/\?v=[^&]+$/, "?v=20261019-admin4")
   }));
   fs.writeFileSync(path.join(adminPwaDir, "manifest.webmanifest"), JSON.stringify(adminManifest, null, 2) + "\n", "utf8");
-  // This worker's URL and scope stay inside /admin/ instead of claiming the root operational app.
+  // Make the Admin output independently deployable at the root of a different origin.
+  // Relative ../assets, ../verix-presence-v1.js and ../AI-ACCESS-POLICY.md URLs
+  // resolve to the root of that origin, while still working from /admin/ on GitHub Pages.
+  fs.cpSync(path.join(OUTPUT_DIR, "assets"), path.join(adminPwaDir, "assets"), { recursive: true });
+  for (const file of ["verix-presence-v1.js", "AI-ACCESS-POLICY.md"]) {
+    const source = path.join(OUTPUT_DIR, file);
+    if (!fs.existsSync(source)) throw new Error("Required standalone Admin asset missing: " + file);
+    fs.copyFileSync(source, path.join(adminPwaDir, file));
+  }
+  // This worker stays within /admin/ on GitHub Pages and becomes root-scoped on a dedicated Admin origin.
   fs.copyFileSync(path.join(OUTPUT_DIR, "sw.js"), path.join(adminPwaDir, "sw.js"));
 }
 
