@@ -117,7 +117,7 @@ jobs:
             echo "Source-map file found in dist"
             exit 1
           fi
-          if grep -R -n 'sourceMappingURL\\|//# sourceURL' dist; then
+          if grep -R -n 'sourceMappingURL\|//# sourceURL' dist; then
             echo "Source-map directive found in dist"
             exit 1
           fi
