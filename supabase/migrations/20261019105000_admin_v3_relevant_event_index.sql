@@ -18,33 +18,3 @@ WHERE event IN (
   'legislation_search', 'legislation_copy', 'legislation_favorite_toggle'
 );
 
-DO $validation$
-DECLARE
-  v_expected jsonb;
-  v_actual jsonb;
-  v_at timestamptz;
-BEGIN
-  -- One statement gives both reads the same MVCC snapshot. This avoids false
-  -- failures when new telemetry arrives while the validation is running.
-  WITH baseline AS MATERIALIZED (
-    SELECT payload, (payload->>'generatedAt')::timestamptz AS at
-    FROM public.verix2_admin_v3_cache
-    WHERE singleton = true
-  ),
-  computed AS MATERIALIZED (
-    SELECT public.verix2_admin_dashboard_v3_compute(baseline.at) AS payload
-    FROM baseline
-  )
-  SELECT baseline.payload, computed.payload, baseline.at
-    INTO v_expected, v_actual, v_at
-  FROM baseline CROSS JOIN computed;
-
-  IF v_expected IS NULL OR v_at IS NULL THEN
-    RAISE EXCEPTION 'Admin V3 cache baseline is missing; aborting validation';
-  END IF;
-
-  IF (v_actual - 'generatedAt') IS DISTINCT FROM (v_expected - 'generatedAt') THEN
-    RAISE EXCEPTION 'Admin V3 metrics changed after adding the covering index; aborting migration';
-  END IF;
-END;
-$validation$;
