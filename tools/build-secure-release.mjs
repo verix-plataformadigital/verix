@@ -280,7 +280,15 @@ for (const f of ["favicon.svg", "site.webmanifest", "admin.webmanifest", "sw.js"
   adminPwaSource = adminPwaSource.replace(/(src="\.\.\/verix-presence-v1\.js\?v=)[^"]+/g, "$1" + encodeURIComponent(String(BUILD_ID)));
   adminPwaSource = adminPwaSource.replace(/\.\/AI-ACCESS-POLICY\.md/g, "../AI-ACCESS-POLICY.md");
   if (!/<\/head>/i.test(adminPwaSource)) throw new Error("Admin source has no closing head");
-  adminPwaSource = adminPwaSource.replace(/<\/head>/i, '  <link rel="icon" href="../assets/admin-icon-512.png?v=20261019-admin4" type="image/png" sizes="512x512">\n  <link rel="manifest" href="./manifest.webmanifest?v=20261019-admin4">\n</head>');
+  const adminPwaHeadLinks = [
+    '  <link rel="icon" href="../assets/admin-icon-512.png?v=20261019-admin4" type="image/png" sizes="512x512">'
+  ];
+  // GitHub Pages shares the Operational origin, so it must not advertise an installable Admin PWA.
+  // The separate hosting project sets VERIX_ADMIN_PWA_HOST=1 to enable its own manifest link.
+  if (process.env.VERIX_ADMIN_PWA_HOST === "1") {
+    adminPwaHeadLinks.push('  <link rel="manifest" href="./manifest.webmanifest?v=20261019-admin4">');
+  }
+  adminPwaSource = adminPwaSource.replace(/<\/head>/i, adminPwaHeadLinks.join("\\n") + "\\n</head>");
   const { html: builtAdminPwa } = obfuscateHtml(adminPwaSource, "admin/index.html");
   const adminPwaDir = path.join(OUTPUT_DIR, "admin");
   fs.mkdirSync(adminPwaDir, { recursive: true });
