@@ -28,6 +28,8 @@ import { createClient } from '@supabase/supabase-js';
   var starting = false;
   var activeRefreshTimer = null;
   var reconnectTimer = null;
+  var pendingTrackTimer = null;
+  var reconnectDelayMs = 0;
   var lastTrackAt = 0;
   var lastActivityAt = 0;
   var visible = document.visibilityState !== 'hidden';
@@ -111,14 +113,55 @@ import { createClient } from '@supabase/supabase-js';
     };
   }
 
-  async function track(force) {
+  async function track() {
     if (ADMIN || !channel || !subscribed || !installationKey) return;
+
     var now = Date.now();
-    if (!force && now - lastTrackAt < TRACK_MIN_INTERVAL_MS) return;
+    var elapsed = now - lastTrackAt;
+    if (lastTrackAt && elapsed < TRACK_MIN_INTERVAL_MS) {
+      // Coalesce any number of activity/focus events into one update after the cooldown.
+      if (pendingTrackTimer === null) {
+        pendingTrackTimer = window.setTimeout(function () {
+          pendingTrackTimer = null;
+          track();
+        }, Math.max(250, TRACK_MIN_INTERVAL_MS - elapsed + 100));
+      }
+      return;
+    }
+
     lastTrackAt = now;
     try {
-      await channel.track(currentPayload());
-    } catch (_) {}
+      var result = await channel.track(currentPayload());
+      if (result !== 'ok') {
+        subscribed = false;
+        started = false;
+        emit({
+          status: 'reconnecting',
+          ready: false,
+          onlineInstallations: null,
+          activeInstallations: null,
+          onlineTabs: null,
+          activeTabs: null,
+          observedAt: null,
+          error: 'presence_track_' + String(result || 'unknown')
+        });
+        scheduleReconnect(32000);
+      }
+    } catch (error) {
+      subscribed = false;
+      started = false;
+      emit({
+        status: 'reconnecting',
+        ready: false,
+        onlineInstallations: null,
+        activeInstallations: null,
+        onlineTabs: null,
+        activeTabs: null,
+        observedAt: null,
+        error: String(error && error.message || error)
+      });
+      scheduleReconnect(32000);
+    }
   }
 
   function extractMetas(entry) {
@@ -239,7 +282,7 @@ import { createClient } from '@supabase/supabase-js';
             if (activeRefreshTimer) clearInterval(activeRefreshTimer);
             activeRefreshTimer = setInterval(recalculatePresence, 15000);
           } else {
-            track(true);
+            track();
           }
           return;
         }
@@ -278,10 +321,18 @@ import { createClient } from '@supabase/supabase-js';
     }
   }
 
-  function scheduleReconnect() {
-    if (reconnectTimer !== null) return;
+  function scheduleReconnect(delayMs) {
+    var requestedDelay = Math.max(0, Number(delayMs) || 4000);
+    // If a rate-limit response arrives after CHANNEL_ERROR, keep the longer cooldown.
+    if (reconnectTimer !== null) {
+      if (requestedDelay <= reconnectDelayMs) return;
+      window.clearTimeout(reconnectTimer);
+      reconnectTimer = null;
+    }
+    reconnectDelayMs = requestedDelay;
     reconnectTimer = window.setTimeout(async function () {
       reconnectTimer = null;
+      reconnectDelayMs = 0;
       if (document.visibilityState === 'hidden') return;
       if (ADMIN && !isAdminUnlocked()) return;
       if (starting || started) return;
@@ -292,7 +343,7 @@ import { createClient } from '@supabase/supabase-js';
         try { await client.removeChannel(previousChannel); } catch (_) {}
       }
       start();
-    }, 4000);
+    }, requestedDelay);
   }
 
   async function stopAdminMonitor() {
@@ -347,14 +398,14 @@ import { createClient } from '@supabase/supabase-js';
   function noteActivity() {
     if (ADMIN || document.visibilityState === 'hidden') return;
     lastActivityAt = Date.now();
-    track(false);
+    track();
   }
 
   document.addEventListener('visibilitychange', function () {
     visible = document.visibilityState !== 'hidden';
     if (ADMIN) return;
     if (visible && !started && !starting) start();
-    else track(true);
+    else track();
   });
 
   ['pointerdown', 'keydown', 'input', 'change', 'submit', 'touchstart', 'wheel', 'focusin'].forEach(function (eventName) {
@@ -367,6 +418,11 @@ import { createClient } from '@supabase/supabase-js';
     if (reconnectTimer !== null) {
       clearTimeout(reconnectTimer);
       reconnectTimer = null;
+      reconnectDelayMs = 0;
+    }
+    if (pendingTrackTimer !== null) {
+      clearTimeout(pendingTrackTimer);
+      pendingTrackTimer = null;
     }
     if (activeRefreshTimer) {
       clearInterval(activeRefreshTimer);
@@ -384,7 +440,7 @@ import { createClient } from '@supabase/supabase-js';
       return;
     }
     if (!started && !starting) start();
-    else if (visible) track(true);
+    else if (visible) track();
   });
 
   if (ADMIN) {
