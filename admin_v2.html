@@ -322,6 +322,15 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
   *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 }
 </style>
+<link rel="icon" href="./favicon.svg?v=20261019" type="image/svg+xml" sizes="any">
+<link rel="icon" href="./assets/icon-32.png?v=20261019" type="image/png" sizes="32x32">
+<link rel="icon" href="./assets/icon-192.png?v=20261019" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="./assets/icon-192.png?v=20261019">
+<link rel="manifest" href="./admin.webmanifest?v=20261019">
+<meta name="theme-color" content="#17262e">
+<meta name="apple-mobile-web-app-title" content="VÉRIX Admin">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 </head>
 <body>
 <section id="loginScreen" class="login-shell">
@@ -477,6 +486,7 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
 <script>
 (function(){
 'use strict';
+if('serviceWorker' in navigator&&window.isSecureContext){navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'}).catch(function(){});}
 const API_ORIGIN='https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/';
 const RELEASE='admin-v3-2026-10';
 const AUTH_API=API_ORIGIN+'admin-auth-v2?v='+encodeURIComponent(RELEASE);
