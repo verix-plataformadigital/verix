@@ -39,5 +39,13 @@ jobs:
         run: deno check --no-lock supabase/functions/stats-v2/index.ts
       - name: Check realtime presence source syntax
         run: node --check verix-presence-v1.mjs
+      - name: Build secure release and validate bundled presence
+        run: |
+          npm install --no-fund --no-audit
+          npm run build:secure
+          test -s dist/verix-presence-v1.js
+          node --check dist/verix-presence-v1.js
+          grep -q 'verix-presence-v1.js?v=' dist/verix-app.html
+          grep -q 'verix-presence-v1.js?v=' dist/admin_v2.html
       - name: Verify telemetry integrity contract
         run: node tools/verify-telemetry-integrity.mjs
