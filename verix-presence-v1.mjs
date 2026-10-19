@@ -115,6 +115,7 @@ import { createClient } from '@supabase/supabase-js';
 
   async function track() {
     if (ADMIN || !channel || !subscribed || !installationKey) return;
+    var trackedChannel = channel;
 
     var now = Date.now();
     var elapsed = now - lastTrackAt;
@@ -131,7 +132,8 @@ import { createClient } from '@supabase/supabase-js';
 
     lastTrackAt = now;
     try {
-      var result = await channel.track(currentPayload());
+      var result = await trackedChannel.track(currentPayload());
+      if (trackedChannel !== channel) return;
       if (result !== 'ok') {
         subscribed = false;
         started = false;
@@ -148,6 +150,7 @@ import { createClient } from '@supabase/supabase-js';
         scheduleReconnect(32000);
       }
     } catch (error) {
+      if (trackedChannel !== channel) return;
       subscribed = false;
       started = false;
       emit({
