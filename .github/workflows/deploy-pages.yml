@@ -192,6 +192,8 @@ jobs:
           test -s dist/assets/icon-32.png
           test -s dist/assets/icon-192.png
           test -s dist/assets/icon-512.png
+          test -s dist/assets/admin-icon.svg
+          grep -q "admin-icon.svg" dist/admin.webmanifest
           grep -q '"sizes": "512x512"' dist/site.webmanifest
           grep -q 'rel="manifest"' dist/verix-app.html
           grep -q 'rel="icon"' dist/verix-app.html
@@ -229,6 +231,7 @@ jobs:
           if (!rootAdmin.includes('./admin/index.html') || !sourceHtml.includes('Adicionar ao ecrã principal')) {
             throw new Error('Mobile redirect or install fallback instructions missing from Admin source');
           }
+          if (!manifest.icons.some(icon => icon.src.includes('admin-icon.svg'))) throw new Error('Admin manifest must use its distinct icon');
           for (const icon of manifest.icons || []) {
             const iconPath = path.join('dist', icon.src.split('?')[0]);
             if (!fs.existsSync(iconPath)) throw new Error('Admin PWA icon missing: ' + iconPath);
