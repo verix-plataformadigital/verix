@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="VÉRIX Admin">
+  <rect width="512" height="512" rx="104" fill="#0d1920"/>
+  <rect x="36" y="36" width="440" height="440" rx="82" fill="#162a34" stroke="#41c2c8" stroke-width="8"/>
+  <rect x="124" y="246" width="54" height="104" rx="12" fill="#dff1f3"/>
+  <rect x="210" y="176" width="54" height="174" rx="12" fill="#dff1f3"/>
+  <rect x="296" y="112" width="54" height="238" rx="12" fill="#5bd3d8"/>
+  <rect x="116" y="372" width="270" height="24" rx="12" fill="#5bd3d8"/>
+  <path d="M370 82 422 101 412 151 370 178 328 151 318 101Z" fill="#fff"/>
+  <path d="m349 128 15 15 28-34" fill="none" stroke="#164a53" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
