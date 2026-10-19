@@ -40,7 +40,7 @@ assert.match(stats, /current_app_version:CURRENT_APP_VERSION/);
 assert.doesNotMatch(stats, /app14|["\']1\.4["\']/i, "stats must not hard-code the obsolete version filter");
 assert.doesNotMatch(admin, /VERSÃO 1\.4|ERROS DA 1\.4|app14|versão 1\.4/i, "Admin must not display or consume obsolete 1.4 error metrics");
 assert.match(admin, /detail=dashboard-v3/, "new Admin must consume the V3 dashboard contract");
-assert.ok(adminPwaEntry.includes('rel="manifest" href="../manifest.webmanifest?v=20261019-admin4"'), "dedicated Admin entry must reference its separate installable manifest");
+assert.ok(adminPwaEntry.includes('rel="manifest" href="./manifest.webmanifest?v=20261019-admin4"'), "dedicated Admin entry must reference its separate installable manifest");
 assert.ok(!adminPwaEntry.includes('id="installAdminLogin"'), "Admin install control must not appear on the sign-in screen");
 assert.ok(adminPwaEntry.includes('id="installAdminApp"'), "Admin install control must be available inside the authenticated dashboard");
 const adminAppStart = adminPwaEntry.indexOf('<div id="app"');
