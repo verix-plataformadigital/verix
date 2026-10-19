@@ -81,10 +81,10 @@ jobs:
           test -s dist/verix-mobile.js
           node -e "const v=JSON.parse(require('fs').readFileSync('dist/version.json','utf8')); if(typeof v.buildId!=='string'||!v.buildId) process.exit(1)"
           grep -q "version.json?_=" dist/index.html
-          grep -q 'site.webmanifest?v=20261019-op2' dist/index.html
+          grep -q 'site.webmanifest?v=20261019-op3' dist/index.html
           grep -q "cache:'no-store'" dist/index.html
           grep -q "version.json?_=" dist/verix-mobile.html
-          grep -q 'site.webmanifest?v=20261019-op2' dist/verix-mobile.html
+          grep -q 'site.webmanifest?v=20261019-op3' dist/verix-mobile.html
           grep -q "./verix-mobile.html" dist/index.html
           grep -q "./verix-app.html" dist/verix-mobile.html
 
@@ -174,12 +174,14 @@ jobs:
         run: |
           test -s dist/favicon.svg
           test -s dist/site.webmanifest
-          node -e "const fs=require('fs'); const o=JSON.parse(fs.readFileSync('dist/site.webmanifest')); const a=JSON.parse(fs.readFileSync('dist/admin.webmanifest')); if(o.id!=='/verix/operational/'||a.id!=='/verix/admin/'||o.id===a.id) process.exit(1); if(o.scope!=='./'||a.scope!=='./admin/') process.exit(1)"
+          node -e "const fs=require('fs'); const o=JSON.parse(fs.readFileSync('dist/site.webmanifest')); const a=JSON.parse(fs.readFileSync('dist/admin.webmanifest')); if(o.id!=='/verix/operational-v4/'||a.id!=='/verix/admin-v4/'||o.id===a.id) process.exit(1); if(o.scope!=='./'||a.scope!=='./admin/') process.exit(1)"
           test -s dist/admin.webmanifest
-          grep -q 'href="../admin.webmanifest?v=20261019-admin3"' dist/admin/index.html
-          grep -q '"start_url": "./admin/index.html"' dist/admin.webmanifest
+          grep -q 'href="./manifest.webmanifest?v=20261019-admin4"' dist/admin/index.html
+          grep -q '"start_url": "./admin/index.html?app=verix-admin-v4"' dist/admin.webmanifest
           grep -q '"scope": "./admin/"' dist/admin.webmanifest
           test -s dist/admin/index.html
+          test -s dist/admin/manifest.webmanifest
+          node -e "const fs=require('fs'); const a=JSON.parse(fs.readFileSync('dist/admin/manifest.webmanifest')); if(a.id!=='/verix/admin-v4/'||a.start_url!=='./index.html?app=verix-admin-v4'||a.scope!=='./') process.exit(1)"
           test -s dist/admin/sw.js
           node --check dist/admin/sw.js
           grep -q "isAdminManifest" dist/sw.js
@@ -212,17 +214,19 @@ jobs:
           const fs = require('node:fs');
           const path = require('node:path');
           const manifest = JSON.parse(fs.readFileSync('dist/admin.webmanifest', 'utf8'));
-          if (manifest.id !== '/verix/admin/' ||
-              manifest.start_url !== './admin/index.html' ||
+          const nestedManifest = JSON.parse(fs.readFileSync('dist/admin/manifest.webmanifest', 'utf8'));
+          if (manifest.id !== '/verix/admin-v4/' ||
+              manifest.start_url !== './admin/index.html?app=verix-admin-v4' ||
               manifest.scope !== './admin/' ||
               manifest.display !== 'standalone') {
             throw new Error('Admin PWA must have its own install identity and narrower /admin/ scope');
           }
+          if (nestedManifest.id !== '/verix/admin-v4/' || nestedManifest.start_url !== './index.html?app=verix-admin-v4' || nestedManifest.scope !== './') throw new Error('Admin-scoped manifest must use Admin-only identity, start URL and scope');
           const html = fs.readFileSync('dist/admin/index.html', 'utf8');
           const rootAdmin = fs.readFileSync('dist/admin_v2.html', 'utf8');
           const sourceHtml = fs.readFileSync('admin_v2.html', 'utf8');
           for (const required of [
-            'rel="manifest" href="../admin.webmanifest?v=20261019-admin3"',
+            'rel="manifest" href="./manifest.webmanifest?v=20261019-admin4"',
             'id="installAdminApp"',
             'beforeinstallprompt',
             '../verix-presence-v1.js'
@@ -238,12 +242,16 @@ jobs:
             throw new Error('Mobile redirect or install fallback instructions missing from Admin source');
           }
           if (!manifest.icons.some(icon => icon.src.includes('admin-icon-192.png')) || !manifest.icons.some(icon => icon.src.includes('admin-icon-512.png'))) throw new Error('Admin manifest must use distinct raster icons at 192px and 512px');
+          for (const icon of nestedManifest.icons || []) {
+            const iconPath = path.join('dist/admin', icon.src.split('?')[0]);
+            if (!fs.existsSync(iconPath)) throw new Error('Admin-scoped PWA icon missing: ' + iconPath);
+          }
           for (const icon of manifest.icons || []) {
             const iconPath = path.join('dist', icon.src.split('?')[0]);
             if (!fs.existsSync(iconPath)) throw new Error('Admin PWA icon missing: ' + iconPath);
           }
           if (!fs.existsSync('dist/admin/sw.js')) throw new Error('Dedicated Admin worker is missing');
-          console.log('Separate PWA scope, post-login install control, worker and icons: OK');
+          console.log('Separate Admin manifest URL, unique IDs/start URLs, post-login install control, worker and icons: OK');
           NODE
 
       - name: Upload Pages artifact
