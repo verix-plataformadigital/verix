@@ -73,10 +73,35 @@ Deno.serve(async (request: Request): Promise<Response> => {
   }
 
   const url = new URL(request.url);
-  const prefixAt = url.pathname.indexOf(FUNCTION_PREFIX.slice(0, -1));
-  if (prefixAt < 0) return jsonError("Not found", 404);
+  const pathname = url.pathname;
 
-  let relativePath = url.pathname.slice(prefixAt + FUNCTION_PREFIX.length - 1).replace(/^\/+/, "");
+  // Supabase's gateway can expose either the full external path or only the
+  // path after the function name. Accept both forms and the root URL.
+  const routePrefixes = [
+    FUNCTION_PREFIX.slice(0, -1),
+    "/verix-admin-pwa"
+  ];
+  let routedPath = pathname;
+  let matchedPrefix = false;
+
+  for (const prefix of routePrefixes) {
+    if (pathname === prefix) {
+      routedPath = "";
+      matchedPrefix = true;
+      break;
+    }
+    if (pathname.startsWith(prefix + "/")) {
+      routedPath = pathname.slice(prefix.length);
+      matchedPrefix = true;
+      break;
+    }
+  }
+
+  if (!matchedPrefix && pathname.startsWith("/functions/v1/")) {
+    return jsonError("Not found", 404);
+  }
+
+  let relativePath = routedPath.replace(/^\/+/, "");
   if (!relativePath) relativePath = "index.html";
   try { relativePath = decodeURIComponent(relativePath); }
   catch { return jsonError("Invalid path", 400); }
