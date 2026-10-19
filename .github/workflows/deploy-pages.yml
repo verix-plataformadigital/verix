@@ -241,7 +241,7 @@ jobs:
           const path = require('node:path');
           const manifest = JSON.parse(fs.readFileSync('dist/admin.webmanifest', 'utf8'));
           const vercelConfig = JSON.parse(fs.readFileSync('vercel.json', 'utf8'));
-          if (vercelConfig.buildCommand !== 'npm run build:secure' || vercelConfig.outputDirectory !== 'dist/admin') throw new Error('Vercel must publish only the self-contained Admin bundle on its own origin');
+          if (vercelConfig.buildCommand !== 'VERIX_ADMIN_PWA_HOST=1 npm run build:secure' || vercelConfig.outputDirectory !== 'dist/admin') throw new Error('Vercel must publish only the self-contained Admin bundle on its own origin');
           const nestedManifest = JSON.parse(fs.readFileSync('dist/admin/manifest.webmanifest', 'utf8'));
           if (manifest.id !== '/verix/admin-v4/' ||
               manifest.start_url !== './admin/index.html?app=verix-admin-v4' ||
