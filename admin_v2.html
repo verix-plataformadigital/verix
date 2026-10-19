@@ -197,7 +197,7 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
       </article>
     </section>
 
-    <footer class="footer-note">Definições: “Hoje” começa às 00:00 em Europe/Lisbon; “7 dias” é uma janela móvel de sete dias; “Histórico Total” corresponde ao histórico disponível até 365 dias. “Utilizador ativo” é uma instalação técnica distinta, não uma pessoa identificada. As métricas dependem dos eventos efetivamente enviados por cada versão cliente.</footer>
+    <footer class="footer-note">Definições: “Hoje” começa às 00:00 em Europe/Lisbon; “7 dias” é uma janela móvel de sete dias; “Histórico Total” acumula os registos desde o reset global da versão estável registado em <strong id="historyResetPoint">a confirmar</strong>. “Utilizador ativo” é uma instalação técnica distinta, não uma pessoa identificada. As métricas dependem dos eventos efetivamente enviados por cada versão cliente.</footer>
   </main>
 </div>
 
@@ -217,7 +217,7 @@ const PAGE_TEXT={
  legislation:['Legislação copiada','Elementos mais copiados e utilização comprovada pelo evento de cópia.'],
  errors:['Erros técnicos','Causas, matrículas consultadas, tempos, respostas HTTP e tentativas de ligação disponíveis. Um erro técnico não significa que o veículo não tenha seguro.']
 };
-const PERIODS=[{key:'today',label:'Hoje',startLabel:'desde as 00:00'},{key:'week',label:'7 dias',startLabel:'últimos 7 dias'},{key:'total',label:'Histórico Total',startLabel:'últimos 365 dias'}];
+const PERIODS=[{key:'today',label:'Hoje',startLabel:'desde as 00:00'},{key:'week',label:'7 dias',startLabel:'últimos 7 dias'},{key:'total',label:'Histórico Total',startLabel:'desde o reset da versão estável'}];
 const $=id=>document.getElementById(id);
 const escValue=v=>String(v===null||v===undefined||v===''?'—':v);
 const nf=new Intl.NumberFormat('pt-PT');
@@ -270,7 +270,18 @@ function logout(){
   $('app').hidden=true;$('loginScreen').hidden=false;$('password').value='';$('loginError').textContent='';setStatus('','Sessão encerrada');
 }
 function periodLabel(key){const found=PERIODS.find(x=>x.key===key);return found?found.label:'Histórico Total';}
-function periodCaption(){const p=PERIODS.find(x=>x.key===currentPeriod);$('periodCaption').textContent=p?p.label+' · '+p.startLabel:'Histórico disponível';}
+function historyResetTimestamp(){
+  const start=dashboardData&&dashboardData.ranges&&dashboardData.ranges.total&&dashboardData.ranges.total.start;
+  if(!start)return 'último reset registado';
+  const d=new Date(start);
+  if(!Number.isFinite(d.getTime()))return 'último reset registado';
+  return new Intl.DateTimeFormat('pt-PT',{timeZone:'Europe/Lisbon',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(d);
+}
+function periodCaption(){
+  const p=PERIODS.find(x=>x.key===currentPeriod);
+  const startLabel=currentPeriod==='total'?'desde '+historyResetTimestamp():(p?p.startLabel:'');
+  $('periodCaption').textContent=p?p.label+' · '+startLabel:'Histórico disponível';
+}
 function activePage(page){
   if(!PAGE_TEXT[page])return;currentPage=page;
   document.querySelectorAll('.nav-button').forEach(b=>{const on=b.dataset.page===page;b.setAttribute('aria-current',on?'page':'false');});
@@ -322,13 +333,13 @@ function renderAll(){
     ['Instalações ativas nos últimos 3 min',fmt(liveUsers.activeInstallationsLast3Minutes),'Instalações distintas que iniciaram uma consulta.','blue'],
     ['Instalações ativas hoje',fmt(getPeriodData(dashboardData.users&&dashboardData.users.periods,'today').activeInstallations),'Atividade real desde a meia-noite de Lisboa.','blue'],
     ['Instalações ativas · 7 dias',fmt(getPeriodData(dashboardData.users&&dashboardData.users.periods,'week').activeInstallations),'Instalações distintas na janela móvel de sete dias.','blue'],
-    ['Instalações ativas · histórico',fmt(getPeriodData(dashboardData.users&&dashboardData.users.periods,'total').activeInstallations),'Instalações distintas nos últimos 365 dias.','blue']
+    ['Instalações ativas · histórico',fmt(getPeriodData(dashboardData.users&&dashboardData.users.periods,'total').activeInstallations),'Instalações distintas desde o reset global registado.','blue']
   ]);
   renderHourly('activityHourlyChart','activityHourlyTable',null);
   appendCards('legislationCards',[
     ['Cópias no período',fmt(legislation.copies),'Ação explícita de cópia registada pela telemetria.','accent'],
     ['Instalações que copiaram',fmt(legislation.users),'Instalações distintas com pelo menos uma cópia.','blue'],
-    ['Período',periodLabel(currentPeriod),currentPeriod==='total'?'Janela histórica de 365 dias.':currentPeriod==='week'?'Últimos sete dias.':'Hoje desde as 00:00.','']
+    ['Período',periodLabel(currentPeriod),currentPeriod==='total'?'Acumulado desde o reset global registado.':currentPeriod==='week'?'Últimos sete dias.':'Hoje desde as 00:00.','']
   ]);
   renderLegislationItems(legislation.topItems||[]);
   appendCards('errorCards',[
@@ -338,7 +349,7 @@ function renderAll(){
     ['Consultas classificadas com erro',fmt(insurance.errors),'Resultados finais de consulta classificados como erro.','red']
   ]);
   if(currentPage==='errors')renderErrorLedger();
-  $('lastUpdated').textContent='Dados agregados atualizados: '+prettyDate(dashboardData.generatedAt||new Date().toISOString())+' · janela histórica de 365 dias.';
+  $('lastUpdated').textContent='Dados agregados atualizados: '+prettyDate(dashboardData.generatedAt||new Date().toISOString())+' · histórico desde o reset global registado.';
 }
 function renderQuality(insurance){
   const host=$('queryQuality');host.replaceChildren();
@@ -350,7 +361,7 @@ function renderPeriodCompare(){
   const host=$('periodCompare');host.replaceChildren();
   PERIODS.forEach(p=>{
     const i=getPeriodData(dashboardData.insurance,p.key),u=getPeriodData(dashboardData.users&&dashboardData.users.periods,p.key),l=getPeriodData(dashboardData.legislation,p.key);
-    const box=document.createElement('div');box.className='compare-card';const title=document.createElement('h3');title.textContent=p.key==='total'?'Histórico Total · 365 dias':p.label;box.appendChild(title);
+    const box=document.createElement('div');box.className='compare-card';const title=document.createElement('h3');title.textContent=p.key==='total'?'Histórico Total · desde reset':p.label;box.appendChild(title);
     [['Consultas iniciadas',fmt(i.consultations)],['Com seguro',fmt(i.insured)],['Sem registo',fmt(i.uninsured)],['Percentagem sem registo',pct(i.uninsuredPct)],['Erros',fmt(i.errors)],['Instalações ativas',fmt(u.activeInstallations)],['Legislação copiada',fmt(l.copies)]].forEach(pair=>{
       const row=document.createElement('div');row.className='compare-row';const k=document.createElement('span');k.textContent=pair[0];const v=document.createElement('strong');v.textContent=pair[1];row.append(k,v);box.appendChild(row);
     });host.appendChild(box);
@@ -358,7 +369,7 @@ function renderPeriodCompare(){
 }
 function renderInsurancePeriodTable(){
   const rows=PERIODS.map(p=>{const i=getPeriodData(dashboardData.insurance,p.key);return [
-    p.key==='total'?'Histórico Total · 365 dias':p.label,fmt(i.consultations),fmt(i.finals),fmt(i.insured),fmt(i.uninsured),pct(i.uninsuredPct),fmt(i.errors),fmt(i.pending),fmt(i.incomplete)
+    p.key==='total'?'Histórico Total · desde reset':p.label,fmt(i.consultations),fmt(i.finals),fmt(i.insured),fmt(i.uninsured),pct(i.uninsuredPct),fmt(i.errors),fmt(i.pending),fmt(i.incomplete)
   ];});
   $('insurancePeriodTable').replaceChildren(makeTable(['Período','Iniciadas','Finais únicos','Com seguro','Sem registo','% sem registo¹','Erros','Pendentes','Incompletas'],rows));
 }
