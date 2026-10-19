@@ -118,7 +118,7 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
 .metric-card.amber .metric-value{color:var(--amber)}
 .metric-card.red .metric-value{color:var(--red)}
 .metric-note{margin-top:auto;padding-top:2px;color:#64747c;font-size:12px;line-height:1.5}
-.base-info{margin:0 0 17px;padding:10px 12px;color:var(--muted);background:#eaf1f4;border:1px solid #dce6ea;border-radius:8px;font-size:11px;line-height:1.5;text-align:left}
+.base-info{margin:-4px 0 16px;padding:0;border:0;background:transparent;color:var(--muted);font-size:11px;line-height:1.5;text-align:left}
 .refresh-time{margin:0 0 14px;color:var(--muted);font-size:11px;text-align:right}
 
 /* Panels, chart, tables */
@@ -232,11 +232,11 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
   .panel.wide{grid-column:auto}
   .period-bar{align-items:flex-start}
   .hourly-chart{gap:2px}
-  .hour-slot{grid-template-rows:24px 80px 16px}
-  .bar-pair{height:80px}
+  .hour-slot{grid-template-rows:23px 72px 15px}
+  .bar-pair{height:72px}
 }
 @media(max-width:600px){
-  .main-area{padding:17px 12px 23px}
+  .main-area{min-width:0;padding:17px 12px 23px}
   .topbar{display:block;padding-bottom:16px;margin-bottom:17px}
   .topbar h1{font-size:27px}
   .topbar p{font-size:12.5px}
