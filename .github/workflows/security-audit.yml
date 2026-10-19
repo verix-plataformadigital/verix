@@ -129,6 +129,7 @@ jobs:
           }
           const adminEntry = fs.readFileSync('dist/admin/index.html', 'utf8');
           const sourceHtml = fs.readFileSync('admin_v2.html', 'utf8');
+          const adminOriginProxy = fs.readFileSync('supabase/functions/verix-admin-pwa/index.ts', 'utf8');
           const scopedAdminManifest = JSON.parse(fs.readFileSync('dist/admin/manifest.webmanifest', 'utf8'));
           if (scopedAdminManifest.id !== '/verix/admin-v4/' || scopedAdminManifest.start_url !== './index.html?app=verix-admin-v4' || scopedAdminManifest.scope !== './') throw new Error('Nested Admin manifest identity/start_url/scope is invalid');
           if (scopedAdminManifest.id === operationalManifest.id || scopedAdminManifest.start_url === operationalManifest.start_url) throw new Error('Admin and Operational identities/start URLs must differ');
@@ -138,7 +139,18 @@ jobs:
           }
           const vercelConfig = JSON.parse(fs.readFileSync('vercel.json', 'utf8'));
           if (vercelConfig.buildCommand !== 'VERIX_ADMIN_PWA_HOST=1 npm run build:secure' || vercelConfig.outputDirectory !== 'dist/admin') {
-            throw new Error('Vercel must build the installable Admin only on its separate origin');
+            throw new Error('Standalone Admin build settings are invalid');
+          }
+          if (!sourceHtml.includes('functions/v1/verix-admin-pwa/index.html') ||
+              !adminOriginProxy.includes('UPSTREAM_ROOT') ||
+              !adminOriginProxy.includes('rewriteHtml') ||
+              !adminOriginProxy.includes('rewriteManifest')) {
+            throw new Error('Admin must route to the isolated Supabase origin through the static proxy');
+          }
+          for (const file of ['supabase/functions/admin-auth-v2/index.ts','supabase/functions/stats-v2/index.ts','supabase/functions/telemetry-v2/index.ts']) {
+            if (!fs.readFileSync(file, 'utf8').includes('https://onilkakbgpklxvxuxmks.supabase.co')) {
+              throw new Error('Isolated Admin origin missing from backend CORS allowlist: ' + file);
+            }
           }
           for (const icon of manifest.icons || []) {
             const iconPath = path.join('dist', icon.src.split('?')[0]);
