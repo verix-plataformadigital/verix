@@ -278,8 +278,15 @@ assert.match(hourlyMigration, /count\(DISTINCT e\.query_id\) FILTER/, "hourly co
 assert.match(hourlyMigration, /e\.event='vehicle_lookup'/, "hourly consultations must count actual lookup starts");
 assert.match(hourlyMigration, /count\(DISTINCT e\.installation_id\) FILTER/, "hourly presence must count distinct installations");
 assert.match(hourlyMigration, /e\.event IN \('app_open','heartbeat'\)/, "hourly presence must use app-open/heartbeat events");
-assert.ok(admin.includes("Distribuição horária de hoje"), "dashboard must identify the hourly chart as today-only and avoid showing it for other selected periods");
+assert.ok(admin.includes("<h2>Atividade por hora</h2>") && admin.includes("consultationLabel.textContent=String(consultationValue)"), "dashboard chart must show exact consultation values next to the bars without hover");
+assert.match(admin, /hour-values span\{display:block/);
+assert.match(admin, /grid-template-rows:23px 72px 15px/, "responsive chart layout must reserve space for visible values, bars and hour labels");
+assert.match(admin, /<details class="hourly-values">\s*<summary>Ver tabela com os valores exatos<\/summary>/, "the full hourly table must be available in a collapsed expander");
+assert.doesNotMatch(admin, /<details class="hourly-values"\s+open/, "hourly tables must start collapsed to reduce page height");
 assert.ok(admin.includes("Distribuição horária de hoje"), "usage page must identify its chart as today-only");
+assert.match(admin, /#overviewLiveCards\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/, "recent live metrics must not leave half the card row blank");
+assert.match(admin, /\.main-area\{min-width:0;padding:17px/, "Admin overview must use condensed vertical spacing");
+assert.match(admin, /\.base-info\{margin:-4px 0 16px;padding:0;border:0;background:transparent/, "registered installation total must be a compact note, not a full-width card");
 assert.match(adminV3Migration, /count\(DISTINCT e\.query_id\)/, "the backend contract must deduplicate consultations by query ID");
 assert.ok(admin.includes("activeUsers"), "hourly chart must use the active-installation count");
 
