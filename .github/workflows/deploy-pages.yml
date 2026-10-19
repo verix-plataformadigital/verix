@@ -193,6 +193,32 @@ jobs:
           grep -q 'rel="icon"' dist/verix-app.html
           grep -q 'verix-emblem.svg' dist/verix-app.html
 
+      - name: Validate installable admin app
+        shell: bash
+        run: |
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const manifest = JSON.parse(fs.readFileSync('dist/admin.webmanifest', 'utf8'));
+          if (manifest.id !== './admin_v2.html' ||
+              manifest.start_url !== './admin_v2.html' ||
+              manifest.scope !== './' ||
+              manifest.display !== 'standalone') {
+            throw new Error('Admin PWA manifest identity or launch settings are invalid');
+          }
+          const html = fs.readFileSync('dist/admin_v2.html', 'utf8');
+          if (!html.includes('rel="manifest" href="./admin.webmanifest?v=20261019"') ||
+              !html.includes('id="installAdminLogin"') ||
+              !html.includes('beforeinstallprompt')) {
+            throw new Error('Admin PWA manifest link or install controls are missing');
+          }
+          for (const icon of manifest.icons || []) {
+            const iconPath = path.join('dist', icon.src.split('?')[0]);
+            if (!fs.existsSync(iconPath)) throw new Error('Admin PWA icon missing: ' + iconPath);
+          }
+          console.log('Admin PWA manifest, launch target, install controls and icons: OK');
+          NODE
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
