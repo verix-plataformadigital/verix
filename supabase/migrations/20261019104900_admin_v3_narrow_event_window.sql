@@ -88,7 +88,7 @@ query_finals AS (
     e.query_id,
     count(*) AS final_count,
     count(DISTINCT e.event) AS final_type_count,
-    min(e.event) AS single_final_event,
+    min(e.event) AS single_final_event
   FROM ev e
   JOIN query_starts q ON q.query_id = e.query_id
   WHERE e.event IN ('vehicle_insurance_yes', 'vehicle_insurance_no', 'vehicle_insurance_error')
