@@ -47,6 +47,11 @@ assert.ok(dailyTrendMigration.includes("uniqueInstallations30d") && dailyTrendMi
 assert.ok(admin.includes('id="dailyTrendComparison"') && admin.includes('function renderDailyTrendPlot') && admin.includes('dailyTrendUsersChart'), "30-day trend must render separate readable daily charts for searches and active installations");
 assert.ok(admin.includes("trendDailyDelta") && admin.includes("Valores diários e variação face ao dia anterior"), "30-day trend must provide exact daily values and day-over-day change");
 assert.ok(admin.includes("Semana anterior:") && admin.includes("Dia em curso"), "30-day trend must compare full weeks and mark today's partial counts rather than treating them as a complete day");
+const trendDateParserMatch = admin.match(/function trendDayParts\(value\)\{[\s\S]*?\n\}/);
+assert.ok(trendDateParserMatch, "30-day trend must contain its date parser");
+const trendDayParts = vm.runInNewContext("(" + trendDateParserMatch[0] + ")");
+assert.equal(JSON.stringify(trendDayParts("2026-10-20")), JSON.stringify({year:2026,month:10,day:20}), "30-day trend date parser must accept ISO calendar dates returned by PostgreSQL");
+assert.equal(trendDayParts("not-a-date"), null, "30-day trend date parser must reject invalid calendar-date strings");
 assert.ok(adminPwaEntry.includes('rel="manifest" href="./manifest.webmanifest?v=20261019-admin5"'), "GitHub Pages Admin must link its own manifest under /admin/");
 assert.ok(admin.includes("isSharedGithubPagesOrigin") && admin.includes("isAdminScopedPath"), "Admin installation guard must allow installation only from its dedicated /admin/ path");
 assert.ok(admin.includes("VERIX_ADMIN_PWA_INSTALLED_V5"), "Admin installation flag must be versioned so old same-origin attempts cannot hide the new install control");
