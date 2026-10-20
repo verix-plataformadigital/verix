@@ -531,7 +531,7 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
             </div>
           </section>
         </div>
-        <details class="hourly-values" open>
+        <details class="hourly-values">
           <summary>Valores diários e variação face ao dia anterior</summary>
           <div id="dailyTrendTable" class="hourly-table-content"></div>
         </details>
@@ -1039,7 +1039,11 @@ async function loadDailyTrend(force){
     if(!result.data||!Array.isArray(result.data.days)||result.data.days.length!==30)throw new Error('A resposta não contém 30 dias de histórico.');
     dailyTrendData=result.data;dailyTrendLoadedAt=Date.now();renderDailyTrend();
   }catch(error){
-    if(!dailyTrendData)showEmpty('dailyTrendChart','Não foi possível carregar o histórico diário: '+(error.message||'erro desconhecido')+'. Tenta atualizar.');
+    if(!dailyTrendData){
+      const message='Não foi possível carregar o histórico diário: '+(error.message||'erro desconhecido')+'. Tenta atualizar.';
+      showEmpty('dailyTrendChart',message);
+      showEmpty('dailyTrendUsersChart',message);
+    }
     showNotice('Histórico diário indisponível: '+(error.message||'erro desconhecido'),'warning');
   }finally{dailyTrendBusy=false;}
 }
