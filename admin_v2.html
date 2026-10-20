@@ -860,7 +860,7 @@ function trendSvgElement(name,attrs,text){
   return node;
 }
 function trendDayParts(value){
-  const match=String(value||'').match(/^(\\d{4})-(\\d{2})-(\\d{2})$/);
+  const match=String(value||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
   return match?{year:Number(match[1]),month:Number(match[2]),day:Number(match[3])}:null;
 }
 function trendShortDate(value){
