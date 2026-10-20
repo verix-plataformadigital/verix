@@ -63,6 +63,14 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
 
 .install-help{margin:8px 0 0;color:var(--muted);font-size:11px;line-height:1.5}
 .login-error{min-height:22px;color:var(--red);font-size:12px;margin-top:8px}
+.passkey-login-button{width:100%;margin-top:8px;min-height:42px}
+.passkey-login-hint{margin:10px 0 0;color:var(--muted);font-size:11px;line-height:1.45}
+.passkey-dialog{width:min(92vw,430px);max-width:calc(100vw - 28px);padding:24px;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--ink);box-shadow:0 24px 80px rgba(15,35,45,.24)}
+.passkey-dialog::backdrop{background:rgba(13,29,37,.48);backdrop-filter:blur(2px)}
+.passkey-dialog h2{margin:0 0 8px;font-size:20px}
+.passkey-dialog p{margin:7px 0 13px;color:var(--muted);font-size:12px;line-height:1.5}
+.passkey-dialog-actions{display:flex;gap:9px;justify-content:flex-end;flex-wrap:wrap;margin-top:14px}
+.passkey-dialog-actions button{min-width:110px}
 
 /* Application shell and navigation */
 .app-shell{min-height:100dvh;display:grid;grid-template-columns:244px minmax(0,1fr)}
@@ -417,9 +425,25 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
     <label class="sr-only" for="password">Password de administração</label>
     <input id="password" class="text-input" type="password" autocomplete="current-password" placeholder="Introduza a password" required>
     <button id="loginButton" class="primary-button" type="submit">Entrar no painel</button>
+    <button id="passkeyLoginButton" class="secondary-button passkey-login-button" type="button" hidden>Entrar com biometria</button>
+    <p id="passkeyLoginHint" class="passkey-login-hint">Depois de entrares com a password, podes ativar a biometria neste telemóvel.</p>
     <div id="loginError" class="login-error" role="alert" aria-live="polite"></div>
   </form>
 </section>
+
+<dialog id="passkeyDialog" class="passkey-dialog" aria-labelledby="passkeyDialogTitle">
+  <form id="passkeyDialogForm" method="dialog">
+    <h2 id="passkeyDialogTitle">Ativar biometria</h2>
+    <p>Confirma a password atual para registar uma passkey neste dispositivo. A impressão digital ou o rosto são verificados pelo Android; não são enviados para o VÉRIX.</p>
+    <label class="field-label" for="passkeyPassword">Password de administração</label>
+    <input id="passkeyPassword" class="text-input" type="password" autocomplete="current-password" placeholder="Confirma a password" required>
+    <div id="passkeyDialogMessage" class="login-error" role="alert" aria-live="polite"></div>
+    <div class="passkey-dialog-actions">
+      <button id="passkeyDialogCancel" class="secondary-button" type="button">Cancelar</button>
+      <button id="passkeyEnrollButton" class="primary-button" type="button">Ativar neste telemóvel</button>
+    </div>
+  </form>
+</dialog>
 
 <div id="app" class="app-shell" hidden>
   <aside class="sidebar">
@@ -450,6 +474,7 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
       <div class="top-actions">
         <span id="backendStatus" class="status-pill"><span class="status-dot" aria-hidden="true"></span><span id="backendStatusText">A ligar</span></span>
         <button id="refreshBtn" class="secondary-button" type="button">↻ Atualizar</button>
+        <button id="passkeyManageBtn" class="secondary-button" type="button" hidden>Ativar biometria</button>
         <button id="installAdminApp" class="secondary-button install-button" type="button">⇧ Instalar VÉRIX Admin</button>
         <button id="logoutBtn" class="ghost-button" type="button">Sair</button>
       </div>
@@ -749,15 +774,176 @@ async function request(url,options){
   }catch(e){if(e&&e.name==='AbortError')throw new Error('Tempo de resposta excedido.');if(e instanceof TypeError)throw new Error('Não foi possível comunicar com o backend.');throw e;}
   finally{clearTimeout(timer);}
 }
+async function adminAuthAction(payload,authenticated){
+  const headers={'Content-Type':'application/json'};
+  if(authenticated){
+    if(!token)throw new Error('A sessão expirou. Entra novamente com a password.');
+    headers.Authorization='Bearer '+token;
+  }
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000);
+  try{
+    const response=await fetch(AUTH_API,{method:'POST',headers,body:JSON.stringify(payload),mode:'cors',credentials:'omit',cache:'no-store',signal:controller.signal});
+    const text=await response.text();let data;
+    try{data=JSON.parse(text);}catch(_){data={ok:false};}
+    if(response.status===401&&authenticated&&data.error==='unauthorized'){logout();throw new Error('Sessão expirada. Entra novamente.');}
+    if(!response.ok||data.ok!==true){
+      const messages={
+        rate_limited:'Demasiadas tentativas. Aguarda alguns minutos e volta a tentar.',
+        invalid_password:'Password incorreta.',
+        passkey_not_registered:'Ainda não há biometria registada para este endereço. Entra com a password e ativa-a no painel.',
+        passkey_challenge_expired:'O pedido expirou. Volta a tentar.',
+        passkey_already_registered:'Esta passkey já está registada neste endereço.',
+        origin_not_allowed:'Este endereço não está autorizado para autenticação biométrica.',
+        passkey_authentication_not_verified:'A verificação biométrica não foi validada.',
+        passkey_registration_not_verified:'O registo biométrico não foi validado.'
+      };
+      throw new Error(messages[data.error]||'Não foi possível concluir a autenticação biométrica. A password continua disponível.');
+    }
+    return data;
+  }catch(error){
+    if(error&&error.name==='AbortError')throw new Error('O pedido demorou demasiado tempo. Volta a tentar.');
+    if(error instanceof TypeError)throw new Error('Não foi possível comunicar com o serviço de autenticação.');
+    throw error;
+  }finally{clearTimeout(timer);}
+}
+function supportsPasskeys(){
+  return !!(window.isSecureContext&&navigator.credentials&&typeof window.PublicKeyCredential==='function');
+}
+function passkeyBytesFromBase64Url(value){
+  const text=String(value||'').replace(/-/g,'+').replace(/_/g,'/');
+  const binary=atob(text+'='.repeat((4-text.length%4)%4));
+  return Uint8Array.from(binary,c=>c.charCodeAt(0));
+}
+function passkeyBase64UrlFromBuffer(value){
+  const bytes=new Uint8Array(value),parts=[];
+  for(let i=0;i<bytes.length;i+=0x8000)parts.push(String.fromCharCode(...bytes.subarray(i,Math.min(i+0x8000,bytes.length))));
+  return btoa(parts.join('')).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/g,'');
+}
+function passkeyCreationOptions(options){
+  return {
+    ...options,
+    challenge:passkeyBytesFromBase64Url(options.challenge),
+    user:{...options.user,id:passkeyBytesFromBase64Url(options.user.id)},
+    excludeCredentials:(options.excludeCredentials||[]).map(item=>({...item,id:passkeyBytesFromBase64Url(item.id)}))
+  };
+}
+function passkeyRequestOptions(options){
+  return {
+    ...options,
+    challenge:passkeyBytesFromBase64Url(options.challenge),
+    allowCredentials:(options.allowCredentials||[]).map(item=>({...item,id:passkeyBytesFromBase64Url(item.id)}))
+  };
+}
+function serializePasskeyCredential(credential,ceremony){
+  const response=credential.response;
+  const result={
+    id:credential.id,
+    rawId:passkeyBase64UrlFromBuffer(credential.rawId),
+    type:credential.type,
+    authenticatorAttachment:credential.authenticatorAttachment||'platform',
+    clientExtensionResults:typeof credential.getClientExtensionResults==='function'?credential.getClientExtensionResults():{},
+    response:{clientDataJSON:passkeyBase64UrlFromBuffer(response.clientDataJSON)}
+  };
+  if(ceremony==='registration'){
+    result.response.attestationObject=passkeyBase64UrlFromBuffer(response.attestationObject);
+    result.response.transports=typeof response.getTransports==='function'?response.getTransports():[];
+  }else{
+    result.response.authenticatorData=passkeyBase64UrlFromBuffer(response.authenticatorData);
+    result.response.signature=passkeyBase64UrlFromBuffer(response.signature);
+    result.response.userHandle=response.userHandle?passkeyBase64UrlFromBuffer(response.userHandle):null;
+  }
+  return result;
+}
 async function login(password){
   const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),12000);
   try{
     const r=await fetch(AUTH_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password}),mode:'cors',credentials:'omit',cache:'no-store',signal:ac.signal});
     const text=await r.text();let d;try{d=JSON.parse(text);}catch(_){d={ok:false};}
-    if(!r.ok||d.ok!==true||!d.token)throw new Error(d.error==='rate_limited'?'Demasiadas tentativas. Aguarde antes de voltar a tentar.':'Credenciais inválidas ou serviço de autenticação indisponível.');
+    if(!r.ok||d.ok!==true||!d.token)throw new Error(d.error==='rate_limited'?'Demasiadas tentativas. Aguarde antes de voltar a tentar.':d.error==='invalid_password'?'Password incorreta.':'Credenciais inválidas ou serviço de autenticação indisponível.');
     token=String(d.token);sessionStorage.setItem(TOKEN_KEY,token);
   }catch(e){if(e&&e.name==='AbortError')throw new Error('Tempo de autenticação excedido.');throw e;}
   finally{clearTimeout(tm);}
+}
+async function refreshLoginPasskeyState(){
+  const button=$('passkeyLoginButton'),hint=$('passkeyLoginHint');
+  if(!supportsPasskeys()){
+    button.hidden=true;hint.hidden=false;
+    hint.textContent='A biometria exige um navegador compatível e uma ligação HTTPS. A password continua disponível.';
+    return;
+  }
+  try{
+    const state=await adminAuthAction({action:'passkey-status-public'},false);
+    button.hidden=!state.available;hint.hidden=!!state.available;
+    hint.textContent='Depois de entrares com a password, podes ativar a biometria neste telemóvel.';
+  }catch(_){
+    button.hidden=true;hint.hidden=false;
+    hint.textContent='Para ativar a biometria, entra primeiro com a password.';
+  }
+}
+async function refreshPasskeyManageState(){
+  const button=$('passkeyManageBtn');
+  if(!token||!supportsPasskeys()){button.hidden=true;return;}
+  button.hidden=false;button.disabled=false;button.textContent='Configurar biometria';
+  try{
+    const state=await adminAuthAction({action:'passkey-status'},true);
+    button.textContent=state.available?'Adicionar outra passkey':'Ativar biometria';
+    button.title=state.available?'Registar outro método neste dispositivo ou endereço.':'Ativar o acesso biométrico neste dispositivo.';
+  }catch(_){button.textContent='Configurar biometria';}
+}
+function openPasskeyDialog(){
+  if(!supportsPasskeys()){
+    showNotice('Este navegador ou dispositivo não disponibiliza passkeys neste contexto. Usa o Chrome em HTTPS e confirma que existe bloqueio de ecrã configurado.','warning');return;
+  }
+  $('passkeyPassword').value='';$('passkeyDialogMessage').textContent='';
+  $('passkeyEnrollButton').disabled=false;$('passkeyEnrollButton').textContent='Ativar neste telemóvel';
+  if(typeof $('passkeyDialog').showModal==='function')$('passkeyDialog').showModal();
+  else showNotice('O navegador não suporta a janela segura de configuração. Atualiza o Chrome.','warning');
+}
+async function registerPasskey(){
+  const password=$('passkeyPassword').value;
+  const button=$('passkeyEnrollButton'),message=$('passkeyDialogMessage');
+  if(!password){message.textContent='Confirma primeiro a password atual.';$('passkeyPassword').focus();return;}
+  button.disabled=true;button.textContent='A aguardar confirmação…';message.textContent='';
+  try{
+    const begin=await adminAuthAction({action:'passkey-register-options',password},true);
+    const credential=await navigator.credentials.create({publicKey:passkeyCreationOptions(begin.options)});
+    if(!credential)throw new Error('O dispositivo cancelou o registo biométrico.');
+    const saved=await adminAuthAction({
+      action:'passkey-register-verify',password,challenge:begin.options.challenge,
+      credential:serializePasskeyCredential(credential,'registration')
+    },true);
+    if(!saved.registered)throw new Error('O servidor não confirmou o registo biométrico.');
+    $('passkeyDialog').close();$('passkeyPassword').value='';
+    showNotice('Biometria ativada. No próximo acesso a este endereço já podes entrar sem escrever a password.','success');
+    await refreshPasskeyManageState();void refreshLoginPasskeyState();
+  }catch(error){
+    message.textContent=error&&error.message?error.message:'Não foi possível ativar a biometria. A password mantém-se disponível.';
+  }finally{button.disabled=false;button.textContent='Ativar neste telemóvel';}
+}
+async function loginWithPasskey(){
+  const button=$('passkeyLoginButton'),error=$('loginError');
+  if(!supportsPasskeys()){error.textContent='Este navegador não suporta autenticação biométrica neste contexto.';return;}
+  button.disabled=true;button.textContent='A aguardar biometria…';error.textContent='';
+  try{
+    const begin=await adminAuthAction({action:'passkey-login-options'},false);
+    if(!begin.available||!begin.options)throw new Error('Ainda não há biometria registada. Entra com a password e ativa-a no painel.');
+    const credential=await navigator.credentials.get({publicKey:passkeyRequestOptions(begin.options)});
+    if(!credential)throw new Error('A autenticação biométrica foi cancelada.');
+    const result=await adminAuthAction({
+      action:'passkey-login-verify',challenge:begin.options.challenge,
+      credential:serializePasskeyCredential(credential,'authentication')
+    },false);
+    token=String(result.token);sessionStorage.setItem(TOKEN_KEY,token);
+    $('password').value='';await enterAdminPanel();
+  }catch(error){error.textContent=error&&error.message?error.message:'Falha na autenticação biométrica.';}
+  finally{button.disabled=false;button.textContent='Entrar com biometria';}
+}
+async function enterAdminPanel(){
+  $('loginScreen').hidden=true;$('app').hidden=false;setStatus('loading','A carregar');
+  void refreshPasskeyManageState();
+  await loadDashboard(false);
+  if(refreshTimer)clearInterval(refreshTimer);
+  refreshTimer=setInterval(()=>{if(!document.hidden)scheduleRefresh();},REFRESH_MS);
 }
 function logout(){
   token='';sessionStorage.removeItem(TOKEN_KEY);if(refreshTimer)clearInterval(refreshTimer);refreshTimer=null;
@@ -1364,10 +1550,15 @@ function renderErrorLedger(){
 async function scheduleRefresh(){if(!token)return;await loadDashboard(false);}
 $('loginForm').addEventListener('submit',async function(e){
   e.preventDefault();$('loginError').textContent='';$('loginButton').disabled=true;
-  try{await login($('password').value);$('password').value='';$('loginScreen').hidden=true;$('app').hidden=false;setStatus('loading','A carregar');await loadDashboard(false);if(refreshTimer)clearInterval(refreshTimer);refreshTimer=setInterval(()=>{if(!document.hidden) scheduleRefresh();},REFRESH_MS);}
+  try{await login($('password').value);$('password').value='';await enterAdminPanel();}
   catch(e){$('loginError').textContent=e.message||'Falha de autenticação.';}
   finally{$('loginButton').disabled=false;}
 });
+$('passkeyLoginButton').addEventListener('click',loginWithPasskey);
+$('passkeyManageBtn').addEventListener('click',openPasskeyDialog);
+$('passkeyEnrollButton').addEventListener('click',registerPasskey);
+$('passkeyDialogCancel').addEventListener('click',()=>{$('passkeyPassword').value='';$('passkeyDialog').close();});
+$('passkeyDialog').addEventListener('close',()=>{$('passkeyPassword').value='';$('passkeyDialogMessage').textContent='';});
 document.querySelectorAll('.nav-button').forEach(b=>b.addEventListener('click',()=>activePage(b.dataset.page)));
 document.querySelectorAll('.period-button').forEach(b=>b.addEventListener('click',()=>setPeriod(b.dataset.period)));
 $('refreshBtn').addEventListener('click',()=>loadDashboard(true));
@@ -1380,7 +1571,8 @@ $('errorPrev').addEventListener('click',()=>{errorOffset=Math.max(0,errorOffset-
 $('errorNext').addEventListener('click',()=>{errorOffset+=errorPageSize;loadErrors();});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&token)loadDashboard(false);});
 if(window.VERIX_LIVE_PRESENCE&&typeof window.VERIX_LIVE_PRESENCE.subscribe==='function')window.VERIX_LIVE_PRESENCE.subscribe(renderLivePresence);else window.addEventListener('verix-live-presence',function(e){renderLivePresence(e.detail);});
-if(token){$('loginScreen').hidden=true;$('app').hidden=false;loadDashboard(false);refreshTimer=setInterval(()=>{if(!document.hidden)scheduleRefresh();},REFRESH_MS);}
+void refreshLoginPasskeyState();
+if(token){$('loginScreen').hidden=true;$('app').hidden=false;void refreshPasskeyManageState();loadDashboard(false);refreshTimer=setInterval(()=>{if(!document.hidden)scheduleRefresh();},REFRESH_MS);}
 })();
 </script>
 </body>
