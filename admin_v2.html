@@ -63,7 +63,8 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
 
 .install-help{margin:8px 0 0;color:var(--muted);font-size:11px;line-height:1.5}
 .login-error{min-height:22px;color:var(--red);font-size:12px;margin-top:8px}
-.passkey-login-button{width:100%;margin-top:8px;min-height:42px}
+.login-error.success{color:var(--green)}
+.passkey-login-button,.passkey-activate-login-button{width:100%;margin-top:8px;min-height:42px}
 .passkey-login-hint{margin:10px 0 0;color:var(--muted);font-size:11px;line-height:1.45}
 .passkey-dialog{width:min(92vw,430px);max-width:calc(100vw - 28px);padding:24px;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--ink);box-shadow:0 24px 80px rgba(15,35,45,.24)}
 .passkey-dialog::backdrop{background:rgba(13,29,37,.48);backdrop-filter:blur(2px)}
@@ -425,8 +426,9 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
     <label class="sr-only" for="password">Password de administração</label>
     <input id="password" class="text-input" type="password" autocomplete="current-password" placeholder="Introduza a password" required>
     <button id="loginButton" class="primary-button" type="submit">Entrar no painel</button>
+    <button id="passkeyActivateLoginButton" class="secondary-button passkey-activate-login-button" type="button" hidden>Ativar biometria neste telemóvel</button>
     <button id="passkeyLoginButton" class="secondary-button passkey-login-button" type="button" hidden>Entrar com biometria</button>
-    <p id="passkeyLoginHint" class="passkey-login-hint">Depois de entrares com a password, podes ativar a biometria neste telemóvel.</p>
+    <p id="passkeyLoginHint" class="passkey-login-hint">Podes configurar a biometria neste telemóvel ou entrar com a password habitual.</p>
     <div id="loginError" class="login-error" role="alert" aria-live="polite"></div>
   </form>
 </section>
@@ -865,19 +867,23 @@ async function login(password){
   finally{clearTimeout(tm);}
 }
 async function refreshLoginPasskeyState(){
-  const button=$('passkeyLoginButton'),hint=$('passkeyLoginHint');
+  const button=$('passkeyLoginButton'),activate=$('passkeyActivateLoginButton'),hint=$('passkeyLoginHint');
   if(!supportsPasskeys()){
-    button.hidden=true;hint.hidden=false;
-    hint.textContent='A biometria exige um navegador compatível e uma ligação HTTPS. A password continua disponível.';
+    button.hidden=true;activate.hidden=true;hint.hidden=false;
+    hint.textContent='A biometria exige um navegador compatível, HTTPS e bloqueio de ecrã configurado. A password continua disponível.';
     return;
   }
   try{
     const state=await adminAuthAction({action:'passkey-status-public'},false);
-    button.hidden=!state.available;hint.hidden=!!state.available;
-    hint.textContent='Depois de entrares com a password, podes ativar a biometria neste telemóvel.';
+    button.hidden=!state.available;
+    activate.hidden=!!state.available;
+    hint.hidden=false;
+    hint.textContent=state.available
+      ?'Biometria já configurada para este endereço. Podes entrar com a impressão digital ou usar a password.'
+      :'Ainda não configuraste a biometria neste endereço. Toca em “Ativar biometria neste telemóvel”.';
   }catch(_){
-    button.hidden=true;hint.hidden=false;
-    hint.textContent='Para ativar a biometria, entra primeiro com a password.';
+    button.hidden=true;activate.hidden=false;hint.hidden=false;
+    hint.textContent='A ativação exige HTTPS e um navegador com suporte a passkeys. A password continua disponível.';
   }
 }
 async function refreshPasskeyManageState(){
@@ -902,9 +908,13 @@ function openPasskeyDialog(){
 async function registerPasskey(){
   const password=$('passkeyPassword').value;
   const button=$('passkeyEnrollButton'),message=$('passkeyDialogMessage');
-  if(!password){message.textContent='Confirma primeiro a password atual.';$('passkeyPassword').focus();return;}
+  const alreadyAuthenticated=!!token;
+  if(!password){message.textContent='Introduz a password atual para confirmar a tua identidade.';$('passkeyPassword').focus();return;}
   button.disabled=true;button.textContent='A aguardar confirmação…';message.textContent='';
   try{
+    // If the user opens setup from the login screen, validate the password first
+    // and use the resulting short-lived Admin token only for this enrollment.
+    if(!alreadyAuthenticated)await login(password);
     const begin=await adminAuthAction({action:'passkey-register-options',password},true);
     const credential=await navigator.credentials.create({publicKey:passkeyCreationOptions(begin.options)});
     if(!credential)throw new Error('O dispositivo cancelou o registo biométrico.');
@@ -914,9 +924,17 @@ async function registerPasskey(){
     },true);
     if(!saved.registered)throw new Error('O servidor não confirmou o registo biométrico.');
     $('passkeyDialog').close();$('passkeyPassword').value='';
-    showNotice('Biometria ativada. No próximo acesso a este endereço já podes entrar sem escrever a password.','success');
-    await refreshPasskeyManageState();void refreshLoginPasskeyState();
+    if(alreadyAuthenticated){
+      showNotice('Biometria ativada. No próximo acesso a este endereço já podes entrar sem escrever a password.','success');
+      await refreshPasskeyManageState();
+    }else{
+      token='';sessionStorage.removeItem(TOKEN_KEY);
+      $('loginError').className='login-error success';
+      $('loginError').textContent='Biometria ativada. No próximo acesso, usa “Entrar com biometria”.';
+    }
+    void refreshLoginPasskeyState();
   }catch(error){
+    if(!alreadyAuthenticated){token='';sessionStorage.removeItem(TOKEN_KEY);}
     message.textContent=error&&error.message?error.message:'Não foi possível ativar a biometria. A password mantém-se disponível.';
   }finally{button.disabled=false;button.textContent='Ativar neste telemóvel';}
 }
@@ -1555,6 +1573,7 @@ $('loginForm').addEventListener('submit',async function(e){
   finally{$('loginButton').disabled=false;}
 });
 $('passkeyLoginButton').addEventListener('click',loginWithPasskey);
+$('passkeyActivateLoginButton').addEventListener('click',openPasskeyDialog);
 $('passkeyManageBtn').addEventListener('click',openPasskeyDialog);
 $('passkeyEnrollButton').addEventListener('click',registerPasskey);
 $('passkeyDialogCancel').addEventListener('click',()=>{$('passkeyPassword').value='';$('passkeyDialog').close();});
