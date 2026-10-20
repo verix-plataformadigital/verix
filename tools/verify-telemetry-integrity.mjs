@@ -44,11 +44,11 @@ assert.ok(admin.includes("Evolução diária — desde o reset") && admin.includ
 assert.ok(stats.includes('detail === "daily-trend-since-reset"') && stats.includes('verix2_admin_daily_trend_since_reset'), "Admin stats endpoint must expose the authenticated since-reset daily trend payload");
 const dailyTrendMigration = fs.readFileSync("supabase/migrations/20261020060000_admin_daily_trend_since_reset.sql", "utf8");
 assert.ok(dailyTrendMigration.includes("reset_all_at") && dailyTrendMigration.includes("uniqueInstallationsSinceReset") && dailyTrendMigration.includes("activeInstallations") && dailyTrendMigration.includes("consultations"), "daily trend migration must calculate the reset-bounded date range and daily metrics");
-assert.ok(admin.includes('id="dailyTrendComparison"') && admin.includes('function renderDailyTrendPlot') && admin.includes('dailyTrendUsersChart'), "30-day trend must render separate readable daily charts for searches and active installations");
-assert.ok(admin.includes("trendDailyDelta") && admin.includes("Valores diários e variação face ao dia anterior"), "30-day trend must provide exact daily values and day-over-day change");
+assert.ok(admin.includes('id="dailyTrendComparison"') && admin.includes('function renderDailyTrendPlot') && admin.includes('dailyTrendUsersChart'), "since-reset trend must render separate readable daily charts for searches and active installations");
+assert.ok(admin.includes("trendDailyDelta") && admin.includes("Valores diários e variação face ao dia anterior"), "since-reset trend must provide exact daily values and day-over-day change");
 assert.ok(admin.includes("Semana anterior:") && admin.includes("Hoje · parcial") && admin.includes("Reset · parcial") && admin.includes("Sem comparação · reset parcial"), "since-reset trend must compare full weeks and mark the partial reset day and current day");
 const trendDateParserMatch = admin.match(/function trendDayParts\(value\)\{[\s\S]*?\n\}/);
-assert.ok(trendDateParserMatch, "30-day trend must contain its date parser");
+assert.ok(trendDateParserMatch, "since-reset trend must contain its date parser");
 const trendDayParts = vm.runInNewContext("(" + trendDateParserMatch[0] + ")");
 assert.equal(JSON.stringify(trendDayParts("2026-10-20")), JSON.stringify({year:2026,month:10,day:20}), "since-reset trend date parser must accept ISO calendar dates returned by PostgreSQL");
 assert.equal(trendDayParts("not-a-date"), null, "since-reset trend date parser must reject invalid calendar-date strings");
