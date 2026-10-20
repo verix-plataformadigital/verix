@@ -171,21 +171,48 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
 .hourly-values summary:before{display:inline-grid;place-items:center;width:19px;height:19px;color:var(--accent);border:1px solid var(--line);border-radius:5px;font-size:13px;line-height:1;content:"+"}
 .hourly-values[open] summary:before{content:"−"}
 .hourly-table-content{margin-top:7px}
-.daily-trend-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin:0 0 15px}
-.daily-trend-summary .metric-card{min-height:108px}
+.daily-trend-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin:0 0 13px}
+.daily-trend-summary .metric-card{min-height:105px}
 .daily-trend-summary .metric-value{font-size:clamp(22px,1.9vw,30px)}
-.daily-trend-chart{width:100%;overflow-x:auto;border-bottom:1px solid var(--line)}
-.daily-trend-svg{display:block;width:100%;min-width:820px;height:auto;overflow:visible}
+.daily-trend-comparison{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin:0 0 16px}
+.daily-trend-comparison .metric-card{min-height:100px}
+.daily-trend-comparison .metric-value{font-size:clamp(21px,1.8vw,28px)}
+.daily-trend-comparison .metric-note{font-size:11px}
+.daily-trend-charts{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+.daily-trend-plot{min-width:0;padding:11px 10px 5px;background:#fbfcfd;border:1px solid #e3eaed;border-radius:10px}
+.daily-trend-plot-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin:0 2px 3px}
+.daily-trend-plot-head h3{margin:0;font-size:13px;font-weight:800;color:var(--ink)}
+.daily-trend-plot-head span{color:var(--muted);font-size:11px;font-weight:750;font-variant-numeric:tabular-nums}
+.daily-trend-chart{width:100%;min-width:0;overflow:hidden}
+.daily-trend-svg{display:block;width:100%;height:auto;overflow:visible}
 .daily-trend-svg text{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
 .daily-trend-grid{stroke:#e4ecef;stroke-width:1}
-.daily-trend-axis-label{fill:#65757e;font-size:12px}
-.daily-trend-date-label{fill:#65757e;font-size:11px}
-.daily-trend-consults{fill:none;stroke:var(--accent);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
-.daily-trend-users{fill:none;stroke:var(--blue);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
-.daily-trend-point-consults{fill:#fff;stroke:var(--accent);stroke-width:2}
-.daily-trend-point-users{fill:#fff;stroke:var(--blue);stroke-width:2}
+.daily-trend-axis-label{fill:#65757e;font-size:10.5px}
+.daily-trend-date-label{fill:#65757e;font-size:10px}
+.daily-trend-consults{fill:none;stroke:var(--accent);stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
+.daily-trend-users{fill:none;stroke:var(--blue);stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
+.daily-trend-point-consults{fill:#fff;stroke:var(--accent);stroke-width:1.8}
+.daily-trend-point-users{fill:#fff;stroke:var(--blue);stroke-width:1.8}
+.daily-trend-point-current.daily-trend-point-consults{fill:var(--accent);stroke:#fff;stroke-width:1.5}
+.daily-trend-point-current.daily-trend-point-users{fill:var(--blue);stroke:#fff;stroke-width:1.5}
 .daily-trend-note{margin:11px 0 0;color:var(--muted);font-size:11px;line-height:1.5}
-.daily-trend-legend{margin-bottom:8px}
+.daily-trend-table-wrap{overflow:hidden}
+.daily-trend-table-wrap .data-table{width:100%;min-width:0;table-layout:fixed;font-size:11.5px}
+.daily-trend-table-wrap .data-table th{font-size:9.5px;letter-spacing:.02em;line-height:1.4;overflow-wrap:anywhere}
+.daily-trend-table-wrap .data-table th:nth-child(1),.daily-trend-table-wrap .data-table td:nth-child(1){width:25%}
+.daily-trend-table-wrap .data-table th:nth-child(2),.daily-trend-table-wrap .data-table td:nth-child(2),.daily-trend-table-wrap .data-table th:nth-child(3),.daily-trend-table-wrap .data-table td:nth-child(3){width:37.5%}
+.daily-trend-table-wrap .data-table th,.daily-trend-table-wrap .data-table td{padding:8px 6px;vertical-align:middle}
+.daily-trend-table-wrap .data-table tbody tr:last-child{background:#f0f8f7}
+.daily-trend-day{font-weight:750;color:var(--ink);font-variant-numeric:tabular-nums}
+.daily-trend-today{display:inline-block;margin-top:3px;padding:2px 4px;color:#765316;background:#fff1cf;border-radius:4px;font-size:8.5px;font-weight:800;text-transform:uppercase}
+.daily-trend-valuecell{display:flex;flex-direction:column;gap:3px;min-width:0}
+.daily-trend-value{color:var(--ink);font-size:13px;font-weight:850;font-variant-numeric:tabular-nums}
+.daily-trend-delta{font-size:9.5px;line-height:1.3;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.daily-trend-delta.up{color:var(--green);font-weight:750}
+.daily-trend-delta.down{color:var(--red);font-weight:750}
+.daily-trend-delta.flat{color:var(--muted)}
+.daily-trend-delta.partial{color:var(--amber);font-weight:750}
+.daily-trend-delta.muted{color:var(--muted)}
 .table-wrap{width:100%;overflow:auto;border:1px solid var(--line);border-radius:9px}
 .data-table{width:100%;min-width:520px;border-collapse:collapse;font-size:12.5px}
 .data-table th{color:#51636c;background:#eef3f5;text-align:left;font-size:10.5px;font-weight:800;letter-spacing:.045em;text-transform:uppercase}
@@ -489,18 +516,26 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
           <span id="dailyTrendRange" class="panel-tag">A carregar histórico…</span>
         </div>
         <div id="dailyTrendSummary" class="daily-trend-summary"></div>
-        <div class="legend daily-trend-legend">
-          <span><i class="legend-dot consults"></i>Consultas iniciadas · eixo esquerdo</span>
-          <span><i class="legend-dot users"></i>Instalações ativas · eixo direito</span>
+        <div id="dailyTrendComparison" class="daily-trend-comparison" aria-label="Comparação entre as duas últimas semanas completas"></div>
+        <div class="daily-trend-charts">
+          <section class="daily-trend-plot" aria-label="Pesquisas iniciadas por dia">
+            <div class="daily-trend-plot-head"><h3>Pesquisas iniciadas por dia</h3><span id="dailyTrendCurrentQueries">A carregar…</span></div>
+            <div id="dailyTrendChart" class="daily-trend-chart" role="img" aria-label="Gráfico das pesquisas iniciadas por dia nos últimos 30 dias">
+              <div class="empty-state">A carregar os últimos 30 dias…</div>
+            </div>
+          </section>
+          <section class="daily-trend-plot" aria-label="Utilizadores ativos por dia">
+            <div class="daily-trend-plot-head"><h3>Utilizadores ativos por dia*</h3><span id="dailyTrendCurrentUsers">A carregar…</span></div>
+            <div id="dailyTrendUsersChart" class="daily-trend-chart" role="img" aria-label="Gráfico dos utilizadores ativos por dia nos últimos 30 dias">
+              <div class="empty-state">A carregar os últimos 30 dias…</div>
+            </div>
+          </section>
         </div>
-        <div id="dailyTrendChart" class="daily-trend-chart" role="img" aria-label="Tendência diária, últimos 30 dias">
-          <div class="empty-state">A carregar os últimos 30 dias…</div>
-        </div>
-        <details class="hourly-values">
-          <summary>Ver tabela com os valores diários exatos</summary>
+        <details class="hourly-values" open>
+          <summary>Valores diários e variação face ao dia anterior</summary>
           <div id="dailyTrendTable" class="hourly-table-content"></div>
         </details>
-        <p class="daily-trend-note">As instalações são identificadores técnicos da aplicação, não uma contagem garantida de pessoas físicas únicas. Dias a zero significam que não há eventos registados na telemetria; não provam, por si só, que não houve utilização. O gráfico inclui hoje, ainda em curso; a variação semanal compara apenas dias completos.</p>
+        <p class="daily-trend-note">*“Utilizadores” são instalações identificadas pela aplicação, não pessoas físicas únicas garantidas. Uma instalação conta no dia quando faz uma ação real; aberturas e heartbeats não contam. As variações comparam cada dia completo com o anterior. Hoje aparece como parcial e não entra na comparação semanal.</p>
       </article>
       <article id="activityHourlyPanel" class="panel">
         <div class="panel-head"><div><h2>Distribuição horária de hoje</h2><p>Este gráfico só é mostrado quando o período selecionado é Hoje; mostra 00h–23h à hora de Lisboa.</p></div><span class="panel-tag">Hoje · Lisboa</span></div>
@@ -837,18 +872,94 @@ function trendLongDate(value){
   const p=trendDayParts(value);return p?String(p.day).padStart(2,'0')+'/'+String(p.month).padStart(2,'0')+'/'+p.year:String(value||'—');
 }
 function trendNiceAxisMax(value){
-  const target=Math.max(10,Number(value)||0)/4;
+  const target=Math.max(4,Number(value)||0)/4;
   const magnitude=Math.pow(10,Math.floor(Math.log10(target)));
   const steps=[1,1.5,2,2.5,3,4,5,6,7,8,9,10];
   const step=steps.find(n=>n*magnitude>=target)||10;
   return step*magnitude*4;
 }
+function trendPercent(value){
+  return Math.abs(value).toLocaleString('pt-PT',{minimumFractionDigits:1,maximumFractionDigits:1})+'%';
+}
+function trendCompare(current,previous){
+  const delta=current-previous;
+  if(previous===0){
+    if(current>0)return {label:'Novo · semana anterior: 0',tone:'green'};
+    return {label:'0% · ambas sem atividade',tone:''};
+  }
+  const pct=delta/previous*100;
+  const arrow=delta>0?'↑ ':delta<0?'↓ ':'→ ';
+  const sign=delta>0?'+':delta<0?'−':'';
+  return {label:arrow+sign+trendPercent(pct),tone:delta>0?'green':delta<0?'red':''};
+}
+function trendDecimal(value){
+  return Number(value||0).toLocaleString('pt-PT',{minimumFractionDigits:1,maximumFractionDigits:1});
+}
+function renderDailyTrendPlot(host,rows,key,seriesClass,ariaLabel){
+  host.replaceChildren();
+  const width=Math.max(300,Math.floor(host.clientWidth||340));
+  const height=208,left=34,right=8,top=17,bottom=31;
+  const plotW=width-left-right,plotH=height-top-bottom;
+  const maxValue=trendNiceAxisMax(Math.max(0,...rows.map(row=>row[key])));
+  const xAt=i=>left+(rows.length<=1?plotW/2:(i/(rows.length-1))*plotW);
+  const yAt=value=>top+plotH-(value/maxValue)*plotH;
+  const svg=trendSvgElement('svg',{viewBox:'0 0 '+width+' '+height,class:'daily-trend-svg',role:'img','aria-label':ariaLabel});
+  for(let tick=0;tick<=4;tick++){
+    const y=top+(tick/4)*plotH;
+    const value=Math.round(maxValue*(4-tick)/4);
+    svg.appendChild(trendSvgElement('line',{x1:left,y1:y,x2:width-right,y2:y,class:'daily-trend-grid'}));
+    svg.appendChild(trendSvgElement('text',{x:left-7,y:y+3.5,'text-anchor':'end',class:'daily-trend-axis-label'},fmt(value)));
+  }
+  const path=rows.map((row,i)=>(i?'L ':'M ')+xAt(i).toFixed(2)+' '+yAt(row[key]).toFixed(2)).join(' ');
+  svg.appendChild(trendSvgElement('path',{d:path,class:seriesClass==='consults'?'daily-trend-consults':'daily-trend-users'}));
+  rows.forEach((row,i)=>{
+    const isCurrent=i===rows.length-1;
+    const label=trendLongDate(row.day)+' · '+ariaLabel+': '+fmt(row[key]);
+    const point=trendSvgElement('circle',{
+      cx:xAt(i),cy:yAt(row[key]),r:isCurrent?3.8:2.5,
+      class:(seriesClass==='consults'?'daily-trend-point-consults':'daily-trend-point-users')+(isCurrent?' daily-trend-point-current':''),
+      tabindex:0
+    });
+    point.appendChild(trendSvgElement('title',{},label));
+    svg.appendChild(point);
+  });
+  rows.forEach((row,i)=>{
+    if(i!==0&&i%5!==0&&i!==rows.length-1)return;
+    const anchor=i===0?'start':i===rows.length-1?'end':'middle';
+    svg.appendChild(trendSvgElement('text',{x:xAt(i),y:height-11,'text-anchor':anchor,class:'daily-trend-date-label'},trendShortDate(row.day)));
+  });
+  host.appendChild(svg);
+}
+function trendDailyValueCell(value,delta,kind){
+  const wrap=document.createElement('div');wrap.className='daily-trend-valuecell';
+  const strong=document.createElement('strong');strong.className='daily-trend-value';strong.textContent=fmt(value);
+  const note=document.createElement('span');note.className='daily-trend-delta '+(kind||'muted');note.textContent=delta;
+  wrap.append(strong,note);
+  return wrap;
+}
+function trendDailyDelta(current,previous,isFirst,isPartial){
+  if(isPartial)return {label:'Dia em curso',tone:'partial'};
+  if(isFirst)return {label:'Sem dia anterior',tone:'muted'};
+  const delta=current-previous;
+  if(previous===0){
+    return delta>0?{label:'↑ +'+fmt(delta)+' · novo',tone:'up'}:{label:'→ 0 · 0%',tone:'flat'};
+  }
+  const pct=delta/previous*100;
+  if(delta>0)return {label:'↑ +'+fmt(delta)+' (+'+trendPercent(pct)+')',tone:'up'};
+  if(delta<0)return {label:'↓ −'+fmt(Math.abs(delta))+' (−'+trendPercent(pct)+')',tone:'down'};
+  return {label:'→ 0 (0%)',tone:'flat'};
+}
 function renderDailyTrend(){
-  const summary=$('dailyTrendSummary'),chart=$('dailyTrendChart'),table=$('dailyTrendTable'),range=$('dailyTrendRange');
-  if(!summary||!chart||!table||!range)return;
+  const summary=$('dailyTrendSummary'),comparison=$('dailyTrendComparison'),
+    queryChart=$('dailyTrendChart'),usersChart=$('dailyTrendUsersChart'),
+    table=$('dailyTrendTable'),range=$('dailyTrendRange');
+  if(!summary||!comparison||!queryChart||!usersChart||!table||!range)return;
   if(!dailyTrendData||!Array.isArray(dailyTrendData.days)){
-    summary.replaceChildren();
-    if(!dailyTrendBusy)showEmpty('dailyTrendChart','O histórico diário ainda não foi carregado. Abre o separador Utilização para consultar os últimos 30 dias.');
+    summary.replaceChildren();comparison.replaceChildren();
+    if(!dailyTrendBusy){
+      showEmpty('dailyTrendChart','O histórico diário ainda não foi carregado. Abre o separador Utilização para consultar os últimos 30 dias.');
+      showEmpty('dailyTrendUsersChart','O histórico diário ainda não foi carregado.');
+    }
     range.textContent='Histórico diário';return;
   }
   const rows=dailyTrendData.days.map(row=>({
@@ -856,74 +967,66 @@ function renderDailyTrend(){
     consultations:Math.max(0,Math.trunc(Number(row.consultations)||0)),
     activeInstallations:Math.max(0,Math.trunc(Number(row.activeInstallations)||0))
   })).filter(row=>trendDayParts(row.day)).slice(-30);
-  if(!rows.length){showEmpty('dailyTrendChart','Não há dias válidos para representar.');summary.replaceChildren();table.replaceChildren();return;}
+  if(!rows.length){
+    showEmpty('dailyTrendChart','Não há dias válidos para representar.');
+    showEmpty('dailyTrendUsersChart','Não há dias válidos para representar.');
+    summary.replaceChildren();comparison.replaceChildren();table.replaceChildren();return;
+  }
   const totalConsultations=rows.reduce((sum,row)=>sum+row.consultations,0);
   const uniqueInstallations=Math.max(0,Math.trunc(Number(dailyTrendData.uniqueInstallations30d)||0));
-  const avgConsultations=Math.round(totalConsultations/rows.length);
-  // Exclude today, which is a partial day, from the week-over-week comparison.
+  // Today is in progress; do not let a partial day distort daily averages or week comparisons.
   const completed=rows.slice(0,-1);
-  const recent7=completed.slice(-7);
-  const prior7=completed.slice(-14,-7);
-  const recentTotal=recent7.reduce((sum,row)=>sum+row.consultations,0);
-  const priorTotal=prior7.reduce((sum,row)=>sum+row.consultations,0);
-  let variation='Sem base',variationNote='Não existe uma semana anterior comparável.';
-  let variationTone='';
-  if(prior7.length===7&&priorTotal>0){
-    const change=((recentTotal-priorTotal)/priorTotal)*100;
-    variation=(change>0?'+':'')+change.toLocaleString('pt-PT',{minimumFractionDigits:1,maximumFractionDigits:1})+'%';
-    variationTone=change>0?'green':change<0?'red':'';
-    variationNote='7 dias completos face aos 7 dias completos anteriores: '+fmt(recentTotal)+' vs. '+fmt(priorTotal)+' consultas.';
-  }else if(prior7.length===7&&priorTotal===0&&recentTotal>0){
-    variation='Novo';variationTone='green';variationNote='Houve consultas nos últimos 7 dias completos e nenhuma nos 7 dias anteriores.';
-  }else if(prior7.length===7){
-    variation='0,0%';variationNote='Sem consultas nas duas janelas semanais.';
-  }
+  const avgConsultations=completed.length?completed.reduce((sum,row)=>sum+row.consultations,0)/completed.length:0;
+  const avgActiveInstallations=completed.length?completed.reduce((sum,row)=>sum+row.activeInstallations,0)/completed.length:0;
   summary.replaceChildren(
-    metricCard('Consultas · 30 dias',fmt(totalConsultations),'Total de consultas iniciadas no período.','accent'),
-    metricCard('Instalações distintas · 30 dias',fmt(uniqueInstallations),'Identificadores com pelo menos uma ação real no período.','blue'),
-    metricCard('Média de consultas / dia',fmt(avgConsultations),'Média sobre os 30 dias, incluindo dias sem registos.',''),
-    metricCard('Variação semanal',variation,variationNote,variationTone)
+    metricCard('Pesquisas · 30 dias',fmt(totalConsultations),'Total de pesquisas iniciadas no intervalo; inclui hoje, ainda parcial.','accent'),
+    metricCard('Instalações distintas · 30 dias',fmt(uniqueInstallations),'Instalações com pelo menos uma ação real no intervalo.','blue'),
+    metricCard('Média de pesquisas / dia',trendDecimal(avgConsultations),'Média apenas dos dias completos.',''),
+    metricCard('Média de utilizadores ativos / dia',trendDecimal(avgActiveInstallations),'Instalações distintas com ação real, por dia completo.','')
   );
   range.textContent=trendShortDate(rows[0].day)+' – '+trendShortDate(rows[rows.length-1].day)+' · Lisboa';
-  chart.replaceChildren();
-  const width=1080,height=320,left=65,right=62,top=20,bottom=48;
-  const plotW=width-left-right,plotH=height-top-bottom;
-  const maxConsult=trendNiceAxisMax(Math.max(...rows.map(row=>row.consultations)));
-  const maxUsers=trendNiceAxisMax(Math.max(...rows.map(row=>row.activeInstallations)));
-  const xAt=i=>left+(rows.length<=1?plotW/2:(i/(rows.length-1))*plotW);
-  const yConsult=v=>top+plotH-(v/maxConsult)*plotH;
-  const yUsers=v=>top+plotH-(v/maxUsers)*plotH;
-  const svg=trendSvgElement('svg',{viewBox:'0 0 '+width+' '+height,class:'daily-trend-svg',role:'img','aria-label':'Últimos 30 dias: consultas por dia na escala esquerda e instalações ativas por dia na escala direita.'});
-  svg.appendChild(trendSvgElement('title',{},'Consultas e instalações ativas — '+trendLongDate(rows[0].day)+' a '+trendLongDate(rows[rows.length-1].day)));
-  for(let i=0;i<=4;i++){
-    const y=top+(i/4)*plotH;
-    const consultTick=Math.round(maxConsult*(4-i)/4);
-    const userTick=Math.round(maxUsers*(4-i)/4);
-    svg.appendChild(trendSvgElement('line',{x1:left,y1:y,x2:width-right,y2:y,class:'daily-trend-grid'}));
-    svg.appendChild(trendSvgElement('text',{x:left-10,y:y+4,'text-anchor':'end',class:'daily-trend-axis-label'},fmt(consultTick)));
-    svg.appendChild(trendSvgElement('text',{x:width-right+10,y:y+4,'text-anchor':'start',class:'daily-trend-axis-label'},fmt(userTick)));
+  const recent7=completed.slice(-7),prior7=completed.slice(-14,-7);
+  comparison.replaceChildren();
+  if(recent7.length===7&&prior7.length===7){
+    const recentQueries=recent7.reduce((sum,row)=>sum+row.consultations,0);
+    const previousQueries=prior7.reduce((sum,row)=>sum+row.consultations,0);
+    const recentUsers=recent7.reduce((sum,row)=>sum+row.activeInstallations,0)/7;
+    const previousUsers=prior7.reduce((sum,row)=>sum+row.activeInstallations,0)/7;
+    const queryChange=trendCompare(recentQueries,previousQueries);
+    const userChange=trendCompare(recentUsers,previousUsers);
+    comparison.append(
+      metricCard('Pesquisas · últimos 7 dias',fmt(recentQueries),'Semana anterior: '+fmt(previousQueries)+' · '+queryChange.label,queryChange.tone),
+      metricCard('Utilizadores ativos · média/dia',trendDecimal(recentUsers),'Média anterior: '+trendDecimal(previousUsers)+' por dia · '+userChange.label,userChange.tone)
+    );
+  }else{
+    comparison.append(
+      metricCard('Comparação de pesquisas','Sem base','São necessários 14 dias completos para comparar duas semanas.',''),
+      metricCard('Comparação de utilizadores','Sem base','São necessários 14 dias completos para comparar duas semanas.','')
+    );
   }
-  svg.appendChild(trendSvgElement('text',{x:left,y:12,class:'daily-trend-axis-label'},'Consultas'));
-  svg.appendChild(trendSvgElement('text',{x:width-right,y:12,'text-anchor':'end',class:'daily-trend-axis-label'},'Instalações'));
-  const consultPath=rows.map((row,i)=>(i?'L ':'M ')+xAt(i).toFixed(2)+' '+yConsult(row.consultations).toFixed(2)).join(' ');
-  const usersPath=rows.map((row,i)=>(i?'L ':'M ')+xAt(i).toFixed(2)+' '+yUsers(row.activeInstallations).toFixed(2)).join(' ');
-  svg.appendChild(trendSvgElement('path',{d:consultPath,class:'daily-trend-consults'}));
-  svg.appendChild(trendSvgElement('path',{d:usersPath,class:'daily-trend-users'}));
-  rows.forEach((row,i)=>{
-    const title=trendLongDate(row.day)+' · Consultas: '+fmt(row.consultations)+' · Instalações ativas: '+fmt(row.activeInstallations);
-    const c=trendSvgElement('circle',{cx:xAt(i),cy:yConsult(row.consultations),r:3.2,class:'daily-trend-point-consults',tabindex:0});
-    c.appendChild(trendSvgElement('title',{},title));svg.appendChild(c);
-    const u=trendSvgElement('circle',{cx:xAt(i),cy:yUsers(row.activeInstallations),r:3.2,class:'daily-trend-point-users',tabindex:0});
-    u.appendChild(trendSvgElement('title',{},title));svg.appendChild(u);
+  const last=rows[rows.length-1];
+  $('dailyTrendCurrentQueries').textContent='Hoje · '+fmt(last.consultations)+' pesquisas (parcial)';
+  $('dailyTrendCurrentUsers').textContent='Hoje · '+fmt(last.activeInstallations)+' ativos (parcial)';
+  renderDailyTrendPlot(queryChart,rows,'consultations','consults','Pesquisas iniciadas');
+  renderDailyTrendPlot(usersChart,rows,'activeInstallations','users','Utilizadores ativos');
+  const tableRows=rows.map((row,i)=>{
+    const isPartial=i===rows.length-1;
+    const previous=rows[i-1];
+    const dateCell=document.createElement('div');dateCell.className='daily-trend-valuecell';
+    const day=document.createElement('strong');day.className='daily-trend-day';day.textContent=trendLongDate(row.day);
+    dateCell.appendChild(day);
+    if(isPartial){const badge=document.createElement('span');badge.className='daily-trend-today';badge.textContent='Hoje · parcial';dateCell.appendChild(badge);}
+    const queryDelta=trendDailyDelta(row.consultations,previous?previous.consultations:0,i===0,isPartial);
+    const userDelta=trendDailyDelta(row.activeInstallations,previous?previous.activeInstallations:0,i===0,isPartial);
+    return [
+      dateCell,
+      trendDailyValueCell(row.consultations,queryDelta.label,queryDelta.tone),
+      trendDailyValueCell(row.activeInstallations,userDelta.label,userDelta.tone)
+    ];
   });
-  rows.forEach((row,i)=>{
-    if(i!==0&&i%5!==0&&i!==rows.length-1)return;
-    const anchor=i===0?'start':i===rows.length-1?'end':'middle';
-    svg.appendChild(trendSvgElement('text',{x:xAt(i),y:height-19,'text-anchor':anchor,class:'daily-trend-date-label'},trendShortDate(row.day)));
-  });
-  chart.appendChild(svg);
-  const tableRows=rows.map(row=>[trendLongDate(row.day),fmt(row.consultations),fmt(row.activeInstallations)]);
-  table.replaceChildren(makeTable(['Data','Consultas iniciadas','Instalações ativas'],tableRows));
+  const valueTable=makeTable(['Dia','Pesquisas / Δ dia anterior','Utilizadores ativos* / Δ dia anterior'],tableRows);
+  valueTable.classList.add('daily-trend-table-wrap');
+  table.replaceChildren(valueTable);
 }
 async function loadDailyTrend(force){
   if(!token||dailyTrendBusy)return;
