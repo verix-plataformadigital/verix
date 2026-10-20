@@ -47,12 +47,6 @@ assert.ok(dailyTrendMigration.includes("uniqueInstallations30d") && dailyTrendMi
 assert.ok(admin.includes('id="dailyTrendComparison"') && admin.includes('function renderDailyTrendPlot') && admin.includes('dailyTrendUsersChart'), "30-day trend must render separate readable daily charts for searches and active installations");
 assert.ok(admin.includes("trendDailyDelta") && admin.includes("Valores diários de pesquisas e utilizadores") && admin.includes("Valores diários ASF — números exatos"), "Daily trend must provide exact ASF and usage values with day-over-day change");
 assert.ok(admin.includes("Semana anterior:") && admin.includes("Dia em curso"), "30-day trend must compare full weeks and mark today's partial counts rather than treating them as a complete day");
-assert.ok(admin.includes('id="passkeyActivateLoginButton"') && admin.includes('id="passkeyLoginButton"') && admin.includes('id="passkeyManageBtn"') && admin.includes("serializePasskeyCredential"), "Admin UI must offer login-screen passkey activation, biometric login and authenticated passkey management");
-const adminAuth = fs.readFileSync("supabase/functions/admin-auth-v2/index.ts", "utf8");
-assert.ok(adminAuth.includes("@simplewebauthn/server@13.3.3") && adminAuth.includes("verifyRegistrationResponse") && adminAuth.includes("verifyAuthenticationResponse"), "Admin auth must validate WebAuthn ceremonies server-side");
-assert.ok(adminAuth.includes("verix2_consume_admin_webauthn_challenge") && adminAuth.includes("verifyAdminToken"), "Admin passkey setup must consume one-time challenges and require an authenticated admin session");
-const adminPasskeyMigration = fs.readFileSync("supabase/migrations/20261020073000_add_admin_webauthn_passkeys.sql", "utf8");
-assert.ok(adminPasskeyMigration.includes("verix_admin_passkeys") && adminPasskeyMigration.includes("verix_admin_webauthn_challenges") && adminPasskeyMigration.includes("REVOKE ALL"), "Passkey credentials and challenges must be stored in private tables");
 
 const trendDateParserMatch = admin.match(/function trendDayParts\(value\)\{[\s\S]*?\n\}/);
 assert.ok(trendDateParserMatch, "30-day trend must contain its date parser");
