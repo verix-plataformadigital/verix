@@ -195,6 +195,20 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
 .daily-trend-point-users{fill:#fff;stroke:var(--blue);stroke-width:1.8}
 .daily-trend-point-current.daily-trend-point-consults{fill:var(--accent);stroke:#fff;stroke-width:1.5}
 .daily-trend-point-current.daily-trend-point-users{fill:var(--blue);stroke:#fff;stroke-width:1.5}
+.daily-trend-uninsured{fill:none;stroke:var(--amber);stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
+.daily-trend-errors{fill:none;stroke:var(--red);stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
+.daily-trend-point-uninsured{fill:#fff;stroke:var(--amber);stroke-width:1.8}
+.daily-trend-point-errors{fill:#fff;stroke:var(--red);stroke-width:1.8}
+.daily-trend-point-current.daily-trend-point-uninsured{fill:var(--amber);stroke:#fff;stroke-width:1.5}
+.daily-trend-point-current.daily-trend-point-errors{fill:var(--red);stroke:#fff;stroke-width:1.5}
+.daily-trend-asf-section{margin-top:20px;padding-top:17px;border-top:1px solid var(--line)}
+.daily-trend-asf-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.daily-trend-asf-heading h3{margin:0;font-size:14px;font-weight:850}
+.daily-trend-asf-heading p{margin:4px 0 0;color:var(--muted);font-size:11.5px;line-height:1.5}
+.daily-trend-insurance-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin:0 0 13px}
+.daily-trend-insurance-summary .metric-card{min-height:98px}
+.daily-trend-insurance-charts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.daily-trend-asf-section .hourly-values{margin-top:12px}
 .daily-trend-note{margin:11px 0 0;color:var(--muted);font-size:11px;line-height:1.5}
 .daily-trend-table-wrap{overflow:hidden}
 .daily-trend-table-wrap .data-table{width:100%;min-width:0;table-layout:fixed;font-size:11.5px}
@@ -313,6 +327,7 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
   #dailyTrendSummary{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(max-width:850px){
+  .daily-trend-insurance-charts{grid-template-columns:minmax(0,1fr)}
   .install-button{display:inline-flex}
   .app-shell{display:block}
   .sidebar{position:relative;top:auto;height:auto;overflow:visible;gap:10px;padding:12px 13px 10px}
@@ -531,11 +546,39 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
             </div>
           </section>
         </div>
-        <details class="hourly-values">
-          <summary>Valores diários e variação face ao dia anterior</summary>
+        <section class="daily-trend-asf-section" aria-labelledby="dailyTrendAsfTitle">
+          <div class="daily-trend-asf-heading">
+            <div>
+              <h3 id="dailyTrendAsfTitle">Evolução dos resultados ASF</h3>
+              <p>Comparação apenas desde 09/10/2026, quando o motor ficou estável. Os erros técnicos excluem consultas rejeitadas por formato de matrícula inválido.</p>
+            </div>
+            <span id="dailyTrendAsfRange" class="panel-tag">Desde 09/10/2026</span>
+          </div>
+          <div id="dailyTrendInsuranceSummary" class="daily-trend-insurance-summary"></div>
+          <div class="daily-trend-insurance-charts">
+            <section class="daily-trend-plot" aria-label="Veículos detetados sem seguro por dia">
+              <div class="daily-trend-plot-head"><h3>Veículos detetados sem seguro</h3><span id="dailyTrendCurrentUninsured">A carregar…</span></div>
+              <div id="dailyTrendUninsuredChart" class="daily-trend-chart" role="img" aria-label="Gráfico diário dos veículos detetados sem seguro desde 9 de outubro">
+                <div class="empty-state">A carregar dados ASF…</div>
+              </div>
+            </section>
+            <section class="daily-trend-plot" aria-label="Consultas com erro técnico por dia">
+              <div class="daily-trend-plot-head"><h3>Consultas com erro técnico</h3><span id="dailyTrendCurrentErrors">A carregar…</span></div>
+              <div id="dailyTrendErrorsChart" class="daily-trend-chart" role="img" aria-label="Gráfico diário das consultas com erro técnico desde 9 de outubro, excluindo matrículas inválidas">
+                <div class="empty-state">A carregar erros técnicos…</div>
+              </div>
+            </section>
+          </div>
+          <details class="hourly-values" open>
+            <summary>Valores diários ASF — números exatos</summary>
+            <div id="dailyTrendInsuranceTable" class="hourly-table-content"></div>
+          </details>
+        </section>
+        <details class="hourly-values" open>
+          <summary>Valores diários de pesquisas e utilizadores</summary>
           <div id="dailyTrendTable" class="hourly-table-content"></div>
         </details>
-        <p class="daily-trend-note">*“Utilizadores” são instalações identificadas pela aplicação, não pessoas físicas únicas garantidas. Uma instalação conta no dia quando faz uma ação real; aberturas e heartbeats não contam. As variações comparam cada dia completo com o anterior. Hoje aparece como parcial e não entra na comparação semanal.</p>
+        <p class="daily-trend-note">*“Utilizadores” são instalações identificadas pela aplicação, não pessoas físicas únicas garantidas. As pesquisas e a utilização mantêm a janela móvel de 30 dias. Os indicadores ASF começam em 09/10/2026; o dia atual é parcial. Os erros técnicos excluem pedidos HTTP 400 atribuídos a formato de matrícula inválido.</p>
       </article>
       <article id="activityHourlyPanel" class="panel">
         <div class="panel-head"><div><h2>Distribuição horária de hoje</h2><p>Este gráfico só é mostrado quando o período selecionado é Hoje; mostra 00h–23h à hora de Lisboa.</p></div><span class="panel-tag">Hoje · Lisboa</span></div>
@@ -667,6 +710,7 @@ const PAGE_TEXT={
  errors:['Erros técnicos','Falhas técnicas separadas de erros de formato da matrícula. Um erro técnico não significa que o veículo não tenha seguro.']
 };
 const PERIODS=[{key:'today',label:'Hoje',startLabel:'desde as 00:00'},{key:'week',label:'7 dias',startLabel:'últimos 7 dias'},{key:'total',label:'Histórico Total',startLabel:'desde o reset da versão estável'}];
+const ASF_TREND_START_DAY='2026-10-09';
 const $=id=>document.getElementById(id);
 const escValue=v=>String(v===null||v===undefined||v===''?'—':v);
 const nf=new Intl.NumberFormat('pt-PT');
@@ -860,8 +904,44 @@ function trendSvgElement(name,attrs,text){
   return node;
 }
 function trendDayParts(value){
-  const match=String(value||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  return match?{year:Number(match[1]),month:Number(match[2]),day:Number(match[3])}:null;
+  // Accept plain ISO dates and timestamps from PostgREST/client serializers.
+  const text=String(value??'').trim();
+  let match=text.match(/^(\d{4})-(\d{2})-(\d{2})(?:$|[T\s])/);
+  if(match){
+    const year=Number(match[1]),month=Number(match[2]),day=Number(match[3]);
+    const date=new Date(Date.UTC(year,month-1,day));
+    return date.getUTCFullYear()===year&&date.getUTCMonth()+1===month&&date.getUTCDate()===day
+      ?{year,month,day}:null;
+  }
+  match=text.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if(match){
+    const day=Number(match[1]),month=Number(match[2]),year=Number(match[3]);
+    const date=new Date(Date.UTC(year,month-1,day));
+    return date.getUTCFullYear()===year&&date.getUTCMonth()+1===month&&date.getUTCDate()===day
+      ?{year,month,day}:null;
+  }
+  return null;
+}
+function trendNormalizeDayValue(row){
+  if(row===null||row===undefined)return '';
+  let item=row;
+  if(typeof item==='string'){
+    const text=item.trim();
+    if(text.startsWith('{')){
+      try{item=JSON.parse(text);}catch(_){}
+    }
+    if(typeof item==='string')return text;
+  }
+  if(!item||typeof item!=='object')return String(item??'').trim();
+  const value=item.day??item.report_day??item.reportDay??item.date??item.day_date??item.date_key??item.fecha;
+  if(value!==null&&value!==undefined)return String(value).trim();
+  return '';
+}
+function trendAddDays(dayValue,offset){
+  const p=trendDayParts(dayValue);
+  if(!p)return '';
+  const date=new Date(Date.UTC(p.year,p.month-1,p.day+offset));
+  return date.getUTCFullYear()+'-'+String(date.getUTCMonth()+1).padStart(2,'0')+'-'+String(date.getUTCDate()).padStart(2,'0');
 }
 function trendShortDate(value){
   const p=trendDayParts(value);if(!p)return String(value||'—');
@@ -910,14 +990,21 @@ function renderDailyTrendPlot(host,rows,key,seriesClass,ariaLabel){
     svg.appendChild(trendSvgElement('line',{x1:left,y1:y,x2:width-right,y2:y,class:'daily-trend-grid'}));
     svg.appendChild(trendSvgElement('text',{x:left-7,y:y+3.5,'text-anchor':'end',class:'daily-trend-axis-label'},fmt(value)));
   }
+  const seriesStyles={
+    consults:{line:'daily-trend-consults',point:'daily-trend-point-consults'},
+    users:{line:'daily-trend-users',point:'daily-trend-point-users'},
+    uninsured:{line:'daily-trend-uninsured',point:'daily-trend-point-uninsured'},
+    errors:{line:'daily-trend-errors',point:'daily-trend-point-errors'}
+  };
+  const seriesStyle=seriesStyles[seriesClass]||seriesStyles.users;
   const path=rows.map((row,i)=>(i?'L ':'M ')+xAt(i).toFixed(2)+' '+yAt(row[key]).toFixed(2)).join(' ');
-  svg.appendChild(trendSvgElement('path',{d:path,class:seriesClass==='consults'?'daily-trend-consults':'daily-trend-users'}));
+  svg.appendChild(trendSvgElement('path',{d:path,class:seriesStyle.line}));
   rows.forEach((row,i)=>{
     const isCurrent=i===rows.length-1;
     const label=trendLongDate(row.day)+' · '+ariaLabel+': '+fmt(row[key]);
     const point=trendSvgElement('circle',{
       cx:xAt(i),cy:yAt(row[key]),r:isCurrent?3.8:2.5,
-      class:(seriesClass==='consults'?'daily-trend-point-consults':'daily-trend-point-users')+(isCurrent?' daily-trend-point-current':''),
+      class:seriesStyle.point+(isCurrent?' daily-trend-point-current':''),
       tabindex:0
     });
     point.appendChild(trendSvgElement('title',{},label));
@@ -952,25 +1039,56 @@ function trendDailyDelta(current,previous,isFirst,isPartial){
 function renderDailyTrend(){
   const summary=$('dailyTrendSummary'),comparison=$('dailyTrendComparison'),
     queryChart=$('dailyTrendChart'),usersChart=$('dailyTrendUsersChart'),
-    table=$('dailyTrendTable'),range=$('dailyTrendRange');
-  if(!summary||!comparison||!queryChart||!usersChart||!table||!range)return;
+    table=$('dailyTrendTable'),range=$('dailyTrendRange'),
+    uninsuredChart=$('dailyTrendUninsuredChart'),errorsChart=$('dailyTrendErrorsChart'),
+    insuranceSummary=$('dailyTrendInsuranceSummary'),insuranceTable=$('dailyTrendInsuranceTable'),
+    insuranceRange=$('dailyTrendAsfRange');
+  if(!summary||!comparison||!queryChart||!usersChart||!table||!range||!uninsuredChart||!errorsChart||!insuranceSummary||!insuranceTable||!insuranceRange)return;
   if(!dailyTrendData||!Array.isArray(dailyTrendData.days)){
-    summary.replaceChildren();comparison.replaceChildren();
+    summary.replaceChildren();comparison.replaceChildren();insuranceSummary.replaceChildren();
+    table.replaceChildren();insuranceTable.replaceChildren();
     if(!dailyTrendBusy){
       showEmpty('dailyTrendChart','O histórico diário ainda não foi carregado. Abre o separador Utilização para consultar os últimos 30 dias.');
       showEmpty('dailyTrendUsersChart','O histórico diário ainda não foi carregado.');
+      showEmpty('dailyTrendUninsuredChart','Os dados diários ASF ainda não foram carregados.');
+      showEmpty('dailyTrendErrorsChart','Os dados diários de erros técnicos ainda não foram carregados.');
     }
-    range.textContent='Histórico diário';return;
+    range.textContent='Histórico diário';insuranceRange.textContent='Desde 09/10/2026';return;
   }
-  const rows=dailyTrendData.days.map(row=>({
-    day:String(row.day||''),
-    consultations:Math.max(0,Math.trunc(Number(row.consultations)||0)),
-    activeInstallations:Math.max(0,Math.trunc(Number(row.activeInstallations)||0))
-  })).filter(row=>trendDayParts(row.day)).slice(-30);
+  const asfCount=value=>value===null||value===undefined?null:Math.max(0,Math.trunc(Number(value)||0));
+  const normalizedRows=dailyTrendData.days.map(sourceRow=>{
+    let row=sourceRow;
+    if(typeof row==='string'){
+      try{row=JSON.parse(row);}catch(_){}
+    }
+    row=row&&typeof row==='object'?row:{};
+    return {
+      day:trendNormalizeDayValue(row),
+      consultations:Math.max(0,Math.trunc(Number(row.consultations??row.consultations_count??row.queryCount??row.query_count)||0)),
+      activeInstallations:Math.max(0,Math.trunc(Number(row.activeInstallations??row.active_installations??row.activeUsers??row.active_users)||0)),
+      uninsuredDetections:asfCount(row.uninsuredDetections??row.uninsured_detections),
+      technicalErrorQueries:asfCount(row.technicalErrorQueries??row.technical_error_queries)
+    };
+  });
+  let rows=normalizedRows.filter(row=>trendDayParts(row.day));
+  // The backend contract returns 30 chronologically ordered daily aggregates.
+  // Recover day labels if an older cached serializer omitted/renamed the date property.
+  if(!rows.length&&normalizedRows.length===30){
+    const firstDay=trendNormalizeDayValue({day:dailyTrendData.firstDay??dailyTrendData.first_day});
+    if(trendDayParts(firstDay)){
+      rows=normalizedRows.map((row,index)=>({...row,day:trendAddDays(firstDay,index)}));
+    }
+  }
+  rows=rows.slice(-30);
   if(!rows.length){
-    showEmpty('dailyTrendChart','Não há dias válidos para representar.');
-    showEmpty('dailyTrendUsersChart','Não há dias válidos para representar.');
-    summary.replaceChildren();comparison.replaceChildren();table.replaceChildren();return;
+    const message='O backend devolveu o histórico, mas o formato das datas não é reconhecido. Atualiza o painel; se persistir, é necessário corrigir o contrato do backend.';
+    showEmpty('dailyTrendChart',message);
+    showEmpty('dailyTrendUsersChart',message);
+    showEmpty('dailyTrendUninsuredChart',message);
+    showEmpty('dailyTrendErrorsChart',message);
+    summary.replaceChildren();comparison.replaceChildren();insuranceSummary.replaceChildren();
+    table.replaceChildren();insuranceTable.replaceChildren();
+    range.textContent='Formato de dados a corrigir';insuranceRange.textContent='Desde 09/10/2026';return;
   }
   const totalConsultations=rows.reduce((sum,row)=>sum+row.consultations,0);
   const uniqueInstallations=Math.max(0,Math.trunc(Number(dailyTrendData.uniqueInstallations30d)||0));
@@ -1009,6 +1127,50 @@ function renderDailyTrend(){
   $('dailyTrendCurrentUsers').textContent='Hoje · '+fmt(last.activeInstallations)+' ativos (parcial)';
   renderDailyTrendPlot(queryChart,rows,'consultations','consults','Pesquisas iniciadas');
   renderDailyTrendPlot(usersChart,rows,'activeInstallations','users','Utilizadores ativos');
+
+  const asfRows=rows.filter(row=>row.day>=ASF_TREND_START_DAY&&row.uninsuredDetections!==null&&row.technicalErrorQueries!==null);
+  insuranceSummary.replaceChildren();
+  if(!asfRows.length){
+    showEmpty('dailyTrendUninsuredChart','As métricas ASF diárias ainda não estão disponíveis no backend. É necessária a migração das métricas para ativar este gráfico.');
+    showEmpty('dailyTrendErrorsChart','As métricas de erros técnicos ainda não estão disponíveis no backend. É necessária a migração das métricas para ativar este gráfico.');
+    insuranceRange.textContent='Desde 09/10/2026';
+    insuranceSummary.append(metricCard('Resultados ASF','—','A aguardar as métricas diárias do backend.',''));
+    insuranceTable.replaceChildren();
+  }else{
+    const totalUninsured=asfRows.reduce((sum,row)=>sum+row.uninsuredDetections,0);
+    const totalTechnicalErrors=asfRows.reduce((sum,row)=>sum+row.technicalErrorQueries,0);
+    insuranceSummary.append(
+      metricCard('Deteções sem seguro · desde 09/10',fmt(totalUninsured),'Consultas únicas; inclui hoje, ainda parcial.','amber'),
+      metricCard('Consultas com erro técnico · desde 09/10',fmt(totalTechnicalErrors),'Consultas únicas, excluindo matrículas inválidas.','red')
+    );
+    insuranceRange.textContent=trendShortDate(asfRows[0].day)+' – '+trendShortDate(asfRows[asfRows.length-1].day)+' · Lisboa';
+    const lastAsf=asfRows[asfRows.length-1];
+    const asfTodayIsPartial=lastAsf.day===rows[rows.length-1].day;
+    $('dailyTrendCurrentUninsured').textContent=(asfTodayIsPartial?'Hoje · ':'Último dia · ')+fmt(lastAsf.uninsuredDetections)+' deteções'+(asfTodayIsPartial?' (parcial)':'');
+    $('dailyTrendCurrentErrors').textContent=(asfTodayIsPartial?'Hoje · ':'Último dia · ')+fmt(lastAsf.technicalErrorQueries)+' consultas'+(asfTodayIsPartial?' (parcial)':'');
+    renderDailyTrendPlot(uninsuredChart,asfRows,'uninsuredDetections','uninsured','Veículos detetados sem seguro');
+    renderDailyTrendPlot(errorsChart,asfRows,'technicalErrorQueries','errors','Consultas com erro técnico');
+
+    const insuranceTableRows=asfRows.map((row,i)=>{
+      const isPartial=i===asfRows.length-1&&row.day===rows[rows.length-1].day;
+      const previous=asfRows[i-1];
+      const dateCell=document.createElement('div');dateCell.className='daily-trend-valuecell';
+      const day=document.createElement('strong');day.className='daily-trend-day';day.textContent=trendLongDate(row.day);
+      dateCell.appendChild(day);
+      if(isPartial){const badge=document.createElement('span');badge.className='daily-trend-today';badge.textContent='Hoje · parcial';dateCell.appendChild(badge);}
+      const uninsuredDelta=trendDailyDelta(row.uninsuredDetections,previous?previous.uninsuredDetections:0,i===0,isPartial);
+      const errorDelta=trendDailyDelta(row.technicalErrorQueries,previous?previous.technicalErrorQueries:0,i===0,isPartial);
+      return [
+        dateCell,
+        trendDailyValueCell(row.uninsuredDetections,uninsuredDelta.label,uninsuredDelta.tone),
+        trendDailyValueCell(row.technicalErrorQueries,errorDelta.label,errorDelta.tone)
+      ];
+    });
+    const insuranceValueTable=makeTable(['Dia','Veículos sem seguro / Δ dia anterior','Erros técnicos / Δ dia anterior'],insuranceTableRows);
+    insuranceValueTable.classList.add('daily-trend-table-wrap');
+    insuranceTable.replaceChildren(insuranceValueTable);
+  }
+
   const tableRows=rows.map((row,i)=>{
     const isPartial=i===rows.length-1;
     const previous=rows[i-1];
@@ -1043,6 +1205,8 @@ async function loadDailyTrend(force){
       const message='Não foi possível carregar o histórico diário: '+(error.message||'erro desconhecido')+'. Tenta atualizar.';
       showEmpty('dailyTrendChart',message);
       showEmpty('dailyTrendUsersChart',message);
+      showEmpty('dailyTrendUninsuredChart',message);
+      showEmpty('dailyTrendErrorsChart',message);
     }
     showNotice('Histórico diário indisponível: '+(error.message||'erro desconhecido'),'warning');
   }finally{dailyTrendBusy=false;}
