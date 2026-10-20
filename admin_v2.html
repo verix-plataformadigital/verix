@@ -1025,6 +1025,9 @@ function renderDailyTrendPlot(host,rows,key,seriesClass,ariaLabel){
     svg.appendChild(trendSvgElement('text',{x:xAt(i),y:height-10,'text-anchor':'middle',class:'daily-trend-date-label'},dateLabel));
   });
   host.appendChild(svg);
+  // On narrow screens, open each horizontally scrollable chart at its newest day.
+  // Reapplying this after every render also preserves the intended default after refreshes.
+  host.scrollLeft=Math.max(0,host.scrollWidth-host.clientWidth);
 }
 function trendDailyValueCell(value,delta,kind){
   const wrap=document.createElement('div');wrap.className='daily-trend-valuecell';
