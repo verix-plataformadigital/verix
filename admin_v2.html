@@ -904,8 +904,44 @@ function trendSvgElement(name,attrs,text){
   return node;
 }
 function trendDayParts(value){
-  const match=String(value||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  return match?{year:Number(match[1]),month:Number(match[2]),day:Number(match[3])}:null;
+  // Accept plain ISO dates and timestamps from PostgREST/client serializers.
+  const text=String(value??'').trim();
+  let match=text.match(/^(\d{4})-(\d{2})-(\d{2})(?:$|[T\s])/);
+  if(match){
+    const year=Number(match[1]),month=Number(match[2]),day=Number(match[3]);
+    const date=new Date(Date.UTC(year,month-1,day));
+    return date.getUTCFullYear()===year&&date.getUTCMonth()+1===month&&date.getUTCDate()===day
+      ?{year,month,day}:null;
+  }
+  match=text.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if(match){
+    const day=Number(match[1]),month=Number(match[2]),year=Number(match[3]);
+    const date=new Date(Date.UTC(year,month-1,day));
+    return date.getUTCFullYear()===year&&date.getUTCMonth()+1===month&&date.getUTCDate()===day
+      ?{year,month,day}:null;
+  }
+  return null;
+}
+function trendNormalizeDayValue(row){
+  if(row===null||row===undefined)return '';
+  let item=row;
+  if(typeof item==='string'){
+    const text=item.trim();
+    if(text.startsWith('{')){
+      try{item=JSON.parse(text);}catch(_){}
+    }
+    if(typeof item==='string')return text;
+  }
+  if(!item||typeof item!=='object')return String(item??'').trim();
+  const value=item.day??item.report_day??item.reportDay??item.date??item.day_date??item.date_key??item.fecha;
+  if(value!==null&&value!==undefined)return String(value).trim();
+  return '';
+}
+function trendAddDays(dayValue,offset){
+  const p=trendDayParts(dayValue);
+  if(!p)return '';
+  const date=new Date(Date.UTC(p.year,p.month-1,p.day+offset));
+  return date.getUTCFullYear()+'-'+String(date.getUTCMonth()+1).padStart(2,'0')+'-'+String(date.getUTCDate()).padStart(2,'0');
 }
 function trendShortDate(value){
   const p=trendDayParts(value);if(!p)return String(value||'—');
@@ -1020,20 +1056,39 @@ function renderDailyTrend(){
     range.textContent='Histórico diário';insuranceRange.textContent='Desde 09/10/2026';return;
   }
   const asfCount=value=>value===null||value===undefined?null:Math.max(0,Math.trunc(Number(value)||0));
-  const rows=dailyTrendData.days.map(row=>({
-    day:String(row.day||''),
-    consultations:Math.max(0,Math.trunc(Number(row.consultations)||0)),
-    activeInstallations:Math.max(0,Math.trunc(Number(row.activeInstallations)||0)),
-    uninsuredDetections:asfCount(row.uninsuredDetections),
-    technicalErrorQueries:asfCount(row.technicalErrorQueries)
-  })).filter(row=>trendDayParts(row.day)).slice(-30);
+  const normalizedRows=dailyTrendData.days.map(sourceRow=>{
+    let row=sourceRow;
+    if(typeof row==='string'){
+      try{row=JSON.parse(row);}catch(_){}
+    }
+    row=row&&typeof row==='object'?row:{};
+    return {
+      day:trendNormalizeDayValue(row),
+      consultations:Math.max(0,Math.trunc(Number(row.consultations??row.consultations_count??row.queryCount??row.query_count)||0)),
+      activeInstallations:Math.max(0,Math.trunc(Number(row.activeInstallations??row.active_installations??row.activeUsers??row.active_users)||0)),
+      uninsuredDetections:asfCount(row.uninsuredDetections??row.uninsured_detections),
+      technicalErrorQueries:asfCount(row.technicalErrorQueries??row.technical_error_queries)
+    };
+  });
+  let rows=normalizedRows.filter(row=>trendDayParts(row.day));
+  // The backend contract returns 30 chronologically ordered daily aggregates.
+  // Recover day labels if an older cached serializer omitted/renamed the date property.
+  if(!rows.length&&normalizedRows.length===30){
+    const firstDay=trendNormalizeDayValue({day:dailyTrendData.firstDay??dailyTrendData.first_day});
+    if(trendDayParts(firstDay)){
+      rows=normalizedRows.map((row,index)=>({...row,day:trendAddDays(firstDay,index)}));
+    }
+  }
+  rows=rows.slice(-30);
   if(!rows.length){
-    showEmpty('dailyTrendChart','Não há dias válidos para representar.');
-    showEmpty('dailyTrendUsersChart','Não há dias válidos para representar.');
-    showEmpty('dailyTrendUninsuredChart','Não há dias válidos para representar.');
-    showEmpty('dailyTrendErrorsChart','Não há dias válidos para representar.');
+    const message='O backend devolveu o histórico, mas o formato das datas não é reconhecido. Atualiza o painel; se persistir, é necessário corrigir o contrato do backend.';
+    showEmpty('dailyTrendChart',message);
+    showEmpty('dailyTrendUsersChart',message);
+    showEmpty('dailyTrendUninsuredChart',message);
+    showEmpty('dailyTrendErrorsChart',message);
     summary.replaceChildren();comparison.replaceChildren();insuranceSummary.replaceChildren();
-    table.replaceChildren();insuranceTable.replaceChildren();return;
+    table.replaceChildren();insuranceTable.replaceChildren();
+    range.textContent='Formato de dados a corrigir';insuranceRange.textContent='Desde 09/10/2026';return;
   }
   const totalConsultations=rows.reduce((sum,row)=>sum+row.consultations,0);
   const uniqueInstallations=Math.max(0,Math.trunc(Number(dailyTrendData.uniqueInstallations30d)||0));
