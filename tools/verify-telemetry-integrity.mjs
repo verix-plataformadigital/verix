@@ -44,6 +44,9 @@ assert.ok(admin.includes("Evolução diária — últimos 30 dias") && admin.inc
 assert.ok(stats.includes('detail === "daily-trend-30d"') && stats.includes('verix2_admin_daily_trend_30d'), "Admin stats endpoint must expose the authenticated 30-day trend payload");
 const dailyTrendMigration = fs.readFileSync("supabase/migrations/20261019181805_admin_daily_trend_30d_unique_total.sql", "utf8");
 assert.ok(dailyTrendMigration.includes("uniqueInstallations30d") && dailyTrendMigration.includes("activeInstallations") && dailyTrendMigration.includes("consultations"), "daily trend migration must supply total distinct installations and daily consultation/install counts");
+assert.ok(admin.includes('id="dailyTrendComparison"') && admin.includes('function renderDailyTrendPlot') && admin.includes('dailyTrendUsersChart'), "30-day trend must render separate readable daily charts for searches and active installations");
+assert.ok(admin.includes("trendDailyDelta") && admin.includes("Valores diários e variação face ao dia anterior"), "30-day trend must provide exact daily values and day-over-day change");
+assert.ok(admin.includes("Semana anterior:") && admin.includes("Dia em curso"), "30-day trend must compare full weeks and mark today's partial counts rather than treating them as a complete day");
 assert.ok(adminPwaEntry.includes('rel="manifest" href="./manifest.webmanifest?v=20261019-admin5"'), "GitHub Pages Admin must link its own manifest under /admin/");
 assert.ok(admin.includes("isSharedGithubPagesOrigin") && admin.includes("isAdminScopedPath"), "Admin installation guard must allow installation only from its dedicated /admin/ path");
 assert.ok(admin.includes("VERIX_ADMIN_PWA_INSTALLED_V5"), "Admin installation flag must be versioned so old same-origin attempts cannot hide the new install control");
