@@ -4,6 +4,7 @@ on:
     paths:
       - "supabase/functions/telemetry-v2/index.ts"
       - "supabase/functions/stats-v2/index.ts"
+      - "supabase/functions/admin-auth-v2/index.ts"
       - "supabase/migrations/**"
       - "admin_v2.html"
       - "tools/verify-telemetry-integrity.mjs"
@@ -18,6 +19,7 @@ on:
     paths:
       - "supabase/functions/telemetry-v2/index.ts"
       - "supabase/functions/stats-v2/index.ts"
+      - "supabase/functions/admin-auth-v2/index.ts"
       - "supabase/migrations/**"
       - "admin_v2.html"
       - "tools/verify-telemetry-integrity.mjs"
@@ -43,6 +45,8 @@ jobs:
         run: deno check --no-lock supabase/functions/telemetry-v2/index.ts
       - name: Type-check Admin statistics Edge Function
         run: deno check --no-lock supabase/functions/stats-v2/index.ts
+      - name: Type-check Admin authentication and WebAuthn Edge Function
+        run: deno check --no-lock supabase/functions/admin-auth-v2/index.ts
       - name: Check realtime presence source syntax
         run: node --check verix-presence-v1.mjs
       - name: Build secure release and validate bundled presence
