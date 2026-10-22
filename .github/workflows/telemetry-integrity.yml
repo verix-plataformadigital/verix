@@ -10,6 +10,10 @@ on:
       - "tools/verify-asf-diagnostic-telemetry.mjs"
       - "tests/fixtures/asf-engine-baseline.txt"
       - "verix-app.html"
+      - "src/operational/**"
+      - "tools/lib/operational-source.mjs"
+      - "tools/verify-operational-source.mjs"
+      - "tests/operational-source.test.mjs"
       - "verix-presence-v1.mjs"
       - "tools/verify-migration-filenames.mjs"
       - ".github/workflows/telemetry-integrity.yml"
@@ -27,6 +31,10 @@ on:
       - "tools/verify-asf-diagnostic-telemetry.mjs"
       - "tests/fixtures/asf-engine-baseline.txt"
       - "verix-app.html"
+      - "src/operational/**"
+      - "tools/lib/operational-source.mjs"
+      - "tools/verify-operational-source.mjs"
+      - "tests/operational-source.test.mjs"
       - "tools/verify-migration-filenames.mjs"
       - ".github/workflows/telemetry-integrity.yml"
 permissions:
@@ -58,7 +66,12 @@ jobs:
           node --check dist/verix-presence-v1.js
           grep -q 'verix-presence-v1.js?v=' dist/verix-app.html
           grep -q 'verix-presence-v1.js?v=' dist/admin_v2.html
+      - name: Verify modular operational source
+        run: |
+          node tools/verify-operational-source.mjs
+          node --test tests/operational-source.test.mjs
       - name: Verify telemetry integrity contract
         run: node tools/verify-telemetry-integrity.mjs
+
       - name: Verify ASF engine freeze and diagnostic telemetry
         run: node tools/verify-asf-diagnostic-telemetry.mjs

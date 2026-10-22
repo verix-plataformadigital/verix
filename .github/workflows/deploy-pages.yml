@@ -5,6 +5,10 @@ on:
     branches: ["main"]
     paths:
       - "verix-app.html"
+      - "src/operational/**"
+      - "tools/lib/operational-source.mjs"
+      - "tools/verify-operational-source.mjs"
+      - "tests/operational-source.test.mjs"
       - "verix-presence-v1.mjs"
       - "admin_v2.html"
       - "index.html"
@@ -48,15 +52,11 @@ jobs:
       - name: Install dependencies
         run: npm install --no-fund --no-audit
 
-      - name: Verify mobile asset cache keys
-        shell: bash
+      - name: Verify modular operational source
         run: |
-          grep -qF 'verix-mobile.css?v=10' verix-app.html
-          grep -qF 'verix-mobile.js?v=10' verix-app.html
-          if grep -qF 'openToken' verix-app.html; then
-            echo "Mobile assets must use the release ID, not a random per-open URL"
-            exit 1
-          fi
+          npm run verify:source
+          npm run test:source
+
       - name: Build secure release
         env:
           VERIX_BUILD_ID: "1.5-sec-${{ github.run_number }}-${{ github.sha }}"
