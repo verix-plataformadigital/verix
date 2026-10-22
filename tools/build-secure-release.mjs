@@ -182,7 +182,7 @@ function writeSecureFile(relativeSource, relativeOutput) {
     }
     source = source.replace(
       marker,
-      '<script id="verix-telemetry-v2">\\n' + telemetryRuntimeSource + "\\n</script>"
+      '<script id="verix-telemetry-v2">\n' + telemetryRuntimeSource + "\n</script>"
     );
   }
 
