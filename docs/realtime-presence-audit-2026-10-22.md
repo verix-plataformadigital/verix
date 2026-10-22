@@ -46,6 +46,8 @@ O corpo SELECT do RPC proposto foi executado diretamente sobre os dados atuais, 
 
 Os números são a saída da consulta candidata, não o painel de produção; só passam a refletir o painel após revisão, merge e aplicação controlada da migração.
 
+Um EXPLAIN ANALYZE read-only sobre o corpo completo da consulta, na mesma base de dados, terminou em aproximadamente 68,2 ms (planeamento ~5,7 ms; 566 buffers partilhados em cache). Nesse instante, a consulta encontrou 8 contextos de página e 3 perfis ativos. Isto é uma medição pontual, não um benchmark de carga concorrente.
+
 Foi também executada uma simulação SQL com três sequências de eventos:
 - heartbeat ocorrido antes de session_close, mas recebido depois: **offline**, apesar de a regra antiga baseada apenas no instante de receção o considerar online;
 - heartbeat novo, ocorrido depois de session_close: **online**;
