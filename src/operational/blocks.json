@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "purpose": "Ordered operational source blocks assembled into one portable HTML artifact.",
+  "purpose": "Ordered operational source blocks. Some historically coupled classic scripts are split into semantic source parts and concatenated back into the exact original script at build time.",
   "sourceBaselineCommit": "9d6f9f08809cd953fae2545d2f743f04f9a8a1d5",
   "sourceBlobSha": "139f7f7dc04f2f6aacbd3e1abf75f5fd55046324",
   "expectedCounts": {
@@ -84,11 +84,19 @@
       "ordinal": 8,
       "kind": "script",
       "id": null,
-      "file": "scripts/08-inline-script.js",
       "marker": "<!-- @verix:module:0008 -->",
       "openTag": "<script>",
       "closeTag": "</script>",
-      "bytes": 423882
+      "bytes": 423882,
+      "parts": [
+        "scripts/08-01-core-and-imt.js",
+        "scripts/08-02-menu-operacional.js",
+        "scripts/08-03-historico.js",
+        "scripts/08-04-copiar-legislacao.js",
+        "scripts/08-05-asf-tem-seguro.js",
+        "scripts/08-06-ferramentas-externas.js",
+        "scripts/08-07-cinemometro.js"
+      ]
     },
     {
       "ordinal": 9,
@@ -610,5 +618,6 @@
       "closeTag": "</style>",
       "bytes": 103772
     }
-  ]
+  ],
+  "physicalSourceFiles": 66
 }

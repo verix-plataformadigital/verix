@@ -4,7 +4,9 @@
 - Blob original: 139f7f7dc04f2f6aacbd3e1abf75f5fd55046324
 - Bytes UTF-8 originais: 1108135
 - Blocos CSS extraídos: 26
-- Scripts inline extraídos: 34
+- Blocos JS inline: 34
+- Ficheiros-fonte físicos depois da divisão semântica: 66
 - Reconstrução byte a byte na extração: PASS.
+- Divisão/concatenação do maior script em sete partes semânticas: PASS.
 
 Evidência da extração mecânica inicial; alterações futuras são validadas pelos testes e revisão de código.

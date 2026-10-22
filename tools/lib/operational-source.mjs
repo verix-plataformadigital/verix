@@ -8,11 +8,17 @@ export function readOperationalSource(root=process.cwd()){
  const markers=new Set(),files=new Set();
  for(const b of manifest.blocks){
   if(!b.marker||markers.has(b.marker))throw new Error("Duplicate or missing marker.");
-  if(!b.file||files.has(b.file))throw new Error("Duplicate or missing module.");
-  markers.add(b.marker);files.add(b.file);
+  markers.add(b.marker);
+  const paths=Array.isArray(b.parts)&&b.parts.length?b.parts:[b.file];
+  if(paths.some(p=>!p))throw new Error("Missing module path.");
+  for(const file of paths){
+   if(files.has(file))throw new Error("Duplicate module path: "+file);
+   files.add(file);
+  }
   const count=html.split(b.marker).length-1;
   if(count!==1)throw new Error("Expected exactly one module marker; count="+count);
-  html=html.replace(b.marker,b.openTag+fs.readFileSync(path.join(dir,b.file),"utf8")+b.closeTag);
+  const body=paths.map(file=>fs.readFileSync(path.join(dir,file),"utf8")).join("");
+  html=html.replace(b.marker,b.openTag+body+b.closeTag);
  }
  if(/<!-- @verix:module:\d{4} -->/.test(html))throw new Error("Unresolved module marker.");
  return html;
