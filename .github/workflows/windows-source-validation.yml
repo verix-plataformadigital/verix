@@ -64,3 +64,28 @@ jobs:
             throw "Required ASF relay or client gate markers are missing."
           }
           Write-Output "PASS: portable HTML, build ID, current telemetry route, ASF relay and client gate verified on Windows."
+
+      - name: Create candidate checksum
+        shell: pwsh
+        run: |
+          $app = Join-Path $PWD "dist/verix-app.html"
+          $hash = (Get-FileHash $app -Algorithm SHA256).Hash.ToLowerInvariant()
+          $manifest = Get-Content (Join-Path $PWD "dist/build-manifest.json") -Raw | ConvertFrom-Json
+          @(
+            "build_id=$($manifest.build_id)"
+            "sha256=$hash"
+            "file=verix-app.html"
+          ) | Set-Content (Join-Path $PWD "dist/acceptance-sha256.txt") -Encoding ascii
+          Write-Output "Candidate SHA-256: $hash"
+
+      - name: Upload Windows acceptance candidate
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: VERIX-Windows-Acceptance-Candidate
+          path: |
+            dist/verix-app.html
+            dist/version.json
+            dist/build-manifest.json
+            dist/acceptance-sha256.txt
+          if-no-files-found: error
+          retention-days: 7
