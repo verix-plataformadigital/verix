@@ -33,10 +33,24 @@ jobs:
           import tomllib
           from pathlib import Path
           config = tomllib.loads(Path("supabase/config.toml").read_text())
-          settings = config.get("functions", {}).get("admin-telemetry-v3", {})
-          if settings.get("verify_jwt") is not False:
-              raise SystemExit("admin-telemetry-v3 must keep platform JWT verification disabled because it validates its own signed admin token")
-          print("Admin telemetry v3 auth configuration: OK")
+          functions = config.get("functions", {})
+          required = (
+              "telemetry-v2",
+              "stats-v2",
+              "hourly-history-v2",
+              "admin-auth-v2",
+              "admin-telemetry-v3",
+              "verix-admin-pwa",
+              "asf-proxy-v1",
+              "verix-gate-v1",
+          )
+          missing = [name for name in required if name not in functions]
+          wrong = [name for name in required if functions.get(name, {}).get("verify_jwt") is not False]
+          if missing:
+              raise SystemExit("Active Edge Functions missing from supabase/config.toml: " + ", ".join(missing))
+          if wrong:
+              raise SystemExit("These Edge Functions must retain verify_jwt=false and validate access in the function: " + ", ".join(wrong))
+          print("All eight active Edge Function auth declarations: OK")
           PY
       - name: Type-check Edge Function and tests
         run: deno check supabase/functions/admin-telemetry-v3/index.ts supabase/functions/admin-telemetry-v3/index_test.ts
