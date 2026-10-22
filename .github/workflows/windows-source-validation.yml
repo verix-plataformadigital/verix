@@ -1,0 +1,66 @@
+name: VÉRIX Windows Source Validation
+
+on:
+  pull_request:
+    paths:
+      - "verix-app.html"
+      - "src/operational/**"
+      - "tools/lib/operational-source.mjs"
+      - "tools/verify-operational-source.mjs"
+      - "tests/operational-source.test.mjs"
+      - "tools/build-secure-release.mjs"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/windows-source-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  windows-source:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+
+      - name: Install release tooling
+        run: npm install --no-fund --no-audit
+
+      - name: Verify modular source on Windows
+        run: |
+          npm run verify:source
+          npm run test:source
+
+      - name: Build secure release on Windows
+        env:
+          VERIX_BUILD_ID: "1.5-sec-20261022-windows-ci"
+        run: npm run build:secure
+
+      - name: Validate Windows build outputs
+        shell: pwsh
+        run: |
+          $app = Join-Path $PWD "dist/verix-app.html"
+          $manifestPath = Join-Path $PWD "dist/build-manifest.json"
+          if (!(Test-Path $app) -or (Get-Item $app).Length -lt 500000) {
+            throw "The assembled portable application was not produced or is unexpectedly small."
+          }
+          if (!(Test-Path $manifestPath)) {
+            throw "Secure build manifest is missing."
+          }
+          $manifest = Get-Content $manifestPath -Raw | ConvertFrom-Json
+          if ($manifest.build_id -ne "1.5-sec-20261022-windows-ci") {
+            throw "Build manifest ID does not match the requested Windows CI build."
+          }
+          $html = Get-Content $app -Raw
+          if ($html -notmatch "telemetry-v2" -or $html -match "/functions/v1/telemetry(?:['""?\s]|$)") {
+            throw "The generated application has an unexpected telemetry endpoint reference."
+          }
+          if ($html -notmatch "asf-proxy-v1" -or $html -notmatch "verix-gate-v1") {
+            throw "Required ASF relay or client gate markers are missing."
+          }
+          Write-Output "PASS: portable HTML, build ID, current telemetry route, ASF relay and client gate verified on Windows."
