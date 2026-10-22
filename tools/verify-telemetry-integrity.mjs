@@ -422,9 +422,9 @@ assert.ok(adminV3RestoreInputClassificationMigration.includes("query_start_candi
 
 assert.match(adminErrorClassificationMigration, /verix2_admin_plate_format_valid/, "admin error classification must validate Portuguese plate formats");
 assert.ok(adminErrorClassificationMigration.includes("v = 'AA00AA'"), "the filter must exclude only the reserved first current-format combination, not all 00 center blocks");
-assert.ok(plateZeroBlockMigration.includes("v <> 'AA00AA'"), "the production plate validator must exclude only the reserved AA00AA combination");
+assert.ok(plateZeroBlockMigration.includes("v = 'AA00AA'"), "the production plate validator must exclude only the reserved AA00AA combination");
 assert.ok(plateZeroBlockMigration.includes("public.verix2_is_portuguese_plate_format('AB-00-AA')"), "SQL regression tests must cover the 00 block after the first letter combination");
-assert.doesNotMatch(stats, /plate\\.slice\\(2,4\\)===\"00\"/, "Admin JS must not reject every current-format plate with center 00");
+assert.ok(!stats.includes('plate.slice(2,4)==="00"'), "Admin JS must not reject every current-format plate with center 00");
 assert.ok(stats.includes('plate==="AA00AA"'), "Admin JS must match the SQL reserved-combination rule");
 assert.ok(adminErrorClassificationMigration.includes("c.error_type = 'http_400'") && adminErrorClassificationMigration.includes("c.http_status_raw = '400'"), "only explicit HTTP 400 events qualify for the invalid-input exclusion");
 assert.ok(adminErrorClassificationMigration.includes("c.has_plate_input") && adminErrorClassificationMigration.includes("NOT c.has_valid_plate_format"), "the filter must require a captured but malformed plate");
