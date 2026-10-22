@@ -237,9 +237,13 @@ assert.match(telemetrySource, /var HEARTBEAT_MS = 60000;/, "source heartbeat cad
 assert.match(telemetryScript, /var HEARTBEAT_MS = (?:60000|6e4);/, "compiled heartbeat cadence should remain at 60 seconds within the 90-second presence lease");
 assert.doesNotMatch(telemetryScript, /\/functions\/v1\/telemetry(?!-v2)/, "production bundle must not reference the obsolete telemetry endpoint");
 
-const parserMatch = telemetryScript.match(/function parseReceipt\(text\) \{[\s\S]*?\n  \}/);
-assert.ok(parserMatch, "receipt parser must be independently testable");
-const parseReceipt = new Function("return (" + parserMatch[0] + ");")();
+const parserStart = telemetryScript.indexOf("function parseReceipt(text) {");
+const parserEnd = telemetryScript.indexOf("async function sendViaFetch", parserStart);
+assert.ok(parserStart >= 0 && parserEnd > parserStart, "compiled receipt parser must have clear function boundaries");
+const parserSource = telemetryScript.slice(parserStart, parserEnd).trim();
+assert.match(parserSource, /\\n  \\}$/);
+const parseReceipt = new Function("return (" + parserSource + ");")();
+
 const validReceipt = {
   ok: true,
   acknowledged_event_ids: ["e-inserted", "e-duplicate"],
