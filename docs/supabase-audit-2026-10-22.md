@@ -55,7 +55,7 @@ Os tamanhos e contagens são os valores devolvidos pelo catálogo/estatísticas 
 - `verix2_events` domina o armazenamento. É plausível para a tabela de eventos, mas requer acompanhamento de crescimento, retenção e custo dos índices.
 - O armazenamento legado continua relevante. Não deve ser apagado sem provar que nenhuma instalação antiga ou função consumidora depende dele.
 - As caches administrativas têm uma única linha, mas podem conter payloads consideráveis. Medir tamanho serializado, frequência de atualização, concorrência e invalidação antes de as simplificar.
-- `verix_insurance_no_cases` conserva registos “sem registo”; a retenção pretendida é de 90 dias. Não alterá-la sem aprovação explícita.
+- `verix_insurance_no_cases` conserva registos operacionais “sem registo” por **24 horas**, conforme a migração aplicada em 19/10 e o job `verix_insurance_no_cases_expiry` (a cada 5 minutos). No snapshot de 22/10 havia 597 registos, nenhum expirado por limpar. Isto é distinto da retenção do histórico analítico em `verix2_events`.
 
 ## 4. Índices: oportunidades, não instruções para apagar
 
@@ -115,6 +115,8 @@ Os registos apresentam agentes de utilizador de Chrome/Edge no Windows, sem cabe
 
 **Decisão de segurança:** não foi criado um alias para `/telemetry`. Sem o contrato e o emissor antigo confirmados, um alias poderia ressuscitar um segundo emissor, causar duplicados ou introduzir eventos no modelo errado. Para o link oficial, a correção é publicar o build gerado a partir da fonte modular validada; cópias HTML guardadas localmente precisam de ser substituídas manualmente. Depois de publicar, voltar a medir a taxa de `OPTIONS 404` e confirmar que os pedidos ao endpoint versionado continuam a ter respostas 2xx.
 
+**Snapshot mais recente (22/10/2026, janela móvel de 60 minutos, cerca das 12:08 UTC):** 3.291 `OPTIONS | 404` para `/functions/v1/telemetry`, último evento observado às 12:08:37 UTC; 473 `POST` para `/functions/v1/telemetry-v2`, com HTTP 200, último evento às 12:08:19 UTC. As amostras ainda não identificam o ficheiro emissor. Estes 3.291 pedidos não são 3.291 consultas de veículos nem demonstram falhas de ingestão no caminho atual.
+
 ## 7. Divergência do histórico de migrações — reconciliação inicial
 
 O inventário foi comparado por versão de 14 dígitos e por nome normalizado, removendo prefixos de data e sufixos de data conhecidos. Resultado deste mapeamento conservador:
@@ -148,6 +150,8 @@ Exemplos de ficheiros sem par identificado no ledger pelo mapeamento atual:
 - `20261012190000_admin_performance_fastpaths.sql`
 - `20261012194100_admin_dashboard_shared_cache.sql`
 
+**Atualização da análise de conteúdo/schema:** a revisão objeto a objeto dos seis ficheiros sem par está documentada em [migration-reconciliation-2026-10-22.md](./migration-reconciliation-2026-10-22.md). Os objetos centrais de todos os seis já aparecem no catálogo atual, em vários casos com parâmetros posteriores; isso é evidência contra os reaplicar, não prova que os SQL originais foram executados byte a byte.
+
 **Plano seguro para concluir a reconciliação:**
 1. Exportar um snapshot do esquema real: tabelas/colunas, constraints, índices, triggers, funções e assinaturas, privilégios, RLS, extensões e cron jobs.
 2. Recolher os ficheiros SQL e diffs dos commits antigos disponíveis no GitHub; comparar o conteúdo das migrações relacionadas, não apenas os nomes.
@@ -179,12 +183,12 @@ As consultas usadas para repetir o snapshot de migrações, tabelas/RLS, funçõ
 
 ## 9. O que foi verificado nesta proposta
 
-- No candidato de código `98c8631995c8d0b59a830ab46b66e033fb1b1a89`, passaram `VÉRIX Security Audit`, `Telemetry Integrity`, `ASF Retry Experiment Validation` e `VÉRIX Windows Source Validation`. O último workflow executou o build seguro em `windows-latest` e verificou o HTML gerado.
+- No candidato de código `04b51c1079702e46e99b291a61229562ade1cb29`, passaram `VÉRIX Security Audit`, `Telemetry Integrity`, `ASF Retry Experiment Validation` e `VÉRIX Windows Source Validation`. O último workflow executou o build seguro em `windows-latest`, verificou o HTML gerado e guardou um artefacto candidato com checksum.
 - O verificador de fonte reconstrói o HTML e falha se encontrar uma referência exata ao endpoint antigo; o verificador ASF compara o bloco de motor protegido com a fixture de regressão. A comparação direta da fonte da `main` com a fonte base modular confirmou que o bloco protegido de 13.718 caracteres é byte a byte idêntico.
-- O artefacto candidato para aceitação foi produzido pelo runner Windows e tem SHA-256 `2c1f59835f11c80b27813ca75c2001dd9dca6fd268058a90800605acb8604395`. O ZIP/identificador e os passos para descarregar e verificar estão na [checklist Windows](./windows-acceptance-checklist-2026-10-22.md). Este é um artefacto de teste, não uma publicação de produção.
+- O artefacto `VERIX-Windows-Acceptance-Candidate` foi produzido pelo runner Windows em 22/10/2026 (run [#39774238539](https://github.com/verix-plataformadigital/verix/actions/runs/39774238539)), com build ID `1.5-sec-20261022-windows-ci` e SHA-256 do HTML `0d4c47983184b5b7f2cbcdc6474b6f89ec5b3b78f22cbca6dbfb712637092d75`. O artefacto expira em 29/10/2026 às 11:56 UTC. Consultar a [checklist Windows](./windows-acceptance-checklist-2026-10-22.md). É um candidato de teste, não uma publicação de produção.
 - Os advisors Supabase de segurança e desempenho não devolveram avisos na leitura efetuada; este resultado pontual não é garantia de ausência de problemas.
 - As três tarefas `pg_cron` observadas estão ativas e as últimas cinco execuções consultadas por tarefa não mostraram falhas. A atualização da cache Admin demorou cerca de 2,1–4,3 segundos nas amostras recentes.
 - As tabelas operacionais/legacy consultadas têm RLS ativo e políticas de negação para `anon`/`authenticated`. O inventário de dependências e o apontamento `PUBLIC EXECUTE` de duas funções auxiliares estão detalhados no mapa, sem mudanças de privilégios.
 - Nenhuma migração, alteração de schema, alteração de dados, alteração de permissões ou publicação de produção foi executada.
 
-**Estado honesto:** a estrutura da fonte e os gates automáticos estão preparados e a ingestão atual responde. Ainda não se pode declarar o VÉRIX integralmente concluído sem o teste funcional real em Windows e a reconciliação do histórico de migrações por conteúdo/schema.
+**Estado honesto:** a fonte modular e os gates automáticos estão preparados e a ingestão atual responde. A comparação dos seis ficheiros SQL sem par já foi aprofundada ao nível dos objetos atuais e está documentada; a reconstrução de todos os 60 registos de ledger sem par nominal continua a exigir recuperação e comparação de históricos Git. O candidato com build ID `1.5-sec-20261022-windows-ci` tem SHA-256 `0d4c47983184b5b7f2cbcdc6474b6f89ec5b3b78f22cbca6dbfb712637092d75`. Os quatro workflows passaram no commit de código `04b51c1079702e46e99b291a61229562ade1cb29`. Isso valida a estrutura/compilação, não substitui a aceitação funcional real ASF/IMT/Admin no contexto operacional Windows. Nenhuma migração, alteração de dados, mudança de permissões ou publicação de produção foi executada.
