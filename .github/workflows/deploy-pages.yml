@@ -87,7 +87,7 @@ jobs:
           grep -q "./verix-mobile.html" dist/index.html
           grep -q "./verix-app.html" dist/verix-mobile.html
 
-      - name: Validate server-authoritative live presence
+      - name: Validate backend-calculated live presence
         shell: bash
         run: |
           test ! -e dist/verix-presence-v1.js
