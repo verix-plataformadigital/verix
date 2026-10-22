@@ -1,0 +1,39 @@
+
+.tool:focus-visible, .rail-item:focus-visible, .consult:focus-visible, .module-close:focus-visible {outline:2px solid rgba(101,215,232,.9)!important;outline-offset:2px!important}
+/* O menu é a primeira impressão: ligeiro aumento de hierarquia, sem exagerar */
+/* Rodapé de desenvolvimento sempre legível */
+.credit{white-space:nowrap!important}
+/* Evita a sensação de painel “cortado” em ecrãs 16:9 mais baixos */
+@media(max-height:760px){
+ .command{height:96px!important}
+ .main{top:146px!important;height:calc(100vh - 160px)!important}
+ .rail{top:120px!important}
+}
+/* Nos ecrãs menores, nunca deixar a caixa de consulta sair do cabeçalho. */
+@media(max-width:1050px){
+ .command .searchbar{width:calc(100vw - 430px)!important;min-width:0!important;max-width:none!important;left:56%!important}
+ .command .field input{width:120px!important}
+ .command .consult{min-width:170px!important;padding:0 14px!important}
+}
+.extra-panel{display:flex;flex-direction:column;gap:12px}
+.extra-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:2px}
+.extra-search{flex:1;min-width:220px;height:42px;border:1px solid rgba(101,215,232,.28);border-radius:8px;background:rgba(3,12,17,.96);color:#edf4f5;padding:0 12px;outline:none;font:800 11px/1 Arial,sans-serif}
+.extra-search:focus{border-color:rgba(101,215,232,.65);box-shadow:0 0 0 3px rgba(101,215,232,.08)}
+.extra-count{font:900 8px/1 Arial,sans-serif;letter-spacing:1px;color:#769099;white-space:nowrap}
+.extra-section{border:1px solid rgba(92,125,136,.26);border-radius:10px;background:linear-gradient(145deg,rgba(12,29,38,.95),rgba(4,13,18,.98));overflow:hidden}
+.extra-section-title{padding:11px 13px;border-bottom:1px solid rgba(91,124,134,.18);font:900 10px/1 Arial,sans-serif;letter-spacing:1px;color:#eaf1f2;text-transform:uppercase}
+.extra-table-wrap{max-height:390px;overflow:auto}
+.extra-table{width:100%;border-collapse:collapse;font:800 9px/1.35 Arial,sans-serif;color:#aebdc3}
+.extra-table th{position:sticky;top:0;background:#0b1a22;color:#7fd8e6;text-transform:uppercase;letter-spacing:.7px;font-size:7px;padding:9px 10px;text-align:left;border-bottom:1px solid rgba(101,215,232,.2);z-index:2}
+.extra-table td{padding:8px 10px;border-bottom:1px solid rgba(100,130,140,.12);vertical-align:top}
+.extra-table tr:hover td{background:rgba(101,215,232,.035)}
+.extra-code{font-family:Consolas,monospace;color:#e8f0f2;font-weight:900;white-space:nowrap}
+.extra-pill{display:inline-flex;padding:3px 7px;border:1px solid rgba(74,213,147,.25);border-radius:10px;color:#67dba5;background:rgba(0,139,85,.08);font-size:7px;letter-spacing:.5px}
+.extra-muted{color:#78919a}
+.extra-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.extra-card{border:1px solid rgba(92,125,136,.24);border-radius:9px;background:linear-gradient(145deg,rgba(12,29,38,.92),rgba(4,13,18,.96));padding:13px}
+.extra-card h3{margin:0 0 7px;font:900 10px/1.2 Arial,sans-serif;letter-spacing:.7px;color:#fff;text-transform:uppercase}
+.extra-card p{margin:4px 0;color:#81969e;font-size:8px;line-height:1.45}
+.extra-formula{padding:11px 12px;border:1px solid rgba(228,185,39,.25);background:rgba(228,185,39,.05);border-radius:8px;color:#d8c989;font:800 8px/1.5 Consolas,monospace}
+.extra-result{margin-top:8px;padding:10px;border-radius:7px;background:rgba(0,139,85,.08);border:1px solid rgba(0,139,85,.24);color:#7fe2b0;font:900 9px/1.45 Arial,sans-serif}
+@media(max-width:760px){.extra-grid{grid-template-columns:1fr}}

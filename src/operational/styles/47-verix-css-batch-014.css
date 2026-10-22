@@ -1,0 +1,162 @@
+
+@media(max-width:900px){
+}/* FINAL — suporte e autoria sempre visíveis no System Message */
+/* ===== CÓDIGOS DE DISTRITO — UI OPERACIONAL MODERNA ===== */
+.district-modern-wrap{
+ width:min(1060px,calc(100% - 34px));
+ margin:4px auto 0;
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ gap:18px;
+}.district-modern-head{
+ width:100%;
+ text-align:center;
+ padding:8px 10px 0;
+}.district-modern-kicker{
+ color:#6b8790;
+ font:900 8px/1 Arial,sans-serif;
+ letter-spacing:2.2px;
+ margin-bottom:8px;
+}.district-modern-head h2{
+ margin:0;
+ color:#f1f6f7;
+ font:950 25px/1.05 Arial,sans-serif;
+ letter-spacing:1.8px;
+}.district-modern-head p{
+ margin:8px 0 0;
+ color:#718990;
+ font:700 9px/1.4 Arial,sans-serif;
+ letter-spacing:.35px;
+}.district-modern-toolbar{
+ width:min(760px,100%);
+ display:flex;
+ align-items:center;
+ gap:12px;
+}.district-search-box{
+ position:relative;
+ flex:1;
+ height:46px;
+ display:flex;
+ align-items:center;
+ border:1px solid rgba(101,215,232,.30);
+ border-radius:10px;
+ background:linear-gradient(180deg,rgba(8,22,29,.98),rgba(3,13,18,.98));
+ box-shadow:0 8px 28px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.025);
+}.district-search-box:focus-within{
+ border-color:rgba(101,215,232,.72);
+ box-shadow:0 0 0 3px rgba(101,215,232,.07),0 10px 30px rgba(0,0,0,.22);
+}.district-search-icon{
+ width:38px;
+ text-align:center;
+ color:#68d6e5;
+ font:700 20px/1 Arial,sans-serif;
+}.district-modern-search{
+ flex:1;
+ height:100%;
+ border:0;
+ outline:0;
+ background:transparent;
+ color:#e9f2f4;
+ font:800 10px/1 Arial,sans-serif;
+ letter-spacing:.2px;
+}.district-modern-search::placeholder{color:#657a82}.district-clear{
+ width:34px;
+ height:34px;
+ margin-right:5px;
+ border:0;
+ border-radius:7px;
+ background:transparent;
+ color:#64818a;
+ font:700 20px/1 Arial,sans-serif;
+ cursor:pointer;
+}.district-clear:hover{background:rgba(101,215,232,.07);color:#bfeaf0}.district-modern-count{
+ min-width:72px;
+ height:46px;
+ padding:0 12px;
+ border:1px solid rgba(74,213,147,.20);
+ border-radius:10px;
+ background:rgba(0,139,85,.055);
+ display:flex;
+ flex-direction:column;
+ justify-content:center;
+ align-items:center;
+ gap:3px;
+}.district-modern-count strong{
+ color:#72dfb0;
+ font:950 16px/1 Arial,sans-serif;
+}.district-modern-count span{
+ color:#66827d;
+ font:900 6px/1 Arial,sans-serif;
+ letter-spacing:1.2px;
+}.district-modern-grid{
+ width:100%;
+ display:grid;
+ grid-template-columns:repeat(3,minmax(0,1fr));
+ gap:9px;
+ padding:2px;
+}.district-modern-card{
+ min-height:58px;
+ display:flex;
+ align-items:center;
+ gap:11px;
+ padding:8px 11px;
+ border:1px solid rgba(92,125,136,.22);
+ border-radius:9px;
+ background:linear-gradient(135deg,rgba(13,29,38,.94),rgba(4,14,19,.98));
+ box-shadow:0 5px 16px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.018);
+ transition:transform .14s ease,border-color .14s ease,background .14s ease;
+}.district-modern-card:hover{
+ transform:translateY(-1px);
+ border-color:rgba(101,215,232,.48);
+ background:linear-gradient(135deg,rgba(17,37,47,.98),rgba(5,17,22,.99));
+}.district-code-badge{
+ flex:0 0 38px;
+ width:38px;
+ height:38px;
+ display:grid;
+ place-items:center;
+ border:1px solid rgba(101,215,232,.27);
+ border-radius:8px;
+ background:rgba(101,215,232,.055);
+ color:#78dbe8;
+ font:950 11px/1 Consolas,monospace;
+}.district-card-info{min-width:0;flex:1}.district-card-label{
+ color:#57717a;
+ font:900 6px/1 Arial,sans-serif;
+ letter-spacing:1.2px;
+ margin-bottom:5px;
+}.district-card-name{
+ color:#e6eef0;
+ font:950 10px/1.1 Arial,sans-serif;
+ letter-spacing:.25px;
+ white-space:nowrap;
+ overflow:hidden;
+ text-overflow:ellipsis;
+}.district-card-arrow{
+ color:#4e7079;
+ font:700 19px/1 Arial,sans-serif;
+ padding-left:4px;
+}.district-modern-card:hover .district-card-arrow{color:#72d9e7}.district-empty{
+ width:100%;
+ padding:34px 15px;
+ text-align:center;
+ border:1px dashed rgba(101,215,232,.22);
+ border-radius:10px;
+ color:#70868d;
+ font:900 8px/1 Arial,sans-serif;
+ letter-spacing:1.4px;
+}
+@media(max-width:900px){.district-modern-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:560px){.district-modern-wrap{width:calc(100% - 20px);gap:12px}.district-modern-head h2{font-size:20px}.district-modern-toolbar{align-items:stretch}.district-modern-count{min-width:60px}.district-modern-grid{grid-template-columns:1fr}
+}/* 2ª linha: 3 caixas menores {
+ grid-column:3/span 2!important;
+ grid-row:2!important;
+}
+
+/* Rodapé ancorado ao fundo no desktop, sem sobreposição; adapta-se quando o conteúdo precisa de scroll. */
+html,body{ min-height:100%; }
+@media (max-width:900px) {
+}
+

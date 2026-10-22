@@ -1,0 +1,21 @@
+/* ===== VÉRIX STARTUP LOCK — única autoridade do arranque ===== */
+html.verix-starting,
+html.verix-starting body{
+  overflow:hidden !important;
+}
+html.verix-starting body{
+  visibility:hidden !important;
+}
+html.verix-starting #opsBootOverlay{
+  visibility:visible !important;
+}
+html.verix-starting #verixAsfNoticeOverlay, html.verix-starting #mainMenuScreen, html.verix-starting .main, html.verix-starting .rail, html.verix-starting .command, html.verix-starting .bottom{
+  visibility:hidden !important;
+}
+#opsBootOverlay{
+  opacity:1 !important;
+  pointer-events:auto !important;
+}
+
+#verixAsfNoticeOverlay[aria-hidden="true"]{display:none !important;}
+#verixAsfNoticeOverlay[aria-hidden="false"]{display:flex !important;}

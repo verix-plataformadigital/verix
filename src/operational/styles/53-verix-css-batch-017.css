@@ -1,0 +1,415 @@
+html body .module-overlay.cinemometro-fullpage .module-window.cinemometro-fullpage-window{
+ display:flex!important;
+ flex-direction:column!important;
+ overflow:hidden!important;
+}
+html body .module-overlay.cinemometro-fullpage .module-body,
+html body .module-overlay.cinemometro-fullpage .module-body.cin-radar-expanded{
+ flex:1 1 auto!important;
+ height:auto!important;
+ min-height:0!important;
+ max-height:calc(100vh - 88px)!important;
+ overflow-x:hidden!important;
+ overflow-y:auto!important;
+ padding-bottom:72px!important;
+ box-sizing:border-box!important;
+}
+/* Ecrã em coluna — NUNCA grid rígido */
+html body .module-overlay.cinemometro-fullpage .cin-one-screen,
+html body .module-overlay.cinemometro-fullpage .cin-one-screen.cin-radar-expanded{
+ display:flex!important;
+ flex-direction:column!important;
+ flex-wrap:nowrap!important;
+ align-items:stretch!important;
+ gap:10px!important;
+ height:auto!important;
+ min-height:0!important;
+ max-height:none!important;
+ overflow:visible!important;
+ grid-template-rows:none!important;
+ grid-template-columns:none!important;
+ padding-bottom:8px!important;
+ box-sizing:border-box!important;
+}
+html body .module-overlay.cinemometro-fullpage .cin-one-screen > *{
+ position:relative!important;
+ left:auto!important;
+ right:auto!important;
+ top:auto!important;
+ bottom:auto!important;
+ float:none!important;
+ flex:0 0 auto!important;
+ width:100%!important;
+ max-width:100%!important;
+ min-width:0!important;
+ box-sizing:border-box!important;
+ z-index:auto!important;
+}
+/* Work grid não invade a lista */
+html body .module-overlay.cinemometro-fullpage .cin-work-grid{
+ flex:0 1 auto!important;
+ min-height:200px!important;
+ max-height:36vh!important;
+ height:auto!important;
+ overflow:auto!important;
+}
+html body .module-overlay.cinemometro-fullpage .cin-one-screen.cin-radar-expanded .cin-work-grid{
+ max-height:28vh!important;
+ min-height:160px!important;
+}
+/* Dashboard / sessão */
+html body .module-overlay.cinemometro-fullpage .cin-config-dashboard,
+html body .module-overlay.cinemometro-fullpage .cin-operational-config-row,
+html body .module-overlay.cinemometro-fullpage .cin-fastbar,
+html body .module-overlay.cinemometro-fullpage .cin-action-tip,
+html body .module-overlay.cinemometro-fullpage .cin-active-device-top{
+ position:relative!important;
+ z-index:1!important;
+ margin:0!important;
+}
+/* ===== BLOCO LISTA (ordem fixa no fluxo) ===== */
+html body .module-overlay.cinemometro-fullpage .cin-other-radars-section,
+html body .module-overlay.cinemometro-fullpage .cin-one-screen.cin-radar-expanded .cin-other-radars-section{
+ position:relative!important;
+ z-index:6!important;
+ display:flex!important;
+ flex-direction:column!important;
+ flex-wrap:nowrap!important;
+ align-items:stretch!important;
+ gap:0!important;
+ width:100%!important;
+ min-height:0!important;
+ height:auto!important;
+ max-height:none!important;
+ margin:0!important;
+ padding:0!important;
+ overflow:visible!important;
+ border:1px solid rgba(0,240,255,.2)!important;
+ border-radius:10px!important;
+ background:linear-gradient(180deg,#0a1620,#071018)!important;
+ box-shadow:0 10px 28px rgba(0,0,0,.35)!important;
+}
+html body .module-overlay.cinemometro-fullpage .cin-other-radars-section.collapsed{
+ overflow:hidden!important;
+}
+/* 1) Título */
+html body .module-overlay.cinemometro-fullpage .cin-other-title{
+ order:1!important;
+ position:relative!important;
+ z-index:3!important;
+ display:flex!important;
+ align-items:center!important;
+ justify-content:space-between!important;
+ gap:10px!important;
+ min-height:40px!important;
+ height:auto!important;
+ margin:0!important;
+ padding:8px 12px!important;
+ border-bottom:1px solid rgba(0,240,255,.12)!important;
+ background:rgba(0,20,30,.5)!important;
+ box-sizing:border-box!important;
+}
+html body .module-overlay.cinemometro-fullpage .cin-other-radars-section.collapsed .cin-other-title{
+ border-bottom:0!important;
+}
+/* 2) Pesquisa — SEMPRE acima da lista, nunca absolute full-screen */
+html body .module-overlay.cinemometro-fullpage .cin-radar-search-wrap,
+html body .module-overlay.cinemometro-fullpage .cin-one-screen.cin-radar-expanded .cin-radar-search-wrap{
+ order:2!important;
+ position:relative!important;
+ z-index:4!important;
+ display:flex!important;
+ flex-direction:row!important;
+ align-items:center!important;
+ gap:8px!important;
+ width:100%!important;
+ min-height:44px!important;
+ height:44px!important;
+ max-height:44px!important;
+ margin:0!important;
+ padding:6px 12px!important;
+ box-sizing:border-box!important;
+ border-bottom:1px solid rgba(0,240,255,.1)!important;
+ background:rgba(0,12,20,.65)!important;
+ left:auto!important;
+ right:auto!important;
+ top:auto!important;
+ bottom:auto!important;
+ transform:none!important;
+}
+html body .module-overlay.cinemometro-fullpage .cin-radar-search-wrap input,
+html body .module-overlay.cinemometro-fullpage .cin-radar-search-wrap #cinRadarSearch{
+ position:relative!important;
+ flex:1 1 auto!important;
+ width:100%!important;
+ min-width:0!important;
+ height:32px!important;
+ margin:0!important;
+ box-sizing:border-box!important;
+ left:auto!important;
+ right:auto!important;
+ top:auto!important;
+ bottom:auto!important;
+}
+/* 3) Lista de aparelhos — DEBAIXO da pesquisa */
+html body .module-overlay.cinemometro-fullpage .cin-profile-list,
+html body .module-overlay.cinemometro-fullpage .cin-profile-list-clean,
+html body .module-overlay.cinemometro-fullpage #cinProfileList,
+html body .module-overlay.cinemometro-fullpage .cin-one-screen.cin-radar-expanded .cin-profile-list,
+html body .module-overlay.cinemometro-fullpage .cin-one-screen.cin-radar-expanded #cinProfileList{
+ order:3!important;
+ position:relative!important;
+ z-index:2!important;
+ display:flex!important;
+ flex-direction:column!important;
+ gap:8px!important;
+ width:100%!important;
+ min-height:80px!important;
+ max-height:min(40vh, 340px)!important;
+ height:auto!important;
+ margin:0!important;
+ padding:10px 12px 12px!important;
+ box-sizing:border-box!important;
+ overflow-x:hidden!important;
+ overflow-y:auto!important;
+ left:auto!important;
+ right:auto!important;
+ top:auto!important;
+ bottom:auto!important;
+ transform:none!important;
+}
+html body .module-overlay.cinemometro-fullpage .cin-profile-empty,
+html body .module-overlay.cinemometro-fullpage #cinProfileEmpty{
+ order:3!important;
+ position:relative!important;
+ z-index:2!important;
+ margin:0!important;
+ padding:16px 12px!important;
+}
+/* Recolhido: esconder pesquisa + lista */
+html body .module-overlay.cinemometro-fullpage .cin-other-radars-section.collapsed .cin-radar-search-wrap,
+html body .module-overlay.cinemometro-fullpage .cin-other-radars-section.collapsed .cin-profile-list,
+html body .module-overlay.cinemometro-fullpage .cin-other-radars-section.collapsed #cinProfileList,
+html body .module-overlay.cinemometro-fullpage .cin-other-radars-section.collapsed .cin-profile-empty,
+html body .module-overlay.cinemometro-fullpage .cin-other-radars-section.collapsed #cinProfileEmpty{
+ display:none!important;
+}
+/html body .module-overlay.cinemometro-fullpage .cin-profile-item-clean{
+ position:relative!important;
+ display:flex!important;
+ flex-direction:row!important;
+ align-items:center!important;
+ gap:8px!important;
+ width:100%!important;
+ min-height:52px!important;
+ height:auto!important;
+ margin:0!important;
+ padding:8px 10px!important;
+ box-sizing:border-box!important;
+ flex-shrink:0!important;
+ overflow:hidden!important;
+}
+/* Painel config técnico */
+html body .module-overlay.cinemometro-fullpage .cin-config-panel{
+ position:relative!important;
+ z-index:2!important;
+ width:100%!important;
+ margin-top:6px!important;
+}
+html body .module-overlay.cinemometro-fullpage .cin-config-panel.collapsed{
+ display:none!important;
+}
+/* Neutralizar regras antigas de height fixa / absolute na pesquisa */
+html body .module-overlay.cinemometro-fullpage .cin-radar-search-wrap[style],
+html body .module-overlay.cinemometro-fullpage #cinRadarSearch[style]{
+ position:relative!important;
+ top:auto!important;
+ bottom:auto!important;
+ left:auto!important;
+ right:auto!important;
+}
+/* ================================================================
+ LEGISLAÇÃO — vista de categoria limpa (sem barras estranhas)
+ ================================================================ */
+/* Quando há painel aberto: esconder a grelha de categorias
+ (evita as faixas coloridas esmagadas no topo) */
+html body .module-body:has(.leg-category-panel.open) .leg-category-grid{
+ display:none!important;
+}
+/* Painel da categoria aberta */
+html body .leg-category-panel.open{
+ display:block!important;
+ margin:8px 0 12px!important;
+ border:1px solid rgba(0,240,255,.22)!important;
+ border-radius:12px!important;
+ background:linear-gradient(180deg, rgba(8,18,26,.96), rgba(4,10,16,.98))!important;
+ box-shadow:0 12px 32px rgba(0,0,0,.35)!important;
+ overflow:hidden!important;
+}
+html body .leg-category-title{
+ display:flex!important;
+ align-items:center!important;
+ justify-content:space-between!important;
+ gap:12px!important;
+ padding:12px 16px!important;
+ border-bottom:1px solid rgba(0,240,255,.12)!important;
+ background:linear-gradient(90deg, rgba(200,16,46,.16), rgba(0,40,50,.2) 55%, transparent)!important;
+}
+html body .leg-panel-count{
+ font:800 10px/1 Consolas,monospace!important;
+ letter-spacing:1px!important;
+ color:#7ec8d4!important;
+ padding:8px 16px 0!important;
+}
+/* Lista de infrações */
+html body .leg-list-new{
+ display:flex!important;
+ flex-direction:column!important;
+}
+/* Card de cada infração — hierarquia clara */
+html body .leg-card-new{
+ position:relative!important;
+ border-radius:10px!important;
+ border:1px solid rgba(255,255,255,.1)!important;
+ border-left:4px solid #00c8e0!important;
+ background:
+ linear-gradient(90deg, rgba(0,40,50,.35) 0%, rgba(8,16,22,.95) 24%),
+ linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.15))!important;
+ box-shadow:0 6px 18px rgba(0,0,0,.28)!important;
+}
+html body .leg-card-new:nth-child(even){
+ border-left-color:#e0a020!important;
+ background:
+ linear-gradient(90deg, rgba(50,35,0,.3) 0%, rgba(8,16,22,.95) 24%),
+ linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.15))!important;
+}
+html body .leg-card-new:hover{
+ border-color:rgba(0,240,255,.25)!important;
+ box-shadow:0 10px 26px rgba(0,0,0,.35), 0 0 20px rgba(0,240,255,.08)!important;
+}
+html body .leg-card-new h3{
+ font:900 14px/1.25 Segoe UI,Arial,sans-serif!important;
+ letter-spacing:.3px!important;
+ color:#f2fbfc!important;
+ margin:0 0 6px 0!important;
+}
+html body .leg-code-box, html body .leg-card-new [class*="code"]{
+ font:800 12px/1 Consolas,monospace!important;
+ color:#7ef0ff!important;
+}
+html body .leg-description-new{
+ margin-top:8px!important;
+ padding:10px 12px!important;
+ border-radius:8px!important;
+ background:rgba(0,0,0,.28)!important;
+ border:1px solid rgba(255,255,255,.06)!important;
+ font:500 12.5px/1.45 Segoe UI,Arial,sans-serif!important;
+ color:#c5d6db!important;
+}
+html body .leg-card-new [class*="fine"], html body .leg-card-new [class*="coima"]{
+ font:800 12px/1.2 Consolas,monospace!important;
+ color:#9dffc0!important;
+}
+/* Botões copiar mais claros */
+html body .copy-btn-new,
+html body .copy-desc-new,
+html body .copy-all-new{
+ border-radius:6px!important;
+ font:800 9px/1 Arial,sans-serif!important;
+ letter-spacing:.7px!important;
+ text-transform:uppercase!important;
+}
+/* Grelha inicial (só quando nenhum painel aberto) — hover leve */
+html body .module-body:not(:has(.leg-category-panel.open)) .leg-category:hover{
+ filter:brightness(1.06)!important;
+ transform:translateY(-2px)!important;
+ transition:transform .18s ease, filter .18s ease!important;
+}
+/* Intro/search não empurram demais */
+html body .leg-intro-new{
+ margin-bottom:8px!important;
+}
+/* Densidade */
+html body.ui-compact .panel .head{padding-top:8px!important;padding-bottom:8px!important}
+html body.ui-compact .rail-item{min-height:42px!important;padding:6px 8px!important}
+html body.ui-compact .command{transform:scale(1)!important}
+html body.ui-comfortable .rail-item{min-height:58px!important;padding:12px 10px!important}
+html body.ui-comfortable .panel .head{padding:12px 14px!important}
+/* Escala manual */
+/* Sem HUD / animações */
+html body.no-hud .scan,
+html body.no-hud .verix-holo-scan,
+html body.no-hud .v007-orb,
+html body.no-hud .cinematic-bg::before{
+ display:none!important;
+ animation:none!important;
+}
+html body.no-hud .command:after, html body.no-hud .corner, html body.no-hud #asfRateWidget, html body.no-hud .panel, html body.no-hud .rail-item.active {
+ animation:none!important;
+}
+html body.no-hud .panel:hover, html body.no-hud .rail-item:hover {
+ transform:none!important;
+}
+/* Sem transições */
+html body.no-transitions *{
+ transition:none!important;
+ animation-duration:0.01ms!important;
+}
+html body.no-transitions .module-window,
+html body.no-transitions .history-window,
+html body.no-transitions .legal-notice-window{
+ animation:none!important;
+}
+/* Tema claro — reforço legível */
+html body.theme-light{
+ background:#d8e2e6!important;
+}
+html body.theme-light .cinematic-bg{
+ filter:brightness(1.35) saturate(.4)!important;
+ opacity:.35!important;
+}
+/* Toggle visual */
+html body .toggle{
+ width:52px;height:28px;border-radius:14px;cursor:pointer;
+ background:#2a3840;border:1px solid rgba(255,255,255,.15);
+ position:relative;display:flex;align-items:center;justify-content:center;
+ transition:background .2s ease, border-color .2s ease;
+}
+html body .toggle span{font:800 8px/1 Arial;letter-spacing:.5px;color:#8aa;pointer-events:none}
+html body .toggle.on{background:linear-gradient(180deg,#1a6b4a,#0d3d2c);border-color:rgba(0,229,160,.5)}
+html body .toggle.on span{color:#9dffc0}
+html body .toggle:not(.on) span{color:#a88}
+html body .toggle::after{
+ content:"";position:absolute;width:20px;height:20px;border-radius:50%;
+ background:#cfd8dc;top:3px;left:4px;transition:left .2s ease, background .2s;
+ box-shadow:0 1px 3px rgba(0,0,0,.4)
+}
+html body .toggle.on::after{left:26px;background:#00e5a0}
+/* Settings layout mais prático */
+html body .settings-grid{
+ display:grid!important;
+ grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ gap:10px!important;
+}
+html body .settings-grid-effects{
+ grid-template-columns:repeat(2,minmax(0,1fr))!important;
+}
+@media(max-width:1000px){
+ html body .settings-grid,
+ html body .settings-grid-effects{grid-template-columns:1fr 1fr!important}
+}
+html body .setting-card{
+ border:1px solid rgba(0,240,255,.15)!important;
+ border-radius:10px!important;
+ padding:12px!important;
+ background:rgba(6,14,20,.85)!important;
+}
+html body .setting-select.wide{
+ width:100%!important;
+ margin-top:8px!important;
+ padding:8px 10px!important;
+ border-radius:6px!important;
+ background:#0c1820!important;
+ color:#e8f4f6!important;
+ border:1px solid rgba(0,240,255,.25)!important;
+}

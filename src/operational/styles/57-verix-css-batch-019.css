@@ -1,0 +1,507 @@
+.regime-operacional{padding:2px!important}
+.regime-group{
+ border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:10px;margin-bottom:9px;
+ background:rgba(0,0,0,.10);
+}
+.regime-group:last-child{margin-bottom:0}
+.regime-group-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px;padding:1px 2px 7px;border-bottom:1px solid rgba(255,255,255,.10)}
+.regime-group-head strong{display:block;color:#f4f7f8;font:950 11px/1.15 Arial,sans-serif;letter-spacing:.55px}
+.regime-group-head small{display:block;margin-top:4px;color:#9aabb1;font:700 8.5px/1.3 Arial,sans-serif}
+.regime-threshold{padding:5px 8px;border-radius:5px;border:1px solid rgba(229,194,82,.28);color:#f0d35e;background:rgba(229,194,82,.07);font:950 9px/1 Arial,sans-serif;white-space:nowrap}
+.regime-especial{border-color:rgba(53,216,181,.28);background:linear-gradient(90deg,rgba(20,90,76,.07),rgba(0,0,0,.10))}
+.regime-especial .regime-group-head strong{color:#69ddc1}
+.regime-profissional-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 12px;margin:0}
+.regime-profissional-list span{color:#b7c4c9;font:750 8px/1.3 Arial,sans-serif}
+.regime-profissional-list span::first-letter{color:#69ddc1}
+.regime-grid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:7px!important}
+.regime-item{display:grid!important;grid-template-columns:minmax(0,1.35fr) minmax(92px,.75fr) minmax(70px,.55fr) auto!important;align-items:center;gap:9px;min-height:42px!important;padding:7px 9px!important;border:1px solid rgba(255,255,255,.11);border-radius:6px;background:linear-gradient(90deg,rgba(255,255,255,.035),rgba(0,0,0,.12))}
+.regime-range{color:#f0f4f5;font:950 10px/1.2 Arial,sans-serif;letter-spacing:.05px}
+.regime-fine{color:#f0d36a;font:950 10px/1.2 Arial,sans-serif;white-space:nowrap}
+.regime-points{justify-self:end;padding:5px 7px;border-radius:5px;background:rgba(29,214,170,.08);border:1px solid rgba(29,214,170,.25);color:#65dfc0;font:950 8px/1 Arial,sans-serif;letter-spacing:.35px;white-space:nowrap}
+.regime-5 .regime-points{color:#e8c95c;background:rgba(232,201,92,.07);border-color:rgba(232,201,92,.25)}
+#alcoolEmaBody tr.alcool-row-match{background:rgba(31,215,154,.10)!important;box-shadow:inset 3px 0 0 rgba(31,215,154,.75)}
+#alcoolEmaBody tr.alcool-row-match td:nth-child(2){color:#72e6d2!important;font-weight:950!important}
+@media(max-width:700px){.regime-grid{grid-template-columns:1fr!important}.regime-profissional-list{grid-template-columns:1fr}.regime-item{grid-template-columns:1fr auto!important}.regime-points{justify-self:start}}
+
+.legal-notice-overlay{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(0,0,0,.76);backdrop-filter:blur(4px);}
+.legal-notice-overlay.open{display:flex;}
+.legal-notice-window{width:min(760px,94vw);max-height:min(82vh,760px);overflow:hidden;border:1px solid rgba(101,215,232,.35);border-radius:14px;background:linear-gradient(145deg,#07151a,#02090c);box-shadow:0 22px 80px rgba(0,0,0,.65),inset 0 0 30px rgba(101,215,232,.025);}
+.legal-notice-top{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid rgba(255,255,255,.09);}
+.legal-notice-title{font-weight:900;letter-spacing:2.5px;font-size:17px;color:#f1f5f6;}
+.legal-notice-sub{margin-top:5px;font-size:9px;letter-spacing:2px;color:#65d7e8;}
+.legal-notice-close{width:38px;height:38px;border:1px solid rgba(255,255,255,.12);border-radius:9px;background:rgba(255,255,255,.035);color:#eaf4f6;font-size:25px;line-height:1;cursor:pointer;}
+.legal-notice-body{padding:24px 26px 28px;overflow:auto;color:#e9eef0;font-size:15px;line-height:1.55;}
+.legal-notice-body p{margin:0 0 21px;}
+.legal-notice-body a{color:#48a8ff;text-decoration:none;}
+.legal-notice-body a:hover{text-decoration:underline;}
+.legal-notice-version{margin-top:28px;padding-top:17px;border-top:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;gap:4px;}
+.legal-notice-version span{font-size:18px;color:#48a8ff;}
+.legal-notice-version strong{font-size:22px;letter-spacing:1px;}
+@media(max-width:600px){.legal-notice-overlay{padding:12px;}.legal-notice-window{width:100%;max-height:88vh;border-radius:12px;}.legal-notice-top{padding:15px 16px;}.legal-notice-body{padding:20px 17px 24px;font-size:16px;line-height:1.48;}.legal-notice-body p{margin-bottom:22px;}}
+
+/* Tablet/mobile */
+/* ==========================================================
+   VÉRIX ASF — LAYOUT FINAL
+   Um único trilho horizontal: CONTROLO | JANELA | PRÓXIMA | CACHE
+   ========================================================== */
+html body .main.consultation-fixed-active .panel.insurance{
+  position:relative!important;
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+}
+html body .main.consultation-fixed-active .panel.insurance .insurance-body{
+  box-sizing:border-box!important;
+}
+html body .main.consultation-fixed-active .panel.insurance #asfRateWidget{
+  min-width:0!important;
+  max-width:none!important;
+  grid-template-rows:1fr!important;
+  text-align:left!important;
+}
+/* CONTROLO ASF */
+html body .main.consultation-fixed-active .panel.insurance #asfRateWidget .asf-rate-label{
+  grid-column:1!important;
+  grid-row:1!important;
+  min-width:0!important;
+  width:auto!important;
+  height:100%!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:5px!important;
+  margin:0!important;
+  padding:0 3px!important;
+  color:#d8e7eb!important;
+  font:900 8px/1 Arial,sans-serif!important;
+  letter-spacing:.55px!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+}
+html body .main.consultation-fixed-active .panel.insurance #asfRateWidget .asf-rate-label > span:nth-of-type(2){
+  min-width:0!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+html body .main.consultation-fixed-active .panel.insurance #asfRateWidget .asf-rate-label em{
+  flex:0 0 auto!important;
+  margin:0!important;
+  padding:3px 5px!important;
+  border:1px solid rgba(0,229,160,.28)!important;
+  border-radius:4px!important;
+  background:rgba(0,229,160,.08)!important;
+  color:#6fe6c2!important;
+  font:900 7px/1 Consolas,monospace!important;
+  font-style:normal!important;
+  letter-spacing:.25px!important;
+}
+html body .main.consultation-fixed-active .panel.insurance #asfRateWidget #asfRateCountdown{
+  min-width:0!important;
+  width:auto!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  color:#00e5a0!important;
+  font:950 10px/1 Consolas,monospace!important;
+  text-align:center!important;
+}
+html body .main.consultation-fixed-active .panel.insurance #asfRateWidget.cooldown #asfRateCountdown,
+html body .main.consultation-fixed-active .panel.insurance #asfRateWidget #asfRateCountdown[data-state="wait"]{
+  color:#ffd24a!important;
+}
+html body .main.consultation-fixed-active .panel.insurance #asfRateWidget .asf-rate-sub{
+  display:none!important;
+}
+/* Estados */
+/* Telemóvel: ainda mais simples, sem esmagar os textos. */
+@media (max-width:700px){
+  html body .main.consultation-fixed-active .panel.insurance #asfRateWidget .asf-rate-label{
+    font-size:7px!important;
+    letter-spacing:.35px!important;
+  }
+  html body .main.consultation-fixed-active .panel.insurance #asfRateWidget .asf-rate-label em{
+    font-size:6px!important;
+    padding:3px 4px!important;
+  }
+}
+@media (max-width:430px){
+  html body .main.consultation-fixed-active .panel.insurance .insurance-body{
+    padding-bottom:64px!important;
+  }
+  html body .main.consultation-fixed-active .panel.insurance #asfRateWidget{
+    left:5px!important;
+    right:5px!important;
+    bottom:5px!important;
+    height:50px!important;
+    min-height:50px!important;
+    max-height:50px!important;
+    grid-template-columns:minmax(72px,1.15fr) minmax(49px,.8fr) minmax(53px,.9fr) minmax(48px,.75fr)!important;
+  }
+  html body .main.consultation-fixed-active .panel.insurance #asfRateWidget .asf-rate-label{
+    padding:0 2px!important;
+    gap:4px!important;
+    font-size:6.6px!important;
+  }
+  html body .main.consultation-fixed-active .panel.insurance #asfRateWidget .asf-rate-label em{
+    font-size:5.7px!important;
+    letter-spacing:0!important;
+    padding:3px 3px!important;
+  }
+  html body .main.consultation-fixed-active .panel.insurance #asfRateWidget #asfRateCountdown{
+    font-size:9px!important;
+  }
+}
+html body .main.consultation-fixed-active .panel.insurance .insurance-body{
+  padding-bottom:52px!important;
+}
+html body .main.consultation-fixed-active .panel.insurance #asfRateWidget{
+  position:absolute!important;
+  left:6px!important; right:6px!important; bottom:6px!important; top:auto!important;
+  width:auto!important; height:40px!important; min-height:40px!important; max-height:40px!important;
+  display:grid!important; grid-template-columns:minmax(0,1fr) 74px!important;
+  align-items:center!important; gap:8px!important;
+  box-sizing:border-box!important; margin:0!important; padding:5px 7px!important;
+  border:1px solid rgba(92,158,172,.38)!important; border-radius:7px!important;
+  background:linear-gradient(180deg,rgba(10,27,34,.98),rgba(4,13,18,.98))!important;
+  box-shadow:0 -5px 15px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.08)!important;
+  overflow:hidden!important; z-index:100!important;
+}
+html body #asfRateWidget .asf-rate-label{
+  display:flex!important; align-items:center!important; min-width:0!important; height:100%!important;
+  margin:0!important; padding:0 2px!important;
+  color:#d7e8eb!important; font:900 8px/1 Arial,sans-serif!important;
+  letter-spacing:.8px!important; text-transform:uppercase!important;
+  white-space:nowrap!important; overflow:hidden!important; text-overflow:ellipsis!important;
+}
+html body #asfRateWidget .asf-rate-dot{
+  flex:0 0 auto!important; width:6px!important; height:6px!important;
+  margin:0 6px 0 0!important; border-radius:50%!important;
+  background:#27f1a0!important; box-shadow:0 0 7px rgba(39,241,160,.6)!important;
+}
+html body #asfRateWidget .asf-rate-countdown{
+  display:flex!important; align-items:center!important; justify-content:center!important;
+  width:74px!important; height:28px!important; box-sizing:border-box!important;
+  margin:0!important; padding:0 6px!important;
+  border:1px solid rgba(0,229,160,.34)!important; border-radius:6px!important;
+  background:rgba(0,229,160,.07)!important; color:#00e5a0!important;
+  font:950 14px/1 Consolas,"Courier New",monospace!important;
+  letter-spacing:.2px!important; white-space:nowrap!important;
+}
+html body #asfRateWidget.cooldown .asf-rate-countdown,
+html body #asfRateWidget #asfRateCountdown[data-state="wait"]{
+  border-color:rgba(255,196,74,.48)!important; background:rgba(255,196,74,.09)!important;
+  color:#ffd24a!important;
+}
+html body #asfRateWidget .asf-rate-sub{display:none!important;}
+@media(max-width:700px){
+  html body .main.consultation-fixed-active .panel.insurance .insurance-body{padding-bottom:52px!important;}
+  html body .main.consultation-fixed-active .panel.insurance #asfRateWidget{
+    left:5px!important; right:5px!important; bottom:5px!important;
+    height:40px!important; min-height:40px!important; max-height:40px!important;
+    grid-template-columns:minmax(0,1fr) 68px!important; gap:6px!important; padding:5px 6px!important;
+  }
+  html body #asfRateWidget .asf-rate-label{font-size:7px!important; letter-spacing:.55px!important;}
+  html body #asfRateWidget .asf-rate-countdown{width:68px!important; height:27px!important; font-size:13px!important;}
+}
+/* =========================================================
+   VÉRIX — Painel ASF futurista + polimento global
+   ========================================================= */
+/* Fundo do painel seguro: alinhado ao resto da consola */
+html body .panel.insurance .insurance-body,
+html body .insurance-body {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(0,139,85,.10) 0%, transparent 55%),
+    linear-gradient(180deg, #0a1520 0%, #071018 48%, #050d12 100%) !important;
+  color: #d5e2e6 !important;
+  padding: 16px 14px 58px !important;
+  justify-content: flex-start !important;
+}
+html body .asf-app {
+  width: 100% !important;
+  max-width: 480px !important;
+  gap: 14px !important;
+  animation: asfIn .35s ease-out;
+}
+@keyframes asfIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+/* Matrícula — placa operacional */
+html body .asf-app-plate {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 12px 14px !important;
+  border-radius: 12px !important;
+  background: linear-gradient(180deg, rgba(12,28,36,.95), rgba(6,16,22,.98)) !important;
+  border: 1px solid rgba(101,215,232,.22) !important;
+  box-shadow:
+    0 8px 24px rgba(0,0,0,.35),
+    inset 0 1px 0 rgba(255,255,255,.06) !important;
+}
+html body .asf-app-plate-label {
+  color: #7e969e !important;
+  font: 800 8px/1 Arial,sans-serif !important;
+  letter-spacing: 1.6px !important;
+  text-transform: uppercase !important;
+}
+html body .asf-app-plate-badge {
+  font: 950 18px/1.1 "Segoe UI", Arial, sans-serif !important;
+  letter-spacing: 2.5px !important;
+  color: #0a141a !important;
+  background: linear-gradient(180deg, #f4f8f9, #cfd9de) !important;
+  border: 2px solid #1c3038 !important;
+  border-radius: 7px !important;
+  padding: 9px 18px !important;
+  box-shadow:
+    0 3px 0 #071015,
+    inset 0 1px 0 #fff,
+    0 0 20px rgba(101,215,232,.12) !important;
+  text-transform: uppercase !important;
+}
+/* Status cards */
+html body .asf-status-card {
+  border-radius: 16px !important;
+  padding: 22px 18px 18px !important;
+  position: relative !important;
+  overflow: hidden !important;
+  border: 1px solid transparent !important;
+  box-shadow: 0 12px 32px rgba(0,0,0,.35) !important;
+}
+html body .asf-status-glow {
+  position: absolute;
+  inset: -40% -20% auto -20%;
+  height: 80%;
+  background: radial-gradient(ellipse at center, rgba(255,255,255,.18), transparent 70%);
+  pointer-events: none;
+}
+html body .asf-status-card.ok {
+  background: linear-gradient(155deg, #0bbf72 0%, #08965a 40%, #056b42 100%) !important;
+  border-color: rgba(110,240,180,.45) !important;
+  color: #fff !important;
+  box-shadow:
+    0 12px 32px rgba(0,120,70,.35),
+    0 0 40px rgba(0,200,120,.12) !important;
+}
+html body .asf-status-card.no {
+  background: linear-gradient(155deg, #e02345 0%, #b01030 45%, #7a0a22 100%) !important;
+  border-color: rgba(255,120,140,.4) !important;
+  color: #fff !important;
+  box-shadow: 0 12px 32px rgba(180,20,50,.35) !important;
+}
+html body .asf-status-card.warn {
+  background: linear-gradient(155deg, #e4b927 0%, #b8920f 50%, #7a6208 100%) !important;
+  border-color: rgba(255,220,100,.4) !important;
+  color: #1a1405 !important;
+}
+html body .asf-status-card.wait {
+  background: linear-gradient(160deg, #1a2e38 0%, #0d1a22 100%) !important;
+  border-color: rgba(101,215,232,.28) !important;
+  color: #c5d8de !important;
+}
+html body .asf-status-icon {
+  width: 58px !important;
+  height: 58px !important;
+  margin: 0 auto 12px !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 26px !important;
+  font-weight: 900 !important;
+  background: rgba(255,255,255,.14) !important;
+  border: 2px solid rgba(255,255,255,.35) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.25) !important;
+  backdrop-filter: blur(4px);
+}
+html body .asf-status-icon span { line-height: 1; }
+html body .asf-status-title {
+  font: 950 21px/1.15 "Segoe UI", Arial, sans-serif !important;
+  letter-spacing: 1px !important;
+  text-transform: uppercase !important;
+  text-shadow: 0 2px 8px rgba(0,0,0,.25) !important;
+}
+html body .asf-status-sub {
+  margin-top: 7px !important;
+  font: 700 11px/1.4 Arial, sans-serif !important;
+  opacity: .9 !important;
+  letter-spacing: .2px !important;
+}
+html body .asf-spinner {
+  width: 42px !important;
+  height: 42px !important;
+  margin: 0 auto 14px !important;
+  border-width: 3px !important;
+  border-top-color: #65d7e8 !important;
+  border-right-color: #00e5a0 !important;
+}
+/* Cartão de apólice — glass dark */
+html body .asf-detail-card {
+  background: linear-gradient(180deg, rgba(14,30,38,.96), rgba(8,18,24,.98)) !important;
+  border: 1px solid rgba(101,215,232,.2) !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  box-shadow:
+    0 10px 28px rgba(0,0,0,.4),
+    inset 0 1px 0 rgba(255,255,255,.05) !important;
+}
+html body .asf-detail-head {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 12px 14px !important;
+  background: linear-gradient(90deg, rgba(0,139,85,.18), rgba(101,215,232,.06) 60%, transparent) !important;
+  border-bottom: 1px solid rgba(101,215,232,.14) !important;
+  color: #c5d8de !important;
+}
+html body .asf-detail-kicker {
+  display: block !important;
+  font: 800 8px/1 Arial,sans-serif !important;
+  letter-spacing: 1.4px !important;
+  text-transform: uppercase !important;
+  color: #65d7e8 !important;
+  margin-bottom: 3px !important;
+}
+html body .asf-detail-head-text strong {
+  font: 900 12px/1.2 Arial,sans-serif !important;
+  letter-spacing: .4px !important;
+  color: #e8f0f3 !important;
+  text-transform: uppercase !important;
+}
+html body .asf-logo-wrap {
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid rgba(255,255,255,.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,.25);
+  overflow: hidden;
+}
+html body .asf-logo-fallback {
+  background: linear-gradient(145deg, #0a8a55, #045b3a);
+  color: #fff;
+  font-size: 18px;
+  border-color: rgba(0,229,160,.35);
+}
+html body .asf-logo {
+  width: 40px !important;
+  height: 40px !important;
+  object-fit: contain !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  padding: 2px !important;
+  box-shadow: none !important;
+}
+html body .asf-rows { display: flex; flex-direction: column; }
+html body .asf-row {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: flex-start !important;
+  gap: 12px !important;
+  padding: 12px 14px !important;
+  border-bottom: 1px solid rgba(101,215,232,.08) !important;
+  font-size: 12px !important;
+}
+html body .asf-row:last-child { border-bottom: 0 !important; }
+html body .asf-row .k {
+  color: #7e969e !important;
+  font-weight: 800 !important;
+  flex: 0 0 34% !important;
+  letter-spacing: .3px !important;
+  text-transform: uppercase !important;
+  font-size: 10px !important;
+}
+html body .asf-row .v {
+  color: #eef5f7 !important;
+  font-weight: 900 !important;
+  text-align: right !important;
+  word-break: break-word !important;
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+}
+html body .asf-mono {
+  font-family: Consolas, "Courier New", monospace !important;
+  letter-spacing: .6px !important;
+  color: #65d7e8 !important;
+}
+html body .asf-note {
+  font: 700 9px/1.45 Arial,sans-serif !important;
+  color: #6a828c !important;
+  text-align: center !important;
+  letter-spacing: .2px !important;
+}
+html body .asf-actions {
+  display: flex !important;
+  justify-content: center !important;
+  gap: 8px !important;
+}
+html body .asf-actions .aux-btn,
+html body .asf-actions button {
+  height: 38px !important;
+  padding: 0 16px !important;
+  border-radius: 9px !important;
+  border: 1px solid rgba(101,215,232,.35) !important;
+  background: linear-gradient(180deg, #1a3a44, #0e222a) !important;
+  color: #e8f4f6 !important;
+  font: 900 10px/1 Arial,sans-serif !important;
+  letter-spacing: .7px !important;
+  cursor: pointer !important;
+  transition: filter .15s, transform .1s, border-color .15s !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,.3) !important;
+}
+html body .asf-actions .aux-btn:hover,
+html body .asf-actions button:hover {
+  filter: brightness(1.15);
+  border-color: #65d7e8 !important;
+  transform: translateY(-1px);
+}
+html body .asf-actions .aux-btn:not(.secondary),
+html body .asf-actions button:not(.secondary) {
+  background: linear-gradient(180deg, #0a9a60, #056b42) !important;
+  border-color: rgba(0,229,160,.4) !important;
+}
+html body .asf-diag {
+  font: 600 9px/1.4 Consolas,monospace !important;
+  color: #8aa0a8 !important;
+  background: rgba(0,0,0,.3) !important;
+  border: 1px solid rgba(101,215,232,.12) !important;
+  border-radius: 8px !important;
+  padding: 8px 10px !important;
+}
+/* Rate widget — mais limpo no fundo escuro */
+html body .main.consultation-fixed-active .panel.insurance #asfRateWidget,
+html body .panel.insurance #asfRateWidget {
+  border-color: rgba(101,215,232,.28) !important;
+  background: linear-gradient(180deg, rgba(10,27,34,.98), rgba(4,13,18,.98)) !important;
+}
+/* ---- Polimento global leve ---- */
+html body .panel {
+  box-shadow: 0 18px 44px rgba(0,0,0,.58), inset 0 1px 0 rgba(255,255,255,.06) !important;
+}
+html body .panel .head {
+  letter-spacing: 1.1px !important;
+}
+html body .command .consult:active {
+  transform: translateY(1px);
+}
+html body .tool:hover {
+  filter: brightness(1.12);
+}
+html body .rail-item:hover {
+  background: rgba(255,255,255,.06) !important;
+}
+html body .toast-notification {
+  border-radius: 8px !important;
+  letter-spacing: .4px !important;
+}
+@media (max-width: 700px) {
+  html body .asf-app { max-width: 100% !important; gap: 11px !important; }
+  html body .asf-status-title { font-size: 18px !important; }
+  html body .asf-app-plate-badge { font-size: 15px !important; padding: 8px 14px !important; }
+}

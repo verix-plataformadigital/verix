@@ -1,0 +1,388 @@
+
+
+.module-overlay.cinemometro-fullpage .module-body.cin-radar-expanded{
+ height:calc(100vh - 54px)!important;
+ max-height:none!important;
+ overflow-y:auto!important;
+ overflow-x:hidden!important;
+ overscroll-behavior:contain!important;
+ -webkit-overflow-scrolling:touch!important;
+ scrollbar-gutter:stable!important;
+ padding-bottom:28px!important;
+}
+.module-overlay.cinemometro-fullpage .cin-one-screen.cin-radar-expanded{
+ display:flex!important;
+ flex-direction:column!important;
+ height:auto!important;
+ min-height:0!important;
+ max-height:none!important;
+ overflow:visible!important;
+ gap:8px!important;
+}
+.module-overlay.cinemometro-fullpage .cin-one-screen.cin-radar-expanded .cin-config-dashboard{
+ height:auto!important;
+ min-height:0!important;
+ overflow:visible!important;
+ flex:0 0 auto!important;
+}
+.module-overlay.cinemometro-fullpage .cin-one-screen.cin-radar-expanded .cin-other-radars-section{
+ height:auto!important;
+ min-height:0!important;
+ overflow:visible!important;
+}
+.module-overlay.cinemometro-fullpage .cin-one-screen.cin-radar-expanded .cin-profile-list-clean{
+ max-height:520px!important;
+ overflow-y:auto!important;
+ overflow-x:hidden!important;
+ scrollbar-gutter:stable!important;
+}
+/* Ao expandir, o cabeçalho da lista fica visível sem esconder o restante do painel. */
+.module-overlay.cinemometro-fullpage .cin-one-screen.cin-radar-expanded .cin-other-title{
+ position:sticky!important;
+ top:0!important;
+ z-index:12!important;
+ background:linear-gradient(180deg,#071a22,#06151b)!important;
+}
+html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-one-screen.cin-radar-expanded .cin-config-dashboard{
+ height:auto!important;
+ min-height:0!important;
+ max-height:none!important;
+ overflow:visible!important;
+ grid-row:auto!important;
+ flex:0 0 auto!important;
+}
+html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-one-screen.cin-radar-expanded .cin-config-dashboard-head{
+ height:42px!important;
+ min-height:42px!important;
+ overflow:visible!important;
+}
+html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-one-screen.cin-radar-expanded .cin-other-radars-section{
+ display:block!important;
+ height:auto!important;
+ min-height:0!important;
+ max-height:none!important;
+ overflow:visible!important;
+ visibility:visible!important;
+}
+html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-one-screen.cin-radar-expanded #cinProfileList{
+ display:grid!important;
+ visibility:visible!important;
+ max-height:520px!important;
+ min-height:0!important;
+ overflow-y:auto!important;
+ overflow-x:hidden!important;
+}
+html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-one-screen.cin-radar-expanded .cin-radar-search-wrap{
+ display:flex!important;
+ visibility:visible!important;
+}
+/* Histórico: ligeiramente mais compacto, sem perder destaque. */
+body.consultation-screen-active .consulta-history-bottom{
+ min-width:300px!important;
+ width:300px!important;
+ height:46px!important;
+ padding:0 24px!important;
+}
+@media (min-width:901px){
+ html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active{
+ grid-template-columns:3fr 5fr 2fr !important;
+ }
+}
+.command .brand{
+ top:7px!important;
+ width:min(520px, calc(50vw - 374px))!important;
+ height:90px!important;
+ overflow:hidden!important;
+ z-index:5!important;
+}
+.command .brand-notice{
+ max-width:none!important;
+ height:90px!important;
+ display:flex!important;
+ flex-direction:column!important;
+ box-sizing:border-box!important;
+}@media(max-width:1500px){
+ .command .brand{width:min(430px,calc(50vw - 335px))!important;}}
+@media(max-width:1200px){
+ .command .brand{width:340px!important;}}
+html body.consultation-screen-active .command{
+ box-shadow:0 20px 60px rgba(0,0,0,.72),inset 0 1px 0 rgba(255,255,255,.09),0 0 0 1px rgba(94,197,214,.05),0 0 34px rgba(0,121,155,.08)!important;
+}
+html body.consultation-screen-active .command:before{
+ opacity:.9!important;
+ background:
+ linear-gradient(115deg,transparent 0 39%,rgba(200,16,46,.13) 39.2% 41.2%,transparent 41.4% 44%,rgba(0,139,85,.13) 44.2% 46%,transparent 46.2% 100%),
+ linear-gradient(90deg,rgba(255,255,255,.028) 1px,transparent 1px)!important;
+ background-size:auto,24px 100%!important;
+}
+html body.consultation-screen-active .command:after{
+ height:3px!important;
+ box-shadow:0 0 18px rgba(200,16,46,.42),0 0 8px rgba(0,139,85,.28)!important;
+}
+html body.consultation-screen-active .command .searchbar{
+ border-color:rgba(105,156,169,.72)!important;
+ background:linear-gradient(180deg,rgba(4,16,22,.92),rgba(2,9,13,.94))!important;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 10px 28px rgba(0,0,0,.38),0 0 24px rgba(86,186,210,.08)!important;
+}
+html body.consultation-screen-active .command .searchbar:before{
+ content:"";position:absolute;left:0;right:0;top:0;height:2px;
+ background:linear-gradient(90deg,transparent 0 22%,rgba(101,215,232,.9) 22.5% 38%,transparent 38.5% 65%,rgba(200,16,46,.72) 65.5% 79%,transparent 79.5%);
+ opacity:.7;pointer-events:none;
+}
+html body.consultation-screen-active .command .field input{
+ box-shadow:inset 0 2px 4px rgba(0,0,0,.18),0 0 0 1px rgba(255,255,255,.03),0 0 12px rgba(225,239,242,.05)!important;
+}
+html body.consultation-screen-active .command .consult{
+ box-shadow:0 5px 0 #4e0610,0 10px 24px rgba(200,16,46,.34),inset 0 1px 0 rgba(255,255,255,.15)!important;
+}
+html body.consultation-screen-active .main .panel{
+ border-color:rgba(99,130,141,.62)!important;
+ background:linear-gradient(180deg,#08161e,#041016)!important;
+ box-shadow:0 22px 52px rgba(0,0,0,.68),inset 0 1px 0 rgba(255,255,255,.065),0 0 24px rgba(76,156,177,.035)!important;
+}
+html body.consultation-screen-active .main .panel:after{
+ content:"";position:absolute;inset:0;pointer-events:none;z-index:18;
+ background:
+ linear-gradient(135deg,transparent 0 70%,rgba(101,215,232,.05) 70.2% 72%,transparent 72.2%),
+ repeating-linear-gradient(0deg,transparent 0 4px,rgba(255,255,255,.012) 4px 5px);
+ opacity:.75;
+}
+html body.consultation-screen-active .main .head{
+ border-bottom-width:2px!important;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.09),inset 0 -10px 25px rgba(0,0,0,.10)!important;
+}
+html body.consultation-screen-active .main .head:before{
+ background:
+ linear-gradient(135deg,transparent 0 42%,rgba(255,255,255,.14) 42.2% 44.5%,transparent 44.7% 56%,rgba(255,255,255,.05) 56.2% 58%,transparent 58.2% 100%),
+ linear-gradient(90deg,transparent 0 16%,rgba(255,255,255,.05) 16.2% 16.7%,transparent 16.9% 100%)!important;
+}
+html body.consultation-screen-active .main .head.red{
+ background:linear-gradient(100deg,#570611 0%,#a90d28 38%,#dc1234 62%,#760719 100%)!important;
+}
+html body.consultation-screen-active .main .head.green{
+ background:linear-gradient(100deg,#003b27 0%,#00784b 38%,#0a9e64 62%,#004c31 100%)!important;
+}
+html body.consultation-screen-active .main .head-title{
+ font-size:16px!important;
+ letter-spacing:1.5px!important;
+ text-shadow:0 2px 5px rgba(0,0,0,.8),0 0 9px rgba(255,255,255,.05)!important;
+}
+html body.consultation-screen-active .main .head-title:before{color:rgba(255,255,255,.72)!important;text-shadow:0 0 8px rgba(255,255,255,.12)!important}
+html body.consultation-screen-active .main .head-tag{
+ padding:4px 7px!important;border:1px solid rgba(255,255,255,.10)!important;border-radius:5px!important;
+ background:rgba(0,0,0,.13)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)!important;
+}
+html body.consultation-screen-active .main .panel-body{
+ box-shadow:inset 0 0 0 1px rgba(255,255,255,.022),inset 0 0 30px rgba(0,0,0,.06)!important;
+}
+html body.consultation-screen-active .main .panel-body:before{
+ content:"";position:absolute;left:12px;top:12px;width:20px;height:20px;border-left:1px solid rgba(102,213,232,.35);border-top:1px solid rgba(102,213,232,.35);z-index:4;pointer-events:none;
+}
+html body.consultation-screen-active .main .insurance{
+ border-color:rgba(102,126,134,.68)!important;
+ box-shadow:0 22px 52px rgba(0,0,0,.62),inset 0 1px 0 rgba(255,255,255,.16),0 0 24px rgba(200,16,46,.04)!important;
+}
+html body.consultation-screen-active .main .insurance .insurance-body{
+ background:
+ radial-gradient(circle at 82% 82%,rgba(0,139,85,.06),transparent 20%),
+ linear-gradient(180deg,#edf1f2,#d9e1e4)!important;
+}
+html body.consultation-screen-active .main .insurance .status{
+ text-shadow:0 2px 3px rgba(255,255,255,.6),0 0 8px rgba(66,88,95,.08)!important;
+}
+html body.consultation-screen-active .command .time{
+ text-shadow:0 1px 3px rgba(0,0,0,.75)!important;
+}
+html body.fixed-workspace-active:not(.cinemometro-page-active){
+ --bg:#02070a;--red:#9b2435;--green:#2d7b67;--cyan:#69bac7;--amber:#b89a4a;--white:#e6ecee;--muted:#72838a;
+}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .field label{
+ color:#c6d0d4!important;letter-spacing:.9px!important;
+}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .field input{
+ background:linear-gradient(180deg,#edf1f2,#d7dddf)!important;
+ border-color:#5b6b72!important;
+}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .tools .tool{
+ color:#dfe7e9!important;
+}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .time{
+ color:#8c9da3!important;
+}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .head{
+ height:54px!important;
+ color:#e9edef!important;
+}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .head-tag{
+ color:#d2dde0!important;
+}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .head.red .head-tag:before{color:#a95a68!important}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .head.green .head-tag:before{color:#5b9a84!important}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .panel-body{
+ background:#eef1f2!important;
+}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .insurance-body:before{
+ opacity:.84!important;
+}
+/* subtle operational hairlines around the workspace */
+html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active:after{
+ content:""!important;position:absolute!important;inset:0!important;pointer-events:none!important;border:1px solid rgba(104,151,160,.08)!important;border-radius:14px!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.015)!important;
+}
+html body.fixed-workspace-active:not(.cinemometro-page-active){
+
+ --ops-cyan:#72d8df;
+
+}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .command{
+ border-color:rgba(91,150,141,.48)!important;
+ background:
+ radial-gradient(circle at 78% 35%,rgba(38,157,120,.09),transparent 24%),
+ linear-gradient(180deg,rgba(8,20,24,.985),rgba(1,7,9,.99))!important;
+ box-shadow:
+ 0 18px 56px rgba(0,0,0,.78),
+ inset 0 1px 0 rgba(255,255,255,.06),
+ inset 0 -18px 35px rgba(0,0,0,.22),
+ 0 0 42px rgba(19,116,91,.10)!important;
+}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .command:before{
+ opacity:.82!important;
+ background:
+ repeating-linear-gradient(90deg,rgba(77,217,176,.028) 0 1px,transparent 1px 28px),
+ repeating-linear-gradient(0deg,rgba(77,217,176,.022) 0 1px,transparent 1px 18px),
+ linear-gradient(118deg,transparent 0 53%,rgba(58,176,140,.10) 53.2% 54.2%,transparent 54.4% 60%,rgba(89,221,187,.06) 60.2% 60.8%,transparent 61% 100%)!important;
+ background-size:auto,auto,auto!important;
+}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .command:after{
+ height:2px!important;
+ background:linear-gradient(90deg,#0f4f3d 0%,#247f66 24%,#68d6b2 38%,#4a6561 40%,#6a2734 60%,#991e36 100%)!important;
+ box-shadow:0 0 16px rgba(62,193,153,.22)!important;
+}
+/* Caixa de matrícula — interface de terminal avançado */
+html body.fixed-workspace-active:not(.cinemometro-page-active) .searchbar{
+ border-color:rgba(97,164,155,.62)!important;
+ background:
+ linear-gradient(180deg,rgba(8,22,26,.94),rgba(2,9,12,.96))!important;
+ box-shadow:
+ inset 0 1px 0 rgba(255,255,255,.05),
+ inset 0 -10px 20px rgba(0,0,0,.22),
+ 0 14px 34px rgba(0,0,0,.46),
+ 0 0 28px rgba(35,145,112,.10)!important;
+}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .searchbar:before{
+ content:"";position:absolute;inset:7px;pointer-events:none;border:1px solid rgba(91,182,155,.08);border-radius:8px;
+ background:linear-gradient(90deg,transparent 0 48%,rgba(105,222,184,.045) 48.2% 48.6%,transparent 48.8% 100%);
+}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .field input{
+ box-shadow:inset 0 1px 2px rgba(0,0,0,.18),0 0 0 1px rgba(117,205,179,.04),0 0 16px rgba(101,216,178,.05)!important;
+}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .consult{
+ background:
+ linear-gradient(180deg,#a32940 0%,#7b1b2d 50%,#54121e 100%)!important;
+ border-color:#c86a79!important;
+ box-shadow:
+ 0 3px 0 #2a080f,
+ 0 9px 20px rgba(78,9,21,.34),
+ inset 0 1px 0 rgba(255,255,255,.13),
+ 0 0 18px rgba(172,43,69,.16)!important;
+}
+/* Ferramentas superiores: sóbrias, mas com estados "tech" */
+html body.fixed-workspace-active:not(.cinemometro-page-active) .tools .tool{
+ background:linear-gradient(180deg,#1b2e31,#101c20)!important;
+ border-color:#47665f!important;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 6px 16px rgba(0,0,0,.42)!important;
+}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .tools .tool.green{
+ background:linear-gradient(180deg,#1d755e,#10483a)!important;
+ border-color:#4ca488!important;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 0 16px rgba(61,187,151,.13)!important;
+}
+/* Painéis — profundidade, grelha e "instrumentação" sem mover nada */
+html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .panel{
+ border-color:rgba(84,126,121,.62)!important;
+ background:
+ linear-gradient(180deg,rgba(5,17,20,.985),rgba(2,9,12,.995))!important;
+ box-shadow:
+ 0 22px 55px rgba(0,0,0,.74),
+ inset 0 1px 0 rgba(255,255,255,.05),
+ inset 0 -18px 40px rgba(0,0,0,.20),
+ 0 0 24px rgba(39,157,120,.045)!important;
+}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .panel:after{
+ content:""!important;
+ position:absolute!important;inset:0!important;pointer-events:none!important;z-index:18!important;
+ background:
+ repeating-linear-gradient(0deg,transparent 0 5px,rgba(91,205,170,.010) 5px 6px),
+ linear-gradient(118deg,transparent 0 68%,rgba(49,173,133,.04) 68.2% 69.1%,transparent 69.3% 75%,rgba(93,217,182,.025) 75.2% 75.6%,transparent 75.8%),
+ radial-gradient(circle at 88% 18%,rgba(63,198,158,.035),transparent 18%)!important;
+}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .panel:before{
+ border-color:rgba(112,176,164,.05)!important;
+}
+/* Cabeçalhos: menos "gaming", mais consola de operações */
+html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .head{
+ border-bottom:1px solid rgba(109,177,163,.35)!important;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.05),inset 0 -12px 25px rgba(0,0,0,.18)!important;
+}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .head.red{
+ background:
+ linear-gradient(90deg,#350a13 0%,#4d101c 26%,#631424 52%,#40101a 78%,#250910 100%)!important;
+}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .head.green{
+ background:
+ linear-gradient(90deg,#06201a 0%,#0c362b 25%,#155243 52%,#0d3a2f 78%,#08251f 100%)!important;
+}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .head:before{
+ opacity:.44!important;
+ background:
+ linear-gradient(135deg,transparent 0 39%,rgba(111,220,184,.06) 39.2% 40.1%,transparent 40.3% 56%,rgba(255,255,255,.04) 56.2% 56.8%,transparent 57%),
+ repeating-linear-gradient(90deg,transparent 0 42px,rgba(255,255,255,.018) 42px 43px,transparent 43px 84px)!important;
+}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .head-title{
+ color:#d9e2e3!important;
+ text-shadow:0 2px 6px rgba(0,0,0,.86),0 0 10px rgba(121,220,187,.05)!important;
+}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .head-title:before{color:#67baa5!important}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .head.green .head-title:before{color:#5dd0a9!important}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .head.red .head-title:before{color:#bb5b6d!important}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .head-tag{
+ border-color:rgba(108,168,157,.14)!important;
+ background:rgba(0,0,0,.18)!important;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 0 10px rgba(72,177,140,.05)!important;
+}
+/* Corpo dos módulos: tecnologia em baixa frequência */
+html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .panel-body{
+ box-shadow:
+ inset 0 0 0 1px rgba(255,255,255,.02),
+ inset 0 0 48px rgba(0,0,0,.07)!important;
+}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .panel-body:before{
+ width:24px!important;height:24px!important;
+ border-left-color:rgba(93,197,173,.30)!important;
+ border-top-color:rgba(93,197,173,.30)!important;
+}
+/* Seguro: interface de dossiê técnico, não cartaz colorido */
+html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .insurance{
+ border-color:rgba(103,126,128,.65)!important;
+ background:linear-gradient(180deg,#d9dfe0,#c7d0d2)!important;
+ box-shadow:0 22px 55px rgba(0,0,0,.62),inset 0 1px 0 rgba(255,255,255,.16),0 0 26px rgba(32,121,93,.05)!important;
+}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .insurance .head{
+ background:linear-gradient(90deg,#350a13,#54101d 30%,#691827 56%,#3d0d16 100%)!important;
+}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .insurance-body{
+ background:
+ radial-gradient(circle at 83% 83%,rgba(35,145,112,.08),transparent 19%),
+ linear-gradient(180deg,#e5eaeb,#cbd4d6)!important;
+}
+/* Micro-indicadores visuais */
+html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .panel::marker{color:transparent}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .head-tag:before{
+ text-shadow:0 0 8px currentColor!important;
+}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .time{
+ text-shadow:0 1px 4px rgba(0,0,0,.8),0 0 9px rgba(81,190,150,.08)!important;
+}
+
+.leg-panel-count{transition:.15s;}
+.leg-panel-count.filtered{color:#65d7e8}
+.leg-copy-feedback{min-width:86px}

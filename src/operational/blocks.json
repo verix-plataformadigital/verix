@@ -1,0 +1,614 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Ordered operational source blocks assembled into one portable HTML artifact.",
+  "sourceBaselineCommit": "9d6f9f08809cd953fae2545d2f743f04f9a8a1d5",
+  "sourceBlobSha": "139f7f7dc04f2f6aacbd3e1abf75f5fd55046324",
+  "expectedCounts": {
+    "styles": 26,
+    "inlineScripts": 34,
+    "total": 60
+  },
+  "orderIsSemantic": true,
+  "blocks": [
+    {
+      "ordinal": 1,
+      "kind": "script",
+      "id": "verix-clean-public-url",
+      "file": "scripts/01-verix-clean-public-url.js",
+      "marker": "<!-- @verix:module:0001 -->",
+      "openTag": "<script id=\"verix-clean-public-url\">",
+      "closeTag": "</script>",
+      "bytes": 471
+    },
+    {
+      "ordinal": 2,
+      "kind": "script",
+      "id": "verix-fresh-mobile-assets",
+      "file": "scripts/02-verix-fresh-mobile-assets.js",
+      "marker": "<!-- @verix:module:0002 -->",
+      "openTag": "<script id=\"verix-fresh-mobile-assets\">",
+      "closeTag": "</script>",
+      "bytes": 310
+    },
+    {
+      "ordinal": 3,
+      "kind": "script",
+      "id": "verix-startup-flag",
+      "file": "scripts/03-verix-startup-flag.js",
+      "marker": "<!-- @verix:module:0003 -->",
+      "openTag": "<script id=\"verix-startup-flag\">",
+      "closeTag": "</script>",
+      "bytes": 89
+    },
+    {
+      "ordinal": 4,
+      "kind": "script",
+      "id": "verix-access-protection",
+      "file": "scripts/04-verix-access-protection.js",
+      "marker": "<!-- @verix:module:0004 -->",
+      "openTag": "<script id=\"verix-access-protection\">",
+      "closeTag": "</script>",
+      "bytes": 3183
+    },
+    {
+      "ordinal": 5,
+      "kind": "script",
+      "id": "verix-security-runtime",
+      "file": "scripts/05-verix-security-runtime.js",
+      "marker": "<!-- @verix:module:0005 -->",
+      "openTag": "<script id=\"verix-security-runtime\">",
+      "closeTag": "</script>",
+      "bytes": 4076
+    },
+    {
+      "ordinal": 6,
+      "kind": "script",
+      "id": "vx-install-shortcut-runtime",
+      "file": "scripts/06-vx-install-shortcut-runtime.js",
+      "marker": "<!-- @verix:module:0006 -->",
+      "openTag": "<script id=\"vx-install-shortcut-runtime\">",
+      "closeTag": "</script>",
+      "bytes": 6108
+    },
+    {
+      "ordinal": 7,
+      "kind": "style",
+      "id": "verix-startup-lock",
+      "file": "styles/07-verix-startup-lock.css",
+      "marker": "<!-- @verix:module:0007 -->",
+      "openTag": "<style id=\"verix-startup-lock\">",
+      "closeTag": "</style>",
+      "bytes": 728
+    },
+    {
+      "ordinal": 8,
+      "kind": "script",
+      "id": null,
+      "file": "scripts/08-inline-script.js",
+      "marker": "<!-- @verix:module:0008 -->",
+      "openTag": "<script>",
+      "closeTag": "</script>",
+      "bytes": 423882
+    },
+    {
+      "ordinal": 9,
+      "kind": "style",
+      "id": "verix-css-batch-001",
+      "file": "styles/09-verix-css-batch-001.css",
+      "marker": "<!-- @verix:module:0009 -->",
+      "openTag": "<style id=\"verix-css-batch-001\">",
+      "closeTag": "</style>",
+      "bytes": 31102
+    },
+    {
+      "ordinal": 10,
+      "kind": "script",
+      "id": "v112-history-retomar-cleanup",
+      "file": "scripts/10-v112-history-retomar-cleanup.js",
+      "marker": "<!-- @verix:module:0010 -->",
+      "openTag": "<script id=\"v112-history-retomar-cleanup\">",
+      "closeTag": "</script>",
+      "bytes": 521
+    },
+    {
+      "ordinal": 11,
+      "kind": "style",
+      "id": "verix-css-batch-003",
+      "file": "styles/11-verix-css-batch-003.css",
+      "marker": "<!-- @verix:module:0011 -->",
+      "openTag": "<style id=\"verix-css-batch-003\">",
+      "closeTag": "</style>",
+      "bytes": 32610
+    },
+    {
+      "ordinal": 12,
+      "kind": "script",
+      "id": "verix-performance-profile",
+      "file": "scripts/12-verix-performance-profile.js",
+      "marker": "<!-- @verix:module:0012 -->",
+      "openTag": "<script id=\"verix-performance-profile\">",
+      "closeTag": "</script>",
+      "bytes": 280
+    },
+    {
+      "ordinal": 13,
+      "kind": "style",
+      "id": "verix-brand-lockup-centered",
+      "file": "styles/13-verix-brand-lockup-centered.css",
+      "marker": "<!-- @verix:module:0013 -->",
+      "openTag": "<style id=\"verix-brand-lockup-centered\">",
+      "closeTag": "</style>",
+      "bytes": 4493
+    },
+    {
+      "ordinal": 14,
+      "kind": "style",
+      "id": "verix-portugal-flag-3d",
+      "file": "styles/14-verix-portugal-flag-3d.css",
+      "marker": "<!-- @verix:module:0014 -->",
+      "openTag": "<style id=\"verix-portugal-flag-3d\">",
+      "closeTag": "</style>",
+      "bytes": 1548
+    },
+    {
+      "ordinal": 15,
+      "kind": "style",
+      "id": "verix-flag-attribution-accessibility",
+      "file": "styles/15-verix-flag-attribution-accessibility.css",
+      "marker": "<!-- @verix:module:0015 -->",
+      "openTag": "<style id=\"verix-flag-attribution-accessibility\">",
+      "closeTag": "</style>",
+      "bytes": 516
+    },
+    {
+      "ordinal": 16,
+      "kind": "style",
+      "id": "verix-flag-watermark-refinement",
+      "file": "styles/16-verix-flag-watermark-refinement.css",
+      "marker": "<!-- @verix:module:0016 -->",
+      "openTag": "<style id=\"verix-flag-watermark-refinement\">",
+      "closeTag": "</style>",
+      "bytes": 4517
+    },
+    {
+      "ordinal": 17,
+      "kind": "style",
+      "id": "verix-main-menu-launcher-style-v7",
+      "file": "styles/17-verix-main-menu-launcher-style-v7.css",
+      "marker": "<!-- @verix:module:0017 -->",
+      "openTag": "<style id=\"verix-main-menu-launcher-style-v7\">",
+      "closeTag": "</style>",
+      "bytes": 43465
+    },
+    {
+      "ordinal": 18,
+      "kind": "script",
+      "id": "verix-splash-clock",
+      "file": "scripts/18-verix-splash-clock.js",
+      "marker": "<!-- @verix:module:0018 -->",
+      "openTag": "<script id=\"verix-splash-clock\">",
+      "closeTag": "</script>",
+      "bytes": 117
+    },
+    {
+      "ordinal": 19,
+      "kind": "script",
+      "id": null,
+      "file": "scripts/19-inline-script.js",
+      "marker": "<!-- @verix:module:0019 -->",
+      "openTag": "<script>",
+      "closeTag": "</script>",
+      "bytes": 708
+    },
+    {
+      "ordinal": 20,
+      "kind": "style",
+      "id": "verix-css-batch-006",
+      "file": "styles/20-verix-css-batch-006.css",
+      "marker": "<!-- @verix:module:0020 -->",
+      "openTag": "<style id=\"verix-css-batch-006\">",
+      "closeTag": "</style>",
+      "bytes": 39541
+    },
+    {
+      "ordinal": 21,
+      "kind": "script",
+      "id": "melhorias-10-0-js",
+      "file": "scripts/21-melhorias-10-0-js.js",
+      "marker": "<!-- @verix:module:0021 -->",
+      "openTag": "<script id=\"melhorias-10-0-js\">",
+      "closeTag": "</script>",
+      "bytes": 7024
+    },
+    {
+      "ordinal": 22,
+      "kind": "script",
+      "id": "melhorias-10-1-js",
+      "file": "scripts/22-melhorias-10-1-js.js",
+      "marker": "<!-- @verix:module:0022 -->",
+      "openTag": "<script id=\"melhorias-10-1-js\">",
+      "closeTag": "</script>",
+      "bytes": 4158
+    },
+    {
+      "ordinal": 23,
+      "kind": "script",
+      "id": "cin-v42-operational-overrides",
+      "file": "scripts/23-cin-v42-operational-overrides.js",
+      "marker": "<!-- @verix:module:0023 -->",
+      "openTag": "<script id=\"cin-v42-operational-overrides\">",
+      "closeTag": "</script>",
+      "bytes": 3188
+    },
+    {
+      "ordinal": 24,
+      "kind": "style",
+      "id": "cin-v42-interface",
+      "file": "styles/24-cin-v42-interface.css",
+      "marker": "<!-- @verix:module:0024 -->",
+      "openTag": "<style id=\"cin-v42-interface\">",
+      "closeTag": "</style>",
+      "bytes": 5147
+    },
+    {
+      "ordinal": 25,
+      "kind": "script",
+      "id": "cin-v47-matriz-real-script",
+      "file": "scripts/25-cin-v47-matriz-real-script.js",
+      "marker": "<!-- @verix:module:0025 -->",
+      "openTag": "<script id=\"cin-v47-matriz-real-script\">",
+      "closeTag": "</script>",
+      "bytes": 5074
+    },
+    {
+      "ordinal": 26,
+      "kind": "style",
+      "id": "verix-css-batch-007",
+      "file": "styles/26-verix-css-batch-007.css",
+      "marker": "<!-- @verix:module:0026 -->",
+      "openTag": "<style id=\"verix-css-batch-007\">",
+      "closeTag": "</style>",
+      "bytes": 10227
+    },
+    {
+      "ordinal": 27,
+      "kind": "script",
+      "id": "cin-v83-modal-radar-config-js",
+      "file": "scripts/27-cin-v83-modal-radar-config-js.js",
+      "marker": "<!-- @verix:module:0027 -->",
+      "openTag": "<script id=\"cin-v83-modal-radar-config-js\">",
+      "closeTag": "</script>",
+      "bytes": 1776
+    },
+    {
+      "ordinal": 28,
+      "kind": "style",
+      "id": "v84-menu-principal-header",
+      "file": "styles/28-v84-menu-principal-header.css",
+      "marker": "<!-- @verix:module:0028 -->",
+      "openTag": "<style id=\"v84-menu-principal-header\">",
+      "closeTag": "</style>",
+      "bytes": 18917
+    },
+    {
+      "ordinal": 29,
+      "kind": "script",
+      "id": "v152-leg-copy-count-fix-js",
+      "file": "scripts/29-v152-leg-copy-count-fix-js.js",
+      "marker": "<!-- @verix:module:0029 -->",
+      "openTag": "<script id=\"v152-leg-copy-count-fix-js\">",
+      "closeTag": "</script>",
+      "bytes": 2235
+    },
+    {
+      "ordinal": 30,
+      "kind": "script",
+      "id": "v158-safe-module-stability",
+      "file": "scripts/30-v158-safe-module-stability.js",
+      "marker": "<!-- @verix:module:0030 -->",
+      "openTag": "<script id=\"v158-safe-module-stability\">",
+      "closeTag": "</script>",
+      "bytes": 606
+    },
+    {
+      "ordinal": 31,
+      "kind": "style",
+      "id": "v155-leg-copy-feedback",
+      "file": "styles/31-v155-leg-copy-feedback.css",
+      "marker": "<!-- @verix:module:0031 -->",
+      "openTag": "<style id=\"v155-leg-copy-feedback\">",
+      "closeTag": "</style>",
+      "bytes": 6305
+    },
+    {
+      "ordinal": 32,
+      "kind": "script",
+      "id": "v-futura-boot",
+      "file": "scripts/32-v-futura-boot.js",
+      "marker": "<!-- @verix:module:0032 -->",
+      "openTag": "<script id=\"v-futura-boot\">",
+      "closeTag": "</script>",
+      "bytes": 526
+    },
+    {
+      "ordinal": 33,
+      "kind": "script",
+      "id": "v-ops-console-12-js",
+      "file": "scripts/33-v-ops-console-12-js.js",
+      "marker": "<!-- @verix:module:0033 -->",
+      "openTag": "<script id=\"v-ops-console-12-js\">",
+      "closeTag": "</script>",
+      "bytes": 1754
+    },
+    {
+      "ordinal": 34,
+      "kind": "style",
+      "id": "v194-futurista-definicoes-auto-theme",
+      "file": "styles/34-v194-futurista-definicoes-auto-theme.css",
+      "marker": "<!-- @verix:module:0034 -->",
+      "openTag": "<style id=\"v194-futurista-definicoes-auto-theme\">",
+      "closeTag": "</style>",
+      "bytes": 7258
+    },
+    {
+      "ordinal": 35,
+      "kind": "script",
+      "id": "v140-excel-operacional-data",
+      "file": "scripts/35-v140-excel-operacional-data.js",
+      "marker": "<!-- @verix:module:0035 -->",
+      "openTag": "<script id=\"v140-excel-operacional-data\">",
+      "closeTag": "</script>",
+      "bytes": 48601
+    },
+    {
+      "ordinal": 36,
+      "kind": "style",
+      "id": "verix-css-batch-011",
+      "file": "styles/36-verix-css-batch-011.css",
+      "marker": "<!-- @verix:module:0036 -->",
+      "openTag": "<style id=\"verix-css-batch-011\">",
+      "closeTag": "</style>",
+      "bytes": 3485
+    },
+    {
+      "ordinal": 37,
+      "kind": "style",
+      "id": "verix-css-batch-012",
+      "file": "styles/37-verix-css-batch-012.css",
+      "marker": "<!-- @verix:module:0037 -->",
+      "openTag": "<style id=\"verix-css-batch-012\">",
+      "closeTag": "</style>",
+      "bytes": 45371
+    },
+    {
+      "ordinal": 38,
+      "kind": "script",
+      "id": null,
+      "file": "scripts/38-inline-script.js",
+      "marker": "<!-- @verix:module:0038 -->",
+      "openTag": "<script>",
+      "closeTag": "</script>",
+      "bytes": 913
+    },
+    {
+      "ordinal": 39,
+      "kind": "style",
+      "id": "cin-v44-ajustes",
+      "file": "styles/39-cin-v44-ajustes.css",
+      "marker": "<!-- @verix:module:0039 -->",
+      "openTag": "<style id=\"cin-v44-ajustes\">",
+      "closeTag": "</style>",
+      "bytes": 9039
+    },
+    {
+      "ordinal": 40,
+      "kind": "script",
+      "id": "cin-v61-documental-fixes-script",
+      "file": "scripts/40-cin-v61-documental-fixes-script.js",
+      "marker": "<!-- @verix:module:0040 -->",
+      "openTag": "<script id=\"cin-v61-documental-fixes-script\">",
+      "closeTag": "</script>",
+      "bytes": 12748
+    },
+    {
+      "ordinal": 41,
+      "kind": "script",
+      "id": "v74-main-menu-script",
+      "file": "scripts/41-v74-main-menu-script.js",
+      "marker": "<!-- @verix:module:0041 -->",
+      "openTag": "<script id=\"v74-main-menu-script\">",
+      "closeTag": "</script>",
+      "bytes": 1449
+    },
+    {
+      "ordinal": 42,
+      "kind": "style",
+      "id": "v74-main-menu-clean",
+      "file": "styles/42-v74-main-menu-clean.css",
+      "marker": "<!-- @verix:module:0042 -->",
+      "openTag": "<style id=\"v74-main-menu-clean\">",
+      "closeTag": "</style>",
+      "bytes": 603
+    },
+    {
+      "ordinal": 43,
+      "kind": "script",
+      "id": "cin-v158-restaura-edicao-default",
+      "file": "scripts/43-cin-v158-restaura-edicao-default.js",
+      "marker": "<!-- @verix:module:0043 -->",
+      "openTag": "<script id=\"cin-v158-restaura-edicao-default\">",
+      "closeTag": "</script>",
+      "bytes": 472
+    },
+    {
+      "ordinal": 44,
+      "kind": "style",
+      "id": "verix-css-batch-013",
+      "file": "styles/44-verix-css-batch-013.css",
+      "marker": "<!-- @verix:module:0044 -->",
+      "openTag": "<style id=\"verix-css-batch-013\">",
+      "closeTag": "</style>",
+      "bytes": 37098
+    },
+    {
+      "ordinal": 45,
+      "kind": "script",
+      "id": "verix-force-fresh-load",
+      "file": "scripts/45-verix-force-fresh-load.js",
+      "marker": "<!-- @verix:module:0045 -->",
+      "openTag": "<script id=\"verix-force-fresh-load\">",
+      "closeTag": "</script>",
+      "bytes": 488
+    },
+    {
+      "ordinal": 46,
+      "kind": "script",
+      "id": "v159-factory-reset-modal-script",
+      "file": "scripts/46-v159-factory-reset-modal-script.js",
+      "marker": "<!-- @verix:module:0046 -->",
+      "openTag": "<script id=\"v159-factory-reset-modal-script\">",
+      "closeTag": "</script>",
+      "bytes": 2126
+    },
+    {
+      "ordinal": 47,
+      "kind": "style",
+      "id": "verix-css-batch-014",
+      "file": "styles/47-verix-css-batch-014.css",
+      "marker": "<!-- @verix:module:0047 -->",
+      "openTag": "<style id=\"verix-css-batch-014\">",
+      "closeTag": "</style>",
+      "bytes": 4571
+    },
+    {
+      "ordinal": 48,
+      "kind": "script",
+      "id": "verix-no-plate-history",
+      "file": "scripts/48-verix-no-plate-history.js",
+      "marker": "<!-- @verix:module:0048 -->",
+      "openTag": "<script id=\"verix-no-plate-history\">",
+      "closeTag": "</script>",
+      "bytes": 1000
+    },
+    {
+      "ordinal": 49,
+      "kind": "style",
+      "id": "verix-v11-cinematic-polish",
+      "file": "styles/49-verix-v11-cinematic-polish.css",
+      "marker": "<!-- @verix:module:0049 -->",
+      "openTag": "<style id=\"verix-v11-cinematic-polish\">",
+      "closeTag": "</style>",
+      "bytes": 25191
+    },
+    {
+      "ordinal": 50,
+      "kind": "script",
+      "id": "verix-fx-007-boot",
+      "file": "scripts/50-verix-fx-007-boot.js",
+      "marker": "<!-- @verix:module:0050 -->",
+      "openTag": "<script id=\"verix-fx-007-boot\">",
+      "closeTag": "</script>",
+      "bytes": 579
+    },
+    {
+      "ordinal": 51,
+      "kind": "style",
+      "id": "verix-css-batch-016",
+      "file": "styles/51-verix-css-batch-016.css",
+      "marker": "<!-- @verix:module:0051 -->",
+      "openTag": "<style id=\"verix-css-batch-016\">",
+      "closeTag": "</style>",
+      "bytes": 14205
+    },
+    {
+      "ordinal": 52,
+      "kind": "script",
+      "id": "verix-leg-grid-restore",
+      "file": "scripts/52-verix-leg-grid-restore.js",
+      "marker": "<!-- @verix:module:0052 -->",
+      "openTag": "<script id=\"verix-leg-grid-restore\">",
+      "closeTag": "</script>",
+      "bytes": 612
+    },
+    {
+      "ordinal": 53,
+      "kind": "style",
+      "id": "verix-css-batch-017",
+      "file": "styles/53-verix-css-batch-017.css",
+      "marker": "<!-- @verix:module:0053 -->",
+      "openTag": "<style id=\"verix-css-batch-017\">",
+      "closeTag": "</style>",
+      "bytes": 14778
+    },
+    {
+      "ordinal": 54,
+      "kind": "script",
+      "id": "v146-module-init-fix",
+      "file": "scripts/54-v146-module-init-fix.js",
+      "marker": "<!-- @verix:module:0054 -->",
+      "openTag": "<script id=\"v146-module-init-fix\">",
+      "closeTag": "</script>",
+      "bytes": 507
+    },
+    {
+      "ordinal": 55,
+      "kind": "style",
+      "id": "verix-css-batch-018",
+      "file": "styles/55-verix-css-batch-018.css",
+      "marker": "<!-- @verix:module:0055 -->",
+      "openTag": "<style id=\"verix-css-batch-018\">",
+      "closeTag": "</style>",
+      "bytes": 4115
+    },
+    {
+      "ordinal": 56,
+      "kind": "script",
+      "id": "verix-telemetry-v2",
+      "file": "scripts/56-verix-telemetry-v2.js",
+      "marker": "<!-- @verix:module:0056 -->",
+      "openTag": "<script id=\"verix-telemetry-v2\">",
+      "closeTag": "</script>",
+      "bytes": 33993
+    },
+    {
+      "ordinal": 57,
+      "kind": "style",
+      "id": "verix-css-batch-019",
+      "file": "styles/57-verix-css-batch-019.css",
+      "marker": "<!-- @verix:module:0057 -->",
+      "openTag": "<style id=\"verix-css-batch-019\">",
+      "closeTag": "</style>",
+      "bytes": 21730
+    },
+    {
+      "ordinal": 58,
+      "kind": "script",
+      "id": "verix-startup-controller",
+      "file": "scripts/58-verix-startup-controller.js",
+      "marker": "<!-- @verix:module:0058 -->",
+      "openTag": "<script id=\"verix-startup-controller\">",
+      "closeTag": "</script>",
+      "bytes": 3430
+    },
+    {
+      "ordinal": 59,
+      "kind": "script",
+      "id": "verix-settings-controller",
+      "file": "scripts/59-verix-settings-controller.js",
+      "marker": "<!-- @verix:module:0059 -->",
+      "openTag": "<script id=\"verix-settings-controller\">",
+      "closeTag": "</script>",
+      "bytes": 7575
+    },
+    {
+      "ordinal": 60,
+      "kind": "style",
+      "id": "verix-registration-labels-and-spacing",
+      "file": "styles/60-verix-registration-labels-and-spacing.css",
+      "marker": "<!-- @verix:module:0060 -->",
+      "openTag": "<style id=\"verix-registration-labels-and-spacing\">",
+      "closeTag": "</style>",
+      "bytes": 103772
+    }
+  ]
+}

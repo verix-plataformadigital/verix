@@ -1,0 +1,377 @@
+/* ASF — barra full-width, legível, sem corte de texto */
+html body .panel.insurance,
+html body .insurance{
+ position:relative!important;
+ overflow:hidden!important;
+}
+html body .panel.insurance .insurance-body,
+html body .insurance .insurance-body{
+ padding-bottom:56px!important;
+}
+html body #asfRateWidget.asf-rate-widget,
+html body #asfRateWidget{
+ position:absolute!important;
+ left:0!important; right:0!important; bottom:0!important; top:auto!important;
+ width:100%!important; min-width:100%!important; max-width:100%!important;
+ height:52px!important; min-height:52px!important; max-height:52px!important;
+ margin:0!important; padding:0 10px!important;
+ box-sizing:border-box!important;
+ border:none!important;
+ border-top:1px solid rgba(140,170,180,.35)!important;
+ border-radius:0!important;
+ background:
+ linear-gradient(180deg, rgba(255,255,255,.08) 0%, transparent 40%),
+ linear-gradient(180deg, #152229 0%, #0c141a 50%, #080e13 100%)!important;
+ box-shadow:
+ 0 -6px 20px rgba(0,0,0,.38),
+ inset 0 1px 0 rgba(255,255,255,.1),
+ inset 0 -2px 5px rgba(0,0,0,.3)!important;
+ display:grid!important;
+ grid-template-columns:minmax(110px,auto) minmax(78px,auto) minmax(70px,auto) minmax(0,1fr)!important;
+ align-items:center!important;
+ column-gap:8px!important;
+ pointer-events:none!important;
+ z-index:40!important;
+ overflow:hidden!important;
+ transform:none!important;
+}
+html body #asfRateWidget::before{
+ content:""!important;
+ position:absolute!important;
+ left:0!important; right:0!important; top:0!important;
+ height:2px!important;
+ background:linear-gradient(90deg, transparent, rgba(0,240,255,.55), transparent)!important;
+ z-index:1!important;
+}
+html body #asfRateWidget .asf-rate-label{
+ grid-column:1!important;
+ gap:6px!important;
+ z-index:2!important;
+}
+html body #asfRateWidget.high .asf-rate-dot{ background:#ff3d5a!important; box-shadow:0 0 8px rgba(255,61,90,.7)!important; }
+html body #asfRateWidget.warn .asf-rate-dot{ background:#ffc933!important; box-shadow:0 0 8px rgba(255,201,51,.7)!important; }
+html body #asfRateWidget .asf-rate-main{
+ grid-column:2!important;
+ margin:0!important;
+ padding:4px 10px!important;
+ min-width:0!important;
+ font:950 16px/1 Consolas,monospace!important;
+ letter-spacing:1px!important;
+ color:#00e5a0!important;
+ text-align:center!important;
+ white-space:nowrap!important;
+ border-radius:4px!important;
+ border:1px solid rgba(0,229,160,.4)!important;
+ background:linear-gradient(180deg,#16352e,#0c1f1a)!important;
+ box-shadow:0 2px 0 #04120e, inset 0 1px 0 rgba(255,255,255,.12)!important;
+ z-index:2!important;
+}
+html body #asfRateWidget.high .asf-rate-main{
+ color:#ff6b80!important; border-color:rgba(255,60,90,.5)!important;
+ background:linear-gradient(180deg,#3a1218,#1e080c)!important;
+}
+html body #asfRateWidget.warn .asf-rate-main{
+ color:#ffd24a!important; border-color:rgba(255,210,74,.5)!important;
+ background:linear-gradient(180deg,#3a2e0c,#1e1806)!important;
+}
+/* Cronómetro — nunca cortar */
+html body #asfRateCountdown.asf-rate-countdown,
+html body #asfRateCountdown{
+ grid-column:3!important;
+ margin:0!important;
+ padding:4px 8px!important;
+ min-width:58px!important;
+ width:auto!important;
+ max-width:none!important;
+ box-sizing:border-box!important;
+ font:950 12px/1 Consolas,monospace!important;
+ letter-spacing:.8px!important;
+ text-align:center!important;
+ white-space:nowrap!important;
+ overflow:visible!important;
+ text-overflow:clip!important;
+ border-radius:4px!important;
+ border:1px solid rgba(0,229,160,.4)!important;
+ background:linear-gradient(180deg,rgba(0,229,160,.15),rgba(0,40,30,.3))!important;
+ color:#00e5a0!important;
+ z-index:2!important;
+ flex:none!important;
+}
+html body #asfRateCountdown[data-state="wait"],
+html body #asfRateWidget.cooldown #asfRateCountdown{
+ border-color:rgba(255,180,40,.5)!important;
+ background:linear-gradient(180deg,rgba(255,180,40,.18),rgba(50,35,0,.35))!important;
+ color:#ffc44a!important;
+ animation:asfCdPulse .9s ease-in-out infinite!important;
+}
+html body #asfRateWidget .asf-rate-sub{
+ grid-column:4!important;
+ margin:0!important; padding:0 2px 0 0!important;
+ min-width:0!important;
+ font:700 9px/1.2 Consolas,monospace!important;
+ color:#8aa0a8!important;
+ text-align:right!important;
+ white-space:nowrap!important;
+ overflow:hidden!important;
+ text-overflow:ellipsis!important;
+ z-index:2!important;
+}
+@keyframes asfCdPulse{ 0%,100%{filter:brightness(1)} 50%{filter:brightness(1.15)} }
+@media(max-width:900px){
+ html body #asfRateWidget{
+ grid-template-columns:minmax(90px,auto) minmax(64px,auto) minmax(54px,auto) minmax(0,1fr)!important;
+ padding:0 8px!important; height:50px!important;
+ }
+ html body #asfRateCountdown{font-size:11px!important;min-width:50px!important;padding:3px 6px!important;}
+ html body #asfRateWidget .asf-rate-label{font-size:8px!important;letter-spacing:.6px!important;}
+}
+/* ================================================================
+ VÉRIX — 007 / BLACK OPS / HOLO 4D EXTREME
+ Animacoes intensas · holograma · profundidade · classified
+ ================================================================ */
+/* Profundidade 3D apenas no desktop.
+   perspective num ancestral altera o bloco de referência dos elementos fixed;
+   nos dispositivos móveis, os overlays têm de seguir o viewport real. */
+@media (min-width:1200px){
+ html body{
+  perspective:1600px;
+  perspective-origin:50% 40%;
+ }
+}
+/* --- Ambient fog + hex pulse --- */
+html body .cinematic-bg{
+ animation:v007Bg 18s ease-in-out infinite alternate !important;
+ filter:contrast(1.08) saturate(1.15) !important;
+}
+@keyframes v007Bg{
+ 0%{ filter:contrast(1.05) saturate(1.1) hue-rotate(0deg) brightness(.95); }
+ 50%{ filter:contrast(1.12) saturate(1.25) hue-rotate(12deg) brightness(1.05); }
+ 100%{ filter:contrast(1.08) saturate(1.15) hue-rotate(-6deg) brightness(1); }
+}
+html body .cinematic-bg::before{
+ background-image:
+ linear-gradient(rgba(0,240,255,.05) 1px, transparent 1px),
+ linear-gradient(90deg, rgba(0,240,255,.05) 1px, transparent 1px),
+ radial-gradient(circle at 30% 40%, rgba(0,240,255,.06), transparent 45%),
+ radial-gradient(circle at 70% 60%, rgba(255,42,74,.05), transparent 40%) !important;
+ background-size:48px 48px, 48px 48px, 100% 100%, 100% 100% !important;
+ animation:v007Grid 10s linear infinite, v007GridPulse 4s ease-in-out infinite !important;
+ opacity:.85 !important;
+}
+@keyframes v007Grid{
+ 0%{ background-position:0 0, 0 0, 0 0, 0 0; }
+ 100%{ background-position:48px 48px, 48px 48px, 0 0, 0 0; }
+}
+@keyframes v007GridPulse{
+ 0%,100%{ opacity:.55; }
+ 50%{ opacity:.95; }
+}
+html body .verix-holo-scan{
+ opacity:.55 !important;
+ background:
+ repeating-linear-gradient(0deg, transparent 0 2px, rgba(0,255,220,.03) 2px 3px),
+ linear-gradient(180deg, rgba(0,240,255,.04), transparent 30%, transparent 70%, rgba(255,42,74,.03)) !important;
+ animation:v007HoloMove 6s linear infinite, v007Flicker 5s step-end infinite !important;
+ mix-blend-mode:screen !important;
+ z-index:96 !important;
+}
+@keyframes v007HoloMove{
+ 0%{ transform:translateY(0); }
+ 100%{ transform:translateY(8px); }
+}
+@keyframes v007Flicker{
+ 0%,100%{ opacity:.5; }
+ 92%{ opacity:.5; }
+ 93%{ opacity:.75; }
+ 94%{ opacity:.4; }
+ 96%{ opacity:.65; }
+}
+
+/* --- COMMAND BAR: heavy 3D --- */
+html body .command{
+ transform:translateZ(40px);
+ box-shadow:
+ 0 30px 80px rgba(0,0,0,.7),
+ 0 0 60px rgba(0,240,255,.12),
+ 0 0 120px rgba(255,42,74,.05),
+ inset 0 1px 0 rgba(0,240,255,.2),
+ inset 0 -2px 8px rgba(0,0,0,.4) !important;
+ animation:v007CommandFloat 7s ease-in-out infinite !important;
+}
+@keyframes v007CommandFloat{
+ 0%,100%{ transform:translateY(0) translateZ(40px); }
+ 50%{ transform:translateY(-3px) translateZ(48px); }
+}
+html body .command:after{
+ height:3px !important;
+ animation:intelBarPulse 2s ease-in-out infinite, v007BarScan 3s linear infinite !important;
+ box-shadow:0 0 24px rgba(0,240,255,.7), 0 0 40px rgba(255,42,74,.35) !important;
+}
+@keyframes v007BarScan{
+ 0%{ filter:hue-rotate(0deg) brightness(1.2); }
+ 50%{ filter:hue-rotate(40deg) brightness(1.5); }
+ 100%{ filter:hue-rotate(0deg) brightness(1.2); }
+}
+
+/* Buttons: aggressive 3D press */
+html body .consult{
+ animation:v007BtnGlow 3s ease-in-out infinite !important;
+ transform-style:preserve-3d !important;
+}
+@keyframes v007BtnGlow{
+ 0%,100%{ box-shadow:0 0 24px rgba(255,42,74,.35), 0 4px 0 #600818, inset 0 1px 0 rgba(255,255,255,.2) !important; }
+ 50%{ box-shadow:0 0 40px rgba(255,42,74,.55), 0 4px 0 #600818, 0 0 60px rgba(255,42,74,.2), inset 0 1px 0 rgba(255,255,255,.25) !important; }
+}
+html body .consult:hover{
+ transform:translateY(-4px) scale(1.04) rotateX(8deg) !important;
+ filter:brightness(1.15) saturate(1.2) !important;
+}
+html body .consult:active{
+ transform:translateY(3px) scale(.97) rotateX(-4deg) !important;
+}
+html body .tool:hover{
+ transform:translateY(-3px) rotateX(6deg) !important;
+ box-shadow:0 10px 28px rgba(0,0,0,.45), 0 0 30px rgba(0,240,255,.3) !important;
+}
+html body .field input:focus{
+ animation:v007InputPulse 1.5s ease-in-out infinite !important;
+}
+@keyframes v007InputPulse{
+ 0%,100%{ box-shadow:0 0 0 2px rgba(0,240,255,.3), 0 0 24px rgba(0,240,255,.2) !important; }
+ 50%{ box-shadow:0 0 0 3px rgba(0,240,255,.45), 0 0 36px rgba(0,240,255,.35) !important; }
+}
+/* --- RAIL: floating 3D pods --- */
+html body .rail{
+ transform:translateZ(30px);
+ box-shadow:
+ 16px 0 50px rgba(0,0,0,.55),
+ 0 0 40px rgba(0,240,255,.08),
+ inset -2px 0 12px rgba(0,240,255,.08) !important;
+ animation:v007RailBreath 8s ease-in-out infinite !important;
+}
+@keyframes v007RailBreath{
+ 0%,100%{ filter:brightness(1); }
+ 50%{ filter:brightness(1.08); }
+}
+html body .rail-item{
+ transform-style:preserve-3d !important;
+ transition:transform .28s cubic-bezier(.16,1,.3,1), box-shadow .28s ease !important;
+}
+html body .rail-item:hover{
+ transform:translateX(10px) translateZ(24px) rotateY(-8deg) scale(1.06) !important;
+ box-shadow:0 12px 32px rgba(0,0,0,.4), 0 0 28px rgba(0,240,255,.25) !important;
+}
+html body .rail-item.active{
+ transform:translateX(6px) translateZ(16px) !important;
+ animation:v007ActivePulse 2s ease-in-out infinite !important;
+}
+@keyframes v007ActivePulse{
+ 0%,100%{ box-shadow:inset 3px 0 0 #ff2a4a, 0 0 24px rgba(255,42,74,.3) !important; }
+ 50%{ box-shadow:inset 3px 0 0 #ff2a4a, 0 0 40px rgba(255,42,74,.5), 0 0 60px rgba(255,42,74,.15) !important; }
+}
+/* --- PANELS: hologram screens --- */
+html body .main{
+ transform-style:preserve-3d;
+}
+html body .panel{
+ transform-style:preserve-3d !important;
+ transition:transform .35s cubic-bezier(.16,1,.3,1), box-shadow .35s ease !important;
+}
+html body .panel:hover{
+ box-shadow:
+ 0 36px 80px rgba(0,0,0,.6),
+ 0 0 50px rgba(0,240,255,.18),
+ 0 0 100px rgba(0,229,160,.06),
+ inset 0 0 80px rgba(0,240,255,.05) !important;
+}
+html body .head.red::after,
+html body .head.green::after{
+ opacity:.9 !important;
+}
+html body .scan{ display:none!important; animation:none!important; }
+html body .corner{
+ animation:verixCornerBlink 1.8s ease-in-out infinite !important;
+ box-shadow:0 0 14px rgba(0,240,255,.8) !important;
+ width:16px !important; height:16px !important;
+ border-width:2px !important;
+}
+
+/html body .module-card:hover, html body .leg-card-new:hover{
+ transform:translateY(-8px) rotateX(6deg) scale(1.02) !important;
+ box-shadow:0 20px 48px rgba(0,0,0,.45), 0 0 40px rgba(0,240,255,.2) !important;
+}
+html body .leg-category:hover{
+ transform:translateY(-10px) scale(1.04) rotateX(5deg) !important;
+ box-shadow:0 24px 50px rgba(0,0,0,.5), 0 0 50px rgba(0,240,255,.2) !important;
+ filter:brightness(1.2) saturate(1.3) !important;
+}
+/* Modals: dramatic entrance */
+html body .module-window,
+html body .history-window,
+html body .legal-notice-window{
+ animation:v007ModalIn .4s cubic-bezier(.16,1,.3,1) !important;
+ box-shadow:
+ 0 50px 120px rgba(0,0,0,.85),
+ 0 0 100px rgba(0,240,255,.15),
+ 0 0 0 1px rgba(0,240,255,.3),
+ inset 0 0 80px rgba(0,240,255,.04) !important;
+}
+@keyframes v007ModalIn{
+ from{ opacity:0; transform:translateY(30px) scale(.92) rotateX(8deg); filter:blur(8px); }
+ to{ opacity:1; transform:translateY(0) scale(1) rotateX(0); filter:blur(0); }
+}
+/* History */
+html body .history-row:hover{
+ transform:translateX(10px) scale(1.02) !important;
+ box-shadow:0 10px 28px rgba(0,0,0,.35), 0 0 30px rgba(0,229,160,.2) !important;
+}
+/* Floating orbs (decorative) */
+html body .v007-orb{
+ position:fixed;
+ border-radius:50%;
+ pointer-events:none;
+ z-index:3;
+ filter:blur(40px);
+ opacity:.35;
+ mix-blend-mode:screen;
+ animation:v007Orb 14s ease-in-out infinite alternate;
+}
+html body .v007-orb.a{ width:280px; height:280px; background:#00f0ff; top:10%; left:5%; animation-duration:16s; }
+html body .v007-orb.b{ width:220px; height:220px; background:#ff2a4a; bottom:15%; right:8%; animation-duration:12s; animation-delay:-3s; }
+html body .v007-orb.c{ width:180px; height:180px; background:#00e5a0; top:50%; left:40%; animation-duration:18s; animation-delay:-6s; opacity:.22; }
+@keyframes v007Orb{
+ 0%{ transform:translate(0,0) scale(1); }
+ 50%{ transform:translate(40px,-30px) scale(1.15); }
+ 100%{ transform:translate(-20px,20px) scale(.9); }
+}
+/* ASF bar extra drama */
+html body #asfRateWidget{
+ animation:verixAsfBarBreath 4s ease-in-out infinite, v007AsfEdge 5s linear infinite !important;
+}
+@keyframes v007AsfEdge{
+ 0%{ filter:brightness(1) hue-rotate(0deg); }
+ 50%{ filter:brightness(1.12) hue-rotate(15deg); }
+ 100%{ filter:brightness(1) hue-rotate(0deg); }
+}
+/* Bottom ops strip glow */
+html body .bottom button,
+html body .bottom .tool,
+html body [class*="shortcut"]{
+ transition:transform .15s ease, box-shadow .2s ease !important;
+}
+/* Screen edge vignette pulse */
+html body:after{
+ animation:v007Vignette 8s ease-in-out infinite !important;
+}
+@keyframes v007Vignette{
+ 0%,100%{ opacity:1; }
+ 50%{ opacity:.85; }
+}
+@media (prefers-reduced-motion: reduce){
+html body .cinematic-bg, html body .cinematic-bg::before, html body .verix-holo-scan, html body .command, html body .command:after, html body .panel, html body .rail-item, html body .consult, html body .v007-orb, html body #asfRateWidget, html body .scan, html body .corner {
+ animation:none !important;
+ }
+html body .panel:hover, html body .rail-item:hover, html body .consult:hover {
+ transform:none !important;
+ }
+}

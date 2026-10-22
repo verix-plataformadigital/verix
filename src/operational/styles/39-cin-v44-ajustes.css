@@ -1,0 +1,109 @@
+\n/* Dropdown nativo: o menu aberto tem de continuar legível no Windows/Chromium. */\n.cin-session-operator-fields select{\n color-scheme:light!important;\n}\n.cin-session-operator-fields select option{\n background:#f2f5f7!important;\n color:#10232c!important;\n font-weight:700!important;\n}\n.cin-session-operator-fields select optgroup{\n background:#dce8ec!important;\n color:#164a63!important;\n font-weight:900!important;\n}\n.cin-session-operator-fields select option:checked{\n background:#176fba!important;\n color:#fff!important;\n}\n.cin-session-operator-fields select option[disabled]{\n color:#687b84!important;\n}\n.cin-regime-between{\n border-color:#b77c1b!important;\n box-shadow:0 0 0 1px rgba(224,165,43,.08), inset 0 0 15px rgba(224,165,43,.04);\n}\n.cin-regime-between select{\n border-color:#a77722!important;\n background:linear-gradient(180deg,#201a0b,#0d1216)!important;\n}\n\n/* Pequena etiqueta no limite automático quando é Autoestrada entre placas. */\n.cin-limit-between{\n color:#ffd36a!important;\n}\n
+.cin-one-screen{
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr) 245px!important;
+ grid-template-rows:auto auto minmax(0,1fr) auto auto auto auto!important;
+ gap:8px!important;
+ align-content:stretch!important;
+}/* O bloco inferior deixa de prender visualmente a configuração operacional. */
+.cinemometro-config-bottom{
+ display:contents!important;
+}/* Linha de configuração: esquerda, alinhada com o EMA no topo. */
+.cin-operational-config-row{
+ grid-column:1!important;
+ grid-row:1!important;
+ width:100%!important;
+ height:100%!important;
+ margin:0!important;
+ padding:8px 10px!important;
+ grid-template-columns:185px minmax(0,1fr)!important;
+ gap:10px!important;
+ align-self:stretch!important;
+}.cin-operational-config-label small{
+ font-size:6.4px!important;
+ line-height:1.35!important;
+}.cin-operational-fields{
+ grid-template-columns:.67fr 1.58fr 1.42fr .78fr!important;
+ gap:7px!important;
+}/* EMA: canto superior direito, compacto e sempre visível. */
+.cin-ema-topbar{
+ grid-column:2!important;
+ grid-row:1!important;
+ position:relative!important;
+ top:auto!important;
+ width:100%!important;
+ min-height:0!important;
+ height:100%!important;
+ margin:0!important;
+ padding:8px 10px!important;
+ align-self:stretch!important;
+}.cin-ema-top-label{font-size:7.5px!important}.cin-ema-top-value{font-size:25px!important}.cin-work-grid{grid-column:1 / -1!important;min-height:0!important}.cin-action-tip{grid-column:1 / -1!important;}.cin-session-operator{grid-column:1 / -1!important;}.cin-config-dashboard{grid-column:1 / -1!important;}.cin-config-panel{grid-column:1 / -1!important;}.cin-config-grid-tech .cin-config-col label{gap:3px!important}.cin-config-grid-tech .cin-config-col input,.cin-config-grid-tech .cin-config-col select{height:27px!important}/* Ajuda extra aos três campos centrais da operação. */
+.cin-operational-fields label:nth-child(1)::after{content:'Ex.: Fixo / Em movimento / Perseguição';display:block;color:#5f7b84;font-size:5.5px;font-style:italic;line-height:1.1;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cin-operational-fields label:nth-child(2)::after{content:'Ex.: Ligeiro / pesado / motociclo';display:block;color:#5f7b84;font-size:5.5px;font-style:italic;line-height:1.1;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cin-operational-fields label:nth-child(3)::after{content:'Ex.: Geral / Entre placas / Sinalizado';display:block;color:#5f7b84;font-size:5.5px;font-style:italic;line-height:1.1;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:1150px){.cin-one-screen{grid-template-columns:minmax(0,1fr) 215px!important}.cin-ema-topbar{width:100%!important}.cin-operational-config-row{grid-template-columns:165px minmax(0,1fr)!important}
+}
+@media(max-width:900px){.cin-one-screen{display:flex!important;flex-direction:column!important;gap:8px!important}.cin-operational-config-row,.cin-ema-topbar,.cin-fastbar,.cin-work-grid,.cin-action-tip,.cin-session-operator,.cin-config-dashboard,.cin-config-panel{grid-column:auto!important;grid-row:auto!important}.cin-ema-topbar{width:100%!important;height:auto!important}
+}/* ===== v59 — AUMENTO DE LEGIBILIDADE DOS EXEMPLOS ===== */
+.cin-active-device-top{
+ grid-column:1 / -1!important;
+ grid-row:2!important;
+ min-height:46px!important;
+ height:46px!important;
+ margin:0!important;
+ padding:6px 10px!important;
+ grid-template-columns:125px minmax(0,1fr) auto auto!important;
+ gap:10px!important;
+ align-items:center!important;
+ border-radius:7px!important;
+}.cin-active-device-top .cin-active-mark{
+ font-size:8px!important;
+ white-space:nowrap!important;
+}.cin-active-device-top .cin-active-main{
+ min-width:0!important;
+}.cin-active-device-top .cin-active-main strong{
+ display:block!important;
+ font-size:11px!important;
+ line-height:1.15!important;
+ white-space:nowrap!important;
+ overflow:hidden!important;
+ text-overflow:ellipsis!important;
+}.cin-active-device-top .cin-active-main small{
+ display:block!important;
+ margin-top:2px!important;
+ font-size:6.5px!important;
+ line-height:1.1!important;
+}.cin-active-device-top .cin-note-active-btn,.cin-active-device-top .cin-active-tech-btn{
+ height:27px!important;
+ padding:0 10px!important;
+ font-size:7px!important;
+ white-space:nowrap!important;
+}/* Velocidade registada passa imediatamente para a linha seguinte. */
+.cin-fastbar{
+ grid-column:1 / -1!important;
+ grid-row:3!important;
+}.cin-work-grid{grid-row:4!important}.cin-action-tip{grid-row:5!important}.cin-session-operator{grid-row:6!important}.cin-config-dashboard{grid-row:7!important}.cin-config-panel{grid-row:8!important}
+@media(max-width:1050px){.cin-active-device-top{
+ grid-template-columns:105px minmax(0,1fr) auto!important;
+ }
+}
+@media(max-width:700px){.cin-active-device-top{
+ height:auto!important;
+ min-height:46px!important;
+ grid-template-columns:1fr!important;
+ gap:5px!important;
+ }.cin-active-device-top .cin-note-active-btn,.cin-active-device-top .cin-active-tech-btn{
+ width:100%!important;
+ }
+}/* ===== v61 — CORREÇÕES DOCUMENTAIS / MATRIZ OPERACIONAL ===== */
+.cin-field-help{
+ display:block!important;
+ margin:4px 1px 0!important;
+ color:#8eabb3!important;
+ font-style:italic!important;
+ font-size:9px!important;
+ line-height:1.2!important;
+ white-space:nowrap!important;
+ overflow:hidden!important;
+ text-overflow:ellipsis!important;
+ letter-spacing:.05px!important;
+}.cin-v61-ema-note{color:#d4be7a!important}.cin-v61-warning{color:#ffd26b!important;border-color:#8e6920!important;background:rgba(84,60,12,.16)!important}body.fixed-workspace-active .rail{display:none!important}body.fixed-workspace-active .command{z-index:2100!important}body.fixed-workspace-active .main{z-index:1700}body.fixed-workspace-active .main.consultation-fixed-active{position:fixed!important;left:18px!important;right:18px!important;top:132px!important;bottom:12px!important;display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(320px,.8fr)!important;gap:12px!important;overflow:hidden!important;padding:0!important}body.fixed-workspace-active .main.consultation-fixed-active:before{content:none!important}body.fixed-workspace-active .main.consultation-fixed-active .panel{min-height:0!important}.module-overlay.cinemometro-fullpage:not(.show){display:none!important}.module-overlay.cinemometro-fullpage .module-window{position:absolute!important;inset:118px 0 0 0!important;width:100%!important;height:auto!important;max-width:none!important;max-height:none!important;border:0!important;border-radius:0!important;box-shadow:none!important}.module-overlay.cinemometro-fullpage .module-top{height:54px!important;flex-basis:54px!important;padding:0 20px!important}.module-overlay.cinemometro-fullpage .module-title{font-size:17px!important}.module-overlay.cinemometro-fullpage .module-close{width:auto!important;min-width:118px!important;height:34px!important;font-size:9px!important;padding:0 12px!important}.module-overlay.cinemometro-fullpage .module-body{padding:18px 22px 26px!important}.history-overlay{inset:118px 0 0 0!important;padding:0!important;background:#02090d!important;backdrop-filter:none!important;align-items:stretch!important;justify-content:stretch!important}.history-window{width:100%!important;max-width:none!important;max-height:none!important;height:100%!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:linear-gradient(180deg,#06131a,#02090d)!important}.history-top{height:54px!important;padding:0 20px!important}.history-close{width:auto!important;min-width:118px!important;height:34px!important;font-size:9px!important}.history-body{max-height:none!important;height:calc(100% - 54px)!important}
+@media(max-width:900px){body.fixed-workspace-active .main.consultation-fixed-active{left:10px!important;right:10px!important;grid-template-columns:1fr!important;overflow:auto!important;}body.fixed-workspace-active .main.consultation-fixed-active .panel{min-height:280px!important}}
