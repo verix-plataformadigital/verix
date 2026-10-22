@@ -9,6 +9,8 @@ const adminPwaEntry = fs.existsSync("dist/admin/index.html")
   ? fs.readFileSync("dist/admin/index.html", "utf8")
   : "";
 const app = fs.readFileSync("verix-app.html", "utf8");
+const telemetrySource = fs.readFileSync("telemetry/browser-runtime.ts", "utf8");
+const builtApp = fs.readFileSync("dist/verix-app.html", "utf8");
 const livePresence = fs.readFileSync("verix-presence-v1.mjs", "utf8");
 const livePresenceCleanupMigration = fs.readFileSync("supabase/migrations/20261019110000_realtime_presence_metric_cleanup.sql", "utf8");
 const livePresenceOperationalMetricsMigration = fs.readFileSync("supabase/migrations/20261019094000_realtime_presence_installation_metrics.sql", "utf8");
@@ -198,19 +200,23 @@ for (const metric of ["'pending'","'incomplete'","'contradictory'","'duplicate_f
 for (const label of ["Incompletas","Contraditórias","Finais duplicados","Consultas iniciadas","Instalações ativas","Legislação copiada"]) assert.ok(admin.includes(label), "missing Admin label "+label);
 
 assert.doesNotMatch(app, /\b(?:APP_VERSION|appVersion|app_version)\s*[:=]\s*["\']1\.4(?:\.\d+)?["\']/i, "production runtime must not advertise the obsolete app version");
-const telemetryStart = app.indexOf("function parseReceipt(text)");
-const telemetryEnd = app.indexOf("function rateLimited", telemetryStart);
+assert.ok(app.includes("<!-- VERIX_TELEMETRY_RUNTIME_INJECT -->"), "source HTML must have exactly one build-time telemetry marker");
+assert.doesNotMatch(app, /<script[^>]*id=["']verix-telemetry-v2["']/i, "source HTML must not duplicate the telemetry implementation");
+assert.match(telemetrySource, /var ENDPOINT = ['"]https:\/\/onilkakbgpklxvxuxmks\.supabase\.co\/functions\/v1\/telemetry-v2['"]/);
+assert.doesNotMatch(telemetrySource, /\/functions\/v1\/telemetry(?!-v2)/, "supported code must never call the obsolete endpoint");
+const telemetryStart = telemetrySource.indexOf("function parseReceipt(text)");
+const telemetryEnd = telemetrySource.indexOf("function rateLimited", telemetryStart);
 assert.ok(telemetryStart >= 0 && telemetryEnd > telemetryStart, "production telemetry client must expose its receipt pipeline");
-const clientTransport = app.slice(telemetryStart, telemetryEnd);
+const clientTransport = telemetrySource.slice(telemetryStart, telemetryEnd);
 assert.match(clientTransport, /return parseReceipt\(await response\.text\(\)\)/);
 assert.match(clientTransport, /queue = queue\.filter\(function \(item\)/);
 assert.match(clientTransport, /!acknowledged\[item\.eventId\]/);
 assert.match(clientTransport, /recordRejectedEvents\(batch, receipt\)/);
-const beaconStart = app.indexOf("function flushBeacon()", telemetryStart);
-const beaconEnd = app.indexOf("function rateLimited", beaconStart);
+const beaconStart = telemetrySource.indexOf("function flushBeacon()", telemetryStart);
+const beaconEnd = telemetrySource.indexOf("function rateLimited", beaconStart);
 assert.ok(beaconStart >= 0 && beaconEnd > beaconStart, "sendBeacon handler must exist");
-assert.doesNotMatch(app.slice(beaconStart, beaconEnd), /queue\.splice\(/, "sendBeacon must never dequeue without a server receipt");
-assert.ok(app.includes("VERIX_T2_REJECTED_QUEUE"), "permanent rejections must have bounded non-sensitive local diagnostics");
+assert.doesNotMatch(telemetrySource.slice(beaconStart, beaconEnd), /queue\.splice\(/, "sendBeacon must never dequeue without a server receipt");
+assert.ok(telemetrySource.includes("VERIX_T2_REJECTED_QUEUE"), "permanent rejections must have bounded non-sensitive local diagnostics");
 assert.match(app, /function cleanMetadata\(meta, event\)/, "client metadata sanitizer must know which event is being sent");
 assert.match(app, /function insurancePlateMetadata\(value, asfDiagnostic\)/, "insurance outcome wrappers must normalize the plate");
 assert.match(app, /push\('vehicle_insurance_no', 'consulta', meta\)/, "no-record event must include plate metadata");
@@ -222,10 +228,10 @@ assert.doesNotMatch(app, /event === 'vehicle_lookup'[\s\S]{0,80}flushNow\(\)/, "
 
 
 const scriptOpen = '<script id="verix-telemetry-v2">';
-const scriptStart = app.indexOf(scriptOpen);
-const scriptEnd = app.indexOf("</script>", scriptStart + scriptOpen.length);
-assert.ok(scriptStart >= 0 && scriptEnd > scriptStart, "production telemetry script must have clear boundaries");
-const telemetryScript = app.slice(scriptStart + scriptOpen.length, scriptEnd);
+const scriptStart = builtApp.indexOf(scriptOpen);
+const scriptEnd = builtApp.indexOf("</script>", scriptStart + scriptOpen.length);
+assert.ok(scriptStart >= 0 && scriptEnd > scriptStart, "secure build must inject TypeScript telemetry into the portable app");
+const telemetryScript = builtApp.slice(scriptStart + scriptOpen.length, scriptEnd);
 assert.doesNotThrow(() => new Function(telemetryScript), "production telemetry script must parse as JavaScript");
 assert.match(telemetryScript, /var HEARTBEAT_MS = 60000;/, "heartbeat cadence should reduce requests while remaining within the 90-second online lease");
 
@@ -365,14 +371,14 @@ assert.doesNotMatch(admin, /id="lastUpdated"|\$\('lastUpdated'\)/, "the old dupl
 assert.match(adminV3Migration, /count\(DISTINCT e\.query_id\)/, "the backend contract must deduplicate consultations by query ID");
 assert.ok(admin.includes("activeUsers"), "hourly chart must use the active-installation count");
 
-assert.ok(app.includes("function cinTelemetrySnapshot()"), "Cinemometer telemetry must construct a structured snapshot");
-assert.ok(app.includes("out.cin = {"), "client metadata sanitizer must retain the Cinemometer snapshot");
+assert.ok(telemetrySource.includes("function cinTelemetrySnapshot()"), "Cinemometer telemetry must construct a structured snapshot");
+assert.ok(telemetrySource.includes("out.cin = {"), "client metadata sanitizer must retain the Cinemometer snapshot");
 assert.match(app, /push\('cinemometer_speed_entry', 'cinemometro', \{ cin: snapshot \}\)/, "speed entries must include structured measurement metadata");
 assert.match(app, /push\('cinemometer_calculation', 'cinemometro', \{ cin: snapshot \}\)/, "calculations must include structured measurement metadata");
-const snapshotStart = app.indexOf("function cinTelemetrySnapshot()");
-const snapshotEnd = app.indexOf("\n  function insurancePlateMetadata", snapshotStart);
+const snapshotStart = telemetrySource.indexOf("function cinTelemetrySnapshot()");
+const snapshotEnd = telemetrySource.indexOf("\n  function insurancePlateMetadata", snapshotStart);
 assert.ok(snapshotStart >= 0 && snapshotEnd > snapshotStart, "Cinemometer snapshot helper must be delimited");
-const snapshot = app.slice(snapshotStart, snapshotEnd);
+const snapshot = telemetrySource.slice(snapshotStart, snapshotEnd);
 assert.doesNotMatch(snapshot, /cinSessaoOperadorNome|cinSessaoOperadorNo|cinSessaoOperadorPosto|cinMarca|cinModelo|cinSerie|cinLocalidade|cinDistrito|cinVia|cinSentido|cinKm/, "telemetry snapshot must not collect operator identifiers, apparatus serials, or exact locations");
 
 
