@@ -9,6 +9,10 @@ verify_jwt = false
 [functions.admin-auth-v2]
 verify_jwt = false
 
+# The function validates its own short-lived HMAC admin token.
+[functions.admin-telemetry-v3]
+verify_jwt = false
+
 [functions.verix-admin-pwa]
 verify_jwt = false
 
