@@ -160,14 +160,16 @@ Exemplos de ficheiros sem par identificado no ledger pelo mapeamento atual:
 1. **Publicação controlada da fonte modular:** abrir o PR #156 para aprovação final apenas depois da aceitação em Windows. O ficheiro de desenvolvimento `verix-app.html` é um apontador; o artefacto distribuível é o HTML gerado pelo build seguro em `dist/verix-app.html`.
 2. **Aceitação operacional no Windows:** testar resultados ASF com seguro, sem registo e erro de rede; duas consultas IMT (inspeção/livrete), histórico/retoma; painel Admin autenticado; telemetria e consulta de métricas. Comparar resultados do Admin com a RPC correspondente no Supabase. Este teste requer um PC real com o contexto de rede e permissões usados pela GNR.
 3. **Depois da publicação:** acompanhar por intervalo de tempo `OPTIONS 404` da rota antiga, `POST 2xx` na `telemetry-v2`, erros de ingestão e latência das RPCs; não misturar requests HTTP com consultas válidas nem sessões com pessoas.
-4. **Índices e funções SQL antigas:** mapear dependências Edge Function → RPC → função/tabela → componente Admin, e testar os planos de execução num ambiente de teste antes de qualquer remoção.
+4. **Índices e funções SQL antigas:** o mapa read-only Edge Function → RPC → tabela/trigger ficou documentado em [telemetry-supabase-dependency-map-2026-10-22.md](./telemetry-supabase-dependency-map-2026-10-22.md). Testar planos de execução e hardening de privilégios num ambiente de teste antes de qualquer remoção/alteração.
 5. **Migrações:** completar a comparação baseada em conteúdo e schema, depois documentar uma baseline para instalações novas.
 
 ## 9. O que foi verificado nesta proposta
 
-- Os workflows `VÉRIX Security Audit` e `Telemetry Integrity` passaram no commit `369abbdb3336d996ea200c34185a383efbe141d8`.
+- No commit candidato `6b616bb7ca63c3e51b60ebafd021016365556bc1`, passaram `VÉRIX Security Audit`, `Telemetry Integrity`, `ASF Retry Experiment Validation` e `VÉRIX Windows Source Validation`. O último workflow executou o build seguro em `windows-latest` e verificou o HTML gerado.
 - O verificador de fonte reconstrói o HTML e falha se encontrar uma referência exata ao endpoint antigo; o verificador ASF compara o bloco de motor protegido com a fixture de regressão.
 - Os advisors Supabase de segurança e desempenho não devolveram avisos na leitura efetuada; este resultado pontual não é garantia de ausência de problemas.
-- Nenhuma migração, alteração de schema, alteração de dados ou publicação de produção foi executada.
+- As três tarefas `pg_cron` observadas estão ativas e as últimas cinco execuções consultadas por tarefa não mostraram falhas. A atualização da cache Admin demorou cerca de 2,1–4,3 segundos nas amostras recentes.
+- As tabelas operacionais/legacy consultadas têm RLS ativo e políticas de negação para `anon`/`authenticated`. O inventário de dependências e o apontamento `PUBLIC EXECUTE` de duas funções auxiliares estão detalhados no mapa, sem mudanças de privilégios.
+- Nenhuma migração, alteração de schema, alteração de dados, alteração de permissões ou publicação de produção foi executada.
 
 **Estado honesto:** a estrutura da fonte e os gates automáticos estão preparados e a ingestão atual responde. Ainda não se pode declarar o VÉRIX integralmente concluído sem o teste funcional real em Windows e a reconciliação do histórico de migrações por conteúdo/schema.
