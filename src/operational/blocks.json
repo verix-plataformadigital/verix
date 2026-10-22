@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "purpose": "Ordered operational source blocks. Static HTML partials are serialized back into classic-script string literals at build time.",
+  "purpose": "Ordered operational source blocks. The largest classic script and stylesheet are split into semantic source parts that the build concatenates in exact order.",
   "sourceBaselineCommit": "9d6f9f08809cd953fae2545d2f743f04f9a8a1d5",
   "sourceBlobSha": "139f7f7dc04f2f6aacbd3e1abf75f5fd55046324",
   "expectedCounts": {
@@ -612,14 +612,18 @@
       "ordinal": 60,
       "kind": "style",
       "id": "verix-registration-labels-and-spacing",
-      "file": "styles/60-verix-registration-labels-and-spacing.css",
       "marker": "<!-- @verix:module:0060 -->",
       "openTag": "<style id=\"verix-registration-labels-and-spacing\">",
       "closeTag": "</style>",
-      "bytes": 103772
+      "bytes": 103772,
+      "parts": [
+        "styles/60-01-registration-and-header.css",
+        "styles/60-02-asf-result-presentation.css",
+        "styles/60-03-asf-green-negative-layout.css"
+      ]
     }
   ],
-  "physicalSourceFiles": 66,
+  "physicalSourceFiles": 68,
   "partials": [
     {
       "token": "__VERIX_PARTIAL_LEGISLATION_HTML__",
