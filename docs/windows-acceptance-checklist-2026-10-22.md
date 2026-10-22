@@ -15,7 +15,7 @@
 
 Descarregar o artefacto pela execução acima, extrair para uma pasta de teste e comparar o SHA-256 do HTML com `acceptance-sha256.txt`. **Não substituir a versão oficial nem copiar para uma pasta partilhada antes de completar os testes desta checklist.**
 
-**Importante — origem do teste ASF:** o gate servidor atualmente autoriza o URL HTTPS oficial do GitHub Pages (`https://verix-plataformadigital.github.io/verix/`) e o Workers publicado. O ficheiro `verix-app.html` aberto diretamente por `file://` pode ser bloqueado por origem não autorizada; isso não prova que a consulta ASF está avariada. Para testar a cópia candidata, use um ambiente de teste servido por origem aprovada ou a aplicação WebView2 que navega para o URL oficial. Não adicionar `Origin: null`, `localhost` ou outras origens ao gate de produção sem uma revisão explícita do modelo de segurança. Se a aceitação tiver de ser feita offline/local, registar esse bloqueio como dependência de configuração, não como aprovação ou falha do motor ASF.
+**Bloqueio atual da aceitação ASF em staging:** o gate servidor autoriza o URL HTTPS do GitHub Pages (`https://verix-plataformadigital.github.io`) e o Workers (`https://verix.vxops.workers.dev`). Abrir este HTML por `file://` pode ser bloqueado; navegar para o URL oficial testa a versão atualmente publicada, não este candidato. Neste momento **não existe uma URL staging aprovada a servir este artefacto**, pelo que o teste ponta a ponta do candidato com ASF live ainda não foi executado. O passo seguro é preparar uma rota temporária de staging no hostname HTTPS já permitido (sem alterar o redirecionamento nem substituir a aplicação oficial), testar e retirar essa rota depois. Não adicionar `Origin: null`, `localhost` ou origens de preview diretamente ao gate de produção: isso requer revisão explícita do modelo de segurança. Até existir staging aprovado, o HTML local serve para inspeção/validação estática, não para aceitar o caminho ASF real.
 
 
 - [ ] Guardar uma cópia de segurança da versão oficial atualmente utilizada.
@@ -86,4 +86,4 @@ Usar apenas consultas que sejam legítimas e autorizadas no contexto de teste.
 - [ ] Se o endpoint antigo continuar a receber preflight, identificar e substituir as cópias locais antigas. Não criar um alias de compatibilidade sem prova do contrato e do emissor.
 - [ ] Manter plano de rollback para o artefacto estável anterior.
 
-**Estado em 22/10/2026:** checklist preparada; aceitação num PC Windows real ainda não executada por esta auditoria.
+**Estado em 22/10/2026:** build e validação estática Windows concluídos; aceitação interativa em PC Windows real pendente. Falta disponibilizar o candidato num staging HTTPS permitido pelo gate sem substituir o site de produção, e só depois executar ASF/IMT/Admin.
