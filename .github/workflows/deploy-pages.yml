@@ -303,6 +303,17 @@ jobs:
             grep -Fqi "access-control-allow-origin: ${PAGES_ORIGIN}" /tmp/verix-admin-cors.txt
           done
 
+          # Admin telemetry v3 accepts GET and validates its own short-lived signed token.
+          curl --fail --silent --show-error --retry 5 --retry-delay 2 --retry-all-errors --connect-timeout 10 --max-time 20 -X OPTIONS \
+            -H "Origin: ${PAGES_ORIGIN}" \
+            -H "Access-Control-Request-Method: GET" \
+            -H "Access-Control-Request-Headers: authorization,content-type" \
+            -D /tmp/verix-admin-telemetry-cors.txt -o /dev/null \
+            "https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/admin-telemetry-v3?view=dashboard"
+          grep -Fqi "access-control-allow-origin: ${PAGES_ORIGIN}" /tmp/verix-admin-telemetry-cors.txt
+          grep -Eqi '^access-control-allow-methods:.*GET' /tmp/verix-admin-telemetry-cors.txt
+          grep -Eqi '^access-control-allow-headers:.*authorization' /tmp/verix-admin-telemetry-cors.txt
+
           curl --fail --silent --show-error --retry 12 --retry-delay 3 --retry-all-errors --connect-timeout 10 --max-time 30 \
             "${PAGES_BASE}admin_v2.html?ci=verix-admin-entry-v5" -o /tmp/verix-admin-entry.html
           grep -Fq 'VÉRIX — Administração' /tmp/verix-admin-entry.html
