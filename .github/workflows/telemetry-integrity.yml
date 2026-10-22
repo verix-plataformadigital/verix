@@ -24,13 +24,13 @@ on:
       - "supabase/migrations/**"
       - "admin_v2.html"
       - "tools/verify-telemetry-integrity.mjs"
+      - "tools/verify-asf-diagnostic-telemetry.mjs"
+      - "tests/fixtures/asf-engine-baseline.txt"
       - "verix-app.html"
       - "tools/verify-migration-filenames.mjs"
       - ".github/workflows/telemetry-integrity.yml"
 permissions:
-  contents: read      - "tools/verify-asf-diagnostic-telemetry.mjs"
-      - "tests/fixtures/asf-engine-baseline.txt"
-
+  contents: read
 jobs:
   verify:
     runs-on: ubuntu-latest
