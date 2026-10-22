@@ -49,6 +49,8 @@ jobs:
         run: deno check --no-lock supabase/functions/stats-v2/index.ts
       - name: Check realtime presence source syntax
         run: node --check verix-presence-v1.mjs
+      - name: Type-check browser telemetry TypeScript source
+        run: npx --yes -p typescript tsc --noEmit --strict --target ES2020 --lib DOM,DOM.Iterable,ES2020 --skipLibCheck telemetry/browser-runtime.ts
       - name: Build secure release and validate bundled presence
         run: |
           npm install --no-fund --no-audit
