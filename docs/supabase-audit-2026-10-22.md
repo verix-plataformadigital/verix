@@ -175,8 +175,9 @@ Foi comparada a versão publicada em `main` (22/10/2026) com a fonte integral us
 
 ## 9. O que foi verificado nesta proposta
 
-- No commit candidato `04b51c1079702e46e99b291a61229562ade1cb29`, passaram `VÉRIX Security Audit`, `Telemetry Integrity`, `ASF Retry Experiment Validation` e `VÉRIX Windows Source Validation`. O último workflow executou o build seguro em `windows-latest` e verificou o HTML gerado.
+- No candidato de código `98c8631995c8d0b59a830ab46b66e033fb1b1a89`, passaram `VÉRIX Security Audit`, `Telemetry Integrity`, `ASF Retry Experiment Validation` e `VÉRIX Windows Source Validation`. O último workflow executou o build seguro em `windows-latest` e verificou o HTML gerado.
 - O verificador de fonte reconstrói o HTML e falha se encontrar uma referência exata ao endpoint antigo; o verificador ASF compara o bloco de motor protegido com a fixture de regressão. A comparação direta da fonte da `main` com a fonte base modular confirmou que o bloco protegido de 13.718 caracteres é byte a byte idêntico.
+- O artefacto candidato para aceitação foi produzido pelo runner Windows e tem SHA-256 `2c1f59835f11c80b27813ca75c2001dd9dca6fd268058a90800605acb8604395`. O ZIP/identificador e os passos para descarregar e verificar estão na [checklist Windows](./windows-acceptance-checklist-2026-10-22.md). Este é um artefacto de teste, não uma publicação de produção.
 - Os advisors Supabase de segurança e desempenho não devolveram avisos na leitura efetuada; este resultado pontual não é garantia de ausência de problemas.
 - As três tarefas `pg_cron` observadas estão ativas e as últimas cinco execuções consultadas por tarefa não mostraram falhas. A atualização da cache Admin demorou cerca de 2,1–4,3 segundos nas amostras recentes.
 - As tabelas operacionais/legacy consultadas têm RLS ativo e políticas de negação para `anon`/`authenticated`. O inventário de dependências e o apontamento `PUBLIC EXECUTE` de duas funções auxiliares estão detalhados no mapa, sem mudanças de privilégios.
