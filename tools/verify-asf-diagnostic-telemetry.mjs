@@ -73,7 +73,6 @@ assert.match(experimentalHtml, /ASF_MAX_ATTEMPTS = 3;/);
 assert.match(experimentalHtml, /ASF_RETRY_DELAYS_MS = \[300, 900\];/);
 assert.ok(experimentalHtml.includes('function asfRespostaIndisponivelTransitoria'));
 assert.ok(experimentalHtml.includes('respostaGraphqlIndisponivel && !retryAfterASF'), 'Transient-only retry guard missing.');
-  'The retry loop appears to use an unexpected limit condition.');
 assert.ok(experimentalHtml.includes('retryAfterASF'), 'Retry-After safeguard missing.');
 assert.ok(experimentalHtml.includes('TESTE ASF · 1 consulta + até 2 repetições automáticas'),
   'Experimental build is not visibly labelled.');
