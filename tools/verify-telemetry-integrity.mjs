@@ -199,7 +199,7 @@ assert.equal((migration.match(/NOT EXISTS\(SELECT 1 FROM public\.verix2_events l
 for (const metric of ["'pending'","'incomplete'","'contradictory'","'duplicate_finals'","'orphan_finals'"]) assert.ok(migration.includes(metric), "missing SQL metric "+metric);
 for (const label of ["Incompletas","Contraditórias","Finais duplicados","Consultas iniciadas","Instalações ativas","Legislação copiada"]) assert.ok(admin.includes(label), "missing Admin label "+label);
 
-assert.doesNotMatch(app, /\b(?:APP_VERSION|appVersion|app_version)\s*[:=]\s*["\']1\.4(?:\.\d+)?["\']/i, "production runtime must not advertise the obsolete app version");
+assert.doesNotMatch(telemetrySource, /\b(?:APP_VERSION|appVersion|app_version)\s*[:=]\s*["\']1\.4(?:\.\d+)?["\']/i, "production runtime must not advertise the obsolete app version");
 assert.ok(app.includes("<!-- VERIX_TELEMETRY_RUNTIME_INJECT -->"), "source HTML must have exactly one build-time telemetry marker");
 assert.doesNotMatch(app, /<script[^>]*id=["']verix-telemetry-v2["']/i, "source HTML must not duplicate the telemetry implementation");
 assert.match(telemetrySource, /var ENDPOINT = ['"]https:\/\/onilkakbgpklxvxuxmks\.supabase\.co\/functions\/v1\/telemetry-v2['"]/);
@@ -217,14 +217,14 @@ const beaconEnd = telemetrySource.indexOf("function rateLimited", beaconStart);
 assert.ok(beaconStart >= 0 && beaconEnd > beaconStart, "sendBeacon handler must exist");
 assert.doesNotMatch(telemetrySource.slice(beaconStart, beaconEnd), /queue\.splice\(/, "sendBeacon must never dequeue without a server receipt");
 assert.ok(telemetrySource.includes("VERIX_T2_REJECTED_QUEUE"), "permanent rejections must have bounded non-sensitive local diagnostics");
-assert.match(app, /function cleanMetadata\(meta, event\)/, "client metadata sanitizer must know which event is being sent");
-assert.match(app, /function insurancePlateMetadata\(value, asfDiagnostic\)/, "insurance outcome wrappers must normalize the plate");
-assert.match(app, /push\('vehicle_insurance_no', 'consulta', meta\)/, "no-record event must include plate metadata");
-assert.match(app, /push\('vehicle_insurance_error', 'consulta', meta\)/, "ASF error event must include plate metadata");
-assert.match(app, /event === 'vehicle_insurance_no' \|\| event === 'vehicle_insurance_error'/, "plate metadata must be limited to no-record/error events");
-assert.match(app, /event === 'vehicle_insurance_no' \|\| event === 'vehicle_insurance_error'\) \{\s*flushNow\(\)/, "insurance outcome events must be flushed immediately");
-assert.match(app, /event === 'vehicle_lookup' \|\| queue\.length >= BATCH_SIZE\) \{\s*flush\(\)/, "lookup start events should use the shared 50ms debounce so pending events can join the batch");
-assert.doesNotMatch(app, /event === 'vehicle_lookup'[\s\S]{0,80}flushNow\(\)/, "lookup start must not launch a separate immediate telemetry request");
+assert.match(telemetrySource, /function cleanMetadata\(meta, event\)/, "client metadata sanitizer must know which event is being sent");
+assert.match(telemetrySource, /function insurancePlateMetadata\(value, asfDiagnostic\)/, "insurance outcome wrappers must normalize the plate");
+assert.match(telemetrySource, /push\('vehicle_insurance_no', 'consulta', meta\)/, "no-record event must include plate metadata");
+assert.match(telemetrySource, /push\('vehicle_insurance_error', 'consulta', meta\)/, "ASF error event must include plate metadata");
+assert.match(telemetrySource, /event === 'vehicle_insurance_no' \|\| event === 'vehicle_insurance_error'/, "plate metadata must be limited to no-record/error events");
+assert.match(telemetrySource, /event === 'vehicle_insurance_no' \|\| event === 'vehicle_insurance_error'\) \{\s*flushNow\(\)/, "insurance outcome events must be flushed immediately");
+assert.match(telemetrySource, /event === 'vehicle_lookup' \|\| queue\.length >= BATCH_SIZE\) \{\s*flush\(\)/, "lookup start events should use the shared 50ms debounce so pending events can join the batch");
+assert.doesNotMatch(telemetrySource, /event === 'vehicle_lookup'[\s\S]{0,80}flushNow\(\)/, "lookup start must not launch a separate immediate telemetry request");
 
 
 const scriptOpen = '<script id="verix-telemetry-v2">';
@@ -373,8 +373,8 @@ assert.ok(admin.includes("activeUsers"), "hourly chart must use the active-insta
 
 assert.ok(telemetrySource.includes("function cinTelemetrySnapshot()"), "Cinemometer telemetry must construct a structured snapshot");
 assert.ok(telemetrySource.includes("out.cin = {"), "client metadata sanitizer must retain the Cinemometer snapshot");
-assert.match(app, /push\('cinemometer_speed_entry', 'cinemometro', \{ cin: snapshot \}\)/, "speed entries must include structured measurement metadata");
-assert.match(app, /push\('cinemometer_calculation', 'cinemometro', \{ cin: snapshot \}\)/, "calculations must include structured measurement metadata");
+assert.match(telemetrySource, /push\('cinemometer_speed_entry', 'cinemometro', \{ cin: snapshot \}\)/, "speed entries must include structured measurement metadata");
+assert.match(telemetrySource, /push\('cinemometer_calculation', 'cinemometro', \{ cin: snapshot \}\)/, "calculations must include structured measurement metadata");
 const snapshotStart = telemetrySource.indexOf("function cinTelemetrySnapshot()");
 const snapshotEnd = telemetrySource.indexOf("\n  function insurancePlateMetadata", snapshotStart);
 assert.ok(snapshotStart >= 0 && snapshotEnd > snapshotStart, "Cinemometer snapshot helper must be delimited");
