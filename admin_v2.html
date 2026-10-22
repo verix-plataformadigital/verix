@@ -477,6 +477,16 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
       </div>
       <div class="refresh-time" id="livePresenceUpdated">A aguardar ligação de presença.</div>
       <div class="section-heading compact-heading">
+        <div><h2>Telemetria confirmada no servidor</h2><p>Eventos recebidos e verificados no Supabase; estes números são distintos da presença Realtime do navegador.</p></div>
+        <span class="status-pill loading" id="serverTelemetryStatus"><i class="status-dot" aria-hidden="true"></i><span>A ligar</span></span>
+      </div>
+      <div id="serverTelemetryCards" class="metric-grid live-presence-grid" aria-live="polite">
+        <article class="metric-card blue"><div class="metric-label">Sessões online no servidor</div><div class="metric-value" id="serverTelemetrySessions">—</div><div class="metric-note">Sessões com sinal recebido nos últimos 90 segundos; não são pessoas únicas.</div></article>
+        <article class="metric-card green"><div class="metric-label">Consultas iniciadas na última hora</div><div class="metric-value" id="serverTelemetryQueriesHour">—</div><div class="metric-note">Pedidos registados pelo servidor na última hora; podem diferir dos resultados finais.</div></article>
+        <article class="metric-card blue"><div class="metric-label">Instalações vistas na última hora</div><div class="metric-value" id="serverTelemetrySeenHour">—</div><div class="metric-note">Histórico recente; não significa que estejam online agora.</div></article>
+      </div>
+      <div class="refresh-time" id="serverTelemetryUpdated">A aguardar a primeira leitura da telemetria do servidor.</div>
+      <div class="section-heading compact-heading">
         <div><h2>Atividade recente</h2></div>
       </div>
       <div id="overviewLiveCards" class="metric-grid"></div>
@@ -727,6 +737,7 @@ let dashboardBusy=false,errorBusy=false,errorOffset=0,errorPageSize=50,errorLedg
 let dailyTrendData=null,dailyTrendLoadedAt=0,dailyTrendBusy=false;
 let caseRows=[],caseOffset=0,caseHasMore=false,caseBusy=false;
 let refreshTimer=null,noticeTimer=null,lastUpdated=null,lastErrorRefreshAt=0;
+let serverTelemetryBusy=false,serverTelemetryRun=0;
 function setStatus(mode,label){const el=$('backendStatus');el.className='status-pill '+mode;$('backendStatusText').textContent=label;}
 function showNotice(message,kind){const el=$('notice');el.textContent=message;el.className='notice '+(kind||'');el.hidden=!message;if(noticeTimer)clearTimeout(noticeTimer);if(message)noticeTimer=setTimeout(()=>{el.hidden=true;},9000);}
 function clearNotice(){const el=$('notice');el.hidden=true;el.textContent='';el.className='notice';}
@@ -760,6 +771,7 @@ async function login(password){
   finally{clearTimeout(tm);}
 }
 function logout(){
+  serverTelemetryRun++;serverTelemetryBusy=false;setServerTelemetryStatus('loading','Inicia sessão');clearServerTelemetry('Inicia sessão para consultar a telemetria do servidor.');
   token='';sessionStorage.removeItem(TOKEN_KEY);if(refreshTimer)clearInterval(refreshTimer);refreshTimer=null;
   dashboardData=null;caseRows=[];dailyTrendData=null;dailyTrendLoadedAt=0;errorLedger={items:[],totalEvents:0,uniqueConsultations:0,installations:0,excludedUserInputEvents:0,excludedUserInputConsultations:0,hasMore:false};
   $('app').hidden=true;$('loginScreen').hidden=false;$('password').value='';$('loginError').textContent='';setStatus('','Sessão encerrada');
@@ -826,6 +838,61 @@ function renderLivePresence(snapshot){
     }else{
       updated.textContent='A estabelecer ligação ao serviço de presença em tempo real…';
     }
+  }
+}
+
+
+function setServerTelemetryStatus(mode,label){
+  const pill=$('serverTelemetryStatus');
+  if(!pill)return;
+  pill.className='status-pill '+mode;
+  const labelNode=pill.querySelector('span:last-child');
+  if(labelNode)labelNode.textContent=label;
+}
+function setServerTelemetryCount(id,value){
+  const node=$(id);
+  if(node)node.textContent=value===null?'—':new Intl.NumberFormat('pt-PT').format(value);
+}
+function clearServerTelemetry(message){
+  setServerTelemetryCount('serverTelemetrySessions',null);
+  setServerTelemetryCount('serverTelemetryQueriesHour',null);
+  setServerTelemetryCount('serverTelemetrySeenHour',null);
+  const updated=$('serverTelemetryUpdated');
+  if(updated)updated.textContent=message||'Sem leitura confirmada no servidor; não são reutilizados números antigos.';
+}
+async function loadServerTelemetry(){
+  if(!token||serverTelemetryBusy)return;
+  serverTelemetryBusy=true;
+  const run=++serverTelemetryRun;
+  const requestToken=token;
+  try{
+    const result=await request(API_ORIGIN+'admin-telemetry-v3?view=dashboard&v='+encodeURIComponent(RELEASE));
+    if(run!==serverTelemetryRun||requestToken!==token)return;
+    const p=result&&result.presence;
+    if(!result||result.ok!==true||!p||typeof p!=='object')throw new Error('Resposta de telemetria inválida.');
+    const count=value=>{
+      if(value===null||value===undefined||value===''||!Number.isSafeInteger(Number(value))||Number(value)<0)return null;
+      return Number(value);
+    };
+    const sessions=count(p.online_sessions);
+    const consultations=count(p.consultations_started_last_hour);
+    const seenHour=count(p.installations_seen_last_hour);
+    if(sessions===null||consultations===null||seenHour===null)throw new Error('A resposta não contém todas as métricas de presença.');
+    setServerTelemetryCount('serverTelemetrySessions',sessions);
+    setServerTelemetryCount('serverTelemetryQueriesHour',consultations);
+    setServerTelemetryCount('serverTelemetrySeenHour',seenHour);
+    setServerTelemetryStatus('online','API confirmada');
+    const updated=$('serverTelemetryUpdated');
+    if(updated){
+      const observed=prettyDate(p.observed_at||result.generated_at);
+      updated.textContent='Leitura do servidor: '+observed+' · janela de presença: '+fmt(count(p.presence_lease_seconds)??90)+' s. Sessões, instalações e pessoas não são métricas equivalentes.';
+    }
+  }catch(error){
+    if(run!==serverTelemetryRun||requestToken!==token)return;
+    setServerTelemetryStatus('offline','API indisponível');
+    clearServerTelemetry('Sem leitura confirmada do servidor. A presença Realtime é apresentada separadamente e não é substituída por valores antigos.');
+  }finally{
+    if(run===serverTelemetryRun)serverTelemetryBusy=false;
   }
 }
 
@@ -1361,16 +1428,16 @@ function renderErrorLedger(){
   });
   if(query)$('errorPageInfo').textContent+=' Filtro aplicado à página carregada: '+fmt(filtered.length)+' correspondências.';
 }
-async function scheduleRefresh(){if(!token)return;await loadDashboard(false);}
+async function scheduleRefresh(){if(!token)return;await Promise.allSettled([loadDashboard(false),loadServerTelemetry()]);}
 $('loginForm').addEventListener('submit',async function(e){
   e.preventDefault();$('loginError').textContent='';$('loginButton').disabled=true;
-  try{await login($('password').value);$('password').value='';$('loginScreen').hidden=true;$('app').hidden=false;setStatus('loading','A carregar');await loadDashboard(false);if(refreshTimer)clearInterval(refreshTimer);refreshTimer=setInterval(()=>{if(!document.hidden) scheduleRefresh();},REFRESH_MS);}
+  try{await login($('password').value);$('password').value='';$('loginScreen').hidden=true;$('app').hidden=false;setStatus('loading','A carregar');await Promise.all([loadDashboard(false),loadServerTelemetry()]);if(refreshTimer)clearInterval(refreshTimer);refreshTimer=setInterval(()=>{if(!document.hidden) scheduleRefresh();},REFRESH_MS);}
   catch(e){$('loginError').textContent=e.message||'Falha de autenticação.';}
   finally{$('loginButton').disabled=false;}
 });
 document.querySelectorAll('.nav-button').forEach(b=>b.addEventListener('click',()=>activePage(b.dataset.page)));
 document.querySelectorAll('.period-button').forEach(b=>b.addEventListener('click',()=>setPeriod(b.dataset.period)));
-$('refreshBtn').addEventListener('click',()=>loadDashboard(true));
+$('refreshBtn').addEventListener('click',()=>{loadDashboard(true);loadServerTelemetry();});
 $('logoutBtn').addEventListener('click',logout);
 $('insuranceCasesDisclosure').addEventListener('toggle',function(){if(this.open&&currentPage==='insurance')loadInsuranceCases(0,false);});
 $('insuranceCasesSearch').addEventListener('input',renderInsuranceNoCases);
@@ -1378,9 +1445,9 @@ $('insuranceCasesMore').addEventListener('click',()=>loadInsuranceCases(caseOffs
 $('errorSearch').addEventListener('input',renderErrorLedger);
 $('errorPrev').addEventListener('click',()=>{errorOffset=Math.max(0,errorOffset-errorPageSize);loadErrors();});
 $('errorNext').addEventListener('click',()=>{errorOffset+=errorPageSize;loadErrors();});
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&token)loadDashboard(false);});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&token)scheduleRefresh();});
 if(window.VERIX_LIVE_PRESENCE&&typeof window.VERIX_LIVE_PRESENCE.subscribe==='function')window.VERIX_LIVE_PRESENCE.subscribe(renderLivePresence);else window.addEventListener('verix-live-presence',function(e){renderLivePresence(e.detail);});
-if(token){$('loginScreen').hidden=true;$('app').hidden=false;loadDashboard(false);refreshTimer=setInterval(()=>{if(!document.hidden)scheduleRefresh();},REFRESH_MS);}
+if(token){$('loginScreen').hidden=true;$('app').hidden=false;loadDashboard(false);loadServerTelemetry();refreshTimer=setInterval(()=>{if(!document.hidden)scheduleRefresh();},REFRESH_MS);}
 })();
 </script>
 </body>
