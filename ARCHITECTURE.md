@@ -3,7 +3,7 @@
 ## Princípios
 1. Publicar apenas o artefacto em dist; nunca editar dist manualmente.
 2. O motor ASF fica congelado por defeito; o teste byte a byte com a fixture é obrigatório.
-3. A fonte é modular, mas o build monta um único HTML para manter a distribuição portátil.
+3. HTML estático de legislação fica em partials e é serializado para a mesma string durante a montagem. A fonte é modular, mas o build monta um único HTML para manter a distribuição portátil.
 4. A ordem dos scripts clássicos é semântica: partilham estado e funções globais. Não os ordenar nem converter em ES modules sem testes.
 5. O cliente emite eventos; telemetry-v2 ingere; verix2_* é o modelo corrente; stats-v2 e admin-telemetry-v3 têm responsabilidades separadas.
 6. CORS não autentica; segredos nunca entram no cliente.

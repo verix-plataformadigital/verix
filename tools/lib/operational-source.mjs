@@ -20,6 +20,19 @@ export function readOperationalSource(root=process.cwd()){
   const body=paths.map(file=>fs.readFileSync(path.join(dir,file),"utf8")).join("");
   html=html.replace(b.marker,b.openTag+body+b.closeTag);
  }
+
+ const partials=Array.isArray(manifest.partials)?manifest.partials:[];
+ const partialPaths=new Set();
+ for(const partial of partials){
+  if(!partial.token||!partial.file||partialPaths.has(partial.file))throw new Error("Invalid or duplicate HTML partial.");
+  partialPaths.add(partial.file);
+  const marker=JSON.stringify(partial.token);
+  const count=html.split(marker).length-1;
+  if(count!==1)throw new Error("Expected exactly one HTML partial marker: "+partial.token);
+  const content=fs.readFileSync(path.join(dir,partial.file),"utf8");
+  const replacement=partial.encoding==="json-string"?JSON.stringify(content):content;
+  html=html.replace(marker,replacement);
+ }
  if(/<!-- @verix:module:\d{4} -->/.test(html))throw new Error("Unresolved module marker.");
  return html;
 }

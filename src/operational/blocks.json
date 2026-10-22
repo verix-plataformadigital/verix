@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "purpose": "Ordered operational source blocks. Some historically coupled classic scripts are split into semantic source parts and concatenated back into the exact original script at build time.",
+  "purpose": "Ordered operational source blocks. Static HTML partials are serialized back into classic-script string literals at build time.",
   "sourceBaselineCommit": "9d6f9f08809cd953fae2545d2f743f04f9a8a1d5",
   "sourceBlobSha": "139f7f7dc04f2f6aacbd3e1abf75f5fd55046324",
   "expectedCounts": {
@@ -619,5 +619,12 @@
       "bytes": 103772
     }
   ],
-  "physicalSourceFiles": 66
+  "physicalSourceFiles": 66,
+  "partials": [
+    {
+      "token": "__VERIX_PARTIAL_LEGISLATION_HTML__",
+      "file": "partials/legislacao.html",
+      "encoding": "json-string"
+    }
+  ]
 }

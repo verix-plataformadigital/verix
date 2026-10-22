@@ -9,6 +9,7 @@ const inline=scripts.filter(m=>!/\bsrc\s*=\s*["']/i.test(m[1]||""));
 assert.equal(blocks.length,manifest.expectedCounts.total);
 assert.equal(styles.length,manifest.expectedCounts.styles);
 assert.equal(inline.length,manifest.expectedCounts.inlineScripts);
+for(const p of manifest.partials||[])assert.ok(fs.existsSync(path.join(root,"src","operational",p.file)),"Missing HTML partial: "+p.file);
 for(const b of blocks){
  const paths=Array.isArray(b.parts)&&b.parts.length?b.parts:[b.file];
  for(const file of paths)assert.ok(fs.existsSync(path.join(root,"src","operational",file)),"Missing module: "+file);
