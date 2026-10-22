@@ -37,7 +37,12 @@ assert.equal(
 );
 
 assert.ok(experiment.includes("function asfRespostaIndisponivelTransitoria"), "Transient ASF predicate is missing.");
-assert.ok(experiment.includes("respostaGraphqlIndisponivel && !retryAfterASF"), "Transient-only retry guard is missing.");
+assert.ok(experiment.includes("message.indexOf('indispon') >= 0"), "Portuguese availability-message matching is missing.");
+assert.ok(experiment.includes("message.indexOf('unavailable') >= 0"), "English availability-message matching is missing.");
+assert.ok(!experiment.includes("if (json.data !== undefined && json.data !== null) return false;"),
+  "Retry detector must handle partial-data GraphQL errors that still report unavailability.");
+assert.ok(experiment.includes("respostaGraphqlIndisponivel;"), "Availability retry is not enabled.");
+assert.ok(experiment.includes("Math.min(10000, retryAfterMs)"), "Retry-After safety cap is missing.");
 assert.ok(experiment.includes("TESTE ASF · 1 consulta + até 2 repetições automáticas"), "Experimental warning badge is missing.");
 assert.ok(built.includes("TESTE ASF · 1 consulta + até 2 repetições automáticas"), "Built experiment label is missing.");
 
