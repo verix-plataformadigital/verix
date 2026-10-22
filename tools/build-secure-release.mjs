@@ -173,6 +173,19 @@ function writeSecureFile(relativeSource, relativeOutput) {
     );
   }
 
+  // The source HTML contains no telemetry implementation. The portable production
+  // artefact receives the TypeScript bundle at this single, validated marker.
+  if (relativeSource === "verix-app.html") {
+    const marker = "<!-- VERIX_TELEMETRY_RUNTIME_INJECT -->";
+    if (source.split(marker).length !== 2) {
+      throw new Error("Operational HTML must contain exactly one telemetry injection marker");
+    }
+    source = source.replace(
+      marker,
+      '<script id="verix-telemetry-v2">\\n' + telemetryRuntimeSource + "\\n</script>"
+    );
+  }
+
   source = addAiAccessNotice(source);
   const { html, scriptCount } = obfuscateHtml(source, relativeSource);
   const outPath = path.join(OUTPUT_DIR, relativeOutput);
@@ -190,6 +203,28 @@ function writeSecureFile(relativeSource, relativeOutput) {
     size_bytes: Buffer.byteLength(html, "utf8"),
     size_growth_ratio: Number((Buffer.byteLength(html, "utf8") / Math.max(1, source_size_bytes)).toFixed(3))
   };
+}
+
+// Compile the only browser-telemetry source, then inject it into the self-contained release.
+const telemetryEntry = path.join(ROOT, "telemetry", "browser-runtime.ts");
+if (!fs.existsSync(telemetryEntry)) throw new Error("Required TypeScript telemetry source missing: telemetry/browser-runtime.ts");
+const telemetryBuild = await esbuildBuild({
+  entryPoints: [telemetryEntry],
+  bundle: true,
+  write: false,
+  minify: false,
+  sourcemap: false,
+  legalComments: "none",
+  platform: "browser",
+  format: "iife",
+  target: ["es2020"]
+});
+if (!telemetryBuild.outputFiles.length || !telemetryBuild.outputFiles[0].text.trim()) {
+  throw new Error("TypeScript telemetry bundle is empty");
+}
+const telemetryRuntimeSource = telemetryBuild.outputFiles[0].text.trim();
+if (!/telemetry-v2/.test(telemetryRuntimeSource) || !/heartbeat/.test(telemetryRuntimeSource)) {
+  throw new Error("TypeScript telemetry bundle is missing required runtime markers");
 }
 
 // ── Build ───────────────────────────────────────────────────────────────────
