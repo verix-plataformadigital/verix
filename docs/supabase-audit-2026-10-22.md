@@ -97,34 +97,64 @@ Na consulta de funções com execução concedida a `anon` ou `authenticated`, a
 
 A primeira parece uma validação simples de formato, mas deve manter-se acessível a clientes só se isso for intencional. A segunda é uma função trigger; o privilégio EXECUTE não prova que seja utilizável como RPC convencional. Rever ACLs e exposição PostgREST antes de revogar permissões.
 
-## 6. Endpoint legado da telemetria continua a falhar
+## 6. Endpoint legado: pedidos OPTIONS 404 e caminho ativo a funcionar
 
-A leitura dos últimos 15 minutos devolveu:
-- `/functions/v1/telemetry`: 470 respostas HTTP 404; último registo observado às 11:04:01 UTC.
-- `/functions/v1/telemetry-v2`: 119 respostas HTTP 200; último registo observado às 11:04:45 UTC.
+Foi feita uma segunda leitura dos logs no intervalo **22/10/2026, 00:00–12:00 UTC**, mais abrangente do que a amostra inicial de 15 minutos:
 
-Isto confirma que clientes continuam a chamar a rota antiga enquanto a atual responde. Não criar um alias sem identificar o cliente, payload e contrato antigo: isso pode escrever no modelo de dados errado ou duplicar contagens. A correção segura é localizar a origem/build das chamadas e migrar esses clientes para `telemetry-v2`.
+| Rota / método | Respostas observadas | Primeira ocorrência | Última ocorrência |
+|---|---:|---|---|
+| `/functions/v1/telemetry` — `OPTIONS` | 27.909 HTTP 404 | 06:25:38 UTC | 11:29:04 UTC |
+| `/functions/v1/telemetry-v2` — `POST` | 11.054 HTTP 200 | 00:00:04 UTC | 11:24:41 UTC |
+| `/functions/v1/telemetry-v2` — `OPTIONS` | 1 HTTP 204 no conjunto consultado | 08:59:56 UTC | 08:59:56 UTC |
 
-## 7. Divergência do histórico de migrações
+**Interpretação:** a rota sem versão está a receber preflight `OPTIONS`, não se observou `POST` enviado para esse caminho na consulta exata; os envios efetivos observados estão a entrar em `telemetry-v2` com HTTP 200. Os pedidos antigos não devem ser tratados como 27.909 erros de gravação nem como 27.909 utilizadores: são pedidos HTTP, em grande maioria preflight, e não consultas operacionais confirmadas.
 
-- Migrações registadas como aplicadas no Supabase: 121.
-- Ficheiros SQL em `supabase/migrations/` no ramo auditado: 67.
+Os registos apresentam agentes de utilizador de Chrome/Edge no Windows, sem cabeçalho `Origin`, e associam o tráfego a uma rede de saída da Secretaria-Geral do MAI. Isto é **compatível com HTML local (`file://`) ou outra origem opaca**, mas não prova qual o ficheiro/build que o emite. A fonte operacional montada nesta proposta aponta para `telemetry-v2`; a validação da fonte reconstruída rejeita referências exatas à rota antiga.
 
-A pasta SQL não reproduz integralmente o histórico registado em produção. Isto não prova corrupção do esquema atual, mas impede uma reconstrução fiável sem reconciliação. Não corrigir por renomeação automática, reset do ledger ou reaplicação em lote.
+**Decisão de segurança:** não foi criado um alias para `/telemetry`. Sem o contrato e o emissor antigo confirmados, um alias poderia ressuscitar um segundo emissor, causar duplicados ou introduzir eventos no modelo errado. Para o link oficial, a correção é publicar o build gerado a partir da fonte modular validada; cópias HTML guardadas localmente precisam de ser substituídas manualmente. Depois de publicar, voltar a medir a taxa de `OPTIONS 404` e confirmar que os pedidos ao endpoint versionado continuam a ter respostas 2xx.
 
-Plano recomendado:
-1. Capturar um snapshot verificado: funções e argumentos, tabelas, constraints, índices, triggers, grants, RLS e jobs.
-2. Comparar com migrações e commits históricos disponíveis.
-3. Classificar diferenças: recuperada, renomeada, substituída, revertida ou desconhecida.
-4. Validar em branch/ambiente descartável.
-5. Criar uma baseline documentada para instalações novas, sem reescrever o histórico de produção.
+## 7. Divergência do histórico de migrações — reconciliação inicial
 
-## 8. Prioridades
+O inventário foi comparado por versão de 14 dígitos e por nome normalizado, removendo prefixos de data e sufixos de data conhecidos. Resultado deste mapeamento conservador:
 
-1. Identificar e eliminar a origem dos 404 do endpoint legado.
-2. Medir latência e volume de RPCs administrativos; separar indicadores ao vivo de análise histórica.
-3. Avaliar índices com estatísticas estáveis e planos reais antes de os consolidar.
-4. Mapear consumidores das funções `legacy` e `_v13` antes de as descontinuar.
-5. Reconciliar as migrações antes de qualquer limpeza estrutural.
+| Indicador | Quantidade |
+|---|---:|
+| Migrações registadas como aplicadas no Supabase | 121 |
+| Ficheiros SQL no ramo auditado | 67 |
+| Correspondências por versão/nome normalizado | 61 |
+| Registos de produção sem par identificado no snapshot de nomes/versões | 60 |
+| Ficheiros atuais sem par identificado no histórico consultado | 6 |
 
-**Deliberadamente não feito:** nenhuma tabela, função, política, índice, migração, cache ou dado foi alterado pela auditoria.
+Os valores de correspondência são **uma triagem automatizada, não um veredicto sobre scripts em falta**. Há ficheiros com carimbo temporal alterado, nomes encurtados ou migrações potencialmente renomeadas/revertidas. Portanto, os 60 registos sem par identificado podem incluir históricos renomeados ou substituídos; os 6 ficheiros sem par também não devem ser aplicados apenas por estarem no repositório. Esta diferença impede tratar a pasta atual como reprodução fiel da sequência aplicada em produção.
+
+Exemplos de ficheiros sem par identificado no ledger pelo mapeamento atual:
+- `20261008_harden_telemetry_presence.sql`
+- `20261010222630_consulted_installations_last_3m.sql`
+- `20261011080000_admin_refresh_performance.sql`
+- `20261012182000_admin_auxiliary_fast.sql`
+- `20261012190000_admin_performance_fastpaths.sql`
+- `20261012194100_admin_dashboard_shared_cache.sql`
+
+**Plano seguro para concluir a reconciliação:**
+1. Exportar um snapshot do esquema real: tabelas/colunas, constraints, índices, triggers, funções e assinaturas, privilégios, RLS, extensões e cron jobs.
+2. Recolher os ficheiros SQL e diffs dos commits antigos disponíveis no GitHub; comparar o conteúdo das migrações relacionadas, não apenas os nomes.
+3. Classificar cada caso como correspondência exata, versão alterada, renomeação, substituição/reversão, ou desconhecido, mantendo a evidência e o SHA.
+4. Restaurar ficheiros históricos recuperáveis numa branch separada sem os aplicar; fazer comparação de esquema numa base de teste descartável.
+5. Só depois preparar uma baseline documentada para instalações novas. Não renomear migrações aplicadas, não apagar/resetar o ledger e não reaplicar em lote em produção.
+
+## 8. Prioridades e critérios de fecho
+
+1. **Publicação controlada da fonte modular:** abrir o PR #156 para aprovação final apenas depois da aceitação em Windows. O ficheiro de desenvolvimento `verix-app.html` é um apontador; o artefacto distribuível é o HTML gerado pelo build seguro em `dist/verix-app.html`.
+2. **Aceitação operacional no Windows:** testar resultados ASF com seguro, sem registo e erro de rede; duas consultas IMT (inspeção/livrete), histórico/retoma; painel Admin autenticado; telemetria e consulta de métricas. Comparar resultados do Admin com a RPC correspondente no Supabase. Este teste requer um PC real com o contexto de rede e permissões usados pela GNR.
+3. **Depois da publicação:** acompanhar por intervalo de tempo `OPTIONS 404` da rota antiga, `POST 2xx` na `telemetry-v2`, erros de ingestão e latência das RPCs; não misturar requests HTTP com consultas válidas nem sessões com pessoas.
+4. **Índices e funções SQL antigas:** mapear dependências Edge Function → RPC → função/tabela → componente Admin, e testar os planos de execução num ambiente de teste antes de qualquer remoção.
+5. **Migrações:** completar a comparação baseada em conteúdo e schema, depois documentar uma baseline para instalações novas.
+
+## 9. O que foi verificado nesta proposta
+
+- Os workflows `VÉRIX Security Audit` e `Telemetry Integrity` passaram no commit `369abbdb3336d996ea200c34185a383efbe141d8`.
+- O verificador de fonte reconstrói o HTML e falha se encontrar uma referência exata ao endpoint antigo; o verificador ASF compara o bloco de motor protegido com a fixture de regressão.
+- Os advisors Supabase de segurança e desempenho não devolveram avisos na leitura efetuada; este resultado pontual não é garantia de ausência de problemas.
+- Nenhuma migração, alteração de schema, alteração de dados ou publicação de produção foi executada.
+
+**Estado honesto:** a estrutura da fonte e os gates automáticos estão preparados e a ingestão atual responde. Ainda não se pode declarar o VÉRIX integralmente concluído sem o teste funcional real em Windows e a reconciliação do histórico de migrações por conteúdo/schema.
