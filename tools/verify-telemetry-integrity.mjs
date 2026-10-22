@@ -10,6 +10,7 @@ const adminPwaEntry = fs.existsSync("dist/admin/index.html")
   : "";
 const app = fs.readFileSync("verix-app.html", "utf8");
 const livePresence = fs.readFileSync("verix-presence-v1.mjs", "utf8");
+const secureBuild = fs.readFileSync("tools/build-secure-release.mjs", "utf8");
 const livePresenceCleanupMigration = fs.readFileSync("supabase/migrations/20261019110000_realtime_presence_metric_cleanup.sql", "utf8");
 const livePresenceOperationalMetricsMigration = fs.readFileSync("supabase/migrations/20261019094000_realtime_presence_installation_metrics.sql", "utf8");
 const stats = fs.readFileSync("supabase/functions/stats-v2/index.ts", "utf8");
@@ -98,15 +99,12 @@ assert.match(livePresence, /presenceState\(\)/, "Admin counts must come from cur
 assert.match(livePresence, /ACTIVE_WINDOW_MS = 120000/, "active now must require recent activity");
 assert.match(livePresence, /trackedChannel\.track\(currentPayload\(\)\)/, "app must publish live presence using the channel that initiated the call");
 assert.match(livePresence, /TRACK_MIN_INTERVAL_MS = 30000/, "presence updates must be throttled to avoid high-frequency channel sync");
-assert.match(livePresence, /URGENT_TRACK_MIN_INTERVAL_MS = 2500/, "meaningful clicks can refresh activity presence without removing background throttling");
-assert.match(livePresence, /now - lastTrackAt < 1200 && pendingTrackTimer === null/, "a pending throttled heartbeat must not suppress an urgent search click");
-assert.match(livePresence, /event\.type === 'click' \|\| event\.type === 'submit'/, "clicks and submits must trigger an urgent live-presence refresh");
-assert.match(livePresence, /track\(true\)/, "urgent activity must bypass only the background track cooldown");
+assert.match(livePresence, /TRACK_MIN_INTERVAL_MS = 30000/, "all presence updates must retain the 30-second minimum");
+assert.match(livePresence, /if \(lastTrackAt && elapsed < TRACK_MIN_INTERVAL_MS\)/, "every presence update must pass through the common throttle");
+assert.match(livePresence, /pendingTrackTimer === null/, "bursts of activity must be coalesced into one delayed presence update");
+assert.doesNotMatch(livePresence, /URGENT_TRACK_MIN_INTERVAL_MS|lastUrgentTrackAt|track\s*\(\s*true\s*\)|forceNow/, "clicks and submits must not bypass the common presence throttle");
 assert.match(livePresence, /function scheduleReconnect\(delayMs\)/, "presence must attempt to recover a broken Realtime connection with bounded cooldowns");
-assert.match(livePresence, /pendingTrackTimer/, "activity bursts must be coalesced into one delayed presence update");
 assert.equal((livePresence.match(/trackedChannel !== channel/g) || []).length, 2, "late track callbacks must not affect a replacement presence channel");
-assert.match(livePresence, /if \(!forceNow && lastTrackAt && elapsed < TRACK_MIN_INTERVAL_MS\)/, "ordinary background presence updates must retain the 30-second throttle");
-assert.match(livePresence, /if \(forceNow && pendingTrackTimer !== null\)/, "urgent presence updates must cancel a queued throttled update before sending");
 assert.match(livePresence, /scheduleReconnect\(32000\)/, "track failures must wait beyond the 30-second rate-limit window before reconnecting");
 assert.match(livePresence, /window\.addEventListener\('pageshow'/, "presence must rejoin after browser back-forward cache restores a page");
 assert.match(admin, /Instalações com consulta · última hora/, "Admin must retain the distinct installations that consulted vehicles during the last hour");
@@ -227,6 +225,10 @@ const scriptEnd = app.indexOf("</script>", scriptStart + scriptOpen.length);
 assert.ok(scriptStart >= 0 && scriptEnd > scriptStart, "production telemetry script must have clear boundaries");
 const telemetryScript = app.slice(scriptStart + scriptOpen.length, scriptEnd);
 assert.doesNotThrow(() => new Function(telemetryScript), "production telemetry script must parse as JavaScript");
+assert.match(telemetryScript, /var ENDPOINT = ['"]https:\/\/onilkakbgpklxvxuxmks\.supabase\.co\/functions\/v1\/telemetry-v2['"];/, "production telemetry must target the active telemetry-v2 endpoint");
+assert.doesNotMatch(telemetryScript, /\/functions\/v1\/telemetry(?:['"\/?#])/, "production telemetry must not call the retired telemetry endpoint");
+assert.match(secureBuild, /Critical telemetry endpoint must target telemetry-v2/, "secure build must validate the exact current telemetry endpoint");
+assert.match(secureBuild, /Legacy telemetry endpoint detected in current release source/, "secure build must reject reintroduction of the legacy endpoint");
 assert.match(telemetryScript, /var HEARTBEAT_MS = 60000;/, "heartbeat cadence should reduce requests while remaining within the 90-second online lease");
 
 const parserMatch = clientTransport.match(/function parseReceipt\(text\) \{[\s\S]*?\n  \}/);
