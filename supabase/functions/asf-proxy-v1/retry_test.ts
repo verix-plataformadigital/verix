@@ -1,7 +1,7 @@
 import {
   assertEquals,
+  assert,
   assertFalse,
-  assertTrue,
 } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import {
   ASF_TRANSIENT_RETRY_DELAY_MS,
@@ -17,8 +17,8 @@ const success = JSON.stringify({
 });
 
 Deno.test("recognizes only the observed HTTP-200 GraphQL availability failure", () => {
-  assertTrue(isTransientGraphqlUnavailable(200, unavailable));
-  assertTrue(isTransientGraphqlUnavailable(200, JSON.stringify({
+  assert(isTransientGraphqlUnavailable(200, unavailable));
+  assert(isTransientGraphqlUnavailable(200, JSON.stringify({
     errors: [{ message: "Service temporarily unavailable" }],
   })));
   assertFalse(isTransientGraphqlUnavailable(200, JSON.stringify({
@@ -55,7 +55,7 @@ Deno.test("retries once and returns the successful second response", async () =>
   assertEquals(result.status, 200);
   assertEquals(result.body, success);
   assertEquals(result.attempts, 2);
-  assertTrue(result.retriedTransientAvailability);
+  assert(result.retriedTransientAvailability);
 });
 
 Deno.test("does not retry a second transient failure more than once", async () => {
@@ -76,11 +76,11 @@ Deno.test("does not retry a second transient failure more than once", async () =
   assertEquals(calls, 2);
   assertEquals(result.body, unavailable);
   assertEquals(result.attempts, 2);
-  assertTrue(result.retriedTransientAvailability);
+  assert(result.retriedTransientAvailability);
 });
 
 Deno.test("does not retry generic GraphQL errors, HTTP 429, or Retry-After responses", async () => {
-  const cases = [
+  const cases: Array<{ status: number; body: string; headers: Record<string, string> }> = [
     { status: 200, body: JSON.stringify({ errors: [{ message: "Invalid query" }] }), headers: {} },
     { status: 429, body: unavailable, headers: {} },
     { status: 200, body: unavailable, headers: { "retry-after": "10" } },
