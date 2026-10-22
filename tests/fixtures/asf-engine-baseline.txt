@@ -1,0 +1,352 @@
+  function asfTentativaRetryable(status, errorType) {
+    if (Number(status) === 429) return false;
+    if ([502, 503, 504].indexOf(Number(status)) >= 0) return true;
+    return ['timeout', 'network', 'unknown'].indexOf(String(errorType || '')) >= 0;
+  }
+
+  async function efetuarPedidoHttpASF(payload, matDisplay, queryId) {
+    var diag = criarDiagASF(queryId, matDisplay);
+    var securityTokenASF = null;
+    try {
+      securityTokenASF = await window.VERIX_SECURITY.getToken(false);
+    } catch (_) {
+      diag.asfErrorType = 'security_auth';
+      diag.asfMessage = 'O VÉRIX não conseguiu validar a autorização desta instalação.';
+      throw erroComDiagASF(diag.asfMessage, diag);
+    }
+    if (!securityTokenASF) {
+      diag.asfErrorType = 'security_auth';
+      diag.asfMessage = 'O VÉRIX não conseguiu obter a autorização desta instalação.';
+      throw erroComDiagASF(diag.asfMessage, diag);
+    }
+    var queueStarted = agoraMsASFDiag();
+
+    await reservarSlotFisicoASF(matDisplay);
+    diag.asfQueueWaitMs = Math.max(0, agoraMsASFDiag() - queueStarted);
+
+    var requestBody = JSON.stringify(payload || {});
+    var ultimaTentativa = null;
+
+    for (var tentativaNo = 1; tentativaNo <= ASF_MAX_ATTEMPTS; tentativaNo++) {
+      var tentativa = {
+        attempt: tentativaNo,
+        method: 'POST',
+        transport: (typeof ActiveXObject !== 'undefined') ? 'WinHTTP→VÉRIX-RELAY' : 'Fetch→VÉRIX-RELAY',
+        startedAt: agoraMsASFDiag(),
+        status: null,
+        statusText: null,
+        durationMs: null,
+        errorType: null,
+        message: null,
+        responseBytes: null,
+        responseContentType: null
+      };
+
+      var bodyText = '';
+      try {
+        if (typeof ActiveXObject !== 'undefined') {
+          var xhr = new ActiveXObject('WinHttp.WinHttpRequest.5.1');
+          xhr.open('POST', ASF_PROXY_URL, false);
+          xhr.setTimeouts(10000, 10000, ASF_TIMEOUT_MS, ASF_TIMEOUT_MS);
+          xhr.setRequestHeader('Accept', 'application/json, text/plain, */*');
+          xhr.setRequestHeader('Content-Type', 'text/plain; charset=UTF-8');
+          xhr.setRequestHeader('X-Verix-Build-Id', window.VERIX_BUILD_ID || '1.5-sec-20261008-a');
+          xhr.setRequestHeader('X-Verix-Client-Token', securityTokenASF);
+          xhr.send(requestBody);
+
+          tentativa.status = Number(xhr.Status || 0);
+          bodyText = xhr.ResponseText || '';
+        } else {
+          var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+          var timeoutId = null;
+          var timeoutForcado = false;
+
+          try {
+            timeoutId = setTimeout(function () {
+              timeoutForcado = true;
+              try { if (controller) controller.abort(); } catch (_) {}
+            }, ASF_TIMEOUT_MS);
+
+            var res = await fetch(ASF_PROXY_URL, {
+              method: 'POST',
+              cache: 'no-store',
+              credentials: 'omit',
+              mode: 'cors',
+              redirect: 'follow',
+              headers: {
+                'Accept': 'application/json, text/plain, */*',
+                'Content-Type': 'text/plain;charset=UTF-8',
+                'X-Verix-Build-Id': window.VERIX_BUILD_ID || '1.5-sec-20261008-a',
+                'X-Verix-Client-Token': securityTokenASF
+              },
+              body: requestBody,
+              signal: controller ? controller.signal : undefined
+            });
+
+            tentativa.status = Number(res.status);
+            tentativa.statusText = res.statusText || null;
+            tentativa.responseContentType = res.headers && res.headers.get
+              ? (res.headers.get('content-type') || null)
+              : null;
+
+            if (res.headers && res.headers.get) {
+              var relayLatencyHeader = res.headers.get('X-Verix-ASF-Latency-Ms');
+              var relayLatencyMs = Number(relayLatencyHeader);
+              if (Number.isFinite(relayLatencyMs)) diag.asfRelayLatencyMs = relayLatencyMs;
+            }
+
+            bodyText = await res.text();
+
+            if (res.status >= 400) {
+              tentativa.errorType = res.status === 429
+                ? 'http_429'
+                : (res.status === 503
+                  ? 'http_503'
+                  : (res.status === 504 ? 'relay_timeout' : (res.status === 502 ? 'relay_network' : 'http_' + res.status)));
+            }
+          } catch (e) {
+            tentativa.errorType = timeoutForcado
+              ? 'timeout'
+              : classificarErroASF(e, false);
+            tentativa.message = textoErroASF(e);
+          } finally {
+            if (timeoutId) clearTimeout(timeoutId);
+          }
+        }
+
+        tentativa.responseBytes = bodyText ? String(bodyText).length : 0;
+        tentativa.responseHash = hashTextoASF(bodyText);
+        finalizarTentativaDiagASF(diag, tentativa);
+        ultimaTentativa = tentativa;
+
+        var retryable = asfTentativaRetryable(tentativa.status, tentativa.errorType);
+        if (!retryable || tentativaNo >= ASF_MAX_ATTEMPTS) {
+          if (Number(tentativa.status) >= 200 && Number(tentativa.status) < 300) {
+            diag.asfErrorType = null;
+            diag.asfMessage = null;
+          }
+          return {
+            status: tentativa.status,
+            statusText: tentativa.statusText || null,
+            text: bodyText || '',
+            __asfDiagnostic: diag
+          };
+        }
+
+        var delay = ASF_RETRY_DELAYS_MS[Math.min(tentativaNo - 1, ASF_RETRY_DELAYS_MS.length - 1)] || 900;
+        await esperarASF(delay);
+      } catch (e) {
+        if (!tentativa.durationMs) {
+          tentativa.message = tentativa.message || textoErroASF(e);
+          tentativa.errorType = tentativa.errorType || classificarErroASF(e, false);
+          finalizarTentativaDiagASF(diag, tentativa);
+        }
+        ultimaTentativa = tentativa;
+
+        if (tentativaNo >= ASF_MAX_ATTEMPTS || !asfTentativaRetryable(null, tentativa.errorType)) {
+          throw erroComDiagASF((e && e.message) || 'Falha de comunicação com o relay ASF', diag);
+        }
+
+        var delayEx = ASF_RETRY_DELAYS_MS[Math.min(tentativaNo - 1, ASF_RETRY_DELAYS_MS.length - 1)] || 900;
+        await esperarASF(delayEx);
+      }
+    }
+
+    throw erroComDiagASF(
+      (ultimaTentativa && ultimaTentativa.message) || 'Falha de comunicação com o relay ASF',
+      diag
+    );
+  }
+
+  // Parser robusto inspirado no Consulta Veiculo(2): aceita os envelopes ASF
+  // conhecidos e uma estrutura alternativa onde o resultado aparece dentro de
+  // outro objecto nodes. Nunca transforma erro de esquema em "sem seguro".
+  function extrairNodesASF(data) {
+    var candidatos = [
+      data && data.data && data.data.mobishoutEntry && data.data.mobishoutEntry.noone && data.data.mobishoutEntry.noone.entry && data.data.mobishoutEntry.noone.entry.licenseNumber && data.data.mobishoutEntry.noone.entry.licenseNumber.nodes,
+      data && data.mobishoutEntry && data.mobishoutEntry.noone && data.mobishoutEntry.noone.entry && data.mobishoutEntry.noone.entry.licenseNumber && data.mobishoutEntry.noone.entry.licenseNumber.nodes,
+      data && data.data && data.data.licenseNumber && data.data.licenseNumber.nodes,
+      data && data.licenseNumber && data.licenseNumber.nodes
+    ];
+
+    for (var i = 0; i < candidatos.length; i++) {
+      if (Array.isArray(candidatos[i])) {
+        return { found: true, nodes: candidatos[i] };
+      }
+    }
+
+    var encontrado = null;
+    function arrayTemCamposSeguro(arr) {
+      if (!Array.isArray(arr) || !arr.length) return false;
+      var campos = ['entity','insurer','insuranceCompany','policy','policyNumber','startDate','validFrom','endDate','validTo','license','licenseNumber','code'];
+      return arr.some(function (item) {
+        if (!item || typeof item !== 'object') return false;
+        return campos.some(function (k) { return Object.prototype.hasOwnProperty.call(item, k); });
+      });
+    }
+
+    function walk(v, profundidade, caminho) {
+      if (encontrado || !v || profundidade > 12) return;
+      if (Array.isArray(v) || typeof v !== 'object') return;
+
+      if (Array.isArray(v.nodes)) {
+        var caminhoTexto = (caminho || []).join('.').toLowerCase();
+        var contextoASF = /license|insurance|mobishout|entry|noone|asf/.test(caminhoTexto)
+          || Object.prototype.hasOwnProperty.call(v, 'licenseNumber')
+          || Object.prototype.hasOwnProperty.call(v, 'policy');
+        // Arrays vazios só podem ser considerados um "sem seguro" conclusivo
+        // quando estão num contexto ASF conhecido. Arrays não vazios podem
+        // ser aceites quando trazem campos de seguro reconhecíveis.
+        if ((v.nodes.length === 0 && contextoASF) || arrayTemCamposSeguro(v.nodes)) {
+          encontrado = v.nodes;
+          return;
+        }
+      }
+
+      var vals = Object.keys(v);
+      for (var j = 0; j < vals.length; j++) {
+        var k = vals[j];
+        walk(v[k], profundidade + 1, (caminho || []).concat(k));
+        if (encontrado) return;
+      }
+    }
+    walk(data, 0, []);
+
+    return encontrado ? { found: true, nodes: encontrado } : { found: false, nodes: [] };
+  }
+
+  function interpretarRespostaASF(json) {
+    if (!json || typeof json !== 'object') {
+      throw new Error('Resposta ASF inválida');
+    }
+
+    if (Array.isArray(json.errors) && json.errors.length) {
+      var msgs = json.errors.map(function (e) {
+        return e && e.message ? String(e.message) : '';
+      }).filter(Boolean);
+      throw new Error(msgs.length ? msgs.join(' | ') : 'A ASF devolveu um erro GraphQL');
+    }
+
+    var extraido = extrairNodesASF(json);
+    if (!extraido.found) {
+      throw new Error('Resposta ASF sem estrutura de resultados reconhecida');
+    }
+
+    var nodes = Array.isArray(extraido.nodes) ? extraido.nodes : null;
+    if (!nodes) {
+      throw new Error('Resposta ASF com campo nodes inválido');
+    }
+
+    /*
+     * REGRA ASF ALINHADA COM A APK BASE:
+     * - nodes vazio = SEM SEGURO
+     * - node.license != null = TEM SEGURO
+     * - nodes existentes sem `license` = SEM SEGURO
+     *
+     * Campos como entity/policy/startDate/endDate não são, por si só,
+     * suficientes para classificar a existência do seguro.
+     */
+    if (nodes.length === 0) {
+      return { estado: 'nao', node: null };
+    }
+
+    for (var i = 0; i < nodes.length; i++) {
+      var node = nodes[i];
+      if (!node || typeof node !== 'object') continue;
+
+      if (node.license !== undefined && node.license !== null) {
+        return { estado: 'sim', node: node };
+      }
+    }
+
+    return { estado: 'nao', node: null };
+  }
+
+  // CONSULTA ASF = mesmo endpoint/mutation do IPO_2.2, com parser robusto.
+  // Sem quota artificial VÉRIX; 429 devolvido pela ASF é respeitado.
+
+  async function realizarConsultaASF_IPO(matLimpa, matDisplay, queryId) {
+    var hoje = new Date();
+    var yyyy = hoje.getFullYear();
+    var mm = String(hoje.getMonth() + 1).padStart(2, '0');
+    var dd = String(hoje.getDate()).padStart(2, '0');
+    var dataHoje = yyyy + '/' + mm + '/' + dd;
+
+    var resposta = await efetuarPedidoHttpASF({
+      matricula: matLimpa,
+      date: dataHoje,
+      installationId: obterAsfInstallationId(),
+      queryId: queryId || '',
+      buildId: window.VERIX_BUILD_ID || '1.5-sec-20261008-a'
+    }, matDisplay, queryId);
+
+    var diag = resposta && resposta.__asfDiagnostic
+      ? resposta.__asfDiagnostic
+      : criarDiagASF(queryId, matDisplay);
+
+    var httpStatus = resposta && resposta.status != null ? Number(resposta.status) : null;
+    var responseText = resposta && resposta.text ? String(resposta.text) : '';
+
+    diag.asfHttpStatus = Number.isFinite(httpStatus) ? httpStatus : null;
+    diag.asfResponseBytes = responseText.length;
+
+    if (httpStatus === 429) {
+      diag.asfErrorType = 'http_429';
+      diag.asfMessage = 'A ASF recusou temporariamente a consulta (HTTP 429)';
+      throw erroComDiagASF(diag.asfMessage, diag);
+    }
+
+    if (httpStatus === 504) {
+      diag.asfErrorType = 'relay_timeout';
+      diag.asfMessage = 'O relay VÉRIX excedeu o tempo de resposta da ASF após as tentativas automáticas';
+      throw erroComDiagASF(diag.asfMessage, diag);
+    }
+
+    if (httpStatus === 502) {
+      diag.asfErrorType = 'relay_network';
+      diag.asfMessage = 'O relay VÉRIX não conseguiu comunicar com a ASF após as tentativas automáticas';
+      throw erroComDiagASF(diag.asfMessage, diag);
+    }
+
+    if (httpStatus === 503) {
+      diag.asfErrorType = 'http_503';
+      diag.asfMessage = 'Serviço temporariamente indisponível após as tentativas automáticas';
+      throw erroComDiagASF(diag.asfMessage, diag);
+    }
+
+    if (httpStatus < 200 || httpStatus >= 300) {
+      diag.asfErrorType = 'http_' + httpStatus;
+      diag.asfMessage = 'Erro HTTP ' + httpStatus;
+      throw erroComDiagASF(diag.asfMessage, diag);
+    }
+
+    var json;
+    try {
+      json = JSON.parse(responseText);
+    } catch (_) {
+      diag.asfErrorType = 'invalid_json';
+      diag.asfMessage = 'Resposta ASF não é JSON válido';
+      throw erroComDiagASF(diag.asfMessage, diag);
+    }
+
+    try {
+      if (Array.isArray(json.errors) && json.errors.length) {
+        diag.asfErrorType = 'graphql';
+      }
+
+      var resultado = interpretarRespostaASF(json);
+      diag.asfErrorType = null;
+      diag.asfMessage = null;
+      return { resultado: resultado, asfDiagnostic: diag };
+    } catch (e) {
+      if (!diag.asfErrorType) {
+        diag.asfErrorType =
+          (String(e && e.message || '').toLowerCase().indexOf('estrutura') >= 0)
+            ? 'invalid_response'
+            : 'graphql';
+      }
+      diag.asfMessage = String(e && e.message || 'Resposta ASF inválida').slice(0, 500);
+      throw erroComDiagASF(diag.asfMessage, diag);
+    }
+  }
+
