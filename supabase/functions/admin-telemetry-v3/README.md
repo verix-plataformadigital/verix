@@ -21,7 +21,7 @@ Requires the existing admin bearer token in `Authorization`. The platform JWT ga
 
 ## Dashboard contract
 
-The new Admin block is independent from the existing Realtime presence cards. It displays server-observed sessions that sent `app_open` or `heartbeat` in the last 90 seconds, consultations without a final result inside the current investigation window, and installations seen during the last hour. Sessions, installations, tabs and people are not interchangeable units.
+The new Admin block is independent from the existing Realtime presence cards. It displays server-observed sessions that sent `app_open` or `heartbeat` in the last 90 seconds, consultation requests recorded during the last hour, and installations seen during the last hour. Sessions, installations, tabs and people are not interchangeable units.
 
 The dashboard polls the endpoint on the existing 10-second refresh cadence. On API failure it clears server-derived values rather than presenting old counts as current. The existing `stats-v2` endpoint remains responsible for historical analytics, consultation outcomes and the other Admin pages.
 
