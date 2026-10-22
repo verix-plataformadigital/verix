@@ -1,3 +1,5 @@
+import { fetchAsfWithTransientRetry, isTransientGraphqlUnavailable } from "./retry.ts";
+
 const ALLOWED_ORIGINS = new Set([
   "https://verix.vxops.workers.dev",
   "https://verix-plataformadigital.github.io"
@@ -187,37 +189,30 @@ Deno.serve(async (req: Request) => {
       '") { nodes { id entity startDate endDate policy license code logo } } } } } }';
 
     const url = ASF_ORIGIN + ASF_PATH + "?query=" + encodeURIComponent(query);
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
-    const started = Date.now();
-
     try {
-      const upstream = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Accept": "application/json, text/plain, */*",
-          "Cache-Control": "no-cache",
-          "Pragma": "no-cache"
-        },
-        body: null,
-        redirect: "follow",
-        signal: controller.signal
-      });
+      const upstream = await fetchAsfWithTransientRetry(url, UPSTREAM_TIMEOUT_MS);
 
-      const text = await upstream.text();
-      const elapsedMs = Date.now() - started;
+      if (upstream.retriedTransientAvailability) {
+        // Never log the query URL/body or matricula; report only the recovery outcome.
+        console.warn("verix_asf_transient_availability_retry", {
+          attempts: upstream.attempts,
+          recovered: upstream.status === 200 &&
+            !isTransientGraphqlUnavailable(upstream.status, upstream.body),
+          status: upstream.status,
+          elapsedMs: upstream.elapsedMs
+        });
+      }
 
       const outHeaders: Record<string, string> = {
         ...corsHeaders(req),
-        "Content-Type": upstream.headers.get("content-type") || "application/json; charset=utf-8",
+        "Content-Type": upstream.contentType,
         "X-Verix-ASF-Relay": "1",
-        "X-Verix-ASF-Latency-Ms": String(elapsedMs)
+        "X-Verix-ASF-Latency-Ms": String(upstream.elapsedMs)
       };
 
-      const retryAfter = upstream.headers.get("retry-after");
-      if (retryAfter) outHeaders["Retry-After"] = retryAfter;
+      if (upstream.retryAfter) outHeaders["Retry-After"] = upstream.retryAfter;
 
-      return new Response(text, {
+      return new Response(upstream.body, {
         status: upstream.status,
         headers: outHeaders
       });
@@ -228,8 +223,6 @@ Deno.serve(async (req: Request) => {
         error: aborted ? "upstream_timeout" : "upstream_network",
         message: aborted ? "ASF upstream timeout" : "ASF upstream network error"
       }, aborted ? 504 : 502, req);
-    } finally {
-      clearTimeout(timeout);
     }
   } catch (error) {
     console.error(
