@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { Script } from 'node:vm';
 
 const html = readFileSync('verix-app.html', 'utf8');
 const frozenEngine = readFileSync('tests/fixtures/asf-engine-baseline.txt', 'utf8');
@@ -56,4 +57,32 @@ assert.equal(
 assert.ok(proxy.includes('const ASF_ORIGIN = "https://ext01.asf.com.pt";'));
 assert.ok(proxy.includes('const ASF_PATH = "/api/src/";'));
 
-console.log('PASS: ASF browser engine and relay query unchanged; diagnostic telemetry preserved; bounded retry tested; current telemetry-v2 endpoint verified.');
+
+const experimentalHtml = readFileSync('verix-app-test-retries.html', 'utf8');
+assert.equal(
+  between(experimentalHtml, '  function interpretarRespostaASF(json)', '  // CONSULTA ASF = mesmo endpoint/mutation'),
+  between(html, '  function interpretarRespostaASF(json)', '  // CONSULTA ASF = mesmo endpoint/mutation'),
+  'Experimental HTML changed the ASF result parser.'
+);
+assert.equal(
+  between(experimentalHtml, '    var resposta = await efetuarPedidoHttpASF({', '    var diag = resposta && resposta.__asfDiagnostic'),
+  between(html, '    var resposta = await efetuarPedidoHttpASF({', '    var diag = resposta && resposta.__asfDiagnostic'),
+  'Experimental HTML changed the ASF query payload.'
+);
+assert.match(experimentalHtml, /ASF_MAX_ATTEMPTS = 3;/);
+assert.match(experimentalHtml, /ASF_RETRY_DELAYS_MS = \[300, 900\];/);
+assert.ok(experimentalHtml.includes('function asfRespostaIndisponivelTransitoria'));
+assert.ok(experimentalHtml.includes("retryable && tentativaNo >= ASF_MAX_ATTEMPTS") === false,
+  'The retry loop appears to use an unexpected limit condition.');
+assert.ok(experimentalHtml.includes('retryAfterASF'), 'Retry-After safeguard missing.');
+assert.ok(experimentalHtml.includes('TESTE ASF · 1 consulta + até 2 repetições automáticas'),
+  'Experimental build is not visibly labelled.');
+
+const experimentalScripts = Array.from(
+  experimentalHtml.matchAll(/<script\\b[^>]*>([\\s\\S]*?)<\\/script\\s*>/gi),
+  (match) => match[1]
+);
+const retryScript = experimentalScripts.find((script) => script.includes('function asfRespostaIndisponivelTransitoria'));
+assert.ok(retryScript, 'Could not locate the experimental retry script.');
+new Script(retryScript, { filename: 'verix-app-test-retries:inline-script.js' });
+console.log('PASS: ASF browser engine and relay query unchanged; experimental HTML syntax checked; diagnostic telemetry and bounded retry verified.');
