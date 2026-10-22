@@ -6,6 +6,16 @@
 
 ## 1. Preparar e identificar o candidato
 
+**Artefacto de aceitação já produzido no Windows CI:** [GitHub Actions run #6](https://github.com/verix-plataformadigital/verix/actions/runs/39775385290) → artefacto `VERIX-Windows-Acceptance-Candidate` (disponível até 29/10/2026, aproximadamente às 12:04 UTC).
+
+- Commit da fonte de teste: `98c8631995c8d0b59a830ab46b66e033fb1b1a89`.
+- ID de build: `1.5-sec-20261022-windows-ci` (artefacto de teste, não autorização para mudar a versão de produção).
+- SHA-256 do `dist/verix-app.html` dentro do ZIP: `2c1f59835f11c80b27813ca75c2001dd9dca6fd268058a90800605acb8604395`.
+- Digest SHA-256 do ZIP publicado pela GitHub Actions: `77065fa0e7313655b4b6341b716695f3617020ab32dba9641582ff038c20d974`.
+
+Descarregar o artefacto pela execução acima, extrair para uma pasta de teste e comparar o SHA-256 do HTML com `acceptance-sha256.txt`. **Não substituir a versão oficial nem copiar para uma pasta partilhada antes de completar os testes desta checklist.**
+
+
 - [ ] Guardar uma cópia de segurança da versão oficial atualmente utilizada.
 - [ ] Obter o artefacto gerado pelo build seguro da ramificação candidata (`dist/verix-app.html`), nunca publicar diretamente o pequeno apontador `verix-app.html`.
 - [ ] Registar o commit SHA e o hash SHA-256 do artefacto testado.
