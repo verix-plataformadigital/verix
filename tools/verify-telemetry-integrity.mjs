@@ -204,7 +204,7 @@ assert.ok(app.includes("<!-- VERIX_TELEMETRY_RUNTIME_INJECT -->"), "source HTML 
 assert.doesNotMatch(app, /<script[^>]*id=["']verix-telemetry-v2["']/i, "source HTML must not duplicate the telemetry implementation");
 assert.match(telemetrySource, /var ENDPOINT = ['"]https:\/\/onilkakbgpklxvxuxmks\.supabase\.co\/functions\/v1\/telemetry-v2['"]/);
 assert.doesNotMatch(telemetrySource, /\/functions\/v1\/telemetry(?!-v2)/, "supported code must never call the obsolete endpoint");
-const telemetryStart = telemetrySource.indexOf("function parseReceipt(text)");
+const telemetryStart = telemetrySource.indexOf("function parseReceipt(");
 const telemetryEnd = telemetrySource.indexOf("function rateLimited", telemetryStart);
 assert.ok(telemetryStart >= 0 && telemetryEnd > telemetryStart, "production telemetry client must expose its receipt pipeline");
 const clientTransport = telemetrySource.slice(telemetryStart, telemetryEnd);
@@ -217,8 +217,8 @@ const beaconEnd = telemetrySource.indexOf("function rateLimited", beaconStart);
 assert.ok(beaconStart >= 0 && beaconEnd > beaconStart, "sendBeacon handler must exist");
 assert.doesNotMatch(telemetrySource.slice(beaconStart, beaconEnd), /queue\.splice\(/, "sendBeacon must never dequeue without a server receipt");
 assert.ok(telemetrySource.includes("VERIX_T2_REJECTED_QUEUE"), "permanent rejections must have bounded non-sensitive local diagnostics");
-assert.match(telemetrySource, /function cleanMetadata\(meta, event\)/, "client metadata sanitizer must know which event is being sent");
-assert.match(telemetrySource, /function insurancePlateMetadata\(value, asfDiagnostic\)/, "insurance outcome wrappers must normalize the plate");
+assert.match(telemetrySource, /function cleanMetadata\(meta: TelemetryMetadata[^,]*, event: string\)/, "client metadata sanitizer must know which event is being sent");
+assert.match(telemetrySource, /function insurancePlateMetadata\(value: unknown, asfDiagnostic\?/, "insurance outcome wrappers must normalize the plate");
 assert.match(telemetrySource, /push\('vehicle_insurance_no', 'consulta', meta\)/, "no-record event must include plate metadata");
 assert.match(telemetrySource, /push\('vehicle_insurance_error', 'consulta', meta\)/, "ASF error event must include plate metadata");
 assert.match(telemetrySource, /event === 'vehicle_insurance_no' \|\| event === 'vehicle_insurance_error'/, "plate metadata must be limited to no-record/error events");
@@ -237,7 +237,7 @@ assert.match(telemetrySource, /var HEARTBEAT_MS = 60000;/, "source heartbeat cad
 assert.match(telemetryScript, /var HEARTBEAT_MS = (?:60000|6e4);/, "compiled heartbeat cadence should remain at 60 seconds within the 90-second presence lease");
 assert.doesNotMatch(telemetryScript, /\/functions\/v1\/telemetry(?!-v2)/, "production bundle must not reference the obsolete telemetry endpoint");
 
-const parserMatch = clientTransport.match(/function parseReceipt\(text\) \{[\s\S]*?\n  \}/);
+const parserMatch = telemetryScript.match(/function parseReceipt\(text\) \{[\s\S]*?\n  \}/);
 assert.ok(parserMatch, "receipt parser must be independently testable");
 const parseReceipt = new Function("return (" + parserMatch[0] + ");")();
 const validReceipt = {
