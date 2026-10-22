@@ -1378,14 +1378,13 @@ function submitConjunto(event) {
     return ['timeout', 'network', 'unknown'].indexOf(String(errorType || '')) >= 0;
   }
 
-  // EXPERIMENTAL: recognize only the temporary ASF response observed in logs.
-  // Do not retry generic GraphQL errors, partial data, malformed JSON or HTTP 429.
+  // EXPERIMENTAL: identify upstream availability errors even when GraphQL returns partial data.
+  // Retry only HTTP 200 responses with GraphQL errors and an unavailable message.
   function asfRespostaIndisponivelTransitoria(status, bodyText) {
     if (Number(status) !== 200) return false;
     var json;
     try { json = JSON.parse(String(bodyText || '')); } catch (_) { return false; }
     if (!json || typeof json !== 'object' || Array.isArray(json)) return false;
-    if (json.data !== undefined && json.data !== null) return false;
     if (!Array.isArray(json.errors) || json.errors.length === 0) return false;
 
     function normalizarMensagem(value) {
@@ -1398,17 +1397,11 @@ function submitConjunto(event) {
         .trim();
     }
 
-    var mensagensTemporarias = [
-      'servico indisponivel',
-      'servico temporariamente indisponivel',
-      'service unavailable',
-      'service temporarily unavailable',
-      'temporarily unavailable',
-      'the service is temporarily unavailable'
-    ];
     return json.errors.some(function (item) {
-      return !!item && typeof item === 'object' &&
-        mensagensTemporarias.indexOf(normalizarMensagem(item.message)) >= 0;
+      if (!item || typeof item !== 'object') return false;
+      var message = normalizarMensagem(item.message);
+      // Allows prefix/suffix text and partial-data GraphQL envelopes.
+      return message.indexOf('indispon') >= 0 || message.indexOf('unavailable') >= 0;
     });
   }
 
@@ -1540,7 +1533,7 @@ function submitConjunto(event) {
 
         // Keep existing transport retries; add at most two retries only for this known response.
         var retryable = asfTentativaRetryable(tentativa.status, tentativa.errorType) ||
-          (respostaGraphqlIndisponivel && !retryAfterASF);
+          respostaGraphqlIndisponivel;
         if (!retryable || tentativaNo >= ASF_MAX_ATTEMPTS) {
           if (Number(tentativa.status) >= 200 && Number(tentativa.status) < 300) {
             diag.asfErrorType = null;
@@ -1555,6 +1548,17 @@ function submitConjunto(event) {
         }
 
         var delay = ASF_RETRY_DELAYS_MS[Math.min(tentativaNo - 1, ASF_RETRY_DELAYS_MS.length - 1)] || 900;
+        // Respect Retry-After when supplied, with a 10-second safety cap.
+        if (respostaGraphqlIndisponivel && retryAfterASF) {
+          var retryAfterMs = Number(retryAfterASF) * 1000;
+          if (!Number.isFinite(retryAfterMs)) {
+            var retryAfterDate = Date.parse(retryAfterASF);
+            retryAfterMs = Number.isFinite(retryAfterDate) ? retryAfterDate - Date.now() : 0;
+          }
+          if (Number.isFinite(retryAfterMs) && retryAfterMs > 0) {
+            delay = Math.max(delay, Math.min(10000, retryAfterMs));
+          }
+        }
         await esperarASF(delay);
       } catch (e) {
         if (!tentativa.durationMs) {
