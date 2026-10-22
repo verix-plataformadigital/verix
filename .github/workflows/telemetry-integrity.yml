@@ -7,6 +7,8 @@ on:
       - "supabase/migrations/**"
       - "admin_v2.html"
       - "tools/verify-telemetry-integrity.mjs"
+      - "tools/verify-asf-diagnostic-telemetry.mjs"
+      - "tests/fixtures/asf-engine-baseline.txt"
       - "verix-app.html"
       - "verix-presence-v1.mjs"
       - "tools/verify-migration-filenames.mjs"
@@ -15,6 +17,7 @@ on:
     branches:
       - "main"
       - "fix/telemetry-integrity-*"
+      - "fix/telemetry-diagnostics-*"
     paths:
       - "supabase/functions/telemetry-v2/index.ts"
       - "supabase/functions/stats-v2/index.ts"
@@ -55,3 +58,5 @@ jobs:
           grep -q 'verix-presence-v1.js?v=' dist/admin_v2.html
       - name: Verify telemetry integrity contract
         run: node tools/verify-telemetry-integrity.mjs
+      - name: Verify ASF engine freeze and diagnostic telemetry
+        run: node tools/verify-asf-diagnostic-telemetry.mjs
