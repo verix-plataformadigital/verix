@@ -31,6 +31,7 @@ const adminV3RestoreInputClassificationMigration = fs.readFileSync("supabase/mig
 const adminLiveSummaryStreamlinedMigration = fs.readFileSync("supabase/migrations/20261019111618_admin_live_summary_remove_in_progress.sql", "utf8");
 const adminLiveInsuranceDeltaMigration = fs.readFileSync("supabase/migrations/20261019125025_admin_live_insurance_delta.sql", "utf8");
 const adminErrorClassificationMigration = fs.readFileSync("supabase/migrations/20261019070000_admin_filter_user_input_invalid_plates.sql", "utf8");
+const plateZeroBlockMigration = fs.readFileSync("supabase/migrations/20261022115800_fix_portuguese_plate_zero_center_rule.sql", "utf8");
 const packageConfig = JSON.parse(fs.readFileSync("package.json", "utf8"));
 const currentAppVersion = packageConfig.version.split(".").slice(0, 2).join(".");
 assert.ok(stats.includes('const CURRENT_APP_VERSION = "' + currentAppVersion + '"'), "stats current version must match package.json major.minor");
@@ -312,7 +313,8 @@ for (const [plate, expected] of [
   ["AA1234", true], ["1234AB", true], ["12AB34", true],
   ["AB12CD", true], ["AA12AA", true],
   ["KW1234", false], ["12WY34", false],
-  ["AB00CD", false], ["AB12CA", false]
+  ["AA00AA", false], ["AB00AA", true], ["AB00CD", true], ["BA00AA", false],
+  ["AB12CA", false]
 ]) {
   assert.equal(isPortuguesePlate(plate), expected, "Portuguese plate validation: " + plate);
 }
@@ -420,6 +422,10 @@ assert.ok(adminV3RestoreInputClassificationMigration.includes("query_start_candi
 
 assert.match(adminErrorClassificationMigration, /verix2_admin_plate_format_valid/, "admin error classification must validate Portuguese plate formats");
 assert.ok(adminErrorClassificationMigration.includes("v = 'AA00AA'"), "the filter must exclude only the reserved first current-format combination, not all 00 center blocks");
+assert.ok(plateZeroBlockMigration.includes("v <> 'AA00AA'"), "the production plate validator must exclude only the reserved AA00AA combination");
+assert.ok(plateZeroBlockMigration.includes("public.verix2_is_portuguese_plate_format('AB-00-AA')"), "SQL regression tests must cover the 00 block after the first letter combination");
+assert.doesNotMatch(stats, /plate\\.slice\\(2,4\\)===\"00\"/, "Admin JS must not reject every current-format plate with center 00");
+assert.ok(stats.includes('plate==="AA00AA"'), "Admin JS must match the SQL reserved-combination rule");
 assert.ok(adminErrorClassificationMigration.includes("c.error_type = 'http_400'") && adminErrorClassificationMigration.includes("c.http_status_raw = '400'"), "only explicit HTTP 400 events qualify for the invalid-input exclusion");
 assert.ok(adminErrorClassificationMigration.includes("c.has_plate_input") && adminErrorClassificationMigration.includes("NOT c.has_valid_plate_format"), "the filter must require a captured but malformed plate");
 assert.ok(adminErrorClassificationMigration.includes("'userInputInvalidConsultations'") && adminErrorClassificationMigration.includes("'excludedUserInputConsultations'"), "invalid user input counts must remain visible separately");

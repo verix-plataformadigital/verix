@@ -346,10 +346,10 @@ async function loadErrorInvestigation24h(now:string){
   const validPortuguesePlate=(value:unknown)=>{
     const plate=normalizePlate(value);
     // Match public.verix2_is_portuguese_plate_format exactly.
-    // Historical series excluded K, W and Y; 2020+ AA-01-AA series
-    // exclude the reserved 00 sequence and most vowels at positions 2/6.
+    // Historical series excluded K, W and Y. In the current format, only
+    // AA-00-AA is reserved; later letter combinations may use central 00.
     if(/^(?:[A-JL-VXZ]{2}[0-9]{4}|[0-9]{4}[A-JL-VXZ]{2}|[0-9]{2}[A-JL-VXZ]{2}[0-9]{2})$/.test(plate)) return true;
-    if(!/^[A-Z]{2}[0-9]{2}[A-Z]{2}$/.test(plate) || plate.slice(2,4)==="00") return false;
+    if(!/^[A-Z]{2}[0-9]{2}[A-Z]{2}$/.test(plate) || plate==="AA00AA") return false;
     const second=plate.slice(1,2), sixth=plate.slice(5,6);
     const secondAllowed=!/^[AEIOU]$/.test(second)||(plate[0]===second&&/^[AEIOU]$/.test(second));
     const sixthAllowed=!/^[AEIOU]$/.test(sixth)||(plate[4]===sixth&&/^[AEIOU]$/.test(sixth));
