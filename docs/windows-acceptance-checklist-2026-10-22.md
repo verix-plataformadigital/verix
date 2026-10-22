@@ -15,6 +15,8 @@
 
 Descarregar o artefacto pela execução acima, extrair para uma pasta de teste e comparar o SHA-256 do HTML com `acceptance-sha256.txt`. **Não substituir a versão oficial nem copiar para uma pasta partilhada antes de completar os testes desta checklist.**
 
+**Importante — origem do teste ASF:** o gate servidor atualmente autoriza o URL HTTPS oficial do GitHub Pages (`https://verix-plataformadigital.github.io/verix/`) e o Workers publicado. O ficheiro `verix-app.html` aberto diretamente por `file://` pode ser bloqueado por origem não autorizada; isso não prova que a consulta ASF está avariada. Para testar a cópia candidata, use um ambiente de teste servido por origem aprovada ou a aplicação WebView2 que navega para o URL oficial. Não adicionar `Origin: null`, `localhost` ou outras origens ao gate de produção sem uma revisão explícita do modelo de segurança. Se a aceitação tiver de ser feita offline/local, registar esse bloqueio como dependência de configuração, não como aprovação ou falha do motor ASF.
+
 
 - [ ] Guardar uma cópia de segurança da versão oficial atualmente utilizada.
 - [ ] Obter o artefacto gerado pelo build seguro da ramificação candidata (`dist/verix-app.html`), nunca publicar diretamente o pequeno apontador `verix-app.html`.
