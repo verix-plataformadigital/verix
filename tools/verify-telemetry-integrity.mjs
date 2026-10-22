@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
+import { readOperationalSource } from "./lib/operational-source.mjs";
 
 const endpoint = fs.readFileSync("supabase/functions/telemetry-v2/index.ts", "utf8");
 const migration = fs.readFileSync("supabase/migrations/20261009034000_repair_telemetry_integrity_and_query_metrics.sql", "utf8");
@@ -8,7 +9,7 @@ const admin = fs.readFileSync("admin_v2.html", "utf8");
 const adminPwaEntry = fs.existsSync("dist/admin/index.html")
   ? fs.readFileSync("dist/admin/index.html", "utf8")
   : "";
-const app = fs.readFileSync("verix-app.html", "utf8");
+const app = readOperationalSource();
 const livePresence = fs.readFileSync("verix-presence-v1.mjs", "utf8");
 const livePresenceCleanupMigration = fs.readFileSync("supabase/migrations/20261019110000_realtime_presence_metric_cleanup.sql", "utf8");
 const livePresenceOperationalMetricsMigration = fs.readFileSync("supabase/migrations/20261019094000_realtime_presence_installation_metrics.sql", "utf8");

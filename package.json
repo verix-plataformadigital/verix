@@ -5,7 +5,9 @@
   "description": "VÉRIX public release hardening and responsible AI-use notices",
   "scripts": {
     "build:secure": "node tools/build-secure-release.mjs",
-    "release": "npm run build:secure && echo '\n✓ dist/ ready. Publish ONLY the contents of dist/. The repository remains public; rely on server-side controls, not source secrecy.'"
+    "release": "npm run build:secure && echo '\n✓ dist/ ready. Publish ONLY the contents of dist/. The repository remains public; rely on server-side controls, not source secrecy.'",
+    "verify:source": "node tools/verify-operational-source.mjs",
+    "test:source": "node --test tests/operational-source.test.mjs"
   },
   "devDependencies": {
     "javascript-obfuscator": "5.9.0",

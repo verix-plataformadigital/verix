@@ -1,0 +1,270 @@
+.cin-ema-topbar{
+ box-sizing:border-box;
+ align-items:center;
+ border:1px solid #a47725;
+ background:
+ linear-gradient(100deg,rgba(63,35,7,.98),rgba(32,24,9,.98) 48%,rgba(7,27,34,.98));
+}
+.cin-ema-top-icon{
+ display:flex;align-items:center;justify-content:center;
+ border:1px solid #d3a840;border-radius:7px;
+ background:rgba(188,133,24,.16);color:#ffd66f;font-weight:900;
+}
+.cin-ema-top-label{
+ color:#f4d27b;font-weight:900;
+}
+.cin-ema-top-value{
+ color:#fff3bf;font-weight:1000;text-align:center;
+ text-shadow:0 0 12px rgba(255,197,72,.28);
+}
+.cin-ema-top-context{
+ justify-self:end;color:#c5ad70;font-size:7px;font-weight:800;text-align:right;
+}
+/* Active radar note: no longer looks like secondary metadata */
+.cin-active-main small.no-note{
+ display:inline-block!important;margin-top:5px!important;color:#698189!important;font-size:8px!important;
+}
+/* Notes in the stored-radar list */
+.cin-other-info small.no-note{font-size:7px!important;color:#5f7880!important}
+.cin-other-select{min-height:46px!important}
+.cin-profile-item-clean{margin-bottom:1px}
+/* Make the note buttons equally obvious */
+.cin-note-inline-btn-clean{
+ box-shadow:inset 0 0 12px rgba(255,190,64,.05);
+}
+.cin-note-inline-btn-clean:hover{
+ border-color:#d0a747!important;background:#3a2d0f!important;color:#ffe7a4!important;
+}
+.cin-note-active-btn{padding:0 12px!important;}
+@media(max-width:980px){
+ .cin-ema-topbar{grid-template-columns:30px 1fr 92px;gap:8px}
+ .cin-ema-top-context{grid-column:2 / -1;justify-self:start;text-align:left;margin-top:-2px}
+}
+@media(max-width:700px){
+ .cin-ema-topbar{grid-template-columns:28px 1fr 80px}
+ .cin-ema-top-label{font-size:7px}
+}
+.cin-ema-topbar{
+ z-index:120!important;
+ display:grid!important;
+ grid-template-columns:30px 1fr!important;
+ grid-template-rows:auto auto!important;
+ gap:2px 8px!important;
+ border-radius:9px!important;
+ box-shadow:0 7px 20px rgba(0,0,0,.35),inset 0 0 22px rgba(255,180,45,.05)!important;
+}
+.cin-ema-top-icon{grid-row:1 / span 2!important;width:28px!important;height:28px!important;font-size:15px!important}
+.cin-ema-top-label{
+ grid-column:2!important;
+ letter-spacing:.75px!important;
+ line-height:1.1!important;
+}
+.cin-ema-top-value{
+ grid-column:2!important;
+ justify-self:start!important;
+ line-height:1!important;
+}
+.cin-ema-top-context{
+ display:none!important;
+}
+/* notas — têm de ser percebidas num relance */
+.cin-active-main small.has-note{
+ display:flex!important;
+ align-items:center!important;
+ width:fit-content!important;
+ max-width:min(100%,620px)!important;
+ margin-top:7px!important;
+ padding:7px 11px!important;
+ border:1px solid #b18a2e!important;
+ border-left:4px solid #e0ae38!important;
+ border-radius:6px!important;
+ background:linear-gradient(90deg,rgba(126,91,13,.38),rgba(63,48,14,.22))!important;
+ color:#ffe08a!important;
+ font-size:13px!important;
+ font-weight:900!important;
+ line-height:1.25!important;
+ letter-spacing:.1px!important;
+ white-space:normal!important;
+ overflow:visible!important;
+ text-overflow:clip!important;
+ box-shadow:inset 0 0 14px rgba(255,190,65,.05),0 2px 7px rgba(0,0,0,.18)!important;
+}
+.cin-active-main small.has-note::before{
+ content:'NOTA';
+ flex:0 0 auto;
+ margin-right:8px;
+ padding:2px 5px;
+ border-radius:4px;
+ background:#c18f28;
+ color:#1d1708;
+ font-size:8px;
+ font-weight:1000;
+ letter-spacing:.6px;
+}
+.cin-other-info small.has-note{
+ display:flex!important;
+ align-items:center!important;
+ width:fit-content!important;
+ max-width:100%!important;
+ margin-top:6px!important;
+ padding:6px 9px!important;
+ border:1px solid #9f7b29!important;
+ border-left:3px solid #c99c35!important;
+ border-radius:5px!important;
+ background:rgba(110,81,13,.27)!important;
+ color:#f7d77f!important;
+ font-size:11.5px!important;
+ font-weight:900!important;
+ line-height:1.2!important;
+ white-space:normal!important;
+ overflow:visible!important;
+ text-overflow:clip!important;
+}
+.cin-other-info small.has-note::before{
+ content:'NOTA';
+ flex:0 0 auto;
+ margin-right:7px;
+ padding:2px 4px;
+ border-radius:3px;
+ background:#b78b2d;
+ color:#1a1508;
+ font-size:7px;
+ font-weight:1000;
+ letter-spacing:.5px;
+}
+.cin-note-inline-btn-clean{
+ width:112px!important;
+ height:38px!important;
+ font-size:7.5px!important;
+ letter-spacing:.5px!important;
+}
+.cin-note-active-btn{height:38px!important;font-size:7.8px!important}
+@media(max-width:700px){
+ .cin-ema-topbar{
+ width:215px!important;
+ margin-right:4px!important;
+ top:4px!important;
+ }
+ .cin-ema-top-value{font-size:21px!important}
+ .cin-active-main small.has-note{font-size:11.5px!important}
+ .cin-other-info small.has-note{font-size:10px!important}
+}
+#cinRegime optgroup{font-weight:900;letter-spacing:.25px;}
+#cinRegime option{font-weight:700;}
+#cinRegime optgroup[label^="ART. 27"]{color:#5fd6ff;}
+#cinRegime optgroup[label^="ART. 28"]{color:#ffd166;}
+#cinRegime optgroup[label^="Valor Manual"]{color:#b8c7d1;}
+.cin-profile-item-clean{
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr) auto!important;
+ align-items:center!important;
+ gap:7px!important;
+ width:100%!important;
+ max-width:100%!important;
+ box-sizing:border-box!important;
+}
+.cin-profile-actions-clean{
+ display:flex!important;
+ align-items:center!important;
+ justify-content:flex-end!important;
+ gap:5px!important;
+ width:auto!important;
+ white-space:nowrap!important;
+}
+.cin-note-inline-btn-clean,
+.cin-delete-profile-btn-mini{
+ width:82px!important;
+ min-width:82px!important;
+ max-width:82px!important;
+ height:30px!important;
+ padding:0 7px!important;
+ box-sizing:border-box!important;
+ font-size:7px!important;
+ letter-spacing:.35px!important;
+}
+.cin-note-inline-btn-clean{border-radius:5px!important}
+.cin-delete-profile-btn-mini{border-radius:5px!important}
+.cin-other-select{
+ min-width:0!important;
+ width:100%!important;
+}
+@media(max-width:900px){
+ .cin-profile-item-clean{grid-template-columns:minmax(0,1fr) auto!important}
+ .cin-note-inline-btn-clean,
+ .cin-delete-profile-btn-mini{width:74px!important;min-width:74px!important;max-width:74px!important;font-size:6.5px!important}
+ .cin-profile-actions-clean{gap:4px!important}
+}
+@media(max-width:650px){
+ .cin-profile-item-clean{grid-template-columns:1fr!important}
+ .cin-profile-actions-clean{width:100%!important;justify-content:flex-end!important}
+}
+html body .module-overlay.cinemometro-fullpage{
+ position:fixed!important;
+ inset:0!important;
+ margin:0!important;
+ padding:0!important;
+ transform:none!important;
+}
+html body .module-overlay.cinemometro-fullpage .module-window{
+ position:absolute!important;
+ inset:0!important;
+ margin:0!important;
+ transform:none!important;
+}
+html body .module-overlay.cinemometro-fullpage .module-top{
+ margin-top:0!important;
+}
+.cin-config-modal-backdrop{
+ position:fixed!important;inset:0!important;z-index:9996!important;
+ background:rgba(1,7,11,.80)!important;backdrop-filter:blur(3px)!important;
+ opacity:0;visibility:hidden;pointer-events:none;transition:opacity .16s ease!important;
+}
+.cin-config-modal-backdrop.active{opacity:1;visibility:visible;pointer-events:auto}
+html body.cin-config-modal-open{overflow:hidden!important}
+html body.cin-config-modal-open .cin-config-panel:not(.collapsed){
+ display:block!important;right:auto!important;bottom:auto!important;visibility:visible!important;opacity:1!important;
+}
+html body.cin-config-modal-open .cin-config-panel:not(.collapsed){
+ position:fixed!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;
+ width:min(1180px,calc(100vw - 50px))!important;height:auto!important;max-height:calc(100vh - 50px)!important;
+ margin:0!important;overflow:auto!important;
+ border-color:#2e819a!important;box-shadow:0 22px 70px rgba(0,0,0,.72),0 0 0 1px rgba(78,186,219,.08)!important;
+}
+html body.cin-config-modal-open .cin-config-panel:not(.collapsed) .cin-config-grid{min-height:0!important}
+html body.cin-config-modal-open .cin-config-panel:not(.collapsed) .cin-technical-header{position:sticky;top:0;z-index:2}
+html body.cin-config-modal-open .cin-config-panel:not(.collapsed) .cin-config-foot{position:sticky;bottom:0;z-index:2}
+.cin-config-foot-actions{margin-left:auto;display:flex;align-items:center;gap:7px}
+.cin-config-cancel-top,.cin-config-cancel-bottom{
+ height:27px;padding:0 13px;border:1px solid #7b4650;border-radius:5px;background:#241319;color:#efc4ca;
+ font-size:7px;font-weight:900;letter-spacing:.6px;cursor:pointer
+}
+.cin-config-cancel-bottom{height:31px}
+.cin-config-cancel-top:hover,.cin-config-cancel-bottom:hover{background:#341821;border-color:#a65c68}
+.cin-config-cancel-overlay{
+ position:fixed;inset:0;z-index:10001;display:flex;align-items:center;justify-content:center;padding:24px;
+ background:rgba(1,7,11,.82);backdrop-filter:blur(3px);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .14s ease
+}
+.cin-config-cancel-overlay.active{opacity:1;visibility:visible;pointer-events:auto}
+.cin-config-cancel-modal{
+ width:min(510px,92vw);border:1px solid rgba(225,59,86,.55);border-radius:10px;
+ background:linear-gradient(135deg,#09181f,#0b1218);box-shadow:0 20px 65px rgba(0,0,0,.72),inset 0 0 30px rgba(180,20,50,.05);
+ overflow:hidden
+}
+/* Quando se expandem os radares, o próprio módulo passa a poder ser percorrido verticalmente. */
+.module-overlay.cinemometro-fullpage .cin-one-screen.cin-list-expanded{
+ height:auto!important;min-height:100%!important;max-height:none!important;overflow:visible!important;
+ grid-template-rows:auto auto auto minmax(420px,1fr) auto auto auto!important;
+}
+.module-overlay.cinemometro-fullpage .cin-one-screen.cin-list-expanded .cin-config-dashboard{
+ min-height:0!important;height:auto!important;overflow:visible!important;
+}
+.module-overlay.cinemometro-fullpage .cin-one-screen.cin-list-expanded .cin-other-radars-section{
+ height:auto!important;min-height:0!important;overflow:visible!important;
+}
+.module-overlay.cinemometro-fullpage .cin-one-screen.cin-list-expanded .cin-profile-list-clean{
+ max-height:360px!important;overflow-y:auto!important;overflow-x:hidden!important;
+}
+@media(max-width:800px){
+ html body.cin-config-modal-open .cin-config-panel:not(.collapsed){width:calc(100vw - 18px)!important;max-height:calc(100vh - 18px)!important}
+ .cin-config-foot-actions{width:100%;justify-content:flex-end;flex-wrap:wrap}
+}

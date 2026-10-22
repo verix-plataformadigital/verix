@@ -1,0 +1,458 @@
+.consulta-history-bottom-wrap{
+ position:fixed!important;
+ left:50%!important;
+ transform:translateX(-50%)!important;
+ width:auto!important;
+ margin:0!important;
+ padding:0!important;
+ z-index:2300!important;
+}.consulta-history-bottom{
+ padding:0 30px!important;
+ border:1px solid #ff4964!important;
+ border-radius:9px!important;
+ background:linear-gradient(180deg,#d20f30,#980c25)!important;
+ color:#fff!important;
+ box-shadow:0 10px 26px rgba(190,0,35,.32),inset 0 1px 0 rgba(255,255,255,.14)!important;
+ font:900 12px/1 Arial,sans-serif!important;
+ letter-spacing:1.1px!important;
+ text-transform:uppercase!important;
+}.consulta-history-bottom:hover{
+ background:linear-gradient(180deg,#ed173c,#ad0e29)!important;
+ transform:translateY(-1px);
+}
+@media(max-width:700px){.consulta-history-bottom{min-width:280px!important;width:min(88vw,360px)!important;}
+}html body.cin-config-modal-open .cin-config-modal-backdrop{z-index:9999!important;}html body.cin-config-modal-open .cin-config-panel:not(.collapsed){z-index:10000!important;}html body.cin-config-modal-open .cin-config-panel .cin-config-cancel-top{display:block!important;}html body.cin-config-modal-open .cin-config-panel .cin-config-foot{position:sticky!important;bottom:0!important;}html body.cin-config-modal-open .cin-config-panel .cin-technical-header{position:sticky!important;top:0!important;}/* O backdrop é intencionalmente mudo: clicar fora não fecha a ficha. */
+#cinConfigModalBackdrop{cursor:default!important;}#cinConfigModalBackdrop.active{pointer-events:auto!important;}html body.cin-config-modal-open #cinConfigCancelModal{z-index:10001!important;}html body.cin-config-modal-open #cinConfigCancelModal.active{display:flex!important;}html body.cin-config-modal-open #cinConfigCancelModal .cin-config-cancel-modal{position:relative;z-index:10002!important;}.consulta-history-bottom-wrap{display:none!important;}body.consultation-screen-active .consulta-history-bottom-wrap{display:flex!important;}html body.cinemometro-page-active{overflow:hidden!important;height:100%!important;}html body.cinemometro-page-active .module-overlay.cinemometro-fullpage{overflow:hidden!important;}html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .module-window{overflow:hidden!important;}html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .module-body{
+ height:calc(100vh - 54px)!important;
+ min-height:0!important;
+ box-sizing:border-box!important;
+ overflow:hidden!important;
+ padding:7px 16px 7px!important;
+}html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-one-screen{
+ height:100%!important;
+ min-height:0!important;
+ max-height:none!important;
+ box-sizing:border-box!important;
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr) 245px!important;
+ gap:6px!important;
+ overflow:hidden!important;
+ align-content:stretch!important;
+}html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-operational-config-row{grid-column:1!important;grid-row:1!important;}html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-ema-topbar{grid-column:2!important;grid-row:1!important;padding:6px 9px!important;}html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-active-device-top{grid-column:1 / -1!important;grid-row:2!important;height:45px!important;min-height:45px!important;padding:6px 10px!important;margin:0!important;}html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-fastbar{grid-column:1 / -1!important;grid-row:3!important;height:auto!important;min-height:0!important;padding:7px 10px!important;}html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-work-grid{grid-column:1 / -1!important;grid-row:4!important;height:100%!important;min-height:0!important;overflow:hidden!important;}html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-result-card,html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-text-card{height:100%!important;min-height:0!important;}html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-text-card textarea{min-height:0!important;}html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-action-tip{grid-column:1 / -1!important;grid-row:5!important;height:auto!important;min-height:0!important;}html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-session-operator{grid-column:1 / -1!important;grid-row:6!important;height:auto!important;min-height:0!important;margin:0!important;padding:5px 8px!important;}html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-config-dashboard{grid-column:1 / -1!important;grid-row:7!important;height:42px!important;min-height:42px!important;margin:0!important;overflow:hidden!important;}html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-config-dashboard-head{height:42px!important;min-height:42px!important;padding:5px 9px!important;box-sizing:border-box!important;}html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-config-dashboard-head small{display:none!important;}/* A ficha técnica só aparece como modal; nunca reserva espaço no ecrã de trabalho. */
+html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-config-panel.collapsed{display:none!important;}
+@media(max-height:900px) and (min-width:901px){html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-one-screen{
+ grid-template-rows:60px 43px 68px minmax(0,1fr) 17px 50px 40px!important;
+ gap:5px!important;
+ }html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .module-body{padding:5px 14px 5px!important;}html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-config-dashboard,html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-config-dashboard-head{height:40px!important;min-height:40px!important;}
+}.cin-operational-config-row{
+ overflow:visible!important;
+}.cin-operational-fields{
+ overflow:visible!important;
+}.cin-operational-fields label{
+ position:relative!important;
+ min-height:59px!important;
+ overflow:visible!important;
+}.cin-operational-fields label:nth-child(1)::after,.cin-operational-fields label:nth-child(2)::after,.cin-operational-fields label:nth-child(3)::after{
+ position:absolute!important;
+ left:0!important;
+ top:49px!important;
+ width:100%!important;
+ display:block!important;
+ margin:0!important;
+ font-size:7.5px!important;
+ line-height:1.15!important;
+ color:#78979f!important;
+ font-style:italic!important;
+ white-space:nowrap!important;
+ overflow:hidden!important;
+ text-overflow:ellipsis!important;
+ pointer-events:none!important;
+}.cin-operational-fields label:last-child{
+ position:relative!important;
+}.cin-operational-fields label:last-child em#cinLimiteFonte{
+ position:absolute!important;
+ left:0!important;
+ top:49px!important;
+ width:100%!important;
+ display:block!important;
+ margin:0!important;
+ font-size:7.5px!important;
+ line-height:1.15!important;
+ color:#78979f!important;
+ font-style:italic!important;
+ white-space:nowrap!important;
+ overflow:hidden!important;
+ text-overflow:ellipsis!important;
+}
+@media(max-width:1150px){.cin-operational-fields label:nth-child(1)::after,.cin-operational-fields label:nth-child(2)::after,.cin-operational-fields label:nth-child(3)::after,.cin-operational-fields label:last-child em#cinLimiteFonte{
+ top:49px!important;
+ }
+}html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-one-screen{
+ grid-template-rows:78px 45px 72px minmax(0,1fr) 18px 52px 42px!important;
+}html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-operational-config-row{
+ height:100%!important;
+ min-height:0!important;
+ padding:6px 9px!important;
+ box-sizing:border-box!important;
+ overflow:hidden!important;
+}html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-operational-fields{
+ align-items:start!important;
+ min-width:0!important;
+}html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-operational-fields label{
+ min-height:0!important;
+ height:auto!important;
+ overflow:visible!important;
+ justify-content:flex-start!important;
+ gap:3px!important;
+}html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-operational-fields label>span{
+ height:12px!important;
+ min-height:12px!important;
+ line-height:12px!important;
+ font-size:7.5px!important;
+}html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-operational-fields label:nth-child(1)::after,html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-operational-fields label:nth-child(2)::after,html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-operational-fields label:nth-child(3)::after{
+ position:static!important;
+ width:auto!important;
+ height:auto!important;
+ margin:1px 0 0!important;
+ display:block!important;
+ font-size:7.5px!important;
+ line-height:1.15!important;
+ color:#8aaab2!important;
+ font-style:italic!important;
+ white-space:nowrap!important;
+ overflow:hidden!important;
+ text-overflow:ellipsis!important;
+}html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-operational-fields label:last-child em#cinLimiteFonte{
+ position:static!important;
+ width:auto!important;
+ color:#8aaab2!important;
+ font-style:italic!important;
+}
+@media(max-height:760px) and (min-width:901px){html body.cinemometro-page-active .module-overlay.cinemometro-fullpage .cin-one-screen{
+ grid-template-rows:78px 45px 72px minmax(0,1fr) 18px 52px 42px!important;
+ }
+}html body.fixed-workspace-active:not(.cinemometro-page-active) .command{
+ height:136px!important;
+ min-height:136px!important;
+ box-sizing:border-box!important;
+}html body.fixed-workspace-active:not(.cinemometro-page-active) .command .tools{
+ top:58px!important;
+ right:17px!important;
+ z-index:30!important;
+}html body.fixed-workspace-active:not(.cinemometro-page-active) .command .time{
+ right:18px!important;
+ bottom:10px!important;
+ z-index:30!important;
+ white-space:nowrap!important;
+}/* desloca toda a área de Consulta para acompanhar o novo cabeçalho */
+html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active:after{
+ top:146px!important;
+}html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active{
+ top:164px!important;
+}html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .panel-body,html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .insurance-body{
+ min-height:0!important;
+}.consulta-history-bottom-wrap{
+ bottom:14px!important;
+}.consulta-history-bottom{
+ height:40px!important;
+ min-width:280px!important;
+ width:280px!important;
+}
+@media(max-width:900px){html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active{
+ top:164px!important;
+ overflow:auto!important;
+ }
+}html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active{
+ bottom:48px!important;
+ overflow:hidden!important;
+}html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .panel{
+ min-height:0!important;
+ height:100%!important;
+ max-height:100%!important;
+}html body.fixed-workspace-active:not(.cinemometro-page-active) .consulta-history-bottom-wrap{
+ position:fixed!important;
+ left:50%!important;
+ bottom:8px!important;
+ top:auto!important;
+ transform:translateX(-50%)!important;
+ z-index:2300!important;
+ margin:0!important;
+ padding:0!important;
+ height:40px!important;
+ width:280px!important;
+ display:flex!important;
+ align-items:center!important;
+ justify-content:center!important;
+}html body.fixed-workspace-active:not(.cinemometro-page-active) .consulta-history-bottom{
+ width:280px!important;
+ min-width:280px!important;
+ height:40px!important;
+ min-height:40px!important;
+ margin:0!important;
+ box-sizing:border-box!important;
+}
+@media(max-width:900px){html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active{
+ bottom:48px!important;
+ }
+}html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand{
+ top:9px!important;
+ left:24px!important;
+ width:445px!important;
+ height:116px!important;
+ overflow:hidden!important;
+ z-index:5!important;
+}html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-notice{
+ width:100%!important;
+ height:116px!important;
+ padding:2px 8px 4px!important;
+ display:flex!important;
+ flex-direction:column!important;
+ justify-content:center!important;
+ align-items:center!important;
+ text-align:center!important;
+ box-sizing:border-box!important;
+}@media(max-width:1500px){html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand{width:430px!important;height:116px!important}html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-notice{height:116px!important}
+}
+@media(max-width:1200px){html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand{width:350px!important;height:116px!important}html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-notice{height:116px!important;padding-left:4px!important;padding-right:4px!important}}/* O botão de retorno próprio da Consulta não aparece em Legislação, Ferramentas, Informações ou Definições {
+ display:none!important;
+ visibility:hidden!important;
+ pointer-events:none!important;
+}
+/* O Histórico de Consultas só existe na página de Inspeções/Seguro. */
+html body.fixed-workspace-active:not(.consultation-screen-active):not(.history-page-active) .consulta-history-bottom-wrap{
+ display:none!important;
+ visibility:hidden!important;
+ pointer-events:none!important;
+}/* Em módulos secundários, garante que o único retorno visível é o botão do próprio módulo. */
+html body.fixed-workspace-active:not(.consultation-screen-active):not(.cinemometro-page-active) .module-close{
+ display:flex!important;
+}html body.fixed-workspace-active .module-close{
+ width:118px!important;
+ min-width:118px!important;
+ height:34px!important;
+ min-height:34px!important;
+ padding:0!important;
+ box-sizing:border-box!important;
+ display:flex!important;
+ align-items:center!important;
+ justify-content:center!important;
+ border:1px solid #c99700!important;
+ border-radius:8px!important;
+ background:linear-gradient(180deg,#342b0b,#171507)!important;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 5px 14px rgba(0,0,0,.28)!important;
+ letter-spacing:0!important;
+ overflow:hidden!important;
+}html body.fixed-workspace-active .module-close{
+
+ text-align:center!important;
+ text-shadow:0 0 8px rgba(242,202,88,.18)!important;
+}html body.fixed-workspace-active .module-close:hover{
+ background:linear-gradient(180deg,#40350d,#1d1907)!important;
+ border-color:#e0b63f!important;
+}html body.fixed-workspace-active .module-close::before,html body.fixed-workspace-active .module-close::after{
+ content:none!important;
+ display:none!important;
+}html body.fixed-workspace-active .module-close{
+ font:900 30px/1 Arial,Helvetica,sans-serif!important;
+}html body.fixed-workspace-active .module-close{
+ color:transparent!important;
+ font-size:0!important;
+ position:relative!important;
+}html body.fixed-workspace-active .module-close::before{
+ content:"←"!important;
+ display:flex!important;
+ position:absolute!important;
+ inset:0!important;
+ align-items:center!important;
+ justify-content:center!important;
+ color:#f4cc5a!important;
+ font:900 30px/1 Arial,Helvetica,sans-serif!important;
+ text-shadow:0 0 8px rgba(242,202,88,.18)!important;
+ pointer-events:none!important;
+}html body.fixed-workspace-active .module-close::after{
+ content:none!important;
+ display:none!important;
+}
+@media (max-height: 820px) and (min-width: 901px){html,body{overflow:hidden!important}/* Cabeçalho de consulta mais baixo */
+ html body.fixed-workspace-active:not(.cinemometro-page-active) .command{
+ height:112px!important;
+ min-height:112px!important;
+ top:8px!important;
+ left:10px!important;
+ right:10px!important;
+ border-radius:13px!important;
+ }html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand{
+ top:6px!important;
+ left:16px!important;
+ width:390px!important;
+ height:94px!important;
+ }html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-notice{
+ height:94px!important;
+ padding:0 4px!important;
+ }/* Área de matrícula/reboque compacta e sem colisões */
+ html body.fixed-workspace-active:not(.cinemometro-page-active) .command .searchbar{
+ left:31%!important;
+ right:22%!important;
+ top:14px!important;
+ height:62px!important;
+ min-height:62px!important;
+ border-radius:10px!important;
+ }html body.fixed-workspace-active:not(.cinemometro-page-active) .command .searchbar form{gap:7px!important}html body.fixed-workspace-active:not(.cinemometro-page-active) .command .field{gap:5px!important}html body.fixed-workspace-active:not(.cinemometro-page-active) .command .field label{font-size:7.5px!important}html body.fixed-workspace-active:not(.cinemometro-page-active) .command .field input{width:116px!important;height:38px!important;font-size:14px!important}html body.fixed-workspace-active:not(.cinemometro-page-active) .command .consult{height:38px!important;min-width:170px!important;padding:0 16px!important;font-size:10px!important}/* Ferramentas mais baixas; a linha da data fica sempre livre */
+ html body.fixed-workspace-active:not(.cinemometro-page-active) .command .tools{
+ right:12px!important;
+ gap:5px!important;
+ }html body.fixed-workspace-active:not(.cinemometro-page-active) .command .tools .tool{
+ height:32px!important;
+ min-width:64px!important;
+ padding:0 8px!important;
+ font-size:8px!important;
+ border-radius:7px!important;
+ }html body.fixed-workspace-active:not(.cinemometro-page-active) .command .tool.full{
+ width:36px!important;
+ min-width:36px!important;
+ }html body.fixed-workspace-active:not(.cinemometro-page-active) .command .time{
+ right:14px!important;
+ bottom:5px!important;
+ font-size:7px!important;
+ }/* Botão de retorno fica dentro do cabeçalho {
+ top:7px!important;
+ right:12px!important;
+ width:102px!important;
+ min-width:102px!important;
+ height:29px!important;
+ }
+ /* Quando a consulta usa o botão no cabeçalho, manter espaço entre ele e as ferramentas. */
+ html body.fixed-workspace-active:not(.cinemometro-page-active) .command .tools{
+ top:44px!important;
+ }/* Painéis: sobem, ficam mais baixos e deixam espaço real para o Histórico */
+ html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active{
+ left:10px!important;
+ right:10px!important;
+ top:128px!important;
+ bottom:48px!important;
+ height:auto!important;
+ gap:9px!important;
+ }html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .panel{
+ height:100%!important;
+ min-height:0!important;
+ max-height:none!important;
+ }html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .head{
+ height:46px!important;
+ }html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .head-title{
+ max-width:84%!important;
+ font-size:13px!important;
+ letter-spacing:1.1px!important;
+ }html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .head-tag{
+ right:8px!important;
+ font-size:7px!important;
+ padding:3px 5px!important;
+ }html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .panel-body,html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .insurance-body{
+ top:46px!important;
+ }/* Reduz espaços interiores dos três painéis, sem esconder conteúdo dos iframes. */
+ html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .insurance-body{
+ padding:10px!important;
+ padding-bottom:20px!important;
+ }/* Histórico fica separado do limite inferior dos painéis. */
+ html body.fixed-workspace-active:not(.cinemometro-page-active) .consulta-history-bottom-wrap{
+ bottom:5px!important;
+ height:34px!important;
+ width:250px!important;
+ }html body.fixed-workspace-active:not(.cinemometro-page-active) .consulta-history-bottom{
+ width:250px!important;
+ min-width:250px!important;
+ height:34px!important;
+ min-height:34px!important;
+ font-size:10px!important;
+ }
+}
+/* Ecrãs realmente baixos (ex.: 768 px de altura): versão ainda mais compacta. */
+@media (max-height: 740px) and (min-width: 901px){html body.fixed-workspace-active:not(.cinemometro-page-active) .command{height:104px!important;}html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand{height:88px!important;}html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-notice{height:88px!important;}html body.fixed-workspace-active:not(.cinemometro-page-active) .command .tools{top:42px!important;}html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active{top:116px!important;bottom:42px!important;gap:7px!important;}html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .head{height:42px!important;}html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .panel-body,html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .insurance-body{top:42px!important;}html body.fixed-workspace-active:not(.cinemometro-page-active) .consulta-history-bottom-wrap{bottom:4px!important;height:30px!important;}html body.fixed-workspace-active:not(.cinemometro-page-active) .consulta-history-bottom{height:30px!important;min-height:30px!important;width:225px!important;min-width:225px!important;}
+}html body.fixed-workspace-active:not(.cinemometro-page-active) .command .searchbar form{
+ width:100%!important;
+ justify-content:center!important;
+}
+@media (max-height:740px) and (min-width:901px){html body.fixed-workspace-active:not(.cinemometro-page-active) .command .searchbar{
+ width:650px!important;
+ max-width:calc(100vw - 470px)!important;
+ top:9px!important;
+ height:56px!important;
+ }
+}html body.fixed-workspace-active:not(.cinemometro-page-active) .command .searchbar{
+ left:50%!important;
+ right:auto!important;
+ transform:translateX(-50%)!important;
+ width:500px!important;
+ min-width:500px!important;
+ max-width:500px!important;
+ box-sizing:border-box!important;
+}
+@media(max-width:1200px){html body.fixed-workspace-active:not(.cinemometro-page-active) .command .searchbar{
+ width:500px!important;
+ min-width:500px!important;
+ max-width:500px!important;
+ }
+}
+@media(max-width:900px){html body.fixed-workspace-active:not(.cinemometro-page-active) .command .searchbar{
+ width:500px!important;
+ min-width:500px!important;
+ max-width:calc(100vw - 24px)!important;
+ }
+}/* 10.30 — Seguro ASF: contador persistente + interface ~30% mais compacta.
+ O contador fica fora do contentor reescrito pelos resultados, por isso permanece visível após cada consulta. */
+html body .insurance .insurance-body{
+ overflow:auto!important;
+ padding:10px 10px 18px!important;
+}html body .insurance .asf-app{
+ zoom:.70!important;
+ max-width:520px!important;
+}
+@media(max-width:900px){html body .insurance .asf-app{zoom:.68!important;}html body .insurance .asf-rate-widget{top:7px!important;right:7px!important;}
+}.regime-group{padding:6px 7px!important;margin-bottom:6px!important;border-radius:7px!important}.regime-group-head{gap:8px!important;margin-bottom:5px!important;padding:0 1px 5px!important}.regime-group-head strong{font-size:9.5px!important;letter-spacing:.35px!important}.regime-group-head small{font-size:7px!important;margin-top:2px!important;line-height:1.15!important}.regime-threshold{padding:4px 6px!important;font-size:7.5px!important}.regime-profissional-list{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:2px 8px!important}.regime-profissional-list span{font-size:6.8px!important;line-height:1.18!important}.regime-item{gap:6px!important;border-radius:5px!important}.regime-range{font-size:8.5px!important;line-height:1.1!important}.regime-fine{font-size:8.5px!important;line-height:1.1!important}.regime-points{padding:4px 5px!important;font-size:6.5px!important}
+@media(max-width:700px){.regime-profissional-list{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}.settings-command-hero{margin-bottom:12px;padding:12px 15px}.settings-section-title.futurista{margin:13px 0 7px;padding:7px 10px}.settings-grid,.settings-grid-effects{gap:8px}.setting-card-head{gap:8px}.setting-card-icon{width:27px;height:27px;flex-basis:27px;font-size:14px}.setting-card strong{font-size:8.5px}.setting-card span{font-size:6.5px;margin-top:3px}.setting-select.wide{height:32px;}.settings-profile-grid{display:grid;grid-template-columns:1.05fr 1fr 1fr;gap:8px}.settings-profile-grid .profile-card{min-height:0}.settings-quick-actions{grid-template-columns:repeat(3,1fr);gap:5px;margin-top:9px}.settings-quick-actions button,.settings-diagnostic-btn{height:27px;font-size:6.5px;padding:0 6px}.settings-diagnostic{margin-top:8px;min-height:39px;padding:7px 8px;font-size:6px;line-height:1.4}.settings-diagnostic-btn{margin-top:5px}.settings-status-grid{gap:8px}.settings-status-card{min-height:64px;padding:10px}.settings-status-card strong{margin-top:6px;font-size:14px}.settings-actions{margin-top:10px;padding-top:9px}
+@media(max-width:900px){.settings-profile-grid{grid-template-columns:1fr 1fr}.settings-profile-grid .profile-card:last-child{grid-column:1/-1}}
+@media(max-width:700px){.settings-grid,.settings-grid-effects,.settings-profile-grid,.settings-status-grid{grid-template-columns:1fr}.settings-profile-grid .profile-card:last-child{grid-column:auto}.settings-quick-actions{grid-template-columns:1fr}}body.theme-light{color:#172930!important;
+ --bg:#e7edef;
+ --ink:#172930;--white:#172930;--muted:#60747c;--line:rgba(73,104,114,.25);
+}body.theme-light .cinematic-bg{
+ background:linear-gradient(135deg,#f7fafb 0%,#e7edef 48%,#d6e0e3 100%)!important;
+}body.theme-light .command{
+ background:linear-gradient(180deg,#f8fafb,#e8eef0)!important;
+ border-color:#9eb2ba!important;
+ box-shadow:0 18px 45px rgba(35,54,62,.14),inset 0 1px 0 #fff!important;
+}body.theme-light .command .time{color:#172930!important;text-shadow:none!important}body.theme-light .searchbar{
+ background:#f8fafb!important;border-color:#9eb2ba!important;
+ box-shadow:inset 0 1px 0 #fff,0 8px 22px rgba(35,54,62,.10)!important;
+}body.theme-light .searchbar .field label{color:#30464e!important}body.theme-light .tool{
+ background:linear-gradient(180deg,#f4f8f9,#e2eaec)!important;
+ border-color:#a2b4ba!important;color:#263b43!important;
+}body.theme-light .rail{
+ background:linear-gradient(180deg,#f5f8f9,#e1e9eb)!important;
+ border-color:#a5b8be!important;box-shadow:0 16px 35px rgba(35,54,62,.13)!important;
+}body.theme-light .rail-item{color:#587078!important}body.theme-light .rail-item:hover{color:#172930!important;background:rgba(0,139,85,.08)!important}body.theme-light .rail-item.active{color:#fff!important}body.theme-light .rail-item.selected{color:#12392e!important;background:linear-gradient(180deg,rgba(0,139,85,.15),rgba(0,84,55,.07))!important;border-color:rgba(0,139,85,.42)!important}body.theme-light .main{color:#172930!important}body.theme-light .panel{
+ background:linear-gradient(180deg,#f8fafb,#e8eef0)!important;
+ border-color:#a5b8be!important;box-shadow:0 18px 44px rgba(35,54,62,.13),inset 0 1px 0 #fff!important;
+}body.theme-light .panel-body{background:#eef3f4!important}body.theme-light .head-title{text-shadow:none!important;color:#fff!important}body.theme-light .head-tag{color:#fff!important}body.theme-light .bottom{color:#526a73!important}body.theme-light .credit,.theme-light .credit strong{color:#50666e!important}/* JANELAS DE MÓDULO / HISTÓRICO — sem zonas negras no modo claro */
+body.theme-light .module-overlay{background:rgba(220,229,232,.70)!important;backdrop-filter:blur(8px)!important}body.theme-light .module-window,body.theme-light .history-window{
+ background:linear-gradient(180deg,#f8fafb,#e4ebed)!important;
+ border-color:#9fb2b9!important;
+ box-shadow:0 30px 90px rgba(35,54,62,.22),0 0 0 1px rgba(0,139,85,.08)!important;
+ color:#172930!important;
+}body.theme-light .module-window:before,body.theme-light .history-window:before{opacity:.25!important}body.theme-light .module-top,body.theme-light .history-top{
+ background:linear-gradient(90deg,#f1dde2,#f5f8f9 46%,#dfeee8)!important;
+ border-bottom-color:#b7c7cc!important;
+}body.theme-light .module-title,body.theme-light .history-title{color:#172930!important;text-shadow:none!important}body.theme-light .module-sub,body.theme-light .history-sub{color:#5f747c!important}body.theme-light .module-close,body.theme-light .history-close{background:#eef3f4!important;color:#263b43!important;border-color:#9fb2b9!important}body.theme-light .module-body,body.theme-light .history-body{color:#20343b!important}body.theme-light .module-card,body.theme-light .leg-category-panel,body.theme-light .info-strip{
+ background:linear-gradient(145deg,#f8fafb,#e7eef0)!important;
+ border-color:#b4c3c8!important;color:#20343b!important;
+ box-shadow:0 8px 22px rgba(35,54,62,.08)!important;
+}body.theme-light .module-card h3{color:#172930!important}body.theme-light .module-card p{color:#5d727a!important}body.theme-light .module-status{color:#16815d!important}body.theme-light .module-status i{box-shadow:none!important}body.theme-light .leg-category-title{color:#20343b!important;background:linear-gradient(90deg,rgba(200,16,46,.07),rgba(0,139,85,.05))!important}body.theme-light .history-row{background:linear-gradient(90deg,#f4f8f9,#e5edef)!important;border-color:#b6c5ca!important;color:#20343b!important}body.theme-light .history-row:hover{background:linear-gradient(90deg,#e4f2ec,#f1f7f8)!important}body.theme-light .history-footer{background:#e4ebed!important}/* FORMULÁRIOS / TABELAS / BOTÕES dentro dos módulos */
+body.theme-light input,body.theme-light textarea,body.theme-light select{
+ background:#f9fbfc!important;color:#1c3038!important;border-color:#a8bac0!important;
+}body.theme-light input::placeholder,body.theme-light textarea::placeholder{color:#71838a!important}body.theme-light button.aux-btn,body.theme-light .settings-quick-actions button,body.theme-light .settings-diagnostic-btn{
+ background:linear-gradient(180deg,#f5f9fa,#e2eaec)!important;color:#294049!important;border-color:#a7b9bf!important;
+}body.theme-light table{color:#20343b!important}body.theme-light th{background:#dce7e9!important;color:#31505a!important}body.theme-light td{background:#f4f8f9!important;color:#243b43!important;border-color:#c4d0d4!important}/* DEFINIÇÕES — contraste consistente */
+body.theme-light .settings-command-hero{background:linear-gradient(115deg,#f7fafb,#e7eef0 56%,#dfeee8)!important;color:#172930!important}body.theme-light .settings-hero-kicker{color:#16849b!important}body.theme-light .settings-hero-main h3{color:#172930!important}body.theme-light .settings-hero-main p{color:#5d727a!important}body.theme-light .setting-card,body.theme-light .settings-status-card{background:linear-gradient(145deg,#f8fafb,#e5edef)!important;border-color:#b2c2c7!important;color:#20343b!important}body.theme-light .setting-card strong{color:#172930!important}body.theme-light .setting-card span{color:#60757d!important}body.theme-light .settings-section-title{color:#587078!important}/* mensagens/overlays de estado */
+body.theme-light .loading-overlay{background:radial-gradient(circle at center,#f8fbfc,#e3eaec 70%)!important;color:#536a72!important}body.theme-light .toast-notification{box-shadow:0 7px 20px rgba(35,54,62,.22)!important}.settings-cache-refresh-card{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:10px;padding:11px 13px;border:1px solid rgba(78,204,214,.24);border-radius:9px;background:linear-gradient(90deg,rgba(10,39,47,.72),rgba(5,17,22,.82));box-shadow:inset 0 0 18px rgba(60,195,205,.025)}.settings-cache-refresh-copy{display:flex;align-items:center;gap:10px;min-width:0}.settings-cache-refresh-icon{width:31px;height:31px;flex:0 0 31px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(88,214,221,.38);border-radius:7px;background:rgba(33,135,146,.10);color:#6fe1e5;font:950 17px/1 Arial}.settings-cache-refresh-copy strong{display:block;color:#dcecef;font:950 8.5px/1.15 Arial;letter-spacing:.65px}.settings-cache-refresh-copy span{display:block;margin-top:4px;color:#8ea5ac;font:700 7.2px/1.3 Arial;max-width:760px}.settings-cache-refresh-btn{height:34px;flex:0 0 auto;padding:0 13px;border:1px solid rgba(88,214,221,.46);border-radius:6px;background:linear-gradient(180deg,#10313a,#08191f);color:#aeeef0;font:950 7.5px/1 Arial;letter-spacing:.55px;cursor:pointer}.settings-cache-refresh-btn:hover{border-color:#72e4e8;color:#fff;box-shadow:0 0 12px rgba(88,214,221,.10)}body.theme-light .settings-cache-refresh-card{background:linear-gradient(90deg,rgba(226,241,244,.96),rgba(241,247,249,.98));border-color:rgba(34,105,120,.20)}body.theme-light .settings-cache-refresh-copy strong{color:#17333c}body.theme-light .settings-cache-refresh-copy span{color:#60767e}body.theme-light .settings-cache-refresh-btn{background:#fff;color:#1b4753;border-color:#9bb9c2}
+@media(max-width:700px){.settings-cache-refresh-card{align-items:stretch;flex-direction:column}.settings-cache-refresh-btn{width:100%}
+}.system-factory-modal{position:fixed;inset:0;z-index:999999;display:none;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;background:rgba(1,8,11,.76);backdrop-filter:blur(3px)}.system-factory-modal.open{display:flex}.system-factory-dialog{width:min(540px,calc(100vw - 30px));box-sizing:border-box;border:1px solid rgba(67,184,194,.55);border-radius:12px;background:linear-gradient(145deg,#07151b,#09232a 52%,#071218);box-shadow:0 22px 60px rgba(0,0,0,.62),inset 0 0 30px rgba(0,190,190,.035);overflow:hidden;color:#eaf5f7}.system-factory-head{display:flex;align-items:center;gap:11px;padding:14px 16px 12px;border-bottom:1px solid rgba(49,151,163,.28);background:linear-gradient(90deg,rgba(103,22,52,.34),rgba(4,61,58,.22))}.system-factory-icon{width:36px;height:36px;flex:0 0 36px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(225,93,101,.65);border-radius:8px;background:rgba(132,29,39,.18);color:#ff9a9f;font:900 19px/1 Arial}.system-factory-kicker{display:block;color:#63d8d2;font:900 7px/1 Arial;letter-spacing:1px;margin-bottom:5px}.system-factory-title{display:block;color:#f5f8f9;font:950 17px/1 Arial;letter-spacing:.4px}.system-factory-body{padding:14px 16px 13px}.system-factory-warning{padding:10px 11px;border:1px solid rgba(191,78,87,.45);border-radius:7px;background:rgba(111,28,36,.14);color:#dce9eb;font:700 9px/1.45 Arial}.system-factory-warning strong{color:#ffb0b4;font-weight:950}.system-factory-list{margin:9px 0 0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 8px}.system-factory-list li{padding:6px 8px;border:1px solid rgba(55,139,151,.22);border-radius:5px;background:rgba(4,28,35,.48);color:#aac2c7;font:800 7.5px/1.2 Arial}.system-factory-list li::before{content:'×';color:#e17c83;font-weight:950;margin-right:6px}.system-factory-question{margin-top:10px;color:#f3d36e;font:900 8.5px/1.3 Arial;letter-spacing:.25px}.system-factory-foot{display:flex;justify-content:flex-end;gap:8px;padding:11px 16px;border-top:1px solid rgba(49,151,163,.22);background:rgba(3,16,21,.5)}.system-factory-btn{height:34px;padding:0 15px;border-radius:6px;border:1px solid rgba(75,157,170,.45);background:linear-gradient(180deg,#0d252d,#08171d);color:#b9d3d8;font:950 7.5px/1 Arial;letter-spacing:.5px;cursor:pointer}.system-factory-btn:hover{border-color:#71dbe0;color:#fff}.system-factory-btn.danger{border-color:rgba(218,91,99,.7);background:linear-gradient(180deg,#522127,#2a1217);color:#ffb5b8}.system-factory-btn.danger:hover{border-color:#ff7f86;background:linear-gradient(180deg,#682930,#35161c)}body.theme-light .system-factory-modal{background:rgba(12,25,29,.48)}body.theme-light .system-factory-dialog{background:linear-gradient(145deg,#f5f8fa,#e7eef1);border-color:rgba(34,105,120,.48);color:#122a34}body.theme-light .system-factory-head{background:linear-gradient(90deg,rgba(180,44,73,.10),rgba(0,128,116,.09))}body.theme-light .system-factory-title{color:#102a34}body.theme-light .system-factory-warning{background:#fff4f4;color:#33484f;border-color:rgba(170,65,73,.34)}body.theme-light .system-factory-list li{background:rgba(255,255,255,.66);color:#405961;border-color:rgba(34,105,120,.16)}body.theme-light .system-factory-foot{background:rgba(232,240,243,.82)}body.theme-light .system-factory-btn{background:#fff;color:#24414b;border-color:#a5bec6}
+@media(max-width:600px){.system-factory-modal{padding:10px}.system-factory-list{grid-template-columns:1fr}.system-factory-foot{flex-direction:column-reverse}.system-factory-btn{width:100%}}

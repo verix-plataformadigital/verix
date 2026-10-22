@@ -1,0 +1,1156 @@
+/* Pesquisa de matrículas — legendas técnicas alinhadas com a referência visual. */
+html body .command .searchbar,
+html body.fixed-workspace-active:not(.cinemometro-page-active) .command .searchbar,
+html body.consultation-screen-active .command .searchbar{
+  width:660px!important;
+  min-width:0!important;
+  max-width:calc(100vw - 500px)!important;
+  box-sizing:border-box!important;
+}
+html body .command .searchbar form{
+  display:flex!important;
+  align-items:flex-end!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+  width:100%!important;
+  height:100%!important;
+  box-sizing:border-box!important;
+  padding:7px 10px!important;
+}
+html body .command .field{
+  display:flex!important;
+  flex:1 1 0!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  justify-content:flex-end!important;
+  gap:6px!important;
+  min-width:0!important;
+}
+html body .command .field label{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:7px!important;
+  width:100%!important;
+  min-width:0!important;
+  padding:0 1px!important;
+  box-sizing:border-box!important;
+  color:#e7f0f2!important;
+  font-size:8px!important;
+  font-weight:950!important;
+  line-height:1.15!important;
+  letter-spacing:.7px!important;
+  white-space:nowrap!important;
+  text-shadow:0 1px 3px rgba(0,0,0,.8)!important;
+}
+html body .command .field-label-text{
+  display:block!important;
+  min-width:0!important;
+  overflow:hidden!important;
+  text-overflow:clip!important;
+}
+html body .command .field-index{
+  display:inline-flex!important;
+  flex:0 0 auto!important;
+  align-items:center!important;
+  justify-content:center!important;
+  align-self:stretch!important;
+  min-width:18px!important;
+  margin-left:auto!important;
+  padding-left:7px!important;
+  border-left:1px solid rgba(113,161,172,.55)!important;
+  color:#b5d5dc!important;
+  font-family:ui-monospace,Consolas,monospace!important;
+  font-size:7px!important;
+  font-weight:800!important;
+  line-height:1!important;
+  letter-spacing:0!important;
+}
+html body .command .field input{
+  display:block!important;
+  width:100%!important;
+  min-width:0!important;
+  height:42px!important;
+  box-sizing:border-box!important;
+  font-size:15px!important;
+}
+html body .command .consult{
+  flex:0 0 178px!important;
+  width:178px!important;
+  min-width:150px!important;
+  height:42px!important;
+  box-sizing:border-box!important;
+}
+html body .command .brand-notice{
+  gap:6px!important;
+}
+html body .command .brand-lockup-footer{
+  margin-top:1px!important;
+}
+@media(max-width:1200px){
+  html body .command .searchbar,
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .command .searchbar,
+  html body.consultation-screen-active .command .searchbar{
+    width:660px!important;
+    max-width:calc(100vw - 430px)!important;
+  }
+  html body .command .field label{
+    font-size:7.5px!important;
+    letter-spacing:.45px!important;
+  }
+  html body .command .consult{
+    flex-basis:150px!important;
+    width:150px!important;
+    min-width:140px!important;
+  }
+}
+@media(max-width:900px){
+  html body .command .searchbar,
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .command .searchbar,
+  html body.consultation-screen-active .command .searchbar{
+    left:50%!important;
+    right:auto!important;
+    width:calc(100vw - 32px)!important;
+    max-width:calc(100vw - 32px)!important;
+    min-width:0!important;
+    transform:translateX(-50%)!important;
+  }
+  html body .command .searchbar form{
+    gap:7px!important;
+    padding:6px 7px!important;
+  }
+  html body .command .field label{
+    font-size:clamp(6px,1.15vw,7.5px)!important;
+    letter-spacing:.15px!important;
+  }
+  html body .command .field-index{
+    min-width:14px!important;
+    padding-left:4px!important;
+    font-size:6px!important;
+  }
+  html body .command .field input{
+    height:38px!important;
+    font-size:clamp(10px,1.8vw,14px)!important;
+    letter-spacing:.5px!important;
+  }
+  html body .command .consult{
+    flex-basis:clamp(92px,22vw,150px)!important;
+    width:clamp(92px,22vw,150px)!important;
+    min-width:0!important;
+    height:38px!important;
+    padding:0 6px!important;
+    font-size:clamp(8px,1.5vw,11px)!important;
+  }
+}
+/* VÉRIX — cabeçalho redesenhado: identidade, pesquisa e ações em três zonas. */
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command{
+  display:grid!important;
+  position:fixed!important;
+  top:10px!important;
+  left:12px!important;
+  right:12px!important;
+  bottom:auto!important;
+  width:auto!important;
+  height:146px!important;
+  min-height:146px!important;
+  max-height:146px!important;
+  box-sizing:border-box!important;
+  grid-template-columns:minmax(330px,.95fr) minmax(560px,1.45fr) minmax(350px,.95fr)!important;
+  grid-template-rows:minmax(0,1fr)!important;
+  grid-template-areas:"brand search actions"!important;
+  align-items:stretch!important;
+  gap:clamp(12px,1.15vw,22px)!important;
+  padding:12px 18px 15px!important;
+  overflow:hidden!important;
+  isolation:isolate!important;
+  border:1px solid rgba(99,151,159,.58)!important;
+  border-radius:12px!important;
+  background:
+    radial-gradient(ellipse at 50% -30%,rgba(56,123,128,.16),transparent 54%),
+    linear-gradient(150deg,rgba(9,23,30,.99),rgba(3,10,15,.99) 54%,rgba(6,18,22,.99))!important;
+  box-shadow:0 16px 42px rgba(0,0,0,.58),inset 0 1px 0 rgba(217,246,246,.07)!important;
+  transform:none!important;
+  animation:none!important;
+  transition:border-color .2s,box-shadow .2s!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command:hover{
+  box-shadow:0 18px 46px rgba(0,0,0,.62),inset 0 1px 0 rgba(217,246,246,.08)!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command:before{
+  content:""!important;
+  position:absolute!important;
+  inset:0!important;
+  z-index:0!important;
+  opacity:1!important;
+  pointer-events:none!important;
+  background:
+    linear-gradient(115deg,transparent 0 32%,rgba(104,170,166,.035) 32.2% 32.6%,transparent 32.8% 67%,rgba(200,16,46,.035) 67.2% 67.6%,transparent 67.8%),
+    repeating-linear-gradient(0deg,rgba(224,244,244,.016) 0 1px,transparent 1px 5px)!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command:after{
+  content:""!important;
+  position:absolute!important;
+  z-index:1!important;
+  left:0!important;
+  right:0!important;
+  top:auto!important;
+  bottom:0!important;
+  height:2px!important;
+  background:linear-gradient(90deg,#699da0 0%,#3e8e7f 44%,#ae3449 72%,rgba(174,52,73,.15) 100%)!important;
+  box-shadow:none!important;
+  opacity:.92!important;
+  animation:none!important;
+  pointer-events:none!important;
+}
+/* Zona 1 — identidade institucional, agora organizada como um painel próprio. */
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .brand{
+  grid-area:brand!important;
+  position:relative!important;
+  inset:auto!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  height:100%!important;
+  min-height:0!important;
+  box-sizing:border-box!important;
+  margin:0!important;
+  padding:8px 14px!important;
+  overflow:hidden!important;
+  border:1px solid rgba(102,151,156,.25)!important;
+  border-right-color:rgba(102,151,156,.55)!important;
+  border-radius:8px!important;
+  background:linear-gradient(145deg,rgba(13,34,41,.68),rgba(4,14,19,.38))!important;
+  z-index:2!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .brand-notice{
+  position:relative!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:7px!important;
+  width:100%!important;
+  max-width:none!important;
+  height:auto!important;
+  min-height:0!important;
+  box-sizing:border-box!important;
+  margin:0!important;
+  padding:4px 3px 4px 12px!important;
+  text-align:center!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .brand-notice:before{
+  left:0!important;
+  top:2px!important;
+  bottom:2px!important;
+  width:3px!important;
+  border-radius:4px!important;
+  background:linear-gradient(180deg,#9ab9bf 0%,#659a98 55%,#c54c60 55%,#c54c60 100%)!important;
+  box-shadow:0 0 12px rgba(88,183,166,.15)!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .brand-lockup-line{
+  gap:7px!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .brand-lockup-logo{
+  font-size:15px!important;
+  letter-spacing:.9px!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .brand-lockup-label{
+  font-size:8px!important;
+  letter-spacing:1.25px!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .brand-lockup-subtitle{
+  max-width:100%!important;
+  font-size:clamp(11px,.79vw,14px)!important;
+  line-height:1.2!important;
+  letter-spacing:.05px!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .brand-lockup-values{
+  font-size:8px!important;
+  letter-spacing:1.15px!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .brand-lockup-footer{
+  gap:9px!important;
+  flex-wrap:wrap!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .brand-lockup-badge{
+  padding:4px 8px!important;
+  font-size:7px!important;
+  border-radius:4px!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .brand-lockup-note{
+  font-size:7.5px!important;
+  line-height:1.25!important;
+}
+/* Zona 2 — pesquisa única, com rótulos no topo e campos agrupados numa superfície. */
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .searchbar{
+  grid-area:search!important;
+  position:relative!important;
+  inset:auto!important;
+  left:auto!important;
+  right:auto!important;
+  top:auto!important;
+  bottom:auto!important;
+  transform:none!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+  box-sizing:border-box!important;
+  margin:0!important;
+  padding:8px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  overflow:hidden!important;
+  border:1px solid rgba(98,155,164,.47)!important;
+  border-radius:10px!important;
+  background:linear-gradient(180deg,rgba(7,21,28,.94),rgba(3,11,16,.98))!important;
+  box-shadow:inset 0 1px 0 rgba(231,250,250,.06),0 8px 20px rgba(0,0,0,.22)!important;
+  z-index:2!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .searchbar:before{
+  content:""!important;
+  position:absolute!important;
+  left:12px!important;
+  right:12px!important;
+  top:0!important;
+  height:2px!important;
+  border-radius:0 0 2px 2px!important;
+  background:linear-gradient(90deg,transparent,rgba(98,190,177,.8) 22%,rgba(98,190,177,.28) 72%,transparent)!important;
+  opacity:1!important;
+  pointer-events:none!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .searchbar form{
+  display:flex!important;
+  align-items:flex-end!important;
+  justify-content:center!important;
+  gap:12px!important;
+  width:100%!important;
+  height:100%!important;
+  padding:4px!important;
+  box-sizing:border-box!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .field{
+  display:flex!important;
+  flex:1 1 0!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  justify-content:flex-end!important;
+  gap:7px!important;
+  min-width:0!important;
+  max-width:235px!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .field label{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:6px!important;
+  width:100%!important;
+  min-width:0!important;
+  padding:0 2px!important;
+  color:#dbe9eb!important;
+  font-size:8px!important;
+  font-weight:900!important;
+  line-height:1.15!important;
+  letter-spacing:.75px!important;
+  white-space:nowrap!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .field-index{
+  border-left-color:rgba(105,162,170,.55)!important;
+  color:#8fbabf!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .field input{
+  width:100%!important;
+  min-width:0!important;
+  height:43px!important;
+  box-sizing:border-box!important;
+  border:1px solid #667c83!important;
+  border-radius:7px!important;
+  background:linear-gradient(180deg,#f4f7f8,#d8e1e4)!important;
+  color:#11232b!important;
+  box-shadow:inset 0 2px 4px rgba(0,0,0,.14),0 1px 0 rgba(255,255,255,.08)!important;
+  font-size:15px!important;
+  font-weight:900!important;
+  letter-spacing:1px!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .field input:focus{
+  outline:none!important;
+  border-color:#7cb9b5!important;
+  box-shadow:0 0 0 2px rgba(90,185,165,.18),inset 0 2px 4px rgba(0,0,0,.12)!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .consult{
+  flex:0 0 174px!important;
+  width:174px!important;
+  min-width:150px!important;
+  height:43px!important;
+  box-sizing:border-box!important;
+  border:1px solid rgba(239,104,123,.72)!important;
+  border-radius:7px!important;
+  background:linear-gradient(180deg,#b82943 0%,#8b1d32 100%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.15),0 5px 12px rgba(126,15,36,.21)!important;
+  color:#fff!important;
+  font-size:10px!important;
+  font-weight:950!important;
+  letter-spacing:.8px!important;
+}
+/* Zona 3 — ações agrupadas; Histórico sai da margem inferior e passa para aqui. */
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-right-zone{
+  grid-area:actions!important;
+  position:relative!important;
+  inset:auto!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  align-items:stretch!important;
+  gap:9px!important;
+  width:100%!important;
+  min-width:0!important;
+  height:100%!important;
+  box-sizing:border-box!important;
+  padding:0 0 19px!important;
+  z-index:3!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:8px!important;
+  width:100%!important;
+  min-width:0!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .consulta-history-bottom-wrap{
+  position:relative!important;
+  inset:auto!important;
+  display:flex!important;
+  flex:0 1 auto!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  width:auto!important;
+  min-width:0!important;
+  height:auto!important;
+  margin:0!important;
+  padding:0!important;
+  transform:none!important;
+  z-index:auto!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .consulta-history-bottom{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:7px!important;
+  width:auto!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:31px!important;
+  min-height:31px!important;
+  box-sizing:border-box!important;
+  margin:0!important;
+  padding:0 12px!important;
+  border:1px solid rgba(78,182,145,.64)!important;
+  border-radius:6px!important;
+  background:linear-gradient(180deg,rgba(19,64,51,.98),rgba(9,37,31,.99))!important;
+  box-shadow:inset 0 1px 0 rgba(230,255,244,.08),0 4px 12px rgba(0,0,0,.2)!important;
+  color:#d7f8e9!important;
+  font:900 8px/1 Arial,sans-serif!important;
+  letter-spacing:.55px!important;
+  text-transform:uppercase!important;
+  white-space:nowrap!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .consulta-history-bottom:hover{
+  background:linear-gradient(180deg,rgba(25,83,64,.98),rgba(10,46,36,.99))!important;
+  border-color:rgba(103,220,176,.78)!important;
+  transform:translateY(-1px)!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .consulta-history-bottom-icon{
+  color:#79d7b0!important;
+  font-size:14px!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .tools{
+  position:relative!important;
+  inset:auto!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:6px!important;
+  width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  margin:0!important;
+  padding:0!important;
+  transform:none!important;
+  opacity:1!important;
+  visibility:visible!important;
+  z-index:auto!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .tools .tool{
+  display:inline-flex!important;
+  flex:1 1 auto!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-width:0!important;
+  width:auto!important;
+  height:30px!important;
+  margin:0!important;
+  padding:0 8px!important;
+  border:1px solid rgba(102,151,159,.45)!important;
+  border-radius:6px!important;
+  background:linear-gradient(180deg,rgba(22,43,50,.95),rgba(8,21,27,.98))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.055)!important;
+  color:#d1dfe2!important;
+  font:800 7.5px/1 Arial,sans-serif!important;
+  letter-spacing:.35px!important;
+  white-space:nowrap!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .tools .tool:hover{
+  border-color:rgba(105,200,178,.7)!important;
+  background:linear-gradient(180deg,rgba(25,59,61,.98),rgba(8,30,32,.99))!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .tools .tool.full{
+  flex:0 0 36px!important;
+  width:36px!important;
+  min-width:36px!important;
+  padding:0!important;
+  background:linear-gradient(180deg,#176d59,#0d493d)!important;
+  border-color:rgba(75,202,159,.72)!important;
+  color:#e2fff2!important;
+  font-size:15px!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .time{
+  position:absolute!important;
+  inset:auto 0 0 auto!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:10px!important;
+  width:auto!important;
+  max-width:100%!important;
+  height:12px!important;
+  margin:0!important;
+  padding:0!important;
+  color:#81999f!important;
+  font:700 7px/1 ui-monospace,Consolas,monospace!important;
+  letter-spacing:1px!important;
+  white-space:nowrap!important;
+  transform:none!important;
+  z-index:3!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .time .version-label{
+  color:#b7c8cc!important;
+}
+/* Ecrãs médios: manter as três zonas, mas redistribuir o espaço. */
+@media(max-width:1450px){
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command{
+    top:8px!important;
+    left:8px!important;
+    right:8px!important;
+    height:158px!important;
+    min-height:158px!important;
+    max-height:158px!important;
+    grid-template-columns:minmax(260px,.9fr) minmax(440px,1.35fr) minmax(300px,.92fr)!important;
+    gap:10px!important;
+    padding:10px 12px 14px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .brand{
+    padding:8px 9px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .brand-lockup-subtitle{
+    font-size:12px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-right-zone{
+    gap:7px!important;
+    padding-bottom:17px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary{
+    gap:5px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .consulta-history-bottom{
+    padding:0 8px!important;
+    font-size:7px!important;
+    letter-spacing:.25px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .field label{
+    font-size:7px!important;
+    letter-spacing:.35px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .consult{
+    flex-basis:138px!important;
+    width:138px!important;
+    min-width:124px!important;
+    font-size:9px!important;
+  }
+}
+/* Janelas estreitas: identidade e pesquisa na primeira fila; ações na segunda. */
+@media(max-width:1180px){
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command{
+    height:184px!important;
+    min-height:184px!important;
+    max-height:184px!important;
+    grid-template-columns:minmax(215px,.78fr) minmax(420px,1.42fr)!important;
+    grid-template-rows:94px 55px!important;
+    grid-template-areas:"brand search" "actions actions"!important;
+    gap:8px 12px!important;
+    padding:10px 12px 16px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .brand{
+    border-right:0!important;
+    padding:5px 7px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .brand-notice{
+    gap:4px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .brand-lockup-subtitle{
+    font-size:11px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .searchbar{
+    padding:5px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .searchbar form{
+    gap:8px!important;
+    padding:2px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .field{
+    gap:4px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .field input{
+    height:36px!important;
+    font-size:13px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .consult{
+    height:36px!important;
+    flex-basis:120px!important;
+    width:120px!important;
+    min-width:110px!important;
+    padding:0 5px!important;
+    font-size:8px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-right-zone{
+    flex-direction:row!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    gap:12px!important;
+    padding:0 0 15px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary{
+    width:auto!important;
+    justify-content:flex-start!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .tools{
+    width:auto!important;
+    flex:0 1 55%!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .tools .tool{
+    height:29px!important;
+    padding:0 6px!important;
+  }
+}
+/* Telemóveis: campos em duas colunas e botão de consulta na fila inferior. */
+@media(max-width:900px){
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command{
+    top:6px!important;
+    left:6px!important;
+    right:6px!important;
+    height:292px!important;
+    min-height:292px!important;
+    max-height:292px!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-rows:58px 150px 62px!important;
+    grid-template-areas:"brand" "search" "actions"!important;
+    gap:7px!important;
+    padding:7px 8px 15px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .brand{
+    padding:3px 8px!important;
+    border:0!important;
+    border-bottom:1px solid rgba(103,152,158,.38)!important;
+    background:transparent!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .brand-notice{
+    gap:3px!important;
+    padding-left:10px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .brand-lockup-subtitle{
+    font-size:clamp(10px,2.8vw,12px)!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .brand-lockup-logo{
+    font-size:12px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .brand-lockup-label{
+    font-size:7px!important;
+    letter-spacing:.8px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .brand-lockup-footer{
+    gap:6px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .brand-lockup-note{
+    font-size:6.5px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .searchbar{
+    width:100%!important;
+    padding:7px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .searchbar form{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+    grid-template-rows:auto 39px!important;
+    align-content:center!important;
+    align-items:end!important;
+    gap:8px!important;
+    padding:2px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .field{
+    width:100%!important;
+    max-width:none!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .field label{
+    font-size:clamp(6px,1.7vw,8px)!important;
+    letter-spacing:.15px!important;
+    gap:3px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .field-index{
+    min-width:12px!important;
+    padding-left:3px!important;
+    font-size:6px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .field input{
+    height:38px!important;
+    font-size:clamp(11px,3vw,15px)!important;
+    padding:0 5px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .consult{
+    grid-column:1 / -1!important;
+    width:100%!important;
+    min-width:0!important;
+    height:39px!important;
+    flex:none!important;
+    font-size:10px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-right-zone{
+    flex-direction:column!important;
+    justify-content:center!important;
+    align-items:stretch!important;
+    gap:6px!important;
+    padding:0 0 10px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary{
+    justify-content:center!important;
+    gap:7px!important;
+  }
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .consulta-history-bottom {
+    height:27px!important;
+    min-height:27px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .tools{
+    width:100%!important;
+    flex:0 0 auto!important;
+    justify-content:center!important;
+    gap:5px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .tools .tool{
+    height:27px!important;
+    padding:0 5px!important;
+    font-size:7px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .time{
+    font-size:6px!important;
+    letter-spacing:.4px!important;
+    gap:5px!important;
+  }
+}
+/* Ajustes de altura sem regressar ao cabeçalho antigo. */
+@media(max-height:820px) and (min-width:1451px){
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command{
+    top:7px!important;
+    height:124px!important;
+    min-height:124px!important;
+    max-height:124px!important;
+    padding:9px 14px 12px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .searchbar{
+    padding:5px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .field input,
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .consult{
+    height:38px!important;
+  }
+}
+@media(max-width:900px){
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .main.consultation-fixed-active{
+    overflow:auto!important;
+  }
+}
+/* Inputs de matrícula desenhados como chapas portuguesas — permanecem campos editáveis. */
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .pt-plate-input-shell{
+  display:flex!important;
+  align-items:stretch!important;
+  flex:1 1 auto!important;
+  width:100%!important;
+  min-width:0!important;
+  height:43px!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+  border:1px solid #637982!important;
+  border-radius:7px!important;
+  background:
+    radial-gradient(circle at 90% 12%,rgba(255,255,255,.82),transparent 28%),
+    linear-gradient(180deg,#fbfcfc 0%,#eff2f2 38%,#dce2e4 100%)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.96),
+    inset 0 -2px 3px rgba(29,43,48,.09),
+    0 2px 5px rgba(0,0,0,.25)!important;
+  transition:border-color .16s ease,box-shadow .16s ease!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .pt-plate-input-shell:focus-within{
+  border-color:#65b6aa!important;
+  box-shadow:
+    0 0 0 2px rgba(83,190,163,.16),
+    inset 0 1px 0 rgba(255,255,255,.98),
+    inset 0 -2px 3px rgba(29,43,48,.08),
+    0 3px 10px rgba(0,0,0,.22)!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .pt-plate-eu-band{
+  display:flex!important;
+  flex:0 0 29px!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:0!important;
+  width:29px!important;
+  min-width:29px!important;
+  height:100%!important;
+  box-sizing:border-box!important;
+  border-right:1px solid rgba(10,39,87,.9)!important;
+  background:linear-gradient(180deg,#174b9c 0%,#083575 50%,#062d65 100%)!important;
+  box-shadow:inset -1px 0 0 rgba(255,255,255,.18),inset 1px 0 0 rgba(255,255,255,.14)!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .pt-plate-eu-stars{
+  display:block!important;
+  flex:0 0 18px!important;
+  width:17px!important;
+  height:17px!important;
+  margin:1px 0 0!important;
+  overflow:visible!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .pt-plate-country{
+  display:block!important;
+  margin-top:0!important;
+  color:#fff!important;
+  font:900 9px/10px Arial,Helvetica,sans-serif!important;
+  letter-spacing:0!important;
+  text-align:center!important;
+  text-shadow:0 1px 1px rgba(0,0,0,.4)!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .pt-plate-input-shell input,
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .field .pt-plate-input-shell input{
+  display:block!important;
+  position:relative!important;
+  flex:1 1 0!important;
+  width:0!important;
+  min-width:0!important;
+  max-width:none!important;
+  height:100%!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0 5px!important;
+  box-sizing:border-box!important;
+  border:0!important;
+  border-radius:0!important;
+  outline:none!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:#172a36!important;
+  -webkit-text-fill-color:#172a36!important;
+  font-family:ui-monospace,"Courier New",Consolas,monospace!important;
+  font-size:clamp(13px,1vw,17px)!important;
+  font-weight:900!important;
+  line-height:1!important;
+  letter-spacing:1.45px!important;
+  text-align:center!important;
+  text-transform:uppercase!important;
+  text-shadow:0 1px 0 rgba(255,255,255,.65)!important;
+  caret-color:#153b6c!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .pt-plate-input-shell input::placeholder{
+  color:rgba(34,54,66,.48)!important;
+  -webkit-text-fill-color:rgba(34,54,66,.48)!important;
+  opacity:1!important;
+  letter-spacing:1.35px!important;
+  text-shadow:none!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .pt-plate-input-shell input::selection{
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  background:#174b9c!important;
+}
+@media(max-width:1180px){
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .pt-plate-input-shell{
+    height:36px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .pt-plate-eu-band{
+    flex-basis:25px!important;
+    width:25px!important;
+    min-width:25px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .pt-plate-eu-stars{
+    width:15px!important;
+    height:15px!important;
+    flex-basis:16px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .pt-plate-country{
+    font-size:8px!important;
+    line-height:9px!important;
+  }
+}
+@media(max-width:900px){
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .pt-plate-input-shell{
+    height:38px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .pt-plate-eu-band{
+    flex-basis:25px!important;
+    width:25px!important;
+    min-width:25px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .pt-plate-input-shell input{
+    font-size:clamp(11px,3vw,15px)!important;
+    letter-spacing:.9px!important;
+  }
+}
+/* Botão MENU novo: não reutiliza o ID nem as classes do controlo legado. */
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #verixMenuReturnButton{
+  appearance:none!important;
+  -webkit-appearance:none!important;
+  position:relative!important;
+  inset:auto!important;
+  display:inline-flex!important;
+  flex:0 0 104px!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:9px!important;
+  width:104px!important;
+  min-width:104px!important;
+  max-width:104px!important;
+  height:35px!important;
+  min-height:35px!important;
+  max-height:35px!important;
+  margin:0!important;
+  padding:0 11px!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+  border:1px solid rgba(108,183,174,.62)!important;
+  border-radius:7px!important;
+  background:linear-gradient(180deg,#17343c 0%,#0a2029 100%)!important;
+  box-shadow:inset 0 1px 0 rgba(234,255,255,.09),0 3px 8px rgba(0,0,0,.22)!important;
+  color:#e0f2f1!important;
+  font-family:Arial,Helvetica,sans-serif!important;
+  font-size:9px!important;
+  font-weight:900!important;
+  line-height:1!important;
+  letter-spacing:.9px!important;
+  text-align:center!important;
+  text-indent:0!important;
+  text-shadow:none!important;
+  white-space:nowrap!important;
+  opacity:1!important;
+  visibility:visible!important;
+  filter:none!important;
+  transform:none!important;
+  animation:none!important;
+  cursor:pointer!important;
+  z-index:8!important;
+  isolation:isolate!important;
+  transition:background .14s ease,border-color .14s ease,box-shadow .14s ease,transform .14s ease!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #verixMenuReturnButton:before,
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #verixMenuReturnButton:after{
+  content:none!important;
+  display:none!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #verixMenuReturnButton .verix-menu-return-icon{
+  display:inline-flex!important;
+  flex:0 0 17px!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:17px!important;
+  min-width:17px!important;
+  max-width:17px!important;
+  height:17px!important;
+  min-height:17px!important;
+  margin:0!important;
+  padding:0!important;
+  box-sizing:border-box!important;
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  color:#8fe0d1!important;
+  line-height:0!important;
+  text-shadow:none!important;
+  transform:none!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #verixMenuReturnButton .verix-menu-return-icon svg{
+  display:block!important;
+  width:17px!important;
+  min-width:17px!important;
+  height:17px!important;
+  min-height:17px!important;
+  overflow:visible!important;
+  margin:0!important;
+  padding:0!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #verixMenuReturnButton .verix-menu-return-label{
+  display:inline-block!important;
+  flex:0 0 auto!important;
+  position:static!important;
+  width:auto!important;
+  height:auto!important;
+  min-width:0!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  color:#e0f2f1!important;
+  font:900 9px/1 Arial,Helvetica,sans-serif!important;
+  letter-spacing:1px!important;
+  text-align:center!important;
+  text-shadow:none!important;
+  white-space:nowrap!important;
+  transform:none!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #verixMenuReturnButton:hover{
+  background:linear-gradient(180deg,#20505a 0%,#0d3038 100%)!important;
+  border-color:rgba(142,230,213,.9)!important;
+  box-shadow:inset 0 1px 0 rgba(244,255,255,.13),0 5px 12px rgba(0,0,0,.28)!important;
+  color:#fff!important;
+  filter:none!important;
+  transform:translateY(-1px)!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #verixMenuReturnButton:active{
+  background:linear-gradient(180deg,#0b252d 0%,#071921 100%)!important;
+  box-shadow:inset 0 2px 4px rgba(0,0,0,.25)!important;
+  transform:translateY(0)!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #verixMenuReturnButton:focus-visible{
+  outline:2px solid #85dcca!important;
+  outline-offset:2px!important;
+}
+@media(max-width:1450px){
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #verixMenuReturnButton{
+    flex-basis:96px!important;
+    width:96px!important;
+    min-width:96px!important;
+    max-width:96px!important;
+    height:32px!important;
+    min-height:32px!important;
+    max-height:32px!important;
+    gap:7px!important;
+    padding:0 8px!important;
+  }
+}
+@media(max-width:900px){
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #verixMenuReturnButton{
+    flex-basis:94px!important;
+    width:94px!important;
+    min-width:94px!important;
+    max-width:94px!important;
+    height:27px!important;
+    min-height:27px!important;
+    max-height:27px!important;
+    padding:0 7px!important;
+    gap:6px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #verixMenuReturnButton .verix-menu-return-icon,
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #verixMenuReturnButton .verix-menu-return-icon svg{
+    flex-basis:14px!important;
+    width:14px!important;
+    min-width:14px!important;
+    max-width:14px!important;
+    height:14px!important;
+    min-height:14px!important;
+  }
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .command .command-actions-primary #verixMenuReturnButton .verix-menu-return-label{
+    font-size:8px!important;
+  }
+}
+/* Reaproveita o espaço inferior que deixou de ser necessário após mover o Histórico para o cabeçalho. */
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .main.consultation-fixed-active{
+  top:160px!important;
+  bottom:8px!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:hidden!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .main.consultation-fixed-active > .panel{
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+  align-self:stretch!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .main.consultation-fixed-active > .panel > .panel-body,
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .main.consultation-fixed-active > .panel > .insurance-body{
+  bottom:0!important;
+  min-height:0!important;
+}
+html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .main.consultation-fixed-active .panel-body iframe{
+  width:100%!important;
+  height:100%!important;
+}
+@media(max-width:1450px){
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .main.consultation-fixed-active{
+    top:170px!important;
+    bottom:8px!important;
+  }
+}
+@media(max-width:1180px){
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .main.consultation-fixed-active{
+    top:196px!important;
+    bottom:8px!important;
+  }
+}
+@media(max-width:900px){
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .main.consultation-fixed-active{
+    top:306px!important;
+    bottom:8px!important;
+    height:auto!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+  }
+}
+@media(max-height:820px) and (min-width:1451px){
+  html body.consultation-screen-active:not(.main-menu-active):not(.history-page-active) .main.consultation-fixed-active{
+    top:134px!important;
+    bottom:8px!important;
+  }
+}
+/* Rodapé reconstruído em HTML: barra de estado {
+  order:4!important;
+  position:relative!important;
+  display:flex!important;
+  flex-direction:column!important;
+  flex:0 0 116px!important;
+  align-self:stretch!important;
+  gap:0!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  height:116px!important;
+  min-height:116px!important;
+  max-height:116px!important;
+  margin:auto 0 0!important;
+  padding:0!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+  border:0!important;
+  border-top:1px solid rgba(102,150,159,.38)!important;
+  border-bottom:1px solid rgba(102,150,159,.18)!important;
+  border-radius:0!important;
+  background:linear-gradient(90deg,rgba(6,21,27,.97),rgba(4,13,19,.93) 54%,rgba(17,13,20,.92))!important;
+  box-shadow:none!important;
+  color:#d5e4e7!important;
+}
+/* Tablet: a barra passa a duas linhas e o contacto ocupa largura inteira. */
+

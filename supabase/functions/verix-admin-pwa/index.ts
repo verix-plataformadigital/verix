@@ -134,10 +134,15 @@ Deno.serve(async (request: Request): Promise<Response> => {
       body = await upstream.arrayBuffer();
     }
 
-    return new Response(request.method === "HEAD" ? null : body, {
+    // Set the MIME header after construction as an explicit runtime override.
+    // This avoids the HTML response being exposed as text/plain by the gateway.
+    const response = new Response(request.method === "HEAD" ? null : body, {
       status: 200,
-      headers: { ...RESPONSE_HEADERS, "Content-Type": asset.type }
+      headers: RESPONSE_HEADERS
     });
+    response.headers.set("content-type", asset.type);
+    console.log("verix-admin-pwa-response", relativePath, response.headers.get("content-type"));
+    return response;
   } catch (_) {
     return jsonError("Admin asset could not be loaded", 502);
   }

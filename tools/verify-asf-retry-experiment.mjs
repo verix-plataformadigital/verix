@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { readOperationalSource } from "./lib/operational-source.mjs";
 
-const operational = fs.readFileSync("verix-app.html", "utf8");
+// The modular branch keeps verix-app.html as a development pointer.
+// Compare the experiment to the same assembled operational source used by the release build.
+const operational = readOperationalSource();
 const experiment = fs.readFileSync("verix-app-test-retries.html", "utf8");
 const built = fs.readFileSync("dist/verix-app-test-retries.html", "utf8");
 

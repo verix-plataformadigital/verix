@@ -1,0 +1,45 @@
+
+/* Substitui o ícone artificial por fotografia real de tecido, integrada no cabeçalho. */
+html body .command .brand-notice{
+  position:relative!important;
+  isolation:isolate!important;
+  overflow:visible!important;
+  background:transparent!important;
+}
+html body .command .brand-notice::before{
+  z-index:3!important;
+  pointer-events:none!important;
+  box-shadow:0 0 8px rgba(74,210,151,.25)!important;
+}
+html body .command .brand-lockup-line{
+  align-items:center!important;
+  gap:6px!important;
+  min-height:48px!important;
+}
+html body .command .brand-lockup-logo{
+  text-shadow:0 2px 7px rgba(0,0,0,.88)!important;
+}
+html body .command .brand-lockup-label,
+html body .command .brand-lockup-subtitle,
+html body .command .brand-lockup-values,
+html body .command .brand-lockup-footer{
+  text-shadow:0 1px 5px rgba(0,0,0,.94)!important;
+}
+html body #vxMobileTop .vx-brand-text{
+
+  display:block!important;
+  min-width:0!important;
+  white-space:nowrap!important;
+
+}
+@keyframes verix-flag-mobile-photo-wave{
+  0%,100%{transform:perspective(480px) rotateY(-1deg) skewY(-.3deg) translate3d(-1px,0,0);background-position:0 0,47% 44%}
+  35%{transform:perspective(480px) rotateY(.8deg) skewY(.15deg) translate3d(1px,-.4px,0);background-position:0 0,54% 49%}
+  68%{transform:perspective(480px) rotateY(-.6deg) skewY(-.2deg) translate3d(0,.4px,0);background-position:0 0,46% 53%}
+}
+
+@media(prefers-reduced-motion:reduce){
+  html body #vxMobileTop .vx-brand::before{
+    animation:verix-flag-mobile-photo-wave 6.2s ease-in-out infinite!important;
+  }
+}
