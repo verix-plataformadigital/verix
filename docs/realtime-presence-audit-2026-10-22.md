@@ -35,6 +35,10 @@ Este padrão confirma que o histórico pode receber sinais antigos muito depois 
 
 A consulta não alterou dados. Os números são uma fotografia daquela janela e não uma estatística permanente.
 
+### 2.2 Plano de execução (read-only)
+
+O plano do SELECT principal foi medido com EXPLAIN ANALYZE na base de produção, sem executar INSERT/UPDATE/DDL: ~0,63 ms para obter as contagens de presença e ~0,86 ms para a variante que também materializa as ações recentes. Foram usados poucos blocos de cache (13 e 35, respetivamente), e a leitura do heartbeat usou os índices temporais existentes. Estes valores são fotografias de uma execução, não garantias de latência sob concorrência/carga. Por agora, não há justificação para adicionar índices antes de medir com mais sessões ativas.
+
 ### 2.1 Validação do SQL proposto em modo read-only
 
 O corpo SELECT do RPC proposto foi executado diretamente sobre os dados atuais, substituindo apenas o parâmetro p_now por clock_timestamp(); a migração não foi aplicada e não foi criada nem substituída nenhuma função na base de dados. Fotografia em 2026-10-22 07:31:07 UTC:
@@ -56,9 +60,10 @@ Foi também executada uma simulação SQL com três sequências de eventos:
 
 ### 3. Endpoint legado de telemetria
 
-Nos logs da Supabase foram observadas milhares de chamadas OPTIONS a /functions/v1/telemetry, todas com 404, sem Origin, Referer, Access-Control-Request-Method, Access-Control-Request-Headers ou Content-Type registados. Entre os registos havia user agents de Chrome e Edge em Windows. O código-fonte principal atual só referencia /functions/v1/telemetry-v2; o service worker atual não reescreve pedidos de telemetria.
+Na janela móvel de 24 horas consultada às 07:39:47 UTC, os logs registavam **14 412 chamadas OPTIONS** a /functions/v1/telemetry, todas com HTTP 404 e com `execution_id` vazio. A agregação apresentava um único valor de IP encaminhado e três variantes de User-Agent (Chrome/Windows e Edge/Windows), entre 21 e 22 de outubro. Em todas estas linhas faltavam Origin, Referer e Access-Control-Request-Method; o tráfego não tinha a forma habitual de um preflight CORS de browser. A documentação da Supabase explica que `execution_id` vazio em respostas 404 é consistente com `FUNCTION_NOT_FOUND` (nome de função não reconhecido), antes da execução do código da Edge Function:
+- https://supabase.com/docs/guides/troubleshooting/edge-function-404-error-response
 
-Isto não parece um preflight CORS normal de um browser porque os cabeçalhos de preflight estavam vazios, mas ainda não existe evidência suficiente para atribuir a origem a uma versão específica, extensão, scanner ou serviço. Não criar um alias para o endpoint antigo antes de identificar a origem.
+O código-fonte principal atual só referencia /functions/v1/telemetry-v2; o service worker atual não reescreve pedidos de telemetria. Apesar do padrão ser compatível com um cliente/script antigo ou uma ferramenta a repetir pedidos ao endpoint removido, os logs, por si só, não permitem atribuir a origem a uma versão específica, extensão, scanner ou serviço. Não criar um alias para o endpoint antigo antes de identificar a origem.
 
 ### 4. Identidade de separador
 
