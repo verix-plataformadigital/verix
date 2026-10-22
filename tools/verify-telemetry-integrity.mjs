@@ -233,7 +233,9 @@ const scriptEnd = builtApp.indexOf("</script>", scriptStart + scriptOpen.length)
 assert.ok(scriptStart >= 0 && scriptEnd > scriptStart, "secure build must inject TypeScript telemetry into the portable app");
 const telemetryScript = builtApp.slice(scriptStart + scriptOpen.length, scriptEnd);
 assert.doesNotThrow(() => new Function(telemetryScript), "production telemetry script must parse as JavaScript");
-assert.match(telemetryScript, /var HEARTBEAT_MS = 60000;/, "heartbeat cadence should reduce requests while remaining within the 90-second online lease");
+assert.match(telemetrySource, /var HEARTBEAT_MS = 60000;/, "source heartbeat cadence must remain at 60 seconds");
+assert.match(telemetryScript, /var HEARTBEAT_MS = (?:60000|6e4);/, "compiled heartbeat cadence should remain at 60 seconds within the 90-second presence lease");
+assert.doesNotMatch(telemetryScript, /\\/functions\\/v1\\/telemetry(?!-v2)/, "production bundle must not reference the obsolete telemetry endpoint");
 
 const parserMatch = clientTransport.match(/function parseReceipt\(text\) \{[\s\S]*?\n  \}/);
 assert.ok(parserMatch, "receipt parser must be independently testable");
