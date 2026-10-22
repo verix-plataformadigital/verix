@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - "supabase/functions/telemetry-v2/index.ts"
+      - "supabase/functions/asf-proxy-v1/**"
       - "supabase/functions/stats-v2/index.ts"
       - "supabase/migrations/**"
       - "admin_v2.html"
@@ -20,6 +21,7 @@ on:
       - "fix/telemetry-diagnostics-*"
     paths:
       - "supabase/functions/telemetry-v2/index.ts"
+      - "supabase/functions/asf-proxy-v1/**"
       - "supabase/functions/stats-v2/index.ts"
       - "supabase/migrations/**"
       - "admin_v2.html"
@@ -46,6 +48,10 @@ jobs:
           deno-version: v2.x
       - name: Type-check telemetry Edge Function
         run: deno check --no-lock supabase/functions/telemetry-v2/index.ts
+      - name: Type-check ASF relay and bounded retry helper
+        run: deno check --no-lock supabase/functions/asf-proxy-v1/index.ts supabase/functions/asf-proxy-v1/retry.ts
+      - name: Test bounded ASF transient-error recovery
+        run: deno test supabase/functions/asf-proxy-v1/retry_test.ts
       - name: Type-check Admin statistics Edge Function
         run: deno check --no-lock supabase/functions/stats-v2/index.ts
       - name: Check realtime presence source syntax
