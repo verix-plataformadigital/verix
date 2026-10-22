@@ -6,7 +6,13 @@ verify_jwt = false
 [functions.stats-v2]
 verify_jwt = false
 
+[functions.hourly-history-v2]
+verify_jwt = false
+
 [functions.admin-auth-v2]
+verify_jwt = false
+
+[functions.admin-telemetry-v3]
 verify_jwt = false
 
 [functions.verix-admin-pwa]
