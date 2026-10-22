@@ -163,10 +163,20 @@ Exemplos de ficheiros sem par identificado no ledger pelo mapeamento atual:
 4. **Índices e funções SQL antigas:** o mapa read-only Edge Function → RPC → tabela/trigger ficou documentado em [telemetry-supabase-dependency-map-2026-10-22.md](./telemetry-supabase-dependency-map-2026-10-22.md). Testar planos de execução e hardening de privilégios num ambiente de teste antes de qualquer remoção/alteração.
 5. **Migrações:** completar a comparação baseada em conteúdo e schema, depois documentar uma baseline para instalações novas.
 
+## 8.1 Reconciliação da fonte principal com a `main`
+
+Foi comparada a versão publicada em `main` (22/10/2026) com a fonte integral usada como base para a extração modular (commit `9d6f9f08809cd953fae2545d2f743f04f9a8a1d5`):
+
+- A versão atual da `main` tem **1.097.196 caracteres**; a fonte base da extração tem **1.098.852 caracteres**.
+- A diferença fica em três blocos pequenos perto da serialização dos metadados de telemetria ASF, com **20 linhas líquidas adicionais** na fonte modular. Os campos adicionais encaminham metadados que o motor de diagnóstico já recolhe (tempos, fila, hash/tipo de resposta e informação limitada sobre tentativas/parsing); não encaminham o corpo bruto da resposta ASF.
+- O segmento protegido desde `function asfTentativaRetryable(status, errorType)` até imediatamente antes de `function anunciarEstadoConsultaASF(mensagem)` tem **13.718 caracteres nas duas versões e é exatamente igual, byte a byte**. O HTML antigo e a fonte compilada não referenciam a rota não versionada `/functions/v1/telemetry`; a rota atual `/functions/v1/telemetry-v2` existe em ambas.
+
+**Conclusão:** a divergência do HTML não representa uma alteração inadvertida do motor ASF. É uma extensão da projeção de telemetria de diagnóstico já presente na anterior proposta de reestruturação. O teste ASF continua protegido por comparação exata e passou nas validações automáticas. Esta conclusão não elimina a necessidade do teste funcional com a rede real, nem resolve as chamadas `OPTIONS 404` que ainda chegam de clientes antigos.
+
 ## 9. O que foi verificado nesta proposta
 
 - No commit candidato `04b51c1079702e46e99b291a61229562ade1cb29`, passaram `VÉRIX Security Audit`, `Telemetry Integrity`, `ASF Retry Experiment Validation` e `VÉRIX Windows Source Validation`. O último workflow executou o build seguro em `windows-latest` e verificou o HTML gerado.
-- O verificador de fonte reconstrói o HTML e falha se encontrar uma referência exata ao endpoint antigo; o verificador ASF compara o bloco de motor protegido com a fixture de regressão.
+- O verificador de fonte reconstrói o HTML e falha se encontrar uma referência exata ao endpoint antigo; o verificador ASF compara o bloco de motor protegido com a fixture de regressão. A comparação direta da fonte da `main` com a fonte base modular confirmou que o bloco protegido de 13.718 caracteres é byte a byte idêntico.
 - Os advisors Supabase de segurança e desempenho não devolveram avisos na leitura efetuada; este resultado pontual não é garantia de ausência de problemas.
 - As três tarefas `pg_cron` observadas estão ativas e as últimas cinco execuções consultadas por tarefa não mostraram falhas. A atualização da cache Admin demorou cerca de 2,1–4,3 segundos nas amostras recentes.
 - As tabelas operacionais/legacy consultadas têm RLS ativo e políticas de negação para `anon`/`authenticated`. O inventário de dependências e o apontamento `PUBLIC EXECUTE` de duas funções auxiliares estão detalhados no mapa, sem mudanças de privilégios.
