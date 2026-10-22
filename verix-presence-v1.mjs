@@ -8,7 +8,6 @@ import { createClient } from '@supabase/supabase-js';
   var TOPIC = 'verix-live-presence-v1';
   var ACTIVE_WINDOW_MS = 120000;
   var TRACK_MIN_INTERVAL_MS = 30000;
-  var URGENT_TRACK_MIN_INTERVAL_MS = 2500;
   var currentPath = String(window.location.pathname || '');
   var currentQuery = String(window.location.search || '');
   var ADMIN = currentPath.endsWith('/admin_v2.html') || /\/admin\/(?:index\.html)?$/i.test(currentPath) || currentPath.indexOf('/verix-admin-pwa/') >= 0 || /[?&]app=verix-admin-edge-v1(?:&|$)/i.test(currentQuery) || /[?&]app=verix-admin-v5(?:&|$)/i.test(currentQuery);
@@ -34,7 +33,6 @@ import { createClient } from '@supabase/supabase-js';
   var pendingTrackTimer = null;
   var reconnectDelayMs = 0;
   var lastTrackAt = 0;
-  var lastUrgentTrackAt = 0;
   var lastActivityAt = 0;
   var visible = document.visibilityState !== 'hidden';
   var installationKey = null;
@@ -117,17 +115,13 @@ import { createClient } from '@supabase/supabase-js';
     };
   }
 
-  async function track(forceNow) {
+  async function track() {
     if (ADMIN || !channel || !subscribed || !installationKey) return;
     var trackedChannel = channel;
 
-    if (forceNow && pendingTrackTimer !== null) {
-      window.clearTimeout(pendingTrackTimer);
-      pendingTrackTimer = null;
-    }
     var now = Date.now();
     var elapsed = now - lastTrackAt;
-    if (!forceNow && lastTrackAt && elapsed < TRACK_MIN_INTERVAL_MS) {
+    if (lastTrackAt && elapsed < TRACK_MIN_INTERVAL_MS) {
       // Coalesce any number of activity/focus events into one update after the cooldown.
       if (pendingTrackTimer === null) {
         pendingTrackTimer = window.setTimeout(function () {
@@ -406,20 +400,9 @@ import { createClient } from '@supabase/supabase-js';
     check();
   }
 
-  function noteActivity(event) {
+  function noteActivity() {
     if (ADMIN || document.visibilityState === 'hidden') return;
-    var now = Date.now();
-    lastActivityAt = now;
-    var urgent = event && (event.type === 'click' || event.type === 'submit');
-    if (urgent) {
-      // pointerdown may already have sent the payload for this exact gesture.
-      if (lastTrackAt && now - lastTrackAt < 1200 && pendingTrackTimer === null) return;
-      if (!lastUrgentTrackAt || now - lastUrgentTrackAt >= URGENT_TRACK_MIN_INTERVAL_MS) {
-        lastUrgentTrackAt = now;
-        track(true);
-        return;
-      }
-    }
+    lastActivityAt = Date.now();
     track();
   }
 
