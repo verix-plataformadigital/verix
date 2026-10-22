@@ -28,7 +28,9 @@ on:
       - "tools/verify-migration-filenames.mjs"
       - ".github/workflows/telemetry-integrity.yml"
 permissions:
-  contents: read
+  contents: read      - "tools/verify-asf-diagnostic-telemetry.mjs"
+      - "tests/fixtures/asf-engine-baseline.txt"
+
 jobs:
   verify:
     runs-on: ubuntu-latest
