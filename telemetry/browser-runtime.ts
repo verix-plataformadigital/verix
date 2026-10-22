@@ -573,19 +573,20 @@ interface Window {
     return uid('q');
   }
 
-  function wrap(name, mapper) {
+  function wrap(name: string, mapper: (...args: any[]) => void): void {
+    var dynamicWindow = window as unknown as Record<string, any>;
     try {
-      var original = window[name];
+      var original = dynamicWindow[name] as LegacyFunction | undefined;
       if (typeof original !== 'function' || original.__verixTelemetryV2Wrapped) return;
 
-      var wrapped = function () {
-        try { mapper.apply(this, arguments); } catch (_) {}
-        return original.apply(this, arguments);
+      var wrapped: LegacyFunction = function (this: any, ...args: any[]) {
+        try { mapper.apply(this, args); } catch (_) {}
+        return original.apply(this, args);
       };
 
       wrapped.__verixTelemetryV2Wrapped = true;
       wrapped.__verixTelemetryV2Original = original;
-      window[name] = wrapped;
+      dynamicWindow[name] = wrapped;
     } catch (_) {}
   }
 
