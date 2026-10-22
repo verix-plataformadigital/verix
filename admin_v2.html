@@ -482,7 +482,7 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
       </div>
       <div id="serverTelemetryCards" class="metric-grid live-presence-grid" aria-live="polite">
         <article class="metric-card blue"><div class="metric-label">Sessões online no servidor</div><div class="metric-value" id="serverTelemetrySessions">—</div><div class="metric-note">Sessões com sinal recebido nos últimos 90 segundos; não são pessoas únicas.</div></article>
-        <article class="metric-card green"><div class="metric-label">Consultas em curso</div><div class="metric-value" id="serverTelemetryConsultations">—</div><div class="metric-note">Consultas sem resultado final registado, dentro da janela de acompanhamento.</div></article>
+        <article class="metric-card green"><div class="metric-label">Consultas iniciadas na última hora</div><div class="metric-value" id="serverTelemetryQueriesHour">—</div><div class="metric-note">Pedidos registados pelo servidor na última hora; podem diferir dos resultados finais.</div></article>
         <article class="metric-card blue"><div class="metric-label">Instalações vistas na última hora</div><div class="metric-value" id="serverTelemetrySeenHour">—</div><div class="metric-note">Histórico recente; não significa que estejam online agora.</div></article>
       </div>
       <div class="refresh-time" id="serverTelemetryUpdated">A aguardar a primeira leitura da telemetria do servidor.</div>
@@ -855,7 +855,7 @@ function setServerTelemetryCount(id,value){
 }
 function clearServerTelemetry(message){
   setServerTelemetryCount('serverTelemetrySessions',null);
-  setServerTelemetryCount('serverTelemetryConsultations',null);
+  setServerTelemetryCount('serverTelemetryQueriesHour',null);
   setServerTelemetryCount('serverTelemetrySeenHour',null);
   const updated=$('serverTelemetryUpdated');
   if(updated)updated.textContent=message||'Sem leitura confirmada no servidor; não são reutilizados números antigos.';
@@ -875,11 +875,11 @@ async function loadServerTelemetry(){
       return Number(value);
     };
     const sessions=count(p.online_sessions);
-    const consultations=count(p.consultations_in_progress);
+    const consultations=count(p.consultations_started_last_hour);
     const seenHour=count(p.installations_seen_last_hour);
     if(sessions===null||consultations===null||seenHour===null)throw new Error('A resposta não contém todas as métricas de presença.');
     setServerTelemetryCount('serverTelemetrySessions',sessions);
-    setServerTelemetryCount('serverTelemetryConsultations',consultations);
+    setServerTelemetryCount('serverTelemetryQueriesHour',consultations);
     setServerTelemetryCount('serverTelemetrySeenHour',seenHour);
     setServerTelemetryStatus('online','API confirmada');
     const updated=$('serverTelemetryUpdated');
