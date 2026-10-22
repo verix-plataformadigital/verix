@@ -5,6 +5,7 @@ on:
     branches: ["main"]
     paths:
       - "verix-app.html"
+      - "telemetry/browser-runtime.ts"
       - "verix-presence-v1.mjs"
       - "admin_v2.html"
       - "index.html"
