@@ -6,6 +6,8 @@
  * Do not edit the generated inline script in dist/.
  */
 
+declare var ActiveXObject: any;
+
 type TelemetryEventName =
   | "app_open" | "heartbeat" | "session_close" | "vehicle_lookup"
   | "vehicle_insurance_pending" | "vehicle_insurance_yes"
@@ -240,7 +242,7 @@ interface Window {
     if (/Windows NT/i.test(ua)) {
       var w = firstMatch(/Windows NT\s+([0-9.]+)/i, ua);
       var map: Record<string, string> = { '10.0': '10', '6.4': '10', '6.3': '8.1', '6.2': '8', '6.1': '7' };
-      return { platform: 'Windows', version: map[w] || w };
+      return { platform: 'Windows', version: map[w || ''] || w };
     }
     if (/iPhone|iPad|iPod/i.test(ua)) {
       return { platform: 'iOS', version: firstMatch(/(?:iPhone OS|CPU OS)\s+([0-9_]+)/i, ua) };
@@ -421,7 +423,7 @@ interface Window {
         asfErrorType: a.asfErrorType ? String(a.asfErrorType).slice(0, 60) : null,
         asfMessage: a.asfMessage ? String(a.asfMessage).slice(0, 500) : null,
         asfResponseBytes: a.asfResponseBytes == null ? null : Number(a.asfResponseBytes),
-        asfAttempts: Array.isArray(a.asfAttempts) ? a.asfAttempts.slice(-4).map(function (t) {
+        asfAttempts: Array.isArray(a.asfAttempts) ? a.asfAttempts.slice(-4).map(function (t: Record<string, any>) {
           return {
             method: t.method ? String(t.method).slice(0, 20) : null,
             transport: t.transport ? String(t.transport).slice(0, 30) : null,
@@ -485,7 +487,7 @@ interface Window {
 
   async function sendViaFetch(batch: TelemetryQueueItem[]): Promise<TelemetryReceipt | null> {
     var controller = typeof AbortController === 'function' ? new AbortController() : null;
-    var timer = controller ? setTimeout(function () { controller.abort(); }, TIMEOUT_MS) : null;
+    var timer = controller ? setTimeout(function () { controller?.abort(); }, TIMEOUT_MS) : null;
 
     try {
       var response = await fetch(ENDPOINT, {
@@ -657,7 +659,7 @@ interface Window {
 
       var wrapped: LegacyFunction = function (this: any, ...args: any[]) {
         try { mapper.apply(this, args); } catch (_) {}
-        return original.apply(this, args);
+        return (original as LegacyFunction).apply(this, args);
       };
 
       wrapped.__verixTelemetryV2Wrapped = true;
@@ -855,12 +857,11 @@ interface Window {
   }
 
   function bindDom() {
-    document.addEventListener('click', function (ev) {
-      var el = ev.target && ev.target.closest
-        ? ev.target.closest('button,[role="button"]')
-        : null;
+    document.addEventListener('click', function (ev: MouseEvent) {
+      var target = ev.target;
+      var el = target instanceof Element ? target.closest('button,[role="button"]') : null;
 
-      if (!el) return;
+      if (!(el instanceof HTMLElement)) return;
 
       if (el.matches('.leg-category')) {
         push('legislation_category_open', 'legislacao');
@@ -900,17 +901,20 @@ interface Window {
       }
     }, true);
 
-    document.addEventListener('input', function (ev) {
-      if (ev.target && ev.target.id === 'legSearch') {
-        clearTimeout(legSearchTimer);
+    document.addEventListener('input', function (ev: Event) {
+      var target = ev.target;
+      if (!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement)) return;
+      var input = target;
+      if (input.id === 'legSearch') {
+        clearTimeout(legSearchTimer ?? undefined);
         legSearchTimer = setTimeout(function () {
-          var len = String(ev.target.value || '').trim().length;
+          var len = String(input.value || '').trim().length;
           if (len >= 2) push('legislation_search', 'legislacao');
         }, 700);
       }
 
-      if (ev.target && ev.target.id === 'cinRegistada') {
-        var value = String(ev.target.value || '').trim();
+      if (input.id === 'cinRegistada') {
+        var value = String(input.value || '').trim();
         if (value && rateLimited('cin_speed_entry', 2000)) {
           // O listener é de captura; recolher após o oninput e o recálculo do campo.
           setTimeout(function () {
