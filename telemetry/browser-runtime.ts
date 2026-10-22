@@ -21,6 +21,82 @@ type TelemetryEventName =
 
 type TelemetryMetadata = Record<string, unknown>;
 
+interface TelemetryQueueItem {
+  eventId: string;
+  buildId: string;
+  installationId: string;
+  sessionId: string;
+  tabId: string;
+  appVersion: string;
+  deviceType: string;
+  browser: string;
+  event: string;
+  module: string | null;
+  occurredAt: string;
+  metadata: TelemetryMetadata;
+}
+
+interface TelemetryReceipt {
+  ok: true;
+  acknowledged_event_ids: string[];
+  rejected_event_ids: string[];
+  retry_event_ids: string[];
+  rejection_reasons?: Record<string, string>;
+  [key: string]: unknown;
+}
+
+interface ClientInfo {
+  browserVersion: string | null;
+  osPlatform: string | null;
+  osVersion: string | null;
+  navigatorPlatform: string | null;
+  uaMobile: boolean | null;
+  online: boolean | null;
+  connectionType: string | null;
+  effectiveType: string | null;
+  downlinkMbps: number | null;
+  rttMs: number | null;
+  saveData: boolean | null;
+  hardwareConcurrency: number | null;
+  deviceMemoryGb: number | null;
+  viewport: string | null;
+  devicePixelRatio: number | null;
+  uaDataAvailable: boolean;
+}
+
+interface NetworkInformationLike {
+  type?: string;
+  effectiveType?: string;
+  downlink?: number;
+  rtt?: number;
+  saveData?: boolean;
+}
+
+interface UserAgentDataLike {
+  platform?: string;
+  platformVersion?: string;
+  mobile?: boolean;
+  getHighEntropyValues(hints: string[]): Promise<{
+    platform?: string;
+    platformVersion?: string;
+    mobile?: boolean;
+    fullVersionList?: Array<{ brand?: string; version?: string }>;
+  }>;
+}
+
+type ExtendedNavigator = Navigator & {
+  connection?: NetworkInformationLike;
+  mozConnection?: NetworkInformationLike;
+  webkitConnection?: NetworkInformationLike;
+  deviceMemory?: number;
+  userAgentData?: UserAgentDataLike;
+};
+
+type LegacyFunction = ((...args: any[]) => any) & {
+  __verixTelemetryV2Wrapped?: boolean;
+  __verixTelemetryV2Original?: LegacyFunction;
+};
+
 interface VerixTelemetryApi {
   readonly version: 2;
   readonly enabled: boolean;
