@@ -45,4 +45,15 @@ for (const field of [
   assert.ok(server.includes(field), `Server telemetry sanitizer does not recognize: ${field}`);
 }
 
-console.log('PASS: ASF engine unchanged; diagnostic telemetry fields preserved; current telemetry-v2 endpoint verified.');
+
+const proxy = readFileSync('supabase/functions/asf-proxy-v1/index.ts', 'utf8');
+const frozenProxyQuery = readFileSync('tests/fixtures/asf-proxy-query-baseline.txt', 'utf8');
+assert.equal(
+  between(proxy, '    const query =', '\\n\\n    const url ='),
+  frozenProxyQuery,
+  'ASF relay GraphQL mutation changed. Do not update the baseline without explicit approval.'
+);
+assert.match(proxy, /const ASF_ORIGIN = "https:\\/\\/ext01\\.asf\\.com\\.pt";/);
+assert.match(proxy, /const ASF_PATH = "\\/api\\/src\\/";/);
+
+console.log('PASS: ASF browser engine and relay query unchanged; diagnostic telemetry preserved; bounded retry tested; current telemetry-v2 endpoint verified.');
