@@ -62,6 +62,12 @@ jobs:
           VERIX_BUILD_ID: 1.5-sec-${{ github.run_number }}-${{ github.sha }}
         run: npm run build:secure
 
+      - name: Build isolated ASF retry experiment
+        run: node tools/build-asf-retry-test.mjs
+
+      - name: Verify ASF retry experiment preserves operational logic
+        run: node tools/verify-asf-retry-experiment.mjs
+
       - name: Validate published HTML structure
         shell: bash
         run: |
