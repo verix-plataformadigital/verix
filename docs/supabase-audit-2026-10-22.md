@@ -165,7 +165,7 @@ Exemplos de ficheiros sem par identificado no ledger pelo mapeamento atual:
 
 ## 9. O que foi verificado nesta proposta
 
-- No commit candidato `6b616bb7ca63c3e51b60ebafd021016365556bc1`, passaram `VÉRIX Security Audit`, `Telemetry Integrity`, `ASF Retry Experiment Validation` e `VÉRIX Windows Source Validation`. O último workflow executou o build seguro em `windows-latest` e verificou o HTML gerado.
+- No commit candidato `04b51c1079702e46e99b291a61229562ade1cb29`, passaram `VÉRIX Security Audit`, `Telemetry Integrity`, `ASF Retry Experiment Validation` e `VÉRIX Windows Source Validation`. O último workflow executou o build seguro em `windows-latest` e verificou o HTML gerado.
 - O verificador de fonte reconstrói o HTML e falha se encontrar uma referência exata ao endpoint antigo; o verificador ASF compara o bloco de motor protegido com a fixture de regressão.
 - Os advisors Supabase de segurança e desempenho não devolveram avisos na leitura efetuada; este resultado pontual não é garantia de ausência de problemas.
 - As três tarefas `pg_cron` observadas estão ativas e as últimas cinco execuções consultadas por tarefa não mostraram falhas. A atualização da cache Admin demorou cerca de 2,1–4,3 segundos nas amostras recentes.
