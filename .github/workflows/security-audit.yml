@@ -159,7 +159,7 @@ jobs:
             const installPos = html.indexOf('id="installAdminApp"');
             if (appStart < 0 || installPos < appStart) throw new Error('Admin install control must be inside authenticated UI: ' + file);
           }
-          for (const file of ['dist/admin/index.html','dist/admin/manifest.webmanifest','dist/admin/sw.js','dist/admin/verix-presence-v1.js','dist/admin/AI-ACCESS-POLICY.md','dist/admin/assets/admin-icon-192.png','dist/admin/assets/admin-icon-512.png','dist/admin/assets/admin-icon.svg']) {
+          for (const file of ['dist/admin/index.html','dist/admin/manifest.webmanifest','dist/admin/sw.js','dist/admin/AI-ACCESS-POLICY.md','dist/admin/assets/admin-icon-192.png','dist/admin/assets/admin-icon-512.png','dist/admin/assets/admin-icon.svg']) {
             if (!fs.existsSync(file)) throw new Error('GitHub Pages Admin bundle asset missing: ' + file);
           }
           console.log('GitHub Pages Admin PWA identity, scope, icons and post-login install control: OK');

@@ -147,8 +147,10 @@
   }
 
   var installationId = persistentId(window.localStorage, 'VERIX_T2_INSTALL_ID', 'i');
+  // Keep the analytical session stable across reloads; duplicate tabs may copy it.
+  // tabId is deliberately per-page-context, and live-presence counts use tabId instead.
   var sessionId = persistentId(window.sessionStorage, 'VERIX_T2_SESSION_ID', 's');
-  var tabId = persistentId(window.sessionStorage, 'VERIX_T2_TAB_ID', 't');
+  var tabId = persistentId(null, 'VERIX_T2_TAB_ID', 't');
 
   function requestGate() {
     var payload = JSON.stringify({
@@ -10712,7 +10714,6 @@ html body .leg-card-new .copy-all-new{
   var APP_VERSION = '1.5';
   var INSTALL_KEY = 'VERIX_T2_INSTALL_ID';
   var SESSION_KEY = 'VERIX_T2_SESSION_ID';
-  var TAB_KEY = 'VERIX_T2_TAB_ID';
   var QUEUE_KEY = 'VERIX_T2_QUEUE';
   var REJECTED_QUEUE_KEY = 'VERIX_T2_REJECTED_QUEUE';
   var MAX_QUEUE = 300;
@@ -10761,9 +10762,17 @@ html body .leg-card-new .copy-all-new{
     return value;
   }
 
-  var installationId = persistentId(localStore, INSTALL_KEY, 'i');
-  var sessionId = persistentId(sessionStore, SESSION_KEY, 's');
-  var tabId = persistentId(sessionStore, TAB_KEY, 't');
+  var securityIdentity = null;
+  try {
+    if (window.VERIX_SECURITY && typeof window.VERIX_SECURITY.getIdentity === 'function') {
+      securityIdentity = window.VERIX_SECURITY.getIdentity();
+    }
+  } catch (_) {}
+  // Reuse the gate's identity tuple for consistent grouping; telemetry IDs are pseudonymous labels, not device/user authentication.
+  var installationId = securityIdentity && securityIdentity.installationId
+    ? String(securityIdentity.installationId) : persistentId(localStore, INSTALL_KEY, 'i');
+  var sessionId = securityIdentity && securityIdentity.sessionId ? String(securityIdentity.sessionId) : persistentId(sessionStore, SESSION_KEY, 's');
+  var tabId = securityIdentity && securityIdentity.tabId ? String(securityIdentity.tabId) : uid('t');
 
   function deviceType() {
     var w = Math.min(window.innerWidth || 0, window.innerHeight || 0);
@@ -14202,6 +14211,6 @@ html body #seguroResult .asf-app.asf-negative-operational .asf-negative-source-d
 <a class="verix-flag-attribution" tabindex="0" aria-label="Crédito da fotografia da bandeira: Montserrat Labiaga Ferrer, CC BY 2.0, via Wikimedia Commons" title="Fotografia de Montserrat Labiaga Ferrer — CC BY 2.0 — Wikimedia Commons" href="https://commons.wikimedia.org/wiki/File:Bandera_portuguesa_(3771095401).jpg" target="_blank" rel="noopener noreferrer">Crédito da fotografia da bandeira</a>
 <a class="verix-flag-attribution" tabindex="0" aria-label="Licença da fotografia da bandeira: Creative Commons Attribution 2.0" title="Licença CC BY 2.0" href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">Licença da fotografia da bandeira</a>
 
-<script defer src="./verix-presence-v1.js?v=20261019-realtime-presence-v1"></script>
+<!-- Live session status is now derived server-side from validated telemetry heartbeats. -->
 </body>
 </html>

@@ -114,7 +114,7 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
 .section-heading p{max-width:950px;margin:4px 0 0;color:var(--muted);font-size:12.5px;line-height:1.5}
 .compact-heading{margin-top:20px;margin-bottom:12px}
 .metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 22px;min-width:0}
-#livePresenceCards{grid-template-columns:repeat(3,minmax(0,1fr))}
+#livePresenceCards{grid-template-columns:repeat(4,minmax(0,1fr))}
 #overviewLiveCards{grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:10px}
 #overviewCards{grid-template-columns:repeat(4,minmax(0,1fr))}
 #insuranceCards{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -467,15 +467,17 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
 
     <section id="page-dashboard" class="page active" aria-labelledby="pageTitle">
       <div class="section-heading" style="margin-top:0">
-        <div><h2>Estado operacional</h2><p>Realtime e atividade recente.</p></div>
+        <div><h2>Estado operacional</h2><p>Estado atual calculado no servidor e atividade recente.</p></div>
         <span class="status-pill loading" id="presenceConnection"><i class="status-dot" aria-hidden="true"></i><span>A ligar</span></span>
       </div>
       <div id="livePresenceCards" class="metric-grid live-presence-grid" aria-live="polite">
-        <article class="metric-card blue"><div class="metric-label">Online agora</div><div class="metric-value" id="livePresenceOnline">—</div><div class="metric-note">Instalações com ligação Realtime; não equivale a pessoas únicas.</div></article>
-        <article class="metric-card green"><div class="metric-label">A trabalhar agora</div><div class="metric-value" id="livePresenceActive">—</div><div class="metric-note">Instalações online com interação nos últimos 2 min.</div></article>
-        <article class="metric-card blue"><div class="metric-label">Vistas na última hora</div><div class="metric-value" id="livePresenceHour">—</div><div class="metric-note">Instalações com sinal de presença na última hora; podem estar desligadas.</div></article>
+        <article class="metric-card blue"><div class="metric-label">Perfis de navegador online</div><div class="metric-value" id="livePresenceOnline">—</div><div class="metric-note">Perfis com heartbeat confirmado nos últimos 150 s; não identifica pessoas nem computadores físicos.</div></article>
+        <article class="metric-card green"><div class="metric-label">A trabalhar agora</div><div class="metric-value" id="livePresenceActive">—</div><div class="metric-note">Perfis ligados com ação real nos últimos 120 s.</div></article>
+        <article class="metric-card blue"><div class="metric-label">Contextos de página online</div><div class="metric-value" id="livePresenceTabs">—</div><div class="metric-note">Páginas com heartbeat recente; após um fecho abrupto, o sinal expira em até 150 s.</div></article>
+        <article class="metric-card blue"><div class="metric-label">Vistas na última hora</div><div class="metric-value" id="livePresenceHour">—</div><div class="metric-note">Perfis com sinal na última hora; podem já estar desligados.</div></article>
       </div>
       <div class="refresh-time" id="livePresenceUpdated">A aguardar ligação de presença.</div>
+      <details class="hourly-values live-profiles-details"><summary>Ver até 100 perfis ligados (identificadores pseudonimizados)</summary><div id="liveProfilesList" aria-live="polite">A aguardar dados do backend.</div></details>
       <div class="section-heading compact-heading">
         <div><h2>Atividade recente</h2></div>
       </div>
@@ -616,7 +618,7 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
   </main>
 </div>
 
-<script defer src="./verix-presence-v1.js?v=20261019-realtime-presence-v1"></script>
+<!-- Live presence comes from the authenticated stats API; do not join a public Realtime channel. -->
 <script>
 (function(){
 'use strict';
@@ -800,33 +802,56 @@ function getPeriodData(root,key){return root&&root[key] ? root[key] : {};}
 
 function renderLivePresence(snapshot){
   const s=snapshot||{};
-  const ready=s.ready===true&&s.status==='connected';
+  const ready=typeof s.presenceObservedAt==='string'&&Number.isFinite(Date.parse(s.presenceObservedAt));
   const setValue=(id,value)=>{const el=$(id);if(el)el.textContent=value==null?'—':new Intl.NumberFormat('pt-PT').format(Number(value));};
-  setValue('livePresenceOnline',ready?s.onlineInstallations:null);
-  setValue('livePresenceActive',ready?s.activeInstallations:null);
+  setValue('livePresenceOnline',ready?s.onlineBrowserProfiles:null);
+  setValue('livePresenceActive',ready?s.activeBrowserProfiles:null);
+  setValue('livePresenceTabs',ready?s.onlineTabs:null);
   const pill=$('presenceConnection');
   if(pill){
-    const cls=ready?'online':(s.status==='locked'?'loading':(s.status==='unavailable'?'offline':(s.status==='reconnecting'?'offline':'loading')));
-    const label=ready?'Ligado · tempo real':(s.status==='locked'?'Inicia sessão':(s.status==='unavailable'?'Indisponível':(s.status==='reconnecting'?'A recuperar ligação':'A ligar')));
-    pill.className='status-pill '+cls;
+    pill.className='status-pill '+(ready?'online':'offline');
     const text=pill.querySelector('span:last-child');
-    if(text)text.textContent=label;
+    if(text)text.textContent=ready?'Backend · presença atualizada':'Presença indisponível';
   }
   const updated=$('livePresenceUpdated');
   if(updated){
-    if(ready&&s.observedAt){
-      const time=new Date(s.observedAt);
-      updated.textContent='Presença sincronizada em tempo real · última sincronização '+time.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+'.';
-    }else if(s.status==='locked'){
-      updated.textContent='Inicia sessão no Admin para estabelecer a ligação de presença.';
-    }else if(s.status==='unavailable'){
-      updated.textContent='A presença em tempo real não está disponível. Os valores não são substituídos por estimativas antigas.';
-    }else if(s.status==='reconnecting'){
-      updated.textContent='A ligação de presença foi interrompida. A contagem fica indisponível até voltar a sincronizar.';
+    if(ready){
+      const time=new Date(s.presenceObservedAt);
+      updated.textContent='Presença calculada pelo backend · '+time.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+
+        ' · expira após '+fmt(s.presenceLeaseSeconds||150)+' s sem heartbeat confirmado.';
     }else{
-      updated.textContent='A estabelecer ligação ao serviço de presença em tempo real…';
+      updated.textContent='Não foi possível confirmar a presença atual. Os valores são ocultados em vez de manter uma estimativa antiga.';
     }
   }
+  renderLiveProfiles(ready&&Array.isArray(s.onlineProfiles)?s.onlineProfiles:[],ready);
+}
+
+function renderLiveProfiles(profiles,ready){
+  const host=$('liveProfilesList');
+  if(!host)return;
+  host.replaceChildren();
+  if(!ready){
+    host.textContent='A lista de perfis está indisponível até à próxima resposta válida do backend.';
+    return;
+  }
+  if(!profiles.length){
+    host.textContent='Nenhum perfil de navegador enviou um heartbeat recente.';
+    return;
+  }
+  const rows=profiles.map(p=>{
+    const when=Date.parse(p.lastSeenAt||'');
+    const lastSeen=Number.isFinite(when)?new Date(when).toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'—';
+    const kind=[p.browser||'Unknown',p.deviceType||'Não determinado'].join(' · ');
+    return [
+      'Perfil · '+String(p.profileRef||'').slice(-10),
+      kind,
+      String(p.os||'Unknown'),
+      fmt(p.tabs||0),
+      p.active===true?'Atividade recente':'Ligado · sem ação recente',
+      lastSeen
+    ];
+  });
+  host.appendChild(makeTable(['Perfil pseudonimizado','Navegador / categoria estimada','Sistema operativo reportado','Contextos online','Estado','Último sinal'],rows));
 }
 
 function renderAll(){
@@ -841,6 +866,7 @@ function renderAll(){
   const legislation=getPeriodData(dashboardData.legislation,currentPeriod);
   const errors=getPeriodData(dashboardData.errors,currentPeriod);
   const liveUsers=dashboardData.users||{};
+  renderLivePresence(liveUsers);
   const setOperationalPresenceValue=(id,value)=>{const el=$(id);if(el)el.textContent=fmt(value);};
   setOperationalPresenceValue('livePresenceHour',liveUsers.installationsSeenLastHour);
   const baseNote=$('baseInstallationsNote');
@@ -1260,7 +1286,7 @@ async function loadDashboard(force){
     if(currentPage==='activity')await loadDailyTrend(force);
     if(currentPage==='insurance')loadInsuranceCases(0,false);
     if(currentPage==='errors'&&(force||Date.now()-lastErrorRefreshAt>=ERROR_LEDGER_REFRESH_MS)){errorOffset=0;loadErrors();}
-  }catch(e){setStatus('offline','Dados indisponíveis');showNotice('Não foi possível atualizar as métricas: '+e.message,'error');if(!dashboardData)showEmpty('overviewCards','Os dados não estão disponíveis. Tente atualizar novamente.');}
+  }catch(e){renderLivePresence(null);setStatus('offline','Dados indisponíveis');showNotice('Não foi possível atualizar as métricas: '+e.message,'error');if(!dashboardData)showEmpty('overviewCards','Os dados não estão disponíveis. Tente atualizar novamente.');}
   finally{dashboardBusy=false;$('refreshBtn').disabled=false;}
 }
 async function loadInsuranceCases(offset,append){
@@ -1379,7 +1405,7 @@ $('errorSearch').addEventListener('input',renderErrorLedger);
 $('errorPrev').addEventListener('click',()=>{errorOffset=Math.max(0,errorOffset-errorPageSize);loadErrors();});
 $('errorNext').addEventListener('click',()=>{errorOffset+=errorPageSize;loadErrors();});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&token)loadDashboard(false);});
-if(window.VERIX_LIVE_PRESENCE&&typeof window.VERIX_LIVE_PRESENCE.subscribe==='function')window.VERIX_LIVE_PRESENCE.subscribe(renderLivePresence);else window.addEventListener('verix-live-presence',function(e){renderLivePresence(e.detail);});
+// Presence is intentionally read from the authenticated backend dashboard response.
 if(token){$('loginScreen').hidden=true;$('app').hidden=false;loadDashboard(false);refreshTimer=setInterval(()=>{if(!document.hidden)scheduleRefresh();},REFRESH_MS);}
 })();
 </script>

@@ -5,7 +5,6 @@ on:
     branches: ["main"]
     paths:
       - "verix-app.html"
-      - "verix-presence-v1.mjs"
       - "admin_v2.html"
       - "index.html"
       - "verix-mobile.html"
@@ -88,14 +87,13 @@ jobs:
           grep -q "./verix-mobile.html" dist/index.html
           grep -q "./verix-app.html" dist/verix-mobile.html
 
-      - name: Validate realtime presence bundle
+      - name: Validate server-authoritative live presence
         shell: bash
         run: |
-          test -s dist/verix-presence-v1.js
-          node --check verix-presence-v1.mjs
-          node --check dist/verix-presence-v1.js
-          grep -q 'verix-presence-v1.js?v=' dist/verix-app.html
-          grep -q 'verix-presence-v1.js?v=' dist/admin_v2.html
+          test ! -e dist/verix-presence-v1.js
+          ! grep -q 'verix-presence-v1.js' dist/verix-app.html
+          ! grep -q 'verix-presence-v1.js' dist/admin_v2.html
+          ! grep -q 'verix-presence-v1.js' dist/admin/index.html
 
       - name: Verify secure build
         shell: bash
@@ -185,7 +183,6 @@ jobs:
           test -s dist/admin/assets/admin-icon-512.png
           test -s dist/admin/assets/admin-icon.svg
           test -s dist/admin/assets/icon-32.png
-          test -s dist/admin/verix-presence-v1.js
           test -s dist/admin/AI-ACCESS-POLICY.md
           node -e "const fs=require('fs'); const a=JSON.parse(fs.readFileSync('dist/admin/manifest.webmanifest')); if(a.id!=='/verix/admin/'||a.start_url!=='./index.html?app=verix-admin-v5'||a.scope!=='./') process.exit(1)"
           test -s dist/admin/sw.js
@@ -233,7 +230,7 @@ jobs:
           if (!sourceHtml.includes("new URL('./admin/'") || !sourceHtml.includes('window.location.replace(destination.toString())')) throw new Error('Legacy Admin entry must route to GitHub Pages /admin/');
           if (sourceHtml.includes('https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/verix-admin-pwa')) throw new Error('Admin UI must not be routed through the Supabase HTML proxy');
           if (!sourceHtml.includes('isAdminScopedPath') || !sourceHtml.includes('VERIX_ADMIN_PWA_INSTALLED_V5')) throw new Error('Admin install guard/flag must use the dedicated /admin/ scope');
-          if (!html.includes('../verix-presence-v1.js') || !fs.existsSync('dist/admin/verix-presence-v1.js')) throw new Error('Admin realtime presence bundle is missing');
+          if (html.includes('verix-presence-v1.js') || fs.existsSync('dist/admin/verix-presence-v1.js')) throw new Error('Admin must not ship the unused client-side Realtime Presence runtime');
           for (const file of ['dist/admin/manifest.webmanifest','dist/admin/sw.js','dist/admin/AI-ACCESS-POLICY.md','dist/admin/assets/admin-icon-192.png','dist/admin/assets/admin-icon-512.png','dist/assets/admin-icon-192.png','dist/assets/admin-icon-512.png']) {
             if (!fs.existsSync(file)) throw new Error('Admin PWA asset missing: ' + file);
           }
@@ -288,7 +285,7 @@ jobs:
             "${PAGES_BASE}admin/sw.js" -o /tmp/verix-admin-sw.js
           node --check /tmp/verix-admin-sw.js
 
-          for asset in assets/admin-icon-192.png assets/admin-icon-512.png verix-presence-v1.js; do
+          for asset in assets/admin-icon-192.png assets/admin-icon-512.png; do
             curl --fail --silent --show-error --retry 12 --retry-delay 3 --retry-all-errors --connect-timeout 10 --max-time 30 "${PAGES_BASE}${asset}" -o /dev/null
           done
 

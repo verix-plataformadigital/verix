@@ -1,6 +1,5 @@
 import fs from "node:fs";
 import path from "node:path";
-import { build as esbuildBuild } from "esbuild";
 import { createHash } from "node:crypto";
 import JavaScriptObfuscator from "javascript-obfuscator";
 
@@ -158,17 +157,10 @@ function writeSecureFile(relativeSource, relativeOutput) {
     source = source.replace(/1\.5-sec-20261008-a/g, BUILD_ID);
   }
 
-  // Give external app assets a release-specific URL on every build.
-  // This prevents browsers from reusing presence code from a previous release.
+  // Give mobile assets a release-specific URL on every build.
   if (relativeSource === "verix-app.html") {
     source = source.replace(
       /(\.\/verix-mobile\.(?:css|js)\?v=)\d+/g,
-      "$1" + encodeURIComponent(String(BUILD_ID))
-    );
-  }
-  if (relativeSource === "verix-app.html" || relativeSource === "admin_v2.html") {
-    source = source.replace(
-      /(\.\/verix-presence-v1\.js\?v=)[^'"]+/g,
       "$1" + encodeURIComponent(String(BUILD_ID))
     );
   }
@@ -205,22 +197,7 @@ if (app) results.push(app);
 const admin = writeSecureFile("admin_v2.html", "admin_v2.html");
 if (admin) results.push(admin);
 
-// Bundle the official Supabase SDK locally so client networks do not need a third-party CDN.
-const presenceEntry = path.join(ROOT, "verix-presence-v1.mjs");
-if (!fs.existsSync(presenceEntry)) throw new Error("Required realtime presence source missing: verix-presence-v1.mjs");
-const presenceOutput = path.join(OUTPUT_DIR, "verix-presence-v1.js");
-await esbuildBuild({
-  entryPoints: [presenceEntry],
-  outfile: presenceOutput,
-  bundle: true,
-  minify: true,
-  sourcemap: false,
-  legalComments: "none",
-  platform: "browser",
-  format: "iife",
-  target: ["es2020"]
-});
-results.push({ source: "verix-presence-v1.mjs", output: "dist/verix-presence-v1.js", note: "official Supabase SDK bundled locally", size_bytes: fs.statSync(presenceOutput).size });
+// Realtime Presence is no longer bundled. Live status is calculated by the authenticated stats API.
 
 // Lightweight entry points (no heavy obfuscation needed)
 for (const f of ["index.html", "verix-mobile.html"]) {
@@ -277,8 +254,6 @@ for (const f of ["favicon.svg", "site.webmanifest", "admin.webmanifest", "sw.js"
   adminPwaSource = adminPwaSource.replace(/href="\.\/favicon\.svg/g, 'href="../assets/admin-icon.svg');
   adminPwaSource = adminPwaSource.replace(/href="\.\/assets\/icon-192\.png[^"]*"/g, 'href="../assets/admin-icon-192.png?v=20261019-admin5"');
   adminPwaSource = adminPwaSource.replace(/\.\/assets\//g, "../assets/");
-  adminPwaSource = adminPwaSource.replace(/src="\.\/verix-presence-v1\.js/g, 'src="../verix-presence-v1.js');
-  adminPwaSource = adminPwaSource.replace(/(src="\.\.\/verix-presence-v1\.js\?v=)[^"]+/g, "$1" + encodeURIComponent(String(BUILD_ID)));
   adminPwaSource = adminPwaSource.replace(/\.\/AI-ACCESS-POLICY\.md/g, "../AI-ACCESS-POLICY.md");
   if (!/<\/head>/i.test(adminPwaSource)) throw new Error("Admin source has no closing head");
   const adminPwaHeadLinks = [
@@ -305,14 +280,11 @@ for (const f of ["favicon.svg", "site.webmanifest", "admin.webmanifest", "sw.js"
   }));
   fs.writeFileSync(path.join(adminPwaDir, "manifest.webmanifest"), JSON.stringify(adminManifest, null, 2) + "\n", "utf8");
   // Make the Admin output independently deployable at the root of a different origin.
-  // Relative ../assets, ../verix-presence-v1.js and ../AI-ACCESS-POLICY.md URLs
-  // resolve to the root of that origin, while still working from /admin/ on GitHub Pages.
+  // Relative ../assets and ../AI-ACCESS-POLICY.md URLs resolve to the root of that origin.
   fs.cpSync(path.join(OUTPUT_DIR, "assets"), path.join(adminPwaDir, "assets"), { recursive: true });
-  for (const file of ["verix-presence-v1.js", "AI-ACCESS-POLICY.md"]) {
-    const source = path.join(OUTPUT_DIR, file);
-    if (!fs.existsSync(source)) throw new Error("Required standalone Admin asset missing: " + file);
-    fs.copyFileSync(source, path.join(adminPwaDir, file));
-  }
+  const adminPolicySource = path.join(OUTPUT_DIR, "AI-ACCESS-POLICY.md");
+  if (!fs.existsSync(adminPolicySource)) throw new Error("Required standalone Admin policy asset missing");
+  fs.copyFileSync(adminPolicySource, path.join(adminPwaDir, "AI-ACCESS-POLICY.md"));
   // This worker stays within /admin/ on GitHub Pages and becomes root-scoped on a dedicated Admin origin.
   fs.copyFileSync(path.join(OUTPUT_DIR, "sw.js"), path.join(adminPwaDir, "sw.js"));
 }

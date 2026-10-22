@@ -618,7 +618,17 @@ Deno.serve(async (req:Request) => {
           consultationsLast3Minutes: Number(liveSummary?.consultationsLast3Minutes || 0),
           installationsConsultedLastHour: Number(liveSummary?.installationsConsultedLastHour || 0),
           installationsSeenLastHour: Number(liveSummary?.installationsSeenLastHour || 0),
-          registeredInstallations: Number(liveSummary?.registeredInstallations || 0)
+          registeredInstallations: Number(liveSummary?.registeredInstallations || 0),
+          // Authoritative presence is derived from fresh telemetry received by the server,
+          // not from a public Realtime Presence channel or replayed offline heartbeats.
+          onlineBrowserProfiles: Number(liveSummary?.onlineInstallations || 0),
+          onlineTabs: Number(liveSummary?.onlineTabs || 0),
+          activeBrowserProfiles: Number(liveSummary?.activeInstallations || 0),
+          activeTabsNow: Number(liveSummary?.activeTabs || 0),
+          presenceLeaseSeconds: Number(liveSummary?.presenceLeaseSeconds || 150),
+          presenceObservedAt: typeof liveSummary?.presenceObservedAt === "string" ? liveSummary.presenceObservedAt : null,
+          onlineProfiles: Array.isArray(liveSummary?.onlineProfiles) ? liveSummary.onlineProfiles : [],
+          onlineProfilesLimit: Number(liveSummary?.onlineProfilesLimit || 100)
         };
         if (liveInsuranceDeltaApplied) metrics.generatedAt = now;
         metrics.liveInsuranceDeltaAvailable = liveInsuranceDeltaApplied;

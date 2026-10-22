@@ -28,7 +28,7 @@
 2. `BUILD_ID` é criado pela pipeline, injetado no cliente e vinculado ao token assinado.
 3. O runtime crítico do VÉRIX não usa transformações de obfuscação que possam alterar o fluxo de execução de forma agressiva.
 4. Telemetria deve continuar operacional mesmo quando um mecanismo de transporte falhar; usar fallback em vez de depender de um único `fetch`.
-5. Presença é inferida por atividade recebida no servidor, não por `navigator.onLine`.
+5. Semântica da presença: o Admin consulta o resumo de presença através da API `stats-v2` autenticada; já não depende de um canal público Realtime. Um perfil é considerado online apenas após `app_open`/`heartbeat` recente recebido pelo servidor e com timestamp do cliente também recente (lease de 150 segundos). `Separadores ligados` conta pares únicos perfil/sessão; `A trabalhar agora` exige uma ação real nos últimos 120 segundos. A referência apresentada no painel é pseudonimizada e deriva do ID aleatório persistido no `localStorage` do mesmo origin. Esse ID agrupa o perfil de navegador, mas não prova identidade de pessoa nem de computador físico. Para contar pessoas distintas é necessário um ID estável autenticado; para contar computadores geridos é necessário registo/enrollment explícito do equipamento. Não utilizar fingerprinting, `navigator.onLine` ou heartbeats antigos para afirmar identidade/presença.
 6. Cada consulta de veículo tem um `query_id` único e `vehicle_lookup` é deduplicado no servidor.
 7. Não criar novas camadas CSS/JS "temporárias" sem substituir/remover a anterior. Patches de compatibilidade devem ter um motivo e ficar documentados.
 8. Não editar diretamente a pasta `dist/`; ela é descartável e é regenerada pela pipeline.
@@ -55,6 +55,6 @@ As funções/tabelas antigas de telemetria permanecem presentes apenas por compa
 ## 6. Alterações recentes de estabilidade
 
 - CSS histórico consolidado: 198 blocos → 46, preservando a ordem da cascata e os IDs que têm consumidores JavaScript.
-- Telemetria endurecida com flush imediato, fallback de transporte, `sendBeacon` e presença baseada em `last_seen`.
+- Telemetria endurecida com flush imediato, fallback de transporte e `sendBeacon`; presença administrativa derivada de heartbeats recentes validados no servidor.
 - ASF relay endurecido com token assinado, validação de build e tratamento consistente de CORS.
 - Build seguro com perfil conservador para o runtime operacional e checks automáticos de sintaxe/integridade.
