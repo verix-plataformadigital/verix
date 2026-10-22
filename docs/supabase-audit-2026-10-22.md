@@ -129,6 +129,17 @@ O inventário foi comparado por versão de 14 dígitos e por nome normalizado, r
 
 Os valores de correspondência são **uma triagem automatizada, não um veredicto sobre scripts em falta**. Há ficheiros com carimbo temporal alterado, nomes encurtados ou migrações potencialmente renomeadas/revertidas. Portanto, os 60 registos sem par identificado podem incluir históricos renomeados ou substituídos; os 6 ficheiros sem par também não devem ser aplicados apenas por estarem no repositório. Esta diferença impede tratar a pasta atual como reprodução fiel da sequência aplicada em produção.
 
+### Evidência encontrada no histórico Git
+
+A história do repositório confirma que a pasta passou por várias correções de timestamps e remoção de ficheiros considerados duplicados/desalinhados. Exemplos observados nos commits:
+- **9 de outubro:** foi adicionado `20261009051204_hourly_consultations_and_presence.sql` e depois removido o ficheiro `20261009053000_hourly_consultations_and_presence.sql` com a mensagem “remove duplicate hourly analytics migration filename”.
+- **9 de outubro:** foi adicionado `20261009045708_fix_browser_presence_kpi.sql` e removido `20261009052000_fix_browser_presence_kpi.sql` como duplicado.
+- **19 de outubro:** `20261019114442_admin_v3_recover_legacy_orphan_consultations.sql` substituiu o nome/versão anterior `20261019114500_admin_v3_recover_legacy_orphan_consultations.sql`.
+- **19 de outubro:** `20261019104631_admin_v3_compute_work_mem_64mb.sql` substituiu a versão de nome/tempo `20261019104600_admin_v3_compute_work_mem_64mb.sql`.
+- **19 de outubro:** `20261019120225_admin_v3_restore_invalid_input_classification.sql` substituiu `20261019120000_admin_v3_restore_invalid_input_classification.sql`.
+
+Estes exemplos mostram um padrão real de alinhamento de nomes/versões e limpeza de ficheiros repetidos, por isso a diferença entre os dois totais não deve ser resumida simplesmente a “54 migrações em falta”. Mas também **não prova que os registos do ledger sem par estejam reconciliados**: é necessário comparar cada versão/nome, o SQL dos commits e o estado atual do esquema antes de produzir uma baseline segura.
+
 Exemplos de ficheiros sem par identificado no ledger pelo mapeamento atual:
 - `20261008_harden_telemetry_presence.sql`
 - `20261010222630_consulted_installations_last_3m.sql`
