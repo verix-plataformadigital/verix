@@ -5,11 +5,13 @@ on:
     paths:
       - "supabase/functions/admin-telemetry-v3/**"
       - ".github/workflows/admin-telemetry-tests.yml"
+      - "supabase/config.toml"
   push:
     branches: ["main"]
     paths:
       - "supabase/functions/admin-telemetry-v3/**"
       - ".github/workflows/admin-telemetry-tests.yml"
+      - "supabase/config.toml"
 
 permissions:
   contents: read
@@ -24,6 +26,18 @@ jobs:
         uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
+      - name: Validate Admin telemetry JWT configuration
+        shell: bash
+        run: |
+          python - <<'PY'
+          import tomllib
+          from pathlib import Path
+          config = tomllib.loads(Path("supabase/config.toml").read_text())
+          settings = config.get("functions", {}).get("admin-telemetry-v3", {})
+          if settings.get("verify_jwt") is not False:
+              raise SystemExit("admin-telemetry-v3 must keep platform JWT verification disabled because it validates its own signed admin token")
+          print("Admin telemetry v3 auth configuration: OK")
+          PY
       - name: Type-check Edge Function and tests
         run: deno check supabase/functions/admin-telemetry-v3/index.ts supabase/functions/admin-telemetry-v3/index_test.ts
       - name: Run auth, CORS, response and error-handling tests
