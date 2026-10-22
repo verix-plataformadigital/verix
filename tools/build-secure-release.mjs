@@ -3,6 +3,7 @@ import path from "node:path";
 import { build as esbuildBuild } from "esbuild";
 import { createHash } from "node:crypto";
 import JavaScriptObfuscator from "javascript-obfuscator";
+import { readOperationalSource } from "./lib/operational-source.mjs";
 
 const ROOT = process.cwd();
 const OUTPUT_DIR = path.join(ROOT, process.env.VERIX_OUTPUT_DIR || "dist");
@@ -144,7 +145,9 @@ function writeSecureFile(relativeSource, relativeOutput) {
     return null;
   }
 
-  let source = fs.readFileSync(inputPath, "utf8");
+  let source = relativeSource === "verix-app.html"
+    ? readOperationalSource(ROOT)
+    : fs.readFileSync(inputPath, "utf8");
   const source_size_bytes = Buffer.byteLength(source, "utf8");
 
   // Inject the exact build identity into the client security runtime. The

@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { readOperationalSource } from './lib/operational-source.mjs';
 
-const html = readFileSync('verix-app.html', 'utf8');
+const html = readOperationalSource();
 const frozenEngine = readFileSync('tests/fixtures/asf-engine-baseline.txt', 'utf8');
 const startMarker = '  function asfTentativaRetryable(status, errorType)';
 const endMarker = '  function anunciarEstadoConsultaASF(mensagem)';
