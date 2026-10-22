@@ -36,10 +36,15 @@ function jsonResponse(req: Request, data: unknown, status = 200): Response {
   });
 }
 
-function decodeBase64Url(value: string): Uint8Array {
+function decodeBase64Url(value: string): ArrayBuffer {
   const base64 = value.replace(/-/g, "+").replace(/_/g, "/");
   const padded = base64 + "=".repeat((4 - base64.length % 4) % 4);
-  return Uint8Array.from(atob(padded), (char) => char.charCodeAt(0));
+  const decoded = atob(padded);
+  const bytes = new Uint8Array(decoded.length);
+  for (let index = 0; index < decoded.length; index++) {
+    bytes[index] = decoded.charCodeAt(index);
+  }
+  return bytes.buffer;
 }
 
 async function isAdmin(req: Request): Promise<boolean> {
