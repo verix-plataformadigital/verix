@@ -35,7 +35,9 @@ interface VerixTelemetryApi {
 
 interface Window {
   VERIX_TELEMETRY?: VerixTelemetryApi;
+  VERIX_BUILD_ID?: string;
   __VERIX_CURRENT_QUERY_ID?: string | null;
+  cinCalcularDeducida?: (registered: number) => number | null;
 }
 
 /*
@@ -65,20 +67,20 @@ interface Window {
   var HEARTBEAT_MS = 60000;
   var TIMEOUT_MS = 10000;
 
-  var localStore = null;
-  var sessionStore = null;
+  var localStore: Storage | null = null;
+  var sessionStore: Storage | null = null;
   try { localStore = window.localStorage; } catch (_) {}
   try { sessionStore = window.sessionStorage; } catch (_) {}
 
-  var queue = [];
+  var queue: TelemetryQueueItem[] = [];
   var flushBusy = false;
-  var flushTimer = null;
-  var retryTimer = null;
+  var flushTimer: ReturnType<typeof setTimeout> | null = null;
+  var retryTimer: ReturnType<typeof setTimeout> | null = null;
   var retryStep = 0;
-  var lastAction = Object.create(null);
-  var legSearchTimer = null;
+  var lastAction: Record<string, number> = Object.create(null);
+  var legSearchTimer: ReturnType<typeof setTimeout> | null = null;
 
-  function uid(prefix) {
+  function uid(prefix: string): string {
     try {
       if (window.crypto && typeof window.crypto.randomUUID === 'function') {
         return prefix + '-' + window.crypto.randomUUID();
@@ -87,15 +89,15 @@ interface Window {
     return prefix + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 12);
   }
 
-  function storageGet(store, key) {
-    try { return store.getItem(key); } catch (_) { return null; }
+  function storageGet(store: Storage | null, key: string): string | null {
+    try { return store ? store.getItem(key) : null; } catch (_) { return null; }
   }
 
-  function storageSet(store, key, value) {
-    try { store.setItem(key, value); } catch (_) {}
+  function storageSet(store: Storage | null, key: string, value: string): void {
+    try { if (store) store.setItem(key, value); } catch (_) {}
   }
 
-  function persistentId(store, key, prefix) {
+  function persistentId(store: Storage | null, key: string, prefix: string): string {
     var value = storageGet(store, key);
     if (!value) {
       value = uid(prefix);
@@ -127,7 +129,7 @@ interface Window {
 
   // Diagnóstico de cliente — apenas metadados técnicos para correlacionar erros.
   // Não envia matrícula, nome, conteúdo operacional ou dados de localização.
-  var clientInfo = {
+  var clientInfo: ClientInfo = {
     browserVersion: null,
     osPlatform: null,
     osVersion: null,
@@ -146,22 +148,22 @@ interface Window {
     uaDataAvailable: false
   };
 
-  function firstMatch(re, value) {
+  function firstMatch(re: RegExp, value: string): string | null {
     var m = re.exec(value || '');
     return m ? m[1] : null;
   }
 
-  function browserVersionFromUA(ua) {
+  function browserVersionFromUA(ua: string): string | null {
     return firstMatch(/(?:EdgA|EdgiOS|Edg|CriOS|Chrome|FxiOS|Firefox|OPR|Version)\/([0-9.]+)/i, ua);
   }
 
-  function osFromUA(ua) {
+  function osFromUA(ua: string): { platform: string | null; version: string | null } {
     if (/Android/i.test(ua)) {
       return { platform: 'Android', version: firstMatch(/Android\s+([0-9._]+)/i, ua) };
     }
     if (/Windows NT/i.test(ua)) {
       var w = firstMatch(/Windows NT\s+([0-9.]+)/i, ua);
-      var map = { '10.0': '10', '6.4': '10', '6.3': '8.1', '6.2': '8', '6.1': '7' };
+      var map: Record<string, string> = { '10.0': '10', '6.4': '10', '6.3': '8.1', '6.2': '8', '6.1': '7' };
       return { platform: 'Windows', version: map[w] || w };
     }
     if (/iPhone|iPad|iPod/i.test(ua)) {
@@ -178,7 +180,8 @@ interface Window {
     try {
       var ua = navigator.userAgent || '';
       var os = osFromUA(ua);
-      var c = navigator.connection || navigator.mozConnection || navigator.webkitConnection || null;
+      var extendedNavigator = navigator as ExtendedNavigator;
+      var c = extendedNavigator.connection || extendedNavigator.mozConnection || extendedNavigator.webkitConnection || null;
       clientInfo.browserVersion = browserVersionFromUA(ua);
       clientInfo.osPlatform = os.platform;
       clientInfo.osVersion = os.version;
@@ -191,10 +194,10 @@ interface Window {
       clientInfo.rttMs = c && typeof c.rtt === 'number' ? c.rtt : null;
       clientInfo.saveData = c && typeof c.saveData === 'boolean' ? c.saveData : null;
       clientInfo.hardwareConcurrency = typeof navigator.hardwareConcurrency === 'number' ? navigator.hardwareConcurrency : null;
-      clientInfo.deviceMemoryGb = typeof navigator.deviceMemory === 'number' ? navigator.deviceMemory : null;
+      clientInfo.deviceMemoryGb = typeof extendedNavigator.deviceMemory === 'number' ? extendedNavigator.deviceMemory : null;
       clientInfo.viewport = (window.innerWidth || 0) + 'x' + (window.innerHeight || 0);
       clientInfo.devicePixelRatio = typeof window.devicePixelRatio === 'number' ? window.devicePixelRatio : null;
-      clientInfo.uaDataAvailable = !!navigator.userAgentData;
+      clientInfo.uaDataAvailable = !!extendedNavigator.userAgentData;
     } catch (_) {}
   }
 
@@ -203,8 +206,9 @@ interface Window {
   // User-Agent Client Hints permite obter a versão completa do browser e a
   // versão real da plataforma em browsers que suportem a API.
   try {
-    if (navigator.userAgentData && typeof navigator.userAgentData.getHighEntropyValues === 'function') {
-      navigator.userAgentData.getHighEntropyValues(['platformVersion', 'fullVersionList']).then(function (ua) {
+    var extendedNavigator = navigator as ExtendedNavigator;
+    if (extendedNavigator.userAgentData && typeof extendedNavigator.userAgentData.getHighEntropyValues === 'function') {
+      extendedNavigator.userAgentData.getHighEntropyValues(['platformVersion', 'fullVersionList']).then(function (ua) {
         try {
           if (ua && Array.isArray(ua.fullVersionList)) {
             var brands = ua.fullVersionList;
@@ -236,7 +240,7 @@ interface Window {
     } catch (_) {}
   }
 
-  function recordRejectedEvents(batch, receipt) {
+  function recordRejectedEvents(batch: TelemetryQueueItem[], receipt: TelemetryReceipt | null): void {
     var rejectedIds = Object.create(null);
     var retryIds = Object.create(null);
     var reasons = receipt && receipt.rejection_reasons || {};
@@ -265,9 +269,9 @@ interface Window {
 
   queue = readQueue();
 
-  function cleanMetadata(meta, event) {
-    var m = meta && typeof meta === 'object' ? meta : {};
-    var out = {};
+  function cleanMetadata(meta: TelemetryMetadata | null | undefined, event: string): TelemetryMetadata {
+    var m: Record<string, any> = meta && typeof meta === 'object' ? meta as Record<string, any> : {};
+    var out: Record<string, any> = {};
     if (m.queryId) out.queryId = String(m.queryId).slice(0, 120);
     // Minimização: matrícula só segue nos dois resultados que alimentam as listas ASF.
     var normalizedPlate = '';
@@ -286,12 +290,12 @@ interface Window {
     // Não persistir nome/número do operador, número de série nem local exato através deste snapshot.
     if (m.cin && typeof m.cin === 'object' && !Array.isArray(m.cin)) {
       var cin = m.cin;
-      var cinNumber = function (value) {
+      var cinNumber = function (value: unknown): number | null {
         if (value === null || value === undefined || String(value).trim() === '') return null;
         var n = Number(String(value).trim().replace(',', '.'));
         return isFinite(n) ? n : null;
       };
-      var cinText = function (value, max) {
+      var cinText = function (value: unknown, max: number): string | null {
         var v = String(value == null ? '' : value).trim();
         return v && v !== '—' ? v.slice(0, max) : null;
       };
@@ -357,7 +361,7 @@ interface Window {
     return out;
   }
 
-  function push(event, module, meta) {
+  function push(event: string, module: string | null = null, meta?: TelemetryMetadata | null): TelemetryQueueItem | null {
     if (!event) return null;
     refreshClientInfo();
 
@@ -390,20 +394,20 @@ interface Window {
     return item;
   }
 
-  function parseReceipt(text) {
+  function parseReceipt(text: string): TelemetryReceipt | null {
     try {
       var data = JSON.parse(String(text || ''));
       if (!data || data.ok !== true ||
           !Array.isArray(data.acknowledged_event_ids) ||
           !Array.isArray(data.rejected_event_ids) ||
           !Array.isArray(data.retry_event_ids)) return null;
-      return data;
+      return data as TelemetryReceipt;
     } catch (_) {
       return null;
     }
   }
 
-  async function sendViaFetch(batch) {
+  async function sendViaFetch(batch: TelemetryQueueItem[]): Promise<TelemetryReceipt | null> {
     var controller = typeof AbortController === 'function' ? new AbortController() : null;
     var timer = controller ? setTimeout(function () { controller.abort(); }, TIMEOUT_MS) : null;
 
@@ -427,14 +431,14 @@ interface Window {
     }
   }
 
-  function sendViaXhr(batch) {
-    return new Promise(function (resolve) {
+  function sendViaXhr(batch: TelemetryQueueItem[]): Promise<TelemetryReceipt | null> {
+    return new Promise<TelemetryReceipt | null>(function (resolve) {
       try {
         var X = window.XMLHttpRequest;
         if (typeof X !== 'function') return resolve(null);
         var xhr = new X();
         var done = false;
-        var finish = function (receipt) {
+        var finish = function (receipt: TelemetryReceipt | null) {
           if (done) return;
           done = true;
           try { xhr.abort(); } catch (_) {}
@@ -457,7 +461,7 @@ interface Window {
     });
   }
 
-  function sendBeacon(batch) {
+  function sendBeacon(batch: TelemetryQueueItem[]): boolean {
     try {
       if (!navigator.sendBeacon) return false;
       var payload = JSON.stringify({ events: batch });
@@ -472,7 +476,7 @@ interface Window {
     }
   }
 
-  function sendViaActiveX(batch) {
+  function sendViaActiveX(batch: TelemetryQueueItem[]): Promise<TelemetryReceipt | null> {
     return new Promise(function (resolve) {
       try {
         if (typeof ActiveXObject === 'undefined') return resolve(null);
@@ -489,7 +493,7 @@ interface Window {
     });
   }
 
-  async function send(batch) {
+  async function send(batch: TelemetryQueueItem[]): Promise<TelemetryReceipt | null> {
     if (typeof fetch === 'function') {
       var receipt = await sendViaFetch(batch);
       if (receipt) return receipt;
@@ -499,7 +503,7 @@ interface Window {
     return await sendViaActiveX(batch);
   }
 
-  function schedule(delay) {
+  function schedule(delay: number): void {
     if (retryTimer || !queue.length) return;
     retryTimer = setTimeout(function () {
       retryTimer = null;
@@ -558,14 +562,14 @@ interface Window {
     return true;
   }
 
-  function rateLimited(key, ms) {
+  function rateLimited(key: string, ms: number): boolean {
     var now = Date.now();
     if (lastAction[key] && (now - lastAction[key]) < ms) return false;
     lastAction[key] = now;
     return true;
   }
 
-  function newQueryId() {
+  function newQueryId(): string {
     return uid('q');
   }
 
@@ -585,27 +589,32 @@ interface Window {
     } catch (_) {}
   }
 
-  function cinTelemetryRaw(id) {
+  function cinTelemetryRaw(id: string): string {
     var element = document.getElementById(id);
     if (!element) return '';
-    return typeof element.value === 'string' ? element.value : (element.textContent || '');
+    var input = element as HTMLInputElement;
+    return typeof input.value === 'string' ? input.value : (element.textContent || '');
   }
 
-  function cinTelemetryNumber(id) {
+  function cinTelemetryNumber(id: string): number | null {
     var raw = String(cinTelemetryRaw(id) || '').trim();
     if (!raw || raw === '—') return null;
     var value = Number(raw.replace(',', '.'));
     return isFinite(value) ? value : null;
   }
 
-  function cinTelemetryText(id, max) {
+  function cinTelemetryText(id: string, max: number): string | null {
     var value = String(cinTelemetryRaw(id) || '').trim();
     return value && value !== '—' ? value.slice(0, max) : null;
   }
 
   // Snapshot mínimo para diagnosticar cálculos, sem identidade do operador,
   // número de série do aparelho ou localização operacional exata.
-  function cinTelemetrySnapshot() {
+  function cinTelemetrySnapshot(): {
+    velocidade_registada: number; velocidade_deduzida: number | null; limite: number | null;
+    excesso: number | null; gravidade: string | null; codigo: string | null; modo: string | null;
+    veiculo: string | null; enquadramento: string | null; verificacao: string | null;
+  } | null {
     var registered = cinTelemetryNumber('cinRegistada');
     if (registered === null || registered <= 0) return null;
 
@@ -631,7 +640,7 @@ interface Window {
     };
   }
 
-  function insurancePlateMetadata(value, asfDiagnostic) {
+  function insurancePlateMetadata(value: unknown, asfDiagnostic?: Record<string, any> | null): Record<string, any> {
     var raw = String(value || (asfDiagnostic && asfDiagnostic.matricula) || '').trim().toUpperCase().slice(0, 30);
     var normalized = raw.replace(/[^A-Z0-9]/g, '').slice(0, 30);
     var diagnostic = asfDiagnostic && typeof asfDiagnostic === 'object'
@@ -837,14 +846,14 @@ interface Window {
 
   }
 
-  function scheduleHeartbeat() {
+  function scheduleHeartbeat(): void {
     push('heartbeat', null);
     // Reagenda depois de executar a tentativa atual, evitando acumulação
     // de intervalos quando o browser está sob throttling.
     setTimeout(scheduleHeartbeat, HEARTBEAT_MS);
   }
 
-  function start() {
+  function start(): void {
     installWrappers();
     bindDom();
 
