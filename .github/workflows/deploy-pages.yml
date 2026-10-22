@@ -92,6 +92,24 @@ jobs:
         shell: bash
         run: |
           test -s dist/verix-presence-v1.js
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { readFileSync } from 'node:fs';
+
+          const source = readFileSync('verix-presence-v1.mjs', 'utf8');
+          const start = source.indexOf('async function track() {');
+          const end = source.indexOf('\\n  function extractMetas(', start);
+          assert.ok(start >= 0 && end > start, 'Presence tracker must be a single shared track() function');
+          const tracker = source.slice(start, end);
+
+          assert.match(source, /var TRACK_MIN_INTERVAL_MS = 30000;/, 'Presence cadence must retain the 30-second minimum');
+          assert.doesNotMatch(source, /URGENT_TRACK_MIN_INTERVAL_MS|lastUrgentTrackAt|track\\s*\\(\\s*true\\s*\\)|forceNow/, 'Urgent paths must not bypass the shared throttle');
+          assert.match(tracker, /lastTrackAt && elapsed < TRACK_MIN_INTERVAL_MS/, 'Every Presence update must pass through the same cooldown');
+          assert.match(tracker, /pendingTrackTimer === null/, 'Bursts of activity must be coalesced');
+          assert.doesNotMatch(tracker, /force|urgent/i, 'The Presence tracker must not expose a force-send path');
+
+          console.log('Presence throttle regression checks: OK');
+          NODE
           node --check verix-presence-v1.mjs
           node --check dist/verix-presence-v1.js
           grep -q 'verix-presence-v1.js?v=' dist/verix-app.html
