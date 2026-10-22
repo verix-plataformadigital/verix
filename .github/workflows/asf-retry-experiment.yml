@@ -1,0 +1,46 @@
+name: ASF Retry Experiment Validation
+
+on:
+  pull_request:
+    paths:
+      - "verix-app.html"
+      - "verix-app-test-retries.html"
+      - "tools/build-secure-release.mjs"
+      - "tools/build-asf-retry-test.mjs"
+      - "tools/verify-asf-retry-experiment.mjs"
+      - ".github/workflows/deploy-pages.yml"
+      - ".github/workflows/asf-retry-experiment.yml"
+  push:
+    branches: ["main"]
+    paths:
+      - "verix-app.html"
+      - "verix-app-test-retries.html"
+      - "tools/build-secure-release.mjs"
+      - "tools/build-asf-retry-test.mjs"
+      - "tools/verify-asf-retry-experiment.mjs"
+      - ".github/workflows/deploy-pages.yml"
+      - ".github/workflows/asf-retry-experiment.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: "22"
+      - name: Install dependencies
+        run: npm install --no-fund --no-audit
+      - name: Check test builder and verifier syntax
+        run: |
+          node --check tools/build-asf-retry-test.mjs
+          node --check tools/verify-asf-retry-experiment.mjs
+      - name: Build secure release
+        run: npm run build:secure
+      - name: Build isolated experimental HTML
+        run: node tools/build-asf-retry-test.mjs
+      - name: Verify the protected ASF logic
+        run: node tools/verify-asf-retry-experiment.mjs
