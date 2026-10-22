@@ -10998,6 +10998,23 @@ html body .leg-card-new .copy-all-new{
         asfErrorType: a.asfErrorType ? String(a.asfErrorType).slice(0, 60) : null,
         asfMessage: a.asfMessage ? String(a.asfMessage).slice(0, 500) : null,
         asfResponseBytes: a.asfResponseBytes == null ? null : Number(a.asfResponseBytes),
+        // Preservar metadados técnicos já recolhidos pelo motor; nunca guardar body/resposta bruta.
+        asfTotalMs: a.asfTotalMs == null ? null : Number(a.asfTotalMs),
+        asfQueueWaitMs: a.asfQueueWaitMs == null ? null : Number(a.asfQueueWaitMs),
+        asfQueuePosition: a.asfQueuePosition == null ? null : Number(a.asfQueuePosition),
+        asfResponseContentType: a.asfResponseContentType ? String(a.asfResponseContentType).slice(0, 120) : null,
+        asfResponseHash: a.asfResponseHash ? String(a.asfResponseHash).slice(0, 20) : null,
+        asfStatusText: a.asfStatusText ? String(a.asfStatusText).slice(0, 120) : null,
+        asfRelayLatencyMs: a.asfRelayLatencyMs == null ? null : Number(a.asfRelayLatencyMs),
+        asfParsePath: a.asfParsePath ? String(a.asfParsePath).slice(0, 180) : null,
+        asfResponseClass: a.asfResponseClass ? String(a.asfResponseClass).slice(0, 60) : null,
+        asfGraphqlErrorCount: a.asfGraphqlErrorCount == null ? null : Number(a.asfGraphqlErrorCount),
+        asfGraphqlCodes: Array.isArray(a.asfGraphqlCodes)
+          ? a.asfGraphqlCodes.slice(0, 10).map(function (x) { return String(x || '').slice(0, 120); })
+          : [],
+        asfGraphqlMessages: Array.isArray(a.asfGraphqlMessages)
+          ? a.asfGraphqlMessages.slice(0, 10).map(function (x) { return String(x || '').slice(0, 1000); })
+          : [],
         asfAttempts: Array.isArray(a.asfAttempts) ? a.asfAttempts.slice(-4).map(function (t) {
           return {
             method: t.method ? String(t.method).slice(0, 20) : null,
@@ -11006,7 +11023,10 @@ html body .leg-card-new .copy-all-new{
             durationMs: t.durationMs == null ? null : Number(t.durationMs),
             errorType: t.errorType ? String(t.errorType).slice(0, 60) : null,
             message: t.message ? String(t.message).slice(0, 500) : null,
-            responseBytes: t.responseBytes == null ? null : Number(t.responseBytes)
+            responseBytes: t.responseBytes == null ? null : Number(t.responseBytes),
+            responseHash: t.responseHash ? String(t.responseHash).slice(0, 20) : null,
+            responseContentType: t.responseContentType ? String(t.responseContentType).slice(0, 120) : null,
+            statusText: t.statusText ? String(t.statusText).slice(0, 120) : null
           };
         }) : []
       };
