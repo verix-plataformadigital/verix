@@ -103,11 +103,13 @@ Foi feita uma segunda leitura dos logs no intervalo **22/10/2026, 00:00–12:00 
 
 | Rota / método | Respostas observadas | Primeira ocorrência | Última ocorrência |
 |---|---:|---|---|
-| `/functions/v1/telemetry` — `OPTIONS` | 27.909 HTTP 404 | 06:25:38 UTC | 11:29:04 UTC |
-| `/functions/v1/telemetry-v2` — `POST` | 11.054 HTTP 200 | 00:00:04 UTC | 11:24:41 UTC |
+| `/functions/v1/telemetry` — `OPTIONS` | 27.909 HTTP 404 | 06:25:38 UTC | 11:29:04 UTC* |
+| `/functions/v1/telemetry-v2` — `POST` | 11.054 HTTP 200 | 00:00:04 UTC | 11:24:41 UTC* |
 | `/functions/v1/telemetry-v2` — `OPTIONS` | 1 HTTP 204 no conjunto consultado | 08:59:56 UTC | 08:59:56 UTC |
 
-**Interpretação:** a rota sem versão está a receber preflight `OPTIONS`, não se observou `POST` enviado para esse caminho na consulta exata; os envios efetivos observados estão a entrar em `telemetry-v2` com HTTP 200. Os pedidos antigos não devem ser tratados como 27.909 erros de gravação nem como 27.909 utilizadores: são pedidos HTTP, em grande maioria preflight, e não consultas operacionais confirmadas.
+\* Os totais e os limites temporais nesta tabela vêm da consulta agregada inicial. **Reverificação posterior dos logs:** numa consulta de amostra separada à janela **11:30–11:50 UTC**, ainda se observaram pedidos `OPTIONS | 404` para `/functions/v1/telemetry` até às **11:44:11.144 UTC**. No mesmo intervalo, os últimos exemplos recolhidos de `POST | 200` para `/functions/v1/telemetry-v2` chegaram às **11:45:09.536 UTC**. Estes horários vêm de amostras de registos e não constituem uma nova contagem agregada.
+
+**Interpretação:** a rota sem versão está a receber preflight `OPTIONS`, não se observou `POST` enviado para esse caminho na consulta exata; os envios efetivos observados estão a entrar em `telemetry-v2` com HTTP 200. Os pedidos antigos não devem ser tratados como 27.909 erros de gravação nem como 27.909 utilizadores: são pedidos HTTP, em grande maioria preflight, e não consultas operacionais confirmadas. A permanência das chamadas antigas após a correção de fonte no ramo confirma que a alteração do ramo, por si só, ainda não corrigiu todos os clientes que estão a gerar o tráfego.
 
 Os registos apresentam agentes de utilizador de Chrome/Edge no Windows, sem cabeçalho `Origin`, e associam o tráfego a uma rede de saída da Secretaria-Geral do MAI. Isto é **compatível com HTML local (`file://`) ou outra origem opaca**, mas não prova qual o ficheiro/build que o emite. A fonte operacional montada nesta proposta aponta para `telemetry-v2`; a validação da fonte reconstruída rejeita referências exatas à rota antiga.
 
