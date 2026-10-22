@@ -98,7 +98,6 @@ assert.match(livePresence, /from ['"]@supabase\/supabase-js['"]/, "presence sour
 assert.match(livePresence, /presenceState\(\)/, "Admin counts must come from current Realtime Presence state");
 assert.match(livePresence, /ACTIVE_WINDOW_MS = 120000/, "active now must require recent activity");
 assert.match(livePresence, /trackedChannel\.track\(currentPayload\(\)\)/, "app must publish live presence using the channel that initiated the call");
-assert.match(livePresence, /TRACK_MIN_INTERVAL_MS = 30000/, "presence updates must be throttled to avoid high-frequency channel sync");
 assert.match(livePresence, /TRACK_MIN_INTERVAL_MS = 30000/, "all presence updates must retain the 30-second minimum");
 assert.match(livePresence, /if \(lastTrackAt && elapsed < TRACK_MIN_INTERVAL_MS\)/, "every presence update must pass through the common throttle");
 assert.match(livePresence, /pendingTrackTimer === null/, "bursts of activity must be coalesced into one delayed presence update");
