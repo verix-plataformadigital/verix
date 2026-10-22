@@ -241,7 +241,7 @@ const parserStart = telemetryScript.indexOf("function parseReceipt(text) {");
 const parserEnd = telemetryScript.indexOf("async function sendViaFetch", parserStart);
 assert.ok(parserStart >= 0 && parserEnd > parserStart, "compiled receipt parser must have clear function boundaries");
 const parserSource = telemetryScript.slice(parserStart, parserEnd).trim();
-assert.match(parserSource, /\\n  \\}$/);
+assert.ok(parserSource.endsWith("}"), "compiled receipt parser must end before the next transport function");
 const parseReceipt = new Function("return (" + parserSource + ");")();
 
 const validReceipt = {
