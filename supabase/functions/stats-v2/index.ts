@@ -619,8 +619,8 @@ Deno.serve(async (req:Request) => {
           installationsConsultedLastHour: Number(liveSummary?.installationsConsultedLastHour || 0),
           installationsSeenLastHour: Number(liveSummary?.installationsSeenLastHour || 0),
           registeredInstallations: Number(liveSummary?.registeredInstallations || 0),
-          // Authoritative presence is derived from fresh telemetry received by the server,
-          // not from a public Realtime Presence channel or replayed offline heartbeats.
+          // Presence counts are calculated server-side from recent client heartbeats,
+          // not from public Realtime Presence or stale offline-queue replays. These IDs are pseudonymous, not device authentication.
           onlineBrowserProfiles: Number(liveSummary?.onlineInstallations || 0),
           onlineTabs: Number(liveSummary?.onlineTabs || 0),
           activeBrowserProfiles: Number(liveSummary?.activeInstallations || 0),
