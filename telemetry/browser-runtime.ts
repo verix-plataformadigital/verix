@@ -870,12 +870,10 @@ interface Window {
 
       if (el.matches('.copy-btn-new,.copy-desc-new,.copy-all-new,.copy-btn')) {
         var card = el.closest('.leg-card-new');
-        var title = card && card.querySelector('h3')
-          ? String(card.querySelector('h3').textContent || '').trim()
-          : '';
-        var code = card && card.querySelector('.leg-code-box strong')
-          ? String(card.querySelector('.leg-code-box strong').textContent || '').trim()
-          : '';
+        var titleNode = card ? card.querySelector('h3') : null;
+        var codeNode = card ? card.querySelector('.leg-code-box strong') : null;
+        var title = titleNode ? String(titleNode.textContent || '').trim() : '';
+        var code = codeNode ? String(codeNode.textContent || '').trim() : '';
 
         var copyType = el.classList.contains('copy-desc-new')
           ? 'description'
