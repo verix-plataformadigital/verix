@@ -42,7 +42,7 @@ jobs:
         run: deno check --no-lock supabase/functions/telemetry-v2/index.ts
       - name: Type-check Admin statistics Edge Function
         run: deno check --no-lock supabase/functions/stats-v2/index.ts
-      - name: Build secure release and validate server-authoritative presence
+      - name: Build secure release and validate backend-calculated presence
         run: |
           npm install --no-fund --no-audit
           npm run build:secure
