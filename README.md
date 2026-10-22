@@ -41,3 +41,5 @@ O runtime operacional é um monólito legado grande. Não devem ser introduzidas
 
 Ver `ARCHITECTURE.md` para o mapa da árvore e as regras de manutenção.
 Ver `SECURITY.md` para o modelo de segurança e publicação.
+
+A folha de estilo maior está repartida em três fragmentos ordenados para facilitar a revisão. O motor de montagem concatena-os dentro da mesma tag `<style>`; não mudar a ordem dos fragmentos sem verificar a cascata completa.

@@ -14,7 +14,8 @@
 - verix-app.html: apontador de desenvolvimento, não publicar diretamente.
 - src/operational/template.html: estrutura HTML e marcadores.
 - src/operational/blocks.json: manifesto e ordem dos módulos.
-- src/operational/styles: estilos extraídos.
+- src/operational/styles: estilos extraídos; o maior estilo está dividido em três partes ordenadas.
+- src/operational/partials/legislacao.html: marcação estática separada da lógica JavaScript.
 - src/operational/scripts: scripts clássicos extraídos.
 - tools/lib/operational-source.mjs: montagem do HTML-fonte.
 - tools/build-secure-release.mjs: construção oficial.
@@ -31,7 +32,7 @@ Operacional: index → HTML montado → verix-gate-v1 → token → asf-proxy-v1
 Administração: admin_v2.html → admin-auth-v2 → token → stats-v2 para análise histórica e admin-telemetry-v3 para presença ao vivo. hourly-history-v2 mantém o histórico horário.
 
 ## Fonte e build
-A extração mecânica preservou 26 blocos CSS e 34 scripts inline em 66 ficheiros-fonte físicos; o manifesto contém 60 blocos lógicos. O antigo script transversal foi repartido em sete partes semânticas que são concatenadas para voltar a gerar o mesmo bloco clássico. O helper remonta o HTML pelo manifesto e falha com marcadores ausentes/duplicados. Os comandos verify:source e test:source validam a estrutura; o build seguro gera HTML portátil.
+A extração preservou 26 blocos CSS e 34 scripts inline lógicos em 68 ficheiros-fonte físicos; o manifesto contém 60 blocos lógicos. O CSS maior divide-se em três fragmentos concatenados na mesma tag para preservar a cascata. O antigo script transversal foi repartido em sete partes semânticas que são concatenadas para voltar a gerar o mesmo bloco clássico. O helper remonta o HTML pelo manifesto e falha com marcadores ausentes/duplicados. Os comandos verify:source e test:source validam a estrutura; o build seguro gera HTML portátil.
 
 O maior bloco JavaScript continua historicamente acoplado; a sua decomposição funcional exige mapear dependências globais e testar regressões, não apenas mover texto.
 
