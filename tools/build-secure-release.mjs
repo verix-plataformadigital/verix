@@ -335,10 +335,10 @@ function verifyCriticalRuntime(outputPath) {
   const telemetry = extractInlineScript(html, "verix-telemetry-v2");
   const security = extractInlineScript(html, "verix-security-runtime");
   if (!telemetry) throw new Error("Critical telemetry runtime block missing from secure build");
-  if (!/\\/functions\\/v1\\/telemetry-v2['"]/i.test(telemetry)) {
+  if (!/\/functions\/v1\/telemetry-v2['"]/i.test(telemetry)) {
     throw new Error("Critical telemetry endpoint must target telemetry-v2");
   }
-  if (/\\/functions\\/v1\\/telemetry(?:['"\\/?#])/i.test(telemetry)) {
+  if (/\/functions\/v1\/telemetry(?:['"\/?#])/i.test(telemetry)) {
     throw new Error("Legacy telemetry endpoint detected in current release source");
   }
   if (!/heartbeat/i.test(telemetry)) throw new Error("Critical telemetry heartbeat marker missing");
