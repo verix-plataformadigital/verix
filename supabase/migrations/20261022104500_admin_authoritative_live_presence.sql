@@ -1,4 +1,5 @@
--- Authoritative live presence for the Admin dashboard.
+-- Backend-calculated presence from recent client telemetry for the Admin dashboard.
+-- Client IDs are pseudonymous labels and are not authentication of a physical device or user.
 -- Do not rely on public client-side Realtime Presence for production online counts.
 -- A profile is online only when a fresh app_open/heartbeat was both generated and
 -- received recently. This prevents an offline queue replay from reviving stale clients.
