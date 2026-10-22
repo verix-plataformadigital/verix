@@ -9,7 +9,9 @@ on:
       - "tools/verify-telemetry-integrity.mjs"
       - "verix-app.html"
       - "verix-presence-v1.mjs"
+      - "tools/build-secure-release.mjs"
       - "tools/verify-migration-filenames.mjs"
+      - "tools/build-secure-release.mjs"
       - ".github/workflows/telemetry-integrity.yml"
   push:
     branches:
