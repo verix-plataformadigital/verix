@@ -6,6 +6,9 @@ verify_jwt = false
 [functions.stats-v2]
 verify_jwt = false
 
+[functions.hourly-history-v2]
+verify_jwt = false
+
 [functions.admin-auth-v2]
 verify_jwt = false
 
