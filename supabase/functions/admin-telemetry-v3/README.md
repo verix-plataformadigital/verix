@@ -1,24 +1,27 @@
-# VÉRIX admin telemetry v3 — isolated candidate
+# VÉRIX admin telemetry v3
 
-## Safety boundary
+## Production status
 
-This branch is a review candidate only. It is not deployed and must not be merged or published without explicit approval. It does not modify the operational app, the ASF engine, event ingestion, existing database objects, or the production stats-v2 function.
+The additive Edge Function `admin-telemetry-v3` is deployed to Supabase project `onilkakbgpklxvxuxmks` (version 1). The current Admin UI still uses `stats-v2`; it has **not** been switched to this endpoint. This rollout therefore publishes the new API without replacing existing dashboard behavior.
 
-## What this changes
+## Design
 
-The current production stats-v2?detail=dashboard-v3 contract calls verix2_admin_live_summary_v1, which reports activity over time windows but does not return the strict online_now session count. The database already has verix2_admin_live_presence, which derives online sessions using a 90-second lease and validates both server receipt time and client occurrence time.
+- TypeScript/Deno Edge Function; read-only, no event ingestion and no database schema changes.
+- Calls `verix2_admin_dashboard_v3` and `verix2_admin_live_presence` in parallel.
+- Separates strict online presence (90-second lease, server receipt and client occurrence timestamps) from hourly activity.
+- Uses the existing signed admin-token contract and keeps the service-role key server-side.
+- Applies an 8-second timeout to each RPC, `Cache-Control: no-store`, restrictive CORS origins, safe count validation, and generic client-facing upstream errors.
 
-The candidate admin-telemetry-v3 endpoint calls the existing dashboard aggregate and authoritative live-presence RPC in parallel, then returns separate dashboard and presence objects. It is TypeScript/Deno, not an HTML rewrite. It is read-only and uses the service-role key only server-side.
+## Endpoint
 
-## Before any deployment
+`GET /functions/v1/admin-telemetry-v3?view=dashboard`
 
-1. Confirm the exact admin client and its authentication token contract.
-2. Add automated tests for token expiry, malformed tokens, CORS origins, RPC timeouts/failures, and presence response validation.
-3. Run Deno type-check and tests locally against a non-production Supabase project.
-4. Resolve the legacy /functions/v1/telemetry traffic separately. Do not alias or re-enable it until the source is identified.
-5. Compare response fields against the current admin UI and decide whether the UI should migrate to this contract. Do not change the production client in the same release.
-6. Deploy only to a non-production Supabase project, run acceptance tests, then request explicit approval for any production rollout.
+Requires the existing admin bearer token in `Authorization`. The platform JWT gateway check is disabled for this function because the handler validates the application's own signed token, matching the existing `stats-v2` pattern.
 
-## Known limitation
+## Remaining rollout work
 
-This candidate fixes the identified API contract gap in isolation; it does not yet establish the caller of the legacy endpoint, and it is not a complete production replacement. It intentionally contains no event-ingestion code and makes no database schema changes.
+1. Run authenticated acceptance tests using the Admin UI's real session/token.
+2. Compare payloads and confirm the online count against the live-presence RPC.
+3. Integrate the response into the Admin UI with a fallback to `stats-v2`, then test GitHub Pages build and smoke tests.
+4. Identify and resolve the source still calling the obsolete `/functions/v1/telemetry` path; do not create an alias until the caller is identified.
+5. Do not change the ASF engine as part of this work.
