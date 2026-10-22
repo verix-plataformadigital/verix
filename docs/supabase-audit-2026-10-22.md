@@ -173,6 +173,10 @@ Foi comparada a versão publicada em `main` (22/10/2026) com a fonte integral us
 
 **Conclusão:** a divergência do HTML não representa uma alteração inadvertida do motor ASF. É uma extensão da projeção de telemetria de diagnóstico já presente na anterior proposta de reestruturação. O teste ASF continua protegido por comparação exata e passou nas validações automáticas. Esta conclusão não elimina a necessidade do teste funcional com a rede real, nem resolve as chamadas `OPTIONS 404` que ainda chegam de clientes antigos.
 
+### Auditoria repetível
+
+As consultas usadas para repetir o snapshot de migrações, tabelas/RLS, funções/ACL, índices, triggers e tarefas `pg_cron` estão guardadas em [docs/sql/supabase-readonly-audit.sql](./sql/supabase-readonly-audit.sql). O ficheiro contém exclusivamente consultas `SELECT`; não aplica migrações nem altera o banco.
+
 ## 9. O que foi verificado nesta proposta
 
 - No candidato de código `98c8631995c8d0b59a830ab46b66e033fb1b1a89`, passaram `VÉRIX Security Audit`, `Telemetry Integrity`, `ASF Retry Experiment Validation` e `VÉRIX Windows Source Validation`. O último workflow executou o build seguro em `windows-latest` e verificou o HTML gerado.
