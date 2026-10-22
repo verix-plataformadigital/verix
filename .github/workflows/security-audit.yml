@@ -27,7 +27,9 @@ jobs:
           required = {
               "telemetry-v2",
               "stats-v2",
+              "hourly-history-v2",
               "admin-auth-v2",
+              "admin-telemetry-v3",
               "asf-proxy-v1",
               "verix-gate-v1",
           }
