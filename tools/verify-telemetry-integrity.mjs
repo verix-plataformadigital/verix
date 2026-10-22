@@ -259,7 +259,7 @@ const presenceMigration = fs.readFileSync("supabase/migrations/20261009045708_fi
 const recentQueryPresenceMigration = fs.readFileSync("supabase/migrations/20261010222630_consulted_installations_last_3m.sql", "utf8");
 const activeHourlyMigration = fs.readFileSync("supabase/migrations/20261013100000_hourly_usage_bucket_dates.sql", "utf8");
 assert.match(endpoint, /"session_close"/, "server must accept browser-close presence events");
-assert.match(telemetryScript, /push\('session_close', null\)/, "pagehide must emit a browser-close event");
+assert.match(telemetryScript, /push\(["']session_close["'], null\)/, "pagehide must emit a browser-close event");
 assert.match(telemetryScript, /navigator\.sendBeacon\([\s\S]*events: \[closingEvent\]/, "browser-close event must be sent immediately through Beacon");
 assert.match(presenceMigration, /'online_now',\(SELECT count\(\*\)/, "online_now must count sessions, not installations");
 assert.match(presenceMigration, /last_presence >= p_now-interval '90 seconds'/, "online presence must expire after the heartbeat lease");
