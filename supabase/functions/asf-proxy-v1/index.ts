@@ -10,7 +10,7 @@ function corsHeaders(req: Request) {
     "Access-Control-Allow-Origin": opaqueLocal ? "*" : (ALLOWED_ORIGINS.has(origin) ? origin : ""),
     "Access-Control-Allow-Headers": "content-type,x-verix-build-id,x-verix-client-token",
     "Access-Control-Allow-Methods": "POST,OPTIONS",
-    "Access-Control-Expose-Headers": "X-Verix-ASF-Relay, X-Verix-ASF-Latency-Ms, Retry-After",
+    "Access-Control-Expose-Headers": "X-Verix-ASF-Relay, X-Verix-ASF-Latency-Ms, X-Verix-ASF-Queue-Wait-Ms, Retry-After",
     "Cache-Control": "no-store, max-age=0",
     "Vary": "Origin",
     "X-Content-Type-Options": "nosniff",
@@ -26,6 +26,63 @@ const ASF_ORIGIN = "https://ext01.asf.com.pt";
 const ASF_PATH = "/api/src/";
 const MAX_BODY_BYTES = 16 * 1024;
 const UPSTREAM_TIMEOUT_MS = 15000;
+const ASF_MIN_START_INTERVAL_MS = 10000;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Per-isolate fallback if shared Postgres reservation is temporarily unavailable.
+let localQueueTail: Promise<void> = Promise.resolve();
+let localNextSlotAt = 0;
+
+async function waitForLocalAsfSlot(): Promise<number> {
+  const queuedAt = Date.now();
+  let release!: () => void;
+  const previous = localQueueTail;
+  localQueueTail = new Promise<void>(resolve => { release = resolve; });
+  await previous.catch(() => {});
+  try {
+    const waitMs = Math.max(0, localNextSlotAt - Date.now());
+    if (waitMs > 0) await sleep(waitMs);
+    localNextSlotAt = Date.now() + ASF_MIN_START_INTERVAL_MS;
+  } finally {
+    release();
+  }
+  return Date.now() - queuedAt;
+}
+
+// Atomic reservation shared across all VÉRIX users to pace the same server egress globally.
+async function waitForGlobalAsfSlot(): Promise<number> {
+  const queuedAt = Date.now();
+  try {
+    const baseUrl = SUPABASE_URL.replace(/\/+$/, "");
+    const response = await fetch(baseUrl + "/rest/v1/rpc/verix2_reserve_asf_slot", {
+      method: "POST",
+      headers: {
+        "apikey": SERVICE_KEY,
+        "Authorization": "Bearer " + SERVICE_KEY,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ p_gap_ms: ASF_MIN_START_INTERVAL_MS })
+    });
+    if (!response.ok) throw new Error("queue_http_" + response.status);
+    const rawValue = await response.json();
+    const slotValue = typeof rawValue === "string"
+      ? rawValue
+      : Array.isArray(rawValue)
+        ? rawValue[0]
+        : rawValue?.verix2_reserve_asf_slot;
+    const slotAt = Date.parse(String(slotValue ?? ""));
+    if (!Number.isFinite(slotAt)) throw new Error("queue_invalid_slot");
+    const waitMs = Math.max(0, slotAt - Date.now());
+    if (waitMs > 0) await sleep(waitMs);
+    return Date.now() - queuedAt;
+  } catch (error) {
+    console.error("verix_asf_queue_reservation_failed", String((error as Error)?.message || error));
+    return await waitForLocalAsfSlot();
+  }
+}
 
 function json(data: unknown, status = 200, req?: Request, extraHeaders: Record<string, string> = {}) {
   return new Response(JSON.stringify(data), {
@@ -187,6 +244,7 @@ Deno.serve(async (req: Request) => {
       '") { nodes { id entity startDate endDate policy license code logo } } } } } }';
 
     const url = ASF_ORIGIN + ASF_PATH + "?query=" + encodeURIComponent(query);
+    const queueWaitMs = await waitForGlobalAsfSlot();
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
     const started = Date.now();
@@ -207,11 +265,41 @@ Deno.serve(async (req: Request) => {
       const text = await upstream.text();
       const elapsedMs = Date.now() - started;
 
+      // Safe incident diagnostics: retain only GraphQL error summary, never
+      // the submitted registration, request URL, raw request, or raw response.
+      if (upstream.status === 200) {
+        try {
+          const bodyJson = JSON.parse(text);
+          if (bodyJson && Array.isArray(bodyJson.errors) && bodyJson.errors.length) {
+            const errors = bodyJson.errors.slice(0, 3).map((item: any) => ({
+              message: cleanText(item?.message, 180),
+              code: cleanText(item?.extensions?.code, 80),
+              path: Array.isArray(item?.path)
+                ? item.path.slice(0, 8).map((part: unknown) => cleanText(part, 40))
+                : null
+            }));
+            console.warn("verix_asf_upstream_graphql_error", JSON.stringify({
+              buildId,
+              status: upstream.status,
+              elapsedMs,
+              queueWaitMs,
+              responseBytes: new TextEncoder().encode(text).length,
+              contentType: cleanText(upstream.headers.get("content-type"), 120),
+              errorCount: bodyJson.errors.length,
+              errors
+            }));
+          }
+        } catch (_) {
+          // Malformed responses continue through the unchanged relay behavior.
+        }
+      }
+
       const outHeaders: Record<string, string> = {
         ...corsHeaders(req),
         "Content-Type": upstream.headers.get("content-type") || "application/json; charset=utf-8",
         "X-Verix-ASF-Relay": "1",
-        "X-Verix-ASF-Latency-Ms": String(elapsedMs)
+        "X-Verix-ASF-Latency-Ms": String(elapsedMs),
+        "X-Verix-ASF-Queue-Wait-Ms": String(queueWaitMs)
       };
 
       const retryAfter = upstream.headers.get("retry-after");
