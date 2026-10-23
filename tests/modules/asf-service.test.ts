@@ -186,4 +186,22 @@ describe("ASF service adapter", () => {
     if (!result.ok) expect(result.error.kind).toBe("invalid-input");
     expect(fetchImpl).not.toHaveBeenCalled();
   });
+
+  it("preserva falhas de transporte como erro de rede, sem inventar status HTTP", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockRejectedValue(new TypeError("Failed to fetch"));
+    const gate = createGate();
+    const service = new AsfService({
+      relayUrl: "https://example.invalid/asf",
+      fetchImpl,
+      gate
+    });
+
+    const result = await service.query(request());
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.kind).toBe("network");
+      expect("status" in result.error).toBe(false);
+    }
+  });
+
 });
