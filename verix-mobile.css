@@ -81,7 +81,7 @@ body.vx-mobile-mode .vx-scroll-x{
   padding:7px 4px;
 }
 #vxMobileBar button:active{transform:scale(.98);background:rgba(255,255,255,.08)}
-#vxMobileBar button.vx-active{background:rgba(0,166,183,.18);color:#fff}
+
 #vxMobileBar .vx-icon{display:block;font-size:17px;line-height:18px;margin-bottom:2px}
 #vxMobileTop{
   position:fixed;
@@ -116,8 +116,8 @@ body.vx-mobile-mode .vx-scroll-x{
   border-radius:11px;
   font-size:18px;
 }
-body.vx-mobile-mode .vx-hide-mobile{display:none!important}
-body.vx-mobile-mode .vx-full-mobile{width:100%!important;max-width:100%!important}
+
+
 @media (max-width:767px){
   html,body,body.vx-mobile-mode{
     height:auto!important;

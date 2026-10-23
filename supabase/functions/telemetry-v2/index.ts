@@ -105,6 +105,7 @@ function cleanMetadata(value: unknown): Record<string, unknown> {
   if (m.resultConfirmed === true) out.resultConfirmed = true;
   if (m.matricula) out.matricula = cleanText(m.matricula, 30);
   if (m.matriculaNormalizada) out.matriculaNormalizada = cleanText(m.matriculaNormalizada, 30);
+  if (m.matriculaCapturada) out.matriculaCapturada = cleanText(m.matriculaCapturada, 30);
   if (m.asfUserMessage) out.asfUserMessage = cleanText(m.asfUserMessage, 500);
   if (m.profile_id) out.profile_id = cleanText(m.profile_id, 120);
   if (m.operation_id) out.operation_id = cleanText(m.operation_id, 120);
@@ -271,6 +272,42 @@ function cleanMetadata(value: unknown): Record<string, unknown> {
   return out;
 }
 
+function sanitizeErrorPlateMetadata(metadata: Record<string, unknown>): void {
+  const diagnostic = metadata.asfDiagnostic;
+  const diag = diagnostic && typeof diagnostic === "object" && !Array.isArray(diagnostic)
+    ? diagnostic as Record<string, unknown>
+    : null;
+  const candidates = [diag?.matricula, metadata.matriculaNormalizada, metadata.matricula, metadata.matriculaCapturada];
+  // Preserve exactly what the client captured (within a small, safe character
+  // set), even when it is foreign, partial, or not a recognized Portuguese layout.
+  // This is explicitly a captured input, not a validated registration.
+  const captured = candidates
+    .map(value => String(value ?? "").trim().toUpperCase().slice(0, 30))
+    .find(value => value && /^[A-Z0-9][A-Z0-9 -]{0,29}$/.test(value));
+  if (captured) metadata.matriculaCapturada = captured;
+  else delete metadata.matriculaCapturada;
+
+  const validRaw = candidates
+    .map(value => String(value ?? "").trim())
+    .find(value => {
+      const normalized = value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+      return /^(?:[A-Z]{2}[0-9]{4}|[0-9]{4}[A-Z]{2}|[0-9]{2}[A-Z]{2}[0-9]{2}|[A-Z]{2}[0-9]{2}[A-Z]{2})$/.test(normalized);
+    });
+
+  // Keep legacy normalized fields only for recognized Portuguese formats.
+  if (!validRaw) {
+    delete metadata.matricula;
+    delete metadata.matriculaNormalizada;
+    if (diag) delete diag.matricula;
+    return;
+  }
+
+  const normalized = validRaw.toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (diag) diag.matricula = validRaw;
+  else metadata.matricula = validRaw;
+  metadata.matriculaNormalizada = normalized;
+}
+
 function clientIp(req: Request): string {
   const cf = req.headers.get("cf-connecting-ip");
   if (cf) return cf.trim();
@@ -374,6 +411,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const events: any[] = [];
+    const insuranceNoCases: any[] = [];
 
     for (const x of input) {
       const event = cleanText(x?.event, 80);
@@ -387,6 +425,9 @@ Deno.serve(async (req: Request) => {
       const appVersion = cleanText(x?.appVersion, 40);
       const buildId = cleanText(x?.buildId || metadata.build_id, 60) || appVersion;
       if (!metadata.build_id) metadata.build_id = buildId;
+      const noInsurancePlate = event === "vehicle_insurance_no"
+        ? String(metadata.matriculaNormalizada || metadata.matricula || "").toUpperCase().replace(/[^A-Z0-9]/g, "")
+        : "";
       // installation_id é a única identidade técnica obrigatória: a coluna é NOT NULL.
       // session/tab são opcionais para permitir contabilização mesmo quando o browser
       // perde uma dessas chaves entre refresh/restore.
@@ -402,6 +443,10 @@ Deno.serve(async (req: Request) => {
           delete diag.matricula;
         }
       }
+      // Don't persist partial OCR/input fragments such as "O", "89" or "177ZN"
+      // as a vehicle registration. The error itself remains recorded; only the
+      // unusable plate field is removed.
+      if (event === "vehicle_insurance_error") sanitizeErrorPlateMetadata(metadata);
 
       if (event === "vehicle_lookup") {
         // Uma consulta precisa de instalação, query e versão; sessão/tab podem faltar.
@@ -429,8 +474,18 @@ Deno.serve(async (req: Request) => {
         ? occurredAtDate.toISOString()
         : new Date().toISOString();
 
+      const eventId = cleanText(x?.eventId, 120) || crypto.randomUUID();
+      if (event === "vehicle_insurance_no" && /^[A-Z0-9]{6,8}$/.test(noInsurancePlate)) {
+        insuranceNoCases.push({
+          event_id: eventId,
+          matricula: noInsurancePlate,
+          occurred_at: occurredAt,
+          expires_at: new Date(new Date(occurredAt).getTime() + 90 * 24 * 60 * 60 * 1000).toISOString()
+        });
+      }
+
       events.push({
-        event_id: cleanText(x?.eventId, 120) || crypto.randomUUID(),
+        event_id: eventId,
         installation_id: installationId,
         session_id: sessionId,
         tab_id: tabId,
@@ -515,6 +570,13 @@ Deno.serve(async (req: Request) => {
     const inserted = Number(receipt?.events_inserted);
     if (receipt?.ok !== true || !Number.isInteger(inserted) || inserted < 0 || inserted > events.length) {
       throw new Error("atomic_ingest:invalid_receipt");
+    }
+
+    if (insuranceNoCases.length) {
+      const { error: registryError } = await db
+        .from("verix_insurance_no_cases")
+        .upsert(insuranceNoCases, { onConflict: "event_id", ignoreDuplicates: true });
+      if (registryError) throw new Error("insurance_no_registry:" + registryError.message);
     }
 
     const duplicates = events.length - inserted;

@@ -111,18 +111,34 @@ document.querySelectorAll('table').forEach(table=>{
   wrap.appendChild(table);
 });
 
-function normalizeMobileLayout(){
+function normalizeMobileLayout(root=document.body){
   const vw=Math.max(document.documentElement.clientWidth||0,window.innerWidth||0);
   if(vw>1199) return;
+  if(!root || root.nodeType!==1) root=document.body;
 
-  const all=[...document.body.querySelectorAll('*')];
+  // Work only within the changed layout region where possible. The previous
+  // observer re-scanned every node in the document for each DOM mutation.
+  const all=root===document.body
+    ? [...root.querySelectorAll('*')]
+    : [root,...root.querySelectorAll('*')];
+  const patches=new Map();
+  const patch=(el,prop,value)=>{
+    if(el.style[prop]===value) return;
+    let styles=patches.get(el);
+    if(!styles){styles={};patches.set(el,styles);}
+    styles[prop]=value;
+  };
 
-  all.forEach(el=>{
+  // Read the layout first and apply style writes afterwards. This avoids
+  // interleaving getBoundingClientRect() reads with inline-style writes,
+  // which can force repeated synchronous layout recalculations.
+  for(const el of all){
     const cs=getComputedStyle(el);
     const r=el.getBoundingClientRect();
+
     if(r.width>vw+2){
-      el.style.maxWidth='100%';
-      el.style.width='100%';
+      patch(el,'maxWidth','100%');
+      patch(el,'width','100%');
     }
 
     if(cs.display==='grid'){
@@ -130,40 +146,63 @@ function normalizeMobileLayout(){
       const children=[...el.children].filter(c=>getComputedStyle(c).display!=='none');
       if(children.length>=2 && children.length<=6 && r.width>=vw*.72){
         const rects=children.map(c=>c.getBoundingClientRect());
-        const firstRow=rects.filter(x=>x.top < (rects[0]?.bottom||0) && x.bottom > (rects[0]?.top||0));
-        const wide=firstRow.length>=2 && firstRow.reduce((n,x)=>n+x.width,0)>vw*.72;
-        if(wide || /repeat\(|minmax|\b1fr\b/.test(cols)){
-          el.style.gridTemplateColumns='minmax(0,1fr)';
-          el.style.gridTemplateRows='none';
+        const firstRow=rects.filter(x=>x.top<(rects[0]?.bottom||0)&&x.bottom>(rects[0]?.top||0));
+        const wide=firstRow.length>=2&&firstRow.reduce((n,x)=>n+x.width,0)>vw*.72;
+        if(wide||/repeat\(|minmax|\b1fr\b/.test(cols)){
+          patch(el,'gridTemplateColumns','minmax(0,1fr)');
+          patch(el,'gridTemplateRows','none');
         }
       }
     }
 
-    if(cs.display==='flex' && cs.flexDirection==='row'){
+    if(cs.display==='flex'&&cs.flexDirection==='row'){
       const children=[...el.children].filter(c=>getComputedStyle(c).display!=='none');
-      if(children.length===2 && r.width>=vw*.72){
+      if(children.length===2&&r.width>=vw*.72){
         const rects=children.map(c=>c.getBoundingClientRect());
-        if(rects.every(x=>x.width>vw*.22) && Math.abs(rects[0].top-rects[1].top)<80){
-          el.style.flexDirection='column';
-          el.style.alignItems='stretch';
+        if(rects.every(x=>x.width>vw*.22)&&Math.abs(rects[0].top-rects[1].top)<80){
+          patch(el,'flexDirection','column');
+          patch(el,'alignItems','stretch');
         }
       }
     }
+  }
+
+  patches.forEach((styles,el)=>{
+    Object.entries(styles).forEach(([prop,value])=>{el.style[prop]=value;});
   });
 }
 
-normalizeMobileLayout();
-setTimeout(normalizeMobileLayout,250);
-setTimeout(normalizeMobileLayout,800);
-setTimeout(normalizeMobileLayout,1800);
+const pendingLayoutRoots=new Set();
+function queueLayoutNormalization(records){
+  for(const record of records||[]){
+    let node=record.target;
+    if(!node||node.nodeType!==1) node=node?.parentElement;
+    if(!node) node=document.body;
+    for(let depth=0;node&&depth<3;depth++,node=node.parentElement){
+      pendingLayoutRoots.add(node);
+      if(node===document.body) break;
+    }
+  }
 
-const observer=new MutationObserver(()=>{
   clearTimeout(window.__vxMobileLayoutTimer);
-  window.__vxMobileLayoutTimer=setTimeout(normalizeMobileLayout,60);
-});
+  window.__vxMobileLayoutTimer=setTimeout(()=>{
+    const roots=[...pendingLayoutRoots];
+    pendingLayoutRoots.clear();
+    const targets=roots.filter(root=>!roots.some(other=>other!==root&&other.contains(root)));
+    targets.forEach(root=>normalizeMobileLayout(root));
+  },60);
+}
+
+requestAnimationFrame(()=>normalizeMobileLayout());
+setTimeout(normalizeMobileLayout,800);
+
+const observer=new MutationObserver(queueLayoutNormalization);
 observer.observe(document.body,{childList:true,subtree:true});
 
-window.addEventListener('resize',()=>setTimeout(normalizeMobileLayout,80),{passive:true});
+window.addEventListener('resize',()=>{
+  clearTimeout(window.__vxMobileResizeTimer);
+  window.__vxMobileResizeTimer=setTimeout(()=>normalizeMobileLayout(),100);
+},{passive:true});
 
 const nav=findNavigation();
 

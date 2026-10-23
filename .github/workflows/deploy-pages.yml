@@ -3,6 +3,21 @@ name: Deploy VÉRIX (Secure) to GitHub Pages
 on:
   push:
     branches: ["main"]
+    paths:
+      - "verix-app.html"
+      - "admin_v2.html"
+      - "index.html"
+      - "verix-mobile.html"
+      - "verix-mobile.js"
+      - "verix-mobile.css"
+      - "AI-ACCESS-POLICY.md"
+      - "README-RELEASE.txt"
+      - "robots.txt"
+      - "package.json"
+      - "package-lock.json"
+      - "tools/build-secure-release.mjs"
+      - "tools/verify-ai-security.mjs"
+      - ".github/workflows/deploy-pages.yml"
   workflow_dispatch:
 
 permissions:
@@ -29,6 +44,15 @@ jobs:
       - name: Install dependencies
         run: npm install --no-fund --no-audit
 
+      - name: Verify mobile asset cache keys
+        shell: bash
+        run: |
+          grep -qF 'verix-mobile.css?v=10' verix-app.html
+          grep -qF 'verix-mobile.js?v=10' verix-app.html
+          if grep -qF 'openToken' verix-app.html; then
+            echo "Mobile assets must use the release ID, not a random per-open URL"
+            exit 1
+          fi
       - name: Build secure release
         env:
           VERIX_BUILD_ID: "1.5-sec-${{ github.run_number }}-${{ github.sha }}"
