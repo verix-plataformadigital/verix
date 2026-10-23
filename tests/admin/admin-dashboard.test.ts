@@ -129,7 +129,7 @@ describe('Admin VÉRIX — melhorias da dashboard', () => {
     win.monthlyChart('usageDaily', [{ day_key: '2026-10-09', users: 2 }], 'users');
 
     expect(doc.querySelector('#dashDaily .chart-col')?.getAttribute('aria-label')).toBe('2026-10-09: 4 consultas');
-    expect(doc.querySelector('#usageDaily .chart-col')?.getAttribute('aria-label')).toBe('2026-10-09: 2 utilizadores');
+    expect(doc.querySelector('#usageDaily .chart-col')?.getAttribute('aria-label')).toBe('2026-10-09: 2 instalações');
   });
 
   it('inclui navegação inferior para ecrãs pequenos e controlo de repetição', () => {
