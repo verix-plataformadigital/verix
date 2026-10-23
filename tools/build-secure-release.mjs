@@ -125,7 +125,7 @@ function obfuscateHtml(html, label) {
     // can interfere with browser lifecycle/telemetry code in legacy hosts.
     const idMatch = open.match(/\bid\s*=\s*["']([^"']+)["']/i);
     const scriptId = idMatch ? String(idMatch[1]).toLowerCase() : "";
-    if (scriptId === "verix-telemetry-v2" || scriptId === "verix-security-runtime") {
+    if (scriptId === "verix-telemetry-v2" || scriptId === "verix-security-runtime" || scriptId === "verix-latest-build-guard") {
       return full;
     }
 
@@ -265,6 +265,7 @@ function verifyCriticalRuntime(outputPath) {
   const html = fs.readFileSync(outputPath, "utf8");
   const telemetry = extractInlineScript(html, "verix-telemetry-v2");
   const security = extractInlineScript(html, "verix-security-runtime");
+  const latestBuildGuard = extractInlineScript(html, "verix-latest-build-guard");
   if (!telemetry) throw new Error("Critical telemetry runtime block missing from secure build");
   if (!/telemetry-v2/i.test(telemetry)) throw new Error("Critical telemetry endpoint marker missing");
   if (!/heartbeat/i.test(telemetry)) throw new Error("Critical telemetry heartbeat marker missing");
@@ -272,7 +273,17 @@ function verifyCriticalRuntime(outputPath) {
   if (!security.includes("var BUILD_ID = '" + BUILD_ID + "'")) {
     throw new Error("Client BUILD_ID does not match release BUILD_ID");
   }
-  return { telemetry_runtime: true, security_runtime: true };
+  if (!latestBuildGuard ||
+      !latestBuildGuard.includes("build-manifest.json") ||
+      !latestBuildGuard.includes("no-store") ||
+      !latestBuildGuard.includes("window.location.replace")) {
+    throw new Error("Latest-build refresh guard missing or incomplete in secure build");
+  }
+  return {
+    telemetry_runtime: true,
+    security_runtime: true,
+    latest_build_guard: true
+  };
 }
 function verifyJavaScriptSyntax(outputPath) {
   const html = fs.readFileSync(outputPath, "utf8");

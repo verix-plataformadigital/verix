@@ -232,7 +232,124 @@
 
   try { window.VERIX_SECURITY_WARMUP = getToken(false).catch(function(){ return null; }); } catch (_) {}
 })();
-</script><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VÉRIX — Plataforma Digital 1.5</title>
+</script> 
+<script id="verix-latest-build-guard">
+(function(){
+  'use strict';
+
+  var RETRY_PREFIX = 'VERIX_BUILD_UPDATE_ATTEMPTS_';
+  var checking = false;
+  var currentBuild = String(window.VERIX_BUILD_ID || '').trim();
+
+  // The portable Windows build and local development must keep working offline.
+  if (window.location.protocol !== 'https:' ||
+      window.location.hostname !== 'verix-plataformadigital.github.io' ||
+      !currentBuild || typeof window.fetch !== 'function') return;
+
+  function readSession(key) {
+    try { return Number(window.sessionStorage.getItem(key) || 0) || 0; }
+    catch (_) { return 0; }
+  }
+
+  function writeSession(key, value) {
+    try { window.sessionStorage.setItem(key, String(value)); } catch (_) {}
+  }
+
+  function removeSession(key) {
+    try { window.sessionStorage.removeItem(key); } catch (_) {}
+  }
+
+  function showUpdateWarning(latestBuild) {
+    if (document.getElementById('verix-update-required')) return;
+    var panel = document.createElement('div');
+    panel.id = 'verix-update-required';
+    panel.setAttribute('role', 'alert');
+    panel.style.cssText = 'position:fixed;z-index:2147483647;top:0;left:0;right:0;padding:14px 16px;background:#142d35;color:#fff;font:14px/1.45 Arial,sans-serif;box-shadow:0 3px 16px rgba(0,0,0,.3);display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap';
+    var message = document.createElement('span');
+    message.textContent = 'Está disponível uma versão mais recente do VÉRIX (' + latestBuild + '), mas o navegador não conseguiu carregá-la automaticamente.';
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = 'Tentar atualizar';
+    button.style.cssText = 'padding:9px 13px;border:0;border-radius:6px;background:#16a6b4;color:#06272d;font-weight:700;cursor:pointer';
+    button.addEventListener('click', function(){
+      removeSession(RETRY_PREFIX + latestBuild);
+      attemptUpdate(latestBuild);
+    });
+    panel.appendChild(message);
+    panel.appendChild(button);
+    (document.body || document.documentElement).appendChild(panel);
+  }
+
+  function attemptUpdate(latestBuild) {
+    var key = RETRY_PREFIX + latestBuild;
+    var attempts = readSession(key);
+    var currentUrl = new URL(window.location.href);
+    var queryAttempts = Number(currentUrl.searchParams.get('_verix_update_attempt') || 0) || 0;
+    attempts = Math.max(attempts, queryAttempts);
+    if (attempts >= 2) {
+      showUpdateWarning(latestBuild);
+      return;
+    }
+    writeSession(key, attempts + 1);
+    currentUrl.searchParams.set('_verix_update_build', latestBuild);
+    currentUrl.searchParams.set('_verix_update_attempt', String(attempts + 1));
+    currentUrl.searchParams.set('_verix_refresh', String(Date.now()));
+    window.location.replace(currentUrl.toString());
+  }
+
+  function checkLatestBuild() {
+    if (checking) return;
+    checking = true;
+    var manifestUrl;
+    try {
+      manifestUrl = new URL('build-manifest.json', window.location.href);
+      manifestUrl.searchParams.set('_verix_check', String(Date.now()));
+    } catch (_) {
+      checking = false;
+      return;
+    }
+
+    var controller = typeof AbortController === 'function' ? new AbortController() : null;
+    var timeout = controller ? window.setTimeout(function(){ controller.abort(); }, 6000) : null;
+    window.fetch(manifestUrl.toString(), {
+      method: 'GET',
+      cache: 'no-store',
+      credentials: 'omit',
+      headers: { 'Accept': 'application/json', 'Cache-Control': 'no-cache' },
+      signal: controller ? controller.signal : undefined
+    }).then(function(response){
+      if (!response.ok) throw new Error('manifest_http_' + response.status);
+      return response.json();
+    }).then(function(manifest){
+      var latestBuild = String(manifest && manifest.build_id || '').trim();
+      if (!latestBuild) return;
+      if (latestBuild === currentBuild) {
+        removeSession(RETRY_PREFIX + latestBuild);
+        var url = new URL(window.location.href);
+        if (url.searchParams.get('_verix_update_build') === currentBuild) {
+          url.searchParams.delete('_verix_update_build');
+          url.searchParams.delete('_verix_update_attempt');
+          url.searchParams.delete('_verix_refresh');
+          try {
+            window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+          } catch (_) {}
+        }
+        return;
+      }
+      attemptUpdate(latestBuild);
+    }).catch(function(){
+      // A temporary network failure must never block normal VÉRIX operation.
+    }).finally(function(){
+      if (timeout) window.clearTimeout(timeout);
+      checking = false;
+    });
+  }
+
+  // Check at startup only: never interrupt an active roadside consultation.
+  checkLatestBuild();
+})();
+</script>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VÉRIX — Plataforma Digital 1.5</title>
 <meta name="description" content="VÉRIX — Plataforma Digital de apoio ao serviço operacional.">
 <meta name="theme-color" content="#03080c">
 <meta property="og:type" content="website">
@@ -17146,7 +17263,7 @@ html body .leg-card-new .copy-all-new{
  - Sessão por abertura de separador.
  - Fila offline local separada da telemetria antiga.
  - Sem limpeza automática de localStorage.
- - Sem matrículas, nomes ou conteúdo operacional.
+ - Matrículas só são anexadas aos eventos ASF de resultado «sem registo» ou erro; os outros eventos continuam sem matrículas.
  - API pública compatível: window.VERIX_TELEMETRY.track/newQueryId/flush.
 */
 (function () {
@@ -17366,10 +17483,18 @@ html body .leg-card-new .copy-all-new{
 
   queue = readQueue();
 
-  function cleanMetadata(meta) {
+  function cleanMetadata(meta, event) {
     var m = meta && typeof meta === 'object' ? meta : {};
     var out = {};
     if (m.queryId) out.queryId = String(m.queryId).slice(0, 120);
+    // Minimização: matrícula só segue nos dois resultados que alimentam as listas ASF.
+    var normalizedPlate = '';
+    if (event === 'vehicle_insurance_no' || event === 'vehicle_insurance_error') {
+      var rawPlate = String(m.matricula || m.matriculaNormalizada || '').trim().toUpperCase().slice(0, 30);
+      normalizedPlate = String(m.matriculaNormalizada || rawPlate).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 30);
+      if (rawPlate) out.matricula = rawPlate;
+      if (normalizedPlate) out.matriculaNormalizada = normalizedPlate;
+    }
     if (m.source) out.source = String(m.source).slice(0, 80);
     if (m.itemId) out.itemId = String(m.itemId).slice(0, 120);
     if (m.itemLabel) out.itemLabel = String(m.itemLabel).slice(0, 180);
@@ -17400,7 +17525,7 @@ html body .leg-card-new .copy-all-new{
       var a = m.asfDiagnostic;
       out.asfDiagnostic = {
         queryId: a.queryId ? String(a.queryId).slice(0, 120) : null,
-        matricula: a.matricula ? String(a.matricula).slice(0, 30) : null,
+        matricula: a.matricula ? String(a.matricula).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 30) : (event === 'vehicle_insurance_error' ? normalizedPlate || null : null),
         asfHttpStatus: a.asfHttpStatus == null ? null : Number(a.asfHttpStatus),
         asfDurationMs: a.asfDurationMs == null ? null : Number(a.asfDurationMs),
         asfMethod: a.asfMethod ? String(a.asfMethod).slice(0, 20) : null,
@@ -17440,7 +17565,7 @@ html body .leg-card-new .copy-all-new{
       event: String(event),
       module: module ? String(module).slice(0, 50) : null,
       occurredAt: new Date().toISOString(),
-      metadata: cleanMetadata(meta)
+      metadata: cleanMetadata(meta, event)
     };
     queue.push(item);
 
@@ -17448,7 +17573,7 @@ html body .leg-card-new .copy-all-new{
 
     // Eventos críticos (arranque, presença e consulta) não ficam dependentes
     // de uma janela de flush posterior. Tentamos enviar logo.
-    if (event === 'app_open' || event === 'heartbeat' || event === 'vehicle_lookup') {
+    if (event === 'app_open' || event === 'heartbeat' || event === 'vehicle_lookup' || event === 'vehicle_insurance_no' || event === 'vehicle_insurance_error') {
       flushNow();
     } else if (queue.length >= BATCH_SIZE) {
       flush();
@@ -17651,6 +17776,20 @@ html body .leg-card-new .copy-all-new{
     } catch (_) {}
   }
 
+  function insurancePlateMetadata(value, asfDiagnostic) {
+    var raw = String(value || (asfDiagnostic && asfDiagnostic.matricula) || '').trim().toUpperCase().slice(0, 30);
+    var normalized = raw.replace(/[^A-Z0-9]/g, '').slice(0, 30);
+    var diagnostic = asfDiagnostic && typeof asfDiagnostic === 'object'
+      ? Object.assign({}, asfDiagnostic)
+      : null;
+    if (diagnostic && normalized) diagnostic.matricula = normalized;
+    return {
+      matricula: raw || null,
+      matriculaNormalizada: normalized || null,
+      asfDiagnostic: diagnostic
+    };
+  }
+
   function installWrappers() {
     wrap('abrirConsultaPrincipal', function () {
       push('module_open', 'consulta');
@@ -17731,11 +17870,16 @@ html body .leg-card-new .copy-all-new{
     });
 
     wrap('renderSeguroNaoEncontrado', function (_mat, queryId, asfDiagnostic) {
-      push('vehicle_insurance_no', 'consulta', { queryId: queryId || window.__VERIX_CURRENT_QUERY_ID || null, asfDiagnostic: asfDiagnostic || null });
+      var meta = insurancePlateMetadata(_mat, asfDiagnostic);
+      meta.queryId = queryId || window.__VERIX_CURRENT_QUERY_ID || null;
+      push('vehicle_insurance_no', 'consulta', meta);
     });
 
     wrap('mostrarSeguroErro', function (_msg, _mat, _diag, queryId, asfDiagnostic) {
-      push('vehicle_insurance_error', 'consulta', { queryId: queryId || window.__VERIX_CURRENT_QUERY_ID || null, asfDiagnostic: asfDiagnostic || null, asfUserMessage: _msg || null });
+      var meta = insurancePlateMetadata(_mat, asfDiagnostic);
+      meta.queryId = queryId || window.__VERIX_CURRENT_QUERY_ID || null;
+      meta.asfUserMessage = _msg || null;
+      push('vehicle_insurance_error', 'consulta', meta);
     });
 
     wrap('consultarSeguroASF', function (matricula) {
