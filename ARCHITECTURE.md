@@ -12,6 +12,14 @@
 - `supabase/migrations/`: alterações persistentes de base de dados.
 - `tools/build-secure-release.mjs`: único construtor de produção.
 
+## 1.1 Fonte de verdade da telemetria
+
+- `telemetry/browser-runtime.ts` é a única fonte de código cliente da telemetria.
+- `verix-app.html` contém apenas o marcador `VERIX_TELEMETRY_RUNTIME_INJECT`; não duplicar a implementação no HTML fonte.
+- `tools/build-secure-release.mjs` compila a fonte TypeScript e injeta o bundle no artefacto portátil `dist/verix-app.html`. A distribuição continua autónoma, sem uma chamada adicional de rede para descarregar JavaScript.
+- Não editar manualmente o bundle gerado em `dist/` nem reintroduzir cópias paralelas do runtime.
+- O cliente corrente usa exclusivamente `/functions/v1/telemetry-v2`. Não criar aliases para `/functions/v1/telemetry`; pedidos antigos devem ser rastreados até à sua origem e tratados sem reativar a via obsoleta.
+
 ## 2. Fluxo operacional
 
 `index.html` → `verix-app.html`
@@ -20,7 +28,7 @@
 
 `verix-app.html` → `telemetry-v2` → `verix2_events` / `verix2_installations` / `verix2_sessions`
 
-`admin_v2.html` → `admin-auth-v2` → token administrativo → `stats-v2` / `hourly-history-v2`
+`admin_v2.html` → `admin-auth-v2` → token administrativo → `stats-v2`
 
 ## 3. Regras de manutenção
 

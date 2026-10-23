@@ -11,9 +11,7 @@ html,body{
   -webkit-text-size-adjust:100%;
   text-size-adjust:100%;
 }
-body.vx-mobile-mode{
-  padding-bottom:calc(var(--vx-mobile-bar) + var(--vx-safe-bottom))!important;
-}
+/* O espaçamento vertical é definido por breakpoint para evitar paddings contraditórios. */
 body.vx-mobile-mode *,
 body.vx-mobile-mode *::before,
 body.vx-mobile-mode *::after{
@@ -81,17 +79,15 @@ body.vx-mobile-mode .vx-scroll-x{
   padding:7px 4px;
 }
 #vxMobileBar button:active{transform:scale(.98);background:rgba(255,255,255,.08)}
-#vxMobileBar button.vx-active{background:rgba(0,166,183,.18);color:#fff}
+
 #vxMobileBar .vx-icon{display:block;font-size:17px;line-height:18px;margin-bottom:2px}
 #vxMobileTop{
   position:fixed;
-  left:0;
-  right:0;
-  top:0;
+  inset:0 0 auto;
   z-index:2147482999;
   display:none;
   align-items:center;
-  gap:8px;
+  gap:6px!important;
   padding:calc(7px + var(--vx-safe-top)) 10px 7px;
   min-height:52px;
   background:rgba(7,12,16,.94);
@@ -102,8 +98,9 @@ body.vx-mobile-mode .vx-scroll-x{
 #vxMobileTop .vx-brand{
   flex:1;
   min-width:0;
-  font:950 15px/1 Arial,Helvetica,sans-serif;
-  letter-spacing:2px;
+  font:950 clamp(12px,3.5vw,14px)/1 Arial,Helvetica,sans-serif!important;
+  letter-spacing:.8px!important;
+  white-space:nowrap!important;
   color:#fff;
 }
 #vxMobileTop .vx-brand b{color:#66dbe9}
@@ -116,8 +113,39 @@ body.vx-mobile-mode .vx-scroll-x{
   border-radius:11px;
   font-size:18px;
 }
-body.vx-mobile-mode .vx-hide-mobile{display:none!important}
-body.vx-mobile-mode .vx-full-mobile{width:100%!important;max-width:100%!important}
+#vxMobileOverlay{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:2147482998;
+  background:rgba(0,0,0,.48);
+}
+#vxMobileOverlay.is-open{display:block!important}
+
+@media(max-width:1199px){
+  body.vx-mobile-mode .vx-mobile-drawer,
+  body.vx-mobile-mode:not(.main-menu-active) :is(.sidebar,[class*="sidebar"],aside,[role="navigation"]).vx-mobile-drawer{
+    display:block!important;
+    position:fixed!important;
+    top:calc(56px + env(safe-area-inset-top,0px))!important;
+    right:auto!important;
+    bottom:calc(72px + env(safe-area-inset-bottom,0px))!important;
+    left:8px!important;
+    width:min(86vw,340px)!important;
+    min-width:0!important;
+    max-width:340px!important;
+    overflow:auto!important;
+    -webkit-overflow-scrolling:touch;
+    z-index:2147482999!important;
+    margin:0!important;
+    padding:12px!important;
+    border:1px solid rgba(255,255,255,.12)!important;
+    border-radius:12px!important;
+    background:var(--bg,#0d151a)!important;
+    box-shadow:0 20px 50px rgba(0,0,0,.45)!important;
+  }
+}
+
 @media (max-width:767px){
   html,body,body.vx-mobile-mode{
     height:auto!important;
@@ -144,22 +172,24 @@ body.vx-mobile-mode .vx-full-mobile{width:100%!important;max-width:100%!importan
     width:100%!important;height:auto!important;min-height:48px!important;
     padding:2px 4px 7px!important;
   }
-  body.vx-mobile-mode .command .brand-notice-title{
-    font-size:12px!important;line-height:1.2!important;
-    white-space:normal!important;letter-spacing:.5px!important;
-  }
-  body.vx-mobile-mode .command .brand-notice-text{
-    font-size:9px!important;line-height:1.45!important;
-  }
+
   body.vx-mobile-mode .command .time{display:none!important}
 
   body.vx-mobile-mode .command .searchbar{
-    position:relative!important;
-    left:auto!important;right:auto!important;top:auto!important;
-    transform:none!important;
-    width:100%!important;height:auto!important;
-    padding:10px!important;margin:0!important;
     display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
+    position:relative!important;
+    inset:auto!important;
+    transform:none!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    height:auto!important;
+    margin:8px 0 0!important;
+    padding:10px!important;
+    box-sizing:border-box!important;
+    overflow:visible!important;
   }
   body.vx-mobile-mode .command .searchbar form{
     display:grid!important;
@@ -202,16 +232,21 @@ body.vx-mobile-mode .vx-full-mobile{width:100%!important;max-width:100%!importan
     width:100%!important;height:auto!important;min-height:0!important;
     margin:10px 0 0!important;
     padding:0 10px!important;
+
     display:grid!important;
     grid-template-columns:minmax(0,1fr)!important;
     grid-auto-rows:auto!important;
     gap:10px!important;
+    visibility:visible!important;
+    opacity:1!important;
   }
   body.vx-mobile-mode .main .panel{
     width:100%!important;
     min-width:0!important;
     height:340px!important;
     min-height:340px!important;
+    visibility:visible!important;
+    opacity:1!important;
   }
   body.vx-mobile-mode .main .panel.insurance{
     display:block!important;
@@ -265,29 +300,27 @@ body.vx-mobile-mode .vx-full-mobile{width:100%!important;max-width:100%!importan
   body.vx-mobile-mode .main .insurance{display:block!important;grid-column:1/-1!important;}
 }
 @media (max-width:767px){
-  body.vx-mobile-mode{
-    padding-top:58px!important;
-  }
   #vxMobileTop,#vxMobileBar{display:flex}
-  body.vx-mobile-mode :is(main,section,article,aside,nav,.main,.shell,.content,.container,.wrap,.workspace,.panel,.card,.modal,.dialog,.grid,.toolbar,.topbar,.form-row,.row,.columns){
+  body.vx-mobile-mode:not(.main-menu-active) :is(main,section,article,aside,nav,.main,.content,.wrap,.panel,.card,.modal,.dialog,.grid,.toolbar,.row){
+    min-width:0!important;
     max-width:100%!important;
   }
-  body.vx-mobile-mode :is(.grid,.columns){
+  body.vx-mobile-mode:not(.main-menu-active) :is(.grid){
     grid-template-columns:minmax(0,1fr)!important;
   }
-  body.vx-mobile-mode :is(.row,.form-row,.toolbar){
+  body.vx-mobile-mode:not(.main-menu-active) :is(.row,.toolbar){
     flex-wrap:wrap!important;
   }
-  body.vx-mobile-mode :is(.sidebar,[class*="sidebar"],aside,[role="navigation"]){
+  body.vx-mobile-mode:not(.main-menu-active) :is(.sidebar,[class*="sidebar"],aside,[role="navigation"]){
     display:none!important;
   }
-  body.vx-mobile-mode :is(.main,[class*="main"]){
+  body.vx-mobile-mode:not(.main-menu-active) :is(.main,[class*="main"]){
     margin-left:0!important;
     width:100%!important;
     padding-left:10px!important;
     padding-right:10px!important;
   }
-  body.vx-mobile-mode :is(.modal,.dialog,[role="dialog"]){
+  body.vx-mobile-mode:not(.main-menu-active) :is(.modal,.dialog,[role="dialog"]){
     width:min(100% - 20px,520px)!important;
     max-height:calc(100dvh - 80px)!important;
     overflow:auto!important;
@@ -298,10 +331,10 @@ body.vx-mobile-mode .vx-full-mobile{width:100%!important;max-width:100%!importan
     padding-bottom:12px!important;
     padding-top:0!important;
   }
-  body.vx-mobile-mode :is(.grid,.columns){
+  body.vx-mobile-mode:not(.main-menu-active) :is(.grid){
     grid-template-columns:repeat(2,minmax(0,1fr))!important;
   }
-  body.vx-mobile-mode :is(.main,[class*="main"]){
+  body.vx-mobile-mode:not(.main-menu-active) :is(.main,[class*="main"]){
     margin-left:0!important;
     width:100%!important;
     padding-left:18px!important;
@@ -310,7 +343,7 @@ body.vx-mobile-mode .vx-full-mobile{width:100%!important;max-width:100%!importan
 }
 @media (orientation:landscape) and (max-width:767px){
   body.vx-mobile-mode{--vx-mobile-bar:58px}
-  body.vx-mobile-mode :is(.grid,.columns){
+  body.vx-mobile-mode:not(.main-menu-active) :is(.grid){
     grid-template-columns:repeat(2,minmax(0,1fr))!important;
   }
 }
@@ -323,46 +356,7 @@ body.vx-mobile-mode .vx-full-mobile{width:100%!important;max-width:100%!importan
   }
 }
 
-/* Mobile hotfix: keep the registration search and consultation workspace visible. */
-@media (max-width:767px){
-  body.vx-mobile-mode .command .searchbar{
-    display:block!important;
-    visibility:visible!important;
-    opacity:1!important;
-    position:relative!important;
-    inset:auto!important;
-    transform:none!important;
-    width:100%!important;
-    min-width:0!important;
-    max-width:100%!important;
-    height:auto!important;
-    margin:8px 0 0!important;
-  }
-  body.vx-mobile-mode .command .searchbar form{
-    display:grid!important;
-    grid-template-columns:minmax(0,1fr)!important;
-    width:100%!important;
-  }
-  body.vx-mobile-mode .main{
-    display:grid!important;
-    visibility:visible!important;
-    opacity:1!important;
-  }
-  body.vx-mobile-mode .main .panel{
-    visibility:visible!important;
-    opacity:1!important;
-  }
-}
-
-
-/* Mobile navigation and registration layout hotfix — high-specificity overrides
-   for the legacy fixed-workspace rules that otherwise hide the plate search. */
-#vxMobileTop{gap:6px!important;}
-#vxMobileTop .vx-brand{
-  font-size:clamp(12px,3.5vw,14px)!important;
-  letter-spacing:.8px!important;
-  white-space:nowrap!important;
-}
+/* Navegação mobile: apenas regras específicas para o botão voltar e ecrãs muito estreitos. */
 #vxMobileTop .vx-mobile-back{
   display:inline-flex!important;
   flex:0 0 auto!important;
@@ -423,29 +417,10 @@ body.vx-mobile-mode .vx-full-mobile{width:100%!important;max-width:100%!importan
   html body.vx-mobile-mode.fixed-workspace-active:not(.cinemometro-page-active) .command .consult{
     width:100%!important;min-width:0!important;max-width:100%!important;height:46px!important;
   }
-  html body.vx-mobile-mode.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active{
-    position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
-    width:100%!important;height:auto!important;min-height:0!important;margin:10px 0 0!important;padding:0 10px!important;
-    display:grid!important;grid-template-columns:minmax(0,1fr)!important;grid-auto-rows:auto!important;
-    gap:10px!important;overflow:visible!important;transform:none!important;
-  }
-  html body.vx-mobile-mode.fixed-workspace-active:not(.cinemometro-page-active) .main.consultation-fixed-active .panel{
-    display:block!important;position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
-    width:100%!important;min-width:0!important;height:340px!important;min-height:300px!important;
-    visibility:visible!important;opacity:1!important;
-  }
   html body.vx-mobile-mode.fixed-workspace-active:not(.cinemometro-page-active) #consultationBackBtn{
     display:none!important;
   }
-  #vxMobileBar{
-    position:fixed!important;left:0!important;right:0!important;bottom:0!important;
-    z-index:2147483000!important;display:flex!important;flex-direction:row!important;
-    align-items:stretch!important;justify-content:space-around!important;
-    width:100%!important;min-height:var(--vx-mobile-bar)!important;
-    background:rgba(7,12,16,.97)!important;
-  }
 }
-
 
 /* Mobile/tablet consultation stack: ASF first, then inspection, then vehicle document. */
 @media (max-width:1199px){
@@ -557,10 +532,125 @@ body.vx-mobile-mode .vx-full-mobile{width:100%!important;max-width:100%!importan
     pointer-events:none!important;
   }
   html body.vx-mobile-mode.fixed-workspace-active:not(.cinemometro-page-active) .rail,
-  html body.vx-mobile-mode.fixed-workspace-active:not(.cinemometro-page-active) .rail-operacional,
-  html body.vx-mobile-mode.fixed-workspace-active:not(.cinemometro-page-active) .operational-strip{
+  html body.vx-mobile-mode.fixed-workspace-active:not(.cinemometro-page-active) .rail-operacional{
     display:none!important;
     visibility:hidden!important;
     pointer-events:none!important;
+  }
+
+}
+
+
+/* Arranque e aviso inicial: apenas regras de conteúdo responsivo.
+   O posicionamento fixed usa o viewport porque a perspetiva 3D foi retirada
+   do body em dispositivos móveis, na folha de estilos de origem. */
+@media (max-width:1199px){
+  html body #opsBootOverlay{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:14px!important;
+    padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px))!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    text-align:center!important;
+  }
+
+  html body #opsBootOverlay .ops-boot-title{
+    display:block!important;
+    flex:0 1 auto!important;
+    width:min(100%,480px)!important;
+    min-width:0!important;
+    max-width:100%!important;
+    margin:0 auto!important;
+    padding:0!important;
+    text-align:center!important;
+    white-space:normal!important;
+    overflow-wrap:normal!important;
+    word-break:normal!important;
+    font-size:clamp(20px,5.4vw,24px)!important;
+    line-height:1.25!important;
+    letter-spacing:clamp(1.2px,1vw,3px)!important;
+  }
+
+  html body #opsBootOverlay .ops-boot-sub{
+    display:block!important;
+    width:min(100%,430px)!important;
+    min-width:0!important;
+    max-width:100%!important;
+    margin:0 auto!important;
+    text-align:center!important;
+    white-space:normal!important;
+    overflow-wrap:break-word!important;
+    font-size:clamp(10px,2.7vw,12px)!important;
+    line-height:1.55!important;
+    letter-spacing:clamp(.5px,.5vw,1.5px)!important;
+  }
+
+  html body #opsBootOverlay .ops-boot-bar{
+    flex:0 0 auto!important;
+    width:min(280px,100%)!important;
+    max-width:100%!important;
+    margin:8px auto 0!important;
+  }
+
+  html body .verix-asf-notice-overlay{
+    align-items:center!important;
+    align-items:safe center!important;
+    justify-content:center!important;
+    justify-content:safe center!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    padding:calc(12px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))!important;
+    -webkit-overflow-scrolling:touch!important;
+    overscroll-behavior:contain!important;
+  }
+
+  html body .verix-asf-notice-window{
+    display:flex!important;
+    flex:0 1 auto!important;
+    flex-direction:column!important;
+    width:min(560px,100%)!important;
+    min-width:0!important;
+    max-width:100%!important;
+    height:auto!important;
+    max-height:calc(100dvh - 24px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))!important;
+    min-height:0!important;
+    margin:auto!important;
+    overflow:hidden!important;
+    box-sizing:border-box!important;
+  }
+
+  html body .verix-asf-notice-top,
+  html body .verix-asf-notice-footer{
+    flex:0 0 auto!important;
+    min-width:0!important;
+  }
+
+  html body .verix-asf-notice-body{
+    flex:1 1 auto!important;
+    min-width:0!important;
+    min-height:0!important;
+    width:100%!important;
+    max-width:100%!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    overscroll-behavior:contain!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+
+  html body .verix-asf-notice-grid{
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-auto-rows:auto!important;
+    width:100%!important;
+    height:auto!important;
+    min-height:0!important;
+  }
+
+  html body .verix-asf-notice-card{
+    min-width:0!important;
+    max-width:100%!important;
+    overflow-wrap:anywhere!important;
   }
 }
