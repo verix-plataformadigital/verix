@@ -81,17 +81,15 @@ body.vx-mobile-mode .vx-scroll-x{
   padding:7px 4px;
 }
 #vxMobileBar button:active{transform:scale(.98);background:rgba(255,255,255,.08)}
-#vxMobileBar button.vx-active{background:rgba(0,166,183,.18);color:#fff}
+
 #vxMobileBar .vx-icon{display:block;font-size:17px;line-height:18px;margin-bottom:2px}
 #vxMobileTop{
   position:fixed;
-  left:0;
-  right:0;
-  top:0;
+  inset:0 0 auto;
   z-index:2147482999;
   display:none;
   align-items:center;
-  gap:8px;
+  gap:6px!important;
   padding:calc(7px + var(--vx-safe-top)) 10px 7px;
   min-height:52px;
   background:rgba(7,12,16,.94);
@@ -102,8 +100,9 @@ body.vx-mobile-mode .vx-scroll-x{
 #vxMobileTop .vx-brand{
   flex:1;
   min-width:0;
-  font:950 15px/1 Arial,Helvetica,sans-serif;
-  letter-spacing:2px;
+  font:950 clamp(12px,3.5vw,14px)/1 Arial,Helvetica,sans-serif!important;
+  letter-spacing:.8px!important;
+  white-space:nowrap!important;
   color:#fff;
 }
 #vxMobileTop .vx-brand b{color:#66dbe9}
@@ -116,8 +115,7 @@ body.vx-mobile-mode .vx-scroll-x{
   border-radius:11px;
   font-size:18px;
 }
-body.vx-mobile-mode .vx-hide-mobile{display:none!important}
-body.vx-mobile-mode .vx-full-mobile{width:100%!important;max-width:100%!important}
+
 @media (max-width:767px){
   html,body,body.vx-mobile-mode{
     height:auto!important;
@@ -144,22 +142,24 @@ body.vx-mobile-mode .vx-full-mobile{width:100%!important;max-width:100%!importan
     width:100%!important;height:auto!important;min-height:48px!important;
     padding:2px 4px 7px!important;
   }
-  body.vx-mobile-mode .command .brand-notice-title{
-    font-size:12px!important;line-height:1.2!important;
-    white-space:normal!important;letter-spacing:.5px!important;
-  }
-  body.vx-mobile-mode .command .brand-notice-text{
-    font-size:9px!important;line-height:1.45!important;
-  }
+
   body.vx-mobile-mode .command .time{display:none!important}
 
   body.vx-mobile-mode .command .searchbar{
-    position:relative!important;
-    left:auto!important;right:auto!important;top:auto!important;
-    transform:none!important;
-    width:100%!important;height:auto!important;
-    padding:10px!important;margin:0!important;
     display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
+    position:relative!important;
+    inset:auto!important;
+    transform:none!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    height:auto!important;
+    margin:8px 0 0!important;
+    padding:10px!important;
+    box-sizing:border-box!important;
+    overflow:visible!important;
   }
   body.vx-mobile-mode .command .searchbar form{
     display:grid!important;
@@ -202,16 +202,21 @@ body.vx-mobile-mode .vx-full-mobile{width:100%!important;max-width:100%!importan
     width:100%!important;height:auto!important;min-height:0!important;
     margin:10px 0 0!important;
     padding:0 10px!important;
+
     display:grid!important;
     grid-template-columns:minmax(0,1fr)!important;
     grid-auto-rows:auto!important;
     gap:10px!important;
+    visibility:visible!important;
+    opacity:1!important;
   }
   body.vx-mobile-mode .main .panel{
     width:100%!important;
     min-width:0!important;
     height:340px!important;
     min-height:340px!important;
+    visibility:visible!important;
+    opacity:1!important;
   }
   body.vx-mobile-mode .main .panel.insurance{
     display:block!important;
@@ -265,29 +270,26 @@ body.vx-mobile-mode .vx-full-mobile{width:100%!important;max-width:100%!importan
   body.vx-mobile-mode .main .insurance{display:block!important;grid-column:1/-1!important;}
 }
 @media (max-width:767px){
-  body.vx-mobile-mode{
-    padding-top:58px!important;
-  }
   #vxMobileTop,#vxMobileBar{display:flex}
-  body.vx-mobile-mode :is(main,section,article,aside,nav,.main,.shell,.content,.container,.wrap,.workspace,.panel,.card,.modal,.dialog,.grid,.toolbar,.topbar,.form-row,.row,.columns){
+  body.vx-mobile-mode:not(.main-menu-active) :is(main,section,article,aside,nav,.main,.content,.wrap,.panel,.card,.modal,.dialog,.grid,.toolbar,.row){
     max-width:100%!important;
   }
-  body.vx-mobile-mode :is(.grid,.columns){
+  body.vx-mobile-mode:not(.main-menu-active) :is(.grid){
     grid-template-columns:minmax(0,1fr)!important;
   }
-  body.vx-mobile-mode :is(.row,.form-row,.toolbar){
+  body.vx-mobile-mode:not(.main-menu-active) :is(.row,.toolbar){
     flex-wrap:wrap!important;
   }
-  body.vx-mobile-mode :is(.sidebar,[class*="sidebar"],aside,[role="navigation"]){
+  body.vx-mobile-mode:not(.main-menu-active) :is(.sidebar,[class*="sidebar"],aside,[role="navigation"]){
     display:none!important;
   }
-  body.vx-mobile-mode :is(.main,[class*="main"]){
+  body.vx-mobile-mode:not(.main-menu-active) :is(.main,[class*="main"]){
     margin-left:0!important;
     width:100%!important;
     padding-left:10px!important;
     padding-right:10px!important;
   }
-  body.vx-mobile-mode :is(.modal,.dialog,[role="dialog"]){
+  body.vx-mobile-mode:not(.main-menu-active) :is(.modal,.dialog,[role="dialog"]){
     width:min(100% - 20px,520px)!important;
     max-height:calc(100dvh - 80px)!important;
     overflow:auto!important;
@@ -298,10 +300,10 @@ body.vx-mobile-mode .vx-full-mobile{width:100%!important;max-width:100%!importan
     padding-bottom:12px!important;
     padding-top:0!important;
   }
-  body.vx-mobile-mode :is(.grid,.columns){
+  body.vx-mobile-mode:not(.main-menu-active) :is(.grid){
     grid-template-columns:repeat(2,minmax(0,1fr))!important;
   }
-  body.vx-mobile-mode :is(.main,[class*="main"]){
+  body.vx-mobile-mode:not(.main-menu-active) :is(.main,[class*="main"]){
     margin-left:0!important;
     width:100%!important;
     padding-left:18px!important;
@@ -310,7 +312,7 @@ body.vx-mobile-mode .vx-full-mobile{width:100%!important;max-width:100%!importan
 }
 @media (orientation:landscape) and (max-width:767px){
   body.vx-mobile-mode{--vx-mobile-bar:58px}
-  body.vx-mobile-mode :is(.grid,.columns){
+  body.vx-mobile-mode:not(.main-menu-active) :is(.grid){
     grid-template-columns:repeat(2,minmax(0,1fr))!important;
   }
 }
@@ -323,46 +325,7 @@ body.vx-mobile-mode .vx-full-mobile{width:100%!important;max-width:100%!importan
   }
 }
 
-/* Mobile hotfix: keep the registration search and consultation workspace visible. */
-@media (max-width:767px){
-  body.vx-mobile-mode .command .searchbar{
-    display:block!important;
-    visibility:visible!important;
-    opacity:1!important;
-    position:relative!important;
-    inset:auto!important;
-    transform:none!important;
-    width:100%!important;
-    min-width:0!important;
-    max-width:100%!important;
-    height:auto!important;
-    margin:8px 0 0!important;
-  }
-  body.vx-mobile-mode .command .searchbar form{
-    display:grid!important;
-    grid-template-columns:minmax(0,1fr)!important;
-    width:100%!important;
-  }
-  body.vx-mobile-mode .main{
-    display:grid!important;
-    visibility:visible!important;
-    opacity:1!important;
-  }
-  body.vx-mobile-mode .main .panel{
-    visibility:visible!important;
-    opacity:1!important;
-  }
-}
-
-
-/* Mobile navigation and registration layout hotfix — high-specificity overrides
-   for the legacy fixed-workspace rules that otherwise hide the plate search. */
-#vxMobileTop{gap:6px!important;}
-#vxMobileTop .vx-brand{
-  font-size:clamp(12px,3.5vw,14px)!important;
-  letter-spacing:.8px!important;
-  white-space:nowrap!important;
-}
+/* Navegação mobile: apenas regras específicas para o botão voltar e ecrãs muito estreitos. */
 #vxMobileTop .vx-mobile-back{
   display:inline-flex!important;
   flex:0 0 auto!important;
@@ -445,7 +408,6 @@ body.vx-mobile-mode .vx-full-mobile{width:100%!important;max-width:100%!importan
     background:rgba(7,12,16,.97)!important;
   }
 }
-
 
 /* Mobile/tablet consultation stack: ASF first, then inspection, then vehicle document. */
 @media (max-width:1199px){
@@ -557,10 +519,137 @@ body.vx-mobile-mode .vx-full-mobile{width:100%!important;max-width:100%!importan
     pointer-events:none!important;
   }
   html body.vx-mobile-mode.fixed-workspace-active:not(.cinemometro-page-active) .rail,
-  html body.vx-mobile-mode.fixed-workspace-active:not(.cinemometro-page-active) .rail-operacional,
-  html body.vx-mobile-mode.fixed-workspace-active:not(.cinemometro-page-active) .operational-strip{
+  html body.vx-mobile-mode.fixed-workspace-active:not(.cinemometro-page-active) .rail-operacional{
     display:none!important;
     visibility:hidden!important;
     pointer-events:none!important;
   }
+
+  /* Viewport e aviso inicial — regras partilhadas para mobile/tablet. */
+  html body{
+    perspective:none!important;
+    perspective-origin:initial!important;
+  }
+  .verix-asf-notice-overlay,
+  #opsBootOverlay,
+  #mainMenuScreen.vx-home-screen{
+    position:fixed!important;
+    inset:0!important;
+    width:100vw!important;
+    height:100vh!important;
+    height:100dvh!important;
+  }
+  .verix-asf-notice-overlay{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    box-sizing:border-box!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    padding:calc(12px + env(safe-area-inset-top,0px)) 10px calc(12px + env(safe-area-inset-bottom,0px))!important;
+    -webkit-overflow-scrolling:touch!important;
+    overscroll-behavior:contain!important;
+  }
+  .verix-asf-notice-overlay[aria-hidden="true"]{display:none!important;}
+  .verix-asf-notice-window{
+    flex:0 0 auto!important;
+    width:min(560px,100%)!important;
+    height:auto!important;
+    max-height:calc(100dvh - 24px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))!important;
+    min-height:0!important;
+  }
+  .verix-asf-notice-body{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    overscroll-behavior:contain!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+
 }
+
+/* Mobile full-viewport alignment hotfix (2026-10-18). */
+@media (max-width:1199px){
+  html:has(body.vx-mobile-mode),
+  body.vx-mobile-mode{
+    width:100vw!important;
+    min-width:100vw!important;
+    max-width:none!important;
+    margin:0!important;
+    transform:none!important;
+    translate:none!important;
+    scale:1!important;
+    zoom:1!important;
+    perspective:none!important;
+    filter:none!important;
+    box-sizing:border-box!important;
+  }
+
+  /* A transformed/contained wrapper makes position:fixed behave like a small panel.
+     Remove those containing-block effects only from wrappers holding app-level layers. */
+  body.vx-mobile-mode:has(.verix-asf-notice-overlay),
+  body.vx-mobile-mode:has(#opsBootOverlay),
+  body.vx-mobile-mode:has(#mainMenuScreen.vx-home-screen),
+  body.vx-mobile-mode *:has(.verix-asf-notice-overlay),
+  body.vx-mobile-mode *:has(#opsBootOverlay),
+  body.vx-mobile-mode *:has(#mainMenuScreen.vx-home-screen){
+    transform:none!important;
+    translate:none!important;
+    scale:1!important;
+    zoom:1!important;
+    perspective:none!important;
+    filter:none!important;
+    contain:none!important;
+    will-change:auto!important;
+  }
+
+  .verix-asf-notice-overlay,
+  #opsBootOverlay,
+  #mainMenuScreen.vx-home-screen,
+  #vxMobileOverlay{
+    position:fixed!important;
+    inset:0!important;
+    top:0!important;
+    right:0!important;
+    bottom:0!important;
+    left:0!important;
+    width:100vw!important;
+    min-width:100vw!important;
+    max-width:none!important;
+    height:100vh!important;
+    height:100dvh!important;
+    margin:0!important;
+    transform:none!important;
+    translate:none!important;
+    scale:1!important;
+    zoom:1!important;
+    box-sizing:border-box!important;
+  }
+
+  .verix-asf-notice-overlay{
+    padding-left:max(10px,env(safe-area-inset-left,0px))!important;
+    padding-right:max(10px,env(safe-area-inset-right,0px))!important;
+  }
+
+  .verix-asf-notice-window{
+    width:min(560px,calc(100vw - 24px - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px)))!important;
+    min-width:0!important;
+    max-width:calc(100vw - 24px - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px))!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+    box-sizing:border-box!important;
+  }
+
+  #vxMobileTop,
+  #vxMobileBar{
+    left:0!important;
+    right:0!important;
+    width:100vw!important;
+    min-width:100vw!important;
+    max-width:none!important;
+    margin:0!important;
+    transform:none!important;
+  }
+}
+
