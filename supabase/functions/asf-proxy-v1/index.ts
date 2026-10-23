@@ -83,6 +83,71 @@ function isTransientLicenseUnavailable(bodyText: string): boolean {
   }
 }
 
+const ASF_MIN_START_INTERVAL_MS = 10000;
+const ASF_QUEUE_RPC_TIMEOUT_MS = 2500;
+let localAsfQueueTail: Promise<void> = Promise.resolve();
+let localAsfNextSlotAt = 0;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function waitForLocalAsfSlot(): Promise<number> {
+  const queuedAt = Date.now();
+  let release!: () => void;
+  const previous = localAsfQueueTail;
+  localAsfQueueTail = new Promise<void>(resolve => { release = resolve; });
+  await previous.catch(() => {});
+  try {
+    const waitMs = Math.max(0, localAsfNextSlotAt - Date.now());
+    if (waitMs > 0) await sleep(waitMs);
+    localAsfNextSlotAt = Date.now() + ASF_MIN_START_INTERVAL_MS;
+  } finally {
+    release();
+  }
+  return Date.now() - queuedAt;
+}
+
+// Reserve a global start slot for every physical request to ASF, including retries.
+// This keeps all VÉRIX instances on one cadence instead of pacing only per browser.
+async function waitForGlobalAsfSlot(): Promise<number> {
+  const queuedAt = Date.now();
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), ASF_QUEUE_RPC_TIMEOUT_MS);
+    let response: Response;
+    try {
+      response = await fetch(SUPABASE_URL.replace(/\\/+$/, "") + "/rest/v1/rpc/verix2_reserve_asf_slot", {
+        method: "POST",
+        headers: {
+          "apikey": SERVICE_KEY,
+          "Authorization": "Bearer " + SERVICE_KEY,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ p_gap_ms: ASF_MIN_START_INTERVAL_MS }),
+        signal: controller.signal
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
+    if (!response.ok) throw new Error("queue_http_" + response.status);
+    const rawValue = await response.json();
+    const slotValue = typeof rawValue === "string"
+      ? rawValue
+      : Array.isArray(rawValue)
+        ? rawValue[0]
+        : rawValue?.verix2_reserve_asf_slot;
+    const slotAt = Date.parse(String(slotValue ?? ""));
+    if (!Number.isFinite(slotAt)) throw new Error("queue_invalid_slot");
+    const waitMs = Math.max(0, slotAt - Date.now());
+    if (waitMs > 0) await sleep(waitMs);
+    return Date.now() - queuedAt;
+  } catch (error) {
+    console.error("verix_asf_queue_reservation_failed", String((error as Error)?.message || error));
+    return await waitForLocalAsfSlot();
+  }
+}
+
 const GATE_SECRET =
   Deno.env.get("VERIX_GATE_SECRET") ||
   Deno.env.get("VERIX_ADMIN_SECRET") ||
@@ -212,9 +277,8 @@ Deno.serve(async (req: Request) => {
       '") { nodes { id entity startDate endDate policy license code logo } } } } } }';
 
     const url = ASF_ORIGIN + ASF_PATH + "?query=" + encodeURIComponent(query);
-    const queueWaitMs = 0;
+    let queueWaitMs = 0;
     const started = Date.now();
-    const retryDelaysMs = [300, 900];
     const maxAttempts = 3;
     let upstream: Response | null = null;
     let text = "";
@@ -223,6 +287,8 @@ Deno.serve(async (req: Request) => {
     // Retry only fast, explicit transient GraphQL errors from licenseNumber.
     // Network timeouts and HTTP 429 are not retried here.
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      // Pace every upstream attempt globally; retry traffic must not bypass the same guard.
+      queueWaitMs += await waitForGlobalAsfSlot();
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
       try {
@@ -256,14 +322,14 @@ Deno.serve(async (req: Request) => {
         attempt < maxAttempts - 1 &&
         isTransientLicenseUnavailable(text)
       ) {
-        const waitMs = retryDelaysMs[attempt] ?? retryDelaysMs[retryDelaysMs.length - 1];
         console.warn("verix_asf_graphql_transient_retry", JSON.stringify({
           buildId,
           status: upstream.status,
           attempt: attemptsUsed,
-          nextWaitMs: waitMs
+          minimumGapMs: ASF_MIN_START_INTERVAL_MS,
+          queueWaitMs
         }));
-        await new Promise(resolve => setTimeout(resolve, waitMs));
+        // The next loop iteration reserves a fresh global slot before contacting ASF.
         continue;
       }
       break;
