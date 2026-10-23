@@ -1169,12 +1169,14 @@ function submitConjunto(event) {
   const ASF_MAX_ATTEMPTS = 3;
   const ASF_RETRY_DELAYS_MS = [300, 900];
   /*
-   * Sem quota artificial VÉRIX por minuto.
-   * A fila apenas serializa pedidos concorrentes para proteger a estabilidade.
-   * Retries existem exclusivamente para falhas transitórias de transporte.
-   * Um 429 devolvido pela ASF é respeitado e não é contornado automaticamente.
+   * Sem quota artificial por minuto.
+   * A fila serializa consultas ASF nesta instância do VÉRIX.
+   * Repetições limitadas a falhas transitórias de transporte ou ao erro
+   * GraphQL explícito "Serviço Indisponível" no campo licenseNumber.
+   * Um HTTP 429 é respeitado e não é contornado automaticamente.
    */
   var ASF_FILA_PENDENTES = 0;
+  var ASF_FILA_ULTIMA_PROMESSA = Promise.resolve();
 
   function agoraASF() { return Date.now(); }
   function esperarASF(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
@@ -1239,12 +1241,22 @@ function submitConjunto(event) {
 
     cd.textContent = (ASF_FILA_PENDENTES || 0) > 0 ? 'A PROCESSAR' : 'LIVRE';
     cd.setAttribute('data-state', 'ready');
-    cd.title = 'Sem limite artificial local VÉRIX; pedidos concorrentes seguem em paralelo.';
+    cd.title = 'Sem limite artificial por minuto; as consultas ASF são processadas sequencialmente nesta instância.';
   }
 
   function reservarSlotFisicoASF() {
-    atualizarContadorVisualASF();
-    return Promise.resolve(agoraASF());
+    var esperaAnterior = ASF_FILA_ULTIMA_PROMESSA;
+    var liberar;
+    var slotOcupado = new Promise(function (resolve) {
+      liberar = resolve;
+    });
+
+    ASF_FILA_ULTIMA_PROMESSA = slotOcupado;
+
+    return esperaAnterior.catch(function () {}).then(function () {
+      atualizarContadorVisualASF();
+      return { reservadoEm: agoraASF(), liberar: liberar };
+    });
   }
   atualizarContadorVisualASF();
 
@@ -1372,10 +1384,32 @@ function submitConjunto(event) {
   }
 
 
+  function asfRespostaGraphQLIndisponivel(bodyText) {
+    try {
+      var resposta = JSON.parse(String(bodyText || ''));
+      if (!resposta || !Array.isArray(resposta.errors) || !resposta.errors.length) return false;
+
+      return resposta.errors.some(function (erro) {
+        var mensagem = String(erro && erro.message || '').toLowerCase();
+        var indisponivel =
+          mensagem.indexOf('serviço indisponível') >= 0 ||
+          mensagem.indexOf('servico indisponivel') >= 0;
+        if (!indisponivel) return false;
+
+        var caminho = Array.isArray(erro && erro.path)
+          ? erro.path.join('.').toLowerCase()
+          : '';
+        return !caminho || caminho.indexOf('licensenumber') >= 0;
+      });
+    } catch (_) {
+      return false;
+    }
+  }
+
   function asfTentativaRetryable(status, errorType) {
     if (Number(status) === 429) return false;
     if ([502, 503, 504].indexOf(Number(status)) >= 0) return true;
-    return ['timeout', 'network', 'unknown'].indexOf(String(errorType || '')) >= 0;
+    return ['timeout', 'network', 'unknown', 'graphql_service_unavailable'].indexOf(String(errorType || '')) >= 0;
   }
 
   async function efetuarPedidoHttpASF(payload, matDisplay, queryId) {
@@ -1394,10 +1428,10 @@ function submitConjunto(event) {
       throw erroComDiagASF(diag.asfMessage, diag);
     }
     var queueStarted = agoraMsASFDiag();
-
-    await reservarSlotFisicoASF(matDisplay);
+    var slotASF = await reservarSlotFisicoASF(matDisplay);
     diag.asfQueueWaitMs = Math.max(0, agoraMsASFDiag() - queueStarted);
 
+    try {
     var requestBody = JSON.stringify(payload || {});
     var ultimaTentativa = null;
 
@@ -1488,6 +1522,15 @@ function submitConjunto(event) {
           }
         }
 
+        if (
+          Number(tentativa.status) >= 200 &&
+          Number(tentativa.status) < 300 &&
+          asfRespostaGraphQLIndisponivel(bodyText)
+        ) {
+          tentativa.errorType = 'graphql_service_unavailable';
+          tentativa.message = 'ASF GraphQL devolveu Serviço Indisponível em licenseNumber';
+        }
+
         tentativa.responseBytes = bodyText ? String(bodyText).length : 0;
         tentativa.responseHash = hashTextoASF(bodyText);
         finalizarTentativaDiagASF(diag, tentativa);
@@ -1530,6 +1573,12 @@ function submitConjunto(event) {
       (ultimaTentativa && ultimaTentativa.message) || 'Falha de comunicação com o relay ASF',
       diag
     );
+    } finally {
+      try {
+        if (slotASF && typeof slotASF.liberar === 'function') slotASF.liberar();
+      } catch (_) {}
+      atualizarContadorVisualASF();
+    }
   }
 
   // Parser robusto inspirado no Consulta Veiculo(2): aceita os envelopes ASF
@@ -1893,10 +1942,10 @@ function submitConjunto(event) {
 var ASF_EM_VOO = Object.create(null);
 
   /*
-   * EXECUÇÃO PARALELA:
-   * ASF, inspeção IMT e livrete IMT são canais independentes.
-   * Não existe fila entre consultas ASF e não existe espera pelo RNSI.
-   * A única proteção local é deduplicar uma chamada idêntica ainda em execução.
+   * EXECUÇÃO:
+   * ASF, inspeção IMT e livrete IMT continuam a ser canais independentes.
+   * As consultas ASF são serializadas localmente, sem quota artificial por minuto.
+   * Também se deduplica uma chamada idêntica ainda em execução.
    */
 async function consultarSeguroASF(matricula) {
     var matDisplay = String(matricula || '').trim().toUpperCase();
