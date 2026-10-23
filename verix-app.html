@@ -1307,7 +1307,9 @@ function submitConjunto(event) {
       asfResponseContentType: null,
       asfResponseHash: null,
       asfStatusText: null,
-      asfRelayLatencyMs: null
+      asfRelayLatencyMs: null,
+      asfServerQueueWaitMs: null,
+      asfUpstreamAttempts: null
     };
   }
 
@@ -1467,6 +1469,18 @@ function submitConjunto(event) {
               var relayLatencyHeader = res.headers.get('X-Verix-ASF-Latency-Ms');
               var relayLatencyMs = Number(relayLatencyHeader);
               if (Number.isFinite(relayLatencyMs)) diag.asfRelayLatencyMs = relayLatencyMs;
+
+              var serverQueueWaitHeader = res.headers.get('X-Verix-ASF-Queue-Wait-Ms');
+              var serverQueueWaitMs = Number(serverQueueWaitHeader);
+              if (serverQueueWaitHeader !== null && Number.isFinite(serverQueueWaitMs) && serverQueueWaitMs >= 0) {
+                diag.asfServerQueueWaitMs = serverQueueWaitMs;
+              }
+
+              var upstreamAttemptsHeader = res.headers.get('X-Verix-ASF-Attempts');
+              var upstreamAttempts = Number(upstreamAttemptsHeader);
+              if (upstreamAttemptsHeader !== null && Number.isInteger(upstreamAttempts) && upstreamAttempts >= 1 && upstreamAttempts <= 3) {
+                diag.asfUpstreamAttempts = upstreamAttempts;
+              }
             }
 
             bodyText = await res.text();
@@ -10996,6 +11010,8 @@ html body .leg-card-new .copy-all-new{
         asfMethod: a.asfMethod ? String(a.asfMethod).slice(0, 20) : null,
         asfTransport: a.asfTransport ? String(a.asfTransport).slice(0, 30) : null,
         asfErrorType: a.asfErrorType ? String(a.asfErrorType).slice(0, 60) : null,
+        asfServerQueueWaitMs: a.asfServerQueueWaitMs == null ? null : Number(a.asfServerQueueWaitMs),
+        asfUpstreamAttempts: a.asfUpstreamAttempts == null ? null : Number(a.asfUpstreamAttempts),
         asfMessage: a.asfMessage ? String(a.asfMessage).slice(0, 500) : null,
         asfResponseBytes: a.asfResponseBytes == null ? null : Number(a.asfResponseBytes),
         asfAttempts: Array.isArray(a.asfAttempts) ? a.asfAttempts.slice(-4).map(function (t) {
