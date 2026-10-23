@@ -22,7 +22,6 @@ Para uso portátil Windows, utilizar o projecto em `windows/VerixPortable/`.
 | `supabase/functions/asf-proxy-v1` | Relay servidor-servidor para ASF |
 | `supabase/functions/admin-auth-v2` | Autenticação do painel |
 | `supabase/functions/stats-v2` | Métricas e dashboard |
-| `supabase/functions/hourly-history-v2` | Histórico horário |
 | `tools/build-secure-release.mjs` | Build de produção |
 | `windows/VerixPortable/` | Host WebView2 |
 

@@ -1,0 +1,58 @@
+name: Admin telemetry v3 tests
+
+on:
+  pull_request:
+    paths:
+      - "supabase/functions/admin-telemetry-v3/**"
+      - ".github/workflows/admin-telemetry-tests.yml"
+      - "supabase/config.toml"
+  push:
+    branches: ["main"]
+    paths:
+      - "supabase/functions/admin-telemetry-v3/**"
+      - ".github/workflows/admin-telemetry-tests.yml"
+      - "supabase/config.toml"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Validate Admin telemetry JWT configuration
+        shell: bash
+        run: |
+          python - <<'PY'
+          import tomllib
+          from pathlib import Path
+          config = tomllib.loads(Path("supabase/config.toml").read_text())
+          functions = config.get("functions", {})
+          required = (
+              "telemetry-v2",
+              "stats-v2",
+              "hourly-history-v2",
+              "admin-auth-v2",
+              "admin-telemetry-v3",
+              "verix-admin-pwa",
+              "asf-proxy-v1",
+              "verix-gate-v1",
+          )
+          missing = [name for name in required if name not in functions]
+          wrong = [name for name in required if functions.get(name, {}).get("verify_jwt") is not False]
+          if missing:
+              raise SystemExit("Active Edge Functions missing from supabase/config.toml: " + ", ".join(missing))
+          if wrong:
+              raise SystemExit("These Edge Functions must retain verify_jwt=false and validate access in the function: " + ", ".join(wrong))
+          print("All eight active Edge Function auth declarations: OK")
+          PY
+      - name: Type-check Edge Function and tests
+        run: deno check supabase/functions/admin-telemetry-v3/index.ts supabase/functions/admin-telemetry-v3/index_test.ts
+      - name: Run auth, CORS, response and error-handling tests
+        run: deno test --allow-env supabase/functions/admin-telemetry-v3/index_test.ts
