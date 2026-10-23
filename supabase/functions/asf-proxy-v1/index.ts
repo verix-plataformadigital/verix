@@ -117,7 +117,7 @@ async function waitForGlobalAsfSlot(): Promise<number> {
     const timeout = setTimeout(() => controller.abort(), ASF_QUEUE_RPC_TIMEOUT_MS);
     let response: Response;
     try {
-      response = await fetch(SUPABASE_URL.replace(/\\/+$/, "") + "/rest/v1/rpc/verix2_reserve_asf_slot", {
+      response = await fetch(SUPABASE_URL.replace(new RegExp("/+$"), "") + "/rest/v1/rpc/verix2_reserve_asf_slot", {
         method: "POST",
         headers: {
           "apikey": SERVICE_KEY,
