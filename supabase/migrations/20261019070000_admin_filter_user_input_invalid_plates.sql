@@ -1,0 +1,675 @@
+-- Classify only clearly attributable invalid-plate HTTP 400 events as user input.
+-- These events are removed from technical-failure counters and kept as a separate count.
+-- Requests are not blocked; this migration only changes Admin reporting/read paths.
+-- Admin-only syntactic check for Portuguese registration-number formats.
+-- This is deliberately format-only: it does not claim that a number is actually assigned.
+CREATE OR REPLACE FUNCTION public.verix2_admin_plate_format_valid(p_value text)
+RETURNS boolean
+LANGUAGE plpgsql
+IMMUTABLE
+PARALLEL SAFE
+SET search_path TO 'pg_catalog', 'public'
+AS $function$
+DECLARE
+  v text := upper(regexp_replace(coalesce(p_value, ''), '[^A-Z0-9]', '', 'g'));
+BEGIN
+  -- Historical formats: AA-00-00, 00-00-AA and 00-AA-00.
+  -- K, W and Y were not used in these historical series.
+  IF v ~ '^[A-JL-VXZ]{2}[0-9]{4}$'
+     OR v ~ '^[0-9]{4}[A-JL-VXZ]{2}$'
+     OR v ~ '^[0-9]{2}[A-JL-VXZ]{2}[0-9]{2}$' THEN
+    RETURN true;
+  END IF;
+
+  -- Format introduced in March 2020: AA-00-AA.
+  -- Be conservative with the alphabet so the error filter does not reject
+  -- a potentially legitimate series. Only the specifically reserved AA-00-AA
+  -- combination is excluded, not every series whose central digits are 00.
+  IF v !~ '^[A-Z]{2}[0-9]{2}[A-Z]{2}$' OR v = 'AA00AA' THEN
+    RETURN false;
+  END IF;
+
+  -- IMT rule: no vowel in positions 2 or 6 unless the pair is the same vowel.
+  IF substring(v FROM 2 FOR 1) ~ '^[AEIOU]$'
+     AND substring(v FROM 1 FOR 1) <> substring(v FROM 2 FOR 1) THEN
+    RETURN false;
+  END IF;
+  IF substring(v FROM 6 FOR 1) ~ '^[AEIOU]$'
+     AND substring(v FROM 5 FOR 1) <> substring(v FROM 6 FOR 1) THEN
+    RETURN false;
+  END IF;
+
+  RETURN true;
+END;
+$function$;
+
+REVOKE ALL ON FUNCTION public.verix2_admin_plate_format_valid(text) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.verix2_admin_plate_format_valid(text) TO service_role;
+
+
+-- Verify the plate syntax helper against the official historical/current shapes.
+DO $block$
+BEGIN
+  IF NOT public.verix2_admin_plate_format_valid('AA-00-00') THEN RAISE EXCEPTION 'historical AA-00-00 rejected'; END IF;
+  IF NOT public.verix2_admin_plate_format_valid('00-00-AA') THEN RAISE EXCEPTION 'historical 00-00-AA rejected'; END IF;
+  IF NOT public.verix2_admin_plate_format_valid('00-AA-00') THEN RAISE EXCEPTION 'historical 00-AA-00 rejected'; END IF;
+  IF NOT public.verix2_admin_plate_format_valid('AA-01-AA') THEN RAISE EXCEPTION 'current AA-01-AA rejected'; END IF;
+  IF NOT public.verix2_admin_plate_format_valid('AB-00-AA') THEN RAISE EXCEPTION 'central 00 series after AA start incorrectly rejected'; END IF;
+  IF public.verix2_admin_plate_format_valid('AA-00-AA') THEN RAISE EXCEPTION 'reserved AA-00-AA unexpectedly accepted'; END IF;
+  IF public.verix2_admin_plate_format_valid('AB-12-AE') THEN RAISE EXCEPTION 'disallowed vowel in position 6 accepted'; END IF;
+  IF public.verix2_admin_plate_format_valid('1A-234-5') THEN RAISE EXCEPTION 'malformed input unexpectedly accepted'; END IF;
+END;
+$block$;
+
+
+CREATE OR REPLACE FUNCTION public.verix2_admin_dashboard_v3_compute(
+  p_now timestamptz DEFAULT now()
+)
+RETURNS jsonb
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path TO public, pg_catalog
+SET work_mem TO '32MB'
+AS $function$
+WITH b AS (
+  SELECT
+    (date_trunc('day', p_now AT TIME ZONE 'Europe/Lisbon') AT TIME ZONE 'Europe/Lisbon') AS today_start,
+    p_now - interval '7 days' AS week_start,
+    coalesce(
+      (SELECT reset_all_at FROM public.verix2_admin_dashboard_cache WHERE singleton = true),
+      p_now - interval '365 days'
+    ) AS total_start,
+    p_now AS report_end
+),
+periods AS (
+  SELECT 'today'::text AS period, today_start AS start_at, report_end AS end_at FROM b
+  UNION ALL
+  SELECT 'week', week_start, report_end FROM b
+  UNION ALL
+  SELECT 'total', total_start, report_end FROM b
+),
+ev AS MATERIALIZED (
+  -- Keep the hot path narrow: large client/forensics JSON belongs only in the
+  -- small error/copy subsets below, not in every activity row.
+  SELECT
+    e.event_id, e.installation_id, e.query_id, e.event, e.occurred_at
+  FROM public.verix2_events e
+  CROSS JOIN b
+  WHERE e.occurred_at >= b.total_start
+    AND e.occurred_at < b.report_end
+),
+meta_ev AS MATERIALIZED (
+  SELECT
+    e.event_id, e.installation_id, e.query_id, e.event,
+    e.occurred_at, e.metadata
+  FROM public.verix2_events e
+  CROSS JOIN b
+  WHERE e.occurred_at >= b.total_start
+    AND e.occurred_at < b.report_end
+    AND e.event IN ('vehicle_insurance_error', 'legislation_copy')
+),
+error_candidate_rows AS MATERIALIZED (
+  SELECT
+    e.event_id, e.query_id, e.installation_id, e.occurred_at,
+    coalesce(
+      nullif(e.metadata->'asfDiagnostic'->>'asfErrorType', ''),
+      nullif(e.metadata->>'asfErrorType', ''),
+      nullif(e.metadata->>'errorType', ''),
+      'unknown'
+    ) AS error_type,
+    coalesce(
+      nullif(e.metadata->'asfDiagnostic'->>'asfHttpStatus', ''),
+      nullif(e.metadata->>'httpStatus', '')
+    ) AS http_status_raw,
+    EXISTS (
+      SELECT 1
+      FROM (VALUES
+        (e.metadata->>'matriculaCapturada'),
+        (e.metadata->'asfDiagnostic'->>'matricula'),
+        (e.metadata->>'matriculaNormalizada'),
+        (e.metadata->>'matricula')
+      ) AS plate_candidate(value)
+      WHERE public.verix2_admin_plate_format_valid(plate_candidate.value)
+    ) AS has_valid_plate_format,
+    EXISTS (
+      SELECT 1
+      FROM (VALUES
+        (e.metadata->>'matriculaCapturada'),
+        (e.metadata->'asfDiagnostic'->>'matricula'),
+        (e.metadata->>'matriculaNormalizada'),
+        (e.metadata->>'matricula')
+      ) AS plate_candidate(value)
+      WHERE regexp_replace(upper(coalesce(plate_candidate.value, '')), '[^A-Z0-9]', '', 'g') <> ''
+    ) AS has_plate_input
+  FROM meta_ev e
+  WHERE e.event = 'vehicle_insurance_error'
+),
+error_classified AS MATERIALIZED (
+  SELECT c.*,
+    (
+      c.error_type = 'http_400'
+      AND c.http_status_raw = '400'
+      AND c.has_plate_input
+      AND NOT c.has_valid_plate_format
+    ) AS user_input_invalid
+  FROM error_candidate_rows c
+),
+error_input_by_query AS (
+  SELECT query_id, bool_or(user_input_invalid) AS user_input_invalid
+  FROM error_classified
+  WHERE query_id IS NOT NULL
+  GROUP BY query_id
+),
+action_events AS MATERIALIZED (
+  SELECT installation_id, occurred_at
+  FROM ev
+  WHERE installation_id IS NOT NULL
+    AND event IN (
+      'vehicle_lookup', 'vehicle_insurance_yes', 'vehicle_insurance_no',
+      'vehicle_insurance_error', 'imt_loaded', 'module_open',
+      'history_open', 'history_reopen', 'external_tool_open', 'alcohol_lookup',
+      'cinemometer_operation_start', 'cinemometer_speed_entry',
+      'cinemometer_calculation', 'cinemometer_copy_code',
+      'cinemometer_copy_text', 'cinemometer_copy_location',
+      'cinemometer_profile_select', 'cinemometer_profile_new',
+      'cinemometer_profile_duplicate', 'cinemometer_profile_delete',
+      'cinemometer_profile_save', 'legislation_category_open',
+      'legislation_search', 'legislation_copy', 'legislation_favorite_toggle'
+    )
+),
+query_starts AS (
+  SELECT e.query_id, min(e.occurred_at) AS started_at
+  FROM ev e
+  WHERE e.event = 'vehicle_lookup'
+    AND e.query_id IS NOT NULL
+  GROUP BY e.query_id
+),
+query_finals AS (
+  SELECT
+    e.query_id,
+    count(*) AS final_count,
+    count(DISTINCT e.event) AS final_type_count,
+    min(e.event) AS single_final_event,
+    min(e.occurred_at) AS first_final_at
+  FROM ev e
+  JOIN query_starts q ON q.query_id = e.query_id
+  WHERE e.event IN ('vehicle_insurance_yes', 'vehicle_insurance_no', 'vehicle_insurance_error')
+    AND e.occurred_at >= q.started_at
+  GROUP BY e.query_id
+),
+query_pending AS (
+  SELECT e.query_id, max(e.occurred_at) AS pending_at
+  FROM ev e
+  JOIN query_starts q ON q.query_id = e.query_id
+  WHERE e.event = 'vehicle_insurance_pending'
+    AND e.occurred_at >= q.started_at
+  GROUP BY e.query_id
+),
+query_quality AS (
+  SELECT
+    q.query_id,
+    q.started_at,
+    CASE
+      WHEN f.final_count = 1 THEN 'valid'
+      WHEN coalesce(f.final_count, 0) > 1 AND coalesce(f.final_type_count, 0) > 1 THEN 'contradictory'
+      WHEN coalesce(f.final_count, 0) > 1 THEN 'duplicate_finals'
+      WHEN p.pending_at >= (SELECT report_end FROM b) - interval '10 minutes' THEN 'pending'
+      ELSE 'incomplete'
+    END AS outcome_state,
+    CASE WHEN f.final_count = 1 THEN f.single_final_event ELSE NULL END AS final_event,
+    CASE
+      WHEN f.final_count = 1 AND f.single_final_event = 'vehicle_insurance_error'
+        THEN coalesce(eq.user_input_invalid, false)
+      ELSE false
+    END AS user_input_invalid
+  FROM query_starts q
+  LEFT JOIN query_finals f ON f.query_id = q.query_id
+  LEFT JOIN query_pending p ON p.query_id = q.query_id
+  LEFT JOIN error_input_by_query eq ON eq.query_id = q.query_id
+),
+insurance_rows AS (
+  SELECT
+    p.period,
+    count(q.query_id) AS consultations_started,
+    count(q.query_id) FILTER (WHERE q.outcome_state = 'valid') AS finals,
+    count(q.query_id) FILTER (WHERE q.outcome_state = 'valid' AND q.final_event = 'vehicle_insurance_yes') AS insured,
+    count(q.query_id) FILTER (WHERE q.outcome_state = 'valid' AND q.final_event = 'vehicle_insurance_no') AS uninsured,
+    count(q.query_id) FILTER (WHERE q.outcome_state = 'valid' AND q.final_event = 'vehicle_insurance_error' AND NOT q.user_input_invalid) AS errors,
+    count(q.query_id) FILTER (WHERE q.outcome_state = 'valid' AND q.user_input_invalid) AS user_input_invalid,
+    count(q.query_id) FILTER (WHERE q.outcome_state = 'pending') AS pending,
+    count(q.query_id) FILTER (WHERE q.outcome_state = 'incomplete') AS incomplete,
+    count(q.query_id) FILTER (WHERE q.outcome_state = 'contradictory') AS contradictory,
+    count(q.query_id) FILTER (WHERE q.outcome_state = 'duplicate_finals') AS duplicate_finals
+  FROM periods p
+  LEFT JOIN query_quality q ON q.started_at >= p.start_at AND q.started_at < p.end_at
+  GROUP BY p.period
+),
+error_event_rows AS (
+  SELECT
+    p.period,
+    count(e.event_id) FILTER (WHERE NOT e.user_input_invalid) AS events,
+    count(DISTINCT e.query_id) FILTER (WHERE NOT e.user_input_invalid AND e.query_id IS NOT NULL) AS consultations,
+    count(DISTINCT e.installation_id) FILTER (WHERE NOT e.user_input_invalid AND e.installation_id IS NOT NULL) AS installations,
+    count(e.event_id) FILTER (WHERE e.user_input_invalid) AS user_input_invalid_events,
+    count(DISTINCT e.query_id) FILTER (WHERE e.user_input_invalid AND e.query_id IS NOT NULL) AS user_input_invalid_consultations
+  FROM periods p
+  LEFT JOIN error_classified e ON e.occurred_at >= p.start_at AND e.occurred_at < p.end_at
+  GROUP BY p.period
+),
+user_rows AS (
+  SELECT
+    p.period,
+    count(DISTINCT a.installation_id) AS active_installations
+  FROM periods p
+  LEFT JOIN action_events a ON a.occurred_at >= p.start_at AND a.occurred_at < p.end_at
+  GROUP BY p.period
+),
+active_last_3m AS (
+  SELECT
+    count(DISTINCT e.installation_id) AS active_installations,
+    count(DISTINCT e.query_id) FILTER (WHERE e.query_id IS NOT NULL) AS consultations
+  FROM ev e
+  CROSS JOIN b
+  WHERE e.event = 'vehicle_lookup'
+    AND e.installation_id IS NOT NULL
+    AND e.occurred_at >= b.report_end - interval '3 minutes'
+    AND e.occurred_at < b.report_end
+),
+hour_rows AS (
+  SELECT
+    extract(hour FROM e.occurred_at AT TIME ZONE 'Europe/Lisbon')::integer AS hour_num,
+    count(DISTINCT e.query_id) FILTER (WHERE e.event = 'vehicle_lookup' AND e.query_id IS NOT NULL) AS consultations,
+    count(DISTINCT e.installation_id) FILTER (
+      WHERE e.event IN (
+        'vehicle_lookup', 'vehicle_insurance_yes', 'vehicle_insurance_no',
+        'vehicle_insurance_error', 'imt_loaded', 'module_open',
+        'history_open', 'history_reopen', 'external_tool_open', 'alcohol_lookup',
+        'cinemometer_operation_start', 'cinemometer_speed_entry',
+        'cinemometer_calculation', 'cinemometer_copy_code',
+        'cinemometer_copy_text', 'cinemometer_copy_location',
+        'cinemometer_profile_select', 'cinemometer_profile_new',
+        'cinemometer_profile_duplicate', 'cinemometer_profile_delete',
+        'cinemometer_profile_save', 'legislation_category_open',
+        'legislation_search', 'legislation_copy', 'legislation_favorite_toggle'
+      )
+    ) AS active_users
+  FROM ev e
+  CROSS JOIN b
+  WHERE e.occurred_at >= b.today_start
+    AND e.occurred_at < b.report_end
+  GROUP BY 1
+),
+hourly AS (
+  SELECT jsonb_agg(
+    jsonb_build_object(
+      'hour', lpad(gs.hour_num::text, 2, '0'),
+      'hourNumber', gs.hour_num,
+      'consultations', coalesce(h.consultations, 0),
+      'activeUsers', coalesce(h.active_users, 0)
+    ) ORDER BY gs.hour_num
+  ) AS data
+  FROM generate_series(0, 23) AS gs(hour_num)
+  LEFT JOIN hour_rows h ON h.hour_num = gs.hour_num
+),
+legislation_rows AS (
+  SELECT
+    p.period,
+    count(e.event_id) AS copies,
+    count(DISTINCT e.installation_id) FILTER (WHERE e.installation_id IS NOT NULL) AS users
+  FROM periods p
+  LEFT JOIN meta_ev e ON e.event = 'legislation_copy'
+    AND e.occurred_at >= p.start_at AND e.occurred_at < p.end_at
+  GROUP BY p.period
+),
+legislation_items AS (
+  SELECT
+    p.period,
+    coalesce(
+      nullif(btrim(e.metadata->>'itemLabel'), ''),
+      nullif(btrim(e.metadata->>'itemId'), ''),
+      '(iteme sem identificação)'
+    ) AS item_label,
+    coalesce(nullif(btrim(e.metadata->>'itemId'), ''), '') AS item_id,
+    coalesce(nullif(btrim(e.metadata->>'copyType'), ''), 'desconhecido') AS copy_type,
+    count(*) AS copies,
+    count(DISTINCT e.installation_id) FILTER (WHERE e.installation_id IS NOT NULL) AS users,
+    row_number() OVER (
+      PARTITION BY p.period
+      ORDER BY count(*) DESC, coalesce(nullif(btrim(e.metadata->>'itemLabel'), ''), nullif(btrim(e.metadata->>'itemId'), ''), '(iteme sem identificação)')
+    ) AS rank
+  FROM periods p
+  JOIN meta_ev e ON e.event = 'legislation_copy'
+    AND e.occurred_at >= p.start_at AND e.occurred_at < p.end_at
+  GROUP BY p.period, item_label, item_id, copy_type
+),
+legislation_json_rows AS (
+  SELECT
+    l.period, l.copies, l.users,
+    coalesce((
+      SELECT jsonb_agg(jsonb_build_object(
+        'label', i.item_label,
+        'itemId', i.item_id,
+        'copyType', i.copy_type,
+        'copies', i.copies,
+        'users', i.users
+      ) ORDER BY i.rank)
+      FROM legislation_items i
+      WHERE i.period = l.period AND i.rank <= 10
+    ), '[]'::jsonb) AS top_items
+  FROM legislation_rows l
+),
+error_type_groups AS (
+  SELECT
+    p.period,
+    coalesce(
+      nullif(e.metadata->'asfDiagnostic'->>'asfErrorType', ''),
+      nullif(e.metadata->>'asfErrorType', ''),
+      nullif(e.metadata->>'errorType', ''),
+      'unknown'
+    ) AS error_type,
+    count(*) AS events,
+    count(DISTINCT e.query_id) FILTER (WHERE e.query_id IS NOT NULL) AS consultations
+  FROM periods p
+  JOIN meta_ev e ON e.event = 'vehicle_insurance_error'
+    AND e.occurred_at >= p.start_at AND e.occurred_at < p.end_at
+    AND NOT EXISTS (
+      SELECT 1 FROM error_classified ec
+      WHERE ec.event_id = e.event_id AND ec.user_input_invalid
+    )
+  GROUP BY p.period, error_type
+),
+error_type_ranked AS (
+  SELECT *, row_number() OVER (PARTITION BY period ORDER BY events DESC, error_type) AS rank
+  FROM error_type_groups
+),
+error_types_json AS (
+  SELECT
+    p.period,
+    coalesce((
+      SELECT jsonb_agg(jsonb_build_object(
+        'type', r.error_type,
+        'events', r.events,
+        'consultations', r.consultations
+      ) ORDER BY r.rank)
+      FROM error_type_ranked r
+      WHERE r.period = p.period AND r.rank <= 8
+    ), '[]'::jsonb) AS top_types
+  FROM periods p
+)
+SELECT jsonb_build_object(
+  'generatedAt', (SELECT report_end FROM b),
+  'timezone', 'Europe/Lisbon',
+  'historyDays', greatest(0, floor(extract(epoch FROM ((SELECT report_end FROM b) - (SELECT total_start FROM b))) / 86400)::integer),
+  'ranges', jsonb_build_object(
+    'today', jsonb_build_object('start', (SELECT today_start FROM b), 'end', (SELECT report_end FROM b)),
+    'week', jsonb_build_object('start', (SELECT week_start FROM b), 'end', (SELECT report_end FROM b)),
+    'total', jsonb_build_object('start', (SELECT total_start FROM b), 'end', (SELECT report_end FROM b))
+  ),
+  'insurance', (
+    SELECT jsonb_object_agg(i.period, jsonb_build_object(
+      'consultations', i.consultations_started,
+      'finals', i.finals,
+      'insured', i.insured,
+      'uninsured', i.uninsured,
+      'uninsuredPct', CASE WHEN i.insured + i.uninsured > 0 THEN round(100.0 * i.uninsured / (i.insured + i.uninsured), 1) ELSE NULL END,
+      'errors', i.errors,
+      'userInputInvalid', i.user_input_invalid,
+      'errorPct', CASE WHEN i.finals - i.user_input_invalid > 0 THEN round(100.0 * i.errors / (i.finals - i.user_input_invalid), 1) ELSE NULL END,
+      'errorEvents', coalesce(er.events, 0),
+      'userInputInvalidEvents', coalesce(er.user_input_invalid_events, 0),
+      'userInputInvalidConsultations', coalesce(er.user_input_invalid_consultations, 0),
+      'pending', i.pending,
+      'incomplete', i.incomplete,
+      'contradictory', i.contradictory,
+      'duplicateFinals', i.duplicate_finals
+    ))
+    FROM insurance_rows i
+    LEFT JOIN error_event_rows er ON er.period = i.period
+  ),
+  'users', jsonb_build_object(
+    'consultationsLast3Minutes', (SELECT consultations FROM active_last_3m),
+    'activeInstallationsLast3Minutes', (SELECT active_installations FROM active_last_3m),
+    'periods', (SELECT jsonb_object_agg(period, jsonb_build_object('activeInstallations', active_installations)) FROM user_rows)
+  ),
+  'hourly', (SELECT data FROM hourly),
+  'legislation', (
+    SELECT jsonb_object_agg(period, jsonb_build_object(
+      'copies', copies,
+      'users', users,
+      'topItems', top_items
+    ))
+    FROM legislation_json_rows
+  ),
+  'errors', (
+    SELECT jsonb_object_agg(
+      p.period,
+      jsonb_build_object(
+        'events', coalesce(er.events, 0),
+        'consultations', coalesce(er.consultations, 0),
+        'installations', coalesce(er.installations, 0),
+        'userInputInvalidEvents', coalesce(er.user_input_invalid_events, 0),
+        'userInputInvalidConsultations', coalesce(er.user_input_invalid_consultations, 0),
+        'topTypes', coalesce(et.top_types, '[]'::jsonb)
+      )
+    )
+    FROM periods p
+    LEFT JOIN error_event_rows er ON er.period = p.period
+    LEFT JOIN error_types_json et ON et.period = p.period
+  )
+);
+$function$;
+
+CREATE OR REPLACE FUNCTION public.verix2_admin_error_ledger_v3(
+  p_period text DEFAULT 'today',
+  p_now timestamptz DEFAULT now(),
+  p_limit integer DEFAULT 50,
+  p_offset integer DEFAULT 0
+)
+RETURNS jsonb
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path TO public, pg_catalog
+SET work_mem TO '16MB'
+AS $function$
+WITH b AS (
+  SELECT
+    CASE
+      WHEN p_period = 'today' THEN date_trunc('day', p_now AT TIME ZONE 'Europe/Lisbon') AT TIME ZONE 'Europe/Lisbon'
+      WHEN p_period = 'week' THEN p_now - interval '7 days'
+      ELSE coalesce((SELECT reset_all_at FROM public.verix2_admin_dashboard_cache WHERE singleton = true), p_now - interval '365 days')
+    END AS start_at,
+    p_now AS end_at,
+    greatest(1, least(coalesce(p_limit, 50), 200)) AS safe_limit,
+    greatest(0, least(coalesce(p_offset, 0), 1000000)) AS safe_offset
+),
+error_candidates AS MATERIALIZED (
+  SELECT
+    e.event_id, e.query_id, e.installation_id, e.occurred_at, e.app_version,
+    e.browser, e.device_type, e.metadata,
+    coalesce(
+      nullif(btrim(e.metadata->>'matriculaCapturada'), ''),
+      nullif(btrim(e.metadata->>'matriculaNormalizada'), ''),
+      nullif(btrim(e.metadata->>'matricula'), ''),
+      nullif(btrim(e.metadata->'asfDiagnostic'->>'matricula'), ''),
+      'Não capturada'
+    ) AS plate,
+    coalesce(
+      nullif(e.metadata->'asfDiagnostic'->>'asfErrorType', ''),
+      nullif(e.metadata->>'asfErrorType', ''),
+      nullif(e.metadata->>'errorType', ''),
+      'unknown'
+    ) AS error_type,
+    coalesce(
+      nullif(e.metadata->'asfDiagnostic'->>'asfMessage', ''),
+      nullif(e.metadata->>'asfUserMessage', ''),
+      nullif(e.metadata->'asfDiagnostic'->>'asfNetworkError', ''),
+      nullif(e.metadata->'asfDiagnostic'->>'asfStatusText', ''),
+      'A versão cliente não registou uma causa textual específica.'
+    ) AS cause,
+    coalesce(
+      nullif(e.metadata->'asfDiagnostic'->>'asfTransport', ''),
+      nullif(e.metadata->>'transport', ''),
+      'não registado'
+    ) AS transport,
+    coalesce(
+      nullif(e.metadata->'asfDiagnostic'->>'asfHttpStatus', ''),
+      nullif(e.metadata->>'httpStatus', '')
+    ) AS http_status_raw,
+    coalesce(
+      nullif(e.metadata->'asfDiagnostic'->>'asfDurationMs', ''),
+      nullif(e.metadata->>'durationMs', '')
+    ) AS duration_raw,
+    coalesce(
+      nullif(e.metadata->>'asfRelayLatencyMs', ''),
+      nullif(e.metadata->'asfDiagnostic'->>'asfRelayLatencyMs', '')
+    ) AS relay_latency_raw,
+    coalesce(
+      nullif(e.metadata->'asfDiagnostic'->>'asfResponseHash', ''),
+      nullif(e.metadata->>'responseHash', '')
+    ) AS response_hash,
+    coalesce(
+      nullif(e.metadata->'asfDiagnostic'->>'asfBuildId', ''),
+      nullif(e.metadata->>'build_id', '')
+    ) AS build_id,
+    coalesce(e.metadata->'asfDiagnostic'->'asfAttempts', e.metadata->'attempts', '[]'::jsonb) AS attempts,
+    coalesce(e.metadata->'asfDiagnostic'->'asfGraphqlMessages', e.metadata->'graphqlMessages', '[]'::jsonb) AS graphql_messages,
+    coalesce(e.metadata->'asfDiagnostic'->'asfClientContext', e.metadata->'clientContext', '{}'::jsonb) AS client_context,
+    coalesce(
+      nullif(e.metadata->'asfDiagnostic'->>'asfNetworkError', ''),
+      nullif(e.metadata->>'networkError', '')
+    ) AS network_error,
+    coalesce(
+      nullif(e.metadata->'asfDiagnostic'->>'asfQueueWaitMs', ''),
+      nullif(e.metadata->>'queueWaitMs', '')
+    ) AS queue_wait_raw,
+    coalesce(
+      nullif(e.metadata->'asfDiagnostic'->>'asfHttpStatus', ''),
+      nullif(e.metadata->>'httpStatus', '')
+    ) AS status_for_classification,
+    EXISTS (
+      SELECT 1
+      FROM (VALUES
+        (e.metadata->>'matriculaCapturada'),
+        (e.metadata->'asfDiagnostic'->>'matricula'),
+        (e.metadata->>'matriculaNormalizada'),
+        (e.metadata->>'matricula')
+      ) AS plate_candidate(value)
+      WHERE public.verix2_admin_plate_format_valid(plate_candidate.value)
+    ) AS has_valid_plate_format,
+    EXISTS (
+      SELECT 1
+      FROM (VALUES
+        (e.metadata->>'matriculaCapturada'),
+        (e.metadata->'asfDiagnostic'->>'matricula'),
+        (e.metadata->>'matriculaNormalizada'),
+        (e.metadata->>'matricula')
+      ) AS plate_candidate(value)
+      WHERE regexp_replace(upper(coalesce(plate_candidate.value, '')), '[^A-Z0-9]', '', 'g') <> ''
+    ) AS has_plate_input
+  FROM public.verix2_events e
+  CROSS JOIN b
+  WHERE e.event = 'vehicle_insurance_error'
+    AND e.occurred_at >= b.start_at
+    AND e.occurred_at < b.end_at
+),
+classified_errors AS MATERIALIZED (
+  SELECT c.*,
+    (
+      c.error_type = 'http_400'
+      AND c.status_for_classification = '400'
+      AND c.has_plate_input
+      AND NOT c.has_valid_plate_format
+    ) AS user_input_invalid
+  FROM error_candidates c
+),
+filtered AS MATERIALIZED (
+  SELECT * FROM classified_errors WHERE NOT user_input_invalid
+),
+excluded_user_input AS MATERIALIZED (
+  SELECT event_id, query_id FROM classified_errors WHERE user_input_invalid
+),
+counts AS (
+  SELECT
+    count(*) AS total_events,
+    count(DISTINCT query_id) FILTER (WHERE query_id IS NOT NULL) AS unique_consultations,
+    count(DISTINCT installation_id) FILTER (WHERE installation_id IS NOT NULL) AS installations,
+    (SELECT count(*) FROM excluded_user_input) AS excluded_user_input_events,
+    (SELECT count(DISTINCT query_id) FROM excluded_user_input WHERE query_id IS NOT NULL) AS excluded_user_input_consultations
+  FROM filtered
+),
+page AS (
+  SELECT f.*
+  FROM filtered f
+  ORDER BY f.occurred_at DESC, f.event_id DESC
+  LIMIT (SELECT safe_limit FROM b)
+  OFFSET (SELECT safe_offset FROM b)
+)
+SELECT jsonb_build_object(
+  'period', CASE WHEN p_period IN ('today','week','total') THEN p_period ELSE 'total' END,
+  'generatedAt', p_now,
+  'totalEvents', c.total_events,
+  'uniqueConsultations', c.unique_consultations,
+  'installations', c.installations,
+  'excludedUserInputEvents', c.excluded_user_input_events,
+  'excludedUserInputConsultations', c.excluded_user_input_consultations,
+  'limit', b.safe_limit,
+  'offset', b.safe_offset,
+  'hasMore', b.safe_offset + b.safe_limit < c.total_events,
+  'items', coalesce((
+    SELECT jsonb_agg(jsonb_build_object(
+      'eventId', f.event_id,
+      'queryId', f.query_id,
+      'installationId', f.installation_id,
+      'occurredAt', f.occurred_at,
+      'plate', f.plate,
+      'errorType', f.error_type,
+      'cause', f.cause,
+      'transport', f.transport,
+      'httpStatus', CASE WHEN f.http_status_raw ~ '^[0-9]{3}$' THEN f.http_status_raw::integer ELSE NULL END,
+      'durationMs', CASE WHEN f.duration_raw ~ '^[0-9]+([.][0-9]+)?$' THEN f.duration_raw::numeric ELSE NULL END,
+      'relayLatencyMs', CASE WHEN f.relay_latency_raw ~ '^[0-9]+([.][0-9]+)?$' THEN f.relay_latency_raw::numeric ELSE NULL END,
+      'queueWaitMs', CASE WHEN f.queue_wait_raw ~ '^[0-9]+([.][0-9]+)?$' THEN f.queue_wait_raw::numeric ELSE NULL END,
+      'responseHash', f.response_hash,
+      'buildId', f.build_id,
+      'appVersion', f.app_version,
+      'browser', f.browser,
+      'deviceType', f.device_type,
+      'attempts', coalesce((
+        SELECT jsonb_agg(
+          jsonb_strip_nulls(jsonb_build_object(
+            'method', left(a.value->>'method', 20),
+            'transport', left(a.value->>'transport', 40),
+            'status', CASE WHEN a.value->>'status' ~ '^[0-9]{3}$' THEN (a.value->>'status')::integer ELSE NULL END,
+            'durationMs', CASE WHEN a.value->>'durationMs' ~ '^[0-9]+([.][0-9]+)?$' THEN (a.value->>'durationMs')::numeric ELSE NULL END,
+            'responseBytes', CASE WHEN a.value->>'responseBytes' ~ '^[0-9]+$' THEN (a.value->>'responseBytes')::bigint ELSE NULL END,
+            'responseContentType', left(a.value->>'responseContentType', 120),
+            'responseHash', left(a.value->>'responseHash', 128),
+            'errorType', left(a.value->>'errorType', 100),
+            'message', left(a.value->>'message', 300),
+            'statusText', left(a.value->>'statusText', 120)
+          )) ORDER BY a.ordinality
+        )
+        FROM jsonb_array_elements(
+          CASE WHEN jsonb_typeof(f.attempts) = 'array' THEN f.attempts ELSE '[]'::jsonb END
+        ) WITH ORDINALITY AS a(value, ordinality)
+        WHERE a.ordinality <= 8
+      ), '[]'::jsonb),
+      'graphqlMessages', coalesce((
+        SELECT jsonb_agg(
+          left(coalesce(m.value #>> '{}', m.value::text), 300)
+          ORDER BY m.ordinality
+        )
+        FROM jsonb_array_elements(
+          CASE WHEN jsonb_typeof(f.graphql_messages) = 'array' THEN f.graphql_messages ELSE '[]'::jsonb END
+        ) WITH ORDINALITY AS m(value, ordinality)
+        WHERE m.ordinality <= 12
+      ), '[]'::jsonb),
+      'networkError', left(f.network_error, 300)
+    ) ORDER BY f.occurred_at DESC, f.event_id DESC)
+    FROM page f
+  ), '[]'::jsonb)
+)
+FROM b CROSS JOIN counts c;
+$function$;
