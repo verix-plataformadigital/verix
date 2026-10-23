@@ -207,6 +207,34 @@ Deno.serve(async (req: Request) => {
       const text = await upstream.text();
       const elapsedMs = Date.now() - started;
 
+      // Safe incident diagnostics: retain only GraphQL error summary, never
+      // the submitted registration, request URL, raw request, or raw response.
+      if (upstream.status === 200) {
+        try {
+          const bodyJson = JSON.parse(text);
+          if (bodyJson && Array.isArray(bodyJson.errors) && bodyJson.errors.length) {
+            const errors = bodyJson.errors.slice(0, 3).map((item: any) => ({
+              message: cleanText(item?.message, 180),
+              code: cleanText(item?.extensions?.code, 80),
+              path: Array.isArray(item?.path)
+                ? item.path.slice(0, 8).map((part: unknown) => cleanText(part, 40))
+                : null
+            }));
+            console.warn("verix_asf_upstream_graphql_error", JSON.stringify({
+              buildId,
+              status: upstream.status,
+              elapsedMs,
+              responseBytes: new TextEncoder().encode(text).length,
+              contentType: cleanText(upstream.headers.get("content-type"), 120),
+              errorCount: bodyJson.errors.length,
+              errors
+            }));
+          }
+        } catch (_) {
+          // Malformed responses continue through the unchanged relay behavior.
+        }
+      }
+
       const outHeaders: Record<string, string> = {
         ...corsHeaders(req),
         "Content-Type": upstream.headers.get("content-type") || "application/json; charset=utf-8",
