@@ -6,17 +6,48 @@ on:
 
 permissions:
   contents: read
-  security-events: write
 
 jobs:
   audit:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Validate Supabase configuration syntax and required function settings
+        shell: bash
+        run: |
+          python - <<'PY'
+          import tomllib
+          from pathlib import Path
+
+          path = Path("supabase/config.toml")
+          config = tomllib.loads(path.read_text(encoding="utf-8"))
+          functions = config.get("functions", {})
+          required = {
+              "telemetry-v2",
+              "stats-v2",
+              "admin-auth-v2",
+              "asf-proxy-v1",
+              "verix-gate-v1",
+          }
+          missing = sorted(required - functions.keys())
+          if missing:
+              raise SystemExit(f"Missing Supabase function sections: {missing}")
+          unexpected = sorted(
+              name for name in required
+              if functions[name].get("verify_jwt") is not False
+          )
+          if unexpected:
+              raise SystemExit(
+                  "Expected explicit verify_jwt = false settings for "
+                  f"custom-token-protected functions: {unexpected}"
+              )
+          print("Supabase TOML syntax and required function settings: OK")
+          PY
 
       - name: Build secure release
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
 
@@ -76,6 +107,63 @@ jobs:
                   raise SystemExit(f"{path}: unclosed HTML tags: {parser.stack[-20:]}")
               print(f"HTML structural validation: OK — {path}")
           PY
+
+      - name: Validate GitHub Pages Admin PWA separation and post-login install control
+        shell: bash
+        run: |
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const manifest = JSON.parse(fs.readFileSync('dist/admin.webmanifest', 'utf8'));
+          const operationalManifest = JSON.parse(fs.readFileSync('dist/site.webmanifest', 'utf8'));
+          const scopedAdminManifest = JSON.parse(fs.readFileSync('dist/admin/manifest.webmanifest', 'utf8'));
+          const adminEntry = fs.readFileSync('dist/admin/index.html', 'utf8');
+          const sourceHtml = fs.readFileSync('admin_v2.html', 'utf8');
+          if (operationalManifest.id !== '/verix/operational-v4/' || operationalManifest.scope !== './') throw new Error('Operational manifest identity or scope is invalid');
+          if (manifest.id !== '/verix/admin/' ||
+              manifest.start_url !== './admin/index.html?app=verix-admin-v5' ||
+              manifest.scope !== './admin/' ||
+              manifest.display !== 'standalone') {
+            throw new Error('Admin PWA must have its own install identity and restricted /admin/ scope');
+          }
+          if (scopedAdminManifest.id !== '/verix/admin/' ||
+              scopedAdminManifest.start_url !== './index.html?app=verix-admin-v5' ||
+              scopedAdminManifest.scope !== './') throw new Error('Nested Admin manifest identity/start_url/scope is invalid');
+          if (scopedAdminManifest.id === operationalManifest.id || scopedAdminManifest.start_url === operationalManifest.start_url) throw new Error('Admin and Operational identities/start URLs must differ');
+          if (!adminEntry.includes('rel="manifest" href="./manifest.webmanifest?v=20261019-admin5"')) throw new Error('GitHub Pages /admin/ entry must link the Admin manifest');
+          if (!manifest.icons.some(icon => icon.src.includes('admin-icon-192.png') && icon.type === 'image/png') ||
+              !manifest.icons.some(icon => icon.src.includes('admin-icon-512.png') && icon.type === 'image/png')) {
+            throw new Error('Admin manifest must advertise dedicated PNG icons at 192px and 512px');
+          }
+          if (!sourceHtml.includes("new URL('./admin/'") ||
+              !sourceHtml.includes('window.location.replace(destination.toString())') ||
+              sourceHtml.includes('functions/v1/verix-admin-pwa/index.html')) {
+            throw new Error('Legacy Admin entry must route to the GitHub Pages /admin/ path, not Supabase HTML hosting');
+          }
+          if (!sourceHtml.includes('isAdminScopedPath') || !sourceHtml.includes('VERIX_ADMIN_PWA_INSTALLED_V5')) throw new Error('GitHub Admin install guard or versioned installed flag is missing');
+          for (const file of ['supabase/functions/admin-auth-v2/index.ts','supabase/functions/stats-v2/index.ts','supabase/functions/telemetry-v2/index.ts']) {
+            if (!fs.readFileSync(file, 'utf8').includes('https://verix-plataformadigital.github.io')) {
+              throw new Error('GitHub Pages origin missing from backend CORS allowlist: ' + file);
+            }
+          }
+          for (const icon of scopedAdminManifest.icons || []) {
+            const iconPath = path.join('dist/admin', icon.src.split('?')[0]);
+            const rootIconPath = path.join('dist', icon.src.split('?')[0]);
+            if (!fs.existsSync(iconPath) && !fs.existsSync(rootIconPath)) throw new Error('Admin icon missing from GitHub Pages output: ' + icon.src);
+          }
+          for (const file of ['admin_v2.html', 'dist/admin/index.html']) {
+            const html = fs.readFileSync(file, 'utf8');
+            if (html.includes('id="installAdminLogin"')) throw new Error('Install control is visible in the pre-login screen: ' + file);
+            if ((html.match(/id="installAdminApp"/g) || []).length !== 1) throw new Error('Expected one Admin install control: ' + file);
+            const appStart = html.indexOf('<div id="app"');
+            const installPos = html.indexOf('id="installAdminApp"');
+            if (appStart < 0 || installPos < appStart) throw new Error('Admin install control must be inside authenticated UI: ' + file);
+          }
+          for (const file of ['dist/admin/index.html','dist/admin/manifest.webmanifest','dist/admin/sw.js','dist/admin/AI-ACCESS-POLICY.md','dist/admin/assets/admin-icon-192.png','dist/admin/assets/admin-icon-512.png','dist/admin/assets/admin-icon.svg']) {
+            if (!fs.existsSync(file)) throw new Error('GitHub Pages Admin bundle asset missing: ' + file);
+          }
+          console.log('GitHub Pages Admin PWA identity, scope, icons and post-login install control: OK');
+          NODE
 
       - name: Verify release does not contain source maps
         shell: bash

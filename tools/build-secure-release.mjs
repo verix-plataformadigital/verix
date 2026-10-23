@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import JavaScriptObfuscator from "javascript-obfuscator";
 
 const ROOT = process.cwd();
-const OUTPUT_DIR = path.join(ROOT, "dist");
+const OUTPUT_DIR = path.join(ROOT, process.env.VERIX_OUTPUT_DIR || "dist");
 
 const BUILD_ID = process.env.VERIX_BUILD_ID || `1.5-sec-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-a`;
 
@@ -24,11 +24,13 @@ const OBFUSCATOR_OPTIONS = {
   target: "browser-no-eval",
   compact: true,
   simplify: true,
-  controlFlowFlattening: true,
-  controlFlowFlatteningThreshold: 0.6,
-  deadCodeInjection: false,          // keep false — can break large single-file apps
-  debugProtection: true,
-  debugProtectionInterval: 2000,
+  // Conservative transforms reduce generated size and runtime overhead.
+  // This changes packaging only; application/ASF source logic remains untouched.
+  controlFlowFlattening: false,
+  controlFlowFlatteningThreshold: 0,
+  deadCodeInjection: false,
+  debugProtection: false,
+  debugProtectionInterval: 0,
   disableConsoleOutput: true,
   domainLock: DOMAIN_LOCK,
   domainLockRedirectUrl: "about:blank",
@@ -56,19 +58,11 @@ const OBFUSCATOR_OPTIONS = {
     "^requestAnimationFrame$",
     "^cancelAnimationFrame$"
   ],
-  selfDefending: true,
+  selfDefending: false,
   sourceMap: false,
-  stringArray: true,
-  stringArrayCallsTransform: true,
-  stringArrayEncoding: ["base64"],
-  stringArrayIndexShift: true,
-  stringArrayRotate: true,
-  stringArrayShuffle: true,
-  stringArrayThreshold: 0.85,
+  stringArray: false,
   transformObjectKeys: false,
-  unicodeEscapeSequence: false,
-  splitStrings: true,
-  splitStringsChunkLength: 8
+  unicodeEscapeSequence: false
 };
 
 
@@ -91,29 +85,15 @@ const CRITICAL_RUNTIME_NAMES = [
 
 const COMPATIBILITY_OPTIONS = {
   ...OBFUSCATOR_OPTIONS,
-  // The main VÉRIX runtime is a large legacy single-file application.
-  // Keep semantics deterministic: no control-flow rewriting, anti-debug
-  // runtime, or self-defending wrapper in this critical block.
-  controlFlowFlattening: false,
-  controlFlowFlatteningThreshold: 0,
-  debugProtection: false,
-  debugProtectionInterval: 0,
-  selfDefending: false,
-  stringArray: true,
-  stringArrayCallsTransform: false,
-  stringArrayIndexShift: false,
-  stringArrayRotate: false,
-  stringArrayShuffle: false,
-  stringArrayThreshold: 0.5,
-  splitStrings: false,
+  // Preserve the externally referenced ASF runtime names; do not modify the
+  // consultation functions themselves as part of release packaging.
   reservedNames: [
     ...OBFUSCATOR_OPTIONS.reservedNames,
     ...CRITICAL_RUNTIME_NAMES.map(name => "^" + name + "$")
   ]
 };
 
-
-function obfuscateHtml(html, label) {
+function obfuscateHtml(html, label, optionsOverride = null) {
   const scriptPattern = /(<script\b[^>]*>)([\s\S]*?)(<\/script>)/gi;
   let scriptCount = 0;
 
@@ -134,9 +114,10 @@ function obfuscateHtml(html, label) {
 
     scriptCount++;
     try {
-      const options = trimmed.length >= 250_000
+      const baseOptions = trimmed.length >= 250_000
         ? COMPATIBILITY_OPTIONS
         : OBFUSCATOR_OPTIONS;
+      const options = optionsOverride ? { ...baseOptions, ...optionsOverride } : baseOptions;
       const result = JavaScriptObfuscator.obfuscate(trimmed, options).getObfuscatedCode();
       return open + "\n" + result + "\n" + close;
     } catch (err) {
@@ -163,6 +144,7 @@ function writeSecureFile(relativeSource, relativeOutput) {
   }
 
   let source = fs.readFileSync(inputPath, "utf8");
+  const source_size_bytes = Buffer.byteLength(source, "utf8");
 
   // Inject the exact build identity into the client security runtime. The
   // Pages workflow creates a new build ID on every release.
@@ -175,8 +157,7 @@ function writeSecureFile(relativeSource, relativeOutput) {
     source = source.replace(/1\.5-sec-20261008-a/g, BUILD_ID);
   }
 
-  // Give the external mobile assets a release-specific URL on every build.
-  // This prevents a browser from reusing a previous CSS/JS copy after deployment.
+  // Give mobile assets a release-specific URL on every build.
   if (relativeSource === "verix-app.html") {
     source = source.replace(
       /(\.\/verix-mobile\.(?:css|js)\?v=)\d+/g,
@@ -197,7 +178,9 @@ function writeSecureFile(relativeSource, relativeOutput) {
     output: path.join("dist", relativeOutput).replace(/\\/g, "/"),
     sha256,
     script_blocks_obfuscated: scriptCount,
-    size_bytes: Buffer.byteLength(html, "utf8")
+    source_size_bytes,
+    size_bytes: Buffer.byteLength(html, "utf8"),
+    size_growth_ratio: Number((Buffer.byteLength(html, "utf8") / Math.max(1, source_size_bytes)).toFixed(3))
   };
 }
 
@@ -213,6 +196,8 @@ if (app) results.push(app);
 // Admin panel
 const admin = writeSecureFile("admin_v2.html", "admin_v2.html");
 if (admin) results.push(admin);
+
+// Realtime Presence is no longer bundled. Live status is calculated by the authenticated stats API.
 
 // Lightweight entry points (no heavy obfuscation needed)
 for (const f of ["index.html", "verix-mobile.html"]) {
@@ -246,6 +231,62 @@ for (const f of ["verix-mobile.css", "verix-mobile.js"]) {
   if (fs.existsSync(src)) {
     fs.copyFileSync(src, path.join(OUTPUT_DIR, f));
   }
+}
+
+// VÉRIX brand assets: keep favicon, app icons and manifest in the published bundle.
+for (const f of ["favicon.svg", "site.webmanifest", "admin.webmanifest", "sw.js", "assets/verix-emblem.svg", "assets/icon-32.png", "assets/icon-192.png", "assets/icon-512.png", "assets/admin-icon.svg", "assets/admin-icon-192.png", "assets/admin-icon-512.png"]) {
+  const src = path.join(ROOT, f);
+  if (fs.existsSync(src)) {
+    const out = path.join(OUTPUT_DIR, f);
+    fs.mkdirSync(path.dirname(out), { recursive: true });
+    fs.copyFileSync(src, out);
+  } else {
+    throw new Error("Required VÉRIX brand asset missing: " + f);
+  }
+}
+
+// Dedicated admin PWA entry. Its narrower /admin/ scope keeps it separate from the operational VÉRIX app.
+{
+  const sourcePath = path.join(ROOT, "admin_v2.html");
+  if (!fs.existsSync(sourcePath)) throw new Error("Required admin source missing: admin_v2.html");
+  let adminPwaSource = fs.readFileSync(sourcePath, "utf8");
+  adminPwaSource = adminPwaSource.replace(/<link rel="manifest" href="[^"]*admin\.webmanifest[^"]*">\s*/i, "");
+  adminPwaSource = adminPwaSource.replace(/href="\.\/favicon\.svg/g, 'href="../assets/admin-icon.svg');
+  adminPwaSource = adminPwaSource.replace(/href="\.\/assets\/icon-192\.png[^"]*"/g, 'href="../assets/admin-icon-192.png?v=20261019-admin5"');
+  adminPwaSource = adminPwaSource.replace(/\.\/assets\//g, "../assets/");
+  adminPwaSource = adminPwaSource.replace(/\.\/AI-ACCESS-POLICY\.md/g, "../AI-ACCESS-POLICY.md");
+  if (!/<\/head>/i.test(adminPwaSource)) throw new Error("Admin source has no closing head");
+  const adminPwaHeadLinks = [
+    '  <link rel="icon" href="../assets/admin-icon-512.png?v=20261019-admin5" type="image/png" sizes="512x512">',
+    '  <link rel="manifest" href="./manifest.webmanifest?v=20261019-admin5">'
+  ];
+  // GitHub Pages hosts both apps on one origin. A unique manifest ID plus the
+  // narrower /admin/ scope keeps the Admin install distinct from VÉRIX Operational.
+  adminPwaSource = adminPwaSource.replace(/<\/head>/i, adminPwaHeadLinks.join("\n") + "\n</head>");
+  const { html: builtAdminPwa } = obfuscateHtml(adminPwaSource, "admin/index.html");
+  const adminPwaDir = path.join(OUTPUT_DIR, "admin");
+  fs.mkdirSync(adminPwaDir, { recursive: true });
+  fs.writeFileSync(path.join(adminPwaDir, "index.html"), builtAdminPwa, "utf8");
+  // Keep the Admin install manifest inside the Admin scope. This gives Android
+  // a distinct manifest URL in addition to a distinct app ID and start URL,
+  // including compatibility with older WebAPK identity matching.
+  const adminManifest = JSON.parse(fs.readFileSync(path.join(ROOT, "admin.webmanifest"), "utf8"));
+  adminManifest.id = "/verix/admin/";
+  adminManifest.start_url = "./index.html?app=verix-admin-v5";
+  adminManifest.scope = "./";
+  adminManifest.icons = (adminManifest.icons || []).map(icon => ({
+    ...icon,
+    src: String(icon.src).replace(/^\.\/assets\//, "../assets/").replace(/\?v=[^&]+$/, "?v=20261019-admin5")
+  }));
+  fs.writeFileSync(path.join(adminPwaDir, "manifest.webmanifest"), JSON.stringify(adminManifest, null, 2) + "\n", "utf8");
+  // Make the Admin output independently deployable at the root of a different origin.
+  // Relative ../assets and ../AI-ACCESS-POLICY.md URLs resolve to the root of that origin.
+  fs.cpSync(path.join(OUTPUT_DIR, "assets"), path.join(adminPwaDir, "assets"), { recursive: true });
+  const adminPolicySource = path.join(OUTPUT_DIR, "AI-ACCESS-POLICY.md");
+  if (!fs.existsSync(adminPolicySource)) throw new Error("Required standalone Admin policy asset missing");
+  fs.copyFileSync(adminPolicySource, path.join(adminPwaDir, "AI-ACCESS-POLICY.md"));
+  // This worker stays within /admin/ on GitHub Pages and becomes root-scoped on a dedicated Admin origin.
+  fs.copyFileSync(path.join(OUTPUT_DIR, "sw.js"), path.join(adminPwaDir, "sw.js"));
 }
 
 // Release-time runtime invariants. These critical blocks are intentionally
@@ -300,6 +341,16 @@ if (fs.existsSync(appOutput)) {
   verifyJavaScriptSyntax(appOutput);
 }
 
+// Prevent future release builds from reintroducing excessive obfuscation bloat.
+const MAX_SIZE_GROWTH_RATIO = 1.25;
+for (const result of results) {
+  if (result.source_size_bytes && result.size_growth_ratio > MAX_SIZE_GROWTH_RATIO) {
+    throw new Error(
+      `Release size growth exceeded ${MAX_SIZE_GROWTH_RATIO}x for ${result.source}: ${result.size_growth_ratio}x`
+    );
+  }
+}
+
 // The admin panel is shipped in the same secure Pages artifact. Parse its
 // inline JavaScript at release time as well so syntax regressions are caught
 // before they can break the deployed dashboard.
@@ -309,6 +360,11 @@ if (fs.existsSync(adminOutput)) {
   if (adminScriptsChecked === 0) {
     throw new Error("Admin panel does not contain any validated inline JavaScript");
   }
+}
+const adminPwaOutput = path.join(OUTPUT_DIR, "admin", "index.html");
+if (!fs.existsSync(adminPwaOutput)) throw new Error("Dedicated Admin PWA entry was not generated");
+if (verifyJavaScriptSyntax(adminPwaOutput) === 0) {
+  throw new Error("Admin PWA entry does not contain any validated inline JavaScript");
 }
 
 // Build manifest
@@ -354,6 +410,9 @@ console.log(JSON.stringify({
   files: results.map(r => ({
     output: r.output,
     scripts: r.script_blocks_obfuscated ?? 0,
+    source_bytes: r.source_size_bytes ?? null,
+    output_bytes: r.size_bytes ?? null,
+    growth_ratio: r.size_growth_ratio ?? null,
     sha256: r.sha256?.slice(0, 16) + "…"
   })),
   output_dir: "dist/"
