@@ -57,6 +57,32 @@ function validDate(value: unknown): string | null {
   return s;
 }
 
+function isTransientLicenseUnavailable(bodyText: string): boolean {
+  try {
+    const parsed = JSON.parse(String(bodyText || ""));
+    if (!parsed || !Array.isArray(parsed.errors) || !parsed.errors.length) return false;
+
+    return parsed.errors.some((item: any) => {
+      const message = cleanText(item?.message, 240)
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+      const unavailable =
+        message.includes("servico indisponivel") ||
+        message.includes("service unavailable") ||
+        message.includes("temporarily unavailable");
+      if (!unavailable) return false;
+
+      const path = Array.isArray(item?.path)
+        ? item.path.map((part: unknown) => cleanText(part, 40)).join(".").toLowerCase()
+        : "";
+      return !path || path.includes("licensenumber");
+    });
+  } catch (_) {
+    return false;
+  }
+}
+
 const GATE_SECRET =
   Deno.env.get("VERIX_GATE_SECRET") ||
   Deno.env.get("VERIX_ADMIN_SECRET") ||
@@ -187,80 +213,115 @@ Deno.serve(async (req: Request) => {
 
     const url = ASF_ORIGIN + ASF_PATH + "?query=" + encodeURIComponent(query);
     const queueWaitMs = 0;
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
     const started = Date.now();
+    const retryDelaysMs = [300, 900];
+    const maxAttempts = 3;
+    let upstream: Response | null = null;
+    let text = "";
+    let attemptsUsed = 0;
 
-    try {
-      const upstream = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Accept": "application/json, text/plain, */*",
-          "Cache-Control": "no-cache",
-          "Pragma": "no-cache"
-        },
-        body: null,
-        redirect: "follow",
-        signal: controller.signal
-      });
-
-      const text = await upstream.text();
-      const elapsedMs = Date.now() - started;
-
-      // Safe incident diagnostics: retain only GraphQL error summary, never
-      // the submitted registration, request URL, raw request, or raw response.
-      if (upstream.status === 200) {
-        try {
-          const bodyJson = JSON.parse(text);
-          if (bodyJson && Array.isArray(bodyJson.errors) && bodyJson.errors.length) {
-            const errors = bodyJson.errors.slice(0, 3).map((item: any) => ({
-              message: cleanText(item?.message, 180),
-              code: cleanText(item?.extensions?.code, 80),
-              path: Array.isArray(item?.path)
-                ? item.path.slice(0, 8).map((part: unknown) => cleanText(part, 40))
-                : null
-            }));
-            console.warn("verix_asf_upstream_graphql_error", JSON.stringify({
-              buildId,
-              status: upstream.status,
-              elapsedMs,
-              queueWaitMs,
-              responseBytes: new TextEncoder().encode(text).length,
-              contentType: cleanText(upstream.headers.get("content-type"), 120),
-              errorCount: bodyJson.errors.length,
-              errors
-            }));
-          }
-        } catch (_) {
-          // Malformed responses continue through the unchanged relay behavior.
-        }
+    // Retry only fast, explicit transient GraphQL errors from licenseNumber.
+    // Network timeouts and HTTP 429 are not retried here.
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
+      try {
+        upstream = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Accept": "application/json, text/plain, */*",
+            "Cache-Control": "no-cache",
+            "Pragma": "no-cache"
+          },
+          body: null,
+          redirect: "follow",
+          signal: controller.signal
+        });
+        text = await upstream.text();
+        attemptsUsed = attempt + 1;
+      } catch (error) {
+        const aborted = (error as Error)?.name === "AbortError";
+        return json({
+          ok: false,
+          error: aborted ? "upstream_timeout" : "upstream_network",
+          message: aborted ? "ASF upstream timeout" : "ASF upstream network error"
+        }, aborted ? 504 : 502, req);
+      } finally {
+        clearTimeout(timeout);
       }
 
-      const outHeaders: Record<string, string> = {
-        ...corsHeaders(req),
-        "Content-Type": upstream.headers.get("content-type") || "application/json; charset=utf-8",
-        "X-Verix-ASF-Relay": "1",
-        "X-Verix-ASF-Latency-Ms": String(elapsedMs),
-        "X-Verix-ASF-Queue-Wait-Ms": String(queueWaitMs)
-      };
-
-      const retryAfter = upstream.headers.get("retry-after");
-      if (retryAfter) outHeaders["Retry-After"] = retryAfter;
-
-      return new Response(text, {
-        status: upstream.status,
-        headers: outHeaders
-      });
-    } catch (error) {
-      const aborted = (error as Error)?.name === "AbortError";
-      return json({
-        ok: false,
-        error: aborted ? "upstream_timeout" : "upstream_network",
-        message: aborted ? "ASF upstream timeout" : "ASF upstream network error"
-      }, aborted ? 504 : 502, req);
-    } finally {
-      clearTimeout(timeout);
+      const is2xx = upstream.status >= 200 && upstream.status < 300;
+      if (
+        is2xx &&
+        attempt < maxAttempts - 1 &&
+        isTransientLicenseUnavailable(text)
+      ) {
+        const waitMs = retryDelaysMs[attempt] ?? retryDelaysMs[retryDelaysMs.length - 1];
+        console.warn("verix_asf_graphql_transient_retry", JSON.stringify({
+          buildId,
+          status: upstream.status,
+          attempt: attemptsUsed,
+          nextWaitMs: waitMs
+        }));
+        await new Promise(resolve => setTimeout(resolve, waitMs));
+        continue;
+      }
+      break;
     }
+
+    if (!upstream) {
+      return json({ ok: false, error: "upstream_network", message: "ASF upstream network error" }, 502, req);
+    }
+
+    const elapsedMs = Date.now() - started;
+
+    // Safe incident diagnostics: retain only GraphQL error summary, never
+    // the submitted registration, request URL, raw request, or raw response.
+    if (upstream.status === 200) {
+      try {
+        const bodyJson = JSON.parse(text);
+        if (bodyJson && Array.isArray(bodyJson.errors) && bodyJson.errors.length) {
+          const errors = bodyJson.errors.slice(0, 3).map((item: any) => ({
+            message: cleanText(item?.message, 180),
+            code: cleanText(item?.extensions?.code, 80),
+            path: Array.isArray(item?.path)
+              ? item.path.slice(0, 8).map((part: unknown) => cleanText(part, 40))
+              : null
+          }));
+          console.warn("verix_asf_upstream_graphql_error", JSON.stringify({
+            buildId,
+            status: upstream.status,
+            elapsedMs,
+            queueWaitMs,
+            attemptsUsed,
+            responseBytes: new TextEncoder().encode(text).length,
+            contentType: cleanText(upstream.headers.get("content-type"), 120),
+            errorCount: bodyJson.errors.length,
+            errors
+          }));
+        }
+      } catch (_) {
+        // Malformed responses continue through the unchanged relay behavior.
+      }
+    }
+
+    const outHeaders: Record<string, string> = {
+      ...corsHeaders(req),
+      "Content-Type": upstream.headers.get("content-type") || "application/json; charset=utf-8",
+      "X-Verix-ASF-Relay": "1",
+      "X-Verix-ASF-Latency-Ms": String(elapsedMs),
+      "X-Verix-ASF-Queue-Wait-Ms": String(queueWaitMs),
+      "X-Verix-ASF-Attempts": String(attemptsUsed)
+    };
+
+    const retryAfter = upstream.headers.get("retry-after");
+    if (retryAfter) outHeaders["Retry-After"] = retryAfter;
+
+    return new Response(text, {
+      status: upstream.status,
+      headers: outHeaders
+    });
+
   } catch (error) {
     console.error(
       "verix_asf_proxy_failed",
