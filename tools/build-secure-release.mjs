@@ -86,23 +86,8 @@ const CRITICAL_RUNTIME_NAMES = [
 
 const COMPATIBILITY_OPTIONS = {
   ...OBFUSCATOR_OPTIONS,
-  // Restore the 9 October 2026 compatibility profile for the large legacy
-  // runtime block containing the operational ASF engine. Keep the critical
-  // functions free of control-flow rewriting, debug protection and self-defence.
-  // Only restore the historical string-array settings for this large block;
-  // do not roll back current admin, telemetry, presence or release logic.
-  controlFlowFlattening: false,
-  controlFlowFlatteningThreshold: 0,
-  debugProtection: false,
-  debugProtectionInterval: 0,
-  selfDefending: false,
-  stringArray: true,
-  stringArrayCallsTransform: false,
-  stringArrayIndexShift: false,
-  stringArrayRotate: false,
-  stringArrayShuffle: false,
-  stringArrayThreshold: 0.5,
-  splitStrings: false,
+  // Preserve the externally referenced ASF runtime names; do not modify the
+  // consultation functions themselves as part of release packaging.
   reservedNames: [
     ...OBFUSCATOR_OPTIONS.reservedNames,
     ...CRITICAL_RUNTIME_NAMES.map(name => "^" + name + "$")

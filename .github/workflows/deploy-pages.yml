@@ -20,8 +20,6 @@ on:
       - "robots.txt"
       - "package.json"
       - "tools/build-secure-release.mjs"
-      - "tools/build-asf-retry-test.mjs"
-      - "verix-app-test-retries.html"
       - "tools/verify-ai-security.mjs"
       - ".github/workflows/deploy-pages.yml"
   workflow_dispatch:
@@ -64,9 +62,6 @@ jobs:
           VERIX_BUILD_ID: "1.5-sec-${{ github.run_number }}-${{ github.sha }}"
         run: npm run build:secure
 
-      - name: Build separately hosted ASF retry experiment
-        run: node tools/build-asf-retry-test.mjs
-
       - name: Validate mobile adapter and assets
         shell: bash
         run: |
@@ -105,9 +100,6 @@ jobs:
       - name: Verify secure build
         shell: bash
         run: |
-          test -s dist/verix-app-test-retries.html
-          grep -q 'TESTE ASF' dist/verix-app-test-retries.html
-          grep -q 'var BUILD_ID =' dist/verix-app-test-retries.html
           test ! -f dist/verix-app.html.map
           test ! -f dist/admin_v2.html.map
           if find dist -type f -name '*.map' | grep -q .; then
@@ -161,7 +153,7 @@ jobs:
                   else:
                       self.stack.pop()
 
-          for path in (Path("dist/verix-app.html"), Path("dist/admin_v2.html"), Path("dist/verix-app-test-retries.html")):
+          for path in (Path("dist/verix-app.html"), Path("dist/admin_v2.html")):
               if not path.is_file():
                   raise SystemExit(f"Required published HTML file missing: {path}")
               parser = Validator()
@@ -315,34 +307,3 @@ jobs:
             "${PAGES_BASE}admin_v2.html?ci=verix-admin-entry-v5" -o /tmp/verix-admin-entry.html
           grep -Fq 'VÉRIX — Administração' /tmp/verix-admin-entry.html
           echo "GitHub Pages Admin PWA, HTML MIME type, separate install ID, assets and backend CORS: OK"
-
-      - name: Smoke-test hosted ASF retry experiment
-        shell: bash
-        run: |
-          set -euo pipefail
-          PAGES_BASE="${{ steps.deployment.outputs.page_url }}"
-          PAGES_BASE="${PAGES_BASE%/}/"
-          PAGES_ORIGIN="$(node -e 'console.log(new URL(process.argv[1]).origin)' "$PAGES_BASE")"
-
-          curl --fail --silent --show-error --retry 8 --retry-delay 2 --retry-all-errors --connect-timeout 10 --max-time 30 \
-            -D /tmp/verix-asf-test-headers.txt "${PAGES_BASE}verix-app-test-retries.html?ci=asf-retry-test" -o /tmp/verix-asf-test.html
-          grep -Fqi 'content-type: text/html' /tmp/verix-asf-test-headers.txt
-          grep -Fq 'TESTE ASF' /tmp/verix-asf-test.html
-          grep -Fq 'verix-gate-v1' /tmp/verix-asf-test.html
-          grep -Fq 'asf-proxy-v1' /tmp/verix-asf-test.html
-
-          curl --fail --silent --show-error --retry 5 --retry-delay 2 --retry-all-errors --connect-timeout 10 --max-time 20 -X OPTIONS \
-            -H "Origin: ${PAGES_ORIGIN}" -H "Access-Control-Request-Method: POST" \
-            -H "Access-Control-Request-Headers: content-type" \
-            -D /tmp/verix-gate-cors.txt -o /dev/null \
-            "https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/verix-gate-v1"
-          grep -Fqi "access-control-allow-origin: ${PAGES_ORIGIN}" /tmp/verix-gate-cors.txt
-
-          curl --fail --silent --show-error --retry 5 --retry-delay 2 --retry-all-errors --connect-timeout 10 --max-time 20 -X OPTIONS \
-            -H "Origin: ${PAGES_ORIGIN}" -H "Access-Control-Request-Method: POST" \
-            -H "Access-Control-Request-Headers: content-type,x-verix-build-id,x-verix-client-token" \
-            -D /tmp/verix-relay-cors.txt -o /dev/null \
-            "https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/asf-proxy-v1"
-          grep -Fqi "access-control-allow-origin: ${PAGES_ORIGIN}" /tmp/verix-relay-cors.txt
-          grep -Fqi "x-verix-client-token" /tmp/verix-relay-cors.txt
-          echo "Hosted ASF retry experiment: HTML, security gate and relay CORS OK"
