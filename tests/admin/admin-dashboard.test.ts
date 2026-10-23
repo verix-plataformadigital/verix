@@ -1,0 +1,140 @@
+import { afterEach, describe, expect, it } from 'vitest';
+import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+const require = createRequire(import.meta.url);
+const { JSDOM } = require('jsdom') as { JSDOM: new (...args: any[]) => any };
+
+const html = readFileSync(resolve(process.cwd(), 'admin_v2.html'), 'utf8');
+const openDoms: any[] = [];
+
+function dashboard(): any {
+  const dom = new JSDOM(html, {
+    url: 'https://verix.test/admin',
+    runScripts: 'dangerously',
+    pretendToBeVisual: true,
+  });
+  dom.window.scrollTo = () => undefined;
+  openDoms.push(dom);
+  return dom;
+}
+
+afterEach(() => {
+  for (const dom of openDoms.splice(0)) dom.window.close();
+});
+
+describe('Admin VÉRIX — melhorias da dashboard', () => {
+  it('mostra skeletons no primeiro carregamento e um estado claro quando falha', () => {
+    const dom = dashboard();
+    const doc = dom.window.document as Document;
+    const win = dom.window;
+
+    win.renderLoadingState();
+    expect(doc.querySelectorAll('#dashCards .skeleton-card')).toHaveLength(7);
+    expect(doc.querySelector('#errorTypes .skeleton-panel')).not.toBeNull();
+
+    win.renderLoadFailure();
+    expect(doc.querySelector('#dashCards .skeleton-card')).toBeNull();
+    expect(doc.querySelector('#dashCards .empty')?.textContent).toContain('dados ainda não estão disponíveis');
+  });
+
+  it('ordena tabelas por valores numéricos e atualiza o estado acessível', () => {
+    const dom = dashboard();
+    const doc = dom.window.document as Document;
+    const win = dom.window;
+    const host = doc.getElementById('errorTypes')!;
+    host.innerHTML = win.table(['Tipo', 'Quantidade'], [
+      '<tr><td>network</td><td>10</td></tr>',
+      '<tr><td>http_null</td><td>2</td></tr>',
+    ]);
+
+    const quantityHeader = host.querySelectorAll('th')[1] as HTMLElement;
+    quantityHeader.click();
+
+    const quantities = Array.from(host.querySelectorAll<HTMLTableRowElement>('tbody tr')).map((row) => row.cells[1]?.textContent);
+    expect(quantities).toEqual(['2', '10']);
+    expect(quantityHeader.getAttribute('aria-sort')).toBe('ascending');
+  });
+
+  it('filtra as tabelas de erros sem alterar os dados de origem', () => {
+    const dom = dashboard();
+    const doc = dom.window.document as Document;
+    const win = dom.window;
+    doc.getElementById('errorTypes')!.innerHTML = win.table(['Tipo', 'Quantidade'], [
+      '<tr><td>http_null</td><td>3</td></tr>',
+      '<tr><td>network</td><td>2</td></tr>',
+    ]);
+    const search = doc.getElementById('errorSearch') as HTMLInputElement;
+    search.value = 'HTTP_NULL';
+    search.dispatchEvent(new dom.window.Event('input', { bubbles: true }));
+
+    const rows = Array.from(doc.querySelectorAll<HTMLTableRowElement>('#errorTypes tbody tr'));
+    expect(rows.map((row) => row.hidden)).toEqual([false, true]);
+    expect(doc.getElementById('errorSearchCount')?.textContent).toContain('1 de 2');
+  });
+
+  it('permite abrir o módulo correspondente a partir dos KPI principais', () => {
+    const dom = dashboard();
+    const doc = dom.window.document as Document;
+    const win = dom.window;
+    const payload = {
+      generatedAt: '2026-10-09T02:00:00Z',
+      analytics: {
+        insurance: {
+          '24h': { started: 3, finals: 3, insured: 2, uninsured: 1, errors: 0 },
+          '7d': {},
+          '30d': {},
+        },
+        overview: {},
+        usage: {},
+      },
+      lifetime: {},
+      investigation: {},
+      diagnostics: {},
+      errors: {},
+    };
+    win.renderAll(payload);
+
+    const uninsured = Array.from(doc.querySelectorAll<HTMLElement>('#dashCards .card'))
+      .find((card) => card.querySelector('.label')?.textContent?.trim() === 'SEM REGISTO') as HTMLElement;
+    expect(uninsured.dataset.drillPage).toBe('insurance');
+    uninsured.click();
+    expect(doc.querySelector('[data-page="insurance"]')?.classList.contains('active')).toBe(true);
+  });
+
+  it('permite pesquisar matrículas na tabela de erros de seguro', () => {
+    const dom = dashboard();
+    const doc = dom.window.document as Document;
+    const win = dom.window;
+    doc.getElementById('insurancePlates')!.innerHTML = win.table(['Matrícula', 'Tipos'], [
+      '<tr><td>AA11BB</td><td>network</td></tr>',
+      '<tr><td>CC22DD</td><td>http_null</td></tr>',
+    ]);
+    const search = doc.getElementById('plateErrorSearch') as HTMLInputElement;
+    search.value = 'aa11';
+    search.dispatchEvent(new dom.window.Event('input', { bubbles: true }));
+
+    const rows = Array.from(doc.querySelectorAll<HTMLTableRowElement>('#insurancePlates tbody tr'));
+    expect(rows.map((row) => row.hidden)).toEqual([false, true]);
+    expect(doc.getElementById('plateErrorSearchCount')?.textContent).toContain('1 de 2');
+  });
+
+  it('descreve corretamente o indicador diário para leitores de ecrã', () => {
+    const dom = dashboard();
+    const doc = dom.window.document as Document;
+    const win = dom.window;
+
+    win.monthlyChart('dashDaily', [{ day_key: '2026-10-09', lookups: 4 }], 'lookups');
+    win.monthlyChart('usageDaily', [{ day_key: '2026-10-09', users: 2 }], 'users');
+
+    expect(doc.querySelector('#dashDaily .chart-col')?.getAttribute('aria-label')).toBe('2026-10-09: 4 consultas');
+    expect(doc.querySelector('#usageDaily .chart-col')?.getAttribute('aria-label')).toBe('2026-10-09: 2 instalações');
+  });
+
+  it('inclui navegação inferior para ecrãs pequenos e controlo de repetição', () => {
+    expect(html).toContain('.nav{flex-direction:row;gap:4px;margin:0;overflow-x:auto;scrollbar-width:thin}');
+    expect(html).toContain('id="retryLoadBtn"');
+    expect(html).toContain('id="loadNotice"');
+  });
+});

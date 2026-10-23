@@ -1,0 +1,24 @@
+name: VÉRIX V2 Release Readiness
+
+on:
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  validate-v2:
+    name: V2 quality, database and portable Windows package
+    uses: ./.github/workflows/reengineering-v2.yml
+    permissions:
+      contents: read
+      actions: read
+
+  validate-responsive:
+    name: Phone, tablet and desktop browser validation
+    uses: ./.github/workflows/mobile-responsive.yml
+    permissions:
+      contents: read

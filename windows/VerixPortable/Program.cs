@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.Security.Cryptography;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 
@@ -5,23 +7,30 @@ namespace VerixPortable;
 
 internal static class Program
 {
-    // Public production site (obfuscated only)
     private const string AllowedHost = "verix-plataformadigital.github.io";
     private const string StartUrl = "https://verix-plataformadigital.github.io/verix/";
+    private const string LocalV2StartUrl = "https://verix-plataformadigital.github.io/index.html";
+    private static bool LocalV2Mode { get; set; }
 
-    // External sites deliberately opened by VÉRIX. They are launched in the
-    // user's default browser, while every other external navigation is blocked.
     private static readonly HashSet<string> ExternalAllowedHosts = new(StringComparer.OrdinalIgnoreCase)
     {
         "www.consumidor.asf.com.pt",
         "erru.imt-ip.pt",
         "alvaras.inem.pt",
-        "location.wazept.com"
+        "location.wazept.com",
+        "diariodarepublica.pt"
+    };
+
+    private static readonly HashSet<string> InternalHttpAllowedHosts = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "extranet.imtt.external.rnsi.local",
+        "consultapsp.imtt.external.rnsi.local"
     };
 
     [STAThread]
-    private static void Main()
+    private static void Main(string[] args)
     {
+        LocalV2Mode = args.Any(arg => string.Equals(arg, "--v2-local", StringComparison.OrdinalIgnoreCase));
         ApplicationConfiguration.Initialize();
         Application.Run(new VerixMainForm());
     }
@@ -30,23 +39,54 @@ internal static class Program
     {
         private readonly WebView2 webView = new();
         private readonly string userDataFolder;
+        private CoreWebView2Environment? webEnvironment;
+        private readonly HashSet<Form> rnsiWindows = new();
 
         public VerixMainForm()
         {
-            Text = "VÉRIX — Plataforma Digital";
+            Text = LocalV2Mode ? "VÉRIX V2 — Execução local (teste)" : "VÉRIX — Plataforma Digital";
             Width = 1440;
             Height = 900;
             StartPosition = FormStartPosition.CenterScreen;
             MinimumSize = new Size(1100, 700);
             BackColor = Color.FromArgb(3, 8, 12);
 
-            userDataFolder = Path.Combine(AppContext.BaseDirectory, ".verix-data");
+            userDataFolder = ResolveUserDataFolder();
 
             webView.Dock = DockStyle.Fill;
             Controls.Add(webView);
 
             FormClosed += (_, _) => webView.Dispose();
             Shown += async (_, _) => await InitializeWebViewAsync();
+        }
+
+        private static string ResolveUserDataFolder()
+        {
+            var portablePath = Path.Combine(AppContext.BaseDirectory, ".verix-data");
+
+            try
+            {
+                Directory.CreateDirectory(portablePath);
+                var probePath = Path.Combine(portablePath, ".write-test");
+                using (var probe = File.Open(
+                    probePath,
+                    FileMode.OpenOrCreate,
+                    FileAccess.Write,
+                    FileShare.ReadWrite))
+                {
+                    probe.SetLength(0);
+                }
+
+                File.Delete(probePath);
+                return portablePath;
+            }
+            catch
+            {
+                var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                var fallback = Path.Combine(localAppData, "VERIX", "WebView2");
+                Directory.CreateDirectory(fallback);
+                return fallback;
+            }
         }
 
         private async Task InitializeWebViewAsync()
@@ -59,13 +99,13 @@ internal static class Program
                     additionalBrowserArguments: "--disable-features=msEdgeSidebarV2"
                 );
 
-                var environment = await CoreWebView2Environment.CreateAsync(
+                webEnvironment = await CoreWebView2Environment.CreateAsync(
                     browserExecutableFolder: null,
                     userDataFolder: userDataFolder,
                     options: options
                 );
 
-                await webView.EnsureCoreWebView2Async(environment);
+                await webView.EnsureCoreWebView2Async(webEnvironment);
 
                 var settings = webView.CoreWebView2.Settings;
                 settings.AreDevToolsEnabled = false;
@@ -74,13 +114,49 @@ internal static class Program
                 settings.IsStatusBarEnabled = false;
                 settings.IsZoomControlEnabled = true;
                 settings.AreHostObjectsAllowed = false;
+                settings.AreBrowserAcceleratorKeysEnabled = false;
+                settings.IsGeneralAutofillEnabled = false;
+                settings.IsPasswordAutosaveEnabled = false;
+                settings.IsWebMessageEnabled = false;
+                settings.IsSwipeNavigationEnabled = false;
+
+                var startUrl = StartUrl;
+                if (LocalV2Mode)
+                {
+                    var localAssetsPath = Path.Combine(AppContext.BaseDirectory, "v2-assets");
+                    var localEntryPoint = Path.Combine(localAssetsPath, "index.html");
+                    if (!File.Exists(localEntryPoint))
+                    {
+                        throw new FileNotFoundException(
+                            "Os recursos da V2 local não foram encontrados. Confirma que o pacote inclui a pasta v2-assets.",
+                            localEntryPoint
+                        );
+                    }
+
+                    // This mapping exists only inside this WebView2 instance. Reusing the already
+                    // allowlisted Pages origin preserves the backend CORS contract and legacy
+                    // same-origin storage compatibility; navigation is restricted below to the
+                    // local entry point and its app shell.
+                    webView.CoreWebView2.SetVirtualHostNameToFolderMapping(
+                        AllowedHost,
+                        localAssetsPath,
+                        CoreWebView2HostResourceAccessKind.DenyCors
+                    );
+
+                    var entryPointHash = Convert.ToHexString(
+                        SHA256.HashData(File.ReadAllBytes(localEntryPoint))
+                    ).ToLowerInvariant();
+                    startUrl = LocalV2StartUrl + "?build=" + entryPointHash;
+                }
 
                 webView.CoreWebView2.NavigationStarting += OnNavigationStarting;
+                webView.CoreWebView2.FrameNavigationStarting += OnFrameNavigationStarting;
                 webView.CoreWebView2.NewWindowRequested += OnNewWindowRequested;
                 webView.CoreWebView2.DownloadStarting += OnDownloadStarting;
 
                 webView.CoreWebView2.ProcessFailed += (_, e) =>
                 {
+                    if (IsDisposed) return;
                     BeginInvoke(() =>
                         MessageBox.Show(
                             this,
@@ -92,7 +168,7 @@ internal static class Program
                     );
                 };
 
-                webView.CoreWebView2.Navigate(StartUrl);
+                webView.CoreWebView2.Navigate(startUrl);
             }
             catch (Exception ex)
             {
@@ -114,32 +190,23 @@ internal static class Program
             try
             {
                 var uri = new Uri(e.Uri);
-                if (!string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
-                {
-                    e.Cancel = true;
-                    return;
-                }
 
-                if (string.Equals(uri.Host, AllowedHost, StringComparison.OrdinalIgnoreCase))
+                if (IsAllowedPrimaryUri(uri))
                 {
                     return;
                 }
 
-                if (ExternalAllowedHosts.Contains(uri.Host))
+                if (IsAllowedExternalUri(uri))
                 {
                     e.Cancel = true;
-                    try
-                    {
-                        Process.Start(new ProcessStartInfo
-                        {
-                            FileName = uri.ToString(),
-                            UseShellExecute = true
-                        });
-                    }
-                    catch
-                    {
-                        // Keep navigation blocked if the default browser cannot be launched.
-                    }
+                    LaunchExternal(uri);
+                    return;
+                }
+
+                if (IsAllowedInternalRnsUri(uri))
+                {
+                    e.Cancel = true;
+                    LaunchExternal(uri);
                     return;
                 }
 
@@ -151,40 +218,232 @@ internal static class Program
             }
         }
 
-        private void OnNewWindowRequested(object? sender, CoreWebView2NewWindowRequestedEventArgs e)
+        private void OnFrameNavigationStarting(object? sender, CoreWebView2NavigationStartingEventArgs e)
         {
-            e.Handled = true;
             try
             {
                 var uri = new Uri(e.Uri);
-                if (string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(uri.Host, AllowedHost, StringComparison.OrdinalIgnoreCase))
+
+                // VÉRIX does not require remote frames. Keep child-frame navigation
+                // restricted to the same trusted production origin so an iframe
+                // cannot turn an otherwise safe top-level page into a new network
+                // surface.
+                if (IsAllowedPrimaryUri(uri))
                 {
+                    return;
+                }
+
+                e.Cancel = true;
+            }
+            catch
+            {
+                e.Cancel = true;
+            }
+        }
+
+        private async void OnNewWindowRequested(object? sender, CoreWebView2NewWindowRequestedEventArgs e)
+        {
+            if (!e.IsUserInitiated)
+            {
+                e.Handled = true;
+                return;
+            }
+
+            try
+            {
+                var uri = new Uri(e.Uri);
+
+                if (IsAllowedPrimaryUri(uri))
+                {
+                    e.Handled = true;
                     webView.CoreWebView2.Navigate(uri.ToString());
                     return;
                 }
 
-                if (string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) &&
-                    ExternalAllowedHosts.Contains(uri.Host))
+                if (IsAllowedInternalRnsUri(uri))
                 {
+                    var deferral = e.GetDeferral();
                     try
                     {
-                        Process.Start(new ProcessStartInfo
-                        {
-                            FileName = uri.ToString(),
-                            UseShellExecute = true
-                        });
+                        var child = await CreateRnsiWindowAsync(uri);
+                        e.NewWindow = child.CoreWebView2;
+                        child.Form.Show(this);
+                        e.Handled = false;
                     }
-                    catch
+                    finally
                     {
-                        // Ignore external-launch failures.
+                        deferral.Complete();
                     }
+                    return;
                 }
+
+                if (IsAllowedExternalUri(uri))
+                {
+                    e.Handled = true;
+                    LaunchExternal(uri);
+                    return;
+                }
+
+                e.Handled = true;
             }
             catch
             {
-                // Block malformed or external windows.
+                e.Handled = true;
             }
+        }
+
+        private async Task<(Form Form, CoreWebView2 CoreWebView2)> CreateRnsiWindowAsync(Uri requestedUri)
+        {
+            if (webEnvironment is null)
+            {
+                throw new InvalidOperationException("O ambiente WebView2 ainda não foi inicializado.");
+            }
+
+            var form = new Form
+            {
+                Text = GetRnsiWindowTitle(requestedUri),
+                Width = 1200,
+                Height = 800,
+                StartPosition = FormStartPosition.CenterParent,
+                MinimumSize = new Size(900, 600),
+                BackColor = Color.FromArgb(3, 8, 12)
+            };
+
+            var view = new WebView2 { Dock = DockStyle.Fill };
+            form.Controls.Add(view);
+            rnsiWindows.Add(form);
+
+            form.FormClosed += (_, _) =>
+            {
+                rnsiWindows.Remove(form);
+                view.Dispose();
+            };
+
+            await view.EnsureCoreWebView2Async(webEnvironment);
+
+            // Render official IMT/RNSI HTML at native page scale in its own desktop window.
+            // Do not downscale the source through a dashboard iframe transform.
+            view.ZoomFactor = 1.0;
+
+            var settings = view.CoreWebView2.Settings;
+            settings.AreDevToolsEnabled = false;
+            settings.AreDefaultContextMenusEnabled = false;
+            settings.AreDefaultScriptDialogsEnabled = false;
+            settings.IsStatusBarEnabled = false;
+            settings.IsZoomControlEnabled = true;
+            settings.AreHostObjectsAllowed = false;
+            settings.AreBrowserAcceleratorKeysEnabled = false;
+            settings.IsGeneralAutofillEnabled = false;
+            settings.IsPasswordAutosaveEnabled = false;
+            settings.IsWebMessageEnabled = false;
+            settings.IsSwipeNavigationEnabled = false;
+
+            view.CoreWebView2.NavigationStarting += OnRnsiNavigationStarting;
+            view.CoreWebView2.FrameNavigationStarting += OnRnsiFrameNavigationStarting;
+            view.CoreWebView2.NewWindowRequested += OnRnsiNewWindowRequested;
+            view.CoreWebView2.DownloadStarting += OnRnsDownloadStarting;
+
+            return (form, view.CoreWebView2);
+        }
+
+        private static string GetRnsiWindowTitle(Uri uri)
+        {
+            return uri.AbsolutePath.Contains("consulta_livrete.php", StringComparison.OrdinalIgnoreCase)
+                ? "VÉRIX — RNSI / Livrete"
+                : "VÉRIX — RNSI / Inspeção";
+        }
+
+        private static void OnRnsiNavigationStarting(object? sender, CoreWebView2NavigationStartingEventArgs e)
+        {
+            try
+            {
+                e.Cancel = !IsAllowedInternalRnsUri(new Uri(e.Uri));
+            }
+            catch
+            {
+                e.Cancel = true;
+            }
+        }
+
+        private static void OnRnsiFrameNavigationStarting(object? sender, CoreWebView2NavigationStartingEventArgs e)
+        {
+            try
+            {
+                e.Cancel = !IsAllowedInternalRnsUri(new Uri(e.Uri));
+            }
+            catch
+            {
+                e.Cancel = true;
+            }
+        }
+
+        private static void OnRnsiNewWindowRequested(object? sender, CoreWebView2NewWindowRequestedEventArgs e)
+        {
+            e.Handled = true;
+        }
+
+        private static void OnRnsDownloadStarting(object? sender, CoreWebView2DownloadStartingEventArgs e)
+        {
+            e.Cancel = true;
+        }
+
+        private static bool IsAllowedProductionUri(Uri uri)
+        {
+            return uri.Scheme == Uri.UriSchemeHttps &&
+                string.Equals(uri.Host, AllowedHost, StringComparison.OrdinalIgnoreCase) &&
+                (uri.Port == -1 || uri.Port == 443) &&
+                uri.AbsolutePath.StartsWith("/verix/", StringComparison.OrdinalIgnoreCase) &&
+                string.IsNullOrEmpty(uri.UserInfo);
+        }
+
+        private static bool IsAllowedPrimaryUri(Uri uri)
+        {
+            return LocalV2Mode
+                ? IsAllowedV2LocalUri(uri)
+                : IsAllowedProductionUri(uri);
+        }
+
+        private static bool IsAllowedV2LocalUri(Uri uri)
+        {
+            return uri.Scheme == Uri.UriSchemeHttps &&
+                string.Equals(uri.Host, AllowedHost, StringComparison.OrdinalIgnoreCase) &&
+                (uri.Port == -1 || uri.Port == 443) &&
+                (uri.AbsolutePath == "/" ||
+                    string.Equals(uri.AbsolutePath, "/index.html", StringComparison.OrdinalIgnoreCase)) &&
+                string.IsNullOrEmpty(uri.UserInfo);
+        }
+
+        private static void LaunchExternal(Uri uri)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = uri.ToString(),
+                    UseShellExecute = true
+                });
+            }
+            catch
+            {
+                // Keep external navigation blocked if launch fails.
+            }
+        }
+
+        private static bool IsAllowedExternalUri(Uri uri)
+        {
+            return uri.Scheme == Uri.UriSchemeHttps &&
+                ExternalAllowedHosts.Contains(uri.Host) &&
+                uri.Port == 443 &&
+                string.IsNullOrEmpty(uri.UserInfo);
+        }
+
+        private static bool IsAllowedInternalRnsUri(Uri uri)
+        {
+            return uri.Scheme == Uri.UriSchemeHttp &&
+                InternalHttpAllowedHosts.Contains(uri.Host) &&
+                uri.Port == 80 &&
+                uri.AbsolutePath.StartsWith("/veiculos/", StringComparison.OrdinalIgnoreCase) &&
+                string.IsNullOrEmpty(uri.UserInfo);
         }
 
         private static void OnDownloadStarting(object? sender, CoreWebView2DownloadStartingEventArgs e)
