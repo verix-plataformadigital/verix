@@ -320,10 +320,27 @@ const migrationFiles = fs.existsSync(migrationsDirectory)
   : [];
 const migrationVersions = new Set();
 const migrationIssues = [];
+
+// Immutable production-history exceptions. These filenames existed on main
+// before V2 recovery and must not be renamed retroactively: Supabase migration
+// identity is tied to its deployed history. New migrations must use the
+// 14-digit CLI timestamp form; only these exact legacy filenames are exempt.
+const LEGACY_MIGRATIONS_WITH_NONSTANDARD_NAMES = new Set([
+  "20261002_fix_admin_client_coverage_metric.sql",
+  "20261002_verix2_daily_cleanup_schedule.sql",
+  "20261002_verix2_hardening_rls_retention.sql",
+  "20261007_harden_legacy_rls.sql",
+  "20261008_harden_telemetry_presence.sql",
+  "20261023_asf_global_serial_queue.sql",
+  "20261023_cleanup_discarded_asf_quota_gate.sql"
+]);
+
 for (const filename of migrationFiles) {
   const match = /^(\d{14})_[a-z0-9][a-z0-9_]*\.sql$/i.exec(filename);
   if (!match) {
-    migrationIssues.push({ file: filename, issue: "expected 14-digit timestamp prefix and descriptive name" });
+    if (!LEGACY_MIGRATIONS_WITH_NONSTANDARD_NAMES.has(filename)) {
+      migrationIssues.push({ file: filename, issue: "expected 14-digit timestamp prefix and descriptive name" });
+    }
     continue;
   }
   if (migrationVersions.has(match[1])) {
