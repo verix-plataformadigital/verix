@@ -83,7 +83,7 @@ function isTransientLicenseUnavailable(bodyText: string): boolean {
   }
 }
 
-const ASF_MIN_START_INTERVAL_MS = 10000;
+const ASF_MIN_START_INTERVAL_MS = 0;
 const ASF_QUEUE_RPC_TIMEOUT_MS = 2500;
 let localAsfQueueTail: Promise<void> = Promise.resolve();
 let localAsfNextSlotAt = 0;
@@ -93,6 +93,7 @@ function sleep(ms: number): Promise<void> {
 }
 
 async function waitForLocalAsfSlot(): Promise<number> {
+  if (ASF_MIN_START_INTERVAL_MS <= 0) return 0;
   const queuedAt = Date.now();
   let release!: () => void;
   const previous = localAsfQueueTail;
@@ -108,9 +109,11 @@ async function waitForLocalAsfSlot(): Promise<number> {
   return Date.now() - queuedAt;
 }
 
-// Reserve a global start slot for every physical request to ASF, including retries.
-// This keeps all VÉRIX instances on one cadence instead of pacing only per browser.
+// Optional global pacing hook. Disabled when ASF_MIN_START_INTERVAL_MS is zero.
 async function waitForGlobalAsfSlot(): Promise<number> {
+  // No global pacing: start each ASF request immediately, as requested.
+  // This bypasses any previously reserved future slots in the database queue.
+  if (ASF_MIN_START_INTERVAL_MS <= 0) return 0;
   const queuedAt = Date.now();
   try {
     const controller = new AbortController();
@@ -287,7 +290,7 @@ Deno.serve(async (req: Request) => {
     // Retry only fast, explicit transient GraphQL errors from licenseNumber.
     // Network timeouts and HTTP 429 are not retried here.
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      // Pace every upstream attempt globally; retry traffic must not bypass the same guard.
+      // No intentional waiting between physical requests or retry attempts when pacing is disabled.
       queueWaitMs += await waitForGlobalAsfSlot();
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
