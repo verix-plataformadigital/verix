@@ -74,7 +74,7 @@ async function asfQueueRpc(
   const timer = setTimeout(() => controller.abort(), ASF_QUEUE_RPC_TIMEOUT_MS);
   try {
     const response = await fetch(
-      SUPABASE_URL.replace(/\\/+$/, "") + "/rest/v1/rpc/" + name,
+      SUPABASE_URL.replace(/\/+$/, "") + "/rest/v1/rpc/" + name,
       {
         method: "POST",
         headers: {
@@ -287,7 +287,7 @@ Deno.serve(async (req: Request) => {
       queueWaitMs = await acquireASFSlot(queueOwner);
     } catch (error) {
       const message = String((error as Error)?.message || error);
-      const timeoutMatch = message.match(/^asf_queue_wait_timeout:(\\d+)$/);
+      const timeoutMatch = message.match(/^asf_queue_wait_timeout:(\d+)$/);
       const retrySeconds = timeoutMatch
         ? Math.max(1, Math.min(300, Number(timeoutMatch[1])))
         : 2;
