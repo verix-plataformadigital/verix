@@ -1,0 +1,30 @@
+name: Admin telemetry v3 tests
+
+on:
+  pull_request:
+    paths:
+      - "supabase/functions/admin-telemetry-v3/**"
+      - ".github/workflows/admin-telemetry-tests.yml"
+  push:
+    branches: ["main"]
+    paths:
+      - "supabase/functions/admin-telemetry-v3/**"
+      - ".github/workflows/admin-telemetry-tests.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check Edge Function and tests
+        run: deno check supabase/functions/admin-telemetry-v3/index.ts supabase/functions/admin-telemetry-v3/index_test.ts
+      - name: Run auth, CORS, response and error-handling tests
+        run: deno test --allow-env supabase/functions/admin-telemetry-v3/index_test.ts

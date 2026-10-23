@@ -2,13 +2,18 @@ project_id = "onilkakbgpklxvxuxmks"
 
 [functions.telemetry-v2]
 verify_jwt = false
+
 [functions.stats-v2]
 verify_jwt = false
+
 [functions.admin-auth-v2]
 verify_jwt = false
-[functions.hourly-history-v2]
+
+[functions.verix-admin-pwa]
 verify_jwt = false
+
 [functions.asf-proxy-v1]
 verify_jwt = false
+
 [functions.verix-gate-v1]
 verify_jwt = false
