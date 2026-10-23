@@ -20,7 +20,7 @@
 
 `verix-app.html` → `telemetry-v2` → `verix2_events` / `verix2_installations` / `verix2_sessions`
 
-`admin_v2.html` → `admin-auth-v2` → token administrativo → `stats-v2` / `hourly-history-v2`
+`admin_v2.html` → `admin-auth-v2` → token administrativo → `stats-v2`
 
 ## 3. Regras de manutenção
 
