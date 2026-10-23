@@ -3,6 +3,23 @@ name: Deploy VÉRIX (Secure) to GitHub Pages
 on:
   push:
     branches: ["main"]
+    paths:
+      - "verix-app.html"
+      - "admin_v2.html"
+      - "index.html"
+      - "verix-mobile.html"
+      - "verix-mobile.js"
+      - "verix-mobile.css"
+      - "favicon.svg"
+      - "site.webmanifest"
+      - "sw.js"
+      - "assets/**"
+      - "AI-ACCESS-POLICY.md"
+      - "robots.txt"
+      - "package.json"
+      - "tools/build-secure-release.mjs"
+      - "tools/verify-ai-security.mjs"
+      - ".github/workflows/deploy-pages.yml"
   workflow_dispatch:
 
 permissions:
@@ -29,6 +46,15 @@ jobs:
       - name: Install dependencies
         run: npm install --no-fund --no-audit
 
+      - name: Verify mobile asset cache keys
+        shell: bash
+        run: |
+          grep -qF 'verix-mobile.css?v=10' verix-app.html
+          grep -qF 'verix-mobile.js?v=10' verix-app.html
+          if grep -qF 'openToken' verix-app.html; then
+            echo "Mobile assets must use the release ID, not a random per-open URL"
+            exit 1
+          fi
       - name: Build secure release
         env:
           VERIX_BUILD_ID: "1.5-sec-${{ github.run_number }}-${{ github.sha }}"
@@ -129,6 +155,28 @@ jobs:
 
       - name: Ensure .nojekyll in dist
         run: touch dist/.nojekyll
+
+      - name: Verify VÉRIX brand assets
+        shell: bash
+        run: |
+          test -s dist/favicon.svg
+          test -s dist/site.webmanifest
+          test -s dist/sw.js
+          node --check dist/sw.js
+          grep -q "request.mode === 'navigate'" dist/sw.js
+          grep -q "cache: 'no-store'" dist/sw.js
+          grep -q "navigator.serviceWorker.register('./sw.js'" dist/index.html
+          grep -q "navigator.serviceWorker.register('./sw.js'" dist/verix-mobile.html
+          grep -q "updateViaCache: 'none'" dist/index.html
+          grep -q "updateViaCache: 'none'" dist/verix-mobile.html
+          test -s dist/assets/verix-emblem.svg
+          test -s dist/assets/icon-32.png
+          test -s dist/assets/icon-192.png
+          test -s dist/assets/icon-512.png
+          grep -q '"sizes": "512x512"' dist/site.webmanifest
+          grep -q 'rel="manifest"' dist/verix-app.html
+          grep -q 'rel="icon"' dist/verix-app.html
+          grep -q 'verix-emblem.svg' dist/verix-app.html
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
