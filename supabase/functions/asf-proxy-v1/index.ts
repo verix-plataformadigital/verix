@@ -10,7 +10,7 @@ function corsHeaders(req: Request) {
     "Access-Control-Allow-Origin": opaqueLocal ? "*" : (ALLOWED_ORIGINS.has(origin) ? origin : ""),
     "Access-Control-Allow-Headers": "content-type,x-verix-build-id,x-verix-client-token",
     "Access-Control-Allow-Methods": "POST,OPTIONS",
-    "Access-Control-Expose-Headers": "X-Verix-ASF-Relay, X-Verix-ASF-Latency-Ms, Retry-After",
+    "Access-Control-Expose-Headers": "X-Verix-ASF-Relay, X-Verix-ASF-Latency-Ms, X-Verix-ASF-Queue-Wait-Ms, X-Verix-ASF-GraphQL-Error, Retry-After",
     "Cache-Control": "no-store, max-age=0",
     "Vary": "Origin",
     "X-Content-Type-Options": "nosniff",
@@ -56,6 +56,99 @@ function validDate(value: unknown): string | null {
   const dt = new Date(Date.UTC(y, mo - 1, d));
   if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== mo - 1 || dt.getUTCDate() !== d) return null;
   return s;
+}
+
+const ASF_QUEUE_LEASE_SECONDS = 30;
+const ASF_QUEUE_MAX_WAIT_MS = 90_000;
+const ASF_QUEUE_RPC_TIMEOUT_MS = 5_000;
+
+function waitASF(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function asfQueueRpc(
+  name: string,
+  payload: Record<string, unknown>
+): Promise<any> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ASF_QUEUE_RPC_TIMEOUT_MS);
+  try {
+    const response = await fetch(
+      SUPABASE_URL.replace(/\/+$/, "") + "/rest/v1/rpc/" + name,
+      {
+        method: "POST",
+        headers: {
+          "apikey": SERVICE_KEY,
+          "Authorization": "Bearer " + SERVICE_KEY,
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal
+      }
+    );
+    if (!response.ok) {
+      throw new Error("asf_queue_rpc_failed_" + response.status);
+    }
+    return await response.json();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
+ * Serializes ASF upstream calls across all clients without a per-minute quota.
+ * A stale lease expires automatically if an Edge Function terminates unexpectedly.
+ */
+async function acquireASFSlot(ownerToken: string): Promise<number> {
+  const startedAt = Date.now();
+  let lastWaitMs = 500;
+
+  while (Date.now() - startedAt < ASF_QUEUE_MAX_WAIT_MS) {
+    const state = await asfQueueRpc("verix_asf_try_acquire_slot", {
+      p_owner_token: ownerToken,
+      p_lease_seconds: ASF_QUEUE_LEASE_SECONDS
+    });
+
+    if (state?.granted === true) {
+      return Date.now() - startedAt;
+    }
+
+    lastWaitMs = Math.max(100, Number(state?.wait_ms) || 300);
+    const remainingMs = ASF_QUEUE_MAX_WAIT_MS - (Date.now() - startedAt);
+    if (remainingMs <= 0) break;
+
+    // Small jitter prevents waiting Edge Functions from polling in lockstep.
+    const pauseMs = Math.min(remainingMs, Math.min(1_000, lastWaitMs) + Math.floor(Math.random() * 120));
+    await waitASF(pauseMs);
+  }
+
+  throw new Error("asf_queue_wait_timeout:" + Math.max(1, Math.ceil(lastWaitMs / 1000)));
+}
+
+async function releaseASFSlot(ownerToken: string, cooldownMs: number): Promise<void> {
+  try {
+    await asfQueueRpc("verix_asf_release_slot", {
+      p_owner_token: ownerToken,
+      p_cooldown_ms: Math.max(0, Math.min(300_000, Math.floor(cooldownMs)))
+    });
+  } catch (error) {
+    // The lease expiry is the crash-recovery fallback; do not hide the ASF result.
+    console.warn("verix_asf_queue_release_failed", String((error as Error)?.message || error));
+  }
+}
+
+function upstreamRetryAfterMs(value: string | null): number {
+  if (!value) return 2_000;
+  const seconds = Number(value);
+  if (Number.isFinite(seconds) && seconds >= 0) {
+    return Math.max(1_000, Math.min(300_000, seconds * 1_000));
+  }
+  const dateMs = Date.parse(value);
+  if (Number.isFinite(dateMs)) {
+    return Math.max(1_000, Math.min(300_000, dateMs - Date.now()));
+  }
+  return 2_000;
 }
 
 const GATE_SECRET =
@@ -187,9 +280,33 @@ Deno.serve(async (req: Request) => {
       '") { nodes { id entity startDate endDate policy license code logo } } } } } }';
 
     const url = ASF_ORIGIN + ASF_PATH + "?query=" + encodeURIComponent(query);
+    const queueOwner = crypto.randomUUID();
+    let queueWaitMs = 0;
+
+    try {
+      queueWaitMs = await acquireASFSlot(queueOwner);
+    } catch (error) {
+      const message = String((error as Error)?.message || error);
+      const timeoutMatch = message.match(/^asf_queue_wait_timeout:(\d+)$/);
+      const retrySeconds = timeoutMatch
+        ? Math.max(1, Math.min(300, Number(timeoutMatch[1])))
+        : 2;
+      console.warn("verix_asf_queue_unavailable", JSON.stringify({
+        buildId,
+        reason: timeoutMatch ? "wait_timeout" : "rpc_unavailable",
+        queueWaitMs: Math.min(ASF_QUEUE_MAX_WAIT_MS, 90_000)
+      }));
+      return json({
+        ok: false,
+        error: timeoutMatch ? "asf_queue_wait_timeout" : "asf_queue_unavailable",
+        message: "ASF query queue temporarily unavailable"
+      }, 503, req, { "Retry-After": String(retrySeconds) });
+    }
+
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
     const started = Date.now();
+    let releaseCooldownMs = 0;
 
     try {
       const upstream = await fetch(url, {
@@ -206,15 +323,52 @@ Deno.serve(async (req: Request) => {
 
       const text = await upstream.text();
       const elapsedMs = Date.now() - started;
+      const retryAfter = upstream.headers.get("retry-after");
+      if (upstream.status === 429) {
+        // Honour ASF's own limit across all VÉRIX clients; this is not a local quota.
+        releaseCooldownMs = upstreamRetryAfterMs(retryAfter);
+      }
+
+      let graphqlError = false;
+      try {
+        const parsed = JSON.parse(text);
+        if (Array.isArray(parsed?.errors) && parsed.errors.length > 0) {
+          graphqlError = true;
+          console.warn("verix_asf_upstream_graphql_error", JSON.stringify({
+            buildId,
+            status: upstream.status,
+            elapsedMs,
+            queueWaitMs,
+            errorCount: parsed.errors.length,
+            errors: parsed.errors.slice(0, 3).map((item: any) => ({
+              message: String(item?.message || "GraphQL error").slice(0, 160),
+              code: String(item?.extensions?.code || item?.code || "").slice(0, 80),
+              path: Array.isArray(item?.path) ? item.path.slice(0, 6) : []
+            }))
+          }));
+        }
+      } catch (_) {
+        // A non-JSON body is classified by its HTTP status and content type downstream.
+      }
+
+      if (upstream.status === 429 || upstream.status >= 500) {
+        console.warn("verix_asf_upstream_http_error", JSON.stringify({
+          buildId,
+          status: upstream.status,
+          elapsedMs,
+          queueWaitMs
+        }));
+      }
 
       const outHeaders: Record<string, string> = {
         ...corsHeaders(req),
         "Content-Type": upstream.headers.get("content-type") || "application/json; charset=utf-8",
         "X-Verix-ASF-Relay": "1",
-        "X-Verix-ASF-Latency-Ms": String(elapsedMs)
+        "X-Verix-ASF-Latency-Ms": String(elapsedMs),
+        "X-Verix-ASF-Queue-Wait-Ms": String(queueWaitMs),
+        "X-Verix-ASF-GraphQL-Error": graphqlError ? "1" : "0"
       };
 
-      const retryAfter = upstream.headers.get("retry-after");
       if (retryAfter) outHeaders["Retry-After"] = retryAfter;
 
       return new Response(text, {
@@ -230,6 +384,7 @@ Deno.serve(async (req: Request) => {
       }, aborted ? 504 : 502, req);
     } finally {
       clearTimeout(timeout);
+      await releaseASFSlot(queueOwner, releaseCooldownMs);
     }
   } catch (error) {
     console.error(
