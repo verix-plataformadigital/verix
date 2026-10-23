@@ -1,0 +1,251 @@
+name: VÉRIX 2 Reengineering CI
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verix-v2-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+
+      - name: Use pinned npm resolver
+        run: npm install --global npm@12.2.0
+
+      - name: Verify toolchain
+        run: |
+          node --version
+          npm --version
+
+      - name: Verify committed lockfile
+        shell: bash
+        run: |
+          test -s package-lock.json || {
+            echo "package-lock.json must be versioned; do not resolve dependencies dynamically in CI."
+            exit 1
+          }
+          node -e "const p=require('./package-lock.json'); if(p.name!=='verix-release-security'||p.lockfileVersion!==3) process.exit(1)"
+
+      - name: Install
+        run: npm ci --no-fund --no-audit
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Edge function typecheck
+        run: npm run typecheck:edge
+
+      - name: Telemetry event contract
+        run: npm run verify:telemetry-contract
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Static repository audit
+        run: node tools/audit-repository.mjs
+
+      - name: V2 build
+        run: npm run build:v2
+
+      - name: V2 source security policy
+        run: node tools/verify-v2-security.mjs
+
+      - name: Windows host security policy
+        run: node tools/verify-windows-host-security.mjs
+
+      - name: Reject source maps
+        shell: bash
+        run: |
+          if find dist-v2 -type f -name '*.map' | grep -q .; then
+            echo "Source maps are not allowed in the V2 production artifact."
+            exit 1
+          fi
+
+      - name: Prepare audit source snapshot
+        shell: bash
+        run: |
+          mkdir -p audit-source
+          cp verix-app.html audit-source/
+          cp verix-mobile.html audit-source/
+          cp verix-mobile.js audit-source/
+          cp verix-mobile.css audit-source/
+          cp admin_v2.html audit-source/
+          cp supabase/functions/telemetry-v2/index.ts audit-source/telemetry-v2.ts
+          cp supabase/functions/asf-proxy-v1/index.ts audit-source/asf-proxy-v1.ts
+          cp supabase/functions/verix-gate-v1/index.ts audit-source/verix-gate-v1.ts
+          cp package-lock.json audit-source/package-lock.json
+
+      - name: Upload audit
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: verix-v2-audit
+          path: audit-output/
+          retention-days: 14
+
+      - name: Upload audit source snapshot
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: verix-v2-audit-source
+          path: audit-source/
+          retention-days: 7
+
+  telemetry-ingest-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: verix_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd "pg_isready -U postgres -d verix_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install --yes postgresql-client
+
+      - name: Verify PostgreSQL readiness
+        env:
+          PGPASSWORD: postgres
+        run: |
+          for attempt in {1..30}; do
+            if pg_isready -h 127.0.0.1 -p 5432 -U postgres -d verix_test; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "PostgreSQL service did not become ready."
+          exit 1
+
+      - name: Create disposable V2 telemetry schema
+        env:
+          PGPASSWORD: postgres
+        run: psql -h 127.0.0.1 -p 5432 -U postgres -d verix_test -v ON_ERROR_STOP=1 -f tests/database/atomic-telemetry-ingest.setup.sql
+
+      - name: Apply atomic ingestion migration to disposable database
+        env:
+          PGPASSWORD: postgres
+        run: psql -h 127.0.0.1 -p 5432 -U postgres -d verix_test -v ON_ERROR_STOP=1 -f supabase/migrations/20261008235800_atomic_telemetry_ingest.sql
+
+      - name: Test atomic ingestion and rollback behavior
+        env:
+          PGPASSWORD: postgres
+        run: psql -h 127.0.0.1 -p 5432 -U postgres -d verix_test -v ON_ERROR_STOP=1 -f tests/database/atomic-telemetry-ingest.integration.sql
+
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+
+      - name: Use pinned npm resolver
+        run: npm install --global npm@12.2.0
+
+      - name: Verify committed lockfile
+        shell: pwsh
+        run: |
+          if (!(Test-Path package-lock.json) -or (Get-Item package-lock.json).Length -eq 0) {
+            throw "package-lock.json must be committed before building the Windows package."
+          }
+          node -e "const p=require('./package-lock.json'); if(p.name!=='verix-release-security'||p.lockfileVersion!==3) process.exit(1)"
+
+      - name: Install V2 dependencies
+        run: npm ci --no-fund --no-audit
+
+      - name: Build V2 local assets
+        run: npm run build:v2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore
+        run: dotnet restore .\windows\VerixPortable\VerixPortable.csproj
+
+      - name: Build Windows host
+        run: dotnet build .\windows\VerixPortable\VerixPortable.csproj -c Release --no-restore
+
+      - name: Publish Windows host
+        run: dotnet publish .\windows\VerixPortable\VerixPortable.csproj -c Release -r win-x64 --self-contained true --no-restore
+
+      - name: Package and verify V2-inclusive Windows ZIP
+        shell: pwsh
+        run: pwsh -File tools/package-windows-release.ps1 -PublishDirectory "windows/VerixPortable/bin/Release/net10.0-windows/win-x64/publish" -OutputDirectory "release-assets"
+
+      - name: Upload verified Windows ZIP
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: verix-windows-win-x64
+          path: |
+            release-assets/VERIX-Windows-x64.zip
+            release-assets/VERIX-Windows-x64.zip.sha256
+          if-no-files-found: error
+          retention-days: 7
+
+  verify-windows-release-artifact:
+    name: Verify uploaded Windows ZIP and checksum
+    needs: windows
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+
+      - name: Download Windows package artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: verix-windows-win-x64
+          path: release-assets
+
+      - name: Verify checksum, ZIP integrity and packaged payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          zip="release-assets/VERIX-Windows-x64.zip"
+          checksum="release-assets/VERIX-Windows-x64.zip.sha256"
+          test -s "$zip"
+          test -s "$checksum"
+          (cd release-assets && sha256sum --check VERIX-Windows-x64.zip.sha256)
+          unzip -t "$zip"
+          extracted="$RUNNER_TEMP/verix-windows-zip"
+          mkdir -p "$extracted"
+          unzip -q "$zip" -d "$extracted"
+          node tools/verify-portable-package.mjs "$extracted"
