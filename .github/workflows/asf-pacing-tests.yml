@@ -38,6 +38,24 @@ jobs:
           deno-version: v2.x
       - name: Type-check ASF proxy
         run: deno check supabase/functions/asf-proxy-v1/index.ts
+      - name: Parse operational ASF client
+        run: |
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const html = fs.readFileSync('verix-app.html', 'utf8');
+          const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)];
+          const entry = scripts.find((match) => match[1].includes('function efetuarPedidoHttpASF'));
+          if (!entry) throw new Error('ASF client script was not found');
+          new Function(entry[1]);
+          for (const marker of [
+            "X-Verix-ASF-Queue-Status",
+            "ASF_QUEUE_MAX_WAIT_MS",
+            "tentativa.queueStatus === 'waiting'"
+          ]) {
+            if (!entry[1].includes(marker)) throw new Error('Missing queue client marker: ' + marker);
+          }
+          console.log('PASS: operational ASF client parses and handles queue responses');
+          NODE
       - name: Prepare database roles
         env:
           PGPASSWORD: postgres
