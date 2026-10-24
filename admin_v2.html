@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="./favicon.svg?v=20261024" type="image/svg+xml" sizes="any">
+<meta name="theme-color" content="#0e1c22">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -158,13 +160,47 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
  .error-tools #errorSearchCount{text-align:left}
  .table th,.table td{padding:8px 7px}
 }
+
+
+/* VÉRIX visual restoration — CSS only; telemetry requests and rendering logic remain unchanged. */
+html,body{
+  background:radial-gradient(ellipse at 92% 0%,rgba(0,166,183,.075),transparent 34%),var(--bg);
+}
+.sidebar{background:linear-gradient(180deg,#13242b 0%,#0b171c 100%);border-right:1px solid rgba(102,219,233,.08)}
+.side-brand .big{display:flex;align-items:center;gap:9px}
+.admin-side-emblem{width:34px;height:34px;flex:0 0 34px;object-fit:contain;filter:drop-shadow(0 3px 6px rgba(0,0,0,.28))}
+.side-brand .big>span{display:inline-flex;align-items:baseline;gap:4px}
+.logo{display:flex;align-items:center;gap:12px;letter-spacing:1.8px}
+.admin-emblem{display:block;width:42px;height:42px;flex:0 0 42px;object-fit:contain;filter:drop-shadow(0 4px 8px rgba(9,45,50,.18))}
+.logo-copy{display:inline-flex;align-items:baseline;gap:4px}
+.hero{position:relative;overflow:hidden;background:linear-gradient(130deg,#123740 0%,#102930 58%,#0c2026 100%);border:1px solid rgba(102,219,233,.10)}
+.hero:after{content:"";position:absolute;right:-54px;top:-104px;width:230px;height:230px;border:1px solid rgba(102,219,233,.11);border-radius:50%;box-shadow:0 0 0 24px rgba(102,219,233,.025),0 0 0 48px rgba(102,219,233,.02);pointer-events:none}
+.hero-row{position:relative;z-index:1}
+.card{transition:border-color .16s ease,transform .16s ease,box-shadow .16s ease}
+.card:hover{border-color:#c2dfe3;box-shadow:0 12px 30px rgba(22,40,48,.11)}
+.panel-head{background:linear-gradient(180deg,#fff,#fbfdfe)}
+.nav button.active{background:linear-gradient(90deg,rgba(0,166,183,.20),rgba(0,166,183,.08));box-shadow:inset 3px 0 #00b4c5}
+.topbar{border-bottom:1px solid rgba(217,224,228,.65)}
+.status{box-shadow:0 2px 6px rgba(22,40,48,.025)}
+@media(max-width:980px){
+  .admin-side-emblem{width:28px;height:28px;flex-basis:28px}
+  .side-brand .big{justify-content:center}
+  .side-brand .big>span{display:none}
+}
+@media(max-width:650px){
+  .admin-emblem{width:34px;height:34px;flex-basis:34px}
+  .logo{font-size:19px;letter-spacing:1px}
+  .hero:after{right:-135px}
+}
+@media(prefers-reduced-motion:reduce){.card{transition:none}}
+
 </style>
 </head>
 <body>
 <div id="loginScreen">
   <form class="login-card" id="loginForm">
-    <div class="logo">VÉRIX <b>//</b> ADMIN 1.5</div>
-    <div class="login-sub">Painel simples de utilização, resultados e estado do VÉRIX.</div>
+    <div class="logo"><img class="admin-emblem" src="./assets/verix-emblem.svg?v=20261024" alt="" aria-hidden="true"><span class="logo-copy">VÉRIX <b>//</b> ADMIN 1.5</span></div>
+    <div class="login-sub">Telemetria operacional, utilização, resultados e estado do VÉRIX.</div>
     <label class="sr-only" for="password">Password de administração</label>
     <input id="password" type="password" autocomplete="current-password" placeholder="Password" aria-describedby="loginError" required>
     <button type="submit">ENTRAR</button>
@@ -176,7 +212,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
   <div class="shell">
     <aside class="sidebar">
       <div class="side-brand">
-        <div class="big">VÉRIX <b>//</b></div>
+        <div class="big"><img class="admin-side-emblem" src="./assets/verix-emblem.svg?v=20261024" alt="" aria-hidden="true"><span>VÉRIX <b>//</b></span></div>
         <div class="small">ADMIN 1.5 · PAINEL DE CONTROLO</div>
       </div>
       <nav class="nav" aria-label="Navegação do painel">
@@ -218,7 +254,7 @@ details{border-top:1px solid #edf0f2}.detail-summary{list-style:none;cursor:poin
         <div class="hero">
           <div class="hero-row">
             <div>
-              <div class="hero-kicker">VISÃO GERAL</div>
+              <div class="hero-kicker">TELEMETRIA OPERACIONAL</div>
               <h2>Como está o VÉRIX?</h2>
               <p>Os números principais, sem linguagem complicada.</p>
             </div>
