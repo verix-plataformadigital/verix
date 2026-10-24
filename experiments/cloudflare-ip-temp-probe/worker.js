@@ -19,7 +19,6 @@ export default {
       const response = await fetch("https://api.ipify.org?format=json", {
         method: "GET",
         headers: { Accept: "application/json" },
-        redirect: "error",
         signal: AbortSignal.timeout(8000),
       });
 
