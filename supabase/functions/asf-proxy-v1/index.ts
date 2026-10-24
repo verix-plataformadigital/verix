@@ -284,7 +284,7 @@ Deno.serve(async (req: Request) => {
         wait_ms: slot.waitMs
       }, 503, req, {
         "Retry-After": String(retrySeconds),
-        "X-Verix-ASF-Queue-Status": "waiting"
+        "X-Verix-ASF-Queue-Status": slot.reason === "upstream_cooldown" ? "cooldown" : "waiting"
       });
     }
 
