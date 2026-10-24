@@ -1,0 +1,79 @@
+name: ASF global pacing tests
+
+on:
+  pull_request:
+    paths:
+      - "supabase/functions/asf-proxy-v1/index.ts"
+      - "supabase/migrations/20261024_asf_global_cadence.sql"
+      - "supabase/tests/asf_global_cadence_test.sql"
+      - ".github/workflows/asf-pacing-tests.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: verix_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d verix_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check ASF proxy
+        run: deno check supabase/functions/asf-proxy-v1/index.ts
+      - name: Parse operational ASF client
+        run: |
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const html = fs.readFileSync('verix-app.html', 'utf8');
+          const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)];
+          const entry = scripts.find((match) => match[1].includes('function efetuarPedidoHttpASF'));
+          if (!entry) throw new Error('ASF client script was not found');
+          new Function(entry[1]);
+          for (const marker of [
+            "X-Verix-ASF-Queue-Status",
+            "ASF_QUEUE_MAX_WAIT_MS",
+            "tentativa.queueStatus === 'waiting'"
+          ]) {
+            if (!entry[1].includes(marker)) throw new Error('Missing queue client marker: ' + marker);
+          }
+          console.log('PASS: operational ASF client parses and handles queue responses');
+          NODE
+      - name: Prepare database roles
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -h localhost -U postgres -d verix_test -v ON_ERROR_STOP=1 <<'SQL'
+          DO $roles$
+          BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN CREATE ROLE anon; END IF;
+            IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'authenticated') THEN CREATE ROLE authenticated; END IF;
+            IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'service_role') THEN CREATE ROLE service_role; END IF;
+          END;
+          $roles$;
+          SQL
+      - name: Apply pacing migration
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d verix_test -v ON_ERROR_STOP=1 -f supabase/migrations/20261024_asf_global_cadence.sql
+      - name: Verify global slot and cooldown behavior
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d verix_test -v ON_ERROR_STOP=1 -f supabase/tests/asf_global_cadence_test.sql

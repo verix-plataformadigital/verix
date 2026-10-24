@@ -1144,12 +1144,13 @@ function submitConjunto(event) {
 
   const ASF_PROXY_URL = 'https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/asf-proxy-v1';
 
-  const ASF_TIMEOUT_MS = 15000;
+  const ASF_TIMEOUT_MS = 25000;
   const ASF_MAX_ATTEMPTS = 3;
   const ASF_RETRY_DELAYS_MS = [300, 900];
+  const ASF_QUEUE_MAX_WAIT_MS = 310000;
   /*
    * Sem quota artificial VÉRIX por minuto.
-   * A fila apenas serializa pedidos concorrentes para proteger a estabilidade.
+   * O relay agenda as consultas globalmente; esperas de fila não consomem tentativas ASF.
    * Retries existem exclusivamente para falhas transitórias de transporte.
    * Um 429 devolvido pela ASF é respeitado e não é contornado automaticamente.
    */
@@ -1207,18 +1208,16 @@ function submitConjunto(event) {
     if (!widget || !cd) return;
 
     widget.classList.remove('warn', 'high', 'cooldown', 'asf-wait-state');
-    if (usage) usage.innerHTML = 'SEM QUOTA LOCAL';
+    if (usage) usage.innerHTML = 'FILA GLOBAL ASF';
 
     if (windowText) {
-      windowText.textContent = (ASF_FILA_PENDENTES || 0) > 0
-        ? (ASF_FILA_PENDENTES + ' CONSULTA' + (ASF_FILA_PENDENTES === 1 ? '' : 'S') + ' EM FILA')
-        : 'PESQUISA DISPONÍVEL';
+      windowText.textContent = 'FILA GLOBAL ATIVA';
       windowText.setAttribute('data-window-state', 'ready');
     }
 
-    cd.textContent = (ASF_FILA_PENDENTES || 0) > 0 ? 'A PROCESSAR' : 'LIVRE';
+    cd.textContent = 'AUTOMÁTICO';
     cd.setAttribute('data-state', 'ready');
-    cd.title = 'Sem limite artificial local VÉRIX; pedidos concorrentes seguem em paralelo.';
+    cd.title = 'O relay agenda pedidos globalmente; as consultas aguardam a sua vez e não são rejeitadas por uma contagem fixa.';
   }
 
   function reservarSlotFisicoASF() {
@@ -1372,27 +1371,35 @@ function submitConjunto(event) {
       diag.asfMessage = 'O VÉRIX não conseguiu obter a autorização desta instalação.';
       throw erroComDiagASF(diag.asfMessage, diag);
     }
-    var queueStarted = agoraMsASFDiag();
-
-    await reservarSlotFisicoASF(matDisplay);
-    diag.asfQueueWaitMs = Math.max(0, agoraMsASFDiag() - queueStarted);
 
     var requestBody = JSON.stringify(payload || {});
     var ultimaTentativa = null;
+    var tentativaNo = 0;
+    var queueWaitTotalMs = 0;
 
-    for (var tentativaNo = 1; tentativaNo <= ASF_MAX_ATTEMPTS; tentativaNo++) {
+    while (tentativaNo < ASF_MAX_ATTEMPTS) {
+      if (queueWaitTotalMs >= ASF_QUEUE_MAX_WAIT_MS) {
+        diag.asfQueueWaitMs = queueWaitTotalMs;
+        diag.asfErrorType = 'queue_wait_timeout';
+        diag.asfMessage = 'A fila global ASF demorou demasiado. A consulta não foi rejeitada por contagem; tente novamente quando o serviço estiver menos ocupado.';
+        throw erroComDiagASF(diag.asfMessage, diag);
+      }
+
+      var requestStarted = agoraMsASFDiag();
       var tentativa = {
-        attempt: tentativaNo,
+        attempt: tentativaNo + 1,
         method: 'POST',
         transport: (typeof ActiveXObject !== 'undefined') ? 'WinHTTP→VÉRIX-RELAY' : 'Fetch→VÉRIX-RELAY',
-        startedAt: agoraMsASFDiag(),
+        startedAt: requestStarted,
         status: null,
         statusText: null,
         durationMs: null,
         errorType: null,
         message: null,
         responseBytes: null,
-        responseContentType: null
+        responseContentType: null,
+        queueStatus: null,
+        retryAfterSeconds: null
       };
 
       var bodyText = '';
@@ -1409,6 +1416,16 @@ function submitConjunto(event) {
 
           tentativa.status = Number(xhr.Status || 0);
           bodyText = xhr.ResponseText || '';
+          try { tentativa.queueStatus = String(xhr.getResponseHeader('X-Verix-ASF-Queue-Status') || ''); } catch (_) {}
+          try { tentativa.retryAfterSeconds = Number(xhr.getResponseHeader('Retry-After') || 0); } catch (_) {}
+          try { tentativa.responseContentType = String(xhr.getResponseHeader('Content-Type') || '') || null; } catch (_) {}
+          if (tentativa.status >= 400 && tentativa.queueStatus !== 'waiting' && tentativa.queueStatus !== 'unavailable') {
+            tentativa.errorType = tentativa.status === 429
+              ? 'http_429'
+              : (tentativa.status === 503
+                ? 'http_503'
+                : (tentativa.status === 504 ? 'relay_timeout' : (tentativa.status === 502 ? 'relay_network' : 'http_' + tentativa.status)));
+          }
         } else {
           var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
           var timeoutId = null;
@@ -1446,11 +1463,13 @@ function submitConjunto(event) {
               var relayLatencyHeader = res.headers.get('X-Verix-ASF-Latency-Ms');
               var relayLatencyMs = Number(relayLatencyHeader);
               if (Number.isFinite(relayLatencyMs)) diag.asfRelayLatencyMs = relayLatencyMs;
+              tentativa.queueStatus = String(res.headers.get('X-Verix-ASF-Queue-Status') || '');
+              tentativa.retryAfterSeconds = Number(res.headers.get('Retry-After') || 0);
             }
 
             bodyText = await res.text();
 
-            if (res.status >= 400) {
+            if (res.status >= 400 && tentativa.queueStatus !== 'waiting' && tentativa.queueStatus !== 'unavailable') {
               tentativa.errorType = res.status === 429
                 ? 'http_429'
                 : (res.status === 503
@@ -1467,42 +1486,72 @@ function submitConjunto(event) {
           }
         }
 
-        tentativa.responseBytes = bodyText ? String(bodyText).length : 0;
-        tentativa.responseHash = hashTextoASF(bodyText);
-        finalizarTentativaDiagASF(diag, tentativa);
-        ultimaTentativa = tentativa;
-
-        var retryable = asfTentativaRetryable(tentativa.status, tentativa.errorType);
-        if (!retryable || tentativaNo >= ASF_MAX_ATTEMPTS) {
-          if (Number(tentativa.status) >= 200 && Number(tentativa.status) < 300) {
-            diag.asfErrorType = null;
-            diag.asfMessage = null;
-          }
-          return {
-            status: tentativa.status,
-            statusText: tentativa.statusText || null,
-            text: bodyText || '',
-            __asfDiagnostic: diag
-          };
+        if (tentativa.status >= 400 && !tentativa.errorType &&
+            tentativa.queueStatus !== 'waiting' && tentativa.queueStatus !== 'unavailable') {
+          tentativa.errorType = 'http_' + tentativa.status;
         }
-
-        var delay = ASF_RETRY_DELAYS_MS[Math.min(tentativaNo - 1, ASF_RETRY_DELAYS_MS.length - 1)] || 900;
-        await esperarASF(delay);
       } catch (e) {
-        if (!tentativa.durationMs) {
-          tentativa.message = tentativa.message || textoErroASF(e);
-          tentativa.errorType = tentativa.errorType || classificarErroASF(e, false);
-          finalizarTentativaDiagASF(diag, tentativa);
-        }
-        ultimaTentativa = tentativa;
-
-        if (tentativaNo >= ASF_MAX_ATTEMPTS || !asfTentativaRetryable(null, tentativa.errorType)) {
-          throw erroComDiagASF((e && e.message) || 'Falha de comunicação com o relay ASF', diag);
-        }
-
-        var delayEx = ASF_RETRY_DELAYS_MS[Math.min(tentativaNo - 1, ASF_RETRY_DELAYS_MS.length - 1)] || 900;
-        await esperarASF(delayEx);
+        tentativa.errorType = tentativa.errorType || classificarErroASF(e, false);
+        tentativa.message = tentativa.message || textoErroASF(e);
       }
+
+      tentativa.responseBytes = bodyText ? String(bodyText).length : 0;
+      tentativa.responseHash = hashTextoASF(bodyText);
+      diag.asfQueueWaitMs = queueWaitTotalMs;
+      finalizarTentativaDiagASF(diag, tentativa);
+      ultimaTentativa = tentativa;
+
+      // A 503 with this header means "not yet scheduled", not an ASF failure.
+      // Wait in the client, then resubmit the same request without consuming an ASF retry.
+      if (tentativa.queueStatus === 'waiting' || tentativa.queueStatus === 'unavailable' || tentativa.queueStatus === 'cooldown') {
+        tentativa.errorType = 'queue_wait';
+        var elapsedResponseMs = Math.max(0, agoraMsASFDiag() - requestStarted);
+        var requestedWaitMs = Number(tentativa.retryAfterSeconds) > 0
+          ? Number(tentativa.retryAfterSeconds) * 1000
+          : 1000;
+        requestedWaitMs = Math.max(500, requestedWaitMs);
+        var remainingWaitMs = ASF_QUEUE_MAX_WAIT_MS - queueWaitTotalMs - elapsedResponseMs;
+
+        if (tentativa.queueStatus === 'cooldown' && requestedWaitMs > remainingWaitMs) {
+          // A confirmed upstream Retry-After starts a fresh wait window: honour it
+          // instead of failing just because the client had already waited in the queue.
+          queueWaitTotalMs = 0;
+          remainingWaitMs = ASF_QUEUE_MAX_WAIT_MS - elapsedResponseMs;
+        }
+        if (remainingWaitMs <= 0 || requestedWaitMs > remainingWaitMs) {
+          queueWaitTotalMs += elapsedResponseMs;
+          diag.asfQueueWaitMs = queueWaitTotalMs;
+          diag.asfErrorType = 'queue_wait_timeout';
+          diag.asfMessage = 'A ASF continua ocupada e a espera ultrapassou o limite operacional. Não foi aplicado um bloqueio por número de matrículas.';
+          throw erroComDiagASF(diag.asfMessage, diag);
+        }
+
+        var waitStarted = agoraMsASFDiag();
+        await esperarASF(Math.min(requestedWaitMs + Math.floor(Math.random() * 250), remainingWaitMs));
+        queueWaitTotalMs += elapsedResponseMs + Math.max(0, agoraMsASFDiag() - waitStarted);
+        diag.asfQueueWaitMs = queueWaitTotalMs;
+        continue;
+      }
+
+      tentativaNo++;
+      diag.asfQueueWaitMs = queueWaitTotalMs;
+
+      var retryable = asfTentativaRetryable(tentativa.status, tentativa.errorType);
+      if (!retryable || tentativaNo >= ASF_MAX_ATTEMPTS) {
+        if (Number(tentativa.status) >= 200 && Number(tentativa.status) < 300) {
+          diag.asfErrorType = null;
+          diag.asfMessage = null;
+        }
+        return {
+          status: tentativa.status,
+          statusText: tentativa.statusText || null,
+          text: bodyText || '',
+          __asfDiagnostic: diag
+        };
+      }
+
+      var delay = ASF_RETRY_DELAYS_MS[Math.min(tentativaNo - 1, ASF_RETRY_DELAYS_MS.length - 1)] || 900;
+      await esperarASF(delay);
     }
 
     throw erroComDiagASF(
