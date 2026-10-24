@@ -6256,8 +6256,8 @@ html body #asfRateWidget .asf-rate-sub[data-window-state="ready"]{
 </head><body>
 <script id="verix-splash-clock">(function(){try{window.__verixSplashStarted=performance.now();}catch(e){window.__verixSplashStarted=Date.now();}})();</script>
 <div id="opsBootOverlay" aria-hidden="false">
-  <div class="ops-boot-title">VÉRIX // Plataforma Digital</div>
-  <div class="ops-boot-sub">Inicializar módulos · Consulta · Livrete · Seguro · Cinemómetro</div>
+  <div class="ops-boot-title">VÉRIX - Apoio Operacional</div>
+  <div class="ops-boot-sub">Sistema de apoio operacional · Consulta veicular · Seguro · Livrete · Cinemómetro</div>
   <div class="ops-boot-bar"><i></i></div>
 </div>
 
@@ -6271,13 +6271,25 @@ html body #asfRateWidget .asf-rate-sub[data-window-state="ready"]{
       <div class="verix-asf-notice-badge">VÉRIX</div>
     </div>
     <div class="verix-asf-notice-body">
-      <p class="verix-asf-notice-lead">Foram detetadas algumas <strong>falhas nas consultas automáticas ASF</strong>, relacionadas, em alguns casos, com a <strong>rede RNSI</strong>. A equipa do <strong>VERIX está a trabalhar na sua correção</strong>.</p>
-
-      <p>Foram também detetadas <strong>tentativas de sobrecarga (Brute Force)</strong> e a <strong>cópia do código de consulta de seguros para outros ficheiros HTML.</strong></p>
-
-      <p><strong>Pedimos que não sobrecarreguem a plataforma, de forma deliberada e maldosa, nem reproduzam o código do VERIX sem o consentimento dos desenvolvedores.</strong></p>
-
-      <div class="verix-asf-notice-highlight"><strong>OBRIGADO!</strong><br>Já foram realizadas <strong>mais de 150.000 consultas em apenas duas semanas</strong>.<br><strong>Obrigado a todos pela utilização e confiança no VERIX.</strong></div>
+      <div class="verix-asf-notice-grid">
+        <section class="verix-asf-notice-card verix-asf-notice-card-info" aria-labelledby="verixNoticeInfoTitle">
+          <h2 id="verixNoticeInfoTitle" class="verix-asf-notice-card-title">INFORMAÇÃO IMPORTANTE</h2>
+          <div class="verix-asf-service-status" role="status" aria-label="Consultas automáticas ASF normalizadas">
+            <span class="verix-asf-service-status-title">SERVIÇO ASF NORMALIZADO</span>
+            <span class="verix-asf-service-status-detail">Limite de pesquisas de seguros por minuto removido.</span>
+          </div>
+          <p class="verix-asf-card-external-note">Nota: a disponibilidade continua dependente dos serviços externos ASF/RNSI.</p>
+          <h3 class="verix-asf-notice-card-subtitle">PROTEÇÃO DO CÓDIGO</h3>
+          <p>Não é autorizada a cópia, extração, reprodução ou reutilização, total ou parcial, do código-fonte do VÉRIX sem autorização expressa dos responsáveis pelo desenvolvimento.</p>
+          <p class="verix-asf-notice-card-note">Utilize a plataforma de forma responsável. Evite pedidos automatizados ou repetitivos que possam comprometer a disponibilidade do serviço.</p>
+        </section>
+        <section class="verix-asf-notice-card verix-asf-notice-card-thanks" aria-labelledby="verixNoticeThanksTitle">
+          <h2 id="verixNoticeThanksTitle" class="verix-asf-notice-card-title">OBRIGADO!</h2>
+          <div class="verix-asf-notice-thanks-number">200.000+</div>
+          <p class="verix-asf-notice-thanks-label">PESQUISAS DE MATRÍCULAS EFETUADAS</p>
+          <p class="verix-asf-notice-thanks-copy">Obrigado pela confiança e pela utilização do VÉRIX.</p>
+        </section>
+      </div>
     </div>
     <div class="verix-asf-notice-footer">
       <button type="button" class="verix-asf-notice-continue" onclick="fecharAvisoASFInicial()">COMPREENDIDO &nbsp;→</button>
@@ -6286,7 +6298,11 @@ html body #asfRateWidget .asf-rate-sub[data-window-state="ready"]{
 </div>
 
 <div class="cinematic-bg"></div>
-<div class="command"> <div class="brand"><div class="brand-notice"> <div class="brand-notice-title">Ferramenta de apoio ao serviço operacional <span>· Não oficial</span></div> <div class="brand-notice-text">Informação para <strong>apoio e consulta</strong>.<br>Confirme sempre a legislação, procedimentos e demais dados nas fontes oficiais antes da utilização em serviço.</div>
+<div class="command"> <div class="brand"><div class="brand-notice" role="group" aria-label="VÉRIX - Apoio Operacional">
+  <div class="brand-lockup-line"><span class="brand-lockup-logo">VÉRIX</span><span class="brand-lockup-separator">-</span><span class="brand-lockup-label">Apoio Operacional</span></div>
+  <div class="brand-lockup-subtitle">Sistema de apoio ao serviço operacional</div>
+  <div class="brand-lockup-values">ISENÇÃO <span>*</span> FIRMEZA <span>*</span> CORTESIA</div>
+  <div class="brand-lockup-footer"><span class="brand-lockup-badge"><span class="brand-lockup-alert" aria-hidden="true">!</span>NÃO OFICIAL</span><span class="brand-lockup-note">Confirma sempre os dados nas fontes competentes.</span></div>
 </div></div> <div class="time" id="dataSistema"><span class="version-label">Versão 1.5</span><span class="date-label">-- --- ----</span></div> <div class="searchbar"><form onsubmit="submitConjunto(event)" autocomplete="off" style="display:flex;align-items:center;gap:13px"><div class="field"><label for="MatriculaVeiculo">VEÍCULO</label><input id="MatriculaVeiculo" name="verix_plate_v" maxlength="8" placeholder="11-AA-11" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" data-lpignore="true" data-form-type="other" oninput="formatMatricula(this)" onblur="formatMatricula(this)"></div><div class="field"><label for="MatriculaReboque">REBOQUE</label><input id="MatriculaReboque" name="verix_plate_r" placeholder="L-121212" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" data-lpignore="true" data-form-type="other" oninput="formatMatriculaReboque(this)"></div><button class="consult" type="submit">⌕ &nbsp; CONSULTAR</button></form></div> <div class="tools"><button class="tool green full" onclick="toggleFullscreen()" title="Ecrã inteiro">⛶</button><button class="tool" onclick="consultarIMTERRU()">IMT-ERRU</button><button class="tool" onclick="consultarINEM()">INEM</button><button class="tool" onclick="consultarWAZE()">WAZE</button></div>
 </div>
 <div class="rail rail-operacional"> <div class="rail-item rail-modern active" id="consultaRail" onclick="abrirModulo('consulta',this)" title="Consulta"> <div class="rail-modern-ico">⌕</div><span>CONSULTA</span><div class="rail-arrow">›</div> </div> <div class="rail-item rail-modern" onclick="abrirModulo('legislacao',this)" title="Legislação"> <div class="rail-modern-ico">▤</div><span>LEGISLAÇÃO</span><div class="rail-arrow">›</div> </div> <div class="rail-item rail-modern" onclick="abrirModulo('ferramentas',this)" title="Ferramentas"> <div class="rail-modern-ico">⚒</div><span>FERRAMENTAS</span><div class="rail-arrow">›</div> </div> <div class="rail-item rail-modern" onclick="abrirModulo('informacoes',this)" title="Informações"> <div class="rail-modern-ico">ⓘ</div><span>INFORMAÇÕES</span><div class="rail-arrow">›</div> </div> <div class="rail-spacer" aria-hidden="true"><span>+</span></div> <div class="rail-spacer" aria-hidden="true"><span>+</span></div> <div class="rail-item rail-modern rail-cinemometro" onclick="abrirModulo('cinemometro',this)" title="Cinemómetro"> <div class="cinemometro-icon" aria-hidden="true"> <svg viewBox="0 0 64 64" role="img"> <rect x="13" y="10" width="38" height="22" rx="5"></rect> <circle cx="24" cy="21" r="6"></circle> <circle cx="40" cy="21" r="6"></circle> <path d="M32 32v9M22 57l10-16 10 16M27 48h10"></path> <path d="M52 13l7 7M52 29l7-7"></path> </svg> </div> <div class="cinemometro-label"><span>CINEMÓMETRO</span></div> <div class="rail-arrow">›</div> </div> <div class="rail-item rail-modern" onclick="abrirModulo('definicoes',this)" title="Definições"> <div class="rail-modern-ico">⚙</div><span>DEFINIÇÕES</span><div class="rail-arrow">›</div> </div>
@@ -6298,7 +6314,36 @@ html body #asfRateWidget .asf-rate-sub[data-window-state="ready"]{
 </div>
 <div class="consulta-history-bottom-wrap"><button type="button" class="consulta-history-bottom" onclick="abrirHistorico()"><span class="consulta-history-bottom-icon">◷</span> HISTÓRICO DE CONSULTAS</button></div>
 <div class="bottom"><div class="bottom-left"></div><div class="bottom-right"><div class="credit"><strong></strong><br><br></div></div></div>
-<div id="mainMenuScreen" class="main-menu-screen" aria-label="Menu principal"> <div class="main-menu-v74-shell"> <div class="main-menu-v74-title verix-main-title"> <span class="verix-brand">VÉRIX</span> <span class="verix-menu-label">MENU PRINCIPAL</span> </div> <div class="main-menu-v74-grid-big"> <button class="mm74-card mm74-inspec" type="button" onclick="abrirConsultaPrincipal()"> <span class="mm74-icon mm74-tech-icon mm74-car-icon" aria-hidden="true"><svg viewBox="0 0 160 120" role="img"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M34 77h92l-5-27c-2-11-11-19-22-21H61c-11 2-20 10-22 21l-5 27Z"/><path d="M46 50h68l-7-12c-2-4-7-6-12-6H65c-5 0-10 2-12 6l-7 12Z"/><path d="M34 77h92"/><circle cx="51" cy="84" r="10"/><circle cx="109" cy="84" r="10"/><path d="M59 67h42"/><path d="M45 61h9m57 0h-9"/><path d="M75 36v14m10-14v14"/><rect x="69" y="26" width="22" height="7" rx="2"/><path d="M126 69h9m-9 8h9"/></g><circle cx="80" cy="60" r="54" opacity=".11"/></svg></span><span class="mm74-label">INSPEÇÕES / SEGURO</span> </button> <button class="mm74-card mm74-radar" type="button" onclick="abrirModulo('cinemometro',this)"> <span class="mm74-icon mm74-radar-icon mm74-tech-icon" aria-hidden="true"><svg viewBox="0 0 160 120" role="img"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="78" cy="39" r="23"/><circle cx="78" cy="39" r="9"/><path d="M78 16v46m-23-23h46"/><path d="M61 58l-18 30h70L95 58"/><path d="M67 88l-5 18m27-18 5 18"/><path d="M43 88h68"/><path d="M29 18h18m-18 8h11M118 18h13m-13 8h20"/><path d="M112 50c10 3 17 9 21 18"/></g><circle cx="78" cy="39" r="50" opacity=".10"/><path d="M25 39h20" opacity=".25"/><path d="M111 39h20" opacity=".25"/></svg></span><span class="mm74-label">CINEMÓMETRO</span> </button> </div> <div class="main-menu-v74-grid-small"> <button class="mm74-card mm74-leg" type="button" onclick="abrirModulo('legislacao',this)"><span class="mm74-icon">▤</span><span class="mm74-label">LEGISLAÇÃO</span></button> <button class="mm74-card mm74-extra mm74-alcool" type="button" onclick="abrirModulo('alcoolExcel',this)"><span class="mm74-icon">◉</span><span class="mm74-label">ÁLCOOL / DEDUÇÕES</span></button> <button class="mm74-card mm74-extra" type="button" onclick="abrirModulo('codigosDistrito',this)"><span class="mm74-icon">#</span><span class="mm74-label">CÓDIGOS DISTRITO</span></button> <button class="mm74-card mm74-tools" type="button" onclick="abrirModulo('ferramentas',this)"><span class="mm74-icon">⚒</span><span class="mm74-label">FERRAMENTAS</span></button> <button class="mm74-card mm74-info" type="button" onclick="abrirModulo('informacoes',this)"><span class="mm74-icon">ⓘ</span><span class="mm74-label">INFORMAÇÕES</span></button> <button class="mm74-card mm74-settings" type="button" onclick="abrirModulo('definicoes',this)"><span class="mm74-icon">⚙</span><span class="mm74-label">DEFINIÇÕES</span></button> </div> <div class="verix-system-message-card" role="note" aria-label="Mensagem do sistema VÉRIX"> <div class="verix-system-corner verix-system-corner-tl"></div> <div class="verix-system-corner verix-system-corner-tr"></div> <div class="verix-system-corner verix-system-corner-bl"></div> <div class="verix-system-corner verix-system-corner-br"></div> <div class="verix-system-symbol" aria-hidden="true">i</div> <div class="verix-system-heading-rule"><span></span><b>VÉRIX // <em>PLATAFORMA ONLINE</em></b><span></span></div> <div class="verix-system-update"> <strong>O VÉRIX está em desenvolvimento contínuo, com melhorias, correções e novas funcionalidades.</strong> <span>Acedendo ao link do VÉRIX, terá sempre a versão atualmente publicada.</span> </div> <div class="verix-system-separator"></div> <div class="verix-system-contact"> <div class="verix-system-mail-icon" aria-hidden="true">✉</div> <div class="verix-system-contact-copy"> <span>Sugestões, erros ou melhorias?</span> <span>Envie para: <a href="mailto:verix.plataformadigital@gmail.com?subject=V%C3%89RIX%20-%20Sugest%C3%A3o%20%2F%20Erro">verix.plataformadigital@gmail.com</a></span> </div> </div> <div class="verix-system-disclaimer"> <span class="verix-system-shield" aria-hidden="true">♜</span> <span>Informação para apoio e consulta. Confirme sempre a legislação, procedimentos e demais dados nas fontes oficiais antes da utilização em serviço.</span> </div> <div class="verix-system-developed"></div> <button type="button" class="verix-system-continue" onclick="this.closest('.verix-system-message-card').classList.add('acknowledged');"> <span>CONTINUAR</span><b>→</b> </button> </div> </div> </div>
+<div id="mainMenuScreen" class="main-menu-screen vx-home-screen" aria-label="Menu principal">
+<div class="vx-home-shell">
+  <main class="vx-home-main">
+    <header class="vx-home-topbar vx-home-masthead" aria-label="Cabeçalho VÉRIX"><div class="vx-home-brand-lockup" aria-label="VÉRIX — Apoio Operacional">
+  <span class="vx-home-brand-mark" aria-hidden="true">V</span>
+  <span class="vx-home-brand-line"><h1>VÉRIX</h1><span class="vx-home-brand-divider" aria-hidden="true"></span><span class="vx-home-service-name">Apoio Operacional</span></span>
+</div></header>
+    <div class="vx-home-body">
+      
+      
+      <section class="vx-home-group" data-vx-home-group-panel="primary" aria-label="Ferramentas principais"><div class="vx-home-primary-grid">
+<button type="button" class="vx-home-action vx-home-action-primary" data-vx-home-action="1" data-vx-home-group="primary" aria-label="FISCALIZAÇÃO" onclick="abrirConsultaPrincipal()"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 160 120" role="img"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M34 77h92l-5-27c-2-11-11-19-22-21H61c-11 2-20 10-22 21l-5 27Z"/><path d="M46 50h68l-7-12c-2-4-7-6-12-6H65c-5 0-10 2-12 6l-7 12Z"/><path d="M34 77h92"/><circle cx="51" cy="84" r="10"/><circle cx="109" cy="84" r="10"/><path d="M59 67h42"/><path d="M45 61h9m57 0h-9"/><path d="M75 36v14m10-14v14"/><rect x="69" y="26" width="22" height="7" rx="2"/><path d="M126 69h9m-9 8h9"/></g><circle cx="80" cy="60" r="54" opacity=".11"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">FISCALIZAÇÃO</span><span class="vx-home-action-description">Consultar seguro, inspeção e dados da viatura.</span></span><span class="vx-home-action-arrow vx-home-primary-arrow" aria-hidden="true">↗</span></button>
+<button type="button" class="vx-home-action vx-home-action-primary" data-vx-home-action="1" data-vx-home-group="primary" aria-label="CINEMÓMETRO" onclick="abrirModulo('cinemometro',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 160 120" role="img"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="78" cy="39" r="23"/><circle cx="78" cy="39" r="9"/><path d="M78 16v46m-23-23h46"/><path d="M61 58l-18 30h70L95 58"/><path d="M67 88l-5 18m27-18 5 18"/><path d="M43 88h68"/><path d="M29 18h18m-18 8h11M118 18h13m-13 8h20"/><path d="M112 50c10 3 17 9 21 18"/></g><circle cx="78" cy="39" r="50" opacity=".10"/><path d="M25 39h20" opacity=".25"/><path d="M111 39h20" opacity=".25"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">CINEMÓMETRO</span><span class="vx-home-action-description">Efetuar cálculos e verificações de velocidade.</span></span><span class="vx-home-action-arrow vx-home-primary-arrow" aria-hidden="true">↗</span></button>
+      </div></section>
+      <section class="vx-home-group vx-home-secondary-group" data-vx-home-group-panel="support" aria-label="Ferramentas complementares"><div class="vx-home-secondary-grid">
+<button type="button" class="vx-home-action vx-home-action-secondary" data-vx-home-action="1" data-vx-home-group="support" aria-label="LEGISLAÇÃO" onclick="abrirModulo('legislacao',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5h10.5A3.5 3.5 0 0 1 19 8v11H8a3 3 0 0 1-3-3z"/><path d="M8 4.5v11.8A2.7 2.7 0 0 0 10.7 19M9 8h6M9 11h6M9 14h4"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">LEGISLAÇÃO</span><span class="vx-home-action-description">Pesquisar infrações, artigos e enquadramentos legais.</span></span><span class="vx-home-action-arrow" aria-hidden="true">↗</span></button>
+<button type="button" class="vx-home-action vx-home-action-secondary" data-vx-home-action="1" data-vx-home-group="support" aria-label="ÁLCOOL / DEDUÇÕES" onclick="abrirModulo('alcoolExcel',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v5l-4.2 7.1A3.8 3.8 0 0 0 9.1 21h5.8a3.8 3.8 0 0 0 3.3-5.9L14 8V3"/><path d="M7.8 15h8.4M10 12h4"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">ÁLCOOL / DEDUÇÕES</span><span class="vx-home-action-description">Consultar tabelas de alcoolemia e cálculos de deduções.</span></span><span class="vx-home-action-arrow" aria-hidden="true">↗</span></button>
+<button type="button" class="vx-home-action vx-home-action-secondary" data-vx-home-action="1" data-vx-home-group="support" aria-label="CÓDIGOS DISTRITO" onclick="abrirModulo('codigosDistrito',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3 6.5 21M17.5 3 15 21M3 9h18M2 15h18"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">CÓDIGOS DISTRITO</span><span class="vx-home-action-description">Identificar o distrito através dos códigos de matrícula.</span></span><span class="vx-home-action-arrow" aria-hidden="true">↗</span></button>
+<button type="button" class="vx-home-action vx-home-action-secondary" data-vx-home-action="1" data-vx-home-group="support" aria-label="FERRAMENTAS" onclick="abrirModulo('ferramentas',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 6.2a4 4 0 0 0-5.3 5.3L3.8 17a2 2 0 0 0 2.9 2.9l5.5-5.4a4 4 0 0 0 5.3-5.3l-2.4 2.4-3-3z"/><path d="m14 14 5.8 5.8"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">FERRAMENTAS</span><span class="vx-home-action-description">Utilitários complementares de apoio ao serviço.</span></span><span class="vx-home-action-arrow" aria-hidden="true">↗</span></button>
+<button type="button" class="vx-home-action vx-home-action-secondary" data-vx-home-action="1" data-vx-home-group="support" aria-label="INFORMAÇÕES" onclick="abrirModulo('informacoes',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 10.5v5M12 7.5h.01"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">INFORMAÇÕES</span><span class="vx-home-action-description">Ajuda de utilização e informação sobre a plataforma.</span></span><span class="vx-home-action-arrow" aria-hidden="true">↗</span></button>
+<button type="button" class="vx-home-action vx-home-action-secondary" data-vx-home-action="1" data-vx-home-group="support" aria-label="DEFINIÇÕES" onclick="abrirModulo('definicoes',this)"><span class="vx-home-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19 13.5a7.6 7.6 0 0 0 0-3l1.6-1.2-1.7-3-1.9.7a7 7 0 0 0-2.6-1.5L14 3.5h-4l-.4 2a7 7 0 0 0-2.6 1.5l-1.9-.7-1.7 3L5 10.5a7.6 7.6 0 0 0 0 3l-1.6 1.2 1.7 3 1.9-.7a7 7 0 0 0 2.6 1.5l.4 2h4l.4-2a7 7 0 0 0 2.6-1.5l1.9.7 1.7-3z"/></svg></span><span class="vx-home-action-copy"><span class="vx-home-action-title">DEFINIÇÕES</span><span class="vx-home-action-description">Preferências e opções disponíveis da aplicação.</span></span><span class="vx-home-action-arrow" aria-hidden="true">↗</span></button>
+      </div></section>
+      </div>
+    <footer class="vx-home-footer"><div class="vx-home-footer-brand"><span class="vx-home-footer-dot" aria-hidden="true"></span><strong>VÉRIX</strong><span>APOIO OPERACIONAL</span></div><p>Confirma sempre a legislação e os dados nas fontes oficiais antes da utilização em serviço.</p><a class="vx-home-footer-contact" href="mailto:verix.plataformadigital@gmail.com?subject=V%C3%89RIX%20-%20Sugest%C3%A3o%20%2F%20Erro" aria-label="Contactar a equipa VÉRIX"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg><span>Contactar a equipa</span><b aria-hidden="true">↗</b></a>
+  <span class="vx-home-footer-unofficial">NÃO OFICIAL</span></footer>
+  </main>
+</div>
+</div>
+
+
 <div id="moduleOverlay" class="module-overlay" onclick="fecharModuloFora(event)"> <div class="module-window"> <div class="module-top"><div><div id="moduleTitle" class="module-title">MÓDULO OPERACIONAL</div><div id="moduleSub" class="module-sub">VÉRIX // OPERAÇÕES</div></div><button class="module-close" onclick="fecharModulo()">×</button></div> <div id="moduleBody" class="module-body"></div> </div>
 </div>
 <div id="legalNoticeOverlay" class="legal-notice-overlay" onclick="fecharAvisoLegalFora(event)" aria-hidden="true"> <div class="legal-notice-window" role="dialog" aria-modal="true" aria-labelledby="legalNoticeTitle"> <div class="legal-notice-top"> <div><div id="legalNoticeTitle" class="legal-notice-title">AVISO LEGAL</div><div class="legal-notice-sub">VÉRIX // CONDIÇÕES DE UTILIZAÇÃO</div></div> <button class="legal-notice-close" type="button" onclick="fecharAvisoLegal()" aria-label="Fechar aviso legal">×</button> </div> <div class="legal-notice-body"> <p>Esta aplicação não está afiliada a entidades governamentais ou outras entidades oficiais.</p> <p>A utilização desta aplicação não dispensa a consulta dos documentos originais no <a href="https://diariodarepublica.pt/" target="_blank" rel="noopener noreferrer">Diário da República</a>.</p> <p>A aplicação é fornecida &quot;como está&quot;, sem garantias de exatidão, atualidade ou completude. Pode conter erros ou estar desatualizada.</p> <p>Esta aplicação destina-se apenas a apoio e consulta informativa.</p> <p>A utilização da informação fornecida, sem observar os pressupostos mencionados, é de inteira responsabilidade do utilizador.</p> <div class="legal-notice-version"><span>Versão</span><strong>1.5</strong></div> </div> </div>
@@ -19369,5 +19414,669 @@ html body .toast-notification {
   };
 })();
 </script>
+
+<style id="verix-asf-notice-restored-ui">
+/* ===== AVISO ASF — apresentação inicial ===== */
+.verix-asf-notice-overlay{
+  position:fixed;
+  inset:0;
+  z-index:100000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  background:radial-gradient(circle at center, rgba(19,54,65,.18), rgba(0,0,0,.78) 70%);
+  backdrop-filter:blur(9px);
+  -webkit-backdrop-filter:blur(9px);
+}
+.verix-asf-notice-overlay[aria-hidden="true"]{display:none;}
+.verix-asf-notice-window{
+  position:relative;
+  width:min(840px,94vw);
+  height:min(680px,88vh);
+  max-height:88vh;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  box-sizing:border-box;
+  border:1px solid rgba(101,215,232,.28);
+  border-radius:18px;
+  background:linear-gradient(155deg,rgba(10,24,32,.99),rgba(4,11,16,.99));
+  box-shadow:0 32px 100px rgba(0,0,0,.62),0 0 0 1px rgba(255,255,255,.025) inset,0 0 42px rgba(47,171,191,.08);
+  color:#e8eef0;
+  text-align:center;
+}
+.verix-asf-notice-window:before{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  top:0;
+  height:4px;
+  border-radius:18px 18px 0 0;
+  background:linear-gradient(90deg,#b21d38,#5fd5e6,#00b57c);
+  opacity:.95;
+}
+.verix-asf-notice-top{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  padding:26px 26px 20px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.verix-asf-notice-title{
+  font:950 21px/1 Arial,sans-serif;
+  letter-spacing:2.2px;
+  color:#ffffff;
+  text-shadow:0 2px 12px rgba(0,0,0,.35);
+}
+.verix-asf-notice-sub{
+  margin-top:0;
+  font:800 8px/1.2 Arial,sans-serif;
+  letter-spacing:1.5px;
+  color:#8fa2aa;
+}
+.verix-asf-notice-badge{
+  flex:0 0 auto;
+  padding:7px 13px;
+  border:1px solid rgba(101,215,232,.30);
+  border-radius:999px;
+  background:rgba(101,215,232,.07);
+  color:#8de3ef;
+  font:900 8px/1 Arial,sans-serif;
+  letter-spacing:1.4px;
+}
+.verix-asf-notice-body{
+  padding:22px 24px 16px;
+  width:100%;
+  box-sizing:border-box;
+  margin:0 auto;
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+}
+.verix-asf-notice-grid{
+  display:grid;
+  grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr);
+  align-items:stretch;
+  gap:16px;
+  width:100%;
+  height:100%;
+}
+.verix-asf-notice-card{
+  box-sizing:border-box;
+  min-width:0;
+  padding:22px 20px;
+  border-radius:14px;
+  text-align:left;
+}
+.verix-asf-notice-card-info{
+  border:1px solid rgba(255,79,104,.48);
+  background:linear-gradient(155deg,rgba(116,24,43,.36),rgba(48,13,23,.32));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 10px 26px rgba(64,5,20,.12);
+}
+.verix-asf-service-status{
+  margin:0 0 12px;
+  padding:14px 12px;
+  border:1px solid rgba(255,112,134,.72);
+  border-radius:11px;
+  background:linear-gradient(145deg,rgba(139,28,52,.62),rgba(76,17,31,.54));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 0 22px rgba(255,61,92,.09);
+  text-align:center;
+}
+.verix-asf-service-status-title{
+  display:block;
+  color:#ffbdc7;
+  font:950 clamp(13px,1.6vw,16px)/1.35 Arial,sans-serif;
+  letter-spacing:.65px;
+  text-transform:uppercase;
+  text-shadow:0 1px 12px rgba(255,65,92,.16);
+}
+.verix-asf-service-status-detail{
+  display:block;
+  margin-top:6px;
+  color:#fff0f2;
+  font:800 12px/1.5 Arial,sans-serif;
+}
+.verix-asf-notice-card p.verix-asf-card-external-note{
+  margin:0 0 10px;
+  color:#c9afb4;
+  font:500 10px/1.55 Arial,sans-serif;
+}
+.verix-asf-notice-card-thanks{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  border:1px solid rgba(45,214,132,.42);
+  background:linear-gradient(155deg,rgba(10,95,60,.34),rgba(5,42,30,.34));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 10px 26px rgba(0,64,39,.12);
+}
+.verix-asf-notice-card-title{
+  margin:0 0 16px;
+  font:950 12px/1.35 Arial,sans-serif;
+  letter-spacing:1.25px;
+  color:#ff9eac;
+}
+.verix-asf-notice-card-subtitle{
+  margin:20px 0 9px;
+  font:900 10px/1.4 Arial,sans-serif;
+  letter-spacing:1.1px;
+  color:#ff9eac;
+}
+.verix-asf-notice-card p{
+  margin:0 0 14px;
+  font:500 12px/1.65 Arial,sans-serif;
+  color:#e0d5d8;
+  max-width:none;
+}
+.verix-asf-notice-card p strong{color:#fff0f2;font-weight:850;}
+.verix-asf-notice-card .verix-asf-notice-card-note{
+  margin-bottom:0;
+  color:#c9afb4;
+  font-size:11px;
+}
+.verix-asf-notice-card-thanks .verix-asf-notice-card-title{
+  color:#79f0ad;
+  margin-bottom:14px;
+}
+.verix-asf-notice-thanks-number{
+  margin:2px 0 8px;
+  color:#83f2b2;
+  font:950 clamp(30px,4vw,43px)/1 Arial,sans-serif;
+  letter-spacing:-1.2px;
+  text-shadow:0 0 24px rgba(45,214,132,.12);
+}
+.verix-asf-notice-card p.verix-asf-notice-thanks-label{
+  margin:5px 0 14px;
+  color:#aff7ce;
+  font:900 10px/1.55 Arial,sans-serif;
+  letter-spacing:.85px;
+}
+.verix-asf-notice-card p.verix-asf-notice-thanks-copy{
+  margin:0;
+  color:#d1eadb;
+  font-size:12px;
+}
+.verix-asf-notice-footer{
+  position:relative;
+  z-index:2;
+  flex:0 0 auto;
+  display:flex;
+  justify-content:center;
+  padding:12px 24px 18px;
+  background:linear-gradient(180deg,rgba(4,11,16,.72),rgba(4,11,16,.99) 28%);
+  border-top:1px solid rgba(255,255,255,.07);
+  box-shadow:0 -10px 24px rgba(0,0,0,.18);
+}
+.verix-asf-notice-continue{
+  display:inline-flex !important;
+  align-items:center;
+  justify-content:center;
+  visibility:visible !important;
+  opacity:1 !important;
+  min-width:190px;
+  height:44px;
+  padding:0 22px;
+  border:1px solid rgba(101,215,232,.34);
+  border-radius:10px;
+  background:linear-gradient(135deg,#164450,#0d2831);
+  color:#edf8fa;
+  font:950 9px/1 Arial,sans-serif;
+  letter-spacing:1.3px;
+  cursor:pointer;
+  transition:transform .12s ease,filter .12s ease,border-color .12s ease,box-shadow .12s ease;
+  box-shadow:0 8px 22px rgba(0,0,0,.24);
+}
+.verix-asf-notice-continue:hover{filter:brightness(1.13);border-color:#6fe0ee;box-shadow:0 10px 28px rgba(0,0,0,.32),0 0 20px rgba(101,215,232,.08);}
+.verix-asf-notice-continue:active{transform:translateY(1px);}
+@media(max-width:720px){.verix-asf-notice-window{width:min(560px,94vw);height:min(760px,90vh);max-height:90vh;}
+.verix-asf-notice-body{padding:16px 16px 12px;}
+.verix-asf-notice-grid{grid-template-columns:minmax(0,1fr);height:auto;gap:12px;}
+.verix-asf-notice-card{padding:18px 17px;}
+.verix-asf-notice-card-thanks{min-height:180px;}
+.verix-asf-notice-thanks-number{font-size:34px;}}
+@media(max-width:640px){.verix-asf-notice-overlay{padding:14px;}
+.verix-asf-notice-top{padding:24px 18px 18px;}
+.verix-asf-notice-title{font-size:18px;}
+.verix-asf-notice-body{padding:20px 18px 8px;max-width:none;}
+.verix-asf-notice-body p{font-size:12px;}
+.verix-asf-notice-footer{padding:12px 18px 18px;}
+.verix-asf-notice-continue{width:100%;}}
+</style>
+<style id="verix-brand-lockup-centered">/* Cabeçalho VÉRIX — versão baseada na identificação operacional aprovada. */
+.command .brand{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+.command .brand-notice{
+  position:relative!important;
+}
+.command .brand-notice::before{
+  content:"";
+  position:absolute;
+  left:1px;
+  top:5px;
+  bottom:5px;
+  width:2px;
+  border-radius:2px;
+  background:linear-gradient(180deg,#8caeb8 0%,#8caeb8 46%,#bd5260 46%,#bd5260 100%);
+  box-shadow:0 0 5px rgba(104,196,201,.15);
+}
+.command .brand-lockup-line{
+  display:flex!important;
+  align-items:baseline!important;
+  justify-content:center!important;
+  gap:6px!important;
+  width:100%!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+}
+.command .brand-lockup-logo{
+  color:#f4f7f8!important;
+  font-size:13px!important;
+  font-weight:950!important;
+  letter-spacing:.5px!important;
+  text-shadow:0 1px 3px #000!important;
+}
+.command .brand-lockup-separator{
+  color:#9daeb4!important;
+  font-size:8px!important;
+  font-weight:900!important;
+}
+.command .brand-lockup-label{
+  color:#d4dfe3!important;
+  font-size:8px!important;
+  font-weight:900!important;
+  letter-spacing:1.05px!important;
+  text-shadow:0 1px 3px #000!important;
+}
+.command .brand-lockup-subtitle{
+  width:100%!important;
+  color:#f0f5f6!important;
+  font-size:11.5px!important;
+  font-weight:900!important;
+  line-height:1.12!important;
+  letter-spacing:.05px!important;
+  text-shadow:0 1px 3px #000!important;
+}
+.command .brand-lockup-values{
+  color:#d7e1e4!important;
+  font-size:8px!important;
+  font-weight:900!important;
+  line-height:1.1!important;
+  letter-spacing:1px!important;
+  white-space:nowrap!important;
+}
+.command .brand-lockup-values span{
+  padding:0 3px!important;
+  color:#96adb4!important;
+}
+.command .brand-lockup-footer{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:8px!important;
+  width:100%!important;
+  min-width:0!important;
+  flex-wrap:wrap!important;
+}
+.command .brand-lockup-badge{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:5px!important;
+  flex:0 0 auto!important;
+  padding:3px 7px!important;
+  border:1px solid #c58c2d!important;
+  border-radius:4px!important;
+  background:linear-gradient(180deg,rgba(66,47,13,.92),rgba(29,22,9,.96))!important;
+  color:#ffe4a0!important;
+  font-size:7px!important;
+  font-weight:950!important;
+  line-height:1!important;
+  letter-spacing:.5px!important;
+  box-shadow:inset 0 1px 0 rgba(255,231,169,.08)!important;
+}
+.command .brand-lockup-alert{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:10px!important;
+  height:10px!important;
+  border-radius:50%!important;
+  background:#e4af40!important;
+  color:#241b08!important;
+  font-size:7px!important;
+  font-weight:950!important;
+  line-height:10px!important;
+}
+.command .brand-lockup-note{
+  color:#bac8cd!important;
+  font-size:7.5px!important;
+  font-weight:500!important;
+  line-height:1.2!important;
+  text-shadow:0 1px 2px #000!important;
+}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-notice{
+  max-width:100%!important;
+}
+@media(max-width:760px){
+  .command .brand{
+    left:0!important;
+    top:0!important;
+    width:100%!important;
+    height:100%!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+  }
+  .command .brand-notice{
+    width:calc(100% - 14px)!important;
+    max-width:620px!important;
+    height:100%!important;
+    padding:4px 8px 4px 11px!important;
+    gap:3px!important;
+  }
+  .command .brand-lockup-subtitle{
+    font-size:clamp(10px,2.65vw,12px)!important;
+  }
+  .command .brand-lockup-values{
+    font-size:clamp(7px,1.8vw,8px)!important;
+  }
+  .command .brand-lockup-note{
+    font-size:clamp(7px,1.7vw,7.5px)!important;
+  }
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand{
+    left:0!important;
+    top:0!important;
+    width:100%!important;
+    height:100%!important;
+  }
+  html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-notice{
+    width:calc(100% - 14px)!important;
+    max-width:620px!important;
+    height:100%!important;
+  }
+}
+</style>
+<style id="verix-portugal-flag-3d">
+/* Substitui o ícone artificial por fotografia real de tecido, integrada no cabeçalho. */
+html body .command .brand-notice{
+  position:relative!important;
+  isolation:isolate!important;
+  overflow:visible!important;
+  background:transparent!important;
+}
+html body .command .brand-notice::before{
+  z-index:3!important;
+  pointer-events:none!important;
+  box-shadow:0 0 8px rgba(74,210,151,.25)!important;
+}
+html body .command .brand-lockup-line{
+  align-items:center!important;
+  gap:6px!important;
+  min-height:48px!important;
+}
+html body .command .brand-lockup-logo{
+  text-shadow:0 2px 7px rgba(0,0,0,.88)!important;
+}
+html body .command .brand-lockup-label,
+html body .command .brand-lockup-subtitle,
+html body .command .brand-lockup-values,
+html body .command .brand-lockup-footer{
+  text-shadow:0 1px 5px rgba(0,0,0,.94)!important;
+}
+html body #vxMobileTop .vx-brand-text{
+
+  display:block!important;
+  min-width:0!important;
+  white-space:nowrap!important;
+
+}
+@keyframes verix-flag-mobile-photo-wave{
+  0%,100%{transform:perspective(480px) rotateY(-1deg) skewY(-.3deg) translate3d(-1px,0,0);background-position:0 0,47% 44%}
+  35%{transform:perspective(480px) rotateY(.8deg) skewY(.15deg) translate3d(1px,-.4px,0);background-position:0 0,54% 49%}
+  68%{transform:perspective(480px) rotateY(-.6deg) skewY(-.2deg) translate3d(0,.4px,0);background-position:0 0,46% 53%}
+}
+
+@media(prefers-reduced-motion:reduce){
+  html body #vxMobileTop .vx-brand::before{
+    animation:verix-flag-mobile-photo-wave 6.2s ease-in-out infinite!important;
+  }
+}
+</style>
+<style id="verix-flag-attribution-accessibility">
+.verix-flag-attribution{
+ position:absolute!important;left:-10000px!important;top:auto!important;
+ width:1px!important;height:1px!important;overflow:hidden!important;
+ clip-path:inset(50%)!important;white-space:nowrap!important;
+}
+.verix-flag-attribution:focus{
+ left:8px!important;top:8px!important;width:auto!important;height:auto!important;
+ clip-path:none!important;padding:6px 8px!important;background:#09151a!important;
+ color:#fff!important;z-index:2147483647!important;border:1px solid #3cb987!important;
+}
+</style>
+<style id="verix-flag-watermark-refinement">
+/* Bandeira como marca de água fotográfica: discreta, sem moldura nem corte duro. */
+html body .command .brand-notice::before{display:none!important}
+html body .command .brand-notice::after{
+  content:""!important;position:absolute!important;z-index:0!important;pointer-events:none!important;
+  left:-23px!important;top:-8px!important;bottom:-4px!important;
+  width:min(255px,calc(58vw - 24px))!important;border:0!important;border-radius:0!important;box-shadow:none!important;
+  background-image:
+    linear-gradient(90deg,rgba(2,7,10,.18) 0%,rgba(2,7,10,.35) 34%,rgba(2,7,10,.68) 64%,rgba(2,7,10,.98) 100%),
+    linear-gradient(180deg,rgba(2,7,10,.46) 0%,rgba(2,7,10,.03) 43%,rgba(2,7,10,.58) 100%),
+    url("https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Bandera_portuguesa_%283771095401%29.jpg/1280px-Bandera_portuguesa_%283771095401%29.jpg")!important;
+  background-size:100% 100%,100% 100%,cover!important;
+  background-position:0 0,0 0,4% 47%;background-repeat:no-repeat!important;
+  opacity:.49!important;filter:url(#verix-flag-wave-filter) saturate(.78) contrast(.96) brightness(.82)!important;
+  -webkit-mask-image:linear-gradient(90deg,#000 0%,rgba(0,0,0,.86) 28%,rgba(0,0,0,.38) 61%,transparent 100%)!important;
+  mask-image:linear-gradient(90deg,#000 0%,rgba(0,0,0,.86) 28%,rgba(0,0,0,.38) 61%,transparent 100%)!important;
+  transform-origin:0 50%!important;animation:verix-flag-watermark-wave 8.5s ease-in-out infinite!important;
+  will-change:background-position,transform!important;
+}
+html body .command .brand-notice>*{position:relative!important;z-index:1!important}
+html body .command .brand-lockup-line,
+html body .command .brand-lockup-subtitle,
+html body .command .brand-lockup-values,
+html body .command .brand-lockup-footer{text-shadow:0 1px 3px rgba(0,0,0,.92)!important}
+@keyframes verix-flag-watermark-wave{
+  0%,100%{transform:perspective(900px) rotateY(-.5deg) translate3d(-1px,0,0) scaleX(1);background-position:0 0,0 0,2% 46%}
+  33%{transform:perspective(900px) rotateY(.4deg) translate3d(1px,-.3px,0) scaleX(1.005);background-position:0 0,0 0,7% 49%}
+  68%{transform:perspective(900px) rotateY(-.25deg) translate3d(0,.3px,0) scaleX(.998);background-position:0 0,0 0,3% 52%}
+}
+html body #vxMobileTop .vx-brand{
+  position:relative!important;display:flex!important;align-items:center!important;min-width:0!important;
+  padding-left:66px!important;overflow:hidden!important;isolation:isolate!important;background:transparent!important;
+}
+html body #vxMobileTop .vx-brand::before{
+  content:""!important;position:absolute!important;z-index:0!important;pointer-events:none!important;
+  left:-5px!important;top:-3px!important;bottom:-3px!important;width:72px!important;border:0!important;border-radius:0!important;
+  background-image:
+    linear-gradient(90deg,rgba(7,12,16,.12) 0%,rgba(7,12,16,.34) 48%,rgba(7,12,16,.98) 100%),
+    linear-gradient(180deg,rgba(7,12,16,.38),transparent 42%,rgba(7,12,16,.48)),
+    url("https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Bandera_portuguesa_%283771095401%29.jpg/1280px-Bandera_portuguesa_%283771095401%29.jpg")!important;
+  background-size:100% 100%,100% 100%,cover!important;background-position:0 0,0 0,4% 48%;background-repeat:no-repeat!important;
+  opacity:.5!important;filter:saturate(.78) contrast(.95) brightness(.8)!important;
+  -webkit-mask-image:linear-gradient(90deg,#000 0%,rgba(0,0,0,.75) 42%,transparent 100%)!important;
+  mask-image:linear-gradient(90deg,#000 0%,rgba(0,0,0,.75) 42%,transparent 100%)!important;
+  animation:verix-flag-mobile-watermark-wave 8.5s ease-in-out infinite!important;will-change:background-position,transform!important;
+}
+html body #vxMobileTop .vx-brand-text{position:relative!important;z-index:1!important;text-shadow:0 1px 4px rgba(0,0,0,.95)!important}
+@keyframes verix-flag-mobile-watermark-wave{
+  0%,100%{transform:translateX(-.4px) skewY(-.15deg);background-position:0 0,0 0,0 47%}
+  50%{transform:translateX(.7px) skewY(.15deg);background-position:0 0,0 0,7% 52%}
+}
+@media(max-width:760px){
+  html body .command .brand-notice::after{left:-12px!important;top:-4px!important;bottom:-2px!important;width:min(215px,calc(51vw - 14px))!important;opacity:.38!important}
+}
+@media(max-width:380px){
+  html body #vxMobileTop .vx-brand{padding-left:55px!important}
+  html body #vxMobileTop .vx-brand::before{width:60px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  html body .command .brand-notice::after,
+  html body #vxMobileTop .vx-brand::before{animation:none!important}
+}
+</style>
+<style id="verix-main-menu-launcher-style-v7">
+/* VÉRIX HOME — identidade 2026: mate, funcional, portuguesa e sem efeitos decorativos redundantes. */
+html body #mainMenuScreen.vx-home-screen{position:fixed!important;inset:0!important;z-index:1800!important;display:none!important;width:100vw!important;height:100dvh!important;min-width:0!important;min-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important;box-sizing:border-box!important;background:#080f11!important;color:#eef4f0!important;font-family:Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:normal!important}
+html body #mainMenuScreen.vx-home-screen.show{display:block!important;overflow:hidden!important;background:#080f11!important}
+html body #mainMenuScreen.vx-home-screen:before{content:none!important;display:none!important}
+html body #mainMenuScreen.vx-home-screen *{box-sizing:border-box!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-shell{position:relative!important;isolation:isolate!important;display:flex!important;flex-direction:column!important;width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;overflow:hidden!important;background:#080f11!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-main{display:flex!important;flex:1 1 auto!important;flex-direction:column!important;width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;overflow:hidden!important;background:#080f11!important}
+/* Cabeçalho simples; o detalhe verde/vermelho identifica a marca sem imitar um painel de videojogo. */
+html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead{position:relative!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;flex:0 0 68px!important;min-height:68px!important;min-width:0!important;gap:0!important;padding:0 clamp(20px,3.5vw,54px)!important;border:0!important;border-bottom:1px solid #243b39!important;border-radius:0!important;background:#0b1517!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead:before{content:""!important;position:absolute!important;left:0!important;top:0!important;bottom:0!important;width:3px!important;background:linear-gradient(180deg,#07833c 0 59%,#cf3439 59% 100%)!important;pointer-events:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead:after{content:""!important;position:absolute!important;left:3px!important;right:0!important;bottom:0!important;height:1px!important;background:linear-gradient(90deg,rgba(89,205,147,.42),rgba(89,205,147,.08) 47%,transparent 78%)!important;pointer-events:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup{display:flex!important;align-items:center!important;gap:13px!important;min-width:0!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup .vx-home-brand-mark{position:relative!important;display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 40px!important;width:40px!important;height:40px!important;min-height:40px!important;padding:0 0 3px!important;border:1px solid #32684f!important;border-radius:10px!important;background:#12271e!important;color:#c0eed2!important;box-shadow:none!important;font:900 21px/1 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:-.8px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup .vx-home-brand-mark:after{content:""!important;position:absolute!important;left:10px!important;right:10px!important;bottom:5px!important;height:2px!important;background:linear-gradient(90deg,#07833c 0 58%,#cf3439 58% 100%)!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-line{display:flex!important;align-items:center!important;gap:12px!important;min-width:0!important;white-space:nowrap!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-line h1{margin:0!important;padding:0!important;color:#f1f6f3!important;font:850 19px/1 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:1.05px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-divider{display:block!important;width:1px!important;height:20px!important;flex:0 0 1px!important;background:#3a504a!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-service-name{color:#c0d0c8!important;font:600 12px/1.2 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:.05px!important}
+/* Grelha alinhada ao topo: as ações frequentes ganham presença, as restantes ficam claras e discretas. */
+html body #mainMenuScreen.vx-home-screen .vx-home-body{display:flex!important;flex:1 1 auto!important;flex-direction:column!important;justify-content:flex-start!important;width:100%!important;max-width:1580px!important;min-width:0!important;min-height:0!important;margin:0 auto!important;padding:clamp(24px,3.1vh,34px) clamp(24px,4vw,58px) 24px!important;gap:24px!important;overflow-x:hidden!important;overflow-y:auto!important;scrollbar-color:#314742 transparent!important;scrollbar-width:thin!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-group{display:block!important;min-width:0!important;margin:0!important;padding:0!important;border:0!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-secondary-group{margin:0!important;padding:0!important;border:0!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-primary-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:14px!important;align-items:stretch!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-secondary-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;column-gap:12px!important;row-gap:12px!important;align-items:stretch!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action{position:relative!important;display:flex!important;align-items:center!important;width:100%!important;min-width:0!important;margin:0!important;color:#edf5f0!important;text-align:left!important;font-family:inherit!important;cursor:pointer!important;overflow:hidden!important;outline:none!important;box-shadow:none!important;transform:none!important;transition:background-color .16s ease,border-color .16s ease,transform .16s ease!important}
+/* Fiscalização e cinemómetro: dois pontos de entrada imediatos, com sinalização distinta e contida. */
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary{gap:19px!important;min-height:154px!important;padding:24px 25px!important;border:1px solid #2c5b46!important;border-radius:10px!important;background:#10231c!important;color:#f0f7f2!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:before{content:""!important;position:absolute!important;left:0!important;top:0!important;bottom:0!important;width:3px!important;background:#5cd59a!important;opacity:.9!important;pointer-events:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2){border-color:#4f4b32!important;background:#1b1e18!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2):before{background:#d2bc68!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:hover{transform:translateY(-1px)!important;border-color:#58a77c!important;background:#142a21!important;box-shadow:none!important;filter:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2):hover{border-color:#b9a65d!important;background:#24251b!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-icon{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 36px!important;width:36px!important;height:36px!important;min-width:0!important;min-height:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;color:#9fe3bd!important;box-shadow:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-icon{flex-basis:52px!important;width:52px!important;height:52px!important;border:0!important;border-radius:0!important;background:transparent!important;color:#a8ebc4!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2) .vx-home-action-icon{background:transparent!important;border:0!important;color:#e0ce87!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-icon svg{display:block!important;width:24px!important;height:24px!important;max-width:100%!important;max-height:100%!important;filter:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-icon svg{width:47px!important;height:47px!important;filter:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-copy{display:flex!important;flex:1 1 auto!important;flex-direction:column!important;gap:7px!important;min-width:0!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-title{display:block!important;margin:0!important;color:#f0f6f2!important;font:800 13px/1.3 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:.05px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-title{color:#f3f8f5!important;font-size:18px!important;font-weight:850!important;letter-spacing:.1px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-description{display:block!important;margin:0!important;color:#b0c4ba!important;font:450 11px/1.5 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:0!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-description{max-width:40em!important;color:#c0d3c9!important;font-size:12px!important;line-height:1.55!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-arrow{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 auto!important;width:auto!important;height:auto!important;margin-left:auto!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;color:#80d7a9!important;font:650 21px/1 Arial,sans-serif!important;transition:transform .16s ease,color .16s ease!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-arrow{color:#b9ebce!important;font-size:25px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2) .vx-home-action-arrow{color:#e5d595!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action:hover .vx-home-action-arrow{transform:translate(2px,-1px)!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action:focus-visible{outline:2px solid #9be8bd!important;outline-offset:3px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action:active{transform:translateY(0)!important}
+/* Ferramentas complementares: superfícies mate, sem mini-cartões decorativos dentro dos cartões. */
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary{gap:12px!important;min-height:91px!important;padding:16px 15px!important;border:1px solid #233a39!important;border-radius:9px!important;background:#0e191b!important;color:#edf5f0!important;box-shadow:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary:before{content:none!important;display:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary:hover{transform:translateY(-1px)!important;border-color:#4d9470!important;background:#13231f!important;box-shadow:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-icon{flex:0 0 33px!important;width:33px!important;height:33px!important;border:0!important;border-radius:0!important;background:transparent!important;color:#8bdab0!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-icon svg{width:23px!important;height:23px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-copy{gap:5px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-title{color:#eaf3ee!important;font-size:12.5px!important;font-weight:820!important;letter-spacing:.08px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-description{color:#aebfb8!important;font-size:10.5px!important;line-height:1.45!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-arrow{color:#6daf8c!important;font-size:19px!important}
+/* Rodapé preserva o aviso de utilização e o contacto com a equipa. */
+html body #mainMenuScreen.vx-home-screen .vx-home-footer{display:flex!important;align-items:center!important;justify-content:space-between!important;flex:0 0 auto!important;min-width:0!important;min-height:60px!important;gap:clamp(10px,1.4vw,20px)!important;padding:9px clamp(20px,3.5vw,54px)!important;border:0!important;border-top:1px solid #243a38!important;border-radius:0!important;background:#091315!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-brand{display:flex!important;align-items:center!important;flex:0 0 auto!important;gap:8px!important;min-width:0!important;color:#a9beb4!important;font:750 9px/1.2 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:.55px!important;white-space:nowrap!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-dot{display:block!important;width:6px!important;height:6px!important;flex:0 0 6px!important;border-radius:50%!important;background:#67d6a0!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-brand strong{color:#eef5f0!important;font-size:10px!important;letter-spacing:1px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer p{flex:1 1 auto!important;margin:0!important;color:#a0b4aa!important;font:450 10px/1.45 Inter,"Segoe UI",Arial,sans-serif!important;text-align:center!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;flex:0 0 auto!important;min-width:0!important;min-height:38px!important;padding:0 13px!important;border:1px solid #315b46!important;border-radius:7px!important;background:#10251c!important;color:#d2e7da!important;text-decoration:none!important;font:700 10.5px/1 Inter,"Segoe UI",Arial,sans-serif!important;white-space:nowrap!important;box-shadow:none!important;transition:background-color .16s ease,border-color .16s ease!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact svg{display:block!important;width:15px!important;height:15px!important;flex:0 0 15px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact b{color:#92ddb2!important;font-size:12px!important;font-weight:800!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact:hover{border-color:#67c693!important;background:#173528!important;color:#f3faf5!important;transform:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-unofficial{flex:0 0 auto!important;margin:0!important;padding:5px 8px!important;border:1px solid #4c482e!important;border-radius:4px!important;background:#191b15!important;color:#e0d39a!important;font:850 7px/1 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:.75px!important;white-space:nowrap!important}
+/* Tema claro: conservar legibilidade quando ativado nas definições. */
+html body.theme-light #mainMenuScreen.vx-home-screen,html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-shell,html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-main{background:#f1f5f2!important;color:#203229!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead{background:#fbfdfb!important;border-bottom-color:#d5e1d9!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-brand-line h1{color:#193327!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-service-name{color:#52695d!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-brand-divider{background:#c6d5cc!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-brand-lockup .vx-home-brand-mark{background:#e1f1e7!important;border-color:#81b89b!important;color:#1d6946!important;box-shadow:none!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-action-primary{background:#e6f3ea!important;border-color:#85bda0!important;color:#183b29!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-title{color:#183b29!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-description{color:#496455!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2){background:#f4f0e3!important;border-color:#c8bb88!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2) .vx-home-action-title{color:#3a3520!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-action-primary:nth-child(2) .vx-home-action-description{color:#676044!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-action-secondary{background:#fff!important;border-color:#d4e0d8!important;color:#20362a!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-title{color:#20362a!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-description{color:#5a7064!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-action-secondary:hover{background:#f5faf6!important;border-color:#83b99a!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-footer{background:#fbfdfb!important;border-top-color:#d5e1d9!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-footer-brand{color:#52695d!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-footer-brand strong{color:#23382c!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-footer p{color:#566a5f!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-footer-contact{background:#e7f2eb!important;border-color:#a7cbb5!important;color:#244b34!important}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-footer-unofficial{background:#f8f3df!important;border-color:#d4c78f!important;color:#5a4d1c!important}
+/* Tablet e janelas médias. */
+@media(max-width:1120px){
+html body #mainMenuScreen.vx-home-screen .vx-home-body{max-width:100%!important;padding:24px 26px!important;gap:19px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-primary-grid{gap:12px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary{min-height:138px!important;padding:21px!important;gap:13px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-secondary-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary{min-height:82px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer{padding-left:26px!important;padding-right:26px!important}
+}
+@media(max-width:760px){
+html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead{flex:0 0 59px!important;min-height:59px!important;padding:0 16px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup{gap:9px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup .vx-home-brand-mark{flex-basis:36px!important;width:36px!important;height:36px!important;min-height:36px!important;border-radius:9px!important;font-size:18px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-line{gap:7px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-line h1{font-size:16px!important;letter-spacing:.7px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-divider{height:16px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-service-name{font-size:11px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-body{justify-content:flex-start!important;max-width:100%!important;padding:19px 14px 22px!important;gap:16px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-primary-grid{grid-template-columns:minmax(0,1fr)!important;gap:9px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary{min-height:104px!important;padding:16px!important;gap:13px!important;border-radius:9px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-icon{flex-basis:43px!important;width:43px!important;height:43px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-icon svg{width:39px!important;height:39px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-title{font-size:15px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-description{font-size:11px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary .vx-home-action-arrow{font-size:21px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-secondary-grid{grid-template-columns:minmax(0,1fr)!important;gap:7px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary{min-height:70px!important;padding:12px 13px!important;gap:12px!important;border-radius:8px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-icon{flex-basis:31px!important;width:31px!important;height:31px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-title{font-size:12px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary .vx-home-action-description{font-size:10.5px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer{align-items:center!important;justify-content:space-between!important;flex-wrap:wrap!important;min-height:0!important;padding:11px 14px!important;gap:9px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-brand{order:0!important;flex-basis:100%!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact{order:1!important;min-height:35px!important;padding:0 11px!important;font-size:10px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-unofficial{order:2!important;margin-left:auto!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer p{order:3!important;flex:0 0 100%!important;text-align:left!important;font-size:9px!important;line-height:1.4!important}
+}
+@media(max-width:380px){
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-line{gap:6px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-line h1{font-size:15px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-service-name{font-size:10px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary{padding:14px!important;gap:10px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact{min-height:33px!important;padding:0 9px!important}
+}
+@media(max-height:650px) and (min-width:761px){
+html body #mainMenuScreen.vx-home-screen .vx-home-body{justify-content:flex-start!important;padding-top:18px!important;padding-bottom:18px!important;gap:14px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-primary{min-height:124px!important;padding:20px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action-secondary{min-height:76px!important;padding:12px!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer{min-height:52px!important}
+}
+@media(prefers-reduced-motion:reduce){
+html body #mainMenuScreen.vx-home-screen .vx-home-action,html body #mainMenuScreen.vx-home-screen .vx-home-action-arrow,html body #mainMenuScreen.vx-home-screen .vx-home-footer-contact{transition:none!important}
+html body #mainMenuScreen.vx-home-screen .vx-home-action:hover,html body #mainMenuScreen.vx-home-screen .vx-home-action:active{transform:none!important}
+}
+</style>
 </body>
 </html>
