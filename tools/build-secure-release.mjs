@@ -371,7 +371,6 @@ if (fs.existsSync(adminOutput)) {
   }
 }
 
-const adminPwaOutput = path.join(OUTPUT_DIR, "admin", "index.html");
 if (!fs.existsSync(adminPwaOutput)) throw new Error("Dedicated Admin PWA entry was not generated");
 if (verifyJavaScriptSyntax(adminPwaOutput) === 0) {
   throw new Error("Admin PWA entry does not contain any validated inline JavaScript");
