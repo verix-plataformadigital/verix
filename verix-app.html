@@ -1147,7 +1147,7 @@ function submitConjunto(event) {
   const ASF_TIMEOUT_MS = 20000;
   const ASF_MAX_ATTEMPTS = 3;
   const ASF_RETRY_DELAYS_MS = [300, 900];
-  const ASF_QUEUE_MAX_WAIT_MS = 120000;
+  const ASF_QUEUE_MAX_WAIT_MS = 310000;
   /*
    * Sem quota artificial VÉRIX por minuto.
    * O relay agenda as consultas globalmente; esperas de fila não consomem tentativas ASF.
@@ -1503,7 +1503,7 @@ function submitConjunto(event) {
 
       // A 503 with this header means "not yet scheduled", not an ASF failure.
       // Wait in the client, then resubmit the same request without consuming an ASF retry.
-      if (tentativa.queueStatus === 'waiting' || tentativa.queueStatus === 'unavailable') {
+      if (tentativa.queueStatus === 'waiting' || tentativa.queueStatus === 'unavailable' || tentativa.queueStatus === 'cooldown') {
         tentativa.errorType = 'queue_wait';
         var elapsedResponseMs = Math.max(0, agoraMsASFDiag() - requestStarted);
         var requestedWaitMs = Number(tentativa.retryAfterSeconds) > 0
@@ -1512,6 +1512,12 @@ function submitConjunto(event) {
         requestedWaitMs = Math.max(500, requestedWaitMs);
         var remainingWaitMs = ASF_QUEUE_MAX_WAIT_MS - queueWaitTotalMs - elapsedResponseMs;
 
+        if (tentativa.queueStatus === 'cooldown' && requestedWaitMs > remainingWaitMs) {
+          // A confirmed upstream Retry-After starts a fresh wait window: honour it
+          // instead of failing just because the client had already waited in the queue.
+          queueWaitTotalMs = 0;
+          remainingWaitMs = ASF_QUEUE_MAX_WAIT_MS - elapsedResponseMs;
+        }
         if (remainingWaitMs <= 0 || requestedWaitMs > remainingWaitMs) {
           queueWaitTotalMs += elapsedResponseMs;
           diag.asfQueueWaitMs = queueWaitTotalMs;
