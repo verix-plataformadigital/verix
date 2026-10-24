@@ -1,0 +1,99 @@
+name: Cloudflare IP probe — isolated deployment
+
+on:
+  push:
+    branches:
+      - experiment/cloudflare-ip-diagnostic
+    paths:
+      - "experiments/cloudflare-ip-probe/**"
+      - ".github/workflows/cloudflare-probe-deploy.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verix-cloudflare-ip-probe-experiment
+  cancel-in-progress: false
+
+jobs:
+  deploy-probe:
+    name: Deploy isolated IPify probe
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout experiment branch
+        uses: actions/checkout@v6
+
+      - name: Check Cloudflare credentials are configured
+        id: credentials
+        shell: bash
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CF_PROBE_TOKEN: ${{ secrets.CLOUDFLARE_PROBE_TOKEN }}
+        run: |
+          if [[ -n "$CF_API_TOKEN" && -n "$CF_ACCOUNT_ID" && -n "$CF_PROBE_TOKEN" ]]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+            echo "Cloudflare deployment credentials are present."
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Deployment skipped. Configure repository secrets CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_PROBE_TOKEN, then push a change to the experiment branch."
+          fi
+
+      - name: Deploy Worker and set its PROBE_TOKEN secret
+        id: deploy
+        if: steps.credentials.outputs.ready == 'true'
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: "experiments/cloudflare-ip-probe"
+          command: deploy
+          secrets: |
+            PROBE_TOKEN
+        env:
+          PROBE_TOKEN: ${{ secrets.CLOUDFLARE_PROBE_TOKEN }}
+
+      - name: Smoke-test the deployed Worker (three IPify checks)
+        if: steps.credentials.outputs.ready == 'true'
+        shell: bash
+        env:
+          WORKER_URL: ${{ steps.deploy.outputs.deployment-url }}
+          PROBE_TOKEN: ${{ secrets.CLOUDFLARE_PROBE_TOKEN }}
+        run: |
+          node --input-type=module <<'NODE'
+          const base = (process.env.WORKER_URL || "").replace(/\/$/, "");
+          const token = process.env.PROBE_TOKEN || "";
+          if (!base || !token) {
+            console.error("Deployment may have completed, but Worker URL/token is missing from the action outputs.");
+            process.exit(1);
+          }
+          const results = [];
+          for (let i = 1; i <= 3; i++) {
+            const start = Date.now();
+            try {
+              const response = await fetch(base + "/ip", {
+                headers: { Authorization: "Bearer " + token },
+                signal: AbortSignal.timeout(10000),
+              });
+              const body = await response.json();
+              results.push({
+                attempt: i,
+                status: response.status,
+                ok: response.ok && body.ok === true,
+                elapsedMs: Date.now() - start,
+                observedEgressIp: typeof body.observedEgressIp === "string" ? body.observedEgressIp : undefined,
+                error: body.error || undefined,
+              });
+            } catch (err) {
+              results.push({ attempt: i, ok: false, elapsedMs: Date.now() - start, error: String(err).slice(0, 180) });
+            }
+          }
+          console.log(JSON.stringify({
+            test: "cloudflare-worker-ipify-smoke-test",
+            results,
+            distinctObservedIps: new Set(results.map(r => r.observedEgressIp).filter(Boolean)).size,
+            note: "Different IPs are not guaranteed by Cloudflare Workers."
+          }, null, 2));
+          if (results.some(r => !r.ok)) process.exit(1);
+          NODE
