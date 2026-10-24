@@ -19,6 +19,7 @@
 - Publicar `asf-proxy-v1/index.ts` depois da migração.
 - Confirmar no runtime que os primeiros pedidos têm `X-Verix-ASF-Queue-Wait-Ms`, que não existem rejeições depois de seis consultas e que os erros `Serviço Indisponível` provocam cooldown global.
 - Testar uma matrícula com seguro conhecido, uma sem registo conhecido e várias consultas consecutivas; comparar resultados reais (não apenas HTTP 200).
+- O cliente mantém um limite operacional de espera acumulada de 310 segundos; um `Retry-After` explícito da ASF pode reiniciar essa janela para não abandonar uma pausa externa ainda válida.
 - Reverter a função para o commit baseline `fda0657b182544eeb4ba22569e1040851078837c` e executar os comandos de rollback documentados no cabeçalho da migração para abandonar a cadência.
 
 ## Limitações
