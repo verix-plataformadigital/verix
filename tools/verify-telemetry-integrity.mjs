@@ -20,7 +20,7 @@ assert.match(migration, /WHERE event='vehicle_lookup' AND query_id IS NOT NULL/)
 assert.doesNotMatch(migration, /SELECT DISTINCT ON\(query_id\)/);
 assert.equal((migration.match(/NOT EXISTS\(SELECT 1 FROM public\.verix2_events lookup_event WHERE lookup_event\.event='vehicle_lookup' AND lookup_event\.query_id=fc\.query_id\)/g) || []).length, 3, "orphan finals must be checked against all recorded lookups, not only the 30-day analytics slice");
 for (const metric of ["'pending'","'incomplete'","'contradictory'","'duplicate_finals'","'orphan_finals'"]) assert.ok(migration.includes(metric), "missing SQL metric "+metric);
-for (const label of ["Incompletas","Contraditórias","Finais duplicados","Finais órfãos","INSTALAÇÕES"]) assert.ok(admin.includes(label), "missing Admin label "+label);
+for (const label of ["Incompletas","Contraditórias","Finais duplicados","Eventos de erro","Finais únicos","Instalações afetadas"]) assert.ok(admin.includes(label), "missing Admin V3 label "+label);
 
 const app = fs.readFileSync("verix-app.html", "utf8");
 const telemetryStart = app.indexOf("function parseReceipt(text)");

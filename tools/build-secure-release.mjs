@@ -278,25 +278,25 @@ let adminPwaSource = fs.readFileSync(adminPwaSourcePath, "utf8");
 if (!adminPwaSource.includes("admin-telemetry-v3") || !adminPwaSource.includes("stats-v2")) {
   throw new Error("Admin V3 source does not reference its expected telemetry APIs");
 }
-adminPwaSource = adminPwaSource.replace(/<link rel="manifest" href="[^"]*admin\\.webmanifest[^"]*">\\s*/i, "");
-adminPwaSource = adminPwaSource.replace(/href="\\.\\/favicon\\.svg/g, 'href="../assets/admin-icon.svg');
-adminPwaSource = adminPwaSource.replace(/\\.\\/assets\\//g, "../assets/");
-adminPwaSource = adminPwaSource.replace(/src="\\.\\/verix-presence-v1\\.js/g, 'src="../verix-presence-v1.js');
-adminPwaSource = adminPwaSource.replace(/(src="\\.\\.\\/verix-presence-v1\\.js\\?v=)[^"]+/g, "$1" + encodeURIComponent(String(BUILD_ID)));
-adminPwaSource = adminPwaSource.replace(/\\.\\/AI-ACCESS-POLICY\\.md/g, "../AI-ACCESS-POLICY.md");
+adminPwaSource = adminPwaSource.replace(/<link rel="manifest" href="[^"]*admin\.webmanifest[^"]*">\s*/i, "");
+adminPwaSource = adminPwaSource.replace(/href="\.\/favicon\.svg/g, 'href="../assets/admin-icon.svg');
+adminPwaSource = adminPwaSource.replace(/\.\/assets\//g, "../assets/");
+adminPwaSource = adminPwaSource.replace(/src="\.\/verix-presence-v1\.js/g, 'src="../verix-presence-v1.js');
+adminPwaSource = adminPwaSource.replace(/(src="\.\.\/verix-presence-v1\.js\?v=)[^"]+/g, "$1" + encodeURIComponent(String(BUILD_ID)));
+adminPwaSource = adminPwaSource.replace(/\.\/AI-ACCESS-POLICY\.md/g, "../AI-ACCESS-POLICY.md");
 const adminPwaHeadLinks = [
   '  <link rel="icon" href="../assets/admin-icon.svg" type="image/svg+xml" sizes="any">',
   '  <link rel="manifest" href="./manifest.webmanifest?v=' + encodeURIComponent(String(BUILD_ID)) + '">'
 ];
-if (!/<\\/head>/i.test(adminPwaSource)) throw new Error("Admin V3 source has no closing head");
-adminPwaSource = adminPwaSource.replace(/<\\/head>/i, adminPwaHeadLinks.join("\\n") + "\\n</head>");
+if (!/<\/head>/i.test(adminPwaSource)) throw new Error("Admin V3 source has no closing head");
+adminPwaSource = adminPwaSource.replace(/<\/head>/i, adminPwaHeadLinks.join("\n") + "\n</head>");
 
 const adminPwaBuilt = obfuscateHtml(adminPwaSource, "admin/index.html", ADMIN_PWA_OBFUSCATOR_OPTIONS);
 const adminPwaDir = path.join(OUTPUT_DIR, "admin");
 fs.mkdirSync(adminPwaDir, { recursive: true });
 const adminPwaOutput = path.join(adminPwaDir, "index.html");
 fs.writeFileSync(adminPwaOutput, adminPwaBuilt.html, "utf8");
-fs.writeFileSync(path.join(adminPwaDir, "manifest.webmanifest"), JSON.stringify(adminManifest, null, 2) + "\\n", "utf8");
+fs.writeFileSync(path.join(adminPwaDir, "manifest.webmanifest"), JSON.stringify(adminManifest, null, 2) + "\n", "utf8");
 const adminServiceWorker = path.join(ROOT, "sw.js");
 if (!fs.existsSync(adminServiceWorker)) throw new Error("Required Admin service worker missing");
 fs.copyFileSync(adminServiceWorker, path.join(adminPwaDir, "sw.js"));
