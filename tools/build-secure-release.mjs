@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { createHash } from "node:crypto";
 import JavaScriptObfuscator from "javascript-obfuscator";
+import { build as esbuildBuild } from "esbuild";
 
 const ROOT = process.cwd();
 const OUTPUT_DIR = path.join(ROOT, "dist");
@@ -113,7 +114,25 @@ const COMPATIBILITY_OPTIONS = {
 };
 
 
-function obfuscateHtml(html, label) {
+const ADMIN_PWA_OBFUSCATOR_OPTIONS = {
+  ...OBFUSCATOR_OPTIONS,
+  // The restored V3 Admin includes larger diagnostics and PWA scripts.
+  // Keep the production obfuscator for the operational VÉRIX app unchanged.
+  controlFlowFlattening: false,
+  controlFlowFlatteningThreshold: 0,
+  debugProtection: false,
+  debugProtectionInterval: 0,
+  selfDefending: false,
+  stringArray: false,
+  stringArrayCallsTransform: false,
+  stringArrayIndexShift: false,
+  stringArrayRotate: false,
+  stringArrayShuffle: false,
+  stringArrayThreshold: 0,
+  splitStrings: false
+};
+
+function obfuscateHtml(html, label, optionsOverride = null) {
   const scriptPattern = /(<script\b[^>]*>)([\s\S]*?)(<\/script>)/gi;
   let scriptCount = 0;
 
@@ -134,9 +153,9 @@ function obfuscateHtml(html, label) {
 
     scriptCount++;
     try {
-      const options = trimmed.length >= 250_000
+      const options = optionsOverride || (trimmed.length >= 250_000
         ? COMPATIBILITY_OPTIONS
-        : OBFUSCATOR_OPTIONS;
+        : OBFUSCATOR_OPTIONS);
       const result = JavaScriptObfuscator.obfuscate(trimmed, options).getObfuscatedCode();
       return open + "\n" + result + "\n" + close;
     } catch (err) {
@@ -214,6 +233,81 @@ for (const f of ["verix-mobile.css", "verix-mobile.js"]) {
   }
 }
 
+// Dedicated Admin V3 bundle. This does not modify the operational app or its ASF runtime.
+const presenceEntry = path.join(ROOT, "verix-presence-v1.mjs");
+if (!fs.existsSync(presenceEntry)) throw new Error("Required Admin presence source missing: verix-presence-v1.mjs");
+const presenceOutput = path.join(OUTPUT_DIR, "verix-presence-v1.js");
+await esbuildBuild({
+  entryPoints: [presenceEntry],
+  outfile: presenceOutput,
+  bundle: true,
+  minify: true,
+  sourcemap: false,
+  legalComments: "none",
+  platform: "browser",
+  format: "iife",
+  target: ["es2020"]
+});
+results.push({ source: "verix-presence-v1.mjs", output: "dist/verix-presence-v1.js", size_bytes: fs.statSync(presenceOutput).size });
+
+const adminPolicySource = path.join(ROOT, "AI-ACCESS-POLICY.md");
+if (!fs.existsSync(adminPolicySource)) throw new Error("Required Admin policy document missing");
+fs.copyFileSync(adminPolicySource, path.join(OUTPUT_DIR, "AI-ACCESS-POLICY.md"));
+
+const adminIconSource = path.join(ROOT, "assets", "admin-icon.svg");
+if (!fs.existsSync(adminIconSource)) throw new Error("Required Admin icon missing");
+const adminIconOutput = path.join(OUTPUT_DIR, "assets", "admin-icon.svg");
+fs.mkdirSync(path.dirname(adminIconOutput), { recursive: true });
+fs.copyFileSync(adminIconSource, adminIconOutput);
+
+const adminManifestSource = path.join(ROOT, "admin.webmanifest");
+if (!fs.existsSync(adminManifestSource)) throw new Error("Required Admin manifest source missing");
+const adminManifest = JSON.parse(fs.readFileSync(adminManifestSource, "utf8"));
+adminManifest.id = "/verix/admin/";
+adminManifest.start_url = "./index.html?app=verix-admin-v5";
+adminManifest.scope = "./";
+adminManifest.icons = [{
+  src: "../assets/admin-icon.svg",
+  sizes: "any",
+  type: "image/svg+xml",
+  purpose: "any"
+}];
+
+const adminPwaSourcePath = path.join(ROOT, "admin_v2.html");
+let adminPwaSource = fs.readFileSync(adminPwaSourcePath, "utf8");
+if (!adminPwaSource.includes("admin-telemetry-v3") || !adminPwaSource.includes("stats-v2")) {
+  throw new Error("Admin V3 source does not reference its expected telemetry APIs");
+}
+adminPwaSource = adminPwaSource.replace(/<link rel="manifest" href="[^"]*admin\\.webmanifest[^"]*">\\s*/i, "");
+adminPwaSource = adminPwaSource.replace(/href="\\.\\/favicon\\.svg/g, 'href="../assets/admin-icon.svg');
+adminPwaSource = adminPwaSource.replace(/\\.\\/assets\\//g, "../assets/");
+adminPwaSource = adminPwaSource.replace(/src="\\.\\/verix-presence-v1\\.js/g, 'src="../verix-presence-v1.js');
+adminPwaSource = adminPwaSource.replace(/(src="\\.\\.\\/verix-presence-v1\\.js\\?v=)[^"]+/g, "$1" + encodeURIComponent(String(BUILD_ID)));
+adminPwaSource = adminPwaSource.replace(/\\.\\/AI-ACCESS-POLICY\\.md/g, "../AI-ACCESS-POLICY.md");
+const adminPwaHeadLinks = [
+  '  <link rel="icon" href="../assets/admin-icon.svg" type="image/svg+xml" sizes="any">',
+  '  <link rel="manifest" href="./manifest.webmanifest?v=' + encodeURIComponent(String(BUILD_ID)) + '">'
+];
+if (!/<\\/head>/i.test(adminPwaSource)) throw new Error("Admin V3 source has no closing head");
+adminPwaSource = adminPwaSource.replace(/<\\/head>/i, adminPwaHeadLinks.join("\\n") + "\\n</head>");
+
+const adminPwaBuilt = obfuscateHtml(adminPwaSource, "admin/index.html", ADMIN_PWA_OBFUSCATOR_OPTIONS);
+const adminPwaDir = path.join(OUTPUT_DIR, "admin");
+fs.mkdirSync(adminPwaDir, { recursive: true });
+const adminPwaOutput = path.join(adminPwaDir, "index.html");
+fs.writeFileSync(adminPwaOutput, adminPwaBuilt.html, "utf8");
+fs.writeFileSync(path.join(adminPwaDir, "manifest.webmanifest"), JSON.stringify(adminManifest, null, 2) + "\\n", "utf8");
+const adminServiceWorker = path.join(ROOT, "sw.js");
+if (!fs.existsSync(adminServiceWorker)) throw new Error("Required Admin service worker missing");
+fs.copyFileSync(adminServiceWorker, path.join(adminPwaDir, "sw.js"));
+if (verifyJavaScriptSyntax(adminPwaOutput) === 0) throw new Error("Admin V3 bundle has no validated inline JavaScript");
+results.push({
+  source: "admin_v2.html",
+  output: "dist/admin/index.html",
+  script_blocks_obfuscated: adminPwaBuilt.scriptCount,
+  size_bytes: Buffer.byteLength(adminPwaBuilt.html, "utf8")
+});
+
 // Release-time runtime invariants. These critical blocks are intentionally
 // excluded from heavy obfuscation and must survive packaging unchanged enough
 // to expose their endpoint, heartbeat and security runtime markers.
@@ -275,6 +369,12 @@ if (fs.existsSync(adminOutput)) {
   if (adminScriptsChecked === 0) {
     throw new Error("Admin panel does not contain any validated inline JavaScript");
   }
+}
+
+const adminPwaOutput = path.join(OUTPUT_DIR, "admin", "index.html");
+if (!fs.existsSync(adminPwaOutput)) throw new Error("Dedicated Admin PWA entry was not generated");
+if (verifyJavaScriptSyntax(adminPwaOutput) === 0) {
+  throw new Error("Admin PWA entry does not contain any validated inline JavaScript");
 }
 
 // Build manifest

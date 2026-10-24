@@ -1,0 +1,38 @@
+name: Admin telemetry v3 tests
+
+on:
+  pull_request:
+    paths:
+      - "admin_v2.html"
+      - "supabase/functions/stats-v2/**"
+      - "supabase/functions/admin-telemetry-v3/**"
+      - "supabase/migrations/20261022104500_admin_authoritative_live_presence.sql"
+      - "supabase/migrations/20261022115800_fix_portuguese_plate_zero_center_rule.sql"
+      - ".github/workflows/admin-telemetry-tests.yml"
+  push:
+    branches: ["main"]
+    paths:
+      - "admin_v2.html"
+      - "supabase/functions/stats-v2/**"
+      - "supabase/functions/admin-telemetry-v3/**"
+      - "supabase/migrations/20261022104500_admin_authoritative_live_presence.sql"
+      - "supabase/migrations/20261022115800_fix_portuguese_plate_zero_center_rule.sql"
+      - ".github/workflows/admin-telemetry-tests.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check Admin telemetry APIs
+        run: deno check supabase/functions/stats-v2/index.ts supabase/functions/admin-telemetry-v3/index.ts supabase/functions/admin-telemetry-v3/index_test.ts
+      - name: Run Admin telemetry auth, CORS and response tests
+        run: deno test --allow-env supabase/functions/admin-telemetry-v3/index_test.ts

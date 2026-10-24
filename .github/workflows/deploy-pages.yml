@@ -51,6 +51,23 @@ jobs:
           grep -q "X-Verix-Build-Id" dist/verix-app.html
           grep -q "X-Verix-Client-Token" dist/verix-app.html
           grep -q "verix-telemetry-v2" dist/verix-app.html
+          test -s dist/admin/index.html
+          test -s dist/admin/manifest.webmanifest
+          test -s dist/admin/sw.js
+          test -s dist/verix-presence-v1.js
+          test -s dist/assets/admin-icon.svg
+          test -s dist/AI-ACCESS-POLICY.md
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const html = fs.readFileSync('dist/admin/index.html', 'utf8');
+          const manifest = JSON.parse(fs.readFileSync('dist/admin/manifest.webmanifest', 'utf8'));
+          if (manifest.id !== '/verix/admin/' || manifest.start_url !== './index.html?app=verix-admin-v5' || manifest.scope !== './') {
+            throw new Error('Admin V3 manifest identity/start URL/scope is invalid');
+          }
+          if (!html.includes('./manifest.webmanifest?v=') || !html.includes('../verix-presence-v1.js')) {
+            throw new Error('Admin V3 runtime or manifest link is missing');
+          }
+          NODE
 
       - name: Validate HTML structure
         shell: bash
@@ -86,7 +103,7 @@ jobs:
                   else:
                       self.stack.pop()
 
-          for path in (Path("dist/verix-app.html"), Path("dist/admin_v2.html")):
+          for path in (Path("dist/verix-app.html"), Path("dist/admin_v2.html"), Path("dist/admin/index.html")):
               if not path.is_file():
                   raise SystemExit(f"Required published HTML file missing: {path}")
               parser = Validator()
