@@ -34,8 +34,7 @@ jobs:
           DEPLOY_STATUS=$?
           set -e
 
-          # The temporary-account claim URL is a bearer credential. Extract it,
-          # register it for redaction, and never print the raw Wrangler output.
+          # The claim URL is a bearer credential: never print raw Wrangler output.
           CLAIM_URL="$(grep -Eo 'https://dash\.cloudflare\.com/claim-preview\?claimToken=[^[:space:]]+' "$OUTPUT_FILE" | head -n 1 || true)"
           if [[ -n "$CLAIM_URL" ]]; then
             echo "::add-mask::$CLAIM_URL"
@@ -44,14 +43,13 @@ jobs:
           WORKER_URL="$(grep -Eo 'https://[A-Za-z0-9.-]+\.workers\.dev' "$OUTPUT_FILE" | tail -n 1 || true)"
           if [[ $DEPLOY_STATUS -ne 0 || -z "$WORKER_URL" ]]; then
             echo "Temporary Cloudflare deployment failed or did not return a Worker URL."
-            # Emit only sanitized diagnostics. Never echo the claim URL.
             sed -E 's#https://dash\.cloudflare\.com/claim-preview\?claimToken=[^[:space:]]+#<CLAIM_URL_REDACTED>#g' "$OUTPUT_FILE" | tail -n 35
             rm -f "$OUTPUT_FILE"
             exit 1
           fi
 
           echo "Temporary Worker deployed: $WORKER_URL"
-          echo "The claim URL is deliberately withheld from workflow logs."
+          echo "Claim URL withheld from logs; this temporary deployment expires in about 60 minutes unless claimed."
           echo "Running three fixed-target IPify checks; this does not contact ASF."
 
           WORKER_URL="$WORKER_URL" node --input-type=module <<'NODE'
@@ -64,14 +62,23 @@ jobs:
                 signal: AbortSignal.timeout(10000),
                 cache: "no-store",
               });
-              const body = await response.json();
+              const contentType = response.headers.get("content-type") || "";
+              const raw = await response.text();
+              let body;
+              try {
+                body = JSON.parse(raw);
+              } catch {
+                body = null;
+              }
               results.push({
                 attempt,
                 status: response.status,
-                ok: response.ok && body.ok === true,
-                observedEgressIp: typeof body.observedEgressIp === "string" ? body.observedEgressIp : undefined,
+                contentType,
+                ok: response.ok && body?.ok === true,
+                observedEgressIp: typeof body?.observedEgressIp === "string" ? body.observedEgressIp : undefined,
                 elapsedMs: Date.now() - start,
-                error: body.error || undefined,
+                error: body?.error || undefined,
+                bodyPrefix: body ? undefined : raw.slice(0, 140).replace(/https:\/\/dash\.cloudflare\.com\/claim-preview\?claimToken=[^\s"'<>]+/g, "<CLAIM_URL_REDACTED>"),
               });
             } catch (err) {
               results.push({ attempt, ok: false, elapsedMs: Date.now() - start, error: String(err).slice(0, 180) });
