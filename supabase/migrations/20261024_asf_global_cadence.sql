@@ -66,6 +66,19 @@ BEGIN
   );
 
   IF v_block_until > v_now THEN
+    -- A lease is a crash-recovery ceiling, not the expected time to wait.
+    -- Tell the client to re-check at the next pacing window; if the upstream
+    -- call is still active then, the next poll will return a short wait.
+    IF v_lease_until IS NOT NULL AND v_lease_until > v_now THEN
+      v_block_until := greatest(
+        coalesce(v_next_allowed_at, v_now + interval '1 second'),
+        coalesce(v_cooldown_until, '-infinity'::timestamptz)
+      );
+      IF v_block_until <= v_now THEN
+        v_block_until := v_now + interval '1 second';
+      END IF;
+    END IF;
+
     v_wait_ms := greatest(
       100,
       ceil(extract(epoch FROM (v_block_until - v_now)) * 1000)::integer
