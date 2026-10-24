@@ -37,7 +37,6 @@ export default {
         method: "GET",
         headers: { "Accept": "application/json" },
         signal: AbortSignal.timeout(8000),
-        redirect: "error",
         cf: { cacheTtl: 0, cacheEverything: false },
       });
 
