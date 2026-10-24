@@ -57,5 +57,5 @@ As funções/tabelas antigas de telemetria permanecem presentes apenas por compa
 - CSS histórico consolidado: 198 blocos → 46, preservando a ordem da cascata e os IDs que têm consumidores JavaScript.
 - Telemetria endurecida com flush imediato, fallback de transporte, `sendBeacon` e presença baseada em `last_seen`.
 - ASF relay endurecido com token assinado, validação de build e tratamento consistente de CORS.
-- ASF: `asf-proxy-v1` restaurado para a implementação pré-fila preservada no commit `fda0657`; sem fila global PostgreSQL nem quota local por minuto. Preservar validação de build, token assinado e CORS.
+- ASF: a baseline pré-fila está preservada no commit `fda0657`. A branch `fix/asf-global-cadence-20261024` propõe cadência global de 10 s entre inícios, pausa partilhada perante erros GraphQL de indisponibilidade e respeito por `Retry-After`, sem rejeitar consultas por contagem fixa. Só ativar após aplicar a migração `20261024_asf_global_cadence.sql` e validar consultas reais; não misturar os erros ASF com falhas de autorização/cliente.
 - Build seguro com perfil conservador para o runtime operacional e checks automáticos de sintaxe/integridade.
