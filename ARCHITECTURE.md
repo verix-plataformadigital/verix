@@ -24,7 +24,7 @@
 
 ## 3. Regras de manutenção
 
-1. O browser é sempre considerado não confiável. Autorização, rate limiting e acesso ASF ficam no backend.
+1. O browser é sempre considerado não confiável. Autorização e acesso ASF ficam no backend; não impor quotas locais de pesquisa nem uma fila global sem requisito explícito, teste e aprovação.
 2. `BUILD_ID` é criado pela pipeline, injetado no cliente e vinculado ao token assinado.
 3. O runtime crítico do VÉRIX não usa transformações de obfuscação que possam alterar o fluxo de execução de forma agressiva.
 4. Telemetria deve continuar operacional mesmo quando um mecanismo de transporte falhar; usar fallback em vez de depender de um único `fetch`.
