@@ -60,72 +60,26 @@ function validDate(value: unknown): string | null {
 
 
 const ASF_MIN_INTERVAL_MS = 10_000;
-const ASF_QUEUE_MAX_WAIT_MS = 120_000;
 const ASF_QUEUE_RPC_TIMEOUT_MS = 5_000;
 const ASF_GRAPHQL_UNAVAILABLE_COOLDOWN_MS = 15_000;
 const ASF_UPSTREAM_ERROR_COOLDOWN_MS = 5_000;
 
-function waitASF(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
+async function tryAcquireASFSlot(ownerToken: string): Promise<{
+  granted: boolean;
+  waitMs: number;
+  reason: string;
+}> {
+  const state = await asfPacingRpc("verix_asf_acquire_slot_v1", {
+    p_owner_token: ownerToken,
+    p_lease_seconds: 30,
+    p_min_interval_ms: ASF_MIN_INTERVAL_MS
+  });
 
-async function asfPacingRpc(
-  name: string,
-  payload: Record<string, unknown>
-): Promise<any> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), ASF_QUEUE_RPC_TIMEOUT_MS);
-  try {
-    const response = await fetch(
-      SUPABASE_URL.replace(/\/+$/, "") + "/rest/v1/rpc/" + name,
-      {
-        method: "POST",
-        headers: {
-          "apikey": SERVICE_KEY,
-          "Authorization": "Bearer " + SERVICE_KEY,
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify(payload),
-        signal: controller.signal
-      }
-    );
-    if (!response.ok) throw new Error("asf_pacing_rpc_failed_" + response.status);
-    return await response.json();
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
-/**
- * Waits for a shared Postgres slot. This is pacing, not a per-minute quota:
- * requests wait their turn instead of being denied after a fixed count.
- */
-async function acquireASFSlot(ownerToken: string): Promise<number> {
-  const startedAt = Date.now();
-  let lastWaitMs = 1_000;
-
-  while (Date.now() - startedAt < ASF_QUEUE_MAX_WAIT_MS) {
-    const state = await asfPacingRpc("verix_asf_acquire_slot_v1", {
-      p_owner_token: ownerToken,
-      p_lease_seconds: 30,
-      p_min_interval_ms: ASF_MIN_INTERVAL_MS
-    });
-
-    if (state?.granted === true) return Date.now() - startedAt;
-
-    lastWaitMs = Math.max(100, Number(state?.wait_ms) || 1_000);
-    const remainingMs = ASF_QUEUE_MAX_WAIT_MS - (Date.now() - startedAt);
-    if (remainingMs <= 0) break;
-
-    const pauseMs = Math.min(
-      remainingMs,
-      Math.min(1_000, lastWaitMs) + Math.floor(Math.random() * 120)
-    );
-    await waitASF(pauseMs);
-  }
-
-  throw new Error("asf_queue_wait_timeout");
+  return {
+    granted: state?.granted === true,
+    waitMs: Math.max(100, Number(state?.wait_ms) || 1_000),
+    reason: String(state?.reason || "busy")
+  };
 }
 
 async function releaseASFSlot(ownerToken: string, cooldownMs: number): Promise<void> {
@@ -301,28 +255,40 @@ Deno.serve(async (req: Request) => {
 
     const url = ASF_ORIGIN + ASF_PATH + "?query=" + encodeURIComponent(query);
     const queueOwner = crypto.randomUUID();
-    let queueWaitMs = 0;
+    const slotStarted = Date.now();
+    let slot: { granted: boolean; waitMs: number; reason: string };
 
     try {
-      queueWaitMs = await acquireASFSlot(queueOwner);
+      slot = await tryAcquireASFSlot(queueOwner);
     } catch (error) {
-      const reason = String((error as Error)?.message || error);
-      const timedOut = reason === "asf_queue_wait_timeout";
       console.warn("verix_asf_pacing_unavailable", JSON.stringify({
         buildId,
-        reason: timedOut ? "wait_timeout" : "pacing_rpc_unavailable",
-        maxWaitMs: ASF_QUEUE_MAX_WAIT_MS
+        reason: "pacing_rpc_unavailable"
       }));
       return json({
         ok: false,
-        error: timedOut ? "asf_queue_wait_timeout" : "asf_queue_unavailable",
-        message: "ASF query is queued but the pacing service is temporarily unavailable"
+        error: "asf_queue_unavailable",
+        message: "ASF query scheduling is temporarily unavailable"
       }, 503, req, {
         "Retry-After": "5",
-        "X-Verix-ASF-Queue-Status": timedOut ? "timeout" : "unavailable"
+        "X-Verix-ASF-Queue-Status": "unavailable"
       });
     }
 
+    if (!slot.granted) {
+      const retrySeconds = Math.max(1, Math.min(300, Math.ceil(slot.waitMs / 1000)));
+      return json({
+        ok: false,
+        error: "asf_queue_wait",
+        message: "The ASF query is waiting for the next shared slot",
+        wait_ms: slot.waitMs
+      }, 503, req, {
+        "Retry-After": String(retrySeconds),
+        "X-Verix-ASF-Queue-Status": "waiting"
+      });
+    }
+
+    const queueWaitMs = Date.now() - slotStarted;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
     const started = Date.now();
@@ -349,8 +315,11 @@ Deno.serve(async (req: Request) => {
       if (upstream.status === 429) {
         releaseCooldownMs = upstreamRetryAfterMs(retryAfter);
       } else if (graphql.serviceUnavailable) {
-        // ASF uses HTTP 200 for this GraphQL execution error. Back off globally.
-        releaseCooldownMs = ASF_GRAPHQL_UNAVAILABLE_COOLDOWN_MS;
+        // ASF returns this execution error inside HTTP 200; respect Retry-After if present.
+        releaseCooldownMs = Math.max(
+          ASF_GRAPHQL_UNAVAILABLE_COOLDOWN_MS,
+          retryAfter ? upstreamRetryAfterMs(retryAfter) : 0
+        );
       } else if (upstream.status >= 500) {
         releaseCooldownMs = Math.max(ASF_UPSTREAM_ERROR_COOLDOWN_MS, upstreamRetryAfterMs(retryAfter));
       }
@@ -382,7 +351,7 @@ Deno.serve(async (req: Request) => {
         "X-Verix-ASF-Latency-Ms": String(elapsedMs),
         "X-Verix-ASF-Queue-Wait-Ms": String(queueWaitMs),
         "X-Verix-ASF-GraphQL-Error": graphql.count > 0 ? "1" : "0",
-        "X-Verix-ASF-Queue-Status": queueWaitMs > 0 ? "waited" : "immediate"
+        "X-Verix-ASF-Queue-Status": "acquired"
       };
 
       if (retryAfter) outHeaders["Retry-After"] = retryAfter;
