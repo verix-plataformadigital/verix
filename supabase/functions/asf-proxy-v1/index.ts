@@ -154,25 +154,20 @@ function upstreamRetryAfterMs(value: string | null): number {
 function inspectGraphqlErrors(bodyText: string): {
   count: number;
   serviceUnavailable: boolean;
-  messages: string[];
 } {
   try {
     const parsed = JSON.parse(bodyText);
     const errors = Array.isArray(parsed?.errors) ? parsed.errors : [];
-    const messages = errors.slice(0, 3).map((item: any) =>
-      String(item?.message || "GraphQL error").slice(0, 160)
-    );
     const normalized = errors.map((item: any) =>
       String(item?.message || "")
     ).join(" ").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
     return {
       count: errors.length,
-      serviceUnavailable: /servico indisponivel|service unavailable|temporarily unavailable/.test(normalized),
-      messages
+      serviceUnavailable: /servico indisponivel|service unavailable|temporarily unavailable/.test(normalized)
     };
   } catch (_) {
-    return { count: 0, serviceUnavailable: false, messages: [] };
+    return { count: 0, serviceUnavailable: false };
   }
 }
 
@@ -367,8 +362,7 @@ Deno.serve(async (req: Request) => {
           elapsedMs,
           queueWaitMs,
           errorCount: graphql.count,
-          serviceUnavailable: graphql.serviceUnavailable,
-          errors: graphql.messages
+          serviceUnavailable: graphql.serviceUnavailable
         }));
       }
 
