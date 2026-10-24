@@ -1150,7 +1150,7 @@ function submitConjunto(event) {
   const ASF_QUEUE_MAX_WAIT_MS = 120000;
   /*
    * Sem quota artificial VÉRIX por minuto.
-   * A fila apenas serializa pedidos concorrentes para proteger a estabilidade.
+   * O relay agenda as consultas globalmente; esperas de fila não consomem tentativas ASF.
    * Retries existem exclusivamente para falhas transitórias de transporte.
    * Um 429 devolvido pela ASF é respeitado e não é contornado automaticamente.
    */
@@ -1211,13 +1211,11 @@ function submitConjunto(event) {
     if (usage) usage.innerHTML = 'FILA GLOBAL ASF';
 
     if (windowText) {
-      windowText.textContent = (ASF_FILA_PENDENTES || 0) > 0
-        ? (ASF_FILA_PENDENTES + ' CONSULTA' + (ASF_FILA_PENDENTES === 1 ? '' : 'S') + ' EM FILA')
-        : 'FILA GLOBAL ATIVA';
+      windowText.textContent = 'FILA GLOBAL ATIVA';
       windowText.setAttribute('data-window-state', 'ready');
     }
 
-    cd.textContent = (ASF_FILA_PENDENTES || 0) > 0 ? 'A PROCESSAR' : 'LIVRE';
+    cd.textContent = 'AUTOMÁTICO';
     cd.setAttribute('data-state', 'ready');
     cd.title = 'O relay agenda pedidos globalmente; as consultas aguardam a sua vez e não são rejeitadas por uma contagem fixa.';
   }
@@ -1523,7 +1521,7 @@ function submitConjunto(event) {
         }
 
         var waitStarted = agoraMsASFDiag();
-        await esperarASF(requestedWaitMs + Math.floor(Math.random() * 250));
+        await esperarASF(Math.min(requestedWaitMs + Math.floor(Math.random() * 250), remainingWaitMs));
         queueWaitTotalMs += elapsedResponseMs + Math.max(0, agoraMsASFDiag() - waitStarted);
         diag.asfQueueWaitMs = queueWaitTotalMs;
         continue;
