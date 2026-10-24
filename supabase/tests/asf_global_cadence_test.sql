@@ -18,6 +18,9 @@ BEGIN
   IF v_state->>'granted' <> 'false' THEN
     RAISE EXCEPTION 'concurrent request must wait instead of acquiring: %', v_state;
   END IF;
+  IF (v_state->>'wait_ms')::integer > 2500 THEN
+    RAISE EXCEPTION 'client should not be told to wait for the full crash-recovery lease: %', v_state;
+  END IF;
 
   PERFORM public.verix_asf_release_slot_v1(
     '00000000-0000-0000-0000-000000000001'::uuid, 2000
