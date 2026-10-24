@@ -7,11 +7,11 @@
 
 ## Alteração proposta
 1. Uma única fila PostgreSQL partilhada por todas as instalações do VÉRIX.
-2. Intervalo inicial de 10 segundos entre inícios de pedidos upstream. Os pedidos esperam na fila, não são recusados após uma contagem fixa.
+2. Intervalo inicial de 10 segundos entre inícios de pedidos upstream. Quando ainda não há lugar, o relay devolve de imediato um estado de espera; o cliente espera de forma assíncrona e repete a mesma consulta sem consumir uma tentativa ASF. Assim não ficam pedidos HTTP presos no relay.
 3. Se a ASF devolver HTTP 429, respeitar `Retry-After` com cooldown partilhado.
 4. Se o corpo GraphQL contiver erro de indisponibilidade (`Serviço Indisponível` / `service unavailable`), aplicar cooldown partilhado de 15 segundos, mesmo que o estado HTTP seja 200.
 5. Erros HTTP 5xx e falhas de rede aplicam uma pausa conservadora; todos os pedidos registam a espera e os erros GraphQL sem gravar matrículas nos logs.
-6. O token HMAC, validação de matrícula/data, método upstream, query GraphQL, endpoint e parser do cliente permanecem intactos.
+6. O token HMAC, validação de matrícula/data, método upstream, query GraphQL, endpoint e parser dos resultados permanecem intactos. O transporte cliente foi alterado apenas para reconhecer respostas de espera da fila e manter o timeout de cada chamada acima do timeout upstream.
 
 ## Aplicação segura
 - Esta branch não está em produção.
