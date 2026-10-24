@@ -64,6 +64,34 @@ const ASF_QUEUE_RPC_TIMEOUT_MS = 5_000;
 const ASF_GRAPHQL_UNAVAILABLE_COOLDOWN_MS = 15_000;
 const ASF_UPSTREAM_ERROR_COOLDOWN_MS = 5_000;
 
+async function asfPacingRpc(
+  name: string,
+  payload: Record<string, unknown>
+): Promise<any> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ASF_QUEUE_RPC_TIMEOUT_MS);
+  try {
+    const response = await fetch(
+      SUPABASE_URL.replace(/\/+$/, "") + "/rest/v1/rpc/" + name,
+      {
+        method: "POST",
+        headers: {
+          "apikey": SERVICE_KEY,
+          "Authorization": "Bearer " + SERVICE_KEY,
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal
+      }
+    );
+    if (!response.ok) throw new Error("asf_pacing_rpc_failed_" + response.status);
+    return await response.json();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function tryAcquireASFSlot(ownerToken: string): Promise<{
   granted: boolean;
   waitMs: number;
