@@ -57,5 +57,5 @@ As funções/tabelas antigas de telemetria permanecem presentes apenas por compa
 - CSS histórico consolidado: 198 blocos → 46, preservando a ordem da cascata e os IDs que têm consumidores JavaScript.
 - Telemetria endurecida com flush imediato, fallback de transporte, `sendBeacon` e presença baseada em `last_seen`.
 - ASF relay endurecido com token assinado, validação de build e tratamento consistente de CORS.
-- ASF: sem quota artificial de consultas por minuto; `asf-proxy-v1` serializa pedidos globalmente com lease no Postgres, respeita `Retry-After` da ASF e regista separadamente erros GraphQL e espera na fila.
+- ASF: `asf-proxy-v1` restaurado para a implementação pré-fila preservada no commit `fda0657`; sem fila global PostgreSQL nem quota local por minuto. Preservar validação de build, token assinado e CORS.
 - Build seguro com perfil conservador para o runtime operacional e checks automáticos de sintaxe/integridade.
