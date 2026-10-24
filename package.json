@@ -8,7 +8,9 @@
     "release": "npm run build:secure && echo '\n✓ dist/ ready. Publish ONLY the contents of dist/. Keep the repo private.'"
   },
   "devDependencies": {
-    "javascript-obfuscator": "5.9.0"
+    "javascript-obfuscator": "5.9.0",
+    "esbuild": "0.28.2",
+    "@supabase/supabase-js": "2.118.0"
   },
   "engines": {
     "node": ">=22 <23"
