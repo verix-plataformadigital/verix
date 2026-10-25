@@ -10,7 +10,7 @@ function corsHeaders(req: Request) {
     "Access-Control-Allow-Origin": opaqueLocal ? "*" : (ALLOWED_ORIGINS.has(origin) ? origin : ""),
     "Access-Control-Allow-Headers": "content-type,x-verix-build-id,x-verix-client-token",
     "Access-Control-Allow-Methods": "POST,OPTIONS",
-    "Access-Control-Expose-Headers": "X-Verix-ASF-Relay, X-Verix-ASF-Latency-Ms, Retry-After",
+    "Access-Control-Expose-Headers": "X-Verix-ASF-Relay, X-Verix-ASF-Latency-Ms, X-Verix-ASF-Body-Kind, X-Verix-ASF-GraphQL-Errors, X-Verix-ASF-Data-Present, X-Verix-ASF-Nodes-Count, Retry-After",
     "Cache-Control": "no-store, max-age=0",
     "Vary": "Origin",
     "X-Content-Type-Options": "nosniff",
@@ -206,12 +206,63 @@ Deno.serve(async (req: Request) => {
 
       const text = await upstream.text();
       const elapsedMs = Date.now() - started;
+      const upstreamContentType = upstream.headers.get("content-type") || "";
+
+      // Diagnostics deliberately exclude the plate, raw body, and insurer/policy fields.
+      // This distinguishes GraphQL errors (often HTTP 200) from transport/HTML failures.
+      let bodyKind = "json";
+      let graphqlErrorCount = 0;
+      let graphqlErrorCodes: string[] = [];
+      let hasGraphQLData = false;
+      let nodesCount = -1;
+
+      if (!text.trim()) {
+        bodyKind = "empty";
+      } else {
+        try {
+          const parsed: any = JSON.parse(text);
+          if (parsed && typeof parsed === "object") {
+            const errors = Array.isArray(parsed.errors) ? parsed.errors : [];
+            graphqlErrorCount = errors.length;
+            graphqlErrorCodes = errors.slice(0, 3).map((item: any) => {
+              const rawCode = String(item?.extensions?.code || item?.code || "unknown");
+              return rawCode.replace(/[^A-Za-z0-9_.-]/g, "").slice(0, 60) || "unknown";
+            });
+            hasGraphQLData = Object.prototype.hasOwnProperty.call(parsed, "data");
+            const nodes = parsed?.data?.mobishoutEntry?.noone?.entry?.licenseNumber?.nodes;
+            if (Array.isArray(nodes)) nodesCount = nodes.length;
+          }
+        } catch (_) {
+          bodyKind = (/text\/html/i.test(upstreamContentType) || /^(?:<!doctype html|<html\b)/i.test(text.trim()))
+            ? "html"
+            : "non_json";
+        }
+      }
+
+      const diagnostic = {
+        buildId,
+        upstreamStatus: upstream.status,
+        elapsedMs,
+        contentType: upstreamContentType.split(";")[0].slice(0, 80),
+        bodyKind,
+        graphqlErrorCount,
+        graphqlErrorCodes,
+        hasGraphQLData,
+        nodesCount
+      };
+      if (upstream.status !== 200 || bodyKind !== "json" || graphqlErrorCount > 0 || !hasGraphQLData) {
+        console.warn("verix_asf_upstream_anomaly", JSON.stringify(diagnostic));
+      }
 
       const outHeaders: Record<string, string> = {
         ...corsHeaders(req),
-        "Content-Type": upstream.headers.get("content-type") || "application/json; charset=utf-8",
+        "Content-Type": upstreamContentType || "application/json; charset=utf-8",
         "X-Verix-ASF-Relay": "1",
-        "X-Verix-ASF-Latency-Ms": String(elapsedMs)
+        "X-Verix-ASF-Latency-Ms": String(elapsedMs),
+        "X-Verix-ASF-Body-Kind": bodyKind,
+        "X-Verix-ASF-GraphQL-Errors": String(graphqlErrorCount),
+        "X-Verix-ASF-Data-Present": hasGraphQLData ? "1" : "0",
+        "X-Verix-ASF-Nodes-Count": String(nodesCount)
       };
 
       const retryAfter = upstream.headers.get("retry-after");
