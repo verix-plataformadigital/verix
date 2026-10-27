@@ -1144,7 +1144,7 @@ function submitConjunto(event) {
 
   const ASF_PROXY_URL = 'https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/asf-proxy-v1';
 
-  const ASF_TIMEOUT_MS = 148000; // relay global pacing: 130s queue + up to 15s upstream
+  const ASF_TIMEOUT_MS = 15000;
   const ASF_MAX_ATTEMPTS = 3;
   const ASF_RETRY_DELAYS_MS = [300, 900];
   const ASF_RETRY_GRAPHQL_DELAYS_MS = [1500, 4000];
@@ -1429,8 +1429,6 @@ function submitConjunto(event) {
 
   function asfTentativaRetryable(status, errorType) {
     var type = String(errorType || '');
-    if (type === 'asf_pacing_unavailable') return false;
-    if (type === 'asf_pacing_queue_busy') return true;
     if (Number(status) === 429) return false;
     if ([502, 503, 504].indexOf(Number(status)) >= 0) return true;
     return ['timeout', 'network', 'unknown', 'graphql_service_unavailable'].indexOf(type) >= 0;
