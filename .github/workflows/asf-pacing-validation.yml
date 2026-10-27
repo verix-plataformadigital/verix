@@ -1,0 +1,26 @@
+name: ASF Global Pacing Validation
+on:
+  pull_request:
+    paths:
+      - "supabase/functions/asf-proxy-v1/**"
+      - "supabase/migrations/*asf_global_pacing_queue.sql"
+      - "verix-app.html"
+      - "tools/verify-asf-global-pacing.mjs"
+      - ".github/workflows/asf-pacing-validation.yml"
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check ASF relay
+        run: deno check --no-lock supabase/functions/asf-proxy-v1/index.ts
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+      - name: Verify global pacing contract
+        run: node tools/verify-asf-global-pacing.mjs
