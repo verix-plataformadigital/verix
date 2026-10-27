@@ -1,9 +1,10 @@
-name: ASF Global Pacing Validation
+name: ASF No-Queue Validation
 on:
   pull_request:
     paths:
       - "supabase/functions/asf-proxy-v1/**"
       - "supabase/migrations/*asf_global_pacing_queue.sql"
+      - "supabase/migrations/*remove_asf_global_pacing_queue.sql"
       - "verix-app.html"
       - "tools/verify-asf-global-pacing.mjs"
       - ".github/workflows/asf-pacing-validation.yml"
@@ -22,5 +23,5 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
-      - name: Verify global pacing contract
+      - name: Verify direct relay and no long global queue
         run: node tools/verify-asf-global-pacing.mjs
