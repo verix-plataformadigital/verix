@@ -1144,7 +1144,7 @@ function submitConjunto(event) {
 
   const ASF_PROXY_URL = 'https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/asf-proxy-v1';
 
-  const ASF_TIMEOUT_MS = 15000;
+  const ASF_TIMEOUT_MS = 148000; // relay global pacing: 130s queue + up to 15s upstream
   const ASF_MAX_ATTEMPTS = 3;
   const ASF_RETRY_DELAYS_MS = [300, 900];
   const ASF_RETRY_GRAPHQL_DELAYS_MS = [1500, 4000];
@@ -1428,9 +1428,12 @@ function submitConjunto(event) {
   }
 
   function asfTentativaRetryable(status, errorType) {
+    var type = String(errorType || '');
+    if (type === 'asf_pacing_unavailable') return false;
+    if (type === 'asf_pacing_queue_busy') return true;
     if (Number(status) === 429) return false;
     if ([502, 503, 504].indexOf(Number(status)) >= 0) return true;
-    return ['timeout', 'network', 'unknown', 'graphql_service_unavailable'].indexOf(String(errorType || '')) >= 0;
+    return ['timeout', 'network', 'unknown', 'graphql_service_unavailable'].indexOf(type) >= 0;
   }
 
   async function efetuarPedidoHttpASF(payload, matDisplay, queryId) {
@@ -1526,17 +1529,31 @@ function submitConjunto(event) {
               var relayLatencyHeader = res.headers.get('X-Verix-ASF-Latency-Ms');
               var relayLatencyMs = Number(relayLatencyHeader);
               if (Number.isFinite(relayLatencyMs)) diag.asfRelayLatencyMs = relayLatencyMs;
+              var relayQueueWaitMs = Number(res.headers.get('X-Verix-ASF-Queue-Wait-Ms'));
+              if (Number.isFinite(relayQueueWaitMs) && relayQueueWaitMs >= 0) {
+                diag.asfQueueWaitMs = Math.max(Number(diag.asfQueueWaitMs) || 0, relayQueueWaitMs);
+              }
               tentativa.retryAfterMs = interpretarRetryAfterASF(res.headers.get('Retry-After'));
             }
 
             bodyText = await res.text();
 
             if (res.status >= 400) {
-              tentativa.errorType = res.status === 429
-                ? 'http_429'
-                : (res.status === 503
-                  ? 'http_503'
-                  : (res.status === 504 ? 'relay_timeout' : (res.status === 502 ? 'relay_network' : 'http_' + res.status)));
+              var relayErrorBody = null;
+              try { relayErrorBody = JSON.parse(bodyText || ''); } catch (_) {}
+              if (relayErrorBody && relayErrorBody.error === 'asf_pacing_queue_busy') {
+                tentativa.errorType = 'asf_pacing_queue_busy';
+                tentativa.message = String(relayErrorBody.message || 'O VÉRIX tem consultas ASF em fila.');
+              } else if (relayErrorBody && relayErrorBody.error === 'asf_pacing_unavailable') {
+                tentativa.errorType = 'asf_pacing_unavailable';
+                tentativa.message = String(relayErrorBody.message || 'O agendador do relay Supabase está temporariamente indisponível.');
+              } else {
+                tentativa.errorType = res.status === 429
+                  ? 'http_429'
+                  : (res.status === 503
+                    ? 'http_503'
+                    : (res.status === 504 ? 'relay_timeout' : (res.status === 502 ? 'relay_network' : 'http_' + res.status)));
+              }
             }
           } catch (e) {
             tentativa.errorType = timeoutForcado
@@ -1546,6 +1563,19 @@ function submitConjunto(event) {
           } finally {
             if (timeoutId) clearTimeout(timeoutId);
           }
+        }
+
+        if (Number(tentativa.status) >= 400 && bodyText) {
+          try {
+            var relayErrorBodyCommon = JSON.parse(bodyText);
+            if (relayErrorBodyCommon && relayErrorBodyCommon.error === 'asf_pacing_queue_busy') {
+              tentativa.errorType = 'asf_pacing_queue_busy';
+              tentativa.message = String(relayErrorBodyCommon.message || 'O VÉRIX tem consultas ASF em fila.');
+            } else if (relayErrorBodyCommon && relayErrorBodyCommon.error === 'asf_pacing_unavailable') {
+              tentativa.errorType = 'asf_pacing_unavailable';
+              tentativa.message = String(relayErrorBodyCommon.message || 'O agendador do relay Supabase está temporariamente indisponível.');
+            }
+          } catch (_) {}
         }
 
         if (
@@ -1563,6 +1593,9 @@ function submitConjunto(event) {
         ultimaTentativa = tentativa;
 
         var retryable = asfTentativaRetryable(tentativa.status, tentativa.errorType);
+        if (tentativa.errorType === 'graphql_service_unavailable' && tentativaNo >= 2) {
+          retryable = false;
+        }
         if (!retryable || tentativaNo >= ASF_MAX_ATTEMPTS) {
           if (Number(tentativa.status) >= 200 && Number(tentativa.status) < 300) {
             diag.asfErrorType = null;
@@ -1732,8 +1765,16 @@ function submitConjunto(event) {
     diag.asfResponseBytes = responseText.length;
 
     if (httpStatus === 429) {
-      diag.asfErrorType = 'http_429';
-      diag.asfMessage = 'A ASF recusou temporariamente a consulta (HTTP 429)';
+      var pacingQueueError = null;
+      try { pacingQueueError = JSON.parse(responseText || ''); } catch (_) {}
+      if (pacingQueueError && pacingQueueError.error === 'asf_pacing_queue_busy') {
+        diag.asfErrorType = 'asf_pacing_queue_busy';
+        var queueWaitSeconds = Math.max(1, Number(pacingQueueError.retry_after_seconds) || Math.ceil((Number(pacingQueueError.wait_ms) || 0) / 1000));
+        diag.asfMessage = 'O VÉRIX está a gerir muitas consultas ASF em simultâneo. Nova tentativa automática em cerca de ' + queueWaitSeconds + ' s.';
+      } else {
+        diag.asfErrorType = 'http_429';
+        diag.asfMessage = 'A ASF recusou temporariamente a consulta (HTTP 429)';
+      }
       throw erroComDiagASF(diag.asfMessage, diag);
     }
 
@@ -1750,8 +1791,15 @@ function submitConjunto(event) {
     }
 
     if (httpStatus === 503) {
-      diag.asfErrorType = 'http_503';
-      diag.asfMessage = 'Serviço temporariamente indisponível após as tentativas automáticas';
+      var pacingFailure = null;
+      try { pacingFailure = JSON.parse(responseText || ''); } catch (_) {}
+      if (pacingFailure && pacingFailure.error === 'asf_pacing_unavailable') {
+        diag.asfErrorType = 'asf_pacing_unavailable';
+        diag.asfMessage = 'O relay Supabase não conseguiu reservar um lugar para enviar o pedido à ASF; a consulta não foi enviada ao serviço.';
+      } else {
+        diag.asfErrorType = 'http_503';
+        diag.asfMessage = 'Serviço temporariamente indisponível após as tentativas automáticas';
+      }
       throw erroComDiagASF(diag.asfMessage, diag);
     }
 

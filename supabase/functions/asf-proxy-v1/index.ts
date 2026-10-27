@@ -10,7 +10,7 @@ function corsHeaders(req: Request) {
     "Access-Control-Allow-Origin": opaqueLocal ? "*" : (ALLOWED_ORIGINS.has(origin) ? origin : ""),
     "Access-Control-Allow-Headers": "content-type,x-verix-build-id,x-verix-client-token",
     "Access-Control-Allow-Methods": "POST,OPTIONS",
-    "Access-Control-Expose-Headers": "X-Verix-ASF-Relay, X-Verix-ASF-Latency-Ms, X-Verix-ASF-Body-Kind, X-Verix-ASF-GraphQL-Errors, X-Verix-ASF-Data-Present, X-Verix-ASF-Nodes-Count, Retry-After",
+    "Access-Control-Expose-Headers": "X-Verix-ASF-Relay, X-Verix-ASF-Latency-Ms, X-Verix-ASF-Queue-Wait-Ms, X-Verix-ASF-Body-Kind, X-Verix-ASF-GraphQL-Errors, X-Verix-ASF-Data-Present, X-Verix-ASF-Nodes-Count, Retry-After",
     "Cache-Control": "no-store, max-age=0",
     "Vary": "Origin",
     "X-Content-Type-Options": "nosniff",
@@ -56,6 +56,47 @@ function validDate(value: unknown): string | null {
   const dt = new Date(Date.UTC(y, mo - 1, d));
   if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== mo - 1 || dt.getUTCDate() !== d) return null;
   return s;
+}
+
+
+const ASF_GLOBAL_INTERVAL_MS = 12200;
+const ASF_GLOBAL_MAX_WAIT_MS = 130000;
+const ASF_PACING_RPC_TIMEOUT_MS = 5000;
+
+function esperarASF(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function reservarLugarASF(): Promise<{ granted: boolean; waitMs: number }> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), ASF_PACING_RPC_TIMEOUT_MS);
+  try {
+    const response = await fetch(
+      SUPABASE_URL.replace(/\/+$/, "") + "/rest/v1/rpc/verix_asf_reserve_slot",
+      {
+        method: "POST",
+        headers: {
+          "apikey": SERVICE_KEY,
+          "Authorization": "Bearer " + SERVICE_KEY,
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          p_interval_ms: ASF_GLOBAL_INTERVAL_MS,
+          p_max_wait_ms: ASF_GLOBAL_MAX_WAIT_MS
+        }),
+        signal: controller.signal
+      }
+    );
+    if (!response.ok) throw new Error("asf_pacing_rpc_failed_" + response.status);
+    const result: any = await response.json();
+    return {
+      granted: result?.granted === true,
+      waitMs: Math.max(0, Number(result?.wait_ms) || 0)
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 const GATE_SECRET =
@@ -187,6 +228,42 @@ Deno.serve(async (req: Request) => {
       '") { nodes { id entity startDate endDate policy license code logo } } } } } }';
 
     const url = ASF_ORIGIN + ASF_PATH + "?query=" + encodeURIComponent(query);
+
+    let queueWaitMs = 0;
+    try {
+      const slot = await reservarLugarASF();
+      queueWaitMs = slot.waitMs;
+      if (!slot.granted) {
+        const retryAfterSeconds = Math.max(
+          13,
+          Math.ceil((queueWaitMs - ASF_GLOBAL_MAX_WAIT_MS + ASF_GLOBAL_INTERVAL_MS) / 1000)
+        );
+        console.warn("verix_asf_pacing_queue_busy", JSON.stringify({
+          buildId,
+          queueWaitMs,
+          retryAfterSeconds
+        }));
+        return json({
+          ok: false,
+          error: "asf_pacing_queue_busy",
+          message: "Há muitas consultas ASF em fila. A consulta não foi descartada pelo relay; tente novamente após o intervalo indicado.",
+          wait_ms: queueWaitMs,
+          retry_after_seconds: retryAfterSeconds
+        }, 429, req, {
+          "Retry-After": String(retryAfterSeconds),
+          "X-Verix-ASF-Queue-Wait-Ms": String(queueWaitMs)
+        });
+      }
+      if (queueWaitMs > 0) await esperarASF(queueWaitMs);
+    } catch (error) {
+      console.error("verix_asf_pacing_unavailable", String((error as Error)?.message || error));
+      return json({
+        ok: false,
+        error: "asf_pacing_unavailable",
+        message: "O agendador global de consultas ASF está temporariamente indisponível; nenhum pedido foi enviado à ASF."
+      }, 503, req, { "Retry-After": "12" });
+    }
+
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
     const started = Date.now();
@@ -243,6 +320,7 @@ Deno.serve(async (req: Request) => {
         buildId,
         upstreamStatus: upstream.status,
         elapsedMs,
+        queueWaitMs,
         contentType: upstreamContentType.split(";")[0].slice(0, 80),
         bodyKind,
         graphqlErrorCount,
@@ -259,6 +337,7 @@ Deno.serve(async (req: Request) => {
         "Content-Type": upstreamContentType || "application/json; charset=utf-8",
         "X-Verix-ASF-Relay": "1",
         "X-Verix-ASF-Latency-Ms": String(elapsedMs),
+        "X-Verix-ASF-Queue-Wait-Ms": String(queueWaitMs),
         "X-Verix-ASF-Body-Kind": bodyKind,
         "X-Verix-ASF-GraphQL-Errors": String(graphqlErrorCount),
         "X-Verix-ASF-Data-Present": hasGraphQLData ? "1" : "0",
