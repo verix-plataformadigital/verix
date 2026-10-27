@@ -1147,6 +1147,8 @@ function submitConjunto(event) {
   const ASF_TIMEOUT_MS = 15000;
   const ASF_MAX_ATTEMPTS = 3;
   const ASF_RETRY_DELAYS_MS = [300, 900];
+  const ASF_RETRY_GRAPHQL_DELAYS_MS = [1500, 4000];
+  const ASF_GRAPHQL_COOLDOWN_MAX_MS = 30000;
   /*
    * Sem quota artificial VÉRIX por minuto.
    * A fila apenas serializa pedidos concorrentes para proteger a estabilidade.
@@ -1154,9 +1156,52 @@ function submitConjunto(event) {
    * Um 429 devolvido pela ASF é respeitado e não é contornado automaticamente.
    */
   var ASF_FILA_PENDENTES = 0;
+  var ASF_GRAPHQL_FAILURE_STREAK = 0;
+  var ASF_GRAPHQL_COOLDOWN_UNTIL = 0;
 
   function agoraASF() { return Date.now(); }
   function esperarASF(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+  function interpretarRetryAfterASF(value) {
+    var raw = String(value || '').trim();
+    if (!raw) return 0;
+
+    var seconds = Number(raw);
+    var delay = Number.isFinite(seconds) && seconds >= 0
+      ? seconds * 1000
+      : (Date.parse(raw) - Date.now());
+
+    if (!Number.isFinite(delay)) return 0;
+    return Math.min(300000, Math.max(0, Math.ceil(delay)));
+  }
+
+  function calcularAtrasoRetentativaASF(tentativa, tentativaNo) {
+    var graphQLIndisponivel = String(tentativa && tentativa.errorType || '') === 'graphql_service_unavailable';
+    var atrasos = graphQLIndisponivel ? ASF_RETRY_GRAPHQL_DELAYS_MS : ASF_RETRY_DELAYS_MS;
+    var predefinido = graphQLIndisponivel ? 4000 : 900;
+    var base = atrasos[Math.min(tentativaNo - 1, atrasos.length - 1)] || predefinido;
+    var retryAfter = Math.max(0, Number(tentativa && tentativa.retryAfterMs) || 0);
+    var espera = Math.max(base, retryAfter);
+    return espera + Math.floor(Math.random() * Math.min(1000, Math.max(150, espera * 0.2)));
+  }
+
+  function registarFalhaGraphQLASF() {
+    ASF_GRAPHQL_FAILURE_STREAK = Math.min(6, ASF_GRAPHQL_FAILURE_STREAK + 1);
+    var base = Math.min(
+      ASF_GRAPHQL_COOLDOWN_MAX_MS,
+      2000 * Math.pow(2, ASF_GRAPHQL_FAILURE_STREAK - 1)
+    );
+    var jitter = Math.floor(Math.random() * Math.min(1000, Math.max(150, base * 0.2)));
+    ASF_GRAPHQL_COOLDOWN_UNTIL = Math.max(
+      ASF_GRAPHQL_COOLDOWN_UNTIL,
+      agoraASF() + base + jitter
+    );
+  }
+
+  function limparFalhasGraphQLASF() {
+    ASF_GRAPHQL_FAILURE_STREAK = 0;
+    ASF_GRAPHQL_COOLDOWN_UNTIL = 0;
+  }
   // ASF helpers — kept independent from quota/rate-control code.
   function formatarDataPT(valor) {
     if (valor === undefined || valor === null || String(valor).trim() === '' || String(valor) === '—') return '—';
@@ -1221,9 +1266,18 @@ function submitConjunto(event) {
     cd.title = 'Sem limite artificial local VÉRIX; pedidos concorrentes seguem em paralelo.';
   }
 
-  function reservarSlotFisicoASF() {
+  async function reservarSlotFisicoASF() {
+    var restante = Math.max(0, ASF_GRAPHQL_COOLDOWN_UNTIL - agoraASF());
+    while (restante > 0) {
+      var countdown = document.getElementById('asfRateCountdown');
+      var windowText = document.getElementById('asfRateWindowText');
+      if (windowText) windowText.textContent = 'ASF A RECUPERAR';
+      if (countdown) countdown.textContent = 'AGUARDE ' + Math.ceil(restante / 1000) + 's';
+      await esperarASF(Math.min(restante, 500));
+      restante = Math.max(0, ASF_GRAPHQL_COOLDOWN_UNTIL - agoraASF());
+    }
     atualizarContadorVisualASF();
-    return Promise.resolve(agoraASF());
+    return agoraASF();
   }
   atualizarContadorVisualASF();
 
@@ -1414,7 +1468,8 @@ function submitConjunto(event) {
         errorType: null,
         message: null,
         responseBytes: null,
-        responseContentType: null
+        responseContentType: null,
+        retryAfterMs: 0
       };
 
       var bodyText = '';
@@ -1430,6 +1485,9 @@ function submitConjunto(event) {
           xhr.send(requestBody);
 
           tentativa.status = Number(xhr.Status || 0);
+          try {
+            tentativa.retryAfterMs = interpretarRetryAfterASF(xhr.GetResponseHeader('Retry-After'));
+          } catch (_) {}
           bodyText = xhr.ResponseText || '';
         } else {
           var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
@@ -1468,6 +1526,7 @@ function submitConjunto(event) {
               var relayLatencyHeader = res.headers.get('X-Verix-ASF-Latency-Ms');
               var relayLatencyMs = Number(relayLatencyHeader);
               if (Number.isFinite(relayLatencyMs)) diag.asfRelayLatencyMs = relayLatencyMs;
+              tentativa.retryAfterMs = interpretarRetryAfterASF(res.headers.get('Retry-After'));
             }
 
             bodyText = await res.text();
@@ -1517,8 +1576,7 @@ function submitConjunto(event) {
           };
         }
 
-        var delay = ASF_RETRY_DELAYS_MS[Math.min(tentativaNo - 1, ASF_RETRY_DELAYS_MS.length - 1)] || 900;
-        await esperarASF(delay);
+        await esperarASF(calcularAtrasoRetentativaASF(tentativa, tentativaNo));
       } catch (e) {
         if (!tentativa.durationMs) {
           tentativa.message = tentativa.message || textoErroASF(e);
@@ -1531,8 +1589,7 @@ function submitConjunto(event) {
           throw erroComDiagASF((e && e.message) || 'Falha de comunicação com o relay ASF', diag);
         }
 
-        var delayEx = ASF_RETRY_DELAYS_MS[Math.min(tentativaNo - 1, ASF_RETRY_DELAYS_MS.length - 1)] || 900;
-        await esperarASF(delayEx);
+        await esperarASF(calcularAtrasoRetentativaASF(tentativa, tentativaNo));
       }
     }
 
@@ -1719,6 +1776,7 @@ function submitConjunto(event) {
       }
 
       var resultado = interpretarRespostaASF(json);
+      limparFalhasGraphQLASF();
       diag.asfErrorType = null;
       diag.asfMessage = null;
       return { resultado: resultado, asfDiagnostic: diag };
@@ -1730,6 +1788,14 @@ function submitConjunto(event) {
             : 'graphql';
       }
       diag.asfMessage = String(e && e.message || 'Resposta ASF inválida').slice(0, 500);
+      var mensagemBaixa = diag.asfMessage.toLowerCase();
+      if (
+        mensagemBaixa.indexOf('serviço indisponível') >= 0 ||
+        mensagemBaixa.indexOf('servico indisponivel') >= 0
+      ) {
+        diag.asfErrorType = 'graphql_service_unavailable';
+        registarFalhaGraphQLASF();
+      }
       throw erroComDiagASF(diag.asfMessage, diag);
     }
   }
