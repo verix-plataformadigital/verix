@@ -72,7 +72,7 @@ async function reservarLugarASF(): Promise<{ granted: boolean; waitMs: number }>
   const timeout = setTimeout(() => controller.abort(), ASF_PACING_RPC_TIMEOUT_MS);
   try {
     const response = await fetch(
-      SUPABASE_URL.replace(/\\/+$/, "") + "/rest/v1/rpc/verix_asf_reserve_slot",
+      SUPABASE_URL.replace(/\/+$/, "") + "/rest/v1/rpc/verix_asf_reserve_slot",
       {
         method: "POST",
         headers: {
