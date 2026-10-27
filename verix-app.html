@@ -1591,9 +1591,8 @@ function submitConjunto(event) {
         ultimaTentativa = tentativa;
 
         var retryable = asfTentativaRetryable(tentativa.status, tentativa.errorType);
-        if (tentativa.errorType === 'graphql_service_unavailable' && tentativaNo >= 2) {
-          retryable = false;
-        }
+        // Experimental branch: allow the configured third bounded attempt for
+        // GraphQL Service Unavailable. HTTP 429 remains non-retryable.
         if (!retryable || tentativaNo >= ASF_MAX_ATTEMPTS) {
           if (Number(tentativa.status) >= 200 && Number(tentativa.status) < 300) {
             diag.asfErrorType = null;
