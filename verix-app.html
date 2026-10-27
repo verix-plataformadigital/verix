@@ -1351,10 +1351,32 @@ function submitConjunto(event) {
   }
 
 
+  function asfRespostaGraphQLIndisponivel(bodyText) {
+    try {
+      var resposta = JSON.parse(String(bodyText || ''));
+      if (!resposta || !Array.isArray(resposta.errors) || !resposta.errors.length) return false;
+
+      return resposta.errors.some(function (erro) {
+        var mensagem = String(erro && erro.message || '').toLowerCase();
+        var indisponivel =
+          mensagem.indexOf('serviço indisponível') >= 0 ||
+          mensagem.indexOf('servico indisponivel') >= 0;
+        if (!indisponivel) return false;
+
+        var caminho = Array.isArray(erro && erro.path)
+          ? erro.path.join('.').toLowerCase()
+          : '';
+        return !caminho || caminho.indexOf('licensenumber') >= 0;
+      });
+    } catch (_) {
+      return false;
+    }
+  }
+
   function asfTentativaRetryable(status, errorType) {
     if (Number(status) === 429) return false;
     if ([502, 503, 504].indexOf(Number(status)) >= 0) return true;
-    return ['timeout', 'network', 'unknown'].indexOf(String(errorType || '')) >= 0;
+    return ['timeout', 'network', 'unknown', 'graphql_service_unavailable'].indexOf(String(errorType || '')) >= 0;
   }
 
   async function efetuarPedidoHttpASF(payload, matDisplay, queryId) {
@@ -1465,6 +1487,15 @@ function submitConjunto(event) {
           } finally {
             if (timeoutId) clearTimeout(timeoutId);
           }
+        }
+
+        if (
+          Number(tentativa.status) >= 200 &&
+          Number(tentativa.status) < 300 &&
+          asfRespostaGraphQLIndisponivel(bodyText)
+        ) {
+          tentativa.errorType = 'graphql_service_unavailable';
+          tentativa.message = 'ASF GraphQL devolveu Serviço Indisponível em licenseNumber';
         }
 
         tentativa.responseBytes = bodyText ? String(bodyText).length : 0;
