@@ -21,7 +21,8 @@ assert.ok(cleanup.includes('DROP TABLE IF EXISTS public.verix_asf_pacing_state')
 
 console.log('ASF no-queue contract passed.');
 
-// One low-volume compatibility probe against the publicly identified hostnames.
+// One low-volume compatibility probe against documented/publicly identified ASF hostnames.
+// This diagnostic revision tests only origin alias behavior; production code is unchanged.
 // The deliberately synthetic plate is used only to classify the API envelope.
 // Do not log full response bodies or any vehicle/insurance fields.
 const syntheticQuery =
