@@ -82,6 +82,9 @@ for (const candidate of candidates) {
       test: candidate.name,
       transportError: error?.name || 'Error',
       message: String(error?.message || error).slice(0, 140),
+      causeCode: String(error?.cause?.code || ''),
+      causeName: String(error?.cause?.name || ''),
+      causeMessage: String(error?.cause?.message || '').slice(0, 180),
       elapsedMs: Date.now() - started
     }));
   } finally {
