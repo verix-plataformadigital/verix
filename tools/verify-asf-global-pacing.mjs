@@ -6,13 +6,13 @@ const app = readFileSync('verix-app.html', 'utf8');
 const cleanup = readFileSync('supabase/migrations/20261027192500_remove_asf_global_pacing_queue.sql', 'utf8');
 
 assert.doesNotMatch(proxy, /reservarLugarASF|verix_asf_reserve_slot|ASF_GLOBAL_INTERVAL_MS/);
-assert.match(proxy, /const url = ASF_ORIGIN \\+ ASF_PATH \\+ "\\?query=" \\+ encodeURIComponent\\(query\\)/);
+assert.ok(proxy.includes('const url = ASF_ORIGIN + ASF_PATH + "?query=" + encodeURIComponent(query)'));
 assert.match(proxy, /method: "POST"/);
 assert.match(app, /const ASF_TIMEOUT_MS = 15000;/);
 assert.doesNotMatch(app, /const ASF_TIMEOUT_MS = 148000/);
-assert.doesNotMatch(app, /if \\(type === 'asf_pacing_queue_busy'\\) return true/);
-assert.match(cleanup, /DROP FUNCTION IF EXISTS public\\.verix_asf_reserve_slot\\(integer, integer\\)/);
-assert.match(cleanup, /DROP TABLE IF EXISTS public\\.verix_asf_pacing_state/);
+assert.ok(!app.includes("if (type === 'asf_pacing_queue_busy') return true"));
+assert.ok(cleanup.includes("DROP FUNCTION IF EXISTS public.verix_asf_reserve_slot(integer, integer)"));
+assert.ok(cleanup.includes("DROP TABLE IF EXISTS public.verix_asf_pacing_state"));
 console.log('ASF no-queue contract passed.');
 
 // Egress comparison: run at most six identical serial requests from this GitHub
@@ -66,8 +66,7 @@ if (process.env.GITHUB_ACTIONS === 'true') {
         bodyKind, graphqlErrorCount: errors.length, errors, dataPresent, nodesCount,
         retryAfter: response.headers.get('retry-after')
       });
-      const failed = response.status === 429 || response.status >= 500 || errors.length > 0;
-      if (failed) break;
+      if (response.status === 429 || response.status >= 500 || errors.length > 0) break;
     } catch (error) {
       results.push({
         index, httpStatus: null, elapsedMs: Date.now() - started,
