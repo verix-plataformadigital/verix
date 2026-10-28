@@ -6,18 +6,18 @@ const app = readFileSync('verix-app.html', 'utf8');
 const cleanup = readFileSync('supabase/migrations/20261027192500_remove_asf_global_pacing_queue.sql', 'utf8');
 
 // The ASF relay must forward directly instead of placing requests in a long queue.
-assert.doesNotMatch(proxy, /reservarLugarASF|verix_asf_reserve_slot|ASF_GLOBAL_INTERVAL_MS/);
-assert.match(proxy, /const url = ASF_ORIGIN \\+ ASF_PATH \\+ "\\?query=" \\+ encodeURIComponent\\(query\\)/);
-assert.match(proxy, /method: "POST"/);
+assert.ok(proxy.includes('const url = ASF_ORIGIN + ASF_PATH + "?query=" + encodeURIComponent(query)'));
+assert.ok(proxy.includes('method: "POST"'));
+assert.ok(!/reservarLugarASF|verix_asf_reserve_slot|ASF_GLOBAL_INTERVAL_MS/.test(proxy));
 
 // A client timeout must not be extended to the former 130 s queue window.
-assert.match(app, /const ASF_TIMEOUT_MS = 15000;/);
-assert.doesNotMatch(app, /const ASF_TIMEOUT_MS = 148000/);
-assert.doesNotMatch(app, /if \\(type === 'asf_pacing_queue_busy'\\) return true/);
+assert.ok(app.includes('const ASF_TIMEOUT_MS = 15000;'));
+assert.ok(!app.includes('const ASF_TIMEOUT_MS = 148000'));
+assert.ok(!app.includes("if (type === 'asf_pacing_queue_busy') return true"));
 
 // Remove the database scheduler created by the temporary queue experiment.
-assert.match(cleanup, /DROP FUNCTION IF EXISTS public\\.verix_asf_reserve_slot\\(integer, integer\\)/);
-assert.match(cleanup, /DROP TABLE IF EXISTS public\\.verix_asf_pacing_state/);
+assert.ok(cleanup.includes('DROP FUNCTION IF EXISTS public.verix_asf_reserve_slot(integer, integer)'));
+assert.ok(cleanup.includes('DROP TABLE IF EXISTS public.verix_asf_pacing_state'));
 
 console.log('ASF no-queue contract passed.');
 
@@ -57,8 +57,10 @@ for (const candidate of candidates) {
       payload = JSON.parse(raw);
       bodyKind = 'json';
     } catch {
-      if (/text\\/html/i.test(response.headers.get('content-type') || '') ||
-          /^(?:<!doctype html|<html\\b)/i.test(raw.trim())) bodyKind = 'html';
+      const contentType = response.headers.get('content-type') || '';
+      const bodyStart = raw.trim().toLowerCase();
+      if (contentType.toLowerCase().includes('text/html') ||
+          bodyStart.startsWith('<!doctype html') || bodyStart.startsWith('<html')) bodyKind = 'html';
       else if (!raw.trim()) bodyKind = 'empty';
     }
     const errors = Array.isArray(payload?.errors) ? payload.errors : [];
