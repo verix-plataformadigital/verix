@@ -73,7 +73,8 @@ try {
       }
     }
     if (current.length >= 4) printable.push(current);
-    const unique = [...new Set(printable.filter(value => searchTerms.some(term => value.toLowerCase().includes(term.toLowerCase())))];
+    const selected = printable.filter(value => { const lower = value.toLowerCase(); return searchTerms.some(term => lower.includes(term.toLowerCase())); });
+    const unique = [...new Set(selected)];
     dexFindings.push({ dex: entry, matches: unique.slice(0, 140) });
   }
   console.log(JSON.stringify({ dexEntries, dexFindings }));
