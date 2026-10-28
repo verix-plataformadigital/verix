@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, sep } from "node:path";
 import { createHash } from "node:crypto";
@@ -51,7 +51,7 @@ try {
   const version = run(bin, ["--version"], { timeout: 30000 }).trim();
   console.log(JSON.stringify({ decompiler: "jadx", version }));
 
-  console.log(JSON.stringify({ dexdumpStarting: true, note: "strings are extracted from dex bytecode; no app is executed" }));
+  console.log(JSON.stringify({ dexdumpStarting: true, note: "static-only extraction; the app is not installed or executed" }));
   const archiveEntries = run("unzip", ["-Z1", apkPath]).split(String.fromCharCode(10)).map(name => name.trim()).filter(Boolean);
   const dexEntries = archiveEntries.filter(name => {
     if (name === "classes.dex") return true;
@@ -60,7 +60,7 @@ try {
     return middle.length > 0 && [...middle].every(char => char >= "0" && char <= "9");
   });
   const dexFindings = [];
-  const searchTerms = ["asf", "mobinteg", "mobishoutentry", "licensenumber", "graphql", "ASF_URL", "http://", "https://"];
+  const searchTerms = ["asf-matricula", "ext01.asf.com.pt", "ASF_URL", "licenseNumber", "mobishoutEntry", "graphql", "http://", "https://"];
   for (const entry of dexEntries) {
     const dexBytes = execFileSync("unzip", ["-p", apkPath, entry], { encoding: "buffer", maxBuffer: 40 * 1024 * 1024 });
     const printable = [];
@@ -73,25 +73,49 @@ try {
       }
     }
     if (current.length >= 4) printable.push(current);
-    const selected = printable.filter(value => { const lower = value.toLowerCase(); return searchTerms.some(term => lower.includes(term.toLowerCase())); });
-    const unique = [...new Set(selected)];
-    dexFindings.push({ dex: entry, matches: unique.slice(0, 140) });
+    const selected = printable.filter(value => {
+      const lower = value.toLowerCase();
+      return searchTerms.some(term => lower.includes(term.toLowerCase()));
+    });
+    dexFindings.push({ dex: entry, matches: [...new Set(selected)].slice(0, 120) });
   }
   console.log(JSON.stringify({ dexEntries, dexFindings }));
 
-  run(bin, [
-    "--no-res", "--threads-count", "1",
-    "-d", outDir, apkPath
-  ], { timeout: 240000 });
-  const files = [];
-  function walk(dir) {
-    for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      const path = join(dir, entry.name);
-      if (entry.isDirectory()) walk(path);
-      else if (entry.isFile() && path.endsWith(".java")) files.push(path);
-    }
+  // Decode Android resources/manifest independently; old URLs may live in strings.xml rather than DEX.
+  const apktoolJar = join(work, "apktool.jar");
+  const apktoolOut = join(work, "apktool-decoded");
+  run("curl", [
+    "-fLsS", "--retry", "2", "--retry-delay", "2",
+    "--connect-timeout", "15", "--max-time", "120",
+    "https://github.com/iBotPeaches/Apktool/releases/download/v2.11.1/apktool_2.11.1.jar",
+    "-o", apktoolJar
+  ]);
+  let apktoolStatus = { completed: false };
+  try {
+    run("java", ["-jar", apktoolJar, "d", "-f", "-o", apktoolOut, apkPath], { timeout: 240000 });
+    apktoolStatus = { completed: true };
+  } catch (error) {
+    apktoolStatus = {
+      completed: false,
+      exitCode: error?.status ?? null,
+      stdout: String(error?.stdout?.toString?.() || "").slice(-2500),
+      stderr: String(error?.stderr?.toString?.() || "").slice(-2500)
+    };
   }
-  walk(join(outDir, "sources"));
+
+  // JADX can return exit 3 after successfully decompiling almost all classes; still scan partial output.
+  let jadxStatus = { completed: false };
+  try {
+    run(bin, ["--no-res", "--threads-count", "1", "-d", outDir, apkPath], { timeout: 240000 });
+    jadxStatus = { completed: true };
+  } catch (error) {
+    jadxStatus = {
+      completed: false,
+      exitCode: error?.status ?? null,
+      stdout: String(error?.stdout?.toString?.() || "").slice(-2500),
+      stderr: String(error?.stderr?.toString?.() || "").slice(-2500)
+    };
+  }
 
   const terms = [
     "ws.mobinteg.com/asf-matricula",
@@ -99,24 +123,56 @@ try {
     "ASF_URL_OLD",
     "ASF_URL",
     "licenseNumber(",
-    "mobishoutEntry"
+    "mobishoutEntry",
+    "http://",
+    "https://"
   ];
-  const matches = [];
-  for (const path of files) {
-    const lines = readFileSync(path, "utf8").split(String.fromCharCode(10)).map(line => line.replace(String.fromCharCode(13), ""));
-    const hits = [];
-    for (let i = 0; i < lines.length; i++) {
-      if (terms.some(term => lines[i].includes(term))) {
-        hits.push({ line: i + 1, text: lines[i].trim().slice(0, 280) });
+  function scanTree(root, maxFiles = 8000) {
+    const found = [];
+    let visited = 0;
+    if (!existsSync(root)) return { visited, found };
+    function visit(dir) {
+      if (visited >= maxFiles) return;
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        if (visited >= maxFiles) break;
+        const path = join(dir, entry.name);
+        if (entry.isDirectory()) visit(path);
+        else if (entry.isFile()) {
+          visited++;
+          try {
+            if (statSync(path).size > 3_000_000) continue;
+            const raw = readFileSync(path, "utf8");
+            const lines = raw.split(String.fromCharCode(10)).map(line => line.replace(String.fromCharCode(13), ""));
+            const hits = [];
+            for (let i = 0; i < lines.length; i++) {
+              if (terms.some(term => lines[i].toLowerCase().includes(term.toLowerCase()))) {
+                hits.push({ line: i + 1, text: lines[i].trim().slice(0, 260) });
+                if (hits.length >= 14) break;
+              }
+            }
+            if (hits.length) found.push({ file: path.slice(root.length + 1).split(sep).join("/"), hits });
+          } catch {}
+        }
       }
     }
-    if (hits.length) matches.push({ file: path.slice(join(outDir, "sources").length + 1).split(sep).join("/"), hits: hits.slice(0, 18) });
+    visit(root);
+    return { visited, found: found.slice(0, 80) };
   }
-  const appMatches = matches.filter(x => x.file.includes("com/mobinteg/temseguro"));
+  const decodedResources = scanTree(apktoolOut, 8000);
+  const javaSources = scanTree(join(outDir, "sources"), 8000);
+  let apktoolMetadata = "";
+  try {
+    apktoolMetadata = readFileSync(join(apktoolOut, "apktool.yml"), "utf8").split(String.fromCharCode(10)).slice(0, 45).join(String.fromCharCode(10));
+  } catch {}
   console.log(JSON.stringify({
-    decompiledJavaFiles: files.length,
-    relevantApplicationFiles: appMatches.length,
-    relevantMatches: appMatches.slice(0, 30)
+    historicalAPKSizeBytes: apkSize,
+    historicalAPKSha256: sha256(apkPath),
+    dexEntries,
+    apktoolStatus,
+    apktoolMetadata,
+    decodedResourceMatches: decodedResources,
+    jadxStatus,
+    decompiledSourceMatches: javaSources
   }));
   console.log("historicalAPK: analysis completed; APK and decompiler remained in runner temp directory, no artifact uploaded");
 } catch (error) {
