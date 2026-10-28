@@ -28,25 +28,26 @@ const syntheticQuery =
   'mutation license { mobishoutEntry { noone { entry { licenseNumber(license: "ZZZ9999", date: "2026/10/28") { nodes { id entity startDate endDate policy license code logo } } } } } }';
 
 const candidates = [
-  { name: 'ext01-control', origin: 'https://ext01.asf.com.pt' },
-  { name: 'ext02-candidate', origin: 'https://ext02.asf.com.pt' },
-  { name: 'www-ext02-candidate', origin: 'https://www.ext02.asf.com.pt' }
+  { name: 'ext01-control', origin: 'https://ext01.asf.com.pt', path: '/api/src/', method: 'POST' },
+  { name: 'ext02-candidate', origin: 'https://ext02.asf.com.pt', path: '/api/src/', method: 'POST' },
+  { name: 'www-ext02-candidate', origin: 'https://www.ext02.asf.com.pt', path: '/api/src/', method: 'POST' },
+  { name: 'mobinteg-legacy-root', origin: 'http://ws.mobinteg.com', path: '/asf-matricula/?', method: 'GET' }
 ];
 
 for (const candidate of candidates) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 9000);
-  const url = candidate.origin + '/api/src/?query=' + encodeURIComponent(syntheticQuery);
+  const url = candidate.origin + candidate.path + (candidate.method === 'POST' ? '?query=' + encodeURIComponent(syntheticQuery) : '');
   const started = Date.now();
   try {
     const response = await fetch(url, {
-      method: 'POST',
+      method: candidate.method,
       headers: {
         Accept: 'application/json, text/plain, */*',
         'Cache-Control': 'no-cache',
         Pragma: 'no-cache'
       },
-      body: null,
+      ...(candidate.method === 'POST' ? { body: null } : {}),
       redirect: 'follow',
       signal: controller.signal
     });
@@ -69,6 +70,8 @@ for (const candidate of candidates) {
       test: candidate.name,
       finalHost: (() => { try { return new URL(response.url).host; } catch { return 'unknown'; } })(),
       status: response.status,
+      redirected: response.redirected,
+      allowHeader: response.headers.get('allow') || '',
       contentType: (response.headers.get('content-type') || '').split(';')[0],
       bodyKind,
       graphqlErrorCount: errors.length,
