@@ -75,7 +75,7 @@ if (process.env.GITHUB_ACTIONS === 'true') {
       });
       break;
     }
-    if (index < plates.length - 1) await new Promise(resolve => setTimeout(resolve, 10000));
+    if (index < plates.length - 1) await new Promise(resolve => setTimeout(resolve, 13000));
   }
   console.log('LIVE_ASF_GITHUB_EGRESS_DISTINCT_PLATES=' + JSON.stringify({
     maxRequests: plates.length,
