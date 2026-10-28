@@ -65,26 +65,26 @@ try {
   }
   walk(join(outDir, "sources"));
 
-  const patterns = [
-    /ws\\.mobinteg\\.com\\/asf-matricula/i,
-    /ext01\\.asf\\.com\\.pt\\/api\\/src/i,
-    /ASF_URL_OLD/,
-    /ASF_URL/,
-    /licenseNumber\\(/,
-    /mobishoutEntry/
+  const terms = [
+    "ws.mobinteg.com/asf-matricula",
+    "ext01.asf.com.pt/api/src",
+    "ASF_URL_OLD",
+    "ASF_URL",
+    "licenseNumber(",
+    "mobishoutEntry"
   ];
   const matches = [];
   for (const path of files) {
     const lines = readFileSync(path, "utf8").split(/\\r?\\n/);
     const hits = [];
     for (let i = 0; i < lines.length; i++) {
-      if (patterns.some(re => re.test(lines[i]))) {
+      if (terms.some(term => lines[i].includes(term))) {
         hits.push({ line: i + 1, text: lines[i].trim().slice(0, 280) });
       }
     }
-    if (hits.length) matches.push({ file: path.slice(join(outDir, "sources").length + 1), hits: hits.slice(0, 18) });
+    if (hits.length) matches.push({ file: path.slice(join(outDir, "sources").length + 1).replaceAll("\\\\", "/"), hits: hits.slice(0, 18) });
   }
-  const appMatches = matches.filter(x => /com\\/mobinteg\\/temseguro/i.test(x.file));
+  const appMatches = matches.filter(x => x.file.includes("com/mobinteg/temseguro"));
   console.log(JSON.stringify({
     decompiledJavaFiles: files.length,
     relevantApplicationFiles: appMatches.length,
