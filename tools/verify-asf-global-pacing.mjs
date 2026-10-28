@@ -21,17 +21,17 @@ assert.match(cleanup, /DROP TABLE IF EXISTS public\.verix_asf_pacing_state/);
 
 console.log('ASF no-queue contract passed.');
 
-// One temporary, synthetic-input probe, executed only in GitHub Actions. This invokes
-// a test-only Supabase function that sends exactly two requests to ASF from Supabase:
-// current encodeURIComponent serialization vs the raw URL string passed by the APK.
-// The diagnostic response excludes the synthetic input and all insurance/policy data.
+// A bounded, one-shot reproduction, executed only in GitHub Actions. The temporary
+// Supabase function uses a synthetic plate, sends the same request sequentially, and
+// stops immediately after the first upstream failure (maximum eight requests).
+// It returns sanitized status/GraphQL diagnostics only, never raw insurance data.
 if (process.env.GITHUB_ACTIONS === 'true') {
   const endpoint = 'https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/asf-url-encoding-ab-20261028?k=9d428f6b7b4b02f08f0e6f2d6e8a411e7f8c663c1d5b4e9a';
   const response = await fetch(endpoint, { signal: AbortSignal.timeout(30000) });
   const body = await response.text();
-  assert.equal(response.status, 200, `Live ASF serialization probe failed: HTTP ${response.status}`);
+  assert.equal(response.status, 200, `Live ASF reproduction failed: HTTP ${response.status}`);
   const report = JSON.parse(body);
-  assert.equal(report.requestCount, 2, 'Probe must send exactly two upstream requests');
-  assert.equal(report.results?.length, 2, 'Probe must return both serialization variants');
-  console.log('LIVE_ASF_URL_SERIALIZATION_AB=' + JSON.stringify(report));
+  assert.ok(report.requestCount >= 1 && report.requestCount <= 8, 'Probe must be bounded to 1–8 requests');
+  assert.equal(report.results?.length, report.requestCount, 'Result count must match actual upstream requests');
+  console.log('LIVE_ASF_SEQUENTIAL_REPRODUCTION=' + JSON.stringify(report));
 }
