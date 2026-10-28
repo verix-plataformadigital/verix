@@ -15,19 +15,20 @@ assert.ok(cleanup.includes("DROP FUNCTION IF EXISTS public.verix_asf_reserve_slo
 assert.ok(cleanup.includes("DROP TABLE IF EXISTS public.verix_asf_pacing_state"));
 console.log('ASF no-queue contract passed.');
 
-// Egress comparison: run at most six identical serial requests from this GitHub
-// runner, not from Supabase. Stop at the first GraphQL/upstream failure, no retries.
-// Uses a synthetic plate. Only status and sanitized GraphQL diagnostics are printed.
+// Egress/rate distinction: six DIFFERENT synthetic registrations from this GitHub
+// runner. Same method, query shape, headers, pacing; stop at first upstream error.
+// Only sanitized status and GraphQL diagnostics are printed; no raw payload or plate.
 if (process.env.GITHUB_ACTIONS === 'true') {
   const endpoint = 'https://ext01.asf.com.pt/api/src/?query=';
-  const plate = 'ZZZZ9999';
+  const plates = ['ZZ99ZZ', 'YY88YY', 'XX77XX', 'WW66WW', 'VV55VV', 'UU44UU'];
   const date = '2026/10/28';
-  const query = 'mutation license { mobishoutEntry { noone { entry { licenseNumber(license: "' +
-    plate + '", date: "' + date +
-    '") { nodes { id entity startDate endDate policy license code logo } } } } } }';
-  const url = endpoint + encodeURIComponent(query);
   const results = [];
-  for (let index = 1; index <= 6; index++) {
+  for (let index = 0; index < plates.length; index++) {
+    const plate = plates[index];
+    const query = 'mutation license { mobishoutEntry { noone { entry { licenseNumber(license: "' +
+      plate + '", date: "' + date +
+      '") { nodes { id entity startDate endDate policy license code logo } } } } } }';
+    const url = endpoint + encodeURIComponent(query);
     const started = Date.now();
     try {
       const response = await fetch(url, {
@@ -61,7 +62,7 @@ if (process.env.GITHUB_ACTIONS === 'true') {
         nodesCount = Array.isArray(nodes) ? nodes.length : null;
       } catch {}
       results.push({
-        index, httpStatus: response.status, elapsedMs: Date.now() - started,
+        index: index + 1, httpStatus: response.status, elapsedMs: Date.now() - started,
         contentType: (response.headers.get('content-type') || '').split(';')[0],
         bodyKind, graphqlErrorCount: errors.length, errors, dataPresent, nodesCount,
         retryAfter: response.headers.get('retry-after')
@@ -69,17 +70,18 @@ if (process.env.GITHUB_ACTIONS === 'true') {
       if (response.status === 429 || response.status >= 500 || errors.length > 0) break;
     } catch (error) {
       results.push({
-        index, httpStatus: null, elapsedMs: Date.now() - started,
+        index: index + 1, httpStatus: null, elapsedMs: Date.now() - started,
         networkError: String(error instanceof Error ? error.message : error).slice(0, 180)
       });
       break;
     }
-    if (index < 6) await new Promise(resolve => setTimeout(resolve, 250));
+    if (index < plates.length - 1) await new Promise(resolve => setTimeout(resolve, 250));
   }
-  console.log('LIVE_ASF_GITHUB_EGRESS=' + JSON.stringify({
-    maxRequests: 6,
+  console.log('LIVE_ASF_GITHUB_EGRESS_DISTINCT_PLATES=' + JSON.stringify({
+    maxRequests: plates.length,
     requestCount: results.length,
-    syntheticInput: true,
+    syntheticInputs: true,
+    uniqueQueryEachTime: true,
     sequential: true,
     stopAtFirstFailure: true,
     results
