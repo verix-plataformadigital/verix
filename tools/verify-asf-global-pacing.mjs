@@ -29,9 +29,10 @@ const syntheticQuery =
 
 const candidates = [
   { name: 'ext01-control', origin: 'https://ext01.asf.com.pt', path: '/api/src/', method: 'POST' },
-  { name: 'ext02-candidate', origin: 'https://ext02.asf.com.pt', path: '/api/src/', method: 'POST' },
-  { name: 'www-ext02-candidate', origin: 'https://www.ext02.asf.com.pt', path: '/api/src/', method: 'POST' },
-  { name: 'mobinteg-legacy-root', origin: 'http://ws.mobinteg.com', path: '/asf-matricula/?', method: 'GET' }
+  { name: 'www-ext01-candidate', origin: 'https://www.ext01.asf.com.pt', path: '/api/src/', method: 'POST' },
+  { name: 'consumer-portal-candidate', origin: 'https://consumidor.asf.com.pt', path: '/api/src/', method: 'POST' },
+  { name: 'www-consumer-portal-candidate', origin: 'https://www.consumidor.asf.com.pt', path: '/api/src/', method: 'POST' },
+  { name: 'www-asf-candidate', origin: 'https://www.asf.com.pt', path: '/api/src/', method: 'POST' }
 ];
 
 for (const candidate of candidates) {
