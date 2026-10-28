@@ -15,7 +15,7 @@ assert.ok(cleanup.includes("DROP FUNCTION IF EXISTS public.verix_asf_reserve_slo
 assert.ok(cleanup.includes("DROP TABLE IF EXISTS public.verix_asf_pacing_state"));
 console.log('ASF no-queue contract passed.');
 
-// Egress/rate distinction: six DIFFERENT synthetic registrations from this GitHub
+// Cadence control: six DIFFERENT synthetic registrations from this GitHub
 // runner. Same method, query shape, headers, pacing; stop at first upstream error.
 // Only sanitized status and GraphQL diagnostics are printed; no raw payload or plate.
 if (process.env.GITHUB_ACTIONS === 'true') {
@@ -75,7 +75,7 @@ if (process.env.GITHUB_ACTIONS === 'true') {
       });
       break;
     }
-    if (index < plates.length - 1) await new Promise(resolve => setTimeout(resolve, 250));
+    if (index < plates.length - 1) await new Promise(resolve => setTimeout(resolve, 10000));
   }
   console.log('LIVE_ASF_GITHUB_EGRESS_DISTINCT_PLATES=' + JSON.stringify({
     maxRequests: plates.length,
