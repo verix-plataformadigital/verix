@@ -7,6 +7,7 @@ on:
       - "supabase/migrations/*remove_asf_global_pacing_queue.sql"
       - "verix-app.html"
       - "tools/verify-asf-global-pacing.mjs"
+      - "tools/inspect-temseguro-legacy-apk.mjs"
       - ".github/workflows/asf-pacing-validation.yml"
 permissions:
   contents: read
@@ -25,3 +26,5 @@ jobs:
           node-version: 22
       - name: Verify direct relay and no long global queue
         run: node tools/verify-asf-global-pacing.mjs
+      - name: Compare historical TEM SEGURO APK statically (no install, no publication)
+        run: node tools/inspect-temseguro-legacy-apk.mjs
