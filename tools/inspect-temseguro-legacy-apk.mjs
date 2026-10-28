@@ -160,6 +160,22 @@ try {
   }
   const decodedResources = scanTree(apktoolOut, 8000);
   const javaSources = scanTree(join(outDir, "sources"), 8000);
+  const focusSnippets = [];
+  const focusFiles = [
+    { path: "com/mobinteg/androidocr/util/ServerUtil.java", ranges: [[1, 190]] },
+    { path: "com/mobinteg/androidocr/OCRApplicationController.java", ranges: [[1, 45]] }
+  ];
+  for (const focus of focusFiles) {
+    const fullPath = join(outDir, "sources", focus.path);
+    if (!existsSync(fullPath)) continue;
+    const lines = readFileSync(fullPath, "utf8").split(String.fromCharCode(10)).map(line => line.replace(String.fromCharCode(13), ""));
+    const excerpts = [];
+    for (const [first, last] of focus.ranges) {
+      excerpts.push({ first, last: Math.min(last, lines.length), lines: lines.slice(first - 1, last).map((text, index) => ({ line: first + index, text: text.slice(0, 350) })) });
+    }
+    focusSnippets.push({ file: focus.path, excerpts });
+  }
+
   let apktoolMetadata = "";
   try {
     apktoolMetadata = readFileSync(join(apktoolOut, "apktool.yml"), "utf8").split(String.fromCharCode(10)).slice(0, 45).join(String.fromCharCode(10));
@@ -172,6 +188,7 @@ try {
     apktoolMetadata,
     decodedResourceMatches: decodedResources,
     jadxStatus,
+    focusSnippets,
     decompiledSourceMatches: javaSources
   }));
   console.log("historicalAPK: analysis completed; APK and decompiler remained in runner temp directory, no artifact uploaded");
