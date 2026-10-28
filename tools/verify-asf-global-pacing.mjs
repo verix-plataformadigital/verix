@@ -5,33 +5,84 @@ const proxy = readFileSync('supabase/functions/asf-proxy-v1/index.ts', 'utf8');
 const app = readFileSync('verix-app.html', 'utf8');
 const cleanup = readFileSync('supabase/migrations/20261027192500_remove_asf_global_pacing_queue.sql', 'utf8');
 
-// The ASF relay must forward directly instead of placing requests in a long queue.
 assert.doesNotMatch(proxy, /reservarLugarASF|verix_asf_reserve_slot|ASF_GLOBAL_INTERVAL_MS/);
-assert.match(proxy, /const url = ASF_ORIGIN \+ ASF_PATH \+ "\?query=" \+ encodeURIComponent\(query\)/);
+assert.match(proxy, /const url = ASF_ORIGIN \\+ ASF_PATH \\+ "\\?query=" \\+ encodeURIComponent\\(query\\)/);
 assert.match(proxy, /method: "POST"/);
-
-// A client timeout must not be extended to the former 130 s queue window.
 assert.match(app, /const ASF_TIMEOUT_MS = 15000;/);
 assert.doesNotMatch(app, /const ASF_TIMEOUT_MS = 148000/);
-assert.doesNotMatch(app, /if \(type === 'asf_pacing_queue_busy'\) return true/);
-
-// Remove the database scheduler created by the temporary queue experiment.
-assert.match(cleanup, /DROP FUNCTION IF EXISTS public\.verix_asf_reserve_slot\(integer, integer\)/);
-assert.match(cleanup, /DROP TABLE IF EXISTS public\.verix_asf_pacing_state/);
-
+assert.doesNotMatch(app, /if \\(type === 'asf_pacing_queue_busy'\\) return true/);
+assert.match(cleanup, /DROP FUNCTION IF EXISTS public\\.verix_asf_reserve_slot\\(integer, integer\\)/);
+assert.match(cleanup, /DROP TABLE IF EXISTS public\\.verix_asf_pacing_state/);
 console.log('ASF no-queue contract passed.');
 
-// A bounded, one-shot reproduction, executed only in GitHub Actions. The temporary
-// Supabase function uses a synthetic plate, sends the same request sequentially, and
-// stops immediately after the first upstream failure (maximum eight requests).
-// It returns sanitized status/GraphQL diagnostics only, never raw insurance data.
+// Egress comparison: run at most six identical serial requests from this GitHub
+// runner, not from Supabase. Stop at the first GraphQL/upstream failure, no retries.
+// Uses a synthetic plate. Only status and sanitized GraphQL diagnostics are printed.
 if (process.env.GITHUB_ACTIONS === 'true') {
-  const endpoint = 'https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/asf-url-encoding-ab-20261028?k=9d428f6b7b4b02f08f0e6f2d6e8a411e7f8c663c1d5b4e9a';
-  const response = await fetch(endpoint, { signal: AbortSignal.timeout(30000) });
-  const body = await response.text();
-  assert.equal(response.status, 200, `Live ASF reproduction failed: HTTP ${response.status}`);
-  const report = JSON.parse(body);
-  assert.ok(report.requestCount >= 1 && report.requestCount <= 8, 'Probe must be bounded to 1–8 requests');
-  assert.equal(report.results?.length, report.requestCount, 'Result count must match actual upstream requests');
-  console.log('LIVE_ASF_SEQUENTIAL_REPRODUCTION=' + JSON.stringify(report));
+  const endpoint = 'https://ext01.asf.com.pt/api/src/?query=';
+  const plate = 'ZZZZ9999';
+  const date = '2026/10/28';
+  const query = 'mutation license { mobishoutEntry { noone { entry { licenseNumber(license: "' +
+    plate + '", date: "' + date +
+    '") { nodes { id entity startDate endDate policy license code logo } } } } } }';
+  const url = endpoint + encodeURIComponent(query);
+  const results = [];
+  for (let index = 1; index <= 6; index++) {
+    const started = Date.now();
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json, text/plain, */*',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        },
+        body: null,
+        redirect: 'follow',
+        signal: AbortSignal.timeout(12000)
+      });
+      const raw = await response.text();
+      let bodyKind = 'non_json';
+      let errors = [];
+      let dataPresent = false;
+      let nodesCount = null;
+      try {
+        const parsed = JSON.parse(raw);
+        bodyKind = 'json';
+        errors = Array.isArray(parsed?.errors) ? parsed.errors.slice(0, 3).map(error => ({
+          message: String(error?.message ?? 'unknown').slice(0, 180)
+            .replaceAll(plate, '[TEST_PLATE]')
+            .replace(/[A-Z0-9]{6,8}/g, '[IDENTIFIER]'),
+          code: String(error?.extensions?.code ?? error?.code ?? '').slice(0, 60) || null,
+          path: Array.isArray(error?.path) ? error.path.slice(0, 8) : null
+        })) : [];
+        dataPresent = Object.prototype.hasOwnProperty.call(parsed ?? {}, 'data');
+        const nodes = parsed?.data?.mobishoutEntry?.noone?.entry?.licenseNumber?.nodes;
+        nodesCount = Array.isArray(nodes) ? nodes.length : null;
+      } catch {}
+      results.push({
+        index, httpStatus: response.status, elapsedMs: Date.now() - started,
+        contentType: (response.headers.get('content-type') || '').split(';')[0],
+        bodyKind, graphqlErrorCount: errors.length, errors, dataPresent, nodesCount,
+        retryAfter: response.headers.get('retry-after')
+      });
+      const failed = response.status === 429 || response.status >= 500 || errors.length > 0;
+      if (failed) break;
+    } catch (error) {
+      results.push({
+        index, httpStatus: null, elapsedMs: Date.now() - started,
+        networkError: String(error instanceof Error ? error.message : error).slice(0, 180)
+      });
+      break;
+    }
+    if (index < 6) await new Promise(resolve => setTimeout(resolve, 250));
+  }
+  console.log('LIVE_ASF_GITHUB_EGRESS=' + JSON.stringify({
+    maxRequests: 6,
+    requestCount: results.length,
+    syntheticInput: true,
+    sequential: true,
+    stopAtFirstFailure: true,
+    results
+  }));
 }
