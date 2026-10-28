@@ -51,8 +51,19 @@ try {
   const version = run(bin, ["--version"], { timeout: 30000 }).trim();
   console.log(JSON.stringify({ decompiler: "jadx", version }));
 
+  console.log(JSON.stringify({ dexdumpStarting: true, note: "strings are extracted from dex bytecode; no app is executed" }));
+  const dexEntries = run("unzip", ["-Z1", apkPath]).split(String.fromCharCode(10)).filter(name => /^classes(?:[0-9]+)?\\.dex$/.test(name));
+  const dexFindings = [];
+  for (const entry of dexEntries) {
+    const dexBytes = execFileSync("unzip", ["-p", apkPath, entry], { encoding: "buffer", maxBuffer: 40 * 1024 * 1024 });
+    const printable = dexBytes.toString("latin1").match(/[\\x20-\\x7e]{4,}/g) || [];
+    const unique = [...new Set(printable.filter(value => /asf|mobinteg|mobishoutEntry|licenseNumber|GraphQL|graphql|ASF_URL|https?:\\/\\//i.test(value)))];
+    dexFindings.push({ dex: entry, matches: unique.slice(0, 100) });
+  }
+  console.log(JSON.stringify({ dexEntries, dexFindings }));
+
   run(bin, [
-    "--deobf", "--show-bad-code", "--no-res", "--threads-count", "2",
+    "--show-bad-code", "--no-res", "--threads-count", "2",
     "-d", outDir, apkPath
   ], { timeout: 240000 });
   const files = [];
@@ -95,7 +106,9 @@ try {
   console.log(JSON.stringify({
     historicalAPK: "analysis_incomplete",
     error: String(error?.message || error).slice(0, 1000),
-    stderr: String(error?.stderr?.toString?.() || "").slice(-2500)
+    exitCode: error?.status ?? null,
+    stdout: String(error?.stdout?.toString?.() || "").slice(-5000),
+    stderr: String(error?.stderr?.toString?.() || "").slice(-3000)
   }));
   process.exitCode = 1;
 } finally {
