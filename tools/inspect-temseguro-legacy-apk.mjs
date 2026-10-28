@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, sep } from "node:path";
 import { createHash } from "node:crypto";
 
 const work = mkdtempSync(join(tmpdir(), "temseguro-legacy-audit-"));
@@ -75,14 +75,14 @@ try {
   ];
   const matches = [];
   for (const path of files) {
-    const lines = readFileSync(path, "utf8").split(/\\r?\\n/);
+    const lines = readFileSync(path, "utf8").split(String.fromCharCode(10)).map(line => line.replace(String.fromCharCode(13), ""));
     const hits = [];
     for (let i = 0; i < lines.length; i++) {
       if (terms.some(term => lines[i].includes(term))) {
         hits.push({ line: i + 1, text: lines[i].trim().slice(0, 280) });
       }
     }
-    if (hits.length) matches.push({ file: path.slice(join(outDir, "sources").length + 1).replaceAll("\\\\", "/"), hits: hits.slice(0, 18) });
+    if (hits.length) matches.push({ file: path.slice(join(outDir, "sources").length + 1).split(sep).join("/"), hits: hits.slice(0, 18) });
   }
   const appMatches = matches.filter(x => x.file.includes("com/mobinteg/temseguro"));
   console.log(JSON.stringify({
