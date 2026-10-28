@@ -52,18 +52,34 @@ try {
   console.log(JSON.stringify({ decompiler: "jadx", version }));
 
   console.log(JSON.stringify({ dexdumpStarting: true, note: "strings are extracted from dex bytecode; no app is executed" }));
-  const dexEntries = run("unzip", ["-Z1", apkPath]).split(String.fromCharCode(10)).filter(name => /^classes(?:[0-9]+)?\\.dex$/.test(name));
+  const archiveEntries = run("unzip", ["-Z1", apkPath]).split(String.fromCharCode(10)).map(name => name.trim()).filter(Boolean);
+  const dexEntries = archiveEntries.filter(name => {
+    if (name === "classes.dex") return true;
+    if (!name.startsWith("classes") || !name.endsWith(".dex")) return false;
+    const middle = name.slice(7, -4);
+    return middle.length > 0 && [...middle].every(char => char >= "0" && char <= "9");
+  });
   const dexFindings = [];
+  const searchTerms = ["asf", "mobinteg", "mobishoutentry", "licensenumber", "graphql", "ASF_URL", "http://", "https://"];
   for (const entry of dexEntries) {
     const dexBytes = execFileSync("unzip", ["-p", apkPath, entry], { encoding: "buffer", maxBuffer: 40 * 1024 * 1024 });
-    const printable = dexBytes.toString("latin1").match(/[\\x20-\\x7e]{4,}/g) || [];
-    const unique = [...new Set(printable.filter(value => /asf|mobinteg|mobishoutEntry|licenseNumber|GraphQL|graphql|ASF_URL|https?:\\/\\//i.test(value)))];
-    dexFindings.push({ dex: entry, matches: unique.slice(0, 100) });
+    const printable = [];
+    let current = "";
+    for (const byte of dexBytes) {
+      if (byte >= 32 && byte <= 126) current += String.fromCharCode(byte);
+      else {
+        if (current.length >= 4) printable.push(current);
+        current = "";
+      }
+    }
+    if (current.length >= 4) printable.push(current);
+    const unique = [...new Set(printable.filter(value => searchTerms.some(term => value.toLowerCase().includes(term.toLowerCase())))];
+    dexFindings.push({ dex: entry, matches: unique.slice(0, 140) });
   }
   console.log(JSON.stringify({ dexEntries, dexFindings }));
 
   run(bin, [
-    "--show-bad-code", "--no-res", "--threads-count", "2",
+    "--no-res", "--threads-count", "1",
     "-d", outDir, apkPath
   ], { timeout: 240000 });
   const files = [];
