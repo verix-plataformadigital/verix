@@ -1,0 +1,72 @@
+{
+  "snapshotDate": "2026-10-29",
+  "production": {
+    "function": "asf-proxy-v1",
+    "status": "ACTIVE",
+    "version": 33,
+    "supabaseArtifactSha256": "8f59236ff65eda14723c8c06544cca2a86ba64c33a1c56b91f9456dd126f5fae",
+    "githubPath": "supabase/functions/asf-proxy-v1/index.ts",
+    "githubCommit": "c423fb68fc7791b338efb99c00df5df9b8cdeba3",
+    "githubBlobSha": "d79c86277867f4b51cb3354bcb8e36c9ea6cca83",
+    "previousDirectFetchArtifactSha256": "f33f2750cfad8c4793a835f14c9bdbc81527f111e95fdaf2cc02d09cdb1beab7"
+  },
+  "secretsPresentByConfiguration": [
+    "PROXY_URLS",
+    "PROXY_USERNAME",
+    "PROXY_PASSWORD"
+  ],
+  "secretsIncludedInBackup": false,
+  "proxyPoolConnectivity": {
+    "diagnostic": "runtime-proxy-pool-probe",
+    "ok": true,
+    "configuredEndpoints": 10,
+    "successfulEndpoints": 10,
+    "distinctExitIps": 10,
+    "minLatencyMs": 288,
+    "maxLatencyMs": 1252,
+    "meanLatencyMs": 793,
+    "destination": "https://api.ipify.org?format=json"
+  },
+  "asfConnectivity": {
+    "diagnostic": "runtime-asf-proxy-single-probe",
+    "ok": true,
+    "proxyIndex": 1,
+    "testPlate": "ZZZZZZ",
+    "realVehiclePlateUsed": false,
+    "requestsToASF": 1,
+    "upstreamStatus": 200,
+    "elapsedMs": 598,
+    "responseBytes": 297,
+    "contentType": "application/json",
+    "graphqlErrorCount": 0,
+    "hasGraphQLData": true,
+    "nodesCount": 1
+  },
+  "productionValidation": {
+    "performed": false,
+    "note": "No confirmed normal VÉRIX user lookup result is recorded after deployment in this snapshot."
+  },
+  "diagnosticFunctions": {
+    "runtime-proxy-pool-probe": {
+      "status": "ACTIVE",
+      "version": 3,
+      "verifyJwt": true
+    },
+    "runtime-asf-proxy-single-probe": {
+      "status": "ACTIVE",
+      "version": 1,
+      "verifyJwt": true
+    },
+    "runtime-httpclient-probe": {
+      "status": "ACTIVE",
+      "version": 4,
+      "verifyJwt": true
+    }
+  },
+  "notes": [
+    "Proxy rotation cursor is per Edge Runtime isolate, not global.",
+    "ASF GraphQL query body/query URL format, POST method, and body:null were preserved.",
+    "Production uses Deno.createHttpClient with proxy configuration from Supabase Edge Function secrets.",
+    "The backup excludes the actual proxy URLs and credentials to avoid exposing them in this public GitHub repository."
+  ]
+}
