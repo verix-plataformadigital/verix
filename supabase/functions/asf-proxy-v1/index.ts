@@ -406,8 +406,6 @@ Deno.serve(async (req: Request) => {
       '") { nodes { id entity startDate endDate policy license code logo } } } } } }';
 
     const url = ASF_ORIGIN + ASF_PATH + "?query=" + encodeURIComponent(query);
-    const started = Date.now();
-    let upstreamClient: Deno.HttpClient | undefined;
     let usedFallback = false;
     let upstream: Response;
     let text: string;
