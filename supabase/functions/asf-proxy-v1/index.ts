@@ -31,24 +31,14 @@ const PROXY_USERNAME = Deno.env.get("PROXY_USERNAME") || "";
 const PROXY_PASSWORD = Deno.env.get("PROXY_PASSWORD") || "";
 const MAX_PROXY_ENDPOINTS = 10;
 
-// Keep proxy affinity deterministic per installation across Edge isolates.
-// Five-minute windows limit churn but still rotate endpoints periodically.
-function selectProxyIndexForInstallation(installationId: string, poolSize: number): number {
-  const window = Math.floor(Date.now() / 300_000);
-  const key = String(installationId || "anonymous") + ":" + window;
-  let hash = 0x811c9dc5;
-  for (let i = 0; i < key.length; i++) {
-    hash ^= key.charCodeAt(i);
-    hash = Math.imul(hash, 0x01000193);
-  }
-  return (hash >>> 0) % poolSize;
-}
+// Per-isolate round-robin. Each Edge isolate keeps its own cursor.
+let proxyCursor = Math.floor(Math.random() * 1_000_000);
 
 // Diagnóstico temporário e limitado: mede tamanhos sem registar matrícula ou valores do seguro.
 let payloadProfileBudget = 10;
 
-// Reuse the same custom HTTP client for each proxy endpoint inside this isolate.
-// Short installation affinity above lets adjacent lookups reuse its connection pool.
+// Reutilização por endpoint dentro de cada isolate. A seleção round-robin continua
+// a ser feita por pedido; só se evita recriar TCP/CONNECT/TLS a cada consulta.
 const proxyClientPool = new Map<string, Deno.HttpClient>();
 
 function proxyClientKey(proxy: ProxyEndpoint): string {
@@ -61,10 +51,6 @@ function getOrCreateProxyClient(proxy: ProxyEndpoint): Deno.HttpClient {
   if (existing) return existing;
 
   const client = Deno.createHttpClient({
-    // Keep a bounded pool: concurrent lookups can finish together, so retaining
-    // several idle sockets helps later requests reuse CONNECT/TLS sessions.
-    poolMaxIdlePerHost: 8,
-    poolIdleTimeout: 120_000,
     proxy: {
       url: proxy.url,
       transport: proxy.transport,
@@ -379,7 +365,7 @@ Deno.serve(async (req: Request) => {
       }, 503, req);
     }
 
-    const proxyIndex = selectProxyIndexForInstallation(installationId, proxyPool.length);
+    const proxyIndex = nextProxyIndex(proxyPool.length);
     const selectedProxy = proxyPool[proxyIndex];
 
     const query =
