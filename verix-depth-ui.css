@@ -1,0 +1,84 @@
+/*
+ * VÉRIX — profundidade visual do painel de seguro.
+ * Camada exclusivamente visual: não altera consultas, ASF, iframes ou telemetria.
+ */
+
+body .main .panel.insurance {
+  position: relative !important;
+  isolation: isolate;
+  border: 1px solid rgba(239, 255, 255, .78) !important;
+  border-radius: 17px !important;
+  background: linear-gradient(
+    145deg,
+    #fbfefe 0%,
+    #edf4f4 43%,
+    #d8e4e5 100%
+  ) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .98),
+    inset 0 -1px 0 rgba(21, 58, 65, .18),
+    0 2px 3px rgba(4, 20, 26, .08),
+    0 8px 17px rgba(4, 20, 26, .14),
+    0 22px 38px rgba(4, 20, 26, .17) !important;
+  transition:
+    box-shadow .22s ease,
+    border-color .22s ease;
+}
+
+/* Reflexo de luz na aresta superior — sem cobrir texto nem bloquear cliques. */
+body .main .panel.insurance::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  z-index: 20;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, .38) 0,
+    rgba(255, 255, 255, .11) 3px,
+    transparent 15px
+  );
+}
+
+/* Duplo aro para simular uma moldura física em vez de um cartão plano. */
+body .main .panel.insurance::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 21;
+  pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, .52);
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(15, 54, 60, .10);
+}
+
+body .main .panel.insurance .panel-body iframe,
+body .main .panel.insurance > iframe {
+  display: block;
+  border: 1px solid rgba(248, 255, 255, .88) !important;
+  border-radius: 10px !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .92),
+    0 2px 3px rgba(6, 24, 30, .12),
+    0 8px 17px rgba(6, 24, 30, .18) !important;
+  background: linear-gradient(145deg, #f6fafa, #dce7e8) !important;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  body .main .panel.insurance:hover {
+    border-color: rgba(221, 255, 247, .96) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, .98),
+      inset 0 -1px 0 rgba(21, 58, 65, .18),
+      0 4px 7px rgba(4, 20, 26, .11),
+      0 13px 25px rgba(4, 20, 26, .18),
+      0 28px 46px rgba(4, 20, 26, .20) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body .main .panel.insurance {
+    transition: none !important;
+  }
+}
