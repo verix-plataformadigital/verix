@@ -18128,6 +18128,38 @@ html body .leg-card-new .copy-all-new{
     }
   }
 
+  // Compressão GZIP sem perdas para reduzir tráfego sem remover eventos ou campos.
+  // O prefixo é interno ao corpo para evitar cabeçalhos que provoquem CORS preflight.
+  var TELEMETRY_GZIP_MAGIC = new Uint8Array([86, 88, 84, 71, 49, 10]); // "VXTG1\\n"
+
+  async function serializeBatch(batch) {
+    var payload = JSON.stringify({ events: batch });
+    try {
+      if (typeof CompressionStream !== 'function' ||
+          typeof TextEncoder !== 'function' ||
+          typeof Blob !== 'function' ||
+          typeof Response !== 'function') return payload;
+
+      var plainBytes = new TextEncoder().encode(payload);
+      var compressedStream = new Blob([plainBytes]).stream()
+        .pipeThrough(new CompressionStream('gzip'));
+      var compressedBytes = new Uint8Array(await new Response(compressedStream).arrayBuffer());
+
+      // Só comprime quando o resultado é claramente menor.
+      if (compressedBytes.length + TELEMETRY_GZIP_MAGIC.length + 16 >= plainBytes.length) {
+        return payload;
+      }
+
+      var wire = new Uint8Array(TELEMETRY_GZIP_MAGIC.length + compressedBytes.length);
+      wire.set(TELEMETRY_GZIP_MAGIC, 0);
+      wire.set(compressedBytes, TELEMETRY_GZIP_MAGIC.length);
+      return wire;
+    } catch (_) {
+      // Compatibilidade com navegadores/HTA antigos: JSON original, sem perda de dados.
+      return payload;
+    }
+  }
+
   async function sendViaFetch(batch) {
     var controller = typeof AbortController === 'function' ? new AbortController() : null;
     var timer = controller ? setTimeout(function () { controller.abort(); }, TIMEOUT_MS) : null;
@@ -18136,7 +18168,7 @@ html body .leg-card-new .copy-all-new{
       var response = await fetch(ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
-        body: JSON.stringify({ events: batch }),
+        body: await serializeBatch(batch),
         mode: 'cors',
         credentials: 'omit',
         cache: 'no-store',
@@ -18154,31 +18186,33 @@ html body .leg-card-new .copy-all-new{
 
   function sendViaXhr(batch) {
     return new Promise(function (resolve) {
-      try {
-        var X = window.XMLHttpRequest;
-        if (typeof X !== 'function') return resolve(null);
-        var xhr = new X();
-        var done = false;
-        var finish = function (receipt) {
-          if (done) return;
-          done = true;
-          try { xhr.abort(); } catch (_) {}
-          resolve(receipt || null);
-        };
-        xhr.open('POST', ENDPOINT, true);
-        xhr.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
-        xhr.timeout = TIMEOUT_MS;
-        xhr.onreadystatechange = function () {
-          if (xhr.readyState === 4) {
-            finish(xhr.status >= 200 && xhr.status < 300 ? parseReceipt(xhr.responseText) : null);
-          }
-        };
-        xhr.onerror = function () { finish(null); };
-        xhr.ontimeout = function () { finish(null); };
-        xhr.send(JSON.stringify({ events: batch }));
-      } catch (_) {
-        resolve(null);
-      }
+      serializeBatch(batch).then(function (payload) {
+        try {
+          var X = window.XMLHttpRequest;
+          if (typeof X !== 'function') return resolve(null);
+          var xhr = new X();
+          var done = false;
+          var finish = function (receipt) {
+            if (done) return;
+            done = true;
+            try { xhr.abort(); } catch (_) {}
+            resolve(receipt || null);
+          };
+          xhr.open('POST', ENDPOINT, true);
+          xhr.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
+          xhr.timeout = TIMEOUT_MS;
+          xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+              finish(xhr.status >= 200 && xhr.status < 300 ? parseReceipt(xhr.responseText) : null);
+            }
+          };
+          xhr.onerror = function () { finish(null); };
+          xhr.ontimeout = function () { finish(null); };
+          xhr.send(payload);
+        } catch (_) {
+          resolve(null);
+        }
+      }).catch(function () { resolve(null); });
     });
   }
 
