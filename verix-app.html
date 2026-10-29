@@ -6841,6 +6841,125 @@ html body #asfRateWidget .asf-rate-sub[data-window-state="ready"]{
 }
 </style>
 
+
+<style id="verix-asf-contrast-repair-20261029">
+/* Correção de contraste e hierarquia no resultado ASF, incluindo ecrãs estreitos. */
+#seguroResult .asf-app.asf-app-ok .asf-success-hero{
+  display:grid!important;
+  grid-template-columns:46px minmax(0,1fr) auto!important;
+  align-items:center!important;column-gap:12px!important;row-gap:8px!important;
+  padding:16px!important;
+  background:linear-gradient(135deg,#f0fbf4 0%,#e4f7eb 100%)!important;
+  background-image:none!important;
+  border:1px solid #a8dfbd!important;border-radius:14px!important;
+  box-shadow:0 4px 14px rgba(7,100,53,.08)!important;
+  color:#153c29!important;
+}
+#seguroResult .asf-app.asf-app-ok .asf-success-hero::before,
+#seguroResult .asf-app.asf-app-ok .asf-success-hero::after{display:none!important;content:none!important}
+#seguroResult .asf-app.asf-app-ok .asf-success-badge{
+  grid-column:1!important;grid-row:1!important;
+  width:44px!important;height:44px!important;min-width:44px!important;
+  margin:0!important;background:#087c45!important;color:#fff!important;
+  border:2px solid #b7ebca!important;box-shadow:none!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  font-size:25px!important;line-height:1!important;border-radius:50%!important;
+}
+#seguroResult .asf-app.asf-app-ok .asf-success-copy{
+  grid-column:2!important;grid-row:1!important;min-width:0!important;
+  display:block!important;position:relative!important;z-index:1!important;
+  color:#153c29!important;opacity:1!important;
+}
+#seguroResult .asf-app.asf-app-ok .asf-success-title{
+  display:block!important;color:#075d36!important;-webkit-text-fill-color:#075d36!important;
+  opacity:1!important;visibility:visible!important;
+  font-size:clamp(19px,2.3vw,25px)!important;font-weight:900!important;
+  line-height:1.16!important;letter-spacing:-.02em!important;text-shadow:none!important;
+  overflow-wrap:normal!important;word-break:normal!important;
+}
+#seguroResult .asf-app.asf-app-ok .asf-success-sub{
+  display:block!important;color:#315b44!important;-webkit-text-fill-color:#315b44!important;
+  opacity:1!important;visibility:visible!important;
+  font-size:11px!important;line-height:1.45!important;margin-top:5px!important;text-shadow:none!important;
+}
+#seguroResult .asf-app.asf-app-ok .asf-success-plate{
+  grid-column:3!important;grid-row:1!important;align-self:center!important;
+  min-width:0!important;max-width:100%!important;margin:0!important;
+  background:#fff!important;border:1px solid #aab9b0!important;border-radius:6px!important;
+  padding:4px 8px 4px 39px!important;box-shadow:0 1px 2px rgba(12,40,25,.08)!important;
+}
+#seguroResult .asf-app.asf-app-ok .asf-success-plate::before{
+  background-color:#064ca0!important;
+}
+#seguroResult .asf-app.asf-ok .asf-success-plate span,
+#seguroResult .asf-app.asf-app-ok .asf-success-plate span{
+  color:#111820!important;-webkit-text-fill-color:#111820!important;
+  font:900 13px/1.25 Arial,sans-serif!important;letter-spacing:.04em!important;
+  text-shadow:none!important;overflow-wrap:normal!important;word-break:normal!important;
+}
+#seguroResult .asf-app.asf-app-ok .asf-operational-status{
+  background:#fff!important;border:1px solid #cbded1!important;
+  box-shadow:none!important;color:#193b29!important;
+}
+#seguroResult .asf-app.asf-app-ok .asf-operational-status .asf-op-kicker{
+  color:#4b6556!important;-webkit-text-fill-color:#4b6556!important;
+}
+#seguroResult .asf-app.asf-app-ok .asf-operational-status strong{
+  color:#087443!important;-webkit-text-fill-color:#087443!important;
+}
+#seguroResult .asf-app.asf-app-ok .asf-detail-card.asf-operational-card{
+  background:#fff!important;box-shadow:0 3px 12px rgba(16,44,30,.045)!important;
+}
+#seguroResult .asf-app.asf-app-ok .asf-detail-head{
+  background:#f6faf7!important;color:#183a2a!important;
+}
+#seguroResult .asf-app.asf-app-ok .asf-detail-head-text>strong,
+#seguroResult .asf-app.asf-app-ok .asf-row .v,
+#seguroResult .asf-app.asf-app-ok .asf-date-box strong{
+  color:#172b22!important;-webkit-text-fill-color:#172b22!important;text-shadow:none!important;
+}
+#seguroResult .asf-app.asf-app-ok .asf-row .k,
+#seguroResult .asf-app.asf-app-ok .asf-date-box .k,
+#seguroResult .asf-app.asf-app-ok .asf-detail-kicker{
+  color:#50665a!important;-webkit-text-fill-color:#50665a!important;
+}
+#seguroResult .asf-app.asf-app-ok .asf-date-box.valid{
+  background:#effaf3!important;border-color:#b8e2c6!important;
+}
+#seguroResult .asf-app.asf-app-ok .asf-date-box.valid strong{color:#087443!important;-webkit-text-fill-color:#087443!important}
+#seguroResult .asf-app.asf-app-ok .asf-operational-actions,
+#seguroResult .asf-app.asf-app-ok .asf-operational-actions *{opacity:1!important}
+#seguroResult .asf-app.asf-app-no .asf-status-card.no{
+  background:linear-gradient(135deg,#fff1f2,#fffafa)!important;background-image:none!important;
+  color:#651729!important;border:1px solid #efb0ba!important;box-shadow:0 4px 14px rgba(180,25,52,.06)!important;
+}
+#seguroResult .asf-app.asf-no .asf-status-title,
+#seguroResult .asf-app.asf-app-no .asf-status-title{
+  color:#a3162e!important;-webkit-text-fill-color:#a3162e!important;text-shadow:none!important;
+}
+#seguroResult .asf-app.asf-app-no .asf-status-sub{
+  color:#733442!important;-webkit-text-fill-color:#733442!important;text-shadow:none!important;
+}
+@media(max-width:480px){
+  #seguroResult .asf-app.asf-app-ok .asf-success-hero{
+    grid-template-columns:38px minmax(0,1fr)!important;
+    padding:12px!important;column-gap:9px!important;row-gap:10px!important;
+  }
+  #seguroResult .asf-app.asf-app-ok .asf-success-badge{
+    grid-column:1!important;grid-row:1!important;width:36px!important;height:36px!important;min-width:36px!important;font-size:21px!important;
+  }
+  #seguroResult .asf-app.asf-app-ok .asf-success-copy{
+    grid-column:2!important;grid-row:1!important;
+  }
+  #seguroResult .asf-app.asf-app-ok .asf-success-title{font-size:20px!important;line-height:1.12!important}
+  #seguroResult .asf-app.asf-app-ok .asf-success-sub{font-size:10px!important}
+  #seguroResult .asf-app.asf-app-ok .asf-success-plate{
+    grid-column:2!important;grid-row:2!important;justify-self:start!important;
+  }
+  #seguroResult .asf-app.asf-app-ok .asf-operational-status>div{padding:8px 9px!important}
+}
+</style>
+
 </head><body>
 <script id="verix-splash-clock">(function(){try{window.__verixSplashStarted=performance.now();}catch(e){window.__verixSplashStarted=Date.now();}})();</script>
 <div id="opsBootOverlay" aria-hidden="false">
