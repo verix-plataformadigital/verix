@@ -51,6 +51,11 @@ function getOrCreateProxyClient(proxy: ProxyEndpoint): Deno.HttpClient {
   if (existing) return existing;
 
   const client = Deno.createHttpClient({
+    // Keep connections alive across round-robin cycles. Requests still rotate
+    // proxies per call; reuse only occurs when the same endpoint is selected
+    // again while its idle connection is still available.
+    poolMaxIdlePerHost: 2,
+    poolIdleTimeout: 120_000,
     proxy: {
       url: proxy.url,
       transport: proxy.transport,
