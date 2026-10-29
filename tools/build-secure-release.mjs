@@ -307,6 +307,81 @@ adminPwaSource = adminPwaSource.replace(/href="\.\/favicon\.svg/g, 'href="../ass
 adminPwaSource = adminPwaSource.replace(/\.\/assets\//g, "../assets/");
 adminPwaSource = adminPwaSource.replace(/src="\.\/verix-presence-v1\.js/g, 'src="../verix-presence-v1.js');
 adminPwaSource = adminPwaSource.replace(/(src="\.\.\/verix-presence-v1\.js\?v=)[^"]+/g, "$1" + encodeURIComponent(String(BUILD_ID)));
+
+// Fix the Admin live cards: browser Realtime presence is not populated by the
+// operational client, while the server-side heartbeat API has authoritative
+// short-lease presence data. Keep this patch Admin-only; do not touch verix-app
+// or the ASF runtime.
+function patchAdminPresenceUi(source) {
+  const edits = [
+    [
+      "let serverTelemetryBusy=false,serverTelemetryRun=0;",
+      "let serverTelemetryBusy=false,serverTelemetryRun=0,serverPresenceSnapshot=null;",
+      "presence snapshot state"
+    ],
+    [
+      "function clearServerTelemetry(message){\n  setServerTelemetryCount('serverTelemetrySessions',null);",
+      "function clearServerTelemetry(message){\n  serverPresenceSnapshot=null;\n  setServerTelemetryCount('serverTelemetrySessions',null);",
+      "clear stale server snapshot"
+    ],
+    [
+      "  if(updated)updated.textContent=message||'Sem leitura confirmada no servidor; não são reutilizados números antigos.';\n}",
+      "  if(updated)updated.textContent=message||'Sem leitura confirmada no servidor; não são reutilizados números antigos.';\n  if(window.VERIX_LIVE_PRESENCE&&typeof window.VERIX_LIVE_PRESENCE.snapshot==='function')renderLivePresence(window.VERIX_LIVE_PRESENCE.snapshot());\n}",
+      "rerender after server telemetry clears"
+    ],
+    [
+      "    if(!result||result.ok!==true||!p||typeof p!=='object')throw new Error('Resposta de telemetria inválida.');\n    const count=value=>",
+      "    if(!result||result.ok!==true||!p||typeof p!=='object')throw new Error('Resposta de telemetria inválida.');\n    serverPresenceSnapshot=p;\n    const count=value=>",
+      "store authoritative server presence"
+    ],
+    [
+      "  setValue('livePresenceOnline',ready?s.onlineInstallations:null);\n  setValue('livePresenceActive',ready?s.activeInstallations:null);",
+      "  const serverPresence=serverPresenceSnapshot&&typeof serverPresenceSnapshot==='object'?serverPresenceSnapshot:null;\n  const parsePresenceCount=value=>value!==null&&value!==undefined&&value!==''&&Number.isSafeInteger(Number(value))&&Number(value)>=0?Number(value):null;\n  const serverOnline=serverPresence?parsePresenceCount(serverPresence.online_now):null;\n  const users=dashboardData&&dashboardData.users&&typeof dashboardData.users==='object'?dashboardData.users:{};\n  const serverActive=parsePresenceCount(users.activeInstallations);\n  setValue('livePresenceOnline',serverOnline!==null?serverOnline:(ready?s.onlineInstallations:null));\n  setValue('livePresenceActive',serverActive!==null?serverActive:(ready?s.activeInstallations:null));",
+      "use server counts in live cards"
+    ],
+    [
+      "const cls=ready?'online':(s.status==='locked'?'loading':(s.status==='unavailable'?'offline':(s.status==='reconnecting'?'offline':'loading')));",
+      "const cls=(serverOnline!==null||ready)?'online':(s.status==='locked'?'loading':(s.status==='unavailable'?'offline':(s.status==='reconnecting'?'offline':'loading')));",
+      "server status badge"
+    ],
+    [
+      "const label=ready?'Ligado · tempo real':(s.status==='locked'?'Inicia sessão':(s.status==='unavailable'?'Indisponível':(s.status==='reconnecting'?'A recuperar ligação':'A ligar')));",
+      "const label=serverOnline!==null?'Ligado · servidor':(ready?'Ligado · tempo real':(s.status==='locked'?'Inicia sessão':(s.status==='unavailable'?'Indisponível':(s.status==='reconnecting'?'A recuperar ligação':'A ligar'))));",
+      "server status label"
+    ],
+    [
+      "    if(ready&&s.observedAt){\n      const time=new Date(s.observedAt);\n      updated.textContent='Presença sincronizada em tempo real · última sincronização '+time.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+'.';",
+      "    if(serverOnline!==null&&serverPresence&&serverPresence.observed_at){\n      const time=new Date(serverPresence.observed_at);\n      updated.textContent='Presença confirmada no servidor · última leitura '+time.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+' · janela de 90 s.';\n    }else if(ready&&s.observedAt){\n      const time=new Date(s.observedAt);\n      updated.textContent='Presença sincronizada em tempo real · última sincronização '+time.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+'.';",
+      "server-based freshness label"
+    ],
+    [
+      "Instalações com ligação Realtime; não equivale a pessoas únicas.",
+      "Instalações com sinal do servidor nos últimos 90 s; não equivale a pessoas únicas.",
+      "accurate live metric note"
+    ],
+    [
+      "    setServerTelemetryStatus('online','API confirmada');",
+      "    setServerTelemetryStatus('online','API confirmada');\n    if(window.VERIX_LIVE_PRESENCE&&typeof window.VERIX_LIVE_PRESENCE.snapshot==='function')renderLivePresence(window.VERIX_LIVE_PRESENCE.snapshot());",
+      "rerender when server presence arrives"
+    ],
+    [
+      "    dashboardData=res.data;renderAll();setStatus('online','Backend online');lastUpdated=Date.now();",
+      "    dashboardData=res.data;renderAll();if(window.VERIX_LIVE_PRESENCE&&typeof window.VERIX_LIVE_PRESENCE.snapshot==='function')renderLivePresence(window.VERIX_LIVE_PRESENCE.snapshot());setStatus('online','Backend online');lastUpdated=Date.now();",
+      "refresh active count after dashboard data arrives"
+    ]
+  ];
+  for (const [before, after, label] of edits) {
+    const first = source.indexOf(before);
+    if (first < 0) throw new Error("Admin presence patch marker missing: " + label);
+    if (source.indexOf(before, first + before.length) >= 0) {
+      throw new Error("Admin presence patch marker duplicated: " + label);
+    }
+    source = source.slice(0, first) + after + source.slice(first + before.length);
+  }
+  return source;
+}
+adminPwaSource = patchAdminPresenceUi(adminPwaSource);
+
 adminPwaSource = adminPwaSource.replace(/\.\/AI-ACCESS-POLICY\.md/g, "../AI-ACCESS-POLICY.md");
 const adminPwaHeadLinks = [
   '  <link rel="icon" href="../assets/admin-icon.svg" type="image/svg+xml" sizes="any">',
