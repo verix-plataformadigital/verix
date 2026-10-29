@@ -6721,7 +6721,8 @@ html body #asfRateWidget .asf-rate-sub[data-window-state="ready"]{
           <p class="verix-asf-notice-thanks-kicker">ESTA CONQUISTA É DE TODOS</p>
           <h2 id="verixNoticeThanksTitle" class="verix-asf-notice-thanks-number">250.000+</h2>
           <p class="verix-asf-notice-thanks-label">PESQUISAS DESDE O INÍCIO DO PROJETO</p>
-          <p class="verix-asf-notice-thanks-copy">Obrigado por fazer parte desta missão.</p>
+          <p class="verix-asf-notice-thanks-copy">Ajuda-nos a chegar a mais operacionais. Partilha o VÉRIX nos grupos de WhatsApp da GNR e da PSP.</p>
+          <button type="button" class="verix-notice-share-button" onclick="partilharVerixWhatsApp()" aria-label="Partilhar o VÉRIX nos grupos de WhatsApp">PARTILHAR NO WHATSAPP <span aria-hidden="true">↗</span></button>
         </section>
       </div>
     </div>
@@ -19582,6 +19583,18 @@ html body .toast-notification {
     var o=document.getElementById('verixAsfNoticeOverlay');
     if(o) o.setAttribute('aria-hidden','true');
   };
+
+  /* Partilha explícita: abre o WhatsApp com mensagem pronta para enviar a um grupo. */
+  window.partilharVerixWhatsApp=function(){
+    var shareUrl='https://verix-plataformadigital.github.io/verix/';
+    var message='🚔🇵🇹 VÉRIX — APOIO OPERACIONAL\\n\\n'+
+      'Ferramenta de apoio ao serviço operacional, desenvolvida por um militar da UNT e partilhada para chegar a mais colegas.\\n\\n'+
+      '📊 Mais de 250.000 pesquisas desde o início do projeto.\\n\\n'+
+      '🤝 Se te for útil, partilha nos grupos de WhatsApp da GNR e da PSP e com outros operacionais.\\n\\n'+
+      '🔗 '+shareUrl;
+    var target='https://wa.me/?text='+encodeURIComponent(message);
+    window.open(target,'_blank','noopener,noreferrer');
+  };
 })();
 </script>
 
@@ -20889,6 +20902,49 @@ html body #seguroResult > .asf-app-warn .asf-status-sub{
   html body #seguroResult > .asf-operational-result .asf-date-box{padding:8px!important;min-height:55px!important}
   html body #seguroResult > .asf-operational-result .asf-date-box strong{font-size:10px!important}
   html body #seguroResult > .asf-app-no,html body #seguroResult > .asf-app-warn{padding:9px!important;gap:9px!important}
+}
+</style>
+
+
+<style id="verix-notice-share-cta">
+html body #verixAsfNoticeOverlay .verix-notice-share-button{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:10px!important;
+  box-sizing:border-box!important;
+  max-width:100%!important;
+  min-height:39px!important;
+  margin:17px 0 0!important;
+  padding:0 15px!important;
+  border:1px solid #087443!important;
+  border-radius:9px!important;
+  background:linear-gradient(135deg,#087443 0%,#0a8650 100%)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  font:850 10px/1 Arial,sans-serif!important;
+  letter-spacing:.6px!important;
+  box-shadow:0 5px 14px rgba(8,116,67,.15)!important;
+  cursor:pointer!important;
+  transition:filter .15s ease,transform .15s ease,box-shadow .15s ease!important;
+}
+html body #verixAsfNoticeOverlay .verix-notice-share-button:hover{
+  filter:brightness(1.08)!important;
+  box-shadow:0 7px 18px rgba(8,116,67,.22)!important;
+}
+html body #verixAsfNoticeOverlay .verix-notice-share-button:active{
+  transform:translateY(1px)!important;
+}
+@media(max-width:640px){
+  html body #verixAsfNoticeOverlay .verix-notice-share-button{
+    min-height:42px!important;
+    margin-top:13px!important;
+    padding:0 12px!important;
+    font-size:9px!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  html body #verixAsfNoticeOverlay .verix-notice-share-button{transition:none!important;}
 }
 </style>
 
