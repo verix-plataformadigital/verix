@@ -187,8 +187,10 @@ function writeSecureFile(relativeSource, relativeOutput) {
     source = source.replace(/1\.5-sec-20261008-a/g, BUILD_ID);
   }
 
-  // Inject the versioned visual layer into the generated app HTML. Keep the
-  // source monolith intact and avoid external CSS requests at runtime.
+  // Inject the visual layer at the end of the document, after legacy style
+  // blocks that live inside <body>. If this is placed in <head>, later legacy
+  // CSS can win the cascade and silently restore the old ASF result design.
+  // Keep the source monolith intact and avoid external CSS requests at runtime.
   if (relativeSource === "verix-app.html") {
     const depthCssPath = path.join(ROOT, "verix-depth-ui.css");
     if (!fs.existsSync(depthCssPath)) {
@@ -196,12 +198,12 @@ function writeSecureFile(relativeSource, relativeOutput) {
     }
     const depthCss = fs.readFileSync(depthCssPath, "utf8").trim();
     if (!depthCss) throw new Error("VÉRIX depth stylesheet is empty");
-    if (!/<\/head>/i.test(source)) {
-      throw new Error("Cannot inject VÉRIX depth stylesheet: closing </head> not found");
+    if (!/<\/body>/i.test(source)) {
+      throw new Error("Cannot inject VÉRIX depth stylesheet: closing </body> not found");
     }
     source = source.replace(
-      /<\/head>/i,
-      '<style id="verix-depth-ui">\n' + depthCss + '\n</style>\n</head>'
+      /<\/body>/i,
+      '<style id="verix-depth-ui">\n' + depthCss + '\n</style>\n</body>'
     );
   }
 
