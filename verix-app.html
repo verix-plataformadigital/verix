@@ -17470,6 +17470,10 @@ html body .leg-card-new .copy-all-new{
     var m = meta && typeof meta === 'object' ? meta : {};
     var out = {};
     if (m.queryId) out.queryId = String(m.queryId).slice(0, 120);
+    // Allow a plate only when the no-record wrapper explicitly provides it.
+    // telemetry-v2 moves this field into the restricted 24-hour register and
+    // strips it from the normal analytics event before persistence.
+    if (m.matricula) out.matricula = String(m.matricula).slice(0, 30);
     if (m.source) out.source = String(m.source).slice(0, 80);
     if (m.itemId) out.itemId = String(m.itemId).slice(0, 120);
     if (m.itemLabel) out.itemLabel = String(m.itemLabel).slice(0, 180);
