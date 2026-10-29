@@ -196,12 +196,12 @@ function writeSecureFile(relativeSource, relativeOutput) {
     }
     const depthCss = fs.readFileSync(depthCssPath, "utf8").trim();
     if (!depthCss) throw new Error("VÉRIX depth stylesheet is empty");
-    if (!/<\\/head>/i.test(source)) {
+    if (!/<\/head>/i.test(source)) {
       throw new Error("Cannot inject VÉRIX depth stylesheet: closing </head> not found");
     }
     source = source.replace(
-      /<\\/head>/i,
-      '<style id="verix-depth-ui">\\n' + depthCss + '\\n</style>\\n</head>'
+      /<\/head>/i,
+      '<style id="verix-depth-ui">\n' + depthCss + '\n</style>\n</head>'
     );
   }
 
