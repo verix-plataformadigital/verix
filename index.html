@@ -27,9 +27,12 @@ html,body{margin:0;width:100%;height:100%;background:#010407;overflow:hidden}
   /* No telemóvel/tablet entra automaticamente na interface mobile.
      Desktop continua a abrir a versão principal exatamente como antes. */
   const isMobile=mobileUA || coarse || narrow;
+  // O build seguro substitui este token pelo BUILD_ID da publicação.
+  // A URL só muda numa nova build, não em cada abertura.
+  const cacheVersion='__VERIX_CACHE_VERSION__';
   const target=isMobile
-    ? './verix-mobile.html?_verix='+Date.now()+'&_auto=1'
-    : './verix-app.html?_verix='+Date.now();
+    ? './verix-mobile.html?_verix='+cacheVersion+'&_auto=1'
+    : './verix-app.html?_verix='+cacheVersion;
 
   window.location.replace(target);
 })();
