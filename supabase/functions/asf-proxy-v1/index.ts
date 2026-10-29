@@ -31,18 +31,21 @@ const PROXY_USERNAME = Deno.env.get("PROXY_USERNAME") || "";
 const PROXY_PASSWORD = Deno.env.get("PROXY_PASSWORD") || "";
 const MAX_PROXY_ENDPOINTS = 10;
 
-// Keep each installation on one proxy for a short window so Deno can reuse
-// the HTTPS CONNECT/TLS tunnel across consecutive ASF lookups. Rotate by
-// installation and minute to spread traffic across the configured proxy pool.
-function selectProxyIndex(installationId: string, poolSize: number): number {
-  const timeSlot = Math.floor(Date.now() / 60_000);
-  const key = String(installationId || "anonymous") + ":" + timeSlot;
-  let hash = 0x811c9dc5;
-  for (let i = 0; i < key.length; i++) {
-    hash ^= key.charCodeAt(i);
-    hash = Math.imul(hash, 0x01000193);
+// Pin an Edge isolate to one configured proxy for a 5-minute window.
+// Requests that hit the same warm isolate can then reuse the same upstream
+// CONNECT/TLS connection pool instead of spreading across different proxies
+// per client request. Each isolate starts at a randomized pool position.
+let proxyCursor = Math.floor(Math.random() * 1_000_000);
+let activeProxyWindow = -1;
+let activeProxyIndex = -1;
+function selectProxyIndexForWindow(poolSize: number): number {
+  const window = Math.floor(Date.now() / 300_000);
+  if (activeProxyWindow !== window || activeProxyIndex < 0 || activeProxyIndex >= poolSize) {
+    activeProxyWindow = window;
+    activeProxyIndex = proxyCursor % poolSize;
+    proxyCursor = (proxyCursor + 1) % poolSize;
   }
-  return (hash >>> 0) % poolSize;
+  return activeProxyIndex;
 }
 
 // Diagnóstico temporário e limitado: mede tamanhos sem registar matrícula ou valores do seguro.
@@ -379,7 +382,7 @@ Deno.serve(async (req: Request) => {
       }, 503, req);
     }
 
-    const proxyIndex = selectProxyIndex(installationId, proxyPool.length);
+    const proxyIndex = selectProxyIndexForWindow(proxyPool.length);
     const selectedProxy = proxyPool[proxyIndex];
 
     const query =
