@@ -1,5 +1,4 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { gunzipSync } from "node:zlib";
 
 declare const Deno: any;
 
@@ -41,14 +40,44 @@ function hasTelemetryGzipPrefix(bytes: Uint8Array): boolean {
   return true;
 }
 
-function parseTelemetryBody(raw: Uint8Array): any {
+async function parseTelemetryBody(raw: Uint8Array): Promise<any> {
   let payload = raw;
   if (hasTelemetryGzipPrefix(raw)) {
-    // Limite a expansão para evitar payloads comprimidos maliciosos.
-    payload = gunzipSync(raw.slice(TELEMETRY_GZIP_MAGIC.byteLength), {
-      maxOutputLength: 1024 * 1024
-    });
+    if (typeof DecompressionStream !== "function" || typeof Blob !== "function") {
+      throw new Error("gzip_not_supported");
+    }
+
+    const compressed = raw.slice(TELEMETRY_GZIP_MAGIC.byteLength);
+    const stream = new Blob([compressed]).stream().pipeThrough(new DecompressionStream("gzip"));
+    const reader = stream.getReader();
+    const chunks: Uint8Array[] = [];
+    let total = 0;
+
+    try {
+      while (true) {
+        const part = await reader.read();
+        if (part.done) break;
+        total += part.value.byteLength;
+        if (total > 1024 * 1024) {
+          try { await reader.cancel(); } catch (_) {}
+          const error = new Error("payload_too_large");
+          (error as any).code = "PAYLOAD_TOO_LARGE";
+          throw error;
+        }
+        chunks.push(part.value);
+      }
+    } finally {
+      try { reader.releaseLock(); } catch (_) {}
+    }
+
+    payload = new Uint8Array(total);
+    let offset = 0;
+    for (const chunk of chunks) {
+      payload.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
   }
+
   if (payload.byteLength > 1024 * 1024) {
     const error = new Error("payload_too_large");
     (error as any).code = "PAYLOAD_TOO_LARGE";
@@ -362,7 +391,7 @@ Deno.serve(async (req: Request) => {
       if (rawBody.byteLength > 1024 * 1024) {
         return json({ ok: false, error: "payload_too_large" }, 413, req);
       }
-      body = parseTelemetryBody(rawBody);
+      body = await parseTelemetryBody(rawBody);
     } catch (error) {
       const code = (error as any)?.code;
       if (code === "PAYLOAD_TOO_LARGE" || code === "ERR_BUFFER_TOO_LARGE") {
