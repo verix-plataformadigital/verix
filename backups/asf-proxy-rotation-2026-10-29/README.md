@@ -63,7 +63,7 @@ This proves all ten proxy endpoints authenticated and produced distinct visible 
 
 ### Single-proxy ASF connectivity
 Tested using `runtime-asf-proxy-single-probe`:
-- Proxy: first configured endpoint, `45.38.107.97:6014`
+- Proxy: first configured endpoint (endpoint omitted from the public backup)
 - Synthetic test plate: `ZZZZZZ` (not a real vehicle lookup)
 - ASF HTTP status: 200
 - Content type: JSON
