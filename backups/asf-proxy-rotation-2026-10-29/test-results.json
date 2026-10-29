@@ -40,7 +40,8 @@
     "contentType": "application/json",
     "graphqlErrorCount": 0,
     "hasGraphQLData": true,
-    "nodesCount": 1
+    "nodesCount": 1,
+    "proxyEndpoint": "omitted from public backup"
   },
   "productionValidation": {
     "performed": false,
