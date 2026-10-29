@@ -31,8 +31,39 @@ const PROXY_USERNAME = Deno.env.get("PROXY_USERNAME") || "";
 const PROXY_PASSWORD = Deno.env.get("PROXY_PASSWORD") || "";
 const MAX_PROXY_ENDPOINTS = 10;
 
-// Per-isolate round-robin. Each Edge isolate keeps its own cursor.
-let proxyCursor = Math.floor(Math.random() * 1_000_000);
+// Keep a short proxy affinity per installation to permit TLS/CONNECT reuse.
+// Any network error or upstream 502/503/504 triggers immediate one-hop failover.
+const proxyAffinity = new Map<string, { slot: number; index: number }>();
+function proxyAffinityKey(installationId: string): string {
+  return String(installationId || "anonymous").slice(0, 120);
+}
+function chooseProxyIndex(installationId: string, poolSize: number): number {
+  const key = proxyAffinityKey(installationId);
+  const slot = Math.floor(Date.now() / 60_000);
+  const existing = proxyAffinity.get(key);
+  if (existing && existing.slot === slot && existing.index >= 0 && existing.index < poolSize) {
+    return existing.index;
+  }
+  const hashInput = key + ":" + slot;
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < hashInput.length; i++) {
+    hash ^= hashInput.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  const index = (hash >>> 0) % poolSize;
+  rememberProxyIndex(installationId, slot, index);
+  return index;
+}
+function rememberProxyIndex(installationId: string, slot: number, index: number): void {
+  const key = proxyAffinityKey(installationId);
+  proxyAffinity.set(key, { slot, index });
+  // Bound per-isolate memory when many installations visit this function.
+  while (proxyAffinity.size > 500) {
+    const oldest = proxyAffinity.keys().next().value;
+    if (oldest === undefined) break;
+    proxyAffinity.delete(oldest);
+  }
+}
 
 // Diagnóstico temporário e limitado: mede tamanhos sem registar matrícula ou valores do seguro.
 let payloadProfileBudget = 10;
@@ -113,11 +144,7 @@ function getProxyPool(): ProxyEndpoint[] {
   });
 }
 
-function nextProxyIndex(poolSize: number): number {
-  const index = proxyCursor % poolSize;
-  proxyCursor = (proxyCursor + 1) % poolSize;
-  return index;
-}
+
 
 
 function json(data: unknown, status = 200, req?: Request, extraHeaders: Record<string, string> = {}) {
@@ -370,8 +397,8 @@ Deno.serve(async (req: Request) => {
       }, 503, req);
     }
 
-    const proxyIndex = nextProxyIndex(proxyPool.length);
-    const selectedProxy = proxyPool[proxyIndex];
+    let proxyIndex = chooseProxyIndex(installationId, proxyPool.length);
+    let selectedProxy = proxyPool[proxyIndex];
 
     const query =
       'mutation license { mobishoutEntry { noone { entry { licenseNumber(license: "' +
@@ -379,29 +406,80 @@ Deno.serve(async (req: Request) => {
       '") { nodes { id entity startDate endDate policy license code logo } } } } } }';
 
     const url = ASF_ORIGIN + ASF_PATH + "?query=" + encodeURIComponent(query);
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
     const started = Date.now();
-
     let upstreamClient: Deno.HttpClient | undefined;
+    let usedFallback = false;
+    let upstream: Response;
+    let text: string;
+    let elapsedMs = 0;
+
+    // A fresh timeout is used for each attempt, so a failed proxy does not
+    // consume the full timeout budget of the fallback proxy.
+    const requestThroughProxy = async (proxy: ProxyEndpoint) => {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
+      const attemptStarted = Date.now();
+      try {
+        const client = getOrCreateProxyClient(proxy);
+        const response = await fetch(url, {
+          client,
+          method: "POST",
+          headers: {
+            "Accept": "application/json, text/plain, */*",
+            "Cache-Control": "no-cache",
+            "Pragma": "no-cache"
+          },
+          body: null,
+          redirect: "follow",
+          signal: controller.signal
+        });
+        const bodyText = await response.text();
+        return { response, bodyText, elapsedMs: Date.now() - attemptStarted };
+      } finally {
+        clearTimeout(timeout);
+      }
+    };
+
     try {
-      upstreamClient = getOrCreateProxyClient(selectedProxy);
+      let result: { response: Response; bodyText: string; elapsedMs: number };
+      try {
+        result = await requestThroughProxy(selectedProxy);
+      } catch (firstError) {
+        discardProxyClient(selectedProxy);
+        if (proxyPool.length < 2) throw firstError;
+        usedFallback = true;
+        proxyIndex = (proxyIndex + 1) % proxyPool.length;
+        selectedProxy = proxyPool[proxyIndex];
+        rememberProxyIndex(installationId, Math.floor(Date.now() / 60_000), proxyIndex);
+        console.warn("verix_asf_proxy_failover", JSON.stringify({
+          reason: (firstError as Error)?.name === "AbortError" ? "timeout" : "network",
+          proxyIndex: proxyIndex + 1
+        }));
+        result = await requestThroughProxy(selectedProxy);
+      }
 
-      const upstream = await fetch(url, {
-        client: upstreamClient,
-        method: "POST",
-        headers: {
-          "Accept": "application/json, text/plain, */*",
-          "Cache-Control": "no-cache",
-          "Pragma": "no-cache"
-        },
-        body: null,
-        redirect: "follow",
-        signal: controller.signal
-      });
+      // Retry at most once on upstream gateway/server failure. Do not retry
+      // successful HTTP responses containing GraphQL errors; that could amplify
+      // ASF load or repeat a rate-limited operation.
+      if (!usedFallback && proxyPool.length > 1 && [502, 503, 504].includes(result.response.status)) {
+        try { await result.response.body?.cancel(); } catch (_) {}
+        discardProxyClient(selectedProxy);
+        usedFallback = true;
+        proxyIndex = (proxyIndex + 1) % proxyPool.length;
+        selectedProxy = proxyPool[proxyIndex];
+        rememberProxyIndex(installationId, Math.floor(Date.now() / 60_000), proxyIndex);
+        console.warn("verix_asf_proxy_failover", JSON.stringify({
+          reason: "upstream_" + result.response.status,
+          proxyIndex: proxyIndex + 1
+        }));
+        result = await requestThroughProxy(selectedProxy);
+      }
 
-      const text = await upstream.text();
-      const elapsedMs = Date.now() - started;
+      upstream = result.response;
+      text = result.bodyText;
+      elapsedMs = result.elapsedMs;
+      rememberProxyIndex(installationId, Math.floor(Date.now() / 60_000), proxyIndex);
+
       const upstreamContentType = upstream.headers.get("content-type") || "";
 
       // Diagnostics deliberately exclude the plate, raw body, and insurer/policy fields.
@@ -518,6 +596,7 @@ Deno.serve(async (req: Request) => {
         "X-Verix-ASF-Relay": "1",
         "X-Verix-ASF-Route": "proxy",
         "X-Verix-ASF-Proxy-Index": String(proxyIndex + 1),
+        "X-Verix-ASF-Proxy-Failover": usedFallback ? "1" : "0",
         "X-Verix-ASF-Latency-Ms": String(elapsedMs),
         "X-Verix-ASF-Body-Kind": bodyKind,
         "X-Verix-ASF-GraphQL-Errors": String(graphqlErrorCount),
@@ -530,8 +609,8 @@ Deno.serve(async (req: Request) => {
 
       return await gzipASFResponseIfSupported(req, text, upstream.status, outHeaders);
     } catch (error) {
-      // Se uma ligação reutilizada falhar, descarta-se apenas o cliente desse
-      // endpoint; o próximo pedido volta a criá-lo. A rotação continua por pedido.
+      // Both the preferred proxy and the single fallback failed. Discard the
+      // selected client so the next request can establish a fresh connection.
       discardProxyClient(selectedProxy);
       const aborted = (error as Error)?.name === "AbortError";
       return json({
@@ -539,9 +618,6 @@ Deno.serve(async (req: Request) => {
         error: aborted ? "upstream_timeout" : "upstream_network",
         message: aborted ? "ASF upstream timeout" : "ASF upstream network error"
       }, aborted ? 504 : 502, req);
-    } finally {
-      // Não fechar o cliente em cada pedido: isso força nova ligação e TLS handshake.
-      clearTimeout(timeout);
     }
   } catch (error) {
     console.error(
