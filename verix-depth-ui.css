@@ -2058,3 +2058,227 @@ html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-footer-credit stro
     font-size: 12px !important;
   }
 }
+
+
+/* VÉRIX BRAND BAR — FUTURISTIC / LAYERED METAL v1
+   Redesign scoped to the home masthead only. */
+html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead {
+  position: relative !important;
+  isolation: isolate !important;
+  overflow: hidden !important;
+  min-height: 84px !important;
+  flex-basis: 84px !important;
+  padding: 0 clamp(28px,3.6vw,62px) !important;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(103,214,160,.34) !important;
+  background:
+    radial-gradient(ellipse at 4% 0%,rgba(0,255,126,.15),transparent 30%),
+    radial-gradient(ellipse at 19% 120%,rgba(0,191,116,.12),transparent 35%),
+    radial-gradient(ellipse at 82% -40%,rgba(16,133,151,.10),transparent 43%),
+    linear-gradient(110deg,#07100f 0%,#0c1b1a 26%,#0a1518 58%,#071012 100%) !important;
+  box-shadow:
+    0 10px 25px rgba(0,0,0,.30),
+    0 2px 0 rgba(0,0,0,.52),
+    inset 0 1px 0 rgba(255,255,255,.10),
+    inset 0 -1px 0 rgba(109,255,183,.07) !important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: -1 !important;
+  pointer-events: none !important;
+  opacity: .85 !important;
+  background:
+    repeating-linear-gradient(180deg,rgba(255,255,255,.018) 0 1px,transparent 1px 4px),
+    linear-gradient(115deg,transparent 0 23%,rgba(255,255,255,.035) 29%,transparent 37%),
+    linear-gradient(90deg,rgba(0,245,130,.07),transparent 34%,transparent 70%,rgba(71,207,222,.045)) !important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead::after {
+  content: "" !important;
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 3 !important;
+  height: 2px !important;
+  pointer-events: none !important;
+  background: linear-gradient(90deg,#00df70 0%,#00df70 18%,rgba(0,223,112,.18) 35%,rgba(72,222,200,.08) 69%,#d7193f 100%) !important;
+  box-shadow: 0 0 12px rgba(0,255,128,.20),0 0 10px rgba(215,25,63,.12) !important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup {
+  position: relative !important;
+  z-index: 2 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+  min-width: 0 !important;
+  padding: 9px 15px 9px 0 !important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup .vx-home-brand-mark {
+  position: relative !important;
+  isolation: isolate !important;
+  display: flex !important;
+  flex: 0 0 48px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 48px !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  border: 1px solid #65e9ab !important;
+  border-radius: 13px !important;
+  background:
+    radial-gradient(circle at 28% 14%,rgba(255,255,255,.36),transparent 38%),
+    linear-gradient(145deg,#2d6f50 0%,#123e2b 43%,#071c17 100%) !important;
+  box-shadow:
+    0 0 0 2px rgba(0,255,125,.08),
+    0 0 21px rgba(0,255,128,.16),
+    0 7px 14px rgba(0,0,0,.42),
+    inset 0 1px 0 rgba(255,255,255,.42),
+    inset 0 -3px 0 rgba(0,0,0,.32) !important;
+  color: #e7fff0 !important;
+  font: 1000 22px/1 Inter,"Segoe UI",Arial,sans-serif !important;
+  text-shadow: 0 2px 2px rgba(0,0,0,.50),0 0 12px rgba(103,255,170,.16) !important;
+  transform: perspective(160px) rotateY(-5deg) translateY(-1px) !important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup .vx-home-brand-mark::before {
+  content: "" !important;
+  position: absolute !important;
+  left: 9px !important;
+  right: 9px !important;
+  bottom: 5px !important;
+  height: 2px !important;
+  z-index: -1 !important;
+  background: linear-gradient(90deg,#00ed77 0 65%,#e51a45 65% 100%) !important;
+  box-shadow: 0 0 8px rgba(0,238,119,.55) !important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-line {
+  display: flex !important;
+  align-items: center !important;
+  gap: 15px !important;
+  min-width: 0 !important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-line h1 {
+  margin: 0 !important;
+  color: #f5fff9 !important;
+  -webkit-text-fill-color: #f5fff9 !important;
+  font: 1000 clamp(22px,1.45vw,27px)/1 Inter,"Segoe UI",Arial,sans-serif !important;
+  letter-spacing: 1.9px !important;
+  text-shadow: 0 2px 0 rgba(0,0,0,.58),0 0 18px rgba(104,255,178,.13) !important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-brand-divider {
+  display: block !important;
+  flex: 0 0 1px !important;
+  width: 1px !important;
+  height: 26px !important;
+  background: linear-gradient(180deg,transparent,#7daca0 22%,#7daca0 78%,transparent) !important;
+  box-shadow: 0 0 7px rgba(103,214,160,.18) !important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-service-name {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  min-height: 28px !important;
+  padding: 0 11px !important;
+  border: 1px solid rgba(115,171,147,.24) !important;
+  border-radius: 6px !important;
+  background: linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.015)) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.07) !important;
+  color: #c7dcd1 !important;
+  font: 700 11px/1.2 Inter,"Segoe UI",Arial,sans-serif !important;
+  letter-spacing: .25px !important;
+  white-space: nowrap !important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-service-name::before {
+  content: "" !important;
+  display: inline-block !important;
+  flex: 0 0 5px !important;
+  width: 5px !important;
+  height: 5px !important;
+  margin-right: 8px !important;
+  border-radius: 50% !important;
+  background: #62f5a5 !important;
+  box-shadow: 0 0 8px rgba(0,255,128,.55) !important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead:hover .vx-home-brand-lockup .vx-home-brand-mark {
+  border-color: #a1ffca !important;
+  box-shadow: 0 0 0 2px rgba(0,255,125,.10),0 0 26px rgba(0,255,128,.23),0 9px 17px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.48),inset 0 -3px 0 rgba(0,0,0,.32) !important;
+}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead {
+  background:
+    radial-gradient(ellipse at 4% 0%,rgba(0,192,94,.10),transparent 32%),
+    linear-gradient(110deg,#f6fcf8,#eaf4ee 45%,#f5f9f7) !important;
+  border-bottom-color: #b5d2c1 !important;
+  box-shadow: 0 7px 18px rgba(24,71,43,.11),inset 0 1px 0 #fff,inset 0 -1px 0 rgba(24,71,43,.06) !important;
+}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-brand-line h1 {
+  color: #173d2a !important;
+  -webkit-text-fill-color: #173d2a !important;
+  text-shadow: 0 1px 0 #fff,0 0 13px rgba(0,139,71,.08) !important;
+}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-brand-divider {
+  background: linear-gradient(180deg,transparent,#a0c1ad 22%,#a0c1ad 78%,transparent) !important;
+}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-service-name {
+  border-color: #c4ddd0 !important;
+  background: linear-gradient(180deg,#fff,rgba(228,244,234,.85)) !important;
+  box-shadow: inset 0 1px 0 #fff !important;
+  color: #456553 !important;
+}
+@media(max-width:760px) {
+  html body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead {
+    flex-basis: 66px !important;
+    min-height: 66px !important;
+    padding: 0 15px !important;
+  }
+  html body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup {
+    gap: 10px !important;
+    padding-right: 0 !important;
+  }
+  html body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup .vx-home-brand-mark {
+    flex-basis: 39px !important;
+    width: 39px !important;
+    height: 39px !important;
+    min-height: 39px !important;
+    border-radius: 10px !important;
+    font-size: 19px !important;
+  }
+  html body #mainMenuScreen.vx-home-screen .vx-home-brand-line {
+    gap: 8px !important;
+  }
+  html body #mainMenuScreen.vx-home-screen .vx-home-brand-line h1 {
+    font-size: 18px !important;
+    letter-spacing: .9px !important;
+  }
+  html body #mainMenuScreen.vx-home-screen .vx-home-brand-divider {
+    height: 19px !important;
+  }
+  html body #mainMenuScreen.vx-home-screen .vx-home-service-name {
+    min-height: 23px !important;
+    padding: 0 6px !important;
+    font-size: 9px !important;
+  }
+}
+@media(max-width:440px) {
+  html body #mainMenuScreen.vx-home-screen .vx-home-brand-line {
+    gap: 7px !important;
+  }
+  html body #mainMenuScreen.vx-home-screen .vx-home-brand-line h1 {
+    font-size: 16px !important;
+  }
+  html body #mainMenuScreen.vx-home-screen .vx-home-brand-divider {
+    display: none !important;
+  }
+  html body #mainMenuScreen.vx-home-screen .vx-home-service-name {
+    max-width: 104px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  html body #mainMenuScreen.vx-home-screen .vx-home-topbar,
+  html body #mainMenuScreen.vx-home-screen .vx-home-brand-mark {
+    transition: none !important;
+    animation: none !important;
+  }
+}
