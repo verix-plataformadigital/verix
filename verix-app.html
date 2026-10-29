@@ -21431,5 +21431,104 @@ html body #seguroResult > .asf-app-warn .asf-status-card.warn{
 }
 </style>
 
+
+<style id="verix-asf-traffic-signal-colors-v3">
+/* Verde de PERMITIDO e vermelho de PROIBIDO — reforço visual final.
+   CSS exclusivamente visual; não altera a lógica ASF. */
+html body #seguroResult > div.asf-app.asf-app-ok.asf-operational-result > div.asf-success-hero{
+  background:linear-gradient(120deg,#00e85b 0%,#00ce4f 55%,#00b947 100%)!important;
+  border:2px solid #72ff9a!important;border-left:5px solid #00ff75!important;
+  box-shadow:0 0 0 1px rgba(0,255,94,.18),0 5px 20px rgba(0,220,75,.28),inset 0 1px 0 rgba(255,255,255,.26)!important;
+  opacity:1!important;filter:none!important;mix-blend-mode:normal!important;
+}
+html body #seguroResult > div.asf-app.asf-app-ok.asf-operational-result > div.asf-success-hero > .asf-success-copy{
+  opacity:1!important;filter:none!important;mix-blend-mode:normal!important;color:#003b1b!important;
+}
+html body #seguroResult > div.asf-app.asf-app-ok.asf-operational-result .asf-success-title{
+  color:#00391a!important;-webkit-text-fill-color:#00391a!important;
+  font-weight:950!important;text-shadow:none!important;opacity:1!important;
+  filter:none!important;mix-blend-mode:normal!important;
+}
+html body #seguroResult > div.asf-app.asf-app-ok.asf-operational-result .asf-success-sub{
+  color:#064b25!important;-webkit-text-fill-color:#064b25!important;
+  font-weight:850!important;opacity:1!important;text-shadow:none!important;
+}
+html body #seguroResult > div.asf-app.asf-app-ok.asf-operational-result .asf-success-badge{
+  background:linear-gradient(145deg,#effff3,#aaffc8 48%,#52ff91)!important;
+  color:#00602a!important;border:2px solid #ffffff!important;
+  box-shadow:0 0 0 2px rgba(0,107,45,.18),0 2px 8px rgba(0,77,29,.25)!important;
+}
+html body #seguroResult > div.asf-app.asf-app-ok.asf-operational-result .asf-operational-status{
+  background:linear-gradient(115deg,#00d951 0%,#00b943 100%)!important;
+  border:1px solid #65ff9b!important;color:#00391b!important;
+  box-shadow:0 4px 13px rgba(0,183,66,.18),inset 0 1px 0 rgba(255,255,255,.22)!important;
+}
+html body #seguroResult > div.asf-app.asf-app-ok.asf-operational-result .asf-op-kicker{
+  color:#064b25!important;-webkit-text-fill-color:#064b25!important;font-weight:950!important;
+}
+html body #seguroResult > div.asf-app.asf-app-ok.asf-operational-result .asf-operational-status strong{
+  color:#003619!important;-webkit-text-fill-color:#003619!important;font-weight:950!important;
+}
+html body #seguroResult > div.asf-app.asf-app-ok.asf-operational-result .asf-op-validity{
+  border-left-color:rgba(0,70,28,.32)!important;
+}
+html body #seguroResult > div.asf-app.asf-app-ok.asf-operational-result .asf-operational-status.expired{
+  background:linear-gradient(115deg,#ff2444 0%,#f0002b 58%,#d90025 100%)!important;
+  border-color:#ff8b9a!important;color:#fff!important;
+}
+html body #seguroResult > div.asf-app.asf-app-ok.asf-operational-result .asf-operational-status.expired .asf-op-kicker,
+html body #seguroResult > div.asf-app.asf-app-ok.asf-operational-result .asf-operational-status.expired strong{
+  color:#ffffff!important;-webkit-text-fill-color:#ffffff!important;
+}
+html body #seguroResult > div.asf-app.asf-app-ok.asf-operational-result .asf-operational-status.unknown{
+  background:linear-gradient(115deg,#ffc928,#ffad00)!important;border-color:#ffe38a!important;
+}
+html body #seguroResult > div.asf-app.asf-app-ok.asf-operational-result .asf-date-box.valid{
+  background:linear-gradient(140deg,#00d954,#00ad43)!important;border-color:#6cff9e!important;
+  box-shadow:0 3px 10px rgba(0,180,62,.16)!important;
+}
+html body #seguroResult > div.asf-app.asf-app-ok.asf-operational-result .asf-date-box.valid .k,
+html body #seguroResult > div.asf-app.asf-app-ok.asf-operational-result .asf-date-box.valid strong{
+  color:#003c1c!important;-webkit-text-fill-color:#003c1c!important;text-shadow:none!important;font-weight:950!important;
+}
+html body #seguroResult > div.asf-app.asf-app-ok.asf-operational-result .asf-operational-actions .aux-btn.secondary{
+  background:linear-gradient(180deg,#00dc63,#00b94c)!important;border:1px solid #75ffab!important;
+  color:#003b1c!important;-webkit-text-fill-color:#003b1c!important;font-weight:950!important;
+  box-shadow:0 4px 14px rgba(0,190,68,.25)!important;
+}
+html body #seguroResult > div.asf-app.asf-app-ok.asf-operational-result .asf-operational-actions .aux-btn.secondary:hover{
+  background:linear-gradient(180deg,#35ff88,#00d45c)!important;
+}
+/* Estado sem seguro: vermelho vivo em toda a superfície de decisão. */
+html body #seguroResult > div.asf-app.asf-app-no > div.asf-status-card.no{
+  background:linear-gradient(125deg,#ff1738 0%,#f0002c 52%,#d90025 100%)!important;
+  border:2px solid #ff8b9c!important;
+  box-shadow:0 0 0 1px rgba(255,0,42,.14),0 7px 24px rgba(255,0,42,.25),inset 0 1px 0 rgba(255,255,255,.22)!important;
+  opacity:1!important;filter:none!important;mix-blend-mode:normal!important;
+}
+html body #seguroResult > div.asf-app.asf-app-no > div.asf-status-card.no .asf-status-title{
+  color:#ffffff!important;-webkit-text-fill-color:#ffffff!important;
+  font-weight:950!important;text-shadow:0 1px 2px rgba(90,0,12,.3)!important;opacity:1!important;
+}
+html body #seguroResult > div.asf-app.asf-app-no > div.asf-status-card.no .asf-status-sub{
+  color:#fff4f5!important;-webkit-text-fill-color:#fff4f5!important;font-weight:700!important;opacity:1!important;
+}
+html body #seguroResult > div.asf-app.asf-app-no > div.asf-status-card.no .asf-status-icon{
+  background:#ff3150!important;color:#fff!important;border:2px solid #ffc3cb!important;
+  box-shadow:0 0 0 3px rgba(255,255,255,.12),0 2px 8px rgba(70,0,10,.25)!important;
+}
+html body #seguroResult > div.asf-app.asf-app-no .asf-actions .aux-btn.secondary{
+  background:linear-gradient(180deg,#ff2947,#e9002b)!important;border:1px solid #ff9aa8!important;
+  color:#fff!important;-webkit-text-fill-color:#fff!important;font-weight:900!important;
+  box-shadow:0 4px 12px rgba(220,0,35,.22)!important;
+}
+html body #seguroResult > div.asf-app.asf-app-warn > div.asf-status-card.warn{
+  background:linear-gradient(125deg,#ffbd19,#ff9200)!important;border:2px solid #ffe18b!important;
+}
+@media(max-width:420px){
+  html body #seguroResult > div.asf-app.asf-app-ok.asf-operational-result > div.asf-success-hero{background:linear-gradient(120deg,#00e85b,#00ce4f 55%,#00b947)!important}
+}
+</style>
+
 </body>
 </html>
