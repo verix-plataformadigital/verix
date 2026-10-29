@@ -31,21 +31,17 @@ const PROXY_USERNAME = Deno.env.get("PROXY_USERNAME") || "";
 const PROXY_PASSWORD = Deno.env.get("PROXY_PASSWORD") || "";
 const MAX_PROXY_ENDPOINTS = 10;
 
-// Pin an Edge isolate to one configured proxy for a 5-minute window.
-// Requests that hit the same warm isolate can then reuse the same upstream
-// CONNECT/TLS connection pool instead of spreading across different proxies
-// per client request. Each isolate starts at a randomized pool position.
-let proxyCursor = Math.floor(Math.random() * 1_000_000);
-let activeProxyWindow = -1;
-let activeProxyIndex = -1;
-function selectProxyIndexForWindow(poolSize: number): number {
+// Keep proxy affinity deterministic per installation across Edge isolates.
+// Five-minute windows limit churn but still rotate endpoints periodically.
+function selectProxyIndexForInstallation(installationId: string, poolSize: number): number {
   const window = Math.floor(Date.now() / 300_000);
-  if (activeProxyWindow !== window || activeProxyIndex < 0 || activeProxyIndex >= poolSize) {
-    activeProxyWindow = window;
-    activeProxyIndex = proxyCursor % poolSize;
-    proxyCursor = (proxyCursor + 1) % poolSize;
+  const key = String(installationId || "anonymous") + ":" + window;
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < key.length; i++) {
+    hash ^= key.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
   }
-  return activeProxyIndex;
+  return (hash >>> 0) % poolSize;
 }
 
 // Diagnóstico temporário e limitado: mede tamanhos sem registar matrícula ou valores do seguro.
@@ -65,9 +61,10 @@ function getOrCreateProxyClient(proxy: ProxyEndpoint): Deno.HttpClient {
   if (existing) return existing;
 
   const client = Deno.createHttpClient({
-    // Reuse the established proxy tunnel; retain one idle connection per origin.
-    poolMaxIdlePerHost: 1,
-    poolIdleTimeout: false,
+    // Keep a bounded pool: concurrent lookups can finish together, so retaining
+    // several idle sockets helps later requests reuse CONNECT/TLS sessions.
+    poolMaxIdlePerHost: 8,
+    poolIdleTimeout: 120_000,
     proxy: {
       url: proxy.url,
       transport: proxy.transport,
@@ -382,7 +379,7 @@ Deno.serve(async (req: Request) => {
       }, 503, req);
     }
 
-    const proxyIndex = selectProxyIndexForWindow(proxyPool.length);
+    const proxyIndex = selectProxyIndexForInstallation(installationId, proxyPool.length);
     const selectedProxy = proxyPool[proxyIndex];
 
     const query =
