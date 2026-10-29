@@ -234,12 +234,18 @@ if (app) results.push(app);
 const admin = writeSecureFile("admin_v2.html", "admin_v2.html");
 if (admin) results.push(admin);
 
-// Lightweight entry points (no heavy obfuscation needed)
+// Lightweight entry points (no heavy obfuscation needed).
+// Reuse one app URL within a release, then change it on the next published build.
 for (const f of ["index.html", "verix-mobile.html"]) {
   const src = path.join(ROOT, f);
   if (fs.existsSync(src)) {
-    fs.copyFileSync(src, path.join(OUTPUT_DIR, f));
-    results.push({ source: f, output: `dist/${f}`, note: "copied (bootstrap)" });
+    const template = fs.readFileSync(src, "utf8");
+    if (!template.includes("__VERIX_CACHE_VERSION__")) {
+      throw new Error(`Missing __VERIX_CACHE_VERSION__ placeholder in ${f}`);
+    }
+    const versioned = template.replaceAll("__VERIX_CACHE_VERSION__", BUILD_ID);
+    fs.writeFileSync(path.join(OUTPUT_DIR, f), versioned, "utf8");
+    results.push({ source: f, output: `dist/${f}`, note: "versioned bootstrap (" + BUILD_ID + ")" });
   }
 }
 
