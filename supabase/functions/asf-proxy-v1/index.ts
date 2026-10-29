@@ -36,6 +36,40 @@ const MAX_PROXY_ENDPOINTS = 10;
 // Per-isolate round-robin. Each Edge isolate keeps its own cursor.
 let proxyCursor = Math.floor(Math.random() * 1_000_000);
 
+// Reutilização por endpoint dentro de cada isolate. A seleção round-robin continua
+// a ser feita por pedido; só se evita recriar TCP/CONNECT/TLS a cada consulta.
+const proxyClientPool = new Map<string, Deno.HttpClient>();
+
+function proxyClientKey(proxy: ProxyEndpoint): string {
+  return proxy.transport + "|" + proxy.url;
+}
+
+function getOrCreateProxyClient(proxy: ProxyEndpoint): Deno.HttpClient {
+  const key = proxyClientKey(proxy);
+  const existing = proxyClientPool.get(key);
+  if (existing) return existing;
+
+  const client = Deno.createHttpClient({
+    proxy: {
+      url: proxy.url,
+      transport: proxy.transport,
+      ...(PROXY_USERNAME && PROXY_PASSWORD
+        ? { basicAuth: { username: PROXY_USERNAME, password: PROXY_PASSWORD } }
+        : {})
+    }
+  });
+  proxyClientPool.set(key, client);
+  return client;
+}
+
+function discardProxyClient(proxy: ProxyEndpoint): void {
+  const key = proxyClientKey(proxy);
+  const client = proxyClientPool.get(key);
+  if (!client) return;
+  proxyClientPool.delete(key);
+  try { client.close(); } catch (_) {}
+}
+
 type ProxyEndpoint = {
   url: string;
   host: string;
@@ -344,15 +378,7 @@ Deno.serve(async (req: Request) => {
 
     let upstreamClient: Deno.HttpClient | undefined;
     try {
-      upstreamClient = Deno.createHttpClient({
-        proxy: {
-          url: selectedProxy.url,
-          transport: selectedProxy.transport,
-          ...(PROXY_USERNAME && PROXY_PASSWORD
-            ? { basicAuth: { username: PROXY_USERNAME, password: PROXY_PASSWORD } }
-            : {})
-        }
-      });
+      upstreamClient = getOrCreateProxyClient(selectedProxy);
 
       const upstream = await fetch(url, {
         client: upstreamClient,
@@ -473,6 +499,9 @@ Deno.serve(async (req: Request) => {
 
       return gzipASFResponseIfSupported(req, text, upstream.status, outHeaders);
     } catch (error) {
+      // Se uma ligação reutilizada falhar, descarta-se apenas o cliente desse
+      // endpoint; o próximo pedido volta a criá-lo. A rotação continua por pedido.
+      discardProxyClient(selectedProxy);
       const aborted = (error as Error)?.name === "AbortError";
       return json({
         ok: false,
@@ -480,7 +509,7 @@ Deno.serve(async (req: Request) => {
         message: aborted ? "ASF upstream timeout" : "ASF upstream network error"
       }, aborted ? 504 : 502, req);
     } finally {
-      upstreamClient?.close();
+      // Não fechar o cliente em cada pedido: isso força nova ligação e TLS handshake.
       clearTimeout(timeout);
     }
   } catch (error) {
