@@ -7,8 +7,18 @@ const GATE_SECRET =
 
 const ALLOWED_ORIGINS = new Set([
   "https://verix.vxops.workers.dev",
-  "https://verix-plataformadigital.github.io"
+  "https://verix-plataformadigital.github.io",
+  "http://localhost",
+  "http://127.0.0.1",
+  "http://[::1]"
 ]);
+
+function isSupportedOrigin(origin: string): boolean {
+  // O VÉRIX é distribuído como HTML portátil; Chromium serializa file:// como Origin: null.
+  // O token continua assinado, curto (15 min) e vinculado exatamente à origem recebida.
+  // Nunca refletimos "null" no CORS: a resposta usa wildcard sem credenciais.
+  return ALLOWED_ORIGINS.has(origin) || origin === "null";
+}
 
 function cleanText(value: unknown, max: number): string {
   return String(value ?? "").trim().slice(0, max);
@@ -76,7 +86,15 @@ Deno.serve(async (req: Request) => {
   }
 
   const origin = req.headers.get("origin") || "";
-  if (!(ALLOWED_ORIGINS.has(origin) || legacyLocal(req))) {
+  if (!(isSupportedOrigin(origin) || legacyLocal(req))) {
+    console.warn("verix_gate_origin_rejected", JSON.stringify({
+      originType: origin === "null" ? "opaque" : (origin ? "web" : "missing"),
+      origin: origin && origin !== "null" && ALLOWED_ORIGINS.has(origin) ? origin : undefined,
+      secFetchSite: req.headers.get("sec-fetch-site") || "not-provided",
+      userAgentFamily: /Edg\//i.test(req.headers.get("user-agent") || "") ? "Edge" :
+        (/Chrome\//i.test(req.headers.get("user-agent") || "") ? "Chrome" :
+        (/Firefox\//i.test(req.headers.get("user-agent") || "") ? "Firefox" : "other"))
+    }));
     return json({ ok: false, error: "origin_not_allowed" }, 403, req);
   }
 
