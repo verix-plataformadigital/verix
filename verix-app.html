@@ -20741,19 +20741,18 @@ html body #verixAsfNoticeOverlay .verix-asf-notice-continue:active {transform:tr
   <div class="vkh-head"><h2 id="vkhTitle">Atalhos de teclado</h2><button type="button" class="vkh-close" id="vkhClose" aria-label="Fechar ajuda">Fechar&nbsp; ×</button></div>
   <p class="vkh-sub">Navegue pelo VÉRIX sem interromper o trabalho. Os atalhos de módulos funcionam a partir de qualquer área da aplicação.</p>
   <div class="vkh-row"><div><kbd>F1</kbd></div><div>Abrir esta ajuda</div></div>
-  <div class="vkh-row"><div><kbd>Ctrl</kbd> + <kbd>K</kbd></div><div>Ir para a matrícula do veículo (pesquisa rápida)</div></div>
   <div class="vkh-row"><div><kbd>F2</kbd></div><div>Ir para a matrícula do veículo</div></div>
   <div class="vkh-row"><div><kbd>F3</kbd></div><div>Ir para a matrícula do reboque</div></div>
   <div class="vkh-row"><div><kbd>Ctrl</kbd> + <kbd>F</kbd></div><div>Pesquisar dentro do módulo aberto, quando existe um campo de pesquisa</div></div>
   <div class="vkh-row"><div><kbd>Enter</kbd></div><div>Pesquisar quando o cursor está num campo de matrícula</div></div>
-  <div class="vkh-row"><div><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>1</kbd></div><div>Fiscalização / consulta de veículos</div></div>
-  <div class="vkh-row"><div><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>2</kbd></div><div>Cinemómetro</div></div>
-  <div class="vkh-row"><div><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>3</kbd></div><div>Legislação</div></div>
-  <div class="vkh-row"><div><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>4</kbd></div><div>Álcool / deduções</div></div>
-  <div class="vkh-row"><div><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>5</kbd></div><div>Ferramentas</div></div>
-  <div class="vkh-row"><div><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>6</kbd></div><div>Informações</div></div>
-  <div class="vkh-row"><div><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>7</kbd></div><div>Definições</div></div>
-  <div class="vkh-row"><div><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>H</kbd></div><div>Histórico de consultas</div></div>
+  <div class="vkh-row"><div><kbd>Alt</kbd> + <kbd>1</kbd></div><div>Fiscalização / consulta de veículos</div></div>
+  <div class="vkh-row"><div><kbd>Alt</kbd> + <kbd>2</kbd></div><div>Cinemómetro</div></div>
+  <div class="vkh-row"><div><kbd>Alt</kbd> + <kbd>3</kbd></div><div>Legislação</div></div>
+  <div class="vkh-row"><div><kbd>Alt</kbd> + <kbd>4</kbd></div><div>Álcool / deduções</div></div>
+  <div class="vkh-row"><div><kbd>Alt</kbd> + <kbd>5</kbd></div><div>Ferramentas</div></div>
+  <div class="vkh-row"><div><kbd>Alt</kbd> + <kbd>6</kbd></div><div>Informações</div></div>
+  <div class="vkh-row"><div><kbd>Alt</kbd> + <kbd>7</kbd></div><div>Definições</div></div>
+  <div class="vkh-row"><div><kbd>Alt</kbd> + <kbd>H</kbd></div><div>Histórico de consultas</div></div>
   <p class="vkh-foot">Os atalhos não substituem os botões visíveis. A pesquisa só é iniciada por Enter quando o cursor está num dos campos de matrícula.</p>
  </section>
 </div>
@@ -20783,17 +20782,11 @@ html body #verixAsfNoticeOverlay .verix-asf-notice-continue:active {transform:tr
  document.addEventListener('keydown',function(e){
    if(e.defaultPrevented||e.repeat||e.isComposing)return;
    var key=String(e.key||'').toLowerCase();
-   var ctrlShift=e.ctrlKey&&e.shiftKey&&!e.altKey&&!e.metaKey;
+   var altOnly=e.altKey&&!e.ctrlKey&&!e.metaKey&&!e.shiftKey;
    var target=e.target;
    var editable=!!(target&&(target.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)));
    if(key==='escape'&&help&&help.classList.contains('is-open')){e.preventDefault();e.stopPropagation();closeHelp();return;}
    if(key==='f1'){e.preventDefault();openHelp();return;}
-   if(e.ctrlKey&&!e.altKey&&!e.metaKey&&!e.shiftKey&&key==='k'){
-     e.preventDefault();
-     var quickPlate=document.getElementById('MatriculaVeiculo');
-     if(quickPlate){quickPlate.focus();if(typeof quickPlate.select==='function')quickPlate.select();}
-     return;
-   }
    if(e.ctrlKey&&!e.altKey&&!e.metaKey&&!e.shiftKey&&key==='f'){
      var moduleOverlay=document.getElementById('moduleOverlay');
      var moduleIsOpen=!!(moduleOverlay&&(moduleOverlay.classList.contains('show')||moduleOverlay.classList.contains('open')||moduleOverlay.classList.contains('active')||moduleOverlay.getAttribute('aria-hidden')==='false'));
@@ -20803,14 +20796,14 @@ html body #verixAsfNoticeOverlay .verix-asf-notice-continue:active {transform:tr
    }
    if(key==='f2'){e.preventDefault();var v=document.getElementById('MatriculaVeiculo');if(v){v.focus();if(typeof v.select==='function')v.select();}return;}
    if(key==='f3'){e.preventDefault();var r=document.getElementById('MatriculaReboque');if(r){r.focus();if(typeof r.select==='function')r.select();}return;}
-   if(ctrlShift&&key==='1'){e.preventDefault();if(typeof window.abrirConsultaPrincipal==='function')window.abrirConsultaPrincipal();else if(typeof window.abrirModulo==='function')window.abrirModulo('consulta');return;}
-   if(ctrlShift&&key==='2'){e.preventDefault();if(typeof window.abrirModulo==='function')window.abrirModulo('cinemometro');return;}
-   if(ctrlShift&&key==='3'){e.preventDefault();if(typeof window.abrirModulo==='function')window.abrirModulo('legislacao');return;}
-   if(ctrlShift&&key==='4'){e.preventDefault();if(typeof window.abrirModulo==='function')window.abrirModulo('alcoolExcel');return;}
-   if(ctrlShift&&key==='5'){e.preventDefault();if(typeof window.abrirModulo==='function')window.abrirModulo('ferramentas');return;}
-   if(ctrlShift&&key==='6'){e.preventDefault();if(typeof window.abrirModulo==='function')window.abrirModulo('informacoes');return;}
-   if(ctrlShift&&key==='7'){e.preventDefault();if(typeof window.abrirModulo==='function')window.abrirModulo('definicoes');return;}
-   if(ctrlShift&&key==='h'){e.preventDefault();if(typeof window.abrirHistorico==='function')window.abrirHistorico();return;}
+   if(altOnly&&key==='1'){e.preventDefault();if(typeof window.abrirConsultaPrincipal==='function')window.abrirConsultaPrincipal();else if(typeof window.abrirModulo==='function')window.abrirModulo('consulta');return;}
+   if(altOnly&&key==='2'){e.preventDefault();if(typeof window.abrirModulo==='function')window.abrirModulo('cinemometro');return;}
+   if(altOnly&&key==='3'){e.preventDefault();if(typeof window.abrirModulo==='function')window.abrirModulo('legislacao');return;}
+   if(altOnly&&key==='4'){e.preventDefault();if(typeof window.abrirModulo==='function')window.abrirModulo('alcoolExcel');return;}
+   if(altOnly&&key==='5'){e.preventDefault();if(typeof window.abrirModulo==='function')window.abrirModulo('ferramentas');return;}
+   if(altOnly&&key==='6'){e.preventDefault();if(typeof window.abrirModulo==='function')window.abrirModulo('informacoes');return;}
+   if(altOnly&&key==='7'){e.preventDefault();if(typeof window.abrirModulo==='function')window.abrirModulo('definicoes');return;}
+   if(altOnly&&key==='h'){e.preventDefault();if(typeof window.abrirHistorico==='function')window.abrirHistorico();return;}
 
  },true);
 })();
