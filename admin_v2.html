@@ -1379,7 +1379,7 @@ function renderInsuranceNoCases(){
   const host=$('insuranceNoCases');host.replaceChildren();
   const q=$('insuranceCasesSearch').value.trim().toLocaleUpperCase('pt-PT');
   const filtered=caseRows.filter(x=>String(x.matricula||'').toLocaleUpperCase('pt-PT').includes(q));
-  if(!filtered.length){showEmpty('insuranceNoCases',q?'Nenhuma matrícula carregada corresponde ao filtro.':'Não existem registos recentes com resultado “sem registo” nesta janela.');return;}
+  if(!filtered.length){showEmpty('insuranceNoCases',q?'Nenhuma matrícula carregada corresponde ao filtro.':'Os resultados anteriores à correção não guardavam a matrícula e não podem ser recuperados. As novas ocorrências serão registadas durante 24 h.');return;}
   const rows=filtered.map(x=>[x.matricula,prettyDate(x.occurred_at),prettyDate(x.expires_at)]);
   host.appendChild(makeTable(['Matrícula','Data e hora','Fim da retenção'],rows));
 }
