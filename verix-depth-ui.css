@@ -1,31 +1,24 @@
 /*
- * VÉRIX — profundidade visual do painel de seguro.
- * Camada exclusivamente visual: não altera consultas, ASF, iframes ou telemetria.
+ * VÉRIX — resultado ASF: renovação visual premium.
+ * Apenas apresentação. Não altera consulta, parsing, classificação, motor ASF,
+ * telemetria, quotas, proxy ou dados dinâmicos.
  */
 
+/* Painel exterior: vidro claro, aro e profundidade subtil. */
 body .main .panel.insurance {
   position: relative !important;
   isolation: isolate;
-  border: 1px solid rgba(239, 255, 255, .78) !important;
-  border-radius: 17px !important;
-  background: linear-gradient(
-    145deg,
-    #fbfefe 0%,
-    #edf4f4 43%,
-    #d8e4e5 100%
-  ) !important;
+  border: 1px solid rgba(239, 255, 255, .86) !important;
+  border-radius: 18px !important;
+  background: linear-gradient(145deg, #fbfefe 0%, #edf4f4 48%, #d6e3e5 100%) !important;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, .98),
-    inset 0 -1px 0 rgba(21, 58, 65, .18),
-    0 2px 3px rgba(4, 20, 26, .08),
-    0 8px 17px rgba(4, 20, 26, .14),
-    0 22px 38px rgba(4, 20, 26, .17) !important;
-  transition:
-    box-shadow .22s ease,
-    border-color .22s ease;
+    inset 0 -1px 0 rgba(21, 58, 65, .16),
+    0 3px 5px rgba(4, 20, 26, .08),
+    0 10px 22px rgba(4, 20, 26, .15),
+    0 24px 42px rgba(4, 20, 26, .17) !important;
+  transition: box-shadow .22s ease, border-color .22s ease;
 }
-
-/* Reflexo de luz na aresta superior — sem cobrir texto nem bloquear cliques. */
 body .main .panel.insurance::before {
   content: "";
   position: absolute;
@@ -33,52 +26,642 @@ body .main .panel.insurance::before {
   z-index: 20;
   pointer-events: none;
   border-radius: inherit;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, .38) 0,
-    rgba(255, 255, 255, .11) 3px,
-    transparent 15px
-  );
+  background: linear-gradient(180deg, rgba(255,255,255,.42) 0, rgba(255,255,255,.10) 4px, transparent 18px);
 }
-
-/* Duplo aro para simular uma moldura física em vez de um cartão plano. */
 body .main .panel.insurance::after {
   content: "";
   position: absolute;
   inset: 0;
   z-index: 21;
   pointer-events: none;
-  border: 1px solid rgba(255, 255, 255, .52);
+  border: 1px solid rgba(255,255,255,.58);
   border-radius: inherit;
-  box-shadow: inset 0 0 0 1px rgba(15, 54, 60, .10);
+  box-shadow: inset 0 0 0 1px rgba(15,54,60,.09);
 }
-
 body .main .panel.insurance .panel-body iframe,
 body .main .panel.insurance > iframe {
   display: block;
-  border: 1px solid rgba(248, 255, 255, .88) !important;
-  border-radius: 10px !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, .92),
-    0 2px 3px rgba(6, 24, 30, .12),
-    0 8px 17px rgba(6, 24, 30, .18) !important;
-  background: linear-gradient(145deg, #f6fafa, #dce7e8) !important;
+  border: 1px solid rgba(248,255,255,.9) !important;
+  border-radius: 11px !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.92), 0 3px 5px rgba(6,24,30,.12), 0 9px 19px rgba(6,24,30,.17) !important;
+  background: linear-gradient(145deg,#f6fafa,#dce7e8) !important;
 }
 
-@media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  body .main .panel.insurance:hover {
-    border-color: rgba(221, 255, 247, .96) !important;
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, .98),
-      inset 0 -1px 0 rgba(21, 58, 65, .18),
-      0 4px 7px rgba(4, 20, 26, .11),
-      0 13px 25px rgba(4, 20, 26, .18),
-      0 28px 46px rgba(4, 20, 26, .20) !important;
+/* Resultado ASF: cartões claros dentro de uma moldura premium. */
+html body #seguroResult > .asf-operational-result,
+html body #seguroResult > .asf-app {
+  position: relative !important;
+  isolation: isolate;
+  width: 100% !important;
+  max-width: 620px !important;
+  box-sizing: border-box !important;
+  margin: 0 auto !important;
+  padding: 14px 13px 15px !important;
+  gap: 11px !important;
+  color: #14252d !important;
+  background:
+    radial-gradient(ellipse at 100% 0%, rgba(0,214,93,.07), transparent 38%),
+    linear-gradient(145deg,#ffffff 0%,#f2f7f7 56%,#e8f0f1 100%) !important;
+  border: 1px solid rgba(255,255,255,.96) !important;
+  border-radius: 18px !important;
+  box-shadow:
+    0 13px 30px rgba(10,35,42,.14),
+    inset 0 1px 0 #fff,
+    inset 0 -1px 0 rgba(16,55,60,.08) !important;
+  overflow: hidden !important;
+}
+
+/* Seguro ativo: verde de permissão forte, sem prejudicar a leitura. */
+html body #seguroResult > .asf-operational-result .asf-success-hero,
+html body #seguroResult > .asf-app .asf-success-hero {
+  position: relative !important;
+  display: grid !important;
+  grid-template-columns: 43px minmax(0,1fr) auto !important;
+  align-items: center !important;
+  column-gap: 11px !important;
+  row-gap: 8px !important;
+  min-height: 82px !important;
+  box-sizing: border-box !important;
+  padding: 13px !important;
+  border: 1px solid #00d663 !important;
+  border-left: 4px solid #37ff91 !important;
+  border-radius: 14px !important;
+  background:
+    radial-gradient(ellipse at 12% 50%, rgba(147,255,197,.17), transparent 35%),
+    linear-gradient(118deg,#00c853 0%,#00df63 48%,#00b94f 100%) !important;
+  color: #032515 !important;
+  box-shadow:
+    0 7px 17px rgba(0,169,77,.22),
+    0 0 0 3px rgba(0,230,118,.10),
+    inset 0 1px 0 rgba(255,255,255,.42),
+    inset 0 -2px 0 rgba(0,80,35,.15) !important;
+}
+html body #seguroResult > .asf-operational-result .asf-success-badge,
+html body #seguroResult > .asf-app .asf-success-badge {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  margin: 0 !important;
+  border: 2px solid rgba(255,255,255,.92) !important;
+  border-radius: 50% !important;
+  background: linear-gradient(145deg,#ffffff,#e4fff0) !important;
+  color: #00a344 !important;
+  font: 950 25px/1 Arial, sans-serif !important;
+  box-shadow: 0 3px 8px rgba(0,65,29,.18), inset 0 1px 0 #fff !important;
+}
+html body #seguroResult > .asf-operational-result .asf-success-copy,
+html body #seguroResult > .asf-app .asf-success-copy {
+  display: block !important;
+  position: relative !important;
+  z-index: 1 !important;
+  min-width: 0 !important;
+  color: #032515 !important;
+  opacity: 1 !important;
+}
+html body #seguroResult > .asf-operational-result .asf-success-title,
+html body #seguroResult > .asf-app .asf-success-title {
+  display: block !important;
+  margin: 0 !important;
+  color: #032515 !important;
+  -webkit-text-fill-color: #032515 !important;
+  font: 950 clamp(17px,2vw,22px)/1.12 Arial,Helvetica,sans-serif !important;
+  letter-spacing: .15px !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.18) !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+}
+html body #seguroResult > .asf-operational-result .asf-success-sub,
+html body #seguroResult > .asf-app .asf-success-sub {
+  display: block !important;
+  margin-top: 5px !important;
+  color: #06492a !important;
+  -webkit-text-fill-color: #06492a !important;
+  font: 800 9px/1.45 Arial,Helvetica,sans-serif !important;
+  letter-spacing: .42px !important;
+  text-shadow: none !important;
+}
+html body #seguroResult > .asf-operational-result .asf-success-plate,
+html body #seguroResult > .asf-app .asf-success-plate {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 8px 9px 8px 38px !important;
+  border: 1px solid #a3b6af !important;
+  border-radius: 7px !important;
+  background: linear-gradient(180deg,#ffffff 0%,#e7eeee 100%) !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.9), 0 3px 0 rgba(0,50,25,.14) !important;
+}
+html body #seguroResult > .asf-operational-result .asf-success-plate::before,
+html body #seguroResult > .asf-app .asf-success-plate::before {
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: 29px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 5px 0 0 5px !important;
+  background: linear-gradient(180deg,#0756b5,#064293) !important;
+  color: #fff !important;
+  font: 900 12px/1 Arial,sans-serif !important;
+}
+html body #seguroResult > .asf-operational-result .asf-success-plate span,
+html body #seguroResult > .asf-app .asf-success-plate span {
+  color: #111820 !important;
+  -webkit-text-fill-color: #111820 !important;
+  font: 950 12px/1.2 Arial,sans-serif !important;
+  letter-spacing: .65px !important;
+  text-shadow: none !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+}
+
+/* Validade e situação em dois blocos independentes e fáceis de ler. */
+html body #seguroResult > .asf-operational-result .asf-operational-status,
+html body #seguroResult > .asf-app .asf-operational-status {
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important;
+  align-items: stretch !important;
+  gap: 0 !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  border: 1px solid #c9dcd2 !important;
+  border-radius: 12px !important;
+  background: linear-gradient(135deg,#ffffff,#f0f8f3) !important;
+  color: #173d29 !important;
+  box-shadow: inset 0 1px 0 #fff, 0 3px 8px rgba(16,65,42,.045) !important;
+}
+html body #seguroResult > .asf-operational-result .asf-operational-status > div,
+html body #seguroResult > .asf-app .asf-operational-status > div {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  min-width: 0 !important;
+  padding: 11px 12px !important;
+}
+html body #seguroResult > .asf-operational-result .asf-operational-status > div + div,
+html body #seguroResult > .asf-app .asf-operational-status > div + div {
+  border-left: 1px solid #d3e3da !important;
+}
+html body #seguroResult > .asf-operational-result .asf-op-kicker,
+html body #seguroResult > .asf-app .asf-op-kicker {
+  display: block !important;
+  color: #526a5d !important;
+  -webkit-text-fill-color: #526a5d !important;
+  font: 900 8px/1.25 Arial,sans-serif !important;
+  letter-spacing: 1.05px !important;
+}
+html body #seguroResult > .asf-operational-result .asf-operational-status strong,
+html body #seguroResult > .asf-app .asf-operational-status strong {
+  display: block !important;
+  color: #00883f !important;
+  -webkit-text-fill-color: #00883f !important;
+  font: 950 11px/1.3 Arial,sans-serif !important;
+}
+html body #seguroResult > .asf-operational-result .asf-op-validity,
+html body #seguroResult > .asf-app .asf-op-validity {
+  padding-left: 12px !important;
+}
+html body #seguroResult > .asf-operational-result .asf-operational-status.expired,
+html body #seguroResult > .asf-app .asf-operational-status.expired {
+  background: linear-gradient(135deg,#fff0f2,#ffe0e5) !important;
+  border-color: #ff9eac !important;
+  color: #74162a !important;
+}
+html body #seguroResult > .asf-operational-result .asf-operational-status.expired strong,
+html body #seguroResult > .asf-app .asf-operational-status.expired strong {
+  color: #d50032 !important;
+  -webkit-text-fill-color: #d50032 !important;
+}
+html body #seguroResult > .asf-operational-result .asf-operational-status.unknown,
+html body #seguroResult > .asf-app .asf-operational-status.unknown {
+  background: linear-gradient(135deg,#fff9e8,#fff0c7) !important;
+  border-color: #efd082 !important;
+}
+html body #seguroResult > .asf-operational-result .asf-operational-status.unknown strong,
+html body #seguroResult > .asf-app .asf-operational-status.unknown strong {
+  color: #9a6100 !important;
+  -webkit-text-fill-color: #9a6100 !important;
+}
+
+/* Cartão de dados da apólice: relevo discreto e separadores finos. */
+html body #seguroResult > .asf-operational-result .asf-operational-card,
+html body #seguroResult > .asf-app .asf-operational-card,
+html body #seguroResult .asf-detail-card.asf-operational-card {
+  position: relative !important;
+  overflow: hidden !important;
+  border: 1px solid #d4e0e4 !important;
+  border-radius: 14px !important;
+  background: linear-gradient(145deg,#ffffff,#f7fafb) !important;
+  box-shadow: 0 5px 15px rgba(12,38,48,.07), inset 0 1px 0 #fff !important;
+}
+html body #seguroResult > .asf-operational-result .asf-operational-card::before,
+html body #seguroResult > .asf-app .asf-operational-card::before {
+  content: "" !important;
+  display: block !important;
+  height: 3px !important;
+  background: linear-gradient(90deg,#008b42,#00e676 48%,#008b42) !important;
+}
+html body #seguroResult > .asf-operational-result .asf-detail-head,
+html body #seguroResult > .asf-app .asf-detail-head {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 13px !important;
+  border-bottom: 1px solid #e0e9ec !important;
+  background: linear-gradient(120deg,#f5f9fa,#eaf2f3) !important;
+  color: #152b34 !important;
+}
+html body #seguroResult > .asf-operational-result .asf-logo-wrap,
+html body #seguroResult > .asf-app .asf-logo-wrap {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 52px !important;
+  width: 52px !important;
+  min-width: 52px !important;
+  min-height: 52px !important;
+  border: 1px solid #d7e3e6 !important;
+  border-radius: 11px !important;
+  background: linear-gradient(145deg,#fff,#edf3f4) !important;
+  box-shadow: 0 3px 9px rgba(14,45,54,.08), inset 0 1px 0 #fff !important;
+}
+html body #seguroResult > .asf-operational-result .asf-logo,
+html body #seguroResult > .asf-app .asf-logo {
+  max-width: 100% !important;
+  max-height: 38px !important;
+  object-fit: contain !important;
+}
+html body #seguroResult > .asf-operational-result .asf-detail-head-text,
+html body #seguroResult > .asf-app .asf-detail-head-text {
+  min-width: 0 !important;
+}
+html body #seguroResult > .asf-operational-result .asf-detail-kicker,
+html body #seguroResult > .asf-app .asf-detail-kicker {
+  display: block !important;
+  margin-bottom: 4px !important;
+  color: #586e77 !important;
+  -webkit-text-fill-color: #586e77 !important;
+  font: 900 8px/1.35 Arial,sans-serif !important;
+  letter-spacing: 1.15px !important;
+  text-transform: uppercase !important;
+}
+html body #seguroResult > .asf-operational-result .asf-detail-head-text strong,
+html body #seguroResult > .asf-app .asf-detail-head-text strong {
+  display: block !important;
+  color: #122730 !important;
+  -webkit-text-fill-color: #122730 !important;
+  font: 950 clamp(12px,1.5vw,15px)/1.35 Arial,sans-serif !important;
+  overflow-wrap: anywhere !important;
+}
+html body #seguroResult > .asf-operational-result .asf-row-emphasis,
+html body #seguroResult > .asf-app .asf-row-emphasis,
+html body #seguroResult .asf-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  padding: 11px 14px !important;
+  border-bottom: 1px solid #e6edef !important;
+  background: rgba(255,255,255,.78) !important;
+}
+html body #seguroResult > .asf-operational-result .asf-row-emphasis .k,
+html body #seguroResult > .asf-app .asf-row-emphasis .k,
+html body #seguroResult .asf-row .k {
+  flex: 0 0 30% !important;
+  min-width: 0 !important;
+  color: #526a75 !important;
+  -webkit-text-fill-color: #526a75 !important;
+  font: 900 8px/1.4 Arial,sans-serif !important;
+  letter-spacing: .85px !important;
+  text-transform: uppercase !important;
+}
+html body #seguroResult > .asf-operational-result .asf-row-emphasis .v,
+html body #seguroResult > .asf-app .asf-row-emphasis .v,
+html body #seguroResult .asf-row .v {
+  min-width: 0 !important;
+  color: #14262e !important;
+  -webkit-text-fill-color: #14262e !important;
+  font: 800 11px/1.45 Arial,sans-serif !important;
+  text-align: right !important;
+  overflow-wrap: anywhere !important;
+}
+html body #seguroResult .asf-row .asf-mono,
+html body #seguroResult .asf-mono {
+  font-family: "Consolas","Courier New",monospace !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+/* Datas: a data de validade recebe um verde mais luminoso. */
+html body #seguroResult > .asf-operational-result .asf-dates-grid,
+html body #seguroResult > .asf-app .asf-dates-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+  gap: 9px !important;
+  padding: 11px 12px 12px !important;
+}
+html body #seguroResult > .asf-operational-result .asf-date-box,
+html body #seguroResult > .asf-app .asf-date-box {
+  min-width: 0 !important;
+  padding: 11px !important;
+  border: 1px solid #d8e4e7 !important;
+  border-radius: 10px !important;
+  background: linear-gradient(145deg,#f8fbfc,#eaf1f3) !important;
+  box-shadow: inset 0 1px 0 #fff !important;
+}
+html body #seguroResult > .asf-operational-result .asf-date-box .k,
+html body #seguroResult > .asf-app .asf-date-box .k {
+  display: block !important;
+  margin-bottom: 6px !important;
+  color: #536b75 !important;
+  -webkit-text-fill-color: #536b75 !important;
+  font: 900 8px/1.3 Arial,sans-serif !important;
+  letter-spacing: .9px !important;
+  text-transform: uppercase !important;
+}
+html body #seguroResult > .asf-operational-result .asf-date-box strong,
+html body #seguroResult > .asf-app .asf-date-box strong {
+  display: block !important;
+  color: #172b34 !important;
+  -webkit-text-fill-color: #172b34 !important;
+  font: 950 12px/1.3 Arial,sans-serif !important;
+  font-variant-numeric: tabular-nums !important;
+}
+html body #seguroResult > .asf-operational-result .asf-date-box.valid,
+html body #seguroResult > .asf-app .asf-date-box.valid {
+  border-color: #00d768 !important;
+  background: linear-gradient(135deg,#caffdf 0%,#84ffb8 100%) !important;
+  box-shadow: 0 4px 12px rgba(0,191,82,.13), inset 0 1px 0 rgba(255,255,255,.88) !important;
+}
+html body #seguroResult > .asf-operational-result .asf-date-box.valid .k,
+html body #seguroResult > .asf-app .asf-date-box.valid .k {
+  color: #07542e !important;
+  -webkit-text-fill-color: #07542e !important;
+}
+html body #seguroResult > .asf-operational-result .asf-date-box.valid strong,
+html body #seguroResult > .asf-app .asf-date-box.valid strong {
+  color: #064624 !important;
+  -webkit-text-fill-color: #064624 !important;
+}
+
+/* Botões e texto de origem: claros, contrastantes e com foco visível. */
+html body #seguroResult > .asf-operational-result .asf-operational-actions,
+html body #seguroResult > .asf-app .asf-operational-actions,
+html body #seguroResult .asf-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 2px 0 0 !important;
+}
+html body #seguroResult > .asf-operational-result .asf-operational-actions .aux-btn,
+html body #seguroResult > .asf-app .asf-operational-actions .aux-btn,
+html body #seguroResult .asf-actions .aux-btn,
+html body #seguroResult .asf-actions button {
+  min-height: 42px !important;
+  height: auto !important;
+  padding: 11px 18px !important;
+  border: 1px solid #009c4b !important;
+  border-radius: 10px !important;
+  background: linear-gradient(145deg,#00df63,#00a846) !important;
+  color: #032b17 !important;
+  -webkit-text-fill-color: #032b17 !important;
+  font: 950 10px/1.25 Arial,sans-serif !important;
+  letter-spacing: .35px !important;
+  box-shadow: 0 5px 13px rgba(0,154,68,.19), inset 0 1px 0 rgba(255,255,255,.4), inset 0 -2px 0 rgba(0,76,34,.12) !important;
+  cursor: pointer !important;
+  transition: transform .16s ease, box-shadow .16s ease, filter .16s ease !important;
+}
+html body #seguroResult > .asf-operational-result .asf-operational-actions .aux-btn.secondary,
+html body #seguroResult > .asf-app .asf-operational-actions .aux-btn.secondary {
+  border-color: #c7d7dd !important;
+  background: linear-gradient(145deg,#fff,#eaf2f4) !important;
+  color: #1a3540 !important;
+  -webkit-text-fill-color: #1a3540 !important;
+  box-shadow: 0 3px 8px rgba(15,39,49,.07),inset 0 1px 0 #fff !important;
+}
+html body #seguroResult .asf-note {
+  margin-top: 2px !important;
+  padding: 10px 12px !important;
+  border: 1px solid #d8e5e9 !important;
+  border-radius: 10px !important;
+  background: linear-gradient(135deg,#eff5f7,#e5eef1) !important;
+  color: #526873 !important;
+  -webkit-text-fill-color: #526873 !important;
+  font: 700 9px/1.5 Arial,sans-serif !important;
+  text-align: center !important;
+}
+html body #seguroResult .asf-diag {
+  border: 1px solid #d4e1e5 !important;
+  border-radius: 9px !important;
+  background: #f5f9fa !important;
+  color: #536b75 !important;
+}
+
+/* Sem seguro: vermelho vivo de proibição. Erro/estado desconhecido: âmbar. */
+html body #seguroResult > .asf-app-no,
+html body #seguroResult > .asf-app-warn,
+html body #seguroResult > .asf-app-error {
+  color: #18262e !important;
+  border-radius: 16px !important;
+  padding: 13px !important;
+  background: linear-gradient(145deg,#fff,#f1f5f6) !important;
+  border: 1px solid #dce6e9 !important;
+  box-shadow: 0 10px 24px rgba(10,35,42,.12),inset 0 1px 0 #fff !important;
+}
+html body #seguroResult > .asf-app-no .asf-status-card.no,
+html body #seguroResult > .asf-app-no .asf-status-card {
+  position: relative !important;
+  background: linear-gradient(125deg,#ff1744 0%,#e50032 54%,#bd002b 100%) !important;
+  background-image: linear-gradient(125deg,#ff1744 0%,#e50032 54%,#bd002b 100%) !important;
+  border: 1px solid #ff6680 !important;
+  border-left: 4px solid #ffb2c0 !important;
+  border-radius: 14px !important;
+  padding: 18px 16px !important;
+  color: #fff !important;
+  box-shadow: 0 7px 18px rgba(216,0,44,.22),inset 0 1px 0 rgba(255,255,255,.2) !important;
+}
+html body #seguroResult > .asf-app-no .asf-status-glow { display: none !important; }
+html body #seguroResult > .asf-app-no .asf-status-icon {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 45px !important;
+  height: 45px !important;
+  margin: 0 auto 10px !important;
+  border: 2px solid rgba(255,255,255,.85) !important;
+  background: #fff !important;
+  color: #e50032 !important;
+  box-shadow: 0 3px 10px rgba(60,0,12,.18) !important;
+}
+html body #seguroResult > .asf-app-no .asf-status-title {
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+  font: 950 clamp(20px,2.2vw,26px)/1.15 Arial,sans-serif !important;
+  text-align: center !important;
+  text-shadow: 0 1px 1px rgba(70,0,15,.16) !important;
+}
+html body #seguroResult > .asf-app-no .asf-status-sub {
+  color: #fff1f3 !important;
+  -webkit-text-fill-color: #fff1f3 !important;
+  font: 750 11px/1.5 Arial,sans-serif !important;
+  text-align: center !important;
+}
+html body #seguroResult > .asf-app-warn .asf-status-card.warn,
+html body #seguroResult > .asf-app-warn .asf-status-card,
+html body #seguroResult > .asf-app-error .asf-status-card {
+  background: linear-gradient(125deg,#fff2c8,#ffe29a) !important;
+  border: 1px solid #e3ae39 !important;
+  border-left: 4px solid #f4b400 !important;
+  border-radius: 14px !important;
+  color: #573900 !important;
+  box-shadow: 0 5px 14px rgba(141,94,0,.12),inset 0 1px 0 rgba(255,255,255,.8) !important;
+}
+html body #seguroResult > .asf-app-warn .asf-status-title,
+html body #seguroResult > .asf-app-error .asf-status-title {
+  color: #704600 !important;
+  -webkit-text-fill-color: #704600 !important;
+  font-weight: 950 !important;
+}
+html body #seguroResult > .asf-app-warn .asf-status-sub,
+html body #seguroResult > .asf-app-error .asf-status-sub {
+  color: #644d23 !important;
+  -webkit-text-fill-color: #644d23 !important;
+}
+html body #seguroResult > .asf-app-no .asf-note,
+html body #seguroResult > .asf-app-warn .asf-note,
+html body #seguroResult > .asf-app-error .asf-note {
+  border-color: #e0e8ea !important;
+  background: #f7fafb !important;
+  color: #536a74 !important;
+}
+html body #seguroResult > .asf-app-no .asf-actions .aux-btn.secondary,
+html body #seguroResult > .asf-app-warn .asf-actions .aux-btn.secondary {
+  border-color: #c9d9de !important;
+  background: linear-gradient(145deg,#fff,#eef4f5) !important;
+  color: #1a3540 !important;
+  -webkit-text-fill-color: #1a3540 !important;
+}
+
+/* Ecrãs estreitos: conteúdo sem cortes, matrícula com prioridade. */
+@media (max-width: 600px) {
+  html body #seguroResult > .asf-operational-result,
+  html body #seguroResult > .asf-app {
+    padding: 9px !important;
+    gap: 9px !important;
+    border-radius: 14px !important;
+  }
+  html body #seguroResult > .asf-operational-result .asf-success-hero,
+  html body #seguroResult > .asf-app .asf-success-hero {
+    grid-template-columns: 36px minmax(0,1fr) !important;
+    padding: 11px !important;
+    column-gap: 9px !important;
+    row-gap: 9px !important;
+  }
+  html body #seguroResult > .asf-operational-result .asf-success-badge,
+  html body #seguroResult > .asf-app .asf-success-badge {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    font-size: 21px !important;
+  }
+  html body #seguroResult > .asf-operational-result .asf-success-copy,
+  html body #seguroResult > .asf-app .asf-success-copy {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+  }
+  html body #seguroResult > .asf-operational-result .asf-success-title,
+  html body #seguroResult > .asf-app .asf-success-title {
+    font-size: 18px !important;
+  }
+  html body #seguroResult > .asf-operational-result .asf-success-plate,
+  html body #seguroResult > .asf-app .asf-success-plate {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+    justify-self: start !important;
+    max-width: 100% !important;
+  }
+  html body #seguroResult > .asf-operational-result .asf-operational-status > div,
+  html body #seguroResult > .asf-app .asf-operational-status > div {
+    padding: 9px !important;
+  }
+  html body #seguroResult > .asf-operational-result .asf-operational-status strong,
+  html body #seguroResult > .asf-app .asf-operational-status strong {
+    font-size: 10px !important;
+    overflow-wrap: anywhere !important;
+  }
+  html body #seguroResult > .asf-operational-result .asf-detail-head,
+  html body #seguroResult > .asf-app .asf-detail-head {
+    gap: 9px !important;
+    padding: 10px !important;
+  }
+  html body #seguroResult > .asf-operational-result .asf-logo-wrap,
+  html body #seguroResult > .asf-app .asf-logo-wrap {
+    flex-basis: 42px !important;
+    width: 42px !important;
+    min-width: 42px !important;
+    min-height: 42px !important;
+  }
+  html body #seguroResult > .asf-operational-result .asf-row-emphasis,
+  html body #seguroResult > .asf-app .asf-row-emphasis,
+  html body #seguroResult .asf-row {
+    gap: 8px !important;
+    padding: 9px !important;
+  }
+  html body #seguroResult > .asf-operational-result .asf-row-emphasis .k,
+  html body #seguroResult > .asf-app .asf-row-emphasis .k,
+  html body #seguroResult .asf-row .k {
+    flex-basis: 34% !important;
+    font-size: 7px !important;
+  }
+  html body #seguroResult > .asf-operational-result .asf-row-emphasis .v,
+  html body #seguroResult > .asf-app .asf-row-emphasis .v,
+  html body #seguroResult .asf-row .v {
+    font-size: 10px !important;
+  }
+  html body #seguroResult > .asf-operational-result .asf-date-box,
+  html body #seguroResult > .asf-app .asf-date-box {
+    padding: 9px !important;
+  }
+  html body #seguroResult > .asf-operational-result .asf-date-box strong,
+  html body #seguroResult > .asf-app .asf-date-box strong {
+    font-size: 11px !important;
+    overflow-wrap: anywhere !important;
   }
 }
-
+@media (hover:hover) and (prefers-reduced-motion:no-preference) {
+  body .main .panel.insurance:hover {
+    border-color: rgba(221,255,247,.98) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.98), inset 0 -1px 0 rgba(21,58,65,.16),
+      0 5px 9px rgba(4,20,26,.12), 0 14px 28px rgba(4,20,26,.18), 0 30px 48px rgba(4,20,26,.20) !important;
+  }
+  html body #seguroResult .asf-actions button:hover,
+  html body #seguroResult .asf-operational-actions .aux-btn:hover {
+    transform: translateY(-1px) !important;
+    filter: saturate(1.08) brightness(1.02) !important;
+  }
+}
+html body #seguroResult .asf-actions button:focus-visible,
+html body #seguroResult .asf-operational-actions .aux-btn:focus-visible {
+  outline: 3px solid #0878d1 !important;
+  outline-offset: 3px !important;
+}
 @media (prefers-reduced-motion: reduce) {
-  body .main .panel.insurance {
+  body .main .panel.insurance,
+  html body #seguroResult .asf-actions button,
+  html body #seguroResult .asf-operational-actions .aux-btn {
     transition: none !important;
   }
 }
