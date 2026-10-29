@@ -187,6 +187,24 @@ function writeSecureFile(relativeSource, relativeOutput) {
     source = source.replace(/1\.5-sec-20261008-a/g, BUILD_ID);
   }
 
+  // Inject the versioned visual layer into the generated app HTML. Keep the
+  // source monolith intact and avoid external CSS requests at runtime.
+  if (relativeSource === "verix-app.html") {
+    const depthCssPath = path.join(ROOT, "verix-depth-ui.css");
+    if (!fs.existsSync(depthCssPath)) {
+      throw new Error("Required VÉRIX depth stylesheet missing: verix-depth-ui.css");
+    }
+    const depthCss = fs.readFileSync(depthCssPath, "utf8").trim();
+    if (!depthCss) throw new Error("VÉRIX depth stylesheet is empty");
+    if (!/<\\/head>/i.test(source)) {
+      throw new Error("Cannot inject VÉRIX depth stylesheet: closing </head> not found");
+    }
+    source = source.replace(
+      /<\\/head>/i,
+      '<style id="verix-depth-ui">\\n' + depthCss + '\\n</style>\\n</head>'
+    );
+  }
+
   const { html, scriptCount } = obfuscateHtml(source, relativeSource);
   const outPath = path.join(OUTPUT_DIR, relativeOutput);
 
