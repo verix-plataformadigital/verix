@@ -1770,3 +1770,159 @@ html body .main section.panel.insurance #seguroResult > .asf-app-error .asf-stat
     padding: 18px 11px !important;
   }
 }
+
+
+/* VÉRIX HOME — Valores institucionais centrados no espaço livre entre os módulos e o rodapé. */
+html body #mainMenuScreen.vx-home-screen .vx-home-values {
+  position: relative !important;
+  z-index: 1 !important;
+  display: flex !important;
+  flex: 0 0 auto !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-wrap: wrap !important;
+  gap: clamp(10px,1.25vw,22px) !important;
+  width: max-content !important;
+  max-width: calc(100% - 24px) !important;
+  margin: auto auto clamp(100px,17vh,164px) !important;
+  padding: 13px clamp(18px,2vw,30px) !important;
+  border: 1px solid rgba(96,145,124,.26) !important;
+  border-radius: 8px !important;
+  background: linear-gradient(180deg,rgba(18,38,31,.38),rgba(7,20,17,.18)) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.035),0 8px 24px rgba(0,0,0,.08) !important;
+  color: #dcebe2 !important;
+  text-align: center !important;
+  font: 900 clamp(11px,.92vw,14px)/1.2 Inter,"Segoe UI",Arial,sans-serif !important;
+  letter-spacing: clamp(1.5px,.25vw,3.2px) !important;
+  white-space: nowrap !important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-values::before,
+html body #mainMenuScreen.vx-home-screen .vx-home-values::after {
+  content: "" !important;
+  display: block !important;
+  flex: 0 1 44px !important;
+  width: clamp(12px,3vw,44px) !important;
+  height: 1px !important;
+  background: linear-gradient(90deg,transparent,rgba(103,214,160,.72)) !important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-values::after {
+  background: linear-gradient(90deg,rgba(103,214,160,.72),transparent) !important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-values span {
+  display: inline-block !important;
+  color: #eaf5ee !important;
+  text-shadow: 0 1px 1px rgba(0,0,0,.65),0 0 12px rgba(82,207,147,.08) !important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-values i {
+  color: #67d6a0 !important;
+  font-style: normal !important;
+  font-weight: 950 !important;
+  text-shadow: 0 0 10px rgba(103,214,160,.22) !important;
+}
+
+/* Assinatura no canto inferior direito: discreta, legível e com presença. */
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-credit {
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  min-width: 0 !important;
+  min-height: 36px !important;
+  margin-left: 2px !important;
+  padding: 0 11px !important;
+  border: 1px solid rgba(103,214,160,.48) !important;
+  border-radius: 7px !important;
+  background: linear-gradient(145deg,#153426,#0d2119 62%,#11251d) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.09),0 3px 10px rgba(0,0,0,.22),0 0 13px rgba(74,205,139,.06) !important;
+  color: #b9d5c5 !important;
+  font: 800 9px/1.15 Inter,"Segoe UI",Arial,sans-serif !important;
+  letter-spacing: .25px !important;
+  white-space: nowrap !important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-credit > span {
+  color: #9ebbad !important;
+  font-size: 7px !important;
+  font-weight: 900 !important;
+  letter-spacing: .75px !important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-credit strong {
+  color: #f0fff5 !important;
+  font-size: 10px !important;
+  font-weight: 950 !important;
+  letter-spacing: .2px !important;
+  text-shadow: 0 0 10px rgba(103,214,160,.13) !important;
+}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-values {
+  border-color: #c6d8cc !important;
+  background: linear-gradient(180deg,rgba(255,255,255,.8),rgba(233,243,237,.7)) !important;
+  box-shadow: inset 0 1px 0 #fff,0 5px 16px rgba(29,65,43,.06) !important;
+}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-values span {
+  color: #244735 !important;
+  text-shadow: none !important;
+}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-footer-credit {
+  border-color: #a7cbb5 !important;
+  background: linear-gradient(145deg,#e7f4eb,#d9ebdf) !important;
+  color: #365644 !important;
+  box-shadow: inset 0 1px 0 #fff,0 2px 7px rgba(29,65,43,.08) !important;
+}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-footer-credit > span {
+  color: #587b64 !important;
+}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-footer-credit strong {
+  color: #173b25 !important;
+  text-shadow: none !important;
+}
+
+/* Compact layouts: keep the credit visible without pushing the footer off-screen. */
+@media (max-width:1120px) {
+  html body #mainMenuScreen.vx-home-screen .vx-home-footer {
+    flex-wrap: wrap !important;
+    row-gap: 9px !important;
+  }
+  html body #mainMenuScreen.vx-home-screen .vx-home-footer p {
+    order: 3 !important;
+    flex: 1 1 100% !important;
+    text-align: center !important;
+  }
+  html body #mainMenuScreen.vx-home-screen .vx-home-footer-credit {
+    order: 4 !important;
+    margin-left: auto !important;
+  }
+  html body #mainMenuScreen.vx-home-screen .vx-home-values {
+    margin-bottom: clamp(44px,10vh,88px) !important;
+  }
+}
+@media (max-width:760px) {
+  html body #mainMenuScreen.vx-home-screen .vx-home-body {
+    overflow-y: auto !important;
+  }
+  html body #mainMenuScreen.vx-home-screen .vx-home-values {
+    width: auto !important;
+    max-width: 100% !important;
+    gap: 9px !important;
+    margin: 24px auto 22px !important;
+    padding: 12px 8px !important;
+    font-size: 10px !important;
+    letter-spacing: .75px !important;
+  }
+  html body #mainMenuScreen.vx-home-screen .vx-home-values::before,
+  html body #mainMenuScreen.vx-home-screen .vx-home-values::after {
+    flex-basis: 8px !important;
+    width: 8px !important;
+  }
+  html body #mainMenuScreen.vx-home-screen .vx-home-footer-credit {
+    order: 4 !important;
+    margin-left: auto !important;
+    min-height: 34px !important;
+    padding: 0 9px !important;
+  }
+  html body #mainMenuScreen.vx-home-screen .vx-home-footer-credit > span {
+    font-size: 6.5px !important;
+  }
+  html body #mainMenuScreen.vx-home-screen .vx-home-footer-credit strong {
+    font-size: 9px !important;
+  }
+}
