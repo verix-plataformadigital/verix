@@ -17863,7 +17863,9 @@ html body .leg-card-new .copy-all-new{
     });
 
     wrap('renderSeguroNaoEncontrado', function (_mat, queryId, asfDiagnostic) {
-      push('vehicle_insurance_no', 'consulta', { queryId: queryId || window.__VERIX_CURRENT_QUERY_ID || null, asfDiagnostic: asfDiagnostic || null });
+      // A matrícula só é enviada no resultado "sem registo" para a lista operacional restrita de 24 h.
+      // O servidor grava-a numa tabela própria e remove-a da telemetria analítica normal.
+      push('vehicle_insurance_no', 'consulta', { queryId: queryId || window.__VERIX_CURRENT_QUERY_ID || null, matricula: _mat || null, asfDiagnostic: asfDiagnostic || null });
     });
 
     wrap('mostrarSeguroErro', function (_msg, _mat, _diag, queryId, asfDiagnostic) {
