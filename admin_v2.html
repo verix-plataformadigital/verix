@@ -430,6 +430,98 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 }
+
+
+/* Admin mobile-first refinement — phone/tablet widths */
+@media(max-width:850px){
+  html,body{max-width:100%;overflow-x:hidden}
+  .app-shell{display:block!important;grid-template-columns:minmax(0,1fr)!important;min-width:0!important}
+  .sidebar{
+    position:relative!important;top:auto!important;height:auto!important;max-height:none!important;
+    overflow:visible!important;min-width:0!important;padding:10px 10px 8px!important;gap:8px!important;
+  }
+  .sidebar-brand{padding:2px 3px 9px!important;min-width:0}
+  .sidebar-brand .brand-mark{font-size:15px!important}
+  .sidebar-brand p{font-size:9px!important;line-height:1.35!important}
+  .main-nav{
+    display:flex!important;flex-wrap:nowrap!important;gap:5px!important;
+    width:100%!important;max-width:100%!important;overflow-x:auto!important;overflow-y:hidden!important;
+    padding:1px 0 5px!important;scrollbar-width:thin!important;overscroll-behavior-x:contain;
+    -webkit-overflow-scrolling:touch;
+  }
+  .main-nav .nav-button{
+    flex:0 0 auto!important;width:auto!important;min-width:max-content!important;
+    min-height:42px!important;padding:8px 11px!important;font-size:11px!important;white-space:nowrap!important;
+  }
+  .main-area{width:100%!important;max-width:none!important;min-width:0!important;padding:15px 13px 26px!important}
+  .topbar{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:9px!important;margin-bottom:12px!important;padding-bottom:12px!important}
+  .topbar h1{font-size:clamp(23px,5.6vw,30px)!important;line-height:1.12!important;overflow-wrap:anywhere}
+  .topbar p{font-size:12px!important;line-height:1.45!important}
+  .top-actions{justify-content:flex-start!important;gap:7px!important;width:100%!important}
+  .top-actions>*{min-height:42px!important;max-width:100%!important}
+  .period-bar{display:flex!important;flex-wrap:wrap!important;gap:9px!important;padding:10px!important}
+  .period-description{flex:1 1 100%!important;width:100%!important;min-width:0!important}
+  .period-controls{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:5px!important;width:100%!important}
+  .period-button{min-width:0!important;min-height:40px!important;padding:7px 4px!important;font-size:10.5px!important;white-space:normal!important}
+  .content-grid,.daily-trend-charts,.daily-trend-insurance-charts{grid-template-columns:minmax(0,1fr)!important}
+  .panel,.panel.wide{min-width:0!important;max-width:100%!important}
+  .panel-head{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:7px!important}
+  .panel-tag{align-self:flex-start!important;white-space:normal!important;max-width:100%!important;overflow-wrap:anywhere}
+  .table-wrap,.daily-trend-table-wrap,.hourly-table-content{
+    max-width:100%!important;overflow-x:auto!important;overflow-y:hidden!important;
+    -webkit-overflow-scrolling:touch!important;overscroll-behavior-x:contain;
+  }
+  .data-table{min-width:520px!important}
+  .daily-trend-table-wrap .data-table{min-width:460px!important;table-layout:auto!important}
+  .search-row{width:100%!important;display:flex!important}
+  .search-row input,.search-row .text-input{width:100%!important;min-width:0!important;max-width:100%!important;font-size:16px!important}
+  .pager{align-items:flex-start!important;flex-wrap:wrap!important;gap:9px!important}
+  .pager-actions{display:flex!important;flex-wrap:wrap!important;gap:6px!important;max-width:100%!important}
+  .pager-button{min-height:42px!important}
+  .error-list{min-width:0!important}
+  .hourly-chart{min-width:540px}
+  .panel:has(.hourly-chart){overflow-x:auto!important}
+  .login-shell{min-height:100svh!important;place-items:start center!important;padding:calc(18px + env(safe-area-inset-top,0px)) 12px calc(20px + env(safe-area-inset-bottom,0px))!important}
+  .login-card{width:100%!important;max-width:420px!important;padding:22px 17px!important;border-radius:14px!important}
+  .login-card input,.login-card button{min-height:46px!important;font-size:16px!important;max-width:100%!important}
+}
+@media(max-width:600px){
+  .main-area{padding:12px 10px calc(22px + env(safe-area-inset-bottom,0px))!important}
+  .sidebar-brand{align-items:flex-start!important}
+  .sidebar-brand p{max-width:55%;text-align:right}
+  .main-nav .nav-button{min-height:40px!important;padding:7px 10px!important}
+  .top-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .top-actions>*{width:100%!important;min-width:0!important}
+  .period-controls{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  #overviewCards,#insuranceCards,#legislationCards,#errorCards,#activityCards,#overviewLiveCards,#dailyTrendSummary{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important
+  }
+  #livePresenceCards{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .metric-grid{gap:8px!important;margin-bottom:13px!important}
+  .metric-card{min-height:108px!important;padding:11px 9px 10px 12px!important}
+  .metric-label{font-size:9px!important;line-height:1.35!important;letter-spacing:.035em!important;overflow-wrap:anywhere}
+  .metric-value{margin:7px 0 4px!important;font-size:clamp(21px,6vw,27px)!important}
+  .metric-note{font-size:10px!important;line-height:1.35!important}
+  .section-heading{margin-bottom:10px!important}
+  .section-heading h2{font-size:16px!important;line-height:1.25!important}
+  .panel{padding:13px 10px 11px!important}
+  .panel-head h2,.panel-head h3{font-size:14px!important;line-height:1.3!important}
+  .quality-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .daily-trend-summary{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .daily-trend-table-wrap .data-table{min-width:440px!important}
+  .footer-note{padding-bottom:5px!important;overflow-wrap:anywhere}
+}
+@media(max-width:380px){
+  #overviewCards,#insuranceCards,#legislationCards,#errorCards,#activityCards,#overviewLiveCards,#dailyTrendSummary,#livePresenceCards{
+    grid-template-columns:minmax(0,1fr)!important
+  }
+  .top-actions{grid-template-columns:minmax(0,1fr)!important}
+  .period-controls{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .metric-card{min-height:96px!important;padding:11px 12px!important}
+  .metric-label{font-size:10px!important}
+  .metric-value{font-size:26px!important}
+}
+
 </style>
 <link rel="icon" href="./favicon.svg?v=20261019" type="image/svg+xml" sizes="any">
 <link rel="icon" href="./assets/icon-32.png?v=20261019" type="image/png" sizes="32x32">
