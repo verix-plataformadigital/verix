@@ -20876,5 +20876,92 @@ html body #verixAsfNoticeOverlay .verix-asf-notice-continue:active {transform:tr
 }
 </style>
 
+
+<style id="verix-keyboard-shortcuts-style">
+#verixKeyboardHelp{position:fixed;inset:0;z-index:2147483000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(2,7,12,.76);backdrop-filter:blur(7px);font-family:inherit;color:#eef3f7}
+#verixKeyboardHelp.is-open{display:flex}
+#verixKeyboardHelp .vkh-card{width:min(560px,100%);max-height:min(82vh,720px);overflow:auto;background:#101820;border:1px solid rgba(255,255,255,.14);border-radius:16px;box-shadow:0 24px 80px rgba(0,0,0,.45);padding:24px}
+#verixKeyboardHelp .vkh-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:8px}
+#verixKeyboardHelp h2{margin:0;font-size:20px;letter-spacing:.02em}
+#verixKeyboardHelp .vkh-sub{margin:7px 0 18px;color:#aebdca;font-size:13px;line-height:1.5}
+#verixKeyboardHelp .vkh-close{border:1px solid #344451;background:#18232d;color:#fff;border-radius:9px;padding:7px 11px;cursor:pointer;font:inherit}
+#verixKeyboardHelp .vkh-row{display:grid;grid-template-columns:minmax(125px, auto) 1fr;gap:16px;align-items:center;padding:11px 0;border-top:1px solid rgba(255,255,255,.08);font-size:13px}
+#verixKeyboardHelp kbd{display:inline-block;white-space:nowrap;background:#202d38;border:1px solid #3b4c59;border-bottom-width:2px;border-radius:6px;padding:4px 7px;color:#fff;font:600 11px/1.2 ui-monospace,SFMono-Regular,Consolas,monospace}
+#verixKeyboardHelp .vkh-foot{margin:16px 0 0;color:#91a2b0;font-size:11px;line-height:1.5}
+@media(max-width:480px){#verixKeyboardHelp .vkh-card{padding:18px}#verixKeyboardHelp .vkh-row{grid-template-columns:1fr;gap:5px}}
+@media(prefers-reduced-motion:reduce){#verixKeyboardHelp *{scroll-behavior:auto!important;transition:none!important}}
+</style>
+<div id="verixKeyboardHelp" aria-hidden="true">
+ <section class="vkh-card" role="dialog" aria-modal="true" aria-labelledby="vkhTitle">
+  <div class="vkh-head"><h2 id="vkhTitle">Atalhos de teclado</h2><button type="button" class="vkh-close" id="vkhClose" aria-label="Fechar ajuda">Fechar&nbsp; ×</button></div>
+  <p class="vkh-sub">Navegue pelo VÉRIX sem interromper o trabalho. Os atalhos de módulos funcionam a partir de qualquer área da aplicação.</p>
+  <div class="vkh-row"><div><kbd>F1</kbd></div><div>Abrir esta ajuda</div></div>
+  <div class="vkh-row"><div><kbd>F2</kbd></div><div>Ir para a matrícula do veículo</div></div>
+  <div class="vkh-row"><div><kbd>F3</kbd></div><div>Ir para a matrícula do reboque</div></div>
+  <div class="vkh-row"><div><kbd>Ctrl</kbd> + <kbd>F</kbd></div><div>Pesquisar dentro do módulo aberto, quando existe um campo de pesquisa</div></div>
+  <div class="vkh-row"><div><kbd>Enter</kbd></div><div>Pesquisar quando o cursor está num campo de matrícula</div></div>
+  <div class="vkh-row"><div><kbd>Alt</kbd> + <kbd>1</kbd></div><div>Fiscalização / consulta de veículos</div></div>
+  <div class="vkh-row"><div><kbd>Alt</kbd> + <kbd>2</kbd></div><div>Cinemómetro</div></div>
+  <div class="vkh-row"><div><kbd>Alt</kbd> + <kbd>3</kbd></div><div>Legislação</div></div>
+  <div class="vkh-row"><div><kbd>Alt</kbd> + <kbd>4</kbd></div><div>Álcool / deduções</div></div>
+  <div class="vkh-row"><div><kbd>Alt</kbd> + <kbd>5</kbd></div><div>Ferramentas</div></div>
+  <div class="vkh-row"><div><kbd>Alt</kbd> + <kbd>6</kbd></div><div>Informações</div></div>
+  <div class="vkh-row"><div><kbd>Alt</kbd> + <kbd>7</kbd></div><div>Definições</div></div>
+  <div class="vkh-row"><div><kbd>Alt</kbd> + <kbd>H</kbd></div><div>Histórico de consultas</div></div>
+  <p class="vkh-foot">Os atalhos não substituem os botões visíveis. A pesquisa só é iniciada por Enter quando o cursor está num dos campos de matrícula.</p>
+ </section>
+</div>
+<script id="verix-keyboard-shortcuts-v1">
+(function(){
+ 'use strict';
+ if(window.__VERIX_KEYBOARD_SHORTCUTS_V1__) return;
+ window.__VERIX_KEYBOARD_SHORTCUTS_V1__=true;
+ var help=document.getElementById('verixKeyboardHelp');
+ var closeBtn=document.getElementById('vkhClose');
+ var lastFocus=null;
+ function openHelp(){
+   if(!help)return;
+   lastFocus=document.activeElement;
+   help.classList.add('is-open');
+   help.setAttribute('aria-hidden','false');
+   if(closeBtn)closeBtn.focus();
+ }
+ function closeHelp(){
+   if(!help)return;
+   help.classList.remove('is-open');
+   help.setAttribute('aria-hidden','true');
+   if(lastFocus&&typeof lastFocus.focus==='function')lastFocus.focus();
+ }
+ if(closeBtn)closeBtn.addEventListener('click',closeHelp);
+ if(help)help.addEventListener('click',function(e){if(e.target===help)closeHelp();});
+ document.addEventListener('keydown',function(e){
+   if(e.defaultPrevented||e.repeat||e.isComposing)return;
+   var key=String(e.key||'').toLowerCase();
+   var altOnly=e.altKey&&!e.ctrlKey&&!e.metaKey&&!e.shiftKey;
+   var target=e.target;
+   var editable=!!(target&&(target.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)));
+   if(key==='escape'&&help&&help.classList.contains('is-open')){e.preventDefault();e.stopPropagation();closeHelp();return;}
+   if(key==='f1'){e.preventDefault();openHelp();return;}
+   if(e.ctrlKey&&!e.altKey&&!e.metaKey&&!e.shiftKey&&key==='f'){
+     var moduleOverlay=document.getElementById('moduleOverlay');
+     var moduleIsOpen=!!(moduleOverlay&&(moduleOverlay.classList.contains('show')||moduleOverlay.classList.contains('open')||moduleOverlay.classList.contains('active')||moduleOverlay.getAttribute('aria-hidden')==='false'));
+     var moduleSearch=moduleIsOpen&&document.querySelector('#moduleBody #legSearch, #moduleBody #extraZoneSearch, #moduleBody input[type="search"], #moduleBody input[placeholder*="Pesquisar" i], #moduleBody input[placeholder*="pesquisar"]');
+     if(moduleSearch){e.preventDefault();moduleSearch.focus();if(typeof moduleSearch.select==='function')moduleSearch.select();return;}
+     // Se o módulo não tiver pesquisa própria, preservar o Ctrl+F nativo do navegador.
+   }
+   if(key==='f2'){e.preventDefault();var v=document.getElementById('MatriculaVeiculo');if(v){v.focus();if(typeof v.select==='function')v.select();}return;}
+   if(key==='f3'){e.preventDefault();var r=document.getElementById('MatriculaReboque');if(r){r.focus();if(typeof r.select==='function')r.select();}return;}
+   if(altOnly&&key==='1'){e.preventDefault();if(typeof window.abrirConsultaPrincipal==='function')window.abrirConsultaPrincipal();else if(typeof window.abrirModulo==='function')window.abrirModulo('consulta');return;}
+   if(altOnly&&key==='2'){e.preventDefault();if(typeof window.abrirModulo==='function')window.abrirModulo('cinemometro');return;}
+   if(altOnly&&key==='3'){e.preventDefault();if(typeof window.abrirModulo==='function')window.abrirModulo('legislacao');return;}
+   if(altOnly&&key==='4'){e.preventDefault();if(typeof window.abrirModulo==='function')window.abrirModulo('alcoolExcel');return;}
+   if(altOnly&&key==='5'){e.preventDefault();if(typeof window.abrirModulo==='function')window.abrirModulo('ferramentas');return;}
+   if(altOnly&&key==='6'){e.preventDefault();if(typeof window.abrirModulo==='function')window.abrirModulo('informacoes');return;}
+   if(altOnly&&key==='7'){e.preventDefault();if(typeof window.abrirModulo==='function')window.abrirModulo('definicoes');return;}
+   if(altOnly&&key==='h'){e.preventDefault();if(typeof window.abrirHistorico==='function')window.abrirHistorico();return;}
+
+ },true);
+})();
+</script>
 </body>
 </html>
