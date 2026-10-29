@@ -65,8 +65,8 @@ function sanitizeGraphQLErrorMessage(
   originalPlate: unknown
 ): string {
   let message = String(value ?? "GraphQL error")
-    .replace(/[\\r\\n\\t]+/g, " ")
-    .replace(/\\s{2,}/g, " ")
+    .replace(/[\r\n\t]+/g, " ")
+    .replace(/\s{2,}/g, " ")
     .trim();
 
   const original = String(originalPlate ?? "").trim().toUpperCase();
@@ -80,8 +80,8 @@ function sanitizeGraphQLErrorMessage(
     if (!candidate) continue;
 
     const escaped = candidate.replace(
-      /[.*+?^${}()|[\\]\\\\]/g,
-      "\\\\$&"
+      /[.*+?^\u0024{}()|[\]\\]/g,
+      "\\$&"
     );
 
     message = message.replace(
