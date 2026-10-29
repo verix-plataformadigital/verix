@@ -20796,7 +20796,7 @@ html body #verixAsfNoticeOverlay .verix-asf-notice-continue:active {transform:tr
    }
    if(e.ctrlKey&&!e.altKey&&!e.metaKey&&!e.shiftKey&&key==='f'){
      var moduleOverlay=document.getElementById('moduleOverlay');
-     var moduleIsOpen=!!(moduleOverlay&&(moduleOverlay.classList.contains('open')||moduleOverlay.classList.contains('active')||moduleOverlay.getAttribute('aria-hidden')==='false'));
+     var moduleIsOpen=!!(moduleOverlay&&(moduleOverlay.classList.contains('show')||moduleOverlay.classList.contains('open')||moduleOverlay.classList.contains('active')||moduleOverlay.getAttribute('aria-hidden')==='false'));
      var moduleSearch=moduleIsOpen&&document.querySelector('#moduleBody #legSearch, #moduleBody #extraZoneSearch, #moduleBody input[type="search"], #moduleBody input[placeholder*="Pesquisar" i], #moduleBody input[placeholder*="pesquisar"]');
      if(moduleSearch){e.preventDefault();moduleSearch.focus();if(typeof moduleSearch.select==='function')moduleSearch.select();return;}
      // Se o módulo não tiver pesquisa própria, preservar o Ctrl+F nativo do navegador.
