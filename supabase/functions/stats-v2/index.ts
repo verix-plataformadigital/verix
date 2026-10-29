@@ -147,8 +147,7 @@ function sessionPattern(rows:any[]){
   let alternating2=false;
   if(speeds.length>=6 && top.length===2){
     alternating2=speeds.every((v,i)=>i%2===0?v===top[0][0]:v===top[1][0]) ||
-                 speeds.every((v,i)=>i%2===0?v===top[1][0]:v===top[0][0]);
-  }
+                 speeds.every((v,i)=>i%2===0?v===top[1][0]:v===top[0][0]);  }
   const copies=rows.filter((e:any)=>e.event==="cinemometer_copy_code"||e.event==="cinemometer_copy_text").length;
   const configCount=measurements.filter((e:any)=>cinSnapshotOf(e)?.aparelho_configurado===true).length;
   const operatorCount=measurements.filter((e:any)=>cinSnapshotOf(e)?.operador_identificado===true).length;
@@ -297,8 +296,7 @@ function buildErrorPlateCases(rows:any[],plateOf:(e:any)=>string,validPortuguese
   }).sort((a,b)=>String(b.occurred_at||"").localeCompare(String(a.occurred_at||""))).slice(0,100);
 }
 
-async function loadErrorInvestigation24h(now:string){
-  const pageSize=1000, maxPages=100;
+async function loadErrorInvestigation24h(now:string){  const pageSize=1000, maxPages=100;
   const rows:any[]=[];
   const startAt=windowStartTodayLisbon(now);
   for(let page=0;page<maxPages;page++){
@@ -447,8 +445,7 @@ async function loadCinemometerAnalytics24h(now:string){
   const speeds:number[]=measurementEvents.map((e:any)=>Number(cinSnapshotOf(e).velocidade_registada)).filter((value:number)=>Number.isFinite(value));
   const analyticsSpeedValues:number[]=events
     .filter((e:any)=>["cinemometer_speed_entry","cinemometer_calculation"].includes(e.event) && cinSnapshotOf(e)?.velocidade_registada!=null)
-    .map((e:any)=>String(cinSnapshotOf(e).velocidade_registada))
-    .filter((v:string)=>/^[0-9]+(\\.[0-9]+)?$/.test(v))
+    .map((e:any)=>String(cinSnapshotOf(e).velocidade_registada))    .filter((v:string)=>/^[0-9]+(\\.[0-9]+)?$/.test(v))
     .map(Number)
     .filter((value:number)=>Number.isFinite(value));
   const distributionMap=new Map<number,number>();
@@ -597,8 +594,7 @@ Deno.serve(async (req:Request) => {
             for (const period of ["today", "week", "total"]) {
               const base = insurance[period] || {};
               const change = deltaPeriods[period] || {};
-              const row = { ...base };
-              for (const key of countKeys) {
+              const row = { ...base };              for (const key of countKeys) {
                 row[key] = Math.max(0, Math.trunc(Number(base[key] || 0) + Number(change[key] || 0)));
               }
               const validDecisions = row.insured + row.uninsured;
@@ -615,10 +611,21 @@ Deno.serve(async (req:Request) => {
         }
         metrics.users = {
           ...(metrics.users || {}),
+          // Preserve the live presence fields returned by verix2_admin_live_summary_v1.
+          // Without this merge the database detects online sessions, but the Admin API
+          // drops onlineInstallations, onlineTabs, activeInstallations and onlineProfiles.
+          ...(liveSummary && typeof liveSummary === "object" ? liveSummary : {}),
           consultationsLast3Minutes: Number(liveSummary?.consultationsLast3Minutes || 0),
           installationsConsultedLastHour: Number(liveSummary?.installationsConsultedLastHour || 0),
           installationsSeenLastHour: Number(liveSummary?.installationsSeenLastHour || 0),
-          registeredInstallations: Number(liveSummary?.registeredInstallations || 0)
+          registeredInstallations: Number(liveSummary?.registeredInstallations || 0),
+          onlineInstallations: Number(liveSummary?.onlineInstallations || 0),
+          onlineTabs: Number(liveSummary?.onlineTabs || 0),
+          activeInstallations: Number(liveSummary?.activeInstallations || 0),
+          activeTabs: Number(liveSummary?.activeTabs || 0),
+          onlineProfiles: Array.isArray(liveSummary?.onlineProfiles) ? liveSummary.onlineProfiles : [],
+          presenceObservedAt: liveSummary?.presenceObservedAt || now,
+          presenceLeaseSeconds: Number(liveSummary?.presenceLeaseSeconds || 150)
         };
         if (liveInsuranceDeltaApplied) metrics.generatedAt = now;
         metrics.liveInsuranceDeltaAvailable = liveInsuranceDeltaApplied;
@@ -747,8 +754,7 @@ Deno.serve(async (req:Request) => {
       try {
         if(!forceRefresh && cachedAnalytics && (Date.now()-cachedAnalytics.at)<ANALYTICS_CACHE_MS) {
           return new Response(cachedAnalytics.body,{status:200,headers:{"Content-Type":"application/json",...corsHeaders(req),"X-Verix-Analytics-Cache":"HIT"}});
-        }
-        const analytics = await rpc("verix2_admin_analytics",{p_now:now});
+        }        const analytics = await rpc("verix2_admin_analytics",{p_now:now});
         const body = JSON.stringify({ok:true,detail:"analytics",generatedAt:now,analytics});
         cachedAnalytics = {at:Date.now(),body};
         return new Response(body,{status:200,headers:{"Content-Type":"application/json",...corsHeaders(req),"X-Verix-Analytics-Cache":"MISS"}});
@@ -897,8 +903,7 @@ Deno.serve(async (req:Request) => {
         headers:{
           "Content-Type":"application/json",
           ...corsHeaders(req),
-          "X-Verix-Stats-Cache":"HIT"
-        }
+          "X-Verix-Stats-Cache":"HIT"        }
       });
     }
 
