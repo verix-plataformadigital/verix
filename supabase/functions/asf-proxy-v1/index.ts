@@ -10,7 +10,7 @@ function corsHeaders(req: Request) {
     "Access-Control-Allow-Origin": opaqueLocal ? "*" : (ALLOWED_ORIGINS.has(origin) ? origin : ""),
     "Access-Control-Allow-Headers": "content-type,x-verix-build-id,x-verix-client-token",
     "Access-Control-Allow-Methods": "POST,OPTIONS",
-    "Access-Control-Expose-Headers": "X-Verix-ASF-Relay, X-Verix-ASF-Latency-Ms, X-Verix-ASF-Body-Kind, X-Verix-ASF-GraphQL-Errors, X-Verix-ASF-Data-Present, X-Verix-ASF-Nodes-Count, Retry-After",
+    "Access-Control-Expose-Headers": "X-Verix-ASF-Relay, X-Verix-ASF-Latency-Ms, X-Verix-ASF-Body-Kind, X-Verix-ASF-GraphQL-Errors, X-Verix-ASF-Data-Present, X-Verix-ASF-Nodes-Count, X-Verix-ASF-Route, X-Verix-ASF-Proxy-Index, Retry-After",
     "Cache-Control": "no-store, max-age=0",
     "Vary": "Origin",
     "X-Content-Type-Options": "nosniff",
@@ -26,6 +26,57 @@ const ASF_ORIGIN = "https://ext01.asf.com.pt";
 const ASF_PATH = "/api/src/";
 const MAX_BODY_BYTES = 16 * 1024;
 const UPSTREAM_TIMEOUT_MS = 15000;
+
+const PROXY_USERNAME = Deno.env.get("PROXY_USERNAME") || "";
+const PROXY_PASSWORD = Deno.env.get("PROXY_PASSWORD") || "";
+const MAX_PROXY_ENDPOINTS = 10;
+
+// Per-isolate round-robin. Each Edge isolate keeps its own cursor.
+let proxyCursor = Math.floor(Math.random() * 1_000_000);
+
+type ProxyEndpoint = {
+  url: string;
+  host: string;
+  port: string;
+  transport: "http" | "https" | "socks5";
+};
+
+function getProxyPool(): ProxyEndpoint[] {
+  const raw = Deno.env.get("PROXY_URLS") || "";
+  const entries = raw.split(/[\n,;]+/).map(value => value.trim()).filter(Boolean);
+
+  if (entries.length < 1 || entries.length > MAX_PROXY_ENDPOINTS) {
+    throw new Error("proxy_pool_not_configured");
+  }
+  if (Boolean(PROXY_USERNAME) !== Boolean(PROXY_PASSWORD)) {
+    throw new Error("proxy_credentials_incomplete");
+  }
+
+  return entries.map(entry => {
+    const parsed = new URL(entry);
+    if (!["http:", "https:", "socks5:"].includes(parsed.protocol) ||
+        !parsed.hostname || parsed.username || parsed.password ||
+        parsed.search || parsed.hash ||
+        (parsed.pathname !== "/" && parsed.pathname !== "")) {
+      throw new Error("proxy_endpoint_invalid");
+    }
+
+    const transport = parsed.protocol.slice(0, -1) as "http" | "https" | "socks5";
+    return {
+      url: parsed.origin,
+      host: parsed.hostname,
+      port: parsed.port || (parsed.protocol === "https:" ? "443" : "80"),
+      transport
+    };
+  });
+}
+
+function nextProxyIndex(poolSize: number): number {
+  const index = proxyCursor % poolSize;
+  proxyCursor = (proxyCursor + 1) % poolSize;
+  return index;
+}
+
 
 function json(data: unknown, status = 200, req?: Request, extraHeaders: Record<string, string> = {}) {
   return new Response(JSON.stringify(data), {
@@ -216,6 +267,22 @@ Deno.serve(async (req: Request) => {
       return json({ ok: false, error: "invalid_date" }, 400, req);
     }
 
+    let proxyPool: ProxyEndpoint[];
+    try {
+      proxyPool = getProxyPool();
+    } catch (error) {
+      const reason = String((error as Error)?.message || error);
+      console.error("verix_asf_proxy_pool_unavailable", reason);
+      return json({
+        ok: false,
+        error: "proxy_pool_not_configured",
+        message: "ASF proxy pool is not configured correctly"
+      }, 503, req);
+    }
+
+    const proxyIndex = nextProxyIndex(proxyPool.length);
+    const selectedProxy = proxyPool[proxyIndex];
+
     const query =
       'mutation license { mobishoutEntry { noone { entry { licenseNumber(license: "' +
       plate + '", date: "' + date +
@@ -226,8 +293,20 @@ Deno.serve(async (req: Request) => {
     const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
     const started = Date.now();
 
+    let upstreamClient: Deno.HttpClient | undefined;
     try {
+      upstreamClient = Deno.createHttpClient({
+        proxy: {
+          url: selectedProxy.url,
+          transport: selectedProxy.transport,
+          ...(PROXY_USERNAME && PROXY_PASSWORD
+            ? { basicAuth: { username: PROXY_USERNAME, password: PROXY_PASSWORD } }
+            : {})
+        }
+      });
+
       const upstream = await fetch(url, {
+        client: upstreamClient,
         method: "POST",
         headers: {
           "Accept": "application/json, text/plain, */*",
@@ -310,6 +389,9 @@ Deno.serve(async (req: Request) => {
 
       const diagnostic = {
         buildId,
+        route: "proxy",
+        proxyIndex: proxyIndex + 1,
+        proxyHost: selectedProxy.host,
         upstreamStatus: upstream.status,
         elapsedMs,
         contentType: upstreamContentType.split(";")[0].slice(0, 80),
@@ -328,6 +410,8 @@ Deno.serve(async (req: Request) => {
         ...corsHeaders(req),
         "Content-Type": upstreamContentType || "application/json; charset=utf-8",
         "X-Verix-ASF-Relay": "1",
+        "X-Verix-ASF-Route": "proxy",
+        "X-Verix-ASF-Proxy-Index": String(proxyIndex + 1),
         "X-Verix-ASF-Latency-Ms": String(elapsedMs),
         "X-Verix-ASF-Body-Kind": bodyKind,
         "X-Verix-ASF-GraphQL-Errors": String(graphqlErrorCount),
@@ -350,6 +434,7 @@ Deno.serve(async (req: Request) => {
         message: aborted ? "ASF upstream timeout" : "ASF upstream network error"
       }, aborted ? 504 : 502, req);
     } finally {
+      upstreamClient?.close();
       clearTimeout(timeout);
     }
   } catch (error) {
