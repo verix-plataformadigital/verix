@@ -10,7 +10,7 @@ function corsHeaders(req: Request) {
     "Access-Control-Allow-Origin": opaqueLocal ? "*" : (ALLOWED_ORIGINS.has(origin) ? origin : ""),
     "Access-Control-Allow-Headers": "content-type,x-verix-build-id,x-verix-client-token",
     "Access-Control-Allow-Methods": "POST,OPTIONS",
-    "Access-Control-Expose-Headers": "X-Verix-ASF-Relay, X-Verix-ASF-Latency-Ms, X-Verix-ASF-Body-Kind, X-Verix-ASF-GraphQL-Errors, X-Verix-ASF-Data-Present, X-Verix-ASF-Nodes-Count, X-Verix-ASF-Route, X-Verix-ASF-Proxy-Index, X-Verix-ASF-Proxy-Failover, Retry-After",
+    "Access-Control-Expose-Headers": "X-Verix-ASF-Relay, X-Verix-ASF-Latency-Ms, X-Verix-ASF-Body-Kind, X-Verix-ASF-GraphQL-Errors, X-Verix-ASF-Data-Present, X-Verix-ASF-Nodes-Count, X-Verix-ASF-Route, X-Verix-ASF-Proxy-Index, Retry-After",
     "Cache-Control": "no-store, max-age=0",
     "Vary": "Origin",
     "X-Content-Type-Options": "nosniff",
@@ -31,81 +31,8 @@ const PROXY_USERNAME = Deno.env.get("PROXY_USERNAME") || "";
 const PROXY_PASSWORD = Deno.env.get("PROXY_PASSWORD") || "";
 const MAX_PROXY_ENDPOINTS = 10;
 
-// Keep a short proxy affinity per installation to permit TLS/CONNECT reuse.
-// Any network error or upstream 502/503/504 triggers immediate one-hop failover.
-const proxyAffinity = new Map<string, { slot: number; index: number }>();
-function proxyAffinityKey(installationId: string): string {
-  return String(installationId || "anonymous").slice(0, 120);
-}
-function chooseProxyIndex(installationId: string, poolSize: number): number {
-  const key = proxyAffinityKey(installationId);
-  const slot = Math.floor(Date.now() / 60_000);
-  const existing = proxyAffinity.get(key);
-  if (existing && existing.slot === slot && existing.index >= 0 && existing.index < poolSize) {
-    return existing.index;
-  }
-  const hashInput = key + ":" + slot;
-  let hash = 0x811c9dc5;
-  for (let i = 0; i < hashInput.length; i++) {
-    hash ^= hashInput.charCodeAt(i);
-    hash = Math.imul(hash, 0x01000193);
-  }
-  const index = (hash >>> 0) % poolSize;
-  rememberProxyIndex(installationId, slot, index);
-  return index;
-}
-function rememberProxyIndex(installationId: string, slot: number, index: number): void {
-  const key = proxyAffinityKey(installationId);
-  proxyAffinity.set(key, { slot, index });
-  // Bound per-isolate memory when many installations visit this function.
-  while (proxyAffinity.size > 500) {
-    const oldest = proxyAffinity.keys().next().value;
-    if (oldest === undefined) break;
-    proxyAffinity.delete(oldest);
-  }
-}
-
-// Diagnóstico temporário e limitado: mede tamanhos sem registar matrícula ou valores do seguro.
-let payloadProfileBudget = 10;
-
-// Reutilização por endpoint dentro de cada isolate. A seleção round-robin continua
-// a ser feita por pedido; só se evita recriar TCP/CONNECT/TLS a cada consulta.
-const proxyClientPool = new Map<string, Deno.HttpClient>();
-
-function proxyClientKey(proxy: ProxyEndpoint): string {
-  return proxy.transport + "|" + proxy.url;
-}
-
-function getOrCreateProxyClient(proxy: ProxyEndpoint): Deno.HttpClient {
-  const key = proxyClientKey(proxy);
-  const existing = proxyClientPool.get(key);
-  if (existing) return existing;
-
-  const client = Deno.createHttpClient({
-    // Keep connections alive across round-robin cycles. Requests still rotate
-    // proxies per call; reuse only occurs when the same endpoint is selected
-    // again while its idle connection is still available.
-    poolMaxIdlePerHost: 2,
-    poolIdleTimeout: 120_000,
-    proxy: {
-      url: proxy.url,
-      transport: proxy.transport,
-      ...(PROXY_USERNAME && PROXY_PASSWORD
-        ? { basicAuth: { username: PROXY_USERNAME, password: PROXY_PASSWORD } }
-        : {})
-    }
-  });
-  proxyClientPool.set(key, client);
-  return client;
-}
-
-function discardProxyClient(proxy: ProxyEndpoint): void {
-  const key = proxyClientKey(proxy);
-  const client = proxyClientPool.get(key);
-  if (!client) return;
-  proxyClientPool.delete(key);
-  try { client.close(); } catch (_) {}
-}
+// Per-isolate round-robin. Each Edge isolate keeps its own cursor.
+let proxyCursor = Math.floor(Math.random() * 1_000_000);
 
 type ProxyEndpoint = {
   url: string;
@@ -144,7 +71,11 @@ function getProxyPool(): ProxyEndpoint[] {
   });
 }
 
-
+function nextProxyIndex(poolSize: number): number {
+  const index = proxyCursor % poolSize;
+  proxyCursor = (proxyCursor + 1) % poolSize;
+  return index;
+}
 
 
 function json(data: unknown, status = 200, req?: Request, extraHeaders: Record<string, string> = {}) {
@@ -156,54 +87,6 @@ function json(data: unknown, status = 200, req?: Request, extraHeaders: Record<s
       ...extraHeaders
     }
   });
-}
-
-async function gzipASFResponseIfSupported(
-  req: Request,
-  text: string,
-  status: number,
-  headers: Record<string, string>
-): Promise<Response> {
-  const acceptEncoding = (req.headers.get("accept-encoding") || "").toLowerCase();
-  const userAgent = req.headers.get("user-agent") || "";
-  const acceptsGzip = acceptEncoding.split(",").some(value => value.trim().split(";")[0] === "gzip");
-  const supportsGzip =
-    acceptsGzip &&
-    /(?:Chrome|Chromium|Edg|Firefox|Safari)[/]/i.test(userAgent) &&
-    !/(?:MSIE|Trident|MSHTA)/i.test(userAgent);
-
-  const plainBytes = new TextEncoder().encode(text);
-  if (!supportsGzip || plainBytes.byteLength < 512 ||
-      typeof CompressionStream !== "function" ||
-      typeof Blob !== "function" ||
-      typeof Response !== "function") {
-    return new Response(text, { status, headers });
-  }
-
-  try {
-    const compressedStream = new Blob([plainBytes]).stream()
-      .pipeThrough(new CompressionStream("gzip"));
-    const compressed = new Uint8Array(await new Response(compressedStream).arrayBuffer());
-    if (compressed.byteLength >= plainBytes.byteLength) {
-      return new Response(text, { status, headers });
-    }
-
-    const finalHeaders = new Headers(headers);
-    finalHeaders.set("Content-Encoding", "gzip");
-    const vary = (finalHeaders.get("Vary") || "")
-      .split(",")
-      .map(value => value.trim())
-      .filter(Boolean);
-    if (!vary.some(value => value.toLowerCase() === "accept-encoding")) {
-      vary.push("Accept-Encoding");
-    }
-    finalHeaders.set("Vary", vary.join(", "));
-    finalHeaders.delete("Content-Length");
-    return new Response(compressed, { status, headers: finalHeaders });
-  } catch (_) {
-    // Compressão é uma otimização de transporte: em caso de falha, responde em texto normal.
-    return new Response(text, { status, headers });
-  }
 }
 
 function cleanText(value: unknown, max: number): string {
@@ -397,8 +280,8 @@ Deno.serve(async (req: Request) => {
       }, 503, req);
     }
 
-    let proxyIndex = chooseProxyIndex(installationId, proxyPool.length);
-    let selectedProxy = proxyPool[proxyIndex];
+    const proxyIndex = nextProxyIndex(proxyPool.length);
+    const selectedProxy = proxyPool[proxyIndex];
 
     const query =
       'mutation license { mobishoutEntry { noone { entry { licenseNumber(license: "' +
@@ -406,78 +289,37 @@ Deno.serve(async (req: Request) => {
       '") { nodes { id entity startDate endDate policy license code logo } } } } } }';
 
     const url = ASF_ORIGIN + ASF_PATH + "?query=" + encodeURIComponent(query);
-    let usedFallback = false;
-    let upstream: Response;
-    let text: string;
-    let elapsedMs = 0;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
+    const started = Date.now();
 
-    // A fresh timeout is used for each attempt, so a failed proxy does not
-    // consume the full timeout budget of the fallback proxy.
-    const requestThroughProxy = async (proxy: ProxyEndpoint) => {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
-      const attemptStarted = Date.now();
-      try {
-        const client = getOrCreateProxyClient(proxy);
-        const response = await fetch(url, {
-          client,
-          method: "POST",
-          headers: {
-            "Accept": "application/json, text/plain, */*",
-            "Cache-Control": "no-cache",
-            "Pragma": "no-cache"
-          },
-          body: null,
-          redirect: "follow",
-          signal: controller.signal
-        });
-        const bodyText = await response.text();
-        return { response, bodyText, elapsedMs: Date.now() - attemptStarted };
-      } finally {
-        clearTimeout(timeout);
-      }
-    };
-
+    let upstreamClient: Deno.HttpClient | undefined;
     try {
-      let result: { response: Response; bodyText: string; elapsedMs: number };
-      try {
-        result = await requestThroughProxy(selectedProxy);
-      } catch (firstError) {
-        discardProxyClient(selectedProxy);
-        if (proxyPool.length < 2) throw firstError;
-        usedFallback = true;
-        proxyIndex = (proxyIndex + 1) % proxyPool.length;
-        selectedProxy = proxyPool[proxyIndex];
-        rememberProxyIndex(installationId, Math.floor(Date.now() / 60_000), proxyIndex);
-        console.warn("verix_asf_proxy_failover", JSON.stringify({
-          reason: (firstError as Error)?.name === "AbortError" ? "timeout" : "network",
-          proxyIndex: proxyIndex + 1
-        }));
-        result = await requestThroughProxy(selectedProxy);
-      }
+      upstreamClient = Deno.createHttpClient({
+        proxy: {
+          url: selectedProxy.url,
+          transport: selectedProxy.transport,
+          ...(PROXY_USERNAME && PROXY_PASSWORD
+            ? { basicAuth: { username: PROXY_USERNAME, password: PROXY_PASSWORD } }
+            : {})
+        }
+      });
 
-      // Retry at most once on upstream gateway/server failure. Do not retry
-      // successful HTTP responses containing GraphQL errors; that could amplify
-      // ASF load or repeat a rate-limited operation.
-      if (!usedFallback && proxyPool.length > 1 && [502, 503, 504].includes(result.response.status)) {
-        try { await result.response.body?.cancel(); } catch (_) {}
-        discardProxyClient(selectedProxy);
-        usedFallback = true;
-        proxyIndex = (proxyIndex + 1) % proxyPool.length;
-        selectedProxy = proxyPool[proxyIndex];
-        rememberProxyIndex(installationId, Math.floor(Date.now() / 60_000), proxyIndex);
-        console.warn("verix_asf_proxy_failover", JSON.stringify({
-          reason: "upstream_" + result.response.status,
-          proxyIndex: proxyIndex + 1
-        }));
-        result = await requestThroughProxy(selectedProxy);
-      }
+      const upstream = await fetch(url, {
+        client: upstreamClient,
+        method: "POST",
+        headers: {
+          "Accept": "application/json, text/plain, */*",
+          "Cache-Control": "no-cache",
+          "Pragma": "no-cache"
+        },
+        body: null,
+        redirect: "follow",
+        signal: controller.signal
+      });
 
-      upstream = result.response;
-      text = result.bodyText;
-      elapsedMs = result.elapsedMs;
-      rememberProxyIndex(installationId, Math.floor(Date.now() / 60_000), proxyIndex);
-
+      const text = await upstream.text();
+      const elapsedMs = Date.now() - started;
       const upstreamContentType = upstream.headers.get("content-type") || "";
 
       // Diagnostics deliberately exclude the plate, raw body, and insurer/policy fields.
@@ -537,30 +379,6 @@ Deno.serve(async (req: Request) => {
             hasGraphQLData = Object.prototype.hasOwnProperty.call(parsed, "data");
             const nodes = parsed?.data?.mobishoutEntry?.noone?.entry?.licenseNumber?.nodes;
             if (Array.isArray(nodes)) nodesCount = nodes.length;
-
-            if (payloadProfileBudget > 0) {
-              const fields = ["id", "entity", "startDate", "endDate", "policy", "license", "code", "logo"];
-              const fieldBytes: Record<string, number> = Object.create(null);
-              for (const field of fields) fieldBytes[field] = 0;
-              if (Array.isArray(nodes)) {
-                for (const node of nodes) {
-                  if (!node || typeof node !== "object") continue;
-                  for (const field of fields) {
-                    const value = (node as Record<string, unknown>)[field];
-                    if (value !== undefined) fieldBytes[field] += new TextEncoder().encode(JSON.stringify(value)).byteLength;
-                  }
-                }
-              }
-              console.log("verix_asf_payload_profile", JSON.stringify({
-                upstreamStatus: upstream.status,
-                upstreamContentEncoding: upstream.headers.get("content-encoding") || "not-exposed-by-fetch",
-                upstreamContentLength: upstream.headers.get("content-length") || "not-exposed-by-fetch",
-                decodedBodyBytes: new TextEncoder().encode(text).byteLength,
-                nodeCount: Array.isArray(nodes) ? nodes.length : 0,
-                fieldBytes
-              }));
-              payloadProfileBudget--;
-            }
           }
         } catch (_) {
           bodyKind = (/text\/html/i.test(upstreamContentType) || /^(?:<!doctype html|<html\b)/i.test(text.trim()))
@@ -594,7 +412,6 @@ Deno.serve(async (req: Request) => {
         "X-Verix-ASF-Relay": "1",
         "X-Verix-ASF-Route": "proxy",
         "X-Verix-ASF-Proxy-Index": String(proxyIndex + 1),
-        "X-Verix-ASF-Proxy-Failover": usedFallback ? "1" : "0",
         "X-Verix-ASF-Latency-Ms": String(elapsedMs),
         "X-Verix-ASF-Body-Kind": bodyKind,
         "X-Verix-ASF-GraphQL-Errors": String(graphqlErrorCount),
@@ -605,17 +422,20 @@ Deno.serve(async (req: Request) => {
       const retryAfter = upstream.headers.get("retry-after");
       if (retryAfter) outHeaders["Retry-After"] = retryAfter;
 
-      return await gzipASFResponseIfSupported(req, text, upstream.status, outHeaders);
+      return new Response(text, {
+        status: upstream.status,
+        headers: outHeaders
+      });
     } catch (error) {
-      // Both the preferred proxy and the single fallback failed. Discard the
-      // selected client so the next request can establish a fresh connection.
-      discardProxyClient(selectedProxy);
       const aborted = (error as Error)?.name === "AbortError";
       return json({
         ok: false,
         error: aborted ? "upstream_timeout" : "upstream_network",
         message: aborted ? "ASF upstream timeout" : "ASF upstream network error"
       }, aborted ? 504 : 502, req);
+    } finally {
+      upstreamClient?.close();
+      clearTimeout(timeout);
     }
   } catch (error) {
     console.error(
