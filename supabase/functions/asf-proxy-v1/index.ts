@@ -58,6 +58,41 @@ function validDate(value: unknown): string | null {
   return s;
 }
 
+
+function sanitizeGraphQLErrorMessage(
+  value: unknown,
+  plate: string,
+  originalPlate: unknown
+): string {
+  let message = String(value ?? "GraphQL error")
+    .replace(/[\\r\\n\\t]+/g, " ")
+    .replace(/\\s{2,}/g, " ")
+    .trim();
+
+  const original = String(originalPlate ?? "").trim().toUpperCase();
+  const candidates = new Set([
+    plate,
+    original,
+    original.replace(/[^A-Z0-9]/g, "")
+  ]);
+
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+
+    const escaped = candidate.replace(
+      /[.*+?^${}()|[\\]\\\\]/g,
+      "\\\\$&"
+    );
+
+    message = message.replace(
+      new RegExp(escaped, "gi"),
+      "[MATRICULA]"
+    );
+  }
+
+  return message.slice(0, 240);
+}
+
 const GATE_SECRET =
   Deno.env.get("VERIX_GATE_SECRET") ||
   Deno.env.get("VERIX_ADMIN_SECRET") ||
@@ -213,6 +248,11 @@ Deno.serve(async (req: Request) => {
       let bodyKind = "json";
       let graphqlErrorCount = 0;
       let graphqlErrorCodes: string[] = [];
+      let graphqlErrorDetails: Array<{
+        message: string;
+        code: string;
+        path: Array<string | number>;
+      }> = [];
       let hasGraphQLData = false;
       let nodesCount = -1;
 
@@ -227,6 +267,35 @@ Deno.serve(async (req: Request) => {
             graphqlErrorCodes = errors.slice(0, 3).map((item: any) => {
               const rawCode = String(item?.extensions?.code || item?.code || "unknown");
               return rawCode.replace(/[^A-Za-z0-9_.-]/g, "").slice(0, 60) || "unknown";
+            });
+            graphqlErrorDetails = errors.slice(0, 3).map((item: any) => {
+              const rawCode = String(item?.extensions?.code || item?.code || "unknown");
+              const code =
+                rawCode.replace(/[^A-Za-z0-9_.-]/g, "").slice(0, 60) ||
+                "unknown";
+
+              const path: Array<string | number> = Array.isArray(item?.path)
+                ? item.path.slice(0, 8).map((part: unknown) => {
+                    if (typeof part === "number" && Number.isFinite(part)) {
+                      return part;
+                    }
+                    return sanitizeGraphQLErrorMessage(
+                      part,
+                      plate,
+                      body?.matricula
+                    ).slice(0, 80);
+                  })
+                : [];
+
+              return {
+                message: sanitizeGraphQLErrorMessage(
+                  item?.message,
+                  plate,
+                  body?.matricula
+                ),
+                code,
+                path
+              };
             });
             hasGraphQLData = Object.prototype.hasOwnProperty.call(parsed, "data");
             const nodes = parsed?.data?.mobishoutEntry?.noone?.entry?.licenseNumber?.nodes;
@@ -247,6 +316,7 @@ Deno.serve(async (req: Request) => {
         bodyKind,
         graphqlErrorCount,
         graphqlErrorCodes,
+        graphqlErrorDetails,
         hasGraphQLData,
         nodesCount
       };
