@@ -1926,3 +1926,135 @@ html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-footer-credit stro
     font-size: 9px !important;
   }
 }
+
+
+/* VÉRIX — assinatura do criador em destaque, mantendo o rodapé operacional. */
+html body #mainMenuScreen.vx-home-screen .vx-home-footer {
+  min-height: 76px !important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-credit {
+  position: relative !important;
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  min-width: 230px !important;
+  min-height: 56px !important;
+  margin-left: auto !important;
+  padding: 8px 17px 8px 51px !important;
+  overflow: visible !important;
+  border: 1px solid #70ffb0 !important;
+  border-radius: 9px !important;
+  background:
+    radial-gradient(ellipse at 0% 50%,rgba(0,255,117,.25),transparent 43%),
+    linear-gradient(145deg,#174c32 0%,#103523 52%,#0b2419 100%) !important;
+  box-shadow:
+    0 0 0 1px rgba(0,255,128,.18),
+    0 0 18px rgba(0,255,128,.17),
+    0 5px 13px rgba(0,0,0,.38),
+    inset 0 1px 0 rgba(255,255,255,.23),
+    inset 0 -2px 0 rgba(0,0,0,.28) !important;
+  color: #d7fbe7 !important;
+  font: 850 9px/1.1 Inter,"Segoe UI",Arial,sans-serif !important;
+  letter-spacing: .6px !important;
+  white-space: nowrap !important;
+  transform: translateY(-1px) !important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-credit::before {
+  content: "AVB" !important;
+  position: absolute !important;
+  left: 11px !important;
+  top: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 30px !important;
+  height: 30px !important;
+  box-sizing: border-box !important;
+  border: 1px solid rgba(199,255,220,.82) !important;
+  border-radius: 7px !important;
+  background: linear-gradient(145deg,#5dff9d 0%,#11d968 47%,#039a49 100%) !important;
+  box-shadow: 0 0 12px rgba(0,255,128,.25),inset 0 1px 0 rgba(255,255,255,.68),inset 0 -2px 0 rgba(0,70,31,.25) !important;
+  color: #052614 !important;
+  font: 950 9px/1 Arial,sans-serif !important;
+  letter-spacing: .25px !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.18) !important;
+  transform: translateY(-50%) !important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-credit > span {
+  color: #b4dfc5 !important;
+  font-size: 7px !important;
+  font-weight: 950 !important;
+  letter-spacing: 1.25px !important;
+  text-shadow: 0 1px 1px rgba(0,0,0,.7) !important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-credit strong {
+  display: block !important;
+  color: #f4fff8 !important;
+  font-size: 13px !important;
+  font-weight: 950 !important;
+  line-height: 1.05 !important;
+  letter-spacing: .25px !important;
+  text-shadow: 0 0 9px rgba(105,255,164,.22),0 1px 2px rgba(0,0,0,.7) !important;
+}
+html body #mainMenuScreen.vx-home-screen .vx-home-footer-credit:hover {
+  border-color: #b3ffd0 !important;
+  background:
+    radial-gradient(ellipse at 0% 50%,rgba(0,255,117,.32),transparent 48%),
+    linear-gradient(145deg,#1a5b3a 0%,#12432c 52%,#0d2d1e 100%) !important;
+  box-shadow:
+    0 0 0 1px rgba(0,255,128,.23),
+    0 0 23px rgba(0,255,128,.23),
+    0 7px 16px rgba(0,0,0,.4),
+    inset 0 1px 0 rgba(255,255,255,.28),
+    inset 0 -2px 0 rgba(0,0,0,.28) !important;
+}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-footer-credit {
+  border-color: #60bd84 !important;
+  background: radial-gradient(ellipse at 0% 50%,rgba(0,210,86,.14),transparent 43%),linear-gradient(145deg,#e8fff0,#cdeed9) !important;
+  box-shadow: 0 0 0 1px rgba(0,145,58,.1),0 4px 11px rgba(30,89,52,.15),inset 0 1px 0 #fff !important;
+}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-footer-credit::before {
+  border-color: #a5f8bf !important;
+  color: #06351b !important;
+}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-footer-credit > span {
+  color: #3c7552 !important;
+  text-shadow: none !important;
+}
+html body.theme-light #mainMenuScreen.vx-home-screen .vx-home-footer-credit strong {
+  color: #123a22 !important;
+  text-shadow: none !important;
+}
+@media (max-width:1120px) {
+  html body #mainMenuScreen.vx-home-screen .vx-home-footer {
+    min-height: 76px !important;
+  }
+  html body #mainMenuScreen.vx-home-screen .vx-home-footer-credit {
+    order: 4 !important;
+    min-width: 230px !important;
+    margin-left: auto !important;
+  }
+}
+@media (max-width:760px) {
+  html body #mainMenuScreen.vx-home-screen .vx-home-footer {
+    min-height: 0 !important;
+  }
+  html body #mainMenuScreen.vx-home-screen .vx-home-footer-credit {
+    order: 4 !important;
+    min-width: min(230px,100%) !important;
+    min-height: 52px !important;
+    margin-left: auto !important;
+    padding: 7px 12px 7px 47px !important;
+  }
+  html body #mainMenuScreen.vx-home-screen .vx-home-footer-credit::before {
+    left: 9px !important;
+    width: 28px !important;
+    height: 28px !important;
+  }
+  html body #mainMenuScreen.vx-home-screen .vx-home-footer-credit strong {
+    font-size: 12px !important;
+  }
+}
