@@ -6647,6 +6647,39 @@ html body #asfRateWidget .asf-rate-sub[data-window-state="ready"]{
 }
 </style>
 
+
+<style id="verix-eu-stars-plate-20261029">
+/* Faixa UE: círculo de 12 estrelas amarelas acima do P, integrado na chapa. */
+.searchbar .field:has(#MatriculaVeiculo)::before,
+.searchbar .field:has(#MatriculaReboque)::before{
+  content:""!important;
+  background-color:#064ca0!important;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='42' viewBox='0 0 32 42'%3E%3Cg fill='%23ffdf00' font-family='Arial,sans-serif' font-size='5.5' text-anchor='middle'%3E%3Ctext x='16' y='6.7'%3E★%3C/text%3E%3Ctext x='20.6' y='8'%3E★%3C/text%3E%3Ctext x='23.7' y='11.4'%3E★%3C/text%3E%3Ctext x='25' y='16'%3E★%3C/text%3E%3Ctext x='23.7' y='20.5'%3E★%3C/text%3E%3Ctext x='20.6' y='24'%3E★%3C/text%3E%3Ctext x='16' y='25.2'%3E★%3C/text%3E%3Ctext x='11.4' y='24'%3E★%3C/text%3E%3Ctext x='8.3' y='20.5'%3E★%3C/text%3E%3Ctext x='7' y='16'%3E★%3C/text%3E%3Ctext x='8.3' y='11.4'%3E★%3C/text%3E%3Ctext x='11.4' y='8'%3E★%3C/text%3E%3C/g%3E%3C/svg%3E")!important;
+  background-repeat:no-repeat!important;background-position:center 1px!important;background-size:31px 28px!important;
+}
+.searchbar .field:has(#MatriculaVeiculo)::after,
+.searchbar .field:has(#MatriculaReboque)::after{
+  content:"P"!important;position:absolute!important;z-index:5!important;left:0!important;bottom:1px!important;
+  width:31px!important;height:17px!important;display:flex!important;align-items:center!important;
+  justify-content:center!important;background:transparent!important;color:#fff!important;
+  font:800 13px/1 Arial,sans-serif!important;border:0!important;box-shadow:none!important;
+}
+/* Resultados ASF: mantém a chapa branca e reproduz a mesma faixa UE. */
+#seguroResult .asf-success-plate::before,
+#seguroResult .asf-app-plate-badge::before{
+  content:""!important;background-color:#064ca0!important;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='42' viewBox='0 0 32 42'%3E%3Cg fill='%23ffdf00' font-family='Arial,sans-serif' font-size='5.5' text-anchor='middle'%3E%3Ctext x='16' y='6.7'%3E★%3C/text%3E%3Ctext x='20.6' y='8'%3E★%3C/text%3E%3Ctext x='23.7' y='11.4'%3E★%3C/text%3E%3Ctext x='25' y='16'%3E★%3C/text%3E%3Ctext x='23.7' y='20.5'%3E★%3C/text%3E%3Ctext x='20.6' y='24'%3E★%3C/text%3E%3Ctext x='16' y='25.2'%3E★%3C/text%3E%3Ctext x='11.4' y='24'%3E★%3C/text%3E%3Ctext x='8.3' y='20.5'%3E★%3C/text%3E%3Ctext x='7' y='16'%3E★%3C/text%3E%3Ctext x='8.3' y='11.4'%3E★%3C/text%3E%3Ctext x='11.4' y='8'%3E★%3C/text%3E%3C/g%3E%3C/svg%3E")!important;
+  background-repeat:no-repeat!important;background-position:center 1px!important;background-size:32px 28px!important;
+}
+#seguroResult .asf-success-plate::after,
+#seguroResult .asf-app-plate-badge::after{
+  content:"P"!important;position:absolute!important;left:0!important;top:auto!important;bottom:1px!important;
+  width:34px!important;height:18px!important;display:flex!important;align-items:center!important;
+  justify-content:center!important;background:transparent!important;color:#fff!important;
+  font:800 13px/1 Arial,sans-serif!important;border:0!important;box-shadow:none!important;
+}
+</style>
+
 </head><body>
 <script id="verix-splash-clock">(function(){try{window.__verixSplashStarted=performance.now();}catch(e){window.__verixSplashStarted=Date.now();}})();</script>
 <div id="opsBootOverlay" aria-hidden="false">
