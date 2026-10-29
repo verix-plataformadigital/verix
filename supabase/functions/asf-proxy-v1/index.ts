@@ -1,3 +1,5 @@
+import { gzipSync } from "node:zlib";
+
 const ALLOWED_ORIGINS = new Set([
   "https://verix.vxops.workers.dev",
   "https://verix-plataformadigital.github.io"
@@ -87,6 +89,53 @@ function json(data: unknown, status = 200, req?: Request, extraHeaders: Record<s
       ...extraHeaders
     }
   });
+}
+
+function gzipASFResponseIfSupported(
+  req: Request,
+  text: string,
+  status: number,
+  headers: Record<string, string>
+): Response {
+  const acceptEncoding = (req.headers.get("accept-encoding") || "").toLowerCase();
+  const userAgent = req.headers.get("user-agent") || "";
+  const acceptsGzip = acceptEncoding.split(",").some(value => value.trim().split(";")[0] === "gzip");
+
+  // Só enviar GZIP a clientes modernos que anunciem suporte.
+  // O caminho ActiveX/HTA/Trident antigo mantém a resposta original.
+  const supportsGzip =
+    acceptsGzip &&
+    /(?:Chrome|Chromium|Edg|Firefox|Safari)[/]/i.test(userAgent) &&
+    !/(?:MSIE|Trident|MSHTA)/i.test(userAgent);
+
+  const plainBytes = new TextEncoder().encode(text);
+  if (!supportsGzip || plainBytes.byteLength < 512) {
+    return new Response(text, { status, headers });
+  }
+
+  try {
+    const compressed = gzipSync(plainBytes, { level: 6 });
+    if (compressed.byteLength >= plainBytes.byteLength) {
+      return new Response(text, { status, headers });
+    }
+
+    const finalHeaders = new Headers(headers);
+    finalHeaders.set("Content-Encoding", "gzip");
+    const vary = (finalHeaders.get("Vary") || "")
+      .split(",")
+      .map(value => value.trim())
+      .filter(Boolean);
+    if (!vary.some(value => value.toLowerCase() === "accept-encoding")) {
+      vary.push("Accept-Encoding");
+    }
+    finalHeaders.set("Vary", vary.join(", "));
+    finalHeaders.delete("Content-Length");
+
+    return new Response(compressed, { status, headers: finalHeaders });
+  } catch (_) {
+    // A compressão é apenas transporte: se falhar, serve a resposta original.
+    return new Response(text, { status, headers });
+  }
 }
 
 function cleanText(value: unknown, max: number): string {
@@ -422,10 +471,7 @@ Deno.serve(async (req: Request) => {
       const retryAfter = upstream.headers.get("retry-after");
       if (retryAfter) outHeaders["Retry-After"] = retryAfter;
 
-      return new Response(text, {
-        status: upstream.status,
-        headers: outHeaders
-      });
+      return gzipASFResponseIfSupported(req, text, upstream.status, outHeaders);
     } catch (error) {
       const aborted = (error as Error)?.name === "AbortError";
       return json({
