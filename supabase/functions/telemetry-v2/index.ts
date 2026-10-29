@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { gunzipSync } from "node:zlib";
 
 declare const Deno: any;
 
@@ -28,6 +29,32 @@ function corsHeaders(req?: Request) {
     "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
     "X-Frame-Options": "DENY"
   };
+}
+
+const TELEMETRY_GZIP_MAGIC = new Uint8Array([86, 88, 84, 71, 49, 10]); // "VXTG1\\n"
+
+function hasTelemetryGzipPrefix(bytes: Uint8Array): boolean {
+  if (bytes.byteLength < TELEMETRY_GZIP_MAGIC.byteLength) return false;
+  for (let i = 0; i < TELEMETRY_GZIP_MAGIC.byteLength; i++) {
+    if (bytes[i] !== TELEMETRY_GZIP_MAGIC[i]) return false;
+  }
+  return true;
+}
+
+function parseTelemetryBody(raw: Uint8Array): any {
+  let payload = raw;
+  if (hasTelemetryGzipPrefix(raw)) {
+    // Limite a expansão para evitar payloads comprimidos maliciosos.
+    payload = gunzipSync(raw.slice(TELEMETRY_GZIP_MAGIC.byteLength), {
+      maxOutputLength: 1024 * 1024
+    });
+  }
+  if (payload.byteLength > 1024 * 1024) {
+    const error = new Error("payload_too_large");
+    (error as any).code = "PAYLOAD_TOO_LARGE";
+    throw error;
+  }
+  return JSON.parse(new TextDecoder().decode(payload));
 }
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
@@ -329,7 +356,20 @@ Deno.serve(async (req: Request) => {
       return json({ ok: false, error: "rate_limited" }, 429, req);
     }
 
-    const body = await req.json().catch(() => null);
+    let body: any = null;
+    try {
+      const rawBody = new Uint8Array(await req.arrayBuffer());
+      if (rawBody.byteLength > 1024 * 1024) {
+        return json({ ok: false, error: "payload_too_large" }, 413, req);
+      }
+      body = parseTelemetryBody(rawBody);
+    } catch (error) {
+      const code = (error as any)?.code;
+      if (code === "PAYLOAD_TOO_LARGE" || code === "ERR_BUFFER_TOO_LARGE") {
+        return json({ ok: false, error: "payload_too_large" }, 413, req);
+      }
+      return json({ ok: false, error: "invalid_payload" }, 400, req);
+    }
     const received = Array.isArray(body?.events) ? body.events : [];
     const input = received.slice(0, 100);
     // The browser acknowledges events by stable event ID, never by HTTP status alone.
