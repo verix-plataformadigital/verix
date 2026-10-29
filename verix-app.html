@@ -6396,6 +6396,135 @@ html body #asfRateWidget .asf-rate-sub[data-window-state="ready"]{
   }catch(_){}
 })();
 </script>
+
+<style id="verix-visual-refresh-20261029">
+/* Refinamento visual — apresentação apenas; sem alterações ao motor ASF. */
+#verixAsfNoticeOverlay .verix-asf-notice-card-title{
+  color:#102d3a!important;line-height:1.12!important;letter-spacing:-.025em!important;
+  font-size:clamp(22px,2.15vw,30px)!important;text-wrap:balance;
+}
+#verixAsfNoticeOverlay .verix-asf-alert-copy{
+  color:#243f4c!important;font-size:15px!important;line-height:1.7!important;
+}
+#verixAsfNoticeOverlay .verix-asf-card-external-note{
+  color:#294653!important;font-size:13px!important;line-height:1.7!important;
+}
+#verixAsfNoticeOverlay .verix-asf-card-external-note strong{
+  display:block;color:#087443!important;font-size:12px!important;letter-spacing:.075em!important;
+  margin-bottom:7px;
+}
+#verixAsfNoticeOverlay .verix-asf-external-caveat{
+  display:block;margin-top:8px;color:#4c6570;font-size:11px;line-height:1.5;
+}
+#verixAsfNoticeOverlay .verix-asf-notice-divider{
+  background:#9bd9b6!important;margin:20px 0 16px!important;
+}
+#verixAsfNoticeOverlay .verix-asf-notice-card-thanks{
+  background:linear-gradient(145deg,#effaf3 0%,#dff4e8 100%)!important;
+  border-color:#b9e6cc!important;
+}
+#verixAsfNoticeOverlay .verix-asf-notice-thanks-number{
+  color:#087443!important;letter-spacing:-.055em!important;
+}
+#verixAsfNoticeOverlay .verix-asf-notice-footer button{
+  min-height:44px;letter-spacing:.035em;
+}
+/* Campo com linguagem visual de matrícula portuguesa. */
+.searchbar .field:has(#MatriculaVeiculo){
+  position:relative!important;
+}
+.searchbar .field:has(#MatriculaVeiculo)::before{
+  content:"P";position:absolute;z-index:3;left:0;bottom:0;height:43px;width:34px;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;background:#174f91;border-radius:5px 0 0 5px;
+  font:800 13px/1 system-ui,sans-serif;border-right:1px solid #d6e2ed;
+}
+.searchbar #MatriculaVeiculo{
+  box-sizing:border-box!important;min-height:43px!important;padding-left:43px!important;
+  color:#101b23!important;background:linear-gradient(90deg,#174f91 0 34px,#fff 34px 100%)!important;
+  border:2px solid #c7d2d8!important;border-radius:7px!important;
+  box-shadow:inset 0 1px 2px rgba(10,35,48,.08),0 2px 0 rgba(0,0,0,.12)!important;
+  font-family:"Arial Narrow",Arial,sans-serif!important;font-size:16px!important;
+  font-weight:800!important;letter-spacing:.14em!important;text-align:center!important;
+}
+.searchbar #MatriculaVeiculo::placeholder{color:#52616a!important;opacity:.72!important;letter-spacing:.12em}
+.searchbar #MatriculaVeiculo:focus{
+  outline:3px solid rgba(20,132,78,.24)!important;border-color:#13834d!important;
+}
+/* Resultado positivo: verde limpo, estado legível e dados organizados. */
+#seguroResult .asf-app-ok .asf-success-hero{
+  background:linear-gradient(120deg,#073b2a 0%,#07583b 58%,#087747 100%)!important;
+  border:1px solid #21b777!important;box-shadow:0 8px 22px rgba(0,85,51,.2)!important;
+}
+#seguroResult .asf-app-ok .asf-success-title{
+  color:#fff!important;font-size:clamp(19px,2vw,25px)!important;font-weight:850!important;
+  letter-spacing:.015em!important;line-height:1.2!important;
+}
+#seguroResult .asf-app-ok .asf-success-sub{
+  color:#d7f7e7!important;line-height:1.5!important;font-size:11px!important;
+}
+#seguroResult .asf-app-ok .asf-success-badge{
+  background:#e5fff0!important;color:#087443!important;border:2px solid #7ee0ad!important;
+  box-shadow:0 0 0 4px rgba(191,255,220,.1)!important;
+}
+#seguroResult .asf-operational-status{
+  background:#f5fbf7!important;border:1px solid #c5e7d2!important;
+  border-radius:10px!important;color:#173e2c!important;
+}
+#seguroResult .asf-operational-status strong{color:#087443!important;font-size:13px!important}
+#seguroResult .asf-operational-status .asf-op-kicker{
+  color:#49685a!important;font-weight:800!important;letter-spacing:.09em!important;
+}
+#seguroResult .asf-detail-card.asf-operational-card{
+  border:1px solid #c7ded1!important;border-radius:12px!important;overflow:hidden;
+  box-shadow:0 7px 20px rgba(12,46,32,.12)!important;
+}
+#seguroResult .asf-detail-head{background:#f0f8f3!important}
+#seguroResult .asf-detail-kicker,#seguroResult .asf-row .k,#seguroResult .asf-date-box .k{
+  color:#476557!important;font-weight:800!important;letter-spacing:.08em!important;
+}
+#seguroResult .asf-date-box.valid{
+  background:#e8f8ef!important;border-color:#a7dfbd!important;
+}
+#seguroResult .asf-date-box.valid strong{color:#087443!important}
+/* Resultado sem registo: vermelho inequívoco, sem confundir com erro técnico. */
+#seguroResult .asf-app-no .asf-status-card.no{
+  background:linear-gradient(135deg,#a91f35 0%,#c62e43 55%,#941c31 100%)!important;
+  border:1px solid #e65d70!important;border-radius:14px!important;
+  box-shadow:0 8px 22px rgba(150,22,44,.2)!important;
+}
+#seguroResult .asf-app-no .asf-status-title{
+  color:#fff!important;font-size:clamp(20px,2.2vw,26px)!important;
+  font-weight:850!important;letter-spacing:.02em!important;
+}
+#seguroResult .asf-app-no .asf-status-sub{
+  color:#fff0f2!important;font-size:13px!important;line-height:1.55!important;
+}
+#seguroResult .asf-app-no .asf-status-icon{
+  background:rgba(255,255,255,.12)!important;border:1px solid rgba(255,255,255,.55)!important;
+  color:#fff!important;
+}
+#seguroResult .asf-app-no .asf-note{
+  color:#344b55!important;font-size:12px!important;line-height:1.6!important;
+}
+#seguroResult .asf-app-no .asf-app-plate-badge{
+  background:#fff!important;color:#14232b!important;border:2px solid #b8c5cc!important;
+  letter-spacing:.13em!important;font-weight:850!important;
+}
+/* Erro técnico em âmbar: visualmente distinto de "sem seguro". */
+#seguroResult .asf-app-warn .asf-status-card.warn{
+  background:linear-gradient(135deg,#704710,#94631a)!important;
+  border:1px solid #d9a94d!important;
+}
+#seguroResult .asf-app-warn .asf-status-title,#seguroResult .asf-app-warn .asf-status-sub{color:#fff!important}
+@media(max-width:600px){
+  #verixAsfNoticeOverlay .verix-asf-notice-card-title{font-size:23px!important}
+  #verixAsfNoticeOverlay .verix-asf-alert-copy{font-size:14px!important}
+  #seguroResult .asf-success-hero{gap:10px!important}
+  .searchbar #MatriculaVeiculo{letter-spacing:.09em!important}
+}
+</style>
+
 </head><body>
 <script id="verix-splash-clock">(function(){try{window.__verixSplashStarted=performance.now();}catch(e){window.__verixSplashStarted=Date.now();}})();</script>
 <div id="opsBootOverlay" aria-hidden="false">
@@ -6418,10 +6547,10 @@ html body #asfRateWidget .asf-rate-sub[data-window-state="ready"]{
       <div class="verix-asf-notice-grid">
         <section class="verix-asf-notice-card verix-asf-notice-card-info verix-asf-notice-card-outage" aria-labelledby="verixNoticeInfoTitle">
           <span class="verix-asf-notice-eyebrow">NOVIDADE IMPORTANTE</span>
-          <h2 id="verixNoticeInfoTitle" class="verix-asf-notice-card-title">CONSULTAS ASF SEM LIMITE DE PESQUISAS</h2>
-          <p class="verix-asf-alert-copy">As consultas ASF voltaram a estar disponíveis sem o limite de pesquisas por minuto que condicionava a utilização do VÉRIX.</p>
+          <h2 id="verixNoticeInfoTitle" class="verix-asf-notice-card-title">CONSULTAS ASF SEM LIMITE NO VÉRIX</h2>
+          <p class="verix-asf-alert-copy">O limite de pesquisas por minuto aplicado pelo VÉRIX foi removido. Pode voltar a consultar matrículas sem essa restrição.</p>
           <div class="verix-asf-notice-divider"></div>
-          <p class="verix-asf-card-external-note"><strong>Pedimos a colaboração de todos:</strong> utilizem o sistema de forma responsável e evitem pesquisas desnecessárias. A utilização consciente ajuda a manter o VÉRIX útil para todos. A disponibilidade continua dependente dos serviços externos ASF/RNSI.</p>
+          <p class="verix-asf-card-external-note"><strong>AJUDE-NOS A MANTER O SERVIÇO ÚTIL</strong><br>Faça apenas as pesquisas necessárias e evite consultas repetidas. A utilização responsável ajuda a manter o VÉRIX disponível e útil para todos.<br><span class="verix-asf-external-caveat">A disponibilidade continua dependente dos serviços externos ASF/RNSI.</span></p>
         </section>
 
         <section class="verix-asf-notice-card verix-asf-notice-card-thanks" aria-labelledby="verixNoticeThanksTitle">
@@ -6448,7 +6577,7 @@ html body #asfRateWidget .asf-rate-sub[data-window-state="ready"]{
   <div class="brand-lockup-subtitle">Sistema de apoio ao serviço operacional</div>
   <div class="brand-lockup-values">ISENÇÃO <span>*</span> FIRMEZA <span>*</span> CORTESIA</div>
   <div class="brand-lockup-footer"><span class="brand-lockup-badge"><span class="brand-lockup-alert" aria-hidden="true">!</span>NÃO OFICIAL</span><span class="brand-lockup-note">Confirma sempre os dados nas fontes competentes.</span></div>
-</div></div> <div class="time" id="dataSistema"><span class="version-label">Versão 1.5</span><span class="date-label">-- --- ----</span></div> <div class="searchbar"><form onsubmit="submitConjunto(event)" autocomplete="off" style="display:flex;align-items:center;gap:13px"><div class="field"><label for="MatriculaVeiculo">VEÍCULO</label><input id="MatriculaVeiculo" name="verix_plate_v" maxlength="8" placeholder="11-AA-11" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" data-lpignore="true" data-form-type="other" oninput="formatMatricula(this)" onblur="formatMatricula(this)"></div><div class="field"><label for="MatriculaReboque">REBOQUE</label><input id="MatriculaReboque" name="verix_plate_r" placeholder="L-121212" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" data-lpignore="true" data-form-type="other" oninput="formatMatriculaReboque(this)"></div><button class="consult" type="submit">⌕ &nbsp; CONSULTAR</button></form></div> <div class="tools"><button class="tool green full" onclick="toggleFullscreen()" title="Ecrã inteiro">⛶</button><button class="tool" onclick="consultarIMTERRU()">IMT-ERRU</button><button class="tool" onclick="consultarINEM()">INEM</button><button class="tool" onclick="consultarWAZE()">WAZE</button></div>
+</div></div> <div class="time" id="dataSistema"><span class="version-label">Versão 1.5</span><span class="date-label">-- --- ----</span></div> <div class="searchbar"><form onsubmit="submitConjunto(event)" autocomplete="off" style="display:flex;align-items:center;gap:13px"><div class="field"><label for="MatriculaVeiculo">VEÍCULO</label><input id="MatriculaVeiculo" name="verix_plate_v" maxlength="8" placeholder="00-AA-00" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" data-lpignore="true" data-form-type="other" oninput="formatMatricula(this)" onblur="formatMatricula(this)"></div><div class="field"><label for="MatriculaReboque">REBOQUE</label><input id="MatriculaReboque" name="verix_plate_r" placeholder="L-121212" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" data-lpignore="true" data-form-type="other" oninput="formatMatriculaReboque(this)"></div><button class="consult" type="submit">⌕ &nbsp; CONSULTAR</button></form></div> <div class="tools"><button class="tool green full" onclick="toggleFullscreen()" title="Ecrã inteiro">⛶</button><button class="tool" onclick="consultarIMTERRU()">IMT-ERRU</button><button class="tool" onclick="consultarINEM()">INEM</button><button class="tool" onclick="consultarWAZE()">WAZE</button></div>
 </div>
 <div class="rail rail-operacional"> <div class="rail-item rail-modern active" id="consultaRail" onclick="abrirModulo('consulta',this)" title="Consulta"> <div class="rail-modern-ico">⌕</div><span>CONSULTA</span><div class="rail-arrow">›</div> </div> <div class="rail-item rail-modern" onclick="abrirModulo('legislacao',this)" title="Legislação"> <div class="rail-modern-ico">▤</div><span>LEGISLAÇÃO</span><div class="rail-arrow">›</div> </div> <div class="rail-item rail-modern" onclick="abrirModulo('ferramentas',this)" title="Ferramentas"> <div class="rail-modern-ico">⚒</div><span>FERRAMENTAS</span><div class="rail-arrow">›</div> </div> <div class="rail-item rail-modern" onclick="abrirModulo('informacoes',this)" title="Informações"> <div class="rail-modern-ico">ⓘ</div><span>INFORMAÇÕES</span><div class="rail-arrow">›</div> </div> <div class="rail-spacer" aria-hidden="true"><span>+</span></div> <div class="rail-spacer" aria-hidden="true"><span>+</span></div> <div class="rail-item rail-modern rail-cinemometro" onclick="abrirModulo('cinemometro',this)" title="Cinemómetro"> <div class="cinemometro-icon" aria-hidden="true"> <svg viewBox="0 0 64 64" role="img"> <rect x="13" y="10" width="38" height="22" rx="5"></rect> <circle cx="24" cy="21" r="6"></circle> <circle cx="40" cy="21" r="6"></circle> <path d="M32 32v9M22 57l10-16 10 16M27 48h10"></path> <path d="M52 13l7 7M52 29l7-7"></path> </svg> </div> <div class="cinemometro-label"><span>CINEMÓMETRO</span></div> <div class="rail-arrow">›</div> </div> <div class="rail-item rail-modern" onclick="abrirModulo('definicoes',this)" title="Definições"> <div class="rail-modern-ico">⚙</div><span>DEFINIÇÕES</span><div class="rail-arrow">›</div> </div>
 </div>
