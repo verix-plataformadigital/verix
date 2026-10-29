@@ -31,14 +31,25 @@ const PROXY_USERNAME = Deno.env.get("PROXY_USERNAME") || "";
 const PROXY_PASSWORD = Deno.env.get("PROXY_PASSWORD") || "";
 const MAX_PROXY_ENDPOINTS = 10;
 
-// Per-isolate round-robin. Each Edge isolate keeps its own cursor.
-let proxyCursor = Math.floor(Math.random() * 1_000_000);
+// Keep each installation on one proxy for a short window so Deno can reuse
+// the HTTPS CONNECT/TLS tunnel across consecutive ASF lookups. Rotate by
+// installation and minute to spread traffic across the configured proxy pool.
+function selectProxyIndex(installationId: string, poolSize: number): number {
+  const timeSlot = Math.floor(Date.now() / 60_000);
+  const key = String(installationId || "anonymous") + ":" + timeSlot;
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < key.length; i++) {
+    hash ^= key.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return (hash >>> 0) % poolSize;
+}
 
 // Diagnóstico temporário e limitado: mede tamanhos sem registar matrícula ou valores do seguro.
 let payloadProfileBudget = 10;
 
-// Reutilização por endpoint dentro de cada isolate. A seleção round-robin continua
-// a ser feita por pedido; só se evita recriar TCP/CONNECT/TLS a cada consulta.
+// Reuse the same custom HTTP client for each proxy endpoint inside this isolate.
+// Short installation affinity above lets adjacent lookups reuse its connection pool.
 const proxyClientPool = new Map<string, Deno.HttpClient>();
 
 function proxyClientKey(proxy: ProxyEndpoint): string {
@@ -51,7 +62,8 @@ function getOrCreateProxyClient(proxy: ProxyEndpoint): Deno.HttpClient {
   if (existing) return existing;
 
   const client = Deno.createHttpClient({
-    // Keep idle upstream connections available between round-robin uses.
+    // Reuse the established proxy tunnel; retain one idle connection per origin.
+    poolMaxIdlePerHost: 1,
     poolIdleTimeout: false,
     proxy: {
       url: proxy.url,
@@ -367,7 +379,7 @@ Deno.serve(async (req: Request) => {
       }, 503, req);
     }
 
-    const proxyIndex = nextProxyIndex(proxyPool.length);
+    const proxyIndex = selectProxyIndex(installationId, proxyPool.length);
     const selectedProxy = proxyPool[proxyIndex];
 
     const query =
