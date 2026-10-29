@@ -34,6 +34,40 @@ const MAX_PROXY_ENDPOINTS = 10;
 // Per-isolate round-robin. Each Edge isolate keeps its own cursor.
 let proxyCursor = Math.floor(Math.random() * 1_000_000);
 
+// Reutilização por endpoint dentro de cada isolate. A seleção round-robin continua
+// a ser feita por pedido; só se evita recriar TCP/CONNECT/TLS a cada consulta.
+const proxyClientPool = new Map<string, Deno.HttpClient>();
+
+function proxyClientKey(proxy: ProxyEndpoint): string {
+  return proxy.transport + "|" + proxy.url;
+}
+
+function getOrCreateProxyClient(proxy: ProxyEndpoint): Deno.HttpClient {
+  const key = proxyClientKey(proxy);
+  const existing = proxyClientPool.get(key);
+  if (existing) return existing;
+
+  const client = Deno.createHttpClient({
+    proxy: {
+      url: proxy.url,
+      transport: proxy.transport,
+      ...(PROXY_USERNAME && PROXY_PASSWORD
+        ? { basicAuth: { username: PROXY_USERNAME, password: PROXY_PASSWORD } }
+        : {})
+    }
+  });
+  proxyClientPool.set(key, client);
+  return client;
+}
+
+function discardProxyClient(proxy: ProxyEndpoint): void {
+  const key = proxyClientKey(proxy);
+  const client = proxyClientPool.get(key);
+  if (!client) return;
+  proxyClientPool.delete(key);
+  try { client.close(); } catch (_) {}
+}
+
 type ProxyEndpoint = {
   url: string;
   host: string;
@@ -87,6 +121,54 @@ function json(data: unknown, status = 200, req?: Request, extraHeaders: Record<s
       ...extraHeaders
     }
   });
+}
+
+async function gzipASFResponseIfSupported(
+  req: Request,
+  text: string,
+  status: number,
+  headers: Record<string, string>
+): Promise<Response> {
+  const acceptEncoding = (req.headers.get("accept-encoding") || "").toLowerCase();
+  const userAgent = req.headers.get("user-agent") || "";
+  const acceptsGzip = acceptEncoding.split(",").some(value => value.trim().split(";")[0] === "gzip");
+  const supportsGzip =
+    acceptsGzip &&
+    /(?:Chrome|Chromium|Edg|Firefox|Safari)[/]/i.test(userAgent) &&
+    !/(?:MSIE|Trident|MSHTA)/i.test(userAgent);
+
+  const plainBytes = new TextEncoder().encode(text);
+  if (!supportsGzip || plainBytes.byteLength < 512 ||
+      typeof CompressionStream !== "function" ||
+      typeof Blob !== "function" ||
+      typeof Response !== "function") {
+    return new Response(text, { status, headers });
+  }
+
+  try {
+    const compressedStream = new Blob([plainBytes]).stream()
+      .pipeThrough(new CompressionStream("gzip"));
+    const compressed = new Uint8Array(await new Response(compressedStream).arrayBuffer());
+    if (compressed.byteLength >= plainBytes.byteLength) {
+      return new Response(text, { status, headers });
+    }
+
+    const finalHeaders = new Headers(headers);
+    finalHeaders.set("Content-Encoding", "gzip");
+    const vary = (finalHeaders.get("Vary") || "")
+      .split(",")
+      .map(value => value.trim())
+      .filter(Boolean);
+    if (!vary.some(value => value.toLowerCase() === "accept-encoding")) {
+      vary.push("Accept-Encoding");
+    }
+    finalHeaders.set("Vary", vary.join(", "));
+    finalHeaders.delete("Content-Length");
+    return new Response(compressed, { status, headers: finalHeaders });
+  } catch (_) {
+    // Compressão é uma otimização de transporte: em caso de falha, responde em texto normal.
+    return new Response(text, { status, headers });
+  }
 }
 
 function cleanText(value: unknown, max: number): string {
@@ -295,15 +377,7 @@ Deno.serve(async (req: Request) => {
 
     let upstreamClient: Deno.HttpClient | undefined;
     try {
-      upstreamClient = Deno.createHttpClient({
-        proxy: {
-          url: selectedProxy.url,
-          transport: selectedProxy.transport,
-          ...(PROXY_USERNAME && PROXY_PASSWORD
-            ? { basicAuth: { username: PROXY_USERNAME, password: PROXY_PASSWORD } }
-            : {})
-        }
-      });
+      upstreamClient = getOrCreateProxyClient(selectedProxy);
 
       const upstream = await fetch(url, {
         client: upstreamClient,
@@ -422,11 +496,11 @@ Deno.serve(async (req: Request) => {
       const retryAfter = upstream.headers.get("retry-after");
       if (retryAfter) outHeaders["Retry-After"] = retryAfter;
 
-      return new Response(text, {
-        status: upstream.status,
-        headers: outHeaders
-      });
+      return await gzipASFResponseIfSupported(req, text, upstream.status, outHeaders);
     } catch (error) {
+      // Se uma ligação reutilizada falhar, descarta-se apenas o cliente desse
+      // endpoint; o próximo pedido volta a criá-lo. A rotação continua por pedido.
+      discardProxyClient(selectedProxy);
       const aborted = (error as Error)?.name === "AbortError";
       return json({
         ok: false,
@@ -434,7 +508,7 @@ Deno.serve(async (req: Request) => {
         message: aborted ? "ASF upstream timeout" : "ASF upstream network error"
       }, aborted ? 504 : 502, req);
     } finally {
-      upstreamClient?.close();
+      // Não fechar o cliente em cada pedido: isso força nova ligação e TLS handshake.
       clearTimeout(timeout);
     }
   } catch (error) {
