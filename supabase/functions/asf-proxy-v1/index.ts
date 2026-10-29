@@ -1,5 +1,3 @@
-import { gzipSync } from "node:zlib";
-
 const ALLOWED_ORIGINS = new Set([
   "https://verix.vxops.workers.dev",
   "https://verix-plataformadigital.github.io"
@@ -125,30 +123,32 @@ function json(data: unknown, status = 200, req?: Request, extraHeaders: Record<s
   });
 }
 
-function gzipASFResponseIfSupported(
+async function gzipASFResponseIfSupported(
   req: Request,
   text: string,
   status: number,
   headers: Record<string, string>
-): Response {
+): Promise<Response> {
   const acceptEncoding = (req.headers.get("accept-encoding") || "").toLowerCase();
   const userAgent = req.headers.get("user-agent") || "";
   const acceptsGzip = acceptEncoding.split(",").some(value => value.trim().split(";")[0] === "gzip");
-
-  // Só enviar GZIP a clientes modernos que anunciem suporte.
-  // O caminho ActiveX/HTA/Trident antigo mantém a resposta original.
   const supportsGzip =
     acceptsGzip &&
     /(?:Chrome|Chromium|Edg|Firefox|Safari)[/]/i.test(userAgent) &&
     !/(?:MSIE|Trident|MSHTA)/i.test(userAgent);
 
   const plainBytes = new TextEncoder().encode(text);
-  if (!supportsGzip || plainBytes.byteLength < 512) {
+  if (!supportsGzip || plainBytes.byteLength < 512 ||
+      typeof CompressionStream !== "function" ||
+      typeof Blob !== "function" ||
+      typeof Response !== "function") {
     return new Response(text, { status, headers });
   }
 
   try {
-    const compressed = gzipSync(plainBytes, { level: 6 });
+    const compressedStream = new Blob([plainBytes]).stream()
+      .pipeThrough(new CompressionStream("gzip"));
+    const compressed = new Uint8Array(await new Response(compressedStream).arrayBuffer());
     if (compressed.byteLength >= plainBytes.byteLength) {
       return new Response(text, { status, headers });
     }
@@ -164,10 +164,9 @@ function gzipASFResponseIfSupported(
     }
     finalHeaders.set("Vary", vary.join(", "));
     finalHeaders.delete("Content-Length");
-
     return new Response(compressed, { status, headers: finalHeaders });
   } catch (_) {
-    // A compressão é apenas transporte: se falhar, serve a resposta original.
+    // Compressão é uma otimização de transporte: em caso de falha, responde em texto normal.
     return new Response(text, { status, headers });
   }
 }
@@ -497,7 +496,7 @@ Deno.serve(async (req: Request) => {
       const retryAfter = upstream.headers.get("retry-after");
       if (retryAfter) outHeaders["Retry-After"] = retryAfter;
 
-      return gzipASFResponseIfSupported(req, text, upstream.status, outHeaders);
+      return await gzipASFResponseIfSupported(req, text, upstream.status, outHeaders);
     } catch (error) {
       // Se uma ligação reutilizada falhar, descarta-se apenas o cliente desse
       // endpoint; o próximo pedido volta a criá-lo. A rotação continua por pedido.
