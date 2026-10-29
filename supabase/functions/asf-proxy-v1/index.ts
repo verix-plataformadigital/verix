@@ -51,6 +51,8 @@ function getOrCreateProxyClient(proxy: ProxyEndpoint): Deno.HttpClient {
   if (existing) return existing;
 
   const client = Deno.createHttpClient({
+    // Keep idle upstream connections available between round-robin uses.
+    poolIdleTimeout: false,
     proxy: {
       url: proxy.url,
       transport: proxy.transport,
