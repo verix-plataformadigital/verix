@@ -34,6 +34,9 @@ const MAX_PROXY_ENDPOINTS = 10;
 // Per-isolate round-robin. Each Edge isolate keeps its own cursor.
 let proxyCursor = Math.floor(Math.random() * 1_000_000);
 
+// Diagnóstico temporário e limitado: mede tamanhos sem registar matrícula ou valores do seguro.
+let payloadProfileBudget = 10;
+
 // Reutilização por endpoint dentro de cada isolate. A seleção round-robin continua
 // a ser feita por pedido; só se evita recriar TCP/CONNECT/TLS a cada consulta.
 const proxyClientPool = new Map<string, Deno.HttpClient>();
@@ -453,6 +456,30 @@ Deno.serve(async (req: Request) => {
             hasGraphQLData = Object.prototype.hasOwnProperty.call(parsed, "data");
             const nodes = parsed?.data?.mobishoutEntry?.noone?.entry?.licenseNumber?.nodes;
             if (Array.isArray(nodes)) nodesCount = nodes.length;
+
+            if (payloadProfileBudget > 0) {
+              const fields = ["id", "entity", "startDate", "endDate", "policy", "license", "code", "logo"];
+              const fieldBytes: Record<string, number> = Object.create(null);
+              for (const field of fields) fieldBytes[field] = 0;
+              if (Array.isArray(nodes)) {
+                for (const node of nodes) {
+                  if (!node || typeof node !== "object") continue;
+                  for (const field of fields) {
+                    const value = (node as Record<string, unknown>)[field];
+                    if (value !== undefined) fieldBytes[field] += new TextEncoder().encode(JSON.stringify(value)).byteLength;
+                  }
+                }
+              }
+              console.log("verix_asf_payload_profile", JSON.stringify({
+                upstreamStatus: upstream.status,
+                upstreamContentEncoding: upstream.headers.get("content-encoding") || "not-exposed-by-fetch",
+                upstreamContentLength: upstream.headers.get("content-length") || "not-exposed-by-fetch",
+                decodedBodyBytes: new TextEncoder().encode(text).byteLength,
+                nodeCount: Array.isArray(nodes) ? nodes.length : 0,
+                fieldBytes
+              }));
+              payloadProfileBudget--;
+            }
           }
         } catch (_) {
           bodyKind = (/text\/html/i.test(upstreamContentType) || /^(?:<!doctype html|<html\b)/i.test(text.trim()))
