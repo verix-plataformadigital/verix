@@ -6706,26 +6706,35 @@ html body #asfRateWidget .asf-rate-sub[data-window-state="ready"]{
     </header>
 
     <div class="verix-asf-notice-body">
-      <div class="verix-asf-notice-grid">
-        <section class="verix-asf-notice-card verix-asf-notice-card-info verix-asf-notice-card-outage" aria-labelledby="verixNoticeInfoTitle">
-          <span class="verix-asf-notice-eyebrow">NOVIDADE IMPORTANTE</span>
+      <div class="verix-asf-notice-grid verix-notice-grid-three">
+        <section class="verix-asf-notice-card verix-asf-notice-card-outage verix-notice-card-service" aria-labelledby="verixNoticeInfoTitle">
+          <span class="verix-notice-card-kicker">ATUALIZAÇÃO DO SERVIÇO</span>
+          <span class="verix-notice-status-pill"><span aria-hidden="true">●</span> LIMITE INTERNO REMOVIDO</span>
           <h2 id="verixNoticeInfoTitle" class="verix-asf-notice-card-title">CONSULTAS ASF SEM LIMITE NO VÉRIX</h2>
           <p class="verix-asf-alert-copy">O limite de pesquisas por minuto aplicado pelo VÉRIX foi removido. Pode voltar a consultar matrículas sem essa restrição.</p>
-          <div class="verix-asf-notice-divider"></div>
-          <p class="verix-asf-card-external-note"><strong>AJUDE-NOS A MANTER O SERVIÇO ÚTIL</strong><br>Faça apenas as pesquisas necessárias e evite consultas repetidas. A utilização responsável ajuda a manter o VÉRIX disponível e útil para todos.<br><span class="verix-asf-external-caveat">A disponibilidade continua dependente dos serviços externos ASF/RNSI.</span></p>
+          <div class="verix-notice-service-note">
+            <strong>NOTA DE DISPONIBILIDADE</strong>
+            <span>A disponibilidade continua dependente dos serviços externos ASF/RNSI. Faça apenas as pesquisas necessárias e evite consultas repetidas.</span>
+          </div>
         </section>
 
-        <section class="verix-asf-notice-card verix-asf-notice-card-thanks" aria-labelledby="verixNoticeThanksTitle">
+        <section class="verix-asf-notice-card verix-asf-notice-card-thanks verix-notice-card-milestone" aria-labelledby="verixNoticeThanksTitle">
           <span class="verix-asf-notice-thanks-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none"><path d="m12 2 2.1 6.2L20 10l-5.9 2.1L12 18l-2.1-5.9L4 10l5.9-1.8L12 2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="m19 15 .9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15Z" fill="currentColor"/></svg>
           </span>
-          <p class="verix-asf-notice-thanks-kicker">ESTA CONQUISTA É DE TODOS</p>
+          <p class="verix-asf-notice-thanks-kicker">OBRIGADO A TODOS</p>
           <h2 id="verixNoticeThanksTitle" class="verix-asf-notice-thanks-number">250.000+</h2>
           <p class="verix-asf-notice-thanks-label">PESQUISAS DESDE O INÍCIO DO PROJETO</p>
-          <div class="verix-notice-share-bubble" role="note" aria-label="Convite à divulgação do VÉRIX">
-            <p class="verix-notice-share-kicker">AJUDE A DIVULGAR O VÉRIX</p>
-            <p class="verix-notice-share-message">Se considera esta ferramenta útil para o serviço, partilhe o acesso em grupos operacionais e redes profissionais relevantes. Assim, mais profissionais no terreno poderão conhecer este recurso.</p>
-          </div>
+          <p class="verix-notice-gratitude-copy">Este marco é possível graças aos profissionais que utilizam o VÉRIX e contribuem para que o projeto continue a crescer.</p>
+        </section>
+
+        <section class="verix-asf-notice-card verix-notice-card-share" aria-labelledby="verixNoticeShareTitle">
+          <span class="verix-notice-share-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="18" cy="5" r="3" stroke="currentColor" stroke-width="1.8"/><circle cx="6" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><circle cx="18" cy="19" r="3" stroke="currentColor" stroke-width="1.8"/><path d="m8.7 10.6 6.6-4.2M8.7 13.4l6.6 4.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </span>
+          <p class="verix-notice-share-kicker">DIVULGAÇÃO OPERACIONAL</p>
+          <h2 id="verixNoticeShareTitle" class="verix-notice-share-title">AJUDE A DIVULGAR O VÉRIX</h2>
+          <p class="verix-notice-share-message">Se considera esta ferramenta útil para o serviço, partilhe o acesso em grupos operacionais e redes profissionais relevantes, para que mais profissionais no terreno possam conhecer este recurso.</p>
         </section>
       </div>
     </div>
@@ -20898,56 +20907,210 @@ html body #seguroResult > .asf-app-warn .asf-status-sub{
 </style>
 
 
-<style id="verix-notice-share-bubble">
-/* Balão independente para o convite à divulgação — sem botão de ação. */
-html body #verixAsfNoticeOverlay .verix-notice-share-bubble{
-  position:relative!important;
-  box-sizing:border-box!important;
-  display:block!important;
-  width:100%!important;
-  max-width:100%!important;
-  margin:19px 0 0!important;
-  padding:13px 14px 14px!important;
-  border:1px solid #c4e5d0!important;
-  border-radius:12px!important;
-  background:linear-gradient(145deg,#ffffff 0%,#f7fcf8 100%)!important;
-  box-shadow:0 5px 16px rgba(20,93,55,.06),inset 0 1px 0 rgba(255,255,255,.9)!important;
-  text-align:left!important;
+<style id="verix-notice-three-message-layout">
+/* Três mensagens autónomas, com cores suaves distintas e contraste legível. */
+html body #verixAsfNoticeOverlay .verix-asf-notice-window{
+  width:min(1100px,96vw)!important;
 }
-html body #verixAsfNoticeOverlay .verix-notice-share-bubble:before{
+html body #verixAsfNoticeOverlay .verix-asf-notice-grid.verix-notice-grid-three{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  align-items:stretch!important;
+  gap:13px!important;
+  height:auto!important;
+}
+html body #verixAsfNoticeOverlay .verix-asf-notice-grid-three>.verix-asf-notice-card{
+  position:relative!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:flex-start!important;
+  align-items:stretch!important;
+  min-width:0!important;
+  min-height:310px!important;
+  box-sizing:border-box!important;
+  padding:23px 18px 19px!important;
+  border-radius:15px!important;
+  overflow:hidden!important;
+  text-align:left!important;
+  box-shadow:0 7px 18px rgba(19,43,55,.045)!important;
+}
+html body #verixAsfNoticeOverlay .verix-asf-notice-grid-three>.verix-asf-notice-card:before{
   content:""!important;
   position:absolute!important;
-  top:-6px!important;
-  left:21px!important;
-  width:10px!important;
-  height:10px!important;
-  border-top:1px solid #c4e5d0!important;
-  border-left:1px solid #c4e5d0!important;
-  background:#ffffff!important;
-  transform:rotate(45deg)!important;
+  inset:0 0 auto 0!important;
+  height:4px!important;
+  background:var(--vx-card-accent)!important;
 }
+html body #verixAsfNoticeOverlay .verix-notice-card-service{
+  --vx-card-accent:#3679ad;
+  border:1px solid #c7dced!important;
+  background:linear-gradient(150deg,#f1f8fd 0%,#e9f3fb 100%)!important;
+  color:#213e52!important;
+}
+html body #verixAsfNoticeOverlay .verix-notice-card-milestone{
+  --vx-card-accent:#278456;
+  border:1px solid #c0e3cd!important;
+  background:linear-gradient(150deg,#f0faf4 0%,#e4f5eb 100%)!important;
+  color:#244a36!important;
+}
+html body #verixAsfNoticeOverlay .verix-notice-card-share{
+  --vx-card-accent:#b27a22;
+  border:1px solid #ead8b7!important;
+  background:linear-gradient(150deg,#fffaf0 0%,#fff4df 100%)!important;
+  color:#59431f!important;
+}
+html body #verixAsfNoticeOverlay .verix-notice-card-kicker,
 html body #verixAsfNoticeOverlay .verix-notice-share-kicker{
-  margin:0 0 7px!important;
-  color:#087443!important;
-  font:850 9px/1.4 Arial,sans-serif!important;
+  display:block!important;
+  margin:0 0 11px!important;
+  font:850 8px/1.45 Arial,sans-serif!important;
+  letter-spacing:1.05px!important;
+}
+html body #verixAsfNoticeOverlay .verix-notice-card-service .verix-notice-card-kicker{color:#235e91!important;}
+html body #verixAsfNoticeOverlay .verix-notice-card-milestone .verix-asf-notice-thanks-kicker{color:#176b43!important;}
+html body #verixAsfNoticeOverlay .verix-notice-card-share .verix-notice-share-kicker{color:#80580c!important;}
+html body #verixAsfNoticeOverlay .verix-notice-status-pill{
+  display:inline-flex!important;
+  align-self:flex-start!important;
+  align-items:center!important;
+  gap:6px!important;
+  margin:0 0 15px!important;
+  padding:6px 8px!important;
+  border:1px solid #bfd8ed!important;
+  border-radius:999px!important;
+  background:#dcecf9!important;
+  color:#235579!important;
+  font:800 7.5px/1.2 Arial,sans-serif!important;
+  letter-spacing:.25px!important;
+}
+html body #verixAsfNoticeOverlay .verix-notice-status-pill span{color:#17804f!important;font-size:9px!important;}
+html body #verixAsfNoticeOverlay .verix-notice-card-service .verix-asf-notice-card-title{
+  margin:0 0 12px!important;
+  color:#19384f!important;
+  font:850 clamp(17px,1.65vw,21px)/1.22 Arial,sans-serif!important;
+  letter-spacing:-.35px!important;
+  text-align:left!important;
+  overflow-wrap:normal!important;
+}
+html body #verixAsfNoticeOverlay .verix-notice-card-service .verix-asf-alert-copy{
+  margin:0!important;
+  color:#314e62!important;
+  font:500 11.5px/1.65 Arial,sans-serif!important;
+}
+html body #verixAsfNoticeOverlay .verix-notice-service-note{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:5px!important;
+  margin:17px 0 0!important;
+  padding:11px 10px!important;
+  border-left:3px solid #4b86b5!important;
+  border-radius:0 8px 8px 0!important;
+  background:#deedf9!important;
+  color:#274b67!important;
+  font:500 9.5px/1.55 Arial,sans-serif!important;
+}
+html body #verixAsfNoticeOverlay .verix-notice-service-note strong{
+  color:#1d527e!important;
+  font:850 7.5px/1.4 Arial,sans-serif!important;
+  letter-spacing:.65px!important;
+}
+html body #verixAsfNoticeOverlay .verix-notice-card-milestone{
+  text-align:center!important;
+}
+html body #verixAsfNoticeOverlay .verix-notice-card-milestone .verix-asf-notice-thanks-icon{
+  width:36px!important;
+  height:36px!important;
+  align-self:center!important;
+  margin:1px 0 14px!important;
+  border-color:#c4e4d0!important;
+  background:#ffffff!important;
+  color:#176b43!important;
+}
+html body #verixAsfNoticeOverlay .verix-notice-card-milestone .verix-asf-notice-thanks-kicker{
+  margin:0 0 9px!important;
+  color:#176b43!important;
+  font:850 8px/1.4 Arial,sans-serif!important;
   letter-spacing:.9px!important;
+}
+html body #verixAsfNoticeOverlay .verix-notice-card-milestone .verix-asf-notice-thanks-number{
+  margin:0 0 8px!important;
+  color:#145f3d!important;
+  font:900 clamp(29px,3vw,39px)/1.05 Arial,sans-serif!important;
+  letter-spacing:-1.2px!important;
+  white-space:nowrap!important;
+}
+html body #verixAsfNoticeOverlay .verix-notice-card-milestone .verix-asf-notice-thanks-label{
+  margin:0!important;
+  color:#245e40!important;
+  font:850 8px/1.55 Arial,sans-serif!important;
+  letter-spacing:.35px!important;
+}
+html body #verixAsfNoticeOverlay .verix-notice-gratitude-copy{
+  margin:18px 0 0!important;
+  color:#315a43!important;
+  font:500 10.5px/1.65 Arial,sans-serif!important;
+}
+html body #verixAsfNoticeOverlay .verix-notice-share-icon{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:37px!important;
+  height:37px!important;
+  margin:1px 0 17px!important;
+  border:1px solid #ead7b3!important;
+  border-radius:11px!important;
+  background:#ffffff!important;
+  color:#986512!important;
+}
+html body #verixAsfNoticeOverlay .verix-notice-share-icon svg{
+  width:20px!important;height:20px!important;
+}
+html body #verixAsfNoticeOverlay .verix-notice-share-title{
+  margin:0 0 12px!important;
+  color:#5c4216!important;
+  font:850 clamp(17px,1.65vw,21px)/1.22 Arial,sans-serif!important;
+  letter-spacing:-.25px!important;
 }
 html body #verixAsfNoticeOverlay .verix-notice-share-message{
   margin:0!important;
-  max-width:none!important;
-  color:#304b3b!important;
-  font:500 11px/1.6 Arial,sans-serif!important;
-  letter-spacing:0!important;
+  color:#57472d!important;
+  font:500 11px/1.7 Arial,sans-serif!important;
+}
+@media(max-width:860px){
+  html body #verixAsfNoticeOverlay .verix-asf-notice-window{
+    width:min(680px,96vw)!important;
+  }
+  html body #verixAsfNoticeOverlay .verix-asf-notice-grid.verix-notice-grid-three{
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:12px!important;
+  }
+  html body #verixAsfNoticeOverlay .verix-asf-notice-grid-three>.verix-asf-notice-card{
+    min-height:0!important;
+    padding:20px 18px 19px!important;
+  }
+  html body #verixAsfNoticeOverlay .verix-notice-card-milestone{
+    text-align:left!important;
+  }
+  html body #verixAsfNoticeOverlay .verix-notice-card-milestone .verix-asf-notice-thanks-icon{
+    align-self:flex-start!important;
+  }
+  html body #verixAsfNoticeOverlay .verix-notice-card-milestone .verix-asf-notice-thanks-number{
+    font-size:36px!important;
+  }
 }
 @media(max-width:640px){
-  html body #verixAsfNoticeOverlay .verix-notice-share-bubble{
-    margin-top:15px!important;
-    padding:11px 12px 12px!important;
+  html body #verixAsfNoticeOverlay .verix-asf-notice-window{
+    max-height:94vh!important;
   }
-  html body #verixAsfNoticeOverlay .verix-notice-share-message{
-    font-size:10.5px!important;
-    line-height:1.55!important;
+  html body #verixAsfNoticeOverlay .verix-asf-notice-body{
+    padding:13px!important;
   }
+  html body #verixAsfNoticeOverlay .verix-asf-notice-grid-three>.verix-asf-notice-card{
+    padding:18px 15px!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  html body #verixAsfNoticeOverlay .verix-asf-notice-grid-three>.verix-asf-notice-card{transition:none!important;}
 }
 </style>
 
