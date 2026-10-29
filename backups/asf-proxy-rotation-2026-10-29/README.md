@@ -37,11 +37,15 @@ The following secrets must exist in Supabase Edge Function Secrets:
 
 The actual endpoint list and credentials are deliberately **not stored in this public repository or this backup documentation**. The original uploaded file contains credentials; keep it private. If Webshare rotates the password or endpoint list, update the Supabase secrets only.
 
-## Diagnostics preserved in the repository
-- `supabase/functions/runtime-proxy-pool-probe/index.ts` — test the pool against the fixed IP-check destination `https://api.ipify.org?format=json`; no ASF requests.
-- `supabase/functions/runtime-asf-proxy-single-probe/index.ts` — one synthetic request through the first configured proxy. Note: this probe is fixed to the first pool entry and does not alter the production function.
-- `supabase/functions/runtime-httpclient-probe/index.ts` — direct/custom HTTP client egress diagnostic.
+## Diagnostics and historical experiments preserved
+- `supabase/functions/runtime-proxy-pool-probe/index.ts` — tests the pool against the fixed IP-check destination `https://api.ipify.org?format=json`; no ASF requests.
+- `supabase/functions/runtime-proxy-probe/index.ts` — earlier single-proxy connectivity diagnostic against the same fixed IP-check destination; no ASF requests.
+- `supabase/functions/runtime-asf-proxy-single-probe/index.ts` — one synthetic request through the first configured proxy. It does not alter the production function.
+- `supabase/functions/runtime-httpclient-probe/index.ts` — direct/custom HTTP client egress diagnostic, copied from deployed Supabase version 4.
 - `supabase/functions/asf-proxy-v1/index.ts` — production relay source at this snapshot.
+- `backups/asf-proxy-rotation-2026-10-29/historical-diagnostics/` — archived source of the temporary egress probe, A/B encoding test, single-error test, and retired URL-encoding/egress probes.
+
+The two temporary endpoints `asf-ab-test-7d3c9` and `asf-error-probe-13c9a` had hard-coded diagnostic access keys that have expired. Those key literals are replaced with `REDACTED_IN_PUBLIC_BACKUP` in the public historical copies. These two archival files preserve the investigation logic but are not drop-in deployment copies. Do not reactivate expired one-shot diagnostic endpoints or publish access keys.
 
 ## Recorded test results
 
