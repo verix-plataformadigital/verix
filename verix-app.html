@@ -6722,8 +6722,10 @@ html body #asfRateWidget .asf-rate-sub[data-window-state="ready"]{
           <p class="verix-asf-notice-thanks-kicker">ESTA CONQUISTA É DE TODOS</p>
           <h2 id="verixNoticeThanksTitle" class="verix-asf-notice-thanks-number">250.000+</h2>
           <p class="verix-asf-notice-thanks-label">PESQUISAS DESDE O INÍCIO DO PROJETO</p>
-          <p class="verix-asf-notice-thanks-copy">Ajuda-nos a chegar a mais operacionais. Partilha o VÉRIX nos grupos de WhatsApp da GNR e da PSP.</p>
-          <button type="button" class="verix-notice-share-button" onclick="partilharVerixWhatsApp()" aria-label="Partilhar o VÉRIX nos grupos de WhatsApp">PARTILHAR NO WHATSAPP <span aria-hidden="true">↗</span></button>
+          <div class="verix-notice-share-bubble" role="note" aria-label="Convite à divulgação do VÉRIX">
+            <p class="verix-notice-share-kicker">AJUDE A DIVULGAR O VÉRIX</p>
+            <p class="verix-notice-share-message">Se considera esta ferramenta útil para o serviço, partilhe o acesso em grupos operacionais e redes profissionais relevantes. Assim, mais profissionais no terreno poderão conhecer este recurso.</p>
+          </div>
         </section>
       </div>
     </div>
@@ -19585,17 +19587,6 @@ html body .toast-notification {
     if(o) o.setAttribute('aria-hidden','true');
   };
 
-  /* Partilha explícita: abre o WhatsApp com mensagem pronta para enviar a um grupo. */
-  window.partilharVerixWhatsApp=function(){
-    var shareUrl='https://verix-plataformadigital.github.io/verix/';
-    var message='🚔🇵🇹 VÉRIX — APOIO OPERACIONAL\\n\\n'+
-      'Ferramenta de apoio ao serviço operacional, desenvolvida por um militar da UNT e partilhada para chegar a mais colegas.\\n\\n'+
-      '📊 Mais de 250.000 pesquisas desde o início do projeto.\\n\\n'+
-      '🤝 Se te for útil, partilha nos grupos de WhatsApp da GNR e da PSP e com outros operacionais.\\n\\n'+
-      '🔗 '+shareUrl;
-    var target='https://wa.me/?text='+encodeURIComponent(message);
-    window.open(target,'_blank','noopener,noreferrer');
-  };
 })();
 </script>
 
@@ -20907,45 +20898,56 @@ html body #seguroResult > .asf-app-warn .asf-status-sub{
 </style>
 
 
-<style id="verix-notice-share-cta">
-html body #verixAsfNoticeOverlay .verix-notice-share-button{
-  display:inline-flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  gap:10px!important;
+<style id="verix-notice-share-bubble">
+/* Balão independente para o convite à divulgação — sem botão de ação. */
+html body #verixAsfNoticeOverlay .verix-notice-share-bubble{
+  position:relative!important;
   box-sizing:border-box!important;
+  display:block!important;
+  width:100%!important;
   max-width:100%!important;
-  min-height:39px!important;
-  margin:17px 0 0!important;
-  padding:0 15px!important;
-  border:1px solid #087443!important;
-  border-radius:9px!important;
-  background:linear-gradient(135deg,#087443 0%,#0a8650 100%)!important;
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important;
-  font:850 10px/1 Arial,sans-serif!important;
-  letter-spacing:.6px!important;
-  box-shadow:0 5px 14px rgba(8,116,67,.15)!important;
-  cursor:pointer!important;
-  transition:filter .15s ease,transform .15s ease,box-shadow .15s ease!important;
+  margin:19px 0 0!important;
+  padding:13px 14px 14px!important;
+  border:1px solid #c4e5d0!important;
+  border-radius:12px!important;
+  background:linear-gradient(145deg,#ffffff 0%,#f7fcf8 100%)!important;
+  box-shadow:0 5px 16px rgba(20,93,55,.06),inset 0 1px 0 rgba(255,255,255,.9)!important;
+  text-align:left!important;
 }
-html body #verixAsfNoticeOverlay .verix-notice-share-button:hover{
-  filter:brightness(1.08)!important;
-  box-shadow:0 7px 18px rgba(8,116,67,.22)!important;
+html body #verixAsfNoticeOverlay .verix-notice-share-bubble:before{
+  content:""!important;
+  position:absolute!important;
+  top:-6px!important;
+  left:21px!important;
+  width:10px!important;
+  height:10px!important;
+  border-top:1px solid #c4e5d0!important;
+  border-left:1px solid #c4e5d0!important;
+  background:#ffffff!important;
+  transform:rotate(45deg)!important;
 }
-html body #verixAsfNoticeOverlay .verix-notice-share-button:active{
-  transform:translateY(1px)!important;
+html body #verixAsfNoticeOverlay .verix-notice-share-kicker{
+  margin:0 0 7px!important;
+  color:#087443!important;
+  font:850 9px/1.4 Arial,sans-serif!important;
+  letter-spacing:.9px!important;
+}
+html body #verixAsfNoticeOverlay .verix-notice-share-message{
+  margin:0!important;
+  max-width:none!important;
+  color:#304b3b!important;
+  font:500 11px/1.6 Arial,sans-serif!important;
+  letter-spacing:0!important;
 }
 @media(max-width:640px){
-  html body #verixAsfNoticeOverlay .verix-notice-share-button{
-    min-height:42px!important;
-    margin-top:13px!important;
-    padding:0 12px!important;
-    font-size:9px!important;
+  html body #verixAsfNoticeOverlay .verix-notice-share-bubble{
+    margin-top:15px!important;
+    padding:11px 12px 12px!important;
   }
-}
-@media(prefers-reduced-motion:reduce){
-  html body #verixAsfNoticeOverlay .verix-notice-share-button{transition:none!important;}
+  html body #verixAsfNoticeOverlay .verix-notice-share-message{
+    font-size:10.5px!important;
+    line-height:1.55!important;
+  }
 }
 </style>
 
