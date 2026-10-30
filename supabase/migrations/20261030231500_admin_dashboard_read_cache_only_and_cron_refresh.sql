@@ -78,15 +78,20 @@ IS 'Interactive requests read the latest shared snapshot. The scheduled pg_cron 
 
 DO $admin_refresh_job$
 DECLARE
-  v_rows integer;
+  v_job_id bigint;
 BEGIN
-  UPDATE cron.job
-     SET command = 'SELECT public.verix2_admin_dashboard_v3(now(), true);'
-   WHERE jobname = 'verix2_admin_dashboard_cache_refresh';
+  SELECT jobid
+    INTO v_job_id
+  FROM cron.job
+  WHERE jobname = 'verix2_admin_dashboard_cache_refresh';
 
-  GET DIAGNOSTICS v_rows = ROW_COUNT;
-  IF v_rows <> 1 THEN
-    RAISE EXCEPTION 'Expected exactly one verix2_admin_dashboard_cache_refresh job, updated %', v_rows;
+  IF v_job_id IS NULL THEN
+    RAISE EXCEPTION 'Could not find verix2_admin_dashboard_cache_refresh job';
   END IF;
+
+  PERFORM cron.alter_job(
+    job_id := v_job_id,
+    command := 'SELECT public.verix2_admin_dashboard_v3(now(), true);'
+  );
 END;
 $admin_refresh_job$;
