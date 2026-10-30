@@ -5,6 +5,33 @@
 
 
 <script id="verix-startup-flag">(function(){try{document.documentElement.classList.add('verix-starting');}catch(e){}})();</script>
+<script id="verix-startup-failsafe">
+(function(){
+  'use strict';
+  function recoverIfStuck(){
+    var root=document.documentElement;
+    if(!root || !root.classList.contains('verix-starting')) return;
+    root.classList.remove('verix-starting');
+    var splash=document.getElementById('opsBootOverlay');
+    if(splash){try{splash.remove();}catch(e){splash.style.display='none';}}
+    var menu=document.getElementById('mainMenuScreen');
+    if(menu)menu.classList.add('show');
+    if(document.body){
+      document.body.classList.add('main-menu-active');
+      document.body.classList.remove('fixed-workspace-active','consultation-screen-active','cinemometro-page-active','history-page-active');
+    }
+    try{document.dispatchEvent(new CustomEvent('verix:startup-recovered'));}catch(e){}
+  }
+  function arm(){
+    window.setTimeout(recoverIfStuck,5000);
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',arm,{once:true});
+  }else{
+    arm();
+  }
+})();
+</script>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
