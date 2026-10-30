@@ -8,13 +8,19 @@
 <script id="verix-startup-failsafe">
 (function(){
   'use strict';
+  var attempts=0;
   function recoverIfStuck(){
     var root=document.documentElement;
     if(!root || !root.classList.contains('verix-starting')) return;
+    attempts++;
+    var menu=document.getElementById('mainMenuScreen');
+    if(!menu && attempts<8){
+      window.setTimeout(recoverIfStuck,1000);
+      return;
+    }
     root.classList.remove('verix-starting');
     var splash=document.getElementById('opsBootOverlay');
     if(splash){try{splash.remove();}catch(e){splash.style.display='none';}}
-    var menu=document.getElementById('mainMenuScreen');
     if(menu)menu.classList.add('show');
     if(document.body){
       document.body.classList.add('main-menu-active');
@@ -22,13 +28,13 @@
     }
     try{document.dispatchEvent(new CustomEvent('verix:startup-recovered'));}catch(e){}
   }
-  function arm(){
-    window.setTimeout(recoverIfStuck,5000);
-  }
+  /* Arm immediately in the head: do not depend on DOMContentLoaded,
+     which may never arrive if another startup script stalls. */
+  window.setTimeout(recoverIfStuck,8000);
   if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',arm,{once:true});
-  }else{
-    arm();
+    document.addEventListener('DOMContentLoaded',function(){
+      window.setTimeout(recoverIfStuck,5000);
+    },{once:true});
   }
 })();
 </script>
