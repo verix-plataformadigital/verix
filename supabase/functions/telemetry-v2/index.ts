@@ -515,7 +515,7 @@ Deno.serve(async (req: Request) => {
           event_id: eventId,
           matricula: operationalPlate,
           occurred_at: occurredAt
-          // created_at/expires_at use database defaults: receipt time + 24 hours.
+          // created_at/expires_at use database defaults: receipt time + 90 days.
         });
       }
 
@@ -608,7 +608,7 @@ Deno.serve(async (req: Request) => {
     }
 
     // Keep the registration plate out of analytics. Store it separately, with the table's
-    // database-enforced 24-hour expiry. Upsert makes retries idempotent by event_id.
+    // database-enforced 90-day expiry. Upsert makes retries idempotent by event_id.
     if (operationalInsuranceNoCases.length) {
       const uniqueCases = [...new Map(
         operationalInsuranceNoCases.map((row: any) => [row.event_id, row])
