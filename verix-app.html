@@ -1,5 +1,5 @@
 <!-- VÉRIX 1.5 — publicação limpa -->
-<!DOCTYPE html><html lang="pt"><head><link rel="stylesheet" href="./verix-mobile.css?v=5" media="(max-width:1199px)"><script defer src="./verix-mobile.js?v=5"></script>
+<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="stylesheet" href="./verix-mobile.css?v=5" media="(max-width:1199px)"><script defer src="./verix-mobile.js?v=5"></script>
 <link rel="preconnect" href="https://onilkakbgpklxvxuxmks.supabase.co" crossorigin>
 <link rel="dns-prefetch" href="//onilkakbgpklxvxuxmks.supabase.co">
 
@@ -46,40 +46,67 @@
 </script>
 
 <style id="verix-mobile-first-paint">
-/* Mobile first paint: the operational menu and notice are static HTML.
-   Do not put a full-screen black splash above them while the legacy bundle parses. */
+/* First-paint contract for handhelds: one full-viewport home shell.
+   The legacy consultation workspace is not rendered under the menu. */
 html.vx-mobile-bootstrap,
 html.vx-mobile-bootstrap body{
   width:100%!important;max-width:100%!important;min-width:0!important;
-  height:auto!important;min-height:100svh!important;
+  height:auto!important;min-height:100%!important;
+  margin:0!important;padding:0!important;
   overflow-x:hidden!important;overflow-y:auto!important;
 }
 html.vx-mobile-bootstrap body{visibility:visible!important}
 html.vx-mobile-bootstrap body #opsBootOverlay{
   display:none!important;visibility:hidden!important;pointer-events:none!important;
 }
-html.vx-mobile-bootstrap body #mainMenuScreen.vx-home-screen{
-  display:block!important;visibility:visible!important;
-  position:fixed!important;inset:0!important;
-  width:100vw!important;height:100dvh!important;
-  min-width:0!important;min-height:0!important;
-  z-index:1800!important;overflow-y:auto!important;
+html.vx-mobile-bootstrap body.main-menu-active .command,
+html.vx-mobile-bootstrap body.main-menu-active .rail,
+html.vx-mobile-bootstrap body.main-menu-active .main,
+html.vx-mobile-bootstrap body.main-menu-active .bottom,
+html.vx-mobile-bootstrap body.main-menu-active .consulta-history-bottom-wrap,
+html.vx-mobile-bootstrap body.main-menu-active #consultaHistoryTopBtn,
+html.vx-mobile-bootstrap body.main-menu-active #consultationBackBtn,
+html.vx-mobile-bootstrap body.main-menu-active .operational-strip,
+html.vx-mobile-bootstrap body.main-menu-active #moduleOverlay,
+html.vx-mobile-bootstrap body.main-menu-active #historyOverlay{
+  display:none!important;visibility:hidden!important;pointer-events:none!important;
+}
+html.vx-mobile-bootstrap body.main-menu-active #mainMenuScreen.vx-home-screen{
+  display:block!important;visibility:visible!important;opacity:1!important;
+  position:fixed!important;top:0!important;right:0!important;bottom:0!important;left:0!important;
+  width:auto!important;max-width:none!important;min-width:0!important;
+  height:auto!important;min-height:0!important;max-height:none!important;
+  margin:0!important;padding:0!important;transform:none!important;
+  box-sizing:border-box!important;z-index:2147482000!important;overflow:hidden!important;
+}
+html.vx-mobile-bootstrap body.main-menu-active #mainMenuScreen.vx-home-screen .vx-home-shell{
+  position:relative!important;isolation:isolate!important;display:flex!important;
+  flex-direction:column!important;width:100%!important;max-width:none!important;min-width:0!important;
+  height:100%!important;min-height:0!important;overflow:hidden!important;
+}
+html.vx-mobile-bootstrap body.main-menu-active #mainMenuScreen.vx-home-screen .vx-home-main{
+  display:flex!important;flex:1 1 auto!important;flex-direction:column!important;
+  width:100%!important;max-width:none!important;min-width:0!important;
+  height:100%!important;min-height:0!important;overflow:hidden!important;
+}
+html.vx-mobile-bootstrap body.main-menu-active #mainMenuScreen.vx-home-screen .vx-home-body{
+  width:100%!important;max-width:none!important;min-width:0!important;
+  flex:1 1 auto!important;min-height:0!important;overflow-x:hidden!important;overflow-y:auto!important;
+  box-sizing:border-box!important;
+}
+html.vx-mobile-bootstrap body.main-menu-active #mainMenuScreen.vx-home-screen .vx-home-footer{
+  flex:0 0 auto!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;
 }
 html.vx-mobile-bootstrap body #verixAsfNoticeOverlay.verix-asf-notice-overlay[aria-hidden="false"]{
-  display:flex!important;visibility:visible!important;
-  position:fixed!important;inset:0!important;
-  width:100vw!important;height:100dvh!important;
-  max-width:100vw!important;max-height:100dvh!important;
-  z-index:2147483001!important;
-  align-items:center!important;justify-content:center!important;
-  overflow:auto!important;box-sizing:border-box!important;
-  padding:10px!important;
+  display:flex!important;visibility:visible!important;position:fixed!important;
+  top:0!important;right:0!important;bottom:0!important;left:0!important;
+  width:auto!important;height:auto!important;max-width:none!important;max-height:none!important;
+  z-index:2147483001!important;align-items:center!important;justify-content:center!important;
+  overflow:auto!important;box-sizing:border-box!important;padding:10px!important;
 }
 html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .verix-asf-notice-window{
-  width:min(560px,calc(100vw - 20px))!important;
-  height:auto!important;min-height:0!important;
-  max-height:calc(100dvh - 20px)!important;
-  margin:auto!important;overflow:auto!important;
+  width:min(560px,calc(100% - 20px))!important;height:auto!important;min-height:0!important;
+  max-height:calc(100% - 20px)!important;margin:auto!important;overflow:auto!important;
 }
 html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .verix-asf-notice-body{
   min-height:0!important;overflow:auto!important;padding:12px!important;
@@ -337,7 +364,7 @@ html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .verix-asf-notice-card{
 
   try { window.VERIX_SECURITY_WARMUP = getToken(false).catch(function(){ return null; }); } catch (_) {}
 })();
-</script><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VÉRIX — Plataforma Digital 1.5</title>
+</script><title>VÉRIX — Plataforma Digital 1.5</title>
 <meta name="description" content="VÉRIX — Plataforma Digital de apoio ao serviço operacional.">
 <meta name="theme-color" content="#03080c">
 <meta property="og:type" content="website">
@@ -19611,16 +19638,31 @@ html body .toast-notification {
 (function(){
   'use strict';
 
-  /* Mobile starts from the visible static menu/notice above.
-     Do not re-enable the desktop splash lock on handheld devices. */
+  /* Handheld startup: establish a clean home state before exposing the UI. */
   if(window.__VERIX_MOBILE_ROUTE){
     try{
-      document.documentElement.classList.remove('verix-starting');
+      var root=document.documentElement;
+      root.classList.remove('verix-starting','verix-startup-recovered');
+      root.classList.add('vx-handheld','vx-mobile-bootstrap');
+      var body=document.body;
+      if(body){
+        body.classList.remove(
+          'fixed-workspace-active','consultation-screen-active',
+          'cinemometro-page-active','history-page-active',
+          'history-open','consultation-screen-active'
+        );
+        body.classList.add('vx-mobile-mode','main-menu-active');
+      }
       var mobileSplash=document.getElementById('opsBootOverlay');
       if(mobileSplash)mobileSplash.remove();
       var mobileMenu=document.getElementById('mainMenuScreen');
       if(mobileMenu)mobileMenu.classList.add('show');
-      if(document.body)document.body.classList.add('main-menu-active');
+      var desktopMain=document.querySelector('.main');
+      if(desktopMain)desktopMain.classList.remove('consultation-fixed-active');
+      ['moduleOverlay','historyOverlay'].forEach(function(id){
+        var overlay=document.getElementById(id);
+        if(overlay)overlay.classList.remove('show','cinemometro-fullpage');
+      });
       var mobileNotice=document.getElementById('verixAsfNoticeOverlay');
       if(mobileNotice)mobileNotice.setAttribute('aria-hidden','false');
       window.fecharAvisoASFInicial=function(){
