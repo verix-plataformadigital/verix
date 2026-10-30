@@ -30,9 +30,14 @@
   try{handheld=handheld||!!(window.matchMedia&&window.matchMedia('(pointer:coarse)').matches);}catch(e){}
   window.__VERIX_MOBILE_ROUTE=!!handheld;
   if(!handheld)return;
+  document.documentElement.classList.remove('verix-starting');
   document.documentElement.classList.add('vx-handheld','vx-mobile-bootstrap');
   var css=document.querySelector('link[href*="verix-mobile.css"]');
   if(css)css.media='all';
+  window.fecharAvisoASFInicial=function(){
+    var overlay=document.getElementById('verixAsfNoticeOverlay');
+    if(overlay)overlay.setAttribute('aria-hidden','true');
+  };
   window.fecharAvisoASFInicial=function(){
     var overlay=document.getElementById('verixAsfNoticeOverlay');
     if(overlay)overlay.setAttribute('aria-hidden','true');
