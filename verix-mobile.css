@@ -532,3 +532,35 @@ html.vx-handheld body.vx-mobile-mode .vx-home-primary-grid,
 html.vx-handheld body.vx-mobile-mode .vx-home-secondary-grid{grid-template-columns:minmax(0,1fr)!important}
 html.vx-handheld body.vx-mobile-mode .vx-mobile-drawer{display:block!important}
 
+
+/* Startup recovery and initial notice layout for handheld browsers. */
+html.verix-startup-recovered,html.verix-startup-recovered body{
+  visibility:visible!important;overflow-x:hidden!important;overflow-y:auto!important;
+}
+html.verix-startup-recovered #opsBootOverlay{display:none!important;visibility:hidden!important}
+html.verix-startup-recovered #mainMenuScreen{
+  display:block!important;visibility:visible!important;position:relative!important;
+  inset:auto!important;width:100%!important;max-width:100%!important;
+  min-height:100svh!important;height:auto!important;overflow:visible!important;
+}
+html.verix-handheld #verixAsfNoticeOverlay[aria-hidden="false"]{
+  position:fixed!important;inset:0!important;z-index:100000!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;
+  overflow:auto!important;padding:10px!important;box-sizing:border-box!important;
+}
+html.verix-handheld #verixAsfNoticeOverlay .verix-asf-notice-window{
+  width:min(560px,calc(100vw - 20px))!important;height:auto!important;
+  max-height:calc(100dvh - 20px)!important;min-height:0!important;
+  margin:auto!important;overflow:auto!important;border-radius:14px!important;
+}
+html.verix-handheld #verixAsfNoticeOverlay .verix-asf-notice-body{
+  min-height:0!important;overflow:auto!important;padding:12px!important;
+}
+html.verix-handheld #verixAsfNoticeOverlay .verix-asf-notice-grid,
+html.verix-handheld #verixAsfNoticeOverlay .verix-notice-grid-three{
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:10px!important;
+}
+html.verix-handheld #verixAsfNoticeOverlay .verix-asf-notice-card{
+  min-height:0!important;padding:15px 13px!important;
+}

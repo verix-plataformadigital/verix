@@ -1,7 +1,7 @@
 (function(){
 'use strict';
 
-const vxForcedMobileRoute = /(?:^|[?&])_mobile=1(?:&|$)/.test(String(window.location.search||''));
+const vxForcedMobileRoute = !!window.__VERIX_MOBILE_ROUTE || /(?:^|[?&])_mobile=1(?:&|$)/.test(String(window.location.search||''));
 const vxMobileViewport = (
   vxForcedMobileRoute ||
   (window.matchMedia && window.matchMedia('(max-width:1199px)').matches) ||
@@ -129,18 +129,19 @@ function normalizeMobileLayout(){
   });
 }
 
-normalizeMobileLayout();
-setTimeout(normalizeMobileLayout,250);
-setTimeout(normalizeMobileLayout,800);
-setTimeout(normalizeMobileLayout,1800);
+// Defer the full-page measurement pass until after DOMContentLoaded. Running it
+// inside this deferred head script delays the startup controller on large devices.
+let normalizeTimer=0;
+function scheduleMobileNormalize(delay){
+  clearTimeout(normalizeTimer);
+  normalizeTimer=setTimeout(()=>requestAnimationFrame(normalizeMobileLayout),delay||300);
+}
+document.addEventListener('DOMContentLoaded',()=>scheduleMobileNormalize(500),{once:true});
 
-const observer=new MutationObserver(()=>{
-  clearTimeout(window.__vxMobileLayoutTimer);
-  window.__vxMobileLayoutTimer=setTimeout(normalizeMobileLayout,60);
-});
+const observer=new MutationObserver(()=>scheduleMobileNormalize(450));
 observer.observe(document.body,{childList:true,subtree:true});
 
-window.addEventListener('resize',()=>setTimeout(normalizeMobileLayout,80),{passive:true});
+window.addEventListener('resize',()=>scheduleMobileNormalize(180),{passive:true});
 
 const nav=findNavigation();
 
