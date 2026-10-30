@@ -572,61 +572,95 @@ Deno.serve(async (req:Request) => {
     if(req.method === "GET" && detail === "dashboard-v3") {
       const now = new Date().toISOString();
       try {
-        const [cachedMetrics, liveSummary] = await Promise.all([
-          rpc("verix2_admin_dashboard_v3", { p_now: now, p_force_refresh: forceRefresh }),
-          rpc("verix2_admin_live_summary_v1", { p_now: now })
-        ]);
+        // The Admin request only reads the shared dashboard snapshot.
+        // The scheduled PostgreSQL job is solely responsible for rebuilding it.
+        const cachedMetrics = await rpc("verix2_admin_dashboard_v3", {
+          p_now: now,
+          p_force_refresh: false
+        });
         const metrics = { ...(cachedMetrics || {}) };
         const cacheCutoff = metrics.generatedAt || metrics.ranges?.today?.end;
-        let liveInsuranceDeltaApplied = false;
-        if (cacheCutoff && metrics.ranges?.today?.start && metrics.ranges?.week?.start && metrics.ranges?.total?.start) {
-          try {
-            const delta = await rpc("verix2_admin_insurance_delta_v1", {
+        const canLoadDelta = Boolean(
+          cacheCutoff &&
+          metrics.ranges?.today?.start &&
+          metrics.ranges?.week?.start &&
+          metrics.ranges?.total?.start
+        );
+
+        // Presence and the small insurance delta are independent supplements.
+        // Load them concurrently and keep the cached dashboard available if either fails.
+        const liveSummaryTask = rpc("verix2_admin_live_summary_v1", { p_now: now }).then(
+          value => ({ ok: true as const, value }),
+          error => ({ ok: false as const, error })
+        );
+        const deltaTask = canLoadDelta
+          ? rpc("verix2_admin_insurance_delta_v1", {
               p_since: cacheCutoff,
               p_now: now,
               p_today_start: metrics.ranges.today.start,
               p_week_start: metrics.ranges.week.start,
               p_total_start: metrics.ranges.total.start
-            });
-            const deltaPeriods = delta?.periods || {};
-            const insurance = { ...(metrics.insurance || {}) };
-            const countKeys = ["consultations", "finals", "insured", "uninsured", "errors", "errorEvents", "pending", "incomplete", "contradictory", "duplicateFinals"];
-            for (const period of ["today", "week", "total"]) {
-              const base = insurance[period] || {};
-              const change = deltaPeriods[period] || {};
-              const row = { ...base };              for (const key of countKeys) {
-                row[key] = Math.max(0, Math.trunc(Number(base[key] || 0) + Number(change[key] || 0)));
-              }
-              const validDecisions = row.insured + row.uninsured;
-              row.uninsuredPct = validDecisions ? Math.round(1000 * row.uninsured / validDecisions) / 10 : null;
-              row.errorPct = row.finals ? Math.round(1000 * row.errors / row.finals) / 10 : null;
-              insurance[period] = row;
-            }
-            metrics.insurance = insurance;
-            liveInsuranceDeltaApplied = true;
-          } catch (deltaError) {
-            // Keep the dashboard available with the last consistent cached snapshot if the small live delta query fails.
-            console.error("Admin live insurance delta unavailable:", String((deltaError as Error)?.message || deltaError));
-          }
+            }).then(
+              value => ({ ok: true as const, value }),
+              error => ({ ok: false as const, error })
+            )
+          : Promise.resolve({ ok: true as const, value: null });
+
+        const [liveSummaryResult, deltaResult] = await Promise.all([
+          liveSummaryTask,
+          deltaTask
+        ]);
+        const liveSummary = liveSummaryResult.ok &&
+            liveSummaryResult.value &&
+            typeof liveSummaryResult.value === "object"
+          ? liveSummaryResult.value
+          : null;
+        if (!liveSummaryResult.ok) {
+          console.error("Admin live summary unavailable:", String((liveSummaryResult.error as Error)?.message || liveSummaryResult.error));
         }
-        metrics.users = {
-          ...(metrics.users || {}),
-          // Preserve the live presence fields returned by verix2_admin_live_summary_v1.
-          // Without this merge the database detects online sessions, but the Admin API
-          // drops onlineInstallations, onlineTabs, activeInstallations and onlineProfiles.
-          ...(liveSummary && typeof liveSummary === "object" ? liveSummary : {}),
-          consultationsLast3Minutes: Number(liveSummary?.consultationsLast3Minutes || 0),
-          installationsConsultedLastHour: Number(liveSummary?.installationsConsultedLastHour || 0),
-          installationsSeenLastHour: Number(liveSummary?.installationsSeenLastHour || 0),
-          registeredInstallations: Number(liveSummary?.registeredInstallations || 0),
-          onlineInstallations: Number(liveSummary?.onlineInstallations || 0),
-          onlineTabs: Number(liveSummary?.onlineTabs || 0),
-          activeInstallations: Number(liveSummary?.activeInstallations || 0),
-          activeTabs: Number(liveSummary?.activeTabs || 0),
-          onlineProfiles: Array.isArray(liveSummary?.onlineProfiles) ? liveSummary.onlineProfiles : [],
-          presenceObservedAt: liveSummary?.presenceObservedAt || now,
-          presenceLeaseSeconds: Number(liveSummary?.presenceLeaseSeconds || 150)
-        };
+
+        let liveInsuranceDeltaApplied = false;
+        if (deltaResult.ok && deltaResult.value) {
+          const delta = deltaResult.value;
+          const deltaPeriods = delta?.periods || {};
+          const insurance = { ...(metrics.insurance || {}) };
+          const countKeys = ["consultations", "finals", "insured", "uninsured", "errors", "errorEvents", "pending", "incomplete", "contradictory", "duplicateFinals"];
+          for (const period of ["today", "week", "total"]) {
+            const base = insurance[period] || {};
+            const change = deltaPeriods[period] || {};
+            const row = { ...base };
+            for (const key of countKeys) {
+              row[key] = Math.max(0, Math.trunc(Number(base[key] || 0) + Number(change[key] || 0)));
+            }
+            const validDecisions = row.insured + row.uninsured;
+            row.uninsuredPct = validDecisions ? Math.round(1000 * row.uninsured / validDecisions) / 10 : null;
+            row.errorPct = row.finals ? Math.round(1000 * row.errors / row.finals) / 10 : null;
+            insurance[period] = row;
+          }
+          metrics.insurance = insurance;
+          liveInsuranceDeltaApplied = true;
+        } else if (!deltaResult.ok) {
+          console.error("Admin live insurance delta unavailable:", String((deltaResult.error as Error)?.message || deltaResult.error));
+        }
+
+        if (liveSummary) {
+          metrics.users = {
+            ...(metrics.users || {}),
+            ...liveSummary,
+            consultationsLast3Minutes: Number(liveSummary.consultationsLast3Minutes || 0),
+            installationsConsultedLastHour: Number(liveSummary.installationsConsultedLastHour || 0),
+            installationsSeenLastHour: Number(liveSummary.installationsSeenLastHour || 0),
+            registeredInstallations: Number(liveSummary.registeredInstallations || 0),
+            onlineInstallations: Number(liveSummary.onlineInstallations || 0),
+            onlineTabs: Number(liveSummary.onlineTabs || 0),
+            activeInstallations: Number(liveSummary.activeInstallations || 0),
+            activeTabs: Number(liveSummary.activeTabs || 0),
+            onlineProfiles: Array.isArray(liveSummary.onlineProfiles) ? liveSummary.onlineProfiles : [],
+            presenceObservedAt: liveSummary.presenceObservedAt || now,
+            presenceLeaseSeconds: Number(liveSummary.presenceLeaseSeconds || 150)
+          };
+        }
+        metrics.liveSummaryAvailable = Boolean(liveSummary);
         if (liveInsuranceDeltaApplied) metrics.generatedAt = now;
         metrics.liveInsuranceDeltaAvailable = liveInsuranceDeltaApplied;
         return json({ok:true,detail:"dashboard-v3",generatedAt:now,data:metrics},200,req);
