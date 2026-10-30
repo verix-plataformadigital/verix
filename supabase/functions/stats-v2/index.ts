@@ -147,8 +147,7 @@ function sessionPattern(rows:any[]){
   let alternating2=false;
   if(speeds.length>=6 && top.length===2){
     alternating2=speeds.every((v,i)=>i%2===0?v===top[0][0]:v===top[1][0]) ||
-                 speeds.every((v,i)=>i%2===0?v===top[1][0]:v===top[0][0]);  }
-  const copies=rows.filter((e:any)=>e.event==="cinemometer_copy_code"||e.event==="cinemometer_copy_text").length;
+                 speeds.every((v,i)=>i%2===0?v===top[1][0]:v===top[0][0]);  }  const copies=rows.filter((e:any)=>e.event==="cinemometer_copy_code"||e.event==="cinemometer_copy_text").length;
   const configCount=measurements.filter((e:any)=>cinSnapshotOf(e)?.aparelho_configurado===true).length;
   const operatorCount=measurements.filter((e:any)=>cinSnapshotOf(e)?.operador_identificado===true).length;
   const first=times[0]??null, last=times[times.length-1]??first;
@@ -234,9 +233,8 @@ async function loadInsuranceNoCases(now:string, pageLimit?:number, pageOffset=0)
     const qs = new URLSearchParams();
     qs.set("select","event_id,matricula,occurred_at,created_at,expires_at");
     qs.set("expires_at","gt."+now);
-    // The 24-hour window starts when the server records the result, not when an
-    // offline client originally generated its event. Existing rows are not rewritten.
-    qs.set("created_at","gte."+new Date(Date.parse(now)-24*60*60*1000).toISOString());
+    // Database expires_at is the single retention boundary. Return every
+    // operational case that remains inside the 90-day retention period.
     qs.set("order","occurred_at.desc,event_id.desc");
     qs.set("limit",String(limit));
     qs.set("offset",String(offset));
@@ -297,8 +295,7 @@ function buildErrorPlateCases(rows:any[],plateOf:(e:any)=>string,validPortuguese
 }
 
 async function loadErrorInvestigation24h(now:string){  const pageSize=1000, maxPages=100;
-  const rows:any[]=[];
-  const startAt=windowStartTodayLisbon(now);
+  const rows:any[]=[];  const startAt=windowStartTodayLisbon(now);
   for(let page=0;page<maxPages;page++){
     const qs = new URLSearchParams();
     qs.set("select","event_id,occurred_at,event,installation_id,query_id,app_version,browser,metadata");
@@ -447,8 +444,7 @@ async function loadCinemometerAnalytics24h(now:string){
     .filter((e:any)=>["cinemometer_speed_entry","cinemometer_calculation"].includes(e.event) && cinSnapshotOf(e)?.velocidade_registada!=null)
     .map((e:any)=>String(cinSnapshotOf(e).velocidade_registada))    .filter((v:string)=>/^[0-9]+(\\.[0-9]+)?$/.test(v))
     .map(Number)
-    .filter((value:number)=>Number.isFinite(value));
-  const distributionMap=new Map<number,number>();
+    .filter((value:number)=>Number.isFinite(value));  const distributionMap=new Map<number,number>();
   for(const speed of analyticsSpeedValues){
     const bucket=Math.floor(speed/10)*10;
     distributionMap.set(bucket,(distributionMap.get(bucket)||0)+1);
@@ -597,8 +593,7 @@ Deno.serve(async (req:Request) => {
               const row = { ...base };              for (const key of countKeys) {
                 row[key] = Math.max(0, Math.trunc(Number(base[key] || 0) + Number(change[key] || 0)));
               }
-              const validDecisions = row.insured + row.uninsured;
-              row.uninsuredPct = validDecisions ? Math.round(1000 * row.uninsured / validDecisions) / 10 : null;
+              const validDecisions = row.insured + row.uninsured;              row.uninsuredPct = validDecisions ? Math.round(1000 * row.uninsured / validDecisions) / 10 : null;
               row.errorPct = row.finals ? Math.round(1000 * row.errors / row.finals) / 10 : null;
               insurance[period] = row;
             }
@@ -747,7 +742,6 @@ Deno.serve(async (req:Request) => {
         return json({ok:false,error:"usage_detail_failed",detail:String((error as Error)?.message||error)},500,req);
       }
     }
-
     // Legacy cross-section analytics remain for old clients only.
     if(req.method==="GET" && detail==="analytics") {
       const now = new Date().toISOString();
@@ -897,8 +891,7 @@ Deno.serve(async (req:Request) => {
       "admin-simple-2026-10-17-r17"
     ].includes(statsCacheKey);
 
-    if(!forceRefresh && cachedStats && cachedStats.key===statsCacheKey && (Date.now()-cachedStats.at)<STATS_CACHE_MS) {
-      return new Response(cachedStats.body,{
+    if(!forceRefresh && cachedStats && cachedStats.key===statsCacheKey && (Date.now()-cachedStats.at)<STATS_CACHE_MS) {      return new Response(cachedStats.body,{
         status:200,
         headers:{
           "Content-Type":"application/json",
