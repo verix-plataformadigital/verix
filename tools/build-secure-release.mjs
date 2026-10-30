@@ -144,7 +144,7 @@ function obfuscateHtml(html, label, optionsOverride = null) {
     // can interfere with browser lifecycle/telemetry code in legacy hosts.
     const idMatch = open.match(/\bid\s*=\s*["']([^"']+)["']/i);
     const scriptId = idMatch ? String(idMatch[1]).toLowerCase() : "";
-    if (scriptId === "verix-telemetry-v2" || scriptId === "verix-security-runtime" || scriptId === "verix-startup-controller" || scriptId === "verix-startup-failsafe" || scriptId === "verix-mobile-route-capture") {
+    if (scriptId === "verix-telemetry-v2" || scriptId === "verix-security-runtime" || scriptId === "verix-startup-controller" || scriptId === "verix-startup-failsafe" || scriptId === "verix-mobile-route-capture" || scriptId === "verix-startup-flag") {
       return full;
     }
 
