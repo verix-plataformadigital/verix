@@ -256,6 +256,7 @@ html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .verix-asf-notice-card{
   var GATE_MAX_ATTEMPTS = 3;
   var securityToken = null;
   var securityTokenExp = 0;
+  var securityTokenMonotonicExp = 0;
   var securityTokenPromise = null;
   var securityRenewalTimer = null;
 
@@ -277,6 +278,24 @@ html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .verix-asf-notice-card{
   var installationId = persistentId(window.localStorage, 'VERIX_T2_INSTALL_ID', 'i');
   var sessionId = persistentId(window.sessionStorage, 'VERIX_T2_SESSION_ID', 's');
   var tabId = persistentId(window.sessionStorage, 'VERIX_T2_TAB_ID', 't');
+
+  function monotonicNow() {
+    try {
+      if (window.performance && typeof window.performance.now === 'function') {
+        return window.performance.now();
+      }
+    } catch (_) {}
+    return Date.now();
+  }
+
+  function tokenRemainingMs() {
+    if (!securityTokenExp) return 0;
+    var wallRemaining = securityTokenExp - Date.now();
+    var monotonicRemaining = securityTokenMonotonicExp
+      ? securityTokenMonotonicExp - monotonicNow()
+      : wallRemaining;
+    return Math.min(wallRemaining, monotonicRemaining);
+  }
 
   function createGateError(code, message, status) {
     var error = new Error(message || code);
@@ -308,6 +327,7 @@ html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .verix-asf-notice-card{
 
     securityToken = String(data.token);
     securityTokenExp = Date.now() + expiresIn * 1000;
+    securityTokenMonotonicExp = monotonicNow() + expiresIn * 1000;
     scheduleTokenRenewal();
     return securityToken;
   }
@@ -437,7 +457,7 @@ html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .verix-asf-notice-card{
   function scheduleTokenRenewalRetry() {
     cancelTokenRenewal();
     if (!securityToken || !securityTokenExp) return;
-    var remaining = securityTokenExp - Date.now();
+    var remaining = tokenRemainingMs();
     if (remaining <= 60000) return;
     var delayMs = Math.min(60000, remaining - 30000);
     securityRenewalTimer = setTimeout(function(){
@@ -458,7 +478,7 @@ html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .verix-asf-notice-card{
   function scheduleTokenRenewal() {
     cancelTokenRenewal();
     if (!securityToken || !securityTokenExp) return;
-    var refreshIn = Math.max(1000, securityTokenExp - Date.now() - 120000);
+    var refreshIn = Math.max(1000, tokenRemainingMs() - 120000);
     securityRenewalTimer = setTimeout(function(){
       securityRenewalTimer = null;
       refreshTokenAhead();
@@ -470,12 +490,12 @@ html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .verix-asf-notice-card{
       getToken(false).catch(function(){});
       return;
     }
-    if (securityTokenExp - Date.now() <= 180000) refreshTokenAhead();
+    if (tokenRemainingMs() <= 180000) refreshTokenAhead();
   }
 
   function getToken(force) {
-    // A token remains valid until its signed expiry; do not discard it 30 seconds early.
-    if (!force && securityToken && Date.now() < securityTokenExp) {
+    // Keep a short safety margin while tracking expiry independently of wall-clock changes.
+    if (!force && securityToken && tokenRemainingMs() > 5000) {
       return Promise.resolve(securityToken);
     }
     if (securityTokenPromise) return securityTokenPromise;
@@ -498,6 +518,7 @@ html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .verix-asf-notice-card{
     clear: function(){
       securityToken = null;
       securityTokenExp = 0;
+      securityTokenMonotonicExp = 0;
       cancelTokenRenewal();
     }
   };
