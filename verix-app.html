@@ -252,9 +252,13 @@ html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .verix-asf-notice-card{
   'use strict';
   var BUILD_ID = '1.5-sec-20261008-a';
   var GATE_URL = 'https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/verix-gate-v1';
+  var GATE_TIMEOUT_MS = 5000;
+  var GATE_MAX_ATTEMPTS = 3;
   var securityToken = null;
   var securityTokenExp = 0;
+  var securityTokenMonotonicExp = 0;
   var securityTokenPromise = null;
+  var securityRenewalTimer = null;
 
   function persistentId(store, key, prefix) {
     try {
@@ -275,7 +279,80 @@ html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .verix-asf-notice-card{
   var sessionId = persistentId(window.sessionStorage, 'VERIX_T2_SESSION_ID', 's');
   var tabId = persistentId(window.sessionStorage, 'VERIX_T2_TAB_ID', 't');
 
-  function requestGate() {
+  function monotonicNow() {
+    try {
+      if (window.performance && typeof window.performance.now === 'function') {
+        return window.performance.now();
+      }
+    } catch (_) {}
+    return Date.now();
+  }
+
+  function tokenRemainingMs() {
+    if (!securityTokenExp) return 0;
+    var wallRemaining = securityTokenExp - Date.now();
+    var monotonicRemaining = securityTokenMonotonicExp
+      ? securityTokenMonotonicExp - monotonicNow()
+      : wallRemaining;
+    return Math.min(wallRemaining, monotonicRemaining);
+  }
+
+  function createGateError(code, message, status) {
+    var error = new Error(message || code);
+    error.code = code;
+    if (status !== null && status !== undefined) error.status = Number(status);
+    return error;
+  }
+
+  function acceptGateResponse(status, responseText) {
+    var httpStatus = Number(status || 0);
+    if (httpStatus < 200 || httpStatus >= 300) {
+      throw createGateError('GATE_HTTP', 'VÉRIX Gate HTTP ' + httpStatus, httpStatus);
+    }
+
+    var data;
+    try {
+      data = JSON.parse(String(responseText || ''));
+    } catch (_) {
+      throw createGateError('GATE_INVALID_RESPONSE', 'Resposta JSON inválida do VÉRIX Gate', httpStatus);
+    }
+
+    var expiresIn = Number(data && data.expires_in);
+    if (!data || !data.token || !Number.isFinite(expiresIn) || expiresIn <= 0) {
+      throw createGateError('GATE_INVALID_RESPONSE', 'Resposta incompleta do VÉRIX Gate', httpStatus);
+    }
+    if (String(data.build_id || '') !== BUILD_ID) {
+      throw createGateError('GATE_BUILD_MISMATCH', 'Build de autorização diferente do cliente', httpStatus);
+    }
+
+    securityToken = String(data.token);
+    securityTokenExp = Date.now() + expiresIn * 1000;
+    securityTokenMonotonicExp = monotonicNow() + expiresIn * 1000;
+    scheduleTokenRenewal();
+    return securityToken;
+  }
+
+  function normalizeGateError(error, startedAt, status) {
+    var result = error instanceof Error ? error : new Error(String(error || 'Falha de comunicação com o VÉRIX Gate'));
+    if (!result.code) {
+      var message = String(result.message || '').toLowerCase();
+      result.code = result.name === 'AbortError' ||
+        message.indexOf('timeout') >= 0 ||
+        message.indexOf('timed out') >= 0 ||
+        message.indexOf('tempo esgotado') >= 0
+        ? 'GATE_TIMEOUT'
+        : 'GATE_NETWORK';
+    }
+    if ((result.status === undefined || result.status === null) && status !== undefined && status !== null) {
+      result.status = Number(status);
+    }
+    result.durationMs = Math.max(0, Date.now() - startedAt);
+    return result;
+  }
+
+  function requestGateOnce() {
+    var startedAt = Date.now();
+    var transport = typeof ActiveXObject !== 'undefined' ? 'WinHTTP' : 'Fetch';
     var payload = JSON.stringify({
       build_id: BUILD_ID,
       installation_id: installationId,
@@ -288,20 +365,20 @@ html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .verix-asf-notice-card{
         try {
           var xhr = new ActiveXObject('WinHttp.WinHttpRequest.5.1');
           xhr.open('POST', GATE_URL, false);
-          xhr.setTimeouts(5000, 5000, 8000, 8000);
+          xhr.setTimeouts(5000, 5000, GATE_TIMEOUT_MS, GATE_TIMEOUT_MS);
           xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
           xhr.send(payload);
-          var status = Number(xhr.Status || 0);
-          var text = xhr.ResponseText || '';
-          if (status < 200 || status >= 300) throw new Error('VÉRIX gate HTTP ' + status);
-          var data = JSON.parse(text);
-          if (!data || !data.token) throw new Error('VÉRIX gate sem token');
-          securityToken = String(data.token);
-          securityTokenExp = Date.now() + Math.max(0, Number(data.expires_in || 0)) * 1000;
-          resolve(securityToken);
-        } catch (e) { reject(e); }
+          resolve(acceptGateResponse(Number(xhr.Status || 0), xhr.ResponseText || ''));
+        } catch (error) {
+          reject(normalizeGateError(error, startedAt));
+        }
       });
     }
+
+    var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timeoutId = controller
+      ? setTimeout(function(){ try { controller.abort(); } catch (_) {} }, GATE_TIMEOUT_MS)
+      : null;
 
     return fetch(GATE_URL, {
       method: 'POST',
@@ -309,21 +386,116 @@ html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .verix-asf-notice-card{
       credentials: 'omit',
       mode: 'cors',
       headers: { 'Content-Type': 'application/json' },
-      body: payload
-    }).then(function(res){
-      return res.text().then(function(text){
-        if (!res.ok) throw new Error('VÉRIX gate HTTP ' + res.status);
-        var data = JSON.parse(text);
-        if (!data || !data.token) throw new Error('VÉRIX gate sem token');
-        securityToken = String(data.token);
-        securityTokenExp = Date.now() + Math.max(0, Number(data.expires_in || 0)) * 1000;
-        return securityToken;
+      body: payload,
+      signal: controller ? controller.signal : undefined
+    }).then(function(response){
+      return response.text().then(function(text){
+        return acceptGateResponse(response.status, text);
+      }, function(error){
+        throw normalizeGateError(error, startedAt, response.status);
       });
+    }).catch(function(error){
+      throw normalizeGateError(error, startedAt);
+    }).finally(function(){
+      if (timeoutId !== null) clearTimeout(timeoutId);
     });
   }
 
+  function gateErrorIsRetryable(error) {
+    var status = Number(error && error.status || 0);
+    if (error && (error.code === 'GATE_NETWORK' || error.code === 'GATE_TIMEOUT')) return true;
+    return status === 408 || status === 429 || (status >= 500 && status <= 599);
+  }
+
+  function requestGate() {
+    var attempts = [];
+    function run(attemptNumber) {
+      var attemptStarted = Date.now();
+      var transport = typeof ActiveXObject !== 'undefined' ? 'WinHTTP' : 'Fetch';
+      return requestGateOnce().then(function(token){
+        attempts.push({
+          attempt: attemptNumber,
+          method: 'POST',
+          transport: transport,
+          status: 200,
+          durationMs: Math.max(0, Date.now() - attemptStarted),
+          errorType: null
+        });
+        return token;
+      }).catch(function(error){
+        var status = error && error.status !== undefined && error.status !== null
+          ? Number(error.status)
+          : null;
+        attempts.push({
+          attempt: attemptNumber,
+          method: 'POST',
+          transport: transport,
+          status: status,
+          durationMs: Math.max(0, Number(error && error.durationMs || Date.now() - attemptStarted)),
+          errorType: String(error && error.code || 'GATE_UNKNOWN')
+        });
+        error.attempts = attempts.slice();
+
+        if (attemptNumber >= GATE_MAX_ATTEMPTS || !gateErrorIsRetryable(error)) {
+          throw error;
+        }
+        var delayMs = attemptNumber === 1 ? 250 : 750;
+        return new Promise(function(resolve){ setTimeout(resolve, delayMs); })
+          .then(function(){ return run(attemptNumber + 1); });
+      });
+    }
+    return run(1);
+  }
+
+  function cancelTokenRenewal() {
+    if (securityRenewalTimer !== null) {
+      clearTimeout(securityRenewalTimer);
+      securityRenewalTimer = null;
+    }
+  }
+
+  function scheduleTokenRenewalRetry() {
+    cancelTokenRenewal();
+    if (!securityToken || !securityTokenExp) return;
+    var remaining = tokenRemainingMs();
+    if (remaining <= 60000) return;
+    var delayMs = Math.min(60000, remaining - 30000);
+    securityRenewalTimer = setTimeout(function(){
+      securityRenewalTimer = null;
+      refreshTokenAhead();
+    }, Math.max(1000, delayMs));
+  }
+
+  function refreshTokenAhead() {
+    if (!securityToken || !securityTokenExp) return;
+    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+    getToken(true).catch(function(){
+      // The current token remains usable until its signed expiration time.
+      scheduleTokenRenewalRetry();
+    });
+  }
+
+  function scheduleTokenRenewal() {
+    cancelTokenRenewal();
+    if (!securityToken || !securityTokenExp) return;
+    var refreshIn = Math.max(1000, tokenRemainingMs() - 120000);
+    securityRenewalTimer = setTimeout(function(){
+      securityRenewalTimer = null;
+      refreshTokenAhead();
+    }, refreshIn);
+  }
+
+  function refreshTokenWhenAvailable() {
+    if (!securityToken) {
+      getToken(false).catch(function(){});
+      return;
+    }
+    if (tokenRemainingMs() <= 180000) refreshTokenAhead();
+  }
+
   function getToken(force) {
-    if (!force && securityToken && Date.now() < securityTokenExp - 30000) {
+    // Keep a short safety margin while tracking expiry independently of wall-clock changes.
+    if (!force && securityToken && tokenRemainingMs() > 5000) {
       return Promise.resolve(securityToken);
     }
     if (securityTokenPromise) return securityTokenPromise;
@@ -346,6 +518,8 @@ html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .verix-asf-notice-card{
     clear: function(){
       securityToken = null;
       securityTokenExp = 0;
+      securityTokenMonotonicExp = 0;
+      cancelTokenRenewal();
     }
   };
 
@@ -369,6 +543,15 @@ html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .verix-asf-notice-card{
       window.VERIX_BUILD_ID = BUILD_ID;
     } catch (__) {}
   }
+
+  try {
+    window.addEventListener('online', refreshTokenWhenAvailable);
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', function(){
+        if (document.visibilityState !== 'hidden') refreshTokenWhenAvailable();
+      });
+    }
+  } catch (_) {}
 
   try { window.VERIX_SECURITY_WARMUP = getToken(false).catch(function(){ return null; }); } catch (_) {}
 })();
@@ -1587,14 +1770,48 @@ function submitConjunto(event) {
     var securityTokenASF = null;
     try {
       securityTokenASF = await window.VERIX_SECURITY.getToken(false);
-    } catch (_) {
+    } catch (authError) {
+      var authCode = String(authError && authError.code || 'GATE_UNKNOWN');
+      var authStatus = authError && authError.status !== undefined && authError.status !== null
+        ? Number(authError.status)
+        : null;
+      var authAttempts = Array.isArray(authError && authError.attempts) ? authError.attempts : [];
+      var authOnline = !(typeof navigator !== 'undefined' && navigator.onLine === false);
+      var authAttemptSummary = authAttempts.map(function(item){
+        return String(item.attempt || '?') + ':' + String(item.errorType || 'unknown') +
+          (item.durationMs !== undefined && item.durationMs !== null ? '@' + String(item.durationMs) + 'ms' : '');
+      }).join(',');
       diag.asfErrorType = 'security_auth';
-      diag.asfMessage = 'O VÉRIX não conseguiu validar a autorização desta instalação.';
+      diag.asfAuthErrorCode = authCode;
+      diag.asfAuthHttpStatus = authStatus;
+      diag.asfAuthOnline = authOnline;
+      diag.asfAuthAttempts = authAttempts;
+      diag.asfNetworkError = (
+        'VÉRIX-GATE ' + authCode +
+        '; HTTP=' + (authStatus === null ? 'não recebido' : String(authStatus)) +
+        '; tentativas=' + String(authAttempts.length) +
+        '; navigator.onLine=' + (authOnline ? 'true' : 'false') +
+        (authAttemptSummary ? '; detalhe=' + authAttemptSummary : '')
+      ).slice(0, 500);
+
+      if (authCode === 'GATE_NETWORK' || authCode === 'GATE_TIMEOUT') {
+        diag.asfMessage = 'Não foi possível contactar o serviço de autorização do VÉRIX. O pedido não foi enviado ao serviço ASF. Verifique a ligação e tente novamente.';
+      } else if (authCode === 'GATE_BUILD_MISMATCH') {
+        diag.asfMessage = 'O serviço de autorização devolveu uma autorização para uma versão diferente da aplicação. O pedido não foi enviado ao serviço ASF.';
+      } else if (authCode === 'GATE_INVALID_RESPONSE') {
+        diag.asfMessage = 'O serviço de autorização do VÉRIX devolveu uma resposta inválida. O pedido não foi enviado ao serviço ASF.';
+      } else if (authStatus !== null) {
+        diag.asfMessage = 'O serviço de autorização do VÉRIX respondeu com HTTP ' + authStatus + '. O pedido não foi enviado ao serviço ASF.';
+      } else {
+        diag.asfMessage = 'Não foi possível obter uma autorização válida para esta instalação (' + authCode + '). O pedido não foi enviado ao serviço ASF.';
+      }
       throw erroComDiagASF(diag.asfMessage, diag);
     }
     if (!securityTokenASF) {
       diag.asfErrorType = 'security_auth';
-      diag.asfMessage = 'O VÉRIX não conseguiu obter a autorização desta instalação.';
+      diag.asfAuthErrorCode = 'GATE_EMPTY_TOKEN';
+      diag.asfNetworkError = 'VÉRIX-GATE GATE_EMPTY_TOKEN; token vazio; pedido ASF não iniciado.';
+      diag.asfMessage = 'O serviço de autorização do VÉRIX não devolveu um token válido. O pedido não foi enviado ao serviço ASF.';
       throw erroComDiagASF(diag.asfMessage, diag);
     }
     var queueStarted = agoraMsASFDiag();
