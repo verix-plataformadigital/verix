@@ -4,7 +4,23 @@
 <link rel="dns-prefetch" href="//onilkakbgpklxvxuxmks.supabase.co">
 
 
-<script id="verix-startup-flag">(function(){try{document.documentElement.classList.add('verix-starting');}catch(e){}})();</script>
+<script id="verix-startup-flag">
+(function(){
+  'use strict';
+  try{
+    var queryMobile=/(?:^|[?&])_mobile=1(?:&|$)/.test(String(window.location.search||''));
+    var ua=String(navigator.userAgent||'');
+    var touch=!!(window.matchMedia&&window.matchMedia('(pointer:coarse)').matches);
+    var handheld=queryMobile||/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(ua)||touch;
+    window.__VERIX_MOBILE_ROUTE=!!handheld;
+    if(handheld){
+      document.documentElement.classList.add('vx-handheld','vx-mobile-bootstrap');
+      return;
+    }
+    document.documentElement.classList.add('verix-starting');
+  }catch(e){}
+})();
+</script>
 <script id="verix-mobile-route-capture">
 (function(){
   'use strict';
@@ -14,11 +30,69 @@
   try{handheld=handheld||!!(window.matchMedia&&window.matchMedia('(pointer:coarse)').matches);}catch(e){}
   window.__VERIX_MOBILE_ROUTE=!!handheld;
   if(!handheld)return;
-  document.documentElement.classList.add('verix-handheld');
+  document.documentElement.classList.remove('verix-starting');
+  document.documentElement.classList.add('vx-handheld','vx-mobile-bootstrap');
   var css=document.querySelector('link[href*="verix-mobile.css"]');
   if(css)css.media='all';
+  window.fecharAvisoASFInicial=function(){
+    var overlay=document.getElementById('verixAsfNoticeOverlay');
+    if(overlay)overlay.setAttribute('aria-hidden','true');
+  };
+  window.fecharAvisoASFInicial=function(){
+    var overlay=document.getElementById('verixAsfNoticeOverlay');
+    if(overlay)overlay.setAttribute('aria-hidden','true');
+  };
 })();
 </script>
+
+<style id="verix-mobile-first-paint">
+/* Mobile first paint: the operational menu and notice are static HTML.
+   Do not put a full-screen black splash above them while the legacy bundle parses. */
+html.vx-mobile-bootstrap,
+html.vx-mobile-bootstrap body{
+  width:100%!important;max-width:100%!important;min-width:0!important;
+  height:auto!important;min-height:100svh!important;
+  overflow-x:hidden!important;overflow-y:auto!important;
+}
+html.vx-mobile-bootstrap body{visibility:visible!important}
+html.vx-mobile-bootstrap body #opsBootOverlay{
+  display:none!important;visibility:hidden!important;pointer-events:none!important;
+}
+html.vx-mobile-bootstrap body #mainMenuScreen.vx-home-screen{
+  display:block!important;visibility:visible!important;
+  position:fixed!important;inset:0!important;
+  width:100vw!important;height:100dvh!important;
+  min-width:0!important;min-height:0!important;
+  z-index:1800!important;overflow-y:auto!important;
+}
+html.vx-mobile-bootstrap body #verixAsfNoticeOverlay.verix-asf-notice-overlay[aria-hidden="false"]{
+  display:flex!important;visibility:visible!important;
+  position:fixed!important;inset:0!important;
+  width:100vw!important;height:100dvh!important;
+  max-width:100vw!important;max-height:100dvh!important;
+  z-index:2147483001!important;
+  align-items:center!important;justify-content:center!important;
+  overflow:auto!important;box-sizing:border-box!important;
+  padding:10px!important;
+}
+html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .verix-asf-notice-window{
+  width:min(560px,calc(100vw - 20px))!important;
+  height:auto!important;min-height:0!important;
+  max-height:calc(100dvh - 20px)!important;
+  margin:auto!important;overflow:auto!important;
+}
+html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .verix-asf-notice-body{
+  min-height:0!important;overflow:auto!important;padding:12px!important;
+}
+html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .verix-asf-notice-grid,
+html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .verix-notice-grid-three{
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:10px!important;
+}
+html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .verix-asf-notice-card{
+  min-height:0!important;padding:15px 13px!important;
+}
+</style>
+
 <script id="verix-startup-failsafe">
 (function(){
   'use strict';
@@ -6734,7 +6808,7 @@ html body #asfRateWidget .asf-rate-sub[data-window-state="ready"]{
   <div class="ops-boot-bar"><i></i></div>
 </div>
 
-<div id="verixAsfNoticeOverlay" class="verix-asf-notice-overlay" aria-hidden="true">
+<div id="verixAsfNoticeOverlay" class="verix-asf-notice-overlay" aria-hidden="false">
   <div class="verix-asf-notice-window" role="dialog" aria-modal="true" aria-labelledby="verixAsfNoticeTitle">
     <header class="verix-asf-notice-top">
       <div>
@@ -6802,7 +6876,7 @@ html body #asfRateWidget .asf-rate-sub[data-window-state="ready"]{
 </div>
 <div class="consulta-history-bottom-wrap"><button type="button" class="consulta-history-bottom" onclick="abrirHistorico()"><span class="consulta-history-bottom-icon">◷</span> HISTÓRICO DE CONSULTAS</button></div>
 <div class="bottom"><div class="bottom-left"></div><div class="bottom-right"><div class="credit"><strong></strong><br><br></div></div></div>
-<div id="mainMenuScreen" class="main-menu-screen vx-home-screen" aria-label="Menu principal">
+<div id="mainMenuScreen" class="main-menu-screen vx-home-screen show" aria-label="Menu principal">
 <div class="vx-home-shell">
   <main class="vx-home-main">
     <header class="vx-home-topbar vx-home-masthead" aria-label="VÉRIX — Apoio Operacional">
@@ -19536,6 +19610,27 @@ html body .toast-notification {
 <script id="verix-startup-controller">
 (function(){
   'use strict';
+
+  /* Mobile starts from the visible static menu/notice above.
+     Do not re-enable the desktop splash lock on handheld devices. */
+  if(window.__VERIX_MOBILE_ROUTE){
+    try{
+      document.documentElement.classList.remove('verix-starting');
+      var mobileSplash=document.getElementById('opsBootOverlay');
+      if(mobileSplash)mobileSplash.remove();
+      var mobileMenu=document.getElementById('mainMenuScreen');
+      if(mobileMenu)mobileMenu.classList.add('show');
+      if(document.body)document.body.classList.add('main-menu-active');
+      var mobileNotice=document.getElementById('verixAsfNoticeOverlay');
+      if(mobileNotice)mobileNotice.setAttribute('aria-hidden','false');
+      window.fecharAvisoASFInicial=function(){
+        var overlay=document.getElementById('verixAsfNoticeOverlay');
+        if(overlay)overlay.setAttribute('aria-hidden','true');
+      };
+      try{document.dispatchEvent(new CustomEvent('verix:boot-complete'));}catch(e){}
+    }catch(e){}
+    return;
+  }
 
   /* VÉRIX — ARRANQUE ÚNICO
      1) Splash visível ~1,2 s
