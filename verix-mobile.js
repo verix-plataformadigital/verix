@@ -55,6 +55,26 @@ function activateBody(){
     table.parentNode.insertBefore(wrap,table);
     wrap.appendChild(table);
   });
+
+  /* Na vista de consulta, os atalhos ficam depois dos painéis e do histórico. */
+  var quickTools=document.querySelector('.command .tools');
+  var historyFooter=document.querySelector('.consulta-history-bottom-wrap');
+  if(quickTools&&historyFooter&&!quickTools.classList.contains('vx-tools-footer')){
+    quickTools.classList.add('vx-tools-footer');
+    historyFooter.insertAdjacentElement('afterend',quickTools);
+  }
+
+  /* submitConjunto volta a focar a matrícula após limpar os campos.
+     No telemóvel retiramos esse foco no fim do submit para fechar o teclado,
+     sem interferir com a execução normal da consulta. */
+  document.addEventListener('submit',function(event){
+    var form=event.target;
+    if(!form||!form.matches||!form.matches('.command .searchbar form'))return;
+    var active=document.activeElement;
+    if(active&&form.contains(active)&&/^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName)){
+      try{active.blur();}catch(e){}
+    }
+  },false);
 }
 if(document.readyState==='loading'){
   document.addEventListener('DOMContentLoaded',activateBody,{once:true});
