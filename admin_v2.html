@@ -786,8 +786,8 @@ html.verix-handheld .login-card input,html.verix-handheld .login-card button{min
       <div id="insuranceCards" class="metric-grid"></div>
       <details id="insuranceCasesDisclosure" class="panel insurance-disclosure" style="margin-top:14px">
         <summary class="panel-head insurance-disclosure-summary">
-          <div><h2>Matrículas com resultado “sem registo”</h2><p>Lista operacional das últimas 24 horas. Expandir apenas quando for necessário consultar os registos.</p></div>
-          <span class="panel-tag">Retenção operacional: 24 h</span>
+          <div><h2>Matrículas com resultado “sem registo”</h2><p>Lista operacional dos últimos 90 dias. Expandir apenas quando for necessário consultar os registos.</p></div>
+          <span class="panel-tag">Retenção operacional: 90 dias</span>
         </summary>
         <div class="insurance-disclosure-body">
           <div id="insuranceCasesInfo" class="list-info">A carregar registos recentes…</div>
@@ -1604,7 +1604,7 @@ async function loadInsuranceCases(offset,append){
     const res=await request(url);const records=Array.isArray(res.cases)?res.cases:[];
     if(append)caseRows=caseRows.concat(records);else caseRows=records;
     caseHasMore=res.hasMore===true;caseOffset=caseRows.length;renderInsuranceNoCases();
-    $('insuranceCasesInfo').textContent=fmt(caseRows.length)+' registos carregados da janela operacional das últimas 24 horas. O resultado, por si só, não confirma a ausência de seguro.';
+    $('insuranceCasesInfo').textContent=fmt(caseRows.length)+' registos carregados da janela operacional dos últimos 90 dias. O resultado, por si só, não confirma a ausência de seguro.';
     $('insuranceCasesPageInfo').textContent=caseHasMore?'Existem mais registos recentes.':'Fim da lista de registos recentes.';
     $('insuranceCasesMore').hidden=!caseHasMore;
   }catch(e){if(!append)showEmpty('insuranceNoCases','Não foi possível carregar a lista de matrículas sem registo. Os dados estão indisponíveis, não significando uma lista vazia.');$('insuranceCasesInfo').textContent='Erro ao carregar registos: '+e.message;}
@@ -1614,7 +1614,7 @@ function renderInsuranceNoCases(){
   const host=$('insuranceNoCases');host.replaceChildren();
   const q=$('insuranceCasesSearch').value.trim().toLocaleUpperCase('pt-PT');
   const filtered=caseRows.filter(x=>String(x.matricula||'').toLocaleUpperCase('pt-PT').includes(q));
-  if(!filtered.length){showEmpty('insuranceNoCases',q?'Nenhuma matrícula carregada corresponde ao filtro.':'Os resultados anteriores à correção não guardavam a matrícula e não podem ser recuperados. As novas ocorrências serão registadas durante 24 h.');return;}
+  if(!filtered.length){showEmpty('insuranceNoCases',q?'Nenhuma matrícula carregada corresponde ao filtro.':'Os resultados anteriores à correção não guardavam a matrícula e não podem ser recuperados. As novas ocorrências serão registadas durante 90 dias.');return;}
   const rows=filtered.map(x=>[x.matricula,prettyDate(x.occurred_at),prettyDate(x.expires_at)]);
   host.appendChild(makeTable(['Matrícula','Data e hora','Fim da retenção'],rows));
 }
