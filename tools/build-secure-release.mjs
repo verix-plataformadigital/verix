@@ -362,18 +362,18 @@ adminPwaSource = adminPwaSource.replace(/(src="\.\.\/verix-presence-v1\.js\?v=)[
 function patchAdminPresenceUi(source) {
   const edits = [
     [
-      "let serverTelemetryBusy=false,serverTelemetryRun=0;",
-      "let serverTelemetryBusy=false,serverTelemetryRun=0,serverPresenceSnapshot=null;",
+      "let serverTelemetryBusy=false,serverTelemetryRun=0,serverTelemetryQueriesLastHour=null;",
+      "let serverTelemetryBusy=false,serverTelemetryRun=0,serverTelemetryQueriesLastHour=null,serverPresenceSnapshot=null;",
       "presence snapshot state"
     ],
     [
-      "function clearServerTelemetry(message){\n  setServerTelemetryCount('serverTelemetrySessions',null);",
-      "function clearServerTelemetry(message){\n  serverPresenceSnapshot=null;\n  setServerTelemetryCount('serverTelemetrySessions',null);",
+      "function clearServerTelemetry(message){\n  serverTelemetryQueriesLastHour=null;",
+      "function clearServerTelemetry(message){\n  serverPresenceSnapshot=null;\n  serverTelemetryQueriesLastHour=null;",
       "clear stale server snapshot"
     ],
     [
-      "  if(updated)updated.textContent=message||'Sem leitura confirmada no servidor; não são reutilizados números antigos.';\n}",
-      "  if(updated)updated.textContent=message||'Sem leitura confirmada no servidor; não são reutilizados números antigos.';\n  if(window.VERIX_LIVE_PRESENCE&&typeof window.VERIX_LIVE_PRESENCE.snapshot==='function')renderLivePresence(window.VERIX_LIVE_PRESENCE.snapshot());\n}",
+      "  if(dashboardData)renderAll();\n}",
+      "  if(dashboardData)renderAll();\n  if(window.VERIX_LIVE_PRESENCE&&typeof window.VERIX_LIVE_PRESENCE.snapshot==='function')renderLivePresence(window.VERIX_LIVE_PRESENCE.snapshot());\n}",
       "rerender after server telemetry clears"
     ],
     [
@@ -402,7 +402,7 @@ function patchAdminPresenceUi(source) {
       "server-based freshness label"
     ],
     [
-      "Instalações com ligação Realtime; não equivale a pessoas únicas.",
+      "Ligações Realtime ativas neste momento; não são pessoas únicas.",
       "Instalações com sinal do servidor nos últimos 90 s; não equivale a pessoas únicas.",
       "accurate live metric note"
     ],
