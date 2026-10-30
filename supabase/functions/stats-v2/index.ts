@@ -234,9 +234,8 @@ async function loadInsuranceNoCases(now:string, pageLimit?:number, pageOffset=0)
     const qs = new URLSearchParams();
     qs.set("select","event_id,matricula,occurred_at,created_at,expires_at");
     qs.set("expires_at","gt."+now);
-    // The 24-hour window starts when the server records the result, not when an
-    // offline client originally generated its event. Existing rows are not rewritten.
-    qs.set("created_at","gte."+new Date(Date.parse(now)-24*60*60*1000).toISOString());
+    // Database expires_at is the single retention boundary. Return every
+    // operational case that remains inside the configured retention period.
     qs.set("order","occurred_at.desc,event_id.desc");
     qs.set("limit",String(limit));
     qs.set("offset",String(offset));
