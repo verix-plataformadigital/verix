@@ -7,6 +7,13 @@ const vxMobileViewport = (
 );
 if(!vxMobileViewport) return;
 
+/* Treat Android/iOS as handheld even when Chrome reports a desktop-sized CSS viewport. */
+const vxViewportMeta=document.querySelector('meta[name="viewport"]');
+if(vxViewportMeta) vxViewportMeta.setAttribute('content','width=device-width,initial-scale=1,viewport-fit=cover');
+const vxMobileStylesheet=[...document.querySelectorAll('link[rel="stylesheet"]')].find(link=>/verix-mobile[.]css(?:[?]|$)/i.test(link.href||''));
+if(vxMobileStylesheet) vxMobileStylesheet.media='all';
+document.documentElement.classList.add('vx-handheld');
+
 function esc(text){
   return String(text||'').replace(/\s+/g,' ').trim();
 }
