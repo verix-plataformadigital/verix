@@ -189,11 +189,11 @@ function writeSecureFile(relativeSource, relativeOutput) {
     // Match the current source version instead of assuming a stale hard-coded value.
     const mobileCacheVersion = encodeURIComponent(String(BUILD_ID));
     source = source.replace(
-      /(verix-mobile\\.css\\?v=)[^"'&\\s]+/g,
+      /(verix-mobile\.css\?v=)[^"'&\s]+/g,
       "$1" + mobileCacheVersion
     );
     source = source.replace(
-      /(verix-mobile\\.js\\?v=)[^"'&\\s]+/g,
+      /(verix-mobile\.js\?v=)[^"'&\s]+/g,
       "$1" + mobileCacheVersion
     );
     if (
