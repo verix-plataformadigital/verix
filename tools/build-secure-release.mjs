@@ -186,9 +186,9 @@ function writeSecureFile(relativeSource, relativeOutput) {
     );
     source = source.replace(/1\.5-sec-20261008-a/g, BUILD_ID);
     // Version the mobile adapter on every release so phones cannot retain an old layout.
-    source = source.replaceAll("verix-mobile.css?v=5", "verix-mobile.css?v=6");
-    source = source.replaceAll("verix-mobile.js?v=5", "verix-mobile.js?v=6");
-    if (!source.includes("verix-mobile.css?v=6") || !source.includes("verix-mobile.js?v=6")) {
+    source = source.replaceAll("verix-mobile.css?v=5", "verix-mobile.css?v=7");
+    source = source.replaceAll("verix-mobile.js?v=5", "verix-mobile.js?v=7");
+    if (!source.includes("verix-mobile.css?v=7") || !source.includes("verix-mobile.js?v=7")) {
       throw new Error("Mobile adapter cache version was not updated in the secure build");
     }
   }
