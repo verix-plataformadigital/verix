@@ -185,10 +185,31 @@ function writeSecureFile(relativeSource, relativeOutput) {
       "var BUILD_ID = '" + safeBuildId + "'"
     );
     source = source.replace(/1\.5-sec-20261008-a/g, BUILD_ID);
-    // Version the mobile adapter on every release so phones cannot retain an old layout.
+    // Use the current release identity for both mobile adapters. Match the
+    // existing version instead of assuming an old hard-coded value: source
+    // assets may already have been bumped independently of this builder.
+    const mobileAdapterVersion = encodeURIComponent(String(BUILD_ID));
+    function updateMobileAdapterReference(fileName) {
+      const escapedName = fileName.replace(/[.*+?^${}()|[]\\]/g, "\\    // Version the mobile adapter on every release so phones cannot retain an old layout.
     source = source.replaceAll("verix-mobile.css?v=5", "verix-mobile.css?v=8");
     source = source.replaceAll("verix-mobile.js?v=5", "verix-mobile.js?v=8");
     if (!source.includes("verix-mobile.css?v=8") || !source.includes("verix-mobile.js?v=8")) {
+      throw new Error("Mobile adapter cache version was not updated in the secure build");
+    }");
+      const pattern = new RegExp("(" + escapedName + "\\?v=)[^"'&\\s<>]+", "g");
+      let replacements = 0;
+      source = source.replace(pattern, (_match, prefix) => {
+        replacements += 1;
+        return prefix + mobileAdapterVersion;
+      });
+      if (replacements === 0) {
+        throw new Error("Mobile adapter reference not found in verix-app.html: " + fileName);
+      }
+    }
+    updateMobileAdapterReference("verix-mobile.css");
+    updateMobileAdapterReference("verix-mobile.js");
+    if (!source.includes("verix-mobile.css?v=" + mobileAdapterVersion) ||
+        !source.includes("verix-mobile.js?v=" + mobileAdapterVersion)) {
       throw new Error("Mobile adapter cache version was not updated in the secure build");
     }
   }
