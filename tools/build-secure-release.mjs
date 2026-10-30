@@ -193,10 +193,10 @@ function writeSecureFile(relativeSource, relativeOutput) {
     }
   }
 
-  // Inject the visual layer at the end of the document, after legacy style
-  // blocks that live inside <body>. If this is placed in <head>, later legacy
-  // CSS can win the cascade and silently restore the old ASF result design.
-  // Keep the source monolith intact and avoid external CSS requests at runtime.
+  // Inject authoritative styles after legacy inline styles. The handheld
+  // startup controller keeps the body hidden until this exact style block has
+  // been parsed; the finalizer then reveals the current UI in one paint.
+  // This prevents obsolete notice styling from flashing before the final CSS.
   if (relativeSource === "verix-app.html") {
     const depthCssPath = path.join(ROOT, "verix-depth-ui.css");
     if (!fs.existsSync(depthCssPath)) {
@@ -215,13 +215,29 @@ function writeSecureFile(relativeSource, relativeOutput) {
     if (!/<\/body>/i.test(source)) {
       throw new Error("Cannot inject VÉRIX stylesheets: closing </body> not found");
     }
+    const mobileFinalizer = [
+      '<script id="verix-mobile-finalize">',
+      '(function(){',
+      '  "use strict";',
+      '  if(!window.__VERIX_MOBILE_ROUTE)return;',
+      '  var root=document.documentElement;',
+      '  var notice=document.getElementById("verixAsfNoticeOverlay");',
+      '  if(notice)notice.setAttribute("aria-hidden","false");',
+      '  root.classList.add("vx-mobile-ready");',
+      '  try{document.dispatchEvent(new CustomEvent("verix:boot-complete"));}catch(e){}',
+      '})();',
+      '</script>'
+    ].join("\n");
     source = source.replace(
       /<\/body>/i,
       '<style id="verix-depth-ui">\n' + depthCss + '\n</style>\n' +
-      '<style id="verix-mobile-final-ui">\n' + mobileFinalCss + '\n</style>\n</body>'
-    );
-  }
+      '<style id="verix-mobile-final-ui">\n' + mobileFinalCss + '\n</style>\n' +
+      mobileFinalizer + '\n</body>'
+    );  }
 
+  if (relativeSource === "verix-app.html" && (!source.includes('id="verix-mobile-finalize"') || !source.includes('id="verix-mobile-final-ui"'))) {
+    throw new Error("Handheld final style/reveal sequence is incomplete");
+  }
   const { html, scriptCount } = obfuscateHtml(source, relativeSource);
   const outPath = path.join(OUTPUT_DIR, relativeOutput);
 

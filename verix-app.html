@@ -133,6 +133,7 @@ html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .verix-asf-notice-card{
       !root.classList.contains('vx-mobile-ready');
     var desktopPending=root.classList.contains('verix-starting');
     if(!mobilePending&&!desktopPending)return;
+    if(mobilePending&&!document.getElementById('verix-mobile-final-ui'))return;
     root.classList.remove('verix-starting');
     root.classList.add('verix-startup-recovered');
     var splash=document.getElementById('opsBootOverlay');
@@ -6842,7 +6843,7 @@ html body #asfRateWidget .asf-rate-sub[data-window-state="ready"]{
   <div class="ops-boot-bar"><i></i></div>
 </div>
 
-<div id="verixAsfNoticeOverlay" class="verix-asf-notice-overlay" aria-hidden="false">
+<div id="verixAsfNoticeOverlay" class="verix-asf-notice-overlay" aria-hidden="true">
   <div class="verix-asf-notice-window" role="dialog" aria-modal="true" aria-labelledby="verixAsfNoticeTitle">
     <header class="verix-asf-notice-top">
       <div>
@@ -19671,13 +19672,10 @@ html body .toast-notification {
         if(overlay)overlay.classList.remove('show','cinemometro-fullpage');
       });
       var mobileNotice=document.getElementById('verixAsfNoticeOverlay');
-      if(mobileNotice)mobileNotice.setAttribute('aria-hidden','false');
       window.fecharAvisoASFInicial=function(){
         var overlay=document.getElementById('verixAsfNoticeOverlay');
         if(overlay)overlay.setAttribute('aria-hidden','true');
       };
-      root.classList.add('vx-mobile-ready');
-      try{document.dispatchEvent(new CustomEvent('verix:boot-complete'));}catch(e){}
     }catch(e){}
     return;
   }
