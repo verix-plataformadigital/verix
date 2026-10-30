@@ -394,10 +394,6 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
   .error-record-heading{gap:7px}
   .error-record-summary .error-time{white-space:normal;text-align:right;margin:0}
   .error-record-body{padding:0 11px 13px}
-  .error-record-summary{align-items:flex-start;gap:8px;padding:13px 11px}
-  .error-record-heading{gap:7px}
-  .error-record-summary .error-time{white-space:normal;text-align:right;margin:0}
-  .error-record-body{padding:0 11px 13px}
   .insurance-disclosure-summary{align-items:flex-start;gap:8px;padding:15px 12px}
   .insurance-disclosure-body{padding:13px 12px}
   .error-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -697,7 +693,7 @@ html.verix-handheld .login-card input,html.verix-handheld .login-card button{min
       <nav id="mainNav" class="main-nav" aria-label="Navegação do painel">
         <button class="nav-button" type="button" data-page="dashboard" aria-current="page"><span class="nav-icon" aria-hidden="true">◫</span>Visão geral</button>
         <button class="nav-button" type="button" data-page="insurance" aria-current="false"><span class="nav-icon" aria-hidden="true">▣</span>Consultas de seguro</button>
-        <button class="nav-button" type="button" data-page="activity" aria-current="false"><span class="nav-icon" aria-hidden="true">◷</span>Utilização por hora</button>
+        <button class="nav-button" type="button" data-page="activity" aria-current="false"><span class="nav-icon" aria-hidden="true">◷</span>Utilização</button>
         <button class="nav-button" type="button" data-page="legislation" aria-current="false"><span class="nav-icon" aria-hidden="true">§</span>Legislação copiada</button>
         <button class="nav-button" type="button" data-page="errors" aria-current="false"><span class="nav-icon" aria-hidden="true">!</span>Erros técnicos</button>
       </nav>
@@ -736,44 +732,22 @@ html.verix-handheld .login-card input,html.verix-handheld .login-card button{min
         <span class="status-pill loading" id="presenceConnection"><i class="status-dot" aria-hidden="true"></i><span>A ligar</span></span>
       </div>
       <div id="livePresenceCards" class="metric-grid live-presence-grid" aria-live="polite">
-        <article class="metric-card blue"><div class="metric-label">Online agora</div><div class="metric-value" id="livePresenceOnline">—</div><div class="metric-note">Instalações com ligação Realtime; não equivale a pessoas únicas.</div></article>
-        <article class="metric-card green"><div class="metric-label">A trabalhar agora</div><div class="metric-value" id="livePresenceActive">—</div><div class="metric-note">Instalações online com interação nos últimos 2 min.</div></article>
-        <article class="metric-card blue"><div class="metric-label">Vistas na última hora</div><div class="metric-value" id="livePresenceHour">—</div><div class="metric-note">Instalações com sinal de presença na última hora; podem estar desligadas.</div></article>
+        <article class="metric-card blue"><div class="metric-label">Instalações online</div><div class="metric-value" id="livePresenceOnline">—</div><div class="metric-note">Ligações Realtime ativas neste momento; não são pessoas únicas.</div></article>
+        <article class="metric-card green"><div class="metric-label">Com atividade</div><div class="metric-value" id="livePresenceActive">—</div><div class="metric-note">Instalações online com interação nos últimos 2 minutos.</div></article>
       </div>
       <div class="refresh-time" id="livePresenceUpdated">A aguardar ligação de presença.</div>
       <div class="section-heading compact-heading">
-        <div><h2>Telemetria confirmada no servidor</h2><p>Eventos recebidos e verificados no Supabase; estes números são distintos da presença Realtime do navegador.</p></div>
+        <div><h2>Atividade recente</h2><p>Consultas confirmadas pelo servidor e instalações que pesquisaram na última hora.</p></div>
         <span class="status-pill loading" id="serverTelemetryStatus"><i class="status-dot" aria-hidden="true"></i><span>A ligar</span></span>
       </div>
-      <div id="serverTelemetryCards" class="metric-grid live-presence-grid" aria-live="polite">
-        <article class="metric-card blue"><div class="metric-label">Sessões online no servidor</div><div class="metric-value" id="serverTelemetrySessions">—</div><div class="metric-note">Sessões com sinal recebido nos últimos 90 segundos; não são pessoas únicas.</div></article>
-        <article class="metric-card green"><div class="metric-label">Consultas iniciadas na última hora</div><div class="metric-value" id="serverTelemetryQueriesHour">—</div><div class="metric-note">Pedidos registados pelo servidor na última hora; podem diferir dos resultados finais.</div></article>
-        <article class="metric-card blue"><div class="metric-label">Instalações vistas na última hora</div><div class="metric-value" id="serverTelemetrySeenHour">—</div><div class="metric-note">Histórico recente; não significa que estejam online agora.</div></article>
-      </div>
-      <div class="refresh-time" id="serverTelemetryUpdated">A aguardar a primeira leitura da telemetria do servidor.</div>
-      <div class="section-heading compact-heading">
-        <div><h2>Atividade recente</h2></div>
-      </div>
       <div id="overviewLiveCards" class="metric-grid"></div>
+      <div class="refresh-time" id="serverTelemetryUpdated">A aguardar a primeira leitura do servidor.</div>
       <p id="baseInstallationsNote" class="base-info">Instalações registadas: a carregar.</p>
       <div class="section-heading compact-heading">
         <div><h2>Indicadores do período</h2></div>
       </div>
       <div id="overviewCards" class="metric-grid"></div>
       <div class="content-grid">
-        <article id="todayHourlyPanel" class="panel wide">
-          <div class="panel-head">
-            <div><h2>Atividade por hora</h2><p>Consultas e instalações ativas. Valores visíveis sobre cada hora.</p></div>
-            <span class="panel-tag">Lisboa</span>
-          </div>
-          <div class="legend"><span><i class="legend-dot consults"></i>Consultas iniciadas</span><span><i class="legend-dot users"></i>Instalações ativas</span></div>
-          <div id="hourlyChart" class="hourly-chart" role="img" aria-label="Gráfico horário: números junto de cada barra indicam os valores exatos"></div>
-          <div id="hourlyNote" class="hourly-note">—</div>
-          <details class="hourly-values">
-            <summary>Ver tabela com os valores exatos</summary>
-            <div id="hourlyTable" class="hourly-table-content"></div>
-          </details>
-        </article>
         <article class="panel wide">
           <div class="panel-head"><div><h2>Qualidade das consultas</h2></div></div>
           <div id="queryQuality" class="quality-grid"></div>
@@ -786,8 +760,8 @@ html.verix-handheld .login-card input,html.verix-handheld .login-card button{min
       <div id="insuranceCards" class="metric-grid"></div>
       <details id="insuranceCasesDisclosure" class="panel insurance-disclosure" style="margin-top:14px">
         <summary class="panel-head insurance-disclosure-summary">
-          <div><h2>Matrículas com resultado “sem registo”</h2><p>Lista operacional das últimas 24 horas. Expandir apenas quando for necessário consultar os registos.</p></div>
-          <span class="panel-tag">Retenção operacional: 24 h</span>
+          <div><h2>Matrículas com resultado “sem registo”</h2><p>Lista operacional de ocorrências ainda dentro da retenção de 90 dias. Expandir apenas quando for necessário consultar os registos.</p></div>
+          <span class="panel-tag">Retenção operacional: 90 dias</span>
         </summary>
         <div class="insurance-disclosure-body">
           <div id="insuranceCasesInfo" class="list-info">A carregar registos recentes…</div>
@@ -981,7 +955,7 @@ const ERROR_LEDGER_REFRESH_MS=60000;
 const PAGE_TEXT={
  dashboard:['Visão geral','Estado operacional em tempo real separado dos indicadores do período selecionado.'],
  insurance:['Consultas de seguro','Resultados do período escolhido e lista operacional recente apresentada separadamente.'],
- activity:['Utilização por hora','Histórico diário dos últimos 30 dias e distribuição horária de hoje.'],
+ activity:['Utilização','Histórico diário dos últimos 30 dias e distribuição horária de hoje.'],
  legislation:['Legislação copiada','Elementos mais copiados e utilização comprovada pelo evento de cópia, no período selecionado.'],
  errors:['Erros técnicos','Falhas técnicas separadas de erros de formato da matrícula. Um erro técnico não significa que o veículo não tenha seguro.']
 };
@@ -1002,7 +976,7 @@ let dashboardBusy=false,errorBusy=false,errorOffset=0,errorPageSize=50,errorLedg
 let dailyTrendData=null,dailyTrendLoadedAt=0,dailyTrendBusy=false;
 let caseRows=[],caseOffset=0,caseHasMore=false,caseBusy=false;
 let refreshTimer=null,noticeTimer=null,lastUpdated=null,lastErrorRefreshAt=0;
-let serverTelemetryBusy=false,serverTelemetryRun=0;
+let serverTelemetryBusy=false,serverTelemetryRun=0,serverTelemetryQueriesLastHour=null;
 function setStatus(mode,label){const el=$('backendStatus');el.className='status-pill '+mode;$('backendStatusText').textContent=label;}
 function showNotice(message,kind){const el=$('notice');el.textContent=message;el.className='notice '+(kind||'');el.hidden=!message;if(noticeTimer)clearTimeout(noticeTimer);if(message)noticeTimer=setTimeout(()=>{el.hidden=true;},9000);}
 function clearNotice(){const el=$('notice');el.hidden=true;el.textContent='';el.className='notice';}
@@ -1116,16 +1090,11 @@ function setServerTelemetryStatus(mode,label){
   const labelNode=pill.querySelector('span:last-child');
   if(labelNode)labelNode.textContent=label;
 }
-function setServerTelemetryCount(id,value){
-  const node=$(id);
-  if(node)node.textContent=value===null?'—':new Intl.NumberFormat('pt-PT').format(value);
-}
 function clearServerTelemetry(message){
-  setServerTelemetryCount('serverTelemetrySessions',null);
-  setServerTelemetryCount('serverTelemetryQueriesHour',null);
-  setServerTelemetryCount('serverTelemetrySeenHour',null);
+  serverTelemetryQueriesLastHour=null;
   const updated=$('serverTelemetryUpdated');
   if(updated)updated.textContent=message||'Sem leitura confirmada no servidor; não são reutilizados números antigos.';
+  if(dashboardData)renderAll();
 }
 async function loadServerTelemetry(){
   if(!token||serverTelemetryBusy)return;
@@ -1141,19 +1110,16 @@ async function loadServerTelemetry(){
       if(value===null||value===undefined||value===''||!Number.isSafeInteger(Number(value))||Number(value)<0)return null;
       return Number(value);
     };
-    const sessions=count(p.online_sessions);
     const consultations=count(p.consultations_started_last_hour);
-    const seenHour=count(p.installations_seen_last_hour);
-    if(sessions===null||consultations===null||seenHour===null)throw new Error('A resposta não contém todas as métricas de presença.');
-    setServerTelemetryCount('serverTelemetrySessions',sessions);
-    setServerTelemetryCount('serverTelemetryQueriesHour',consultations);
-    setServerTelemetryCount('serverTelemetrySeenHour',seenHour);
+    if(consultations===null)throw new Error('A resposta não contém consultas confirmadas na última hora.');
+    serverTelemetryQueriesLastHour=consultations;
     setServerTelemetryStatus('online','API confirmada');
     const updated=$('serverTelemetryUpdated');
     if(updated){
       const observed=prettyDate(p.observed_at||result.generated_at);
-      updated.textContent='Leitura do servidor: '+observed+' · janela de presença: '+fmt(count(p.presence_lease_seconds)??90)+' s. Sessões, instalações e pessoas não são métricas equivalentes.';
+      updated.textContent='Consultas confirmadas pelo servidor · leitura '+observed+'.';
     }
+    if(dashboardData)renderAll();
   }catch(error){
     if(run!==serverTelemetryRun||requestToken!==token)return;
     setServerTelemetryStatus('offline','API indisponível');
@@ -1175,17 +1141,13 @@ function renderAll(){
   const legislation=getPeriodData(dashboardData.legislation,currentPeriod);
   const errors=getPeriodData(dashboardData.errors,currentPeriod);
   const liveUsers=dashboardData.users||{};
-  const setOperationalPresenceValue=(id,value)=>{const el=$(id);if(el)el.textContent=fmt(value);};
-  setOperationalPresenceValue('livePresenceHour',liveUsers.installationsSeenLastHour);
   const baseNote=$('baseInstallationsNote');
   if(baseNote)baseNote.textContent='Base acumulada da aplicação: '+fmt(liveUsers.registeredInstallations)+' instalações registadas. Este total não depende do período selecionado.';
-  const todayHourlyPanel=$('todayHourlyPanel');
-  if(todayHourlyPanel)todayHourlyPanel.hidden=currentPeriod!=='today';
   const activityHourlyPanel=$('activityHourlyPanel');
   if(activityHourlyPanel)activityHourlyPanel.hidden=currentPeriod!=='today';
   appendCards('overviewLiveCards',[
-    ['Consultas iniciadas · últimos 3 min',fmt(liveUsers.consultationsLast3Minutes),'Consultas iniciadas nos últimos 3 min.','accent'],
-    ['Instalações com consulta · última hora',fmt(liveUsers.installationsConsultedLastHour),'Instalações que consultaram veículos na última hora.','blue']
+    ['Consultas iniciadas · última hora',serverTelemetryQueriesLastHour===null?'—':fmt(serverTelemetryQueriesLastHour),'Pedidos registados e confirmados pelo servidor.','accent'],
+    ['Instalações com consulta · última hora',fmt(liveUsers.installationsConsultedLastHour),'Instalações distintas que consultaram veículos na última hora.','blue']
   ]);
   appendCards('overviewCards',[
     ['Consultas iniciadas',fmt(insurance.consultations),'Consultas iniciadas.','accent'],
@@ -1196,7 +1158,6 @@ function renderAll(){
     ['Instalações ativas',fmt(users.activeInstallations),'Instalações com ações reais.','blue'],
     ['Legislação copiada',fmt(legislation.copies),'Cópias confirmadas.','blue']
   ]);
-  renderHourly('hourlyChart','hourlyTable','hourlyNote');
   renderQuality(insurance);
   appendCards('insuranceCards',[
     ['Consultas iniciadas',fmt(insurance.consultations),'Pedidos de consulta enviados no período selecionado.','accent'],
@@ -1604,7 +1565,7 @@ async function loadInsuranceCases(offset,append){
     const res=await request(url);const records=Array.isArray(res.cases)?res.cases:[];
     if(append)caseRows=caseRows.concat(records);else caseRows=records;
     caseHasMore=res.hasMore===true;caseOffset=caseRows.length;renderInsuranceNoCases();
-    $('insuranceCasesInfo').textContent=fmt(caseRows.length)+' registos carregados da janela operacional das últimas 24 horas. O resultado, por si só, não confirma a ausência de seguro.';
+    $('insuranceCasesInfo').textContent=fmt(caseRows.length)+' registos carregados da janela operacional de retenção de 90 dias. O resultado, por si só, não confirma a ausência de seguro.';
     $('insuranceCasesPageInfo').textContent=caseHasMore?'Existem mais registos recentes.':'Fim da lista de registos recentes.';
     $('insuranceCasesMore').hidden=!caseHasMore;
   }catch(e){if(!append)showEmpty('insuranceNoCases','Não foi possível carregar a lista de matrículas sem registo. Os dados estão indisponíveis, não significando uma lista vazia.');$('insuranceCasesInfo').textContent='Erro ao carregar registos: '+e.message;}
@@ -1614,7 +1575,7 @@ function renderInsuranceNoCases(){
   const host=$('insuranceNoCases');host.replaceChildren();
   const q=$('insuranceCasesSearch').value.trim().toLocaleUpperCase('pt-PT');
   const filtered=caseRows.filter(x=>String(x.matricula||'').toLocaleUpperCase('pt-PT').includes(q));
-  if(!filtered.length){showEmpty('insuranceNoCases',q?'Nenhuma matrícula carregada corresponde ao filtro.':'Os resultados anteriores à correção não guardavam a matrícula e não podem ser recuperados. As novas ocorrências serão registadas durante 24 h.');return;}
+  if(!filtered.length){showEmpty('insuranceNoCases',q?'Nenhuma matrícula carregada corresponde ao filtro.':'Os resultados anteriores à correção não guardavam a matrícula e não podem ser recuperados. As novas ocorrências serão registadas durante 90 dias.');return;}
   const rows=filtered.map(x=>[x.matricula,prettyDate(x.occurred_at),prettyDate(x.expires_at)]);
   host.appendChild(makeTable(['Matrícula','Data e hora','Fim da retenção'],rows));
 }
