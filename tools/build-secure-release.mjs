@@ -186,9 +186,9 @@ function writeSecureFile(relativeSource, relativeOutput) {
     );
     source = source.replace(/1\.5-sec-20261008-a/g, BUILD_ID);
     // Version the mobile adapter on every release so phones cannot retain an old layout.
-    source = source.replaceAll("verix-mobile.css?v=5", "verix-mobile.css?v=7");
-    source = source.replaceAll("verix-mobile.js?v=5", "verix-mobile.js?v=7");
-    if (!source.includes("verix-mobile.css?v=7") || !source.includes("verix-mobile.js?v=7")) {
+    source = source.replaceAll("verix-mobile.css?v=5", "verix-mobile.css?v=8");
+    source = source.replaceAll("verix-mobile.js?v=5", "verix-mobile.js?v=8");
+    if (!source.includes("verix-mobile.css?v=8") || !source.includes("verix-mobile.js?v=8")) {
       throw new Error("Mobile adapter cache version was not updated in the secure build");
     }
   }
@@ -204,12 +204,21 @@ function writeSecureFile(relativeSource, relativeOutput) {
     }
     const depthCss = fs.readFileSync(depthCssPath, "utf8").trim();
     if (!depthCss) throw new Error("VÉRIX depth stylesheet is empty");
+
+    const mobileFinalCssPath = path.join(ROOT, "verix-mobile-final.css");
+    if (!fs.existsSync(mobileFinalCssPath)) {
+      throw new Error("Required VÉRIX handheld stylesheet missing: verix-mobile-final.css");
+    }
+    const mobileFinalCss = fs.readFileSync(mobileFinalCssPath, "utf8").trim();
+    if (!mobileFinalCss) throw new Error("VÉRIX handheld stylesheet is empty");
+
     if (!/<\/body>/i.test(source)) {
-      throw new Error("Cannot inject VÉRIX depth stylesheet: closing </body> not found");
+      throw new Error("Cannot inject VÉRIX stylesheets: closing </body> not found");
     }
     source = source.replace(
       /<\/body>/i,
-      '<style id="verix-depth-ui">\n' + depthCss + '\n</style>\n</body>'
+      '<style id="verix-depth-ui">\n' + depthCss + '\n</style>\n' +
+      '<style id="verix-mobile-final-ui">\n' + mobileFinalCss + '\n</style>\n</body>'
     );
   }
 
