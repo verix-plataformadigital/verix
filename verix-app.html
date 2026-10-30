@@ -5,37 +5,43 @@
 
 
 <script id="verix-startup-flag">(function(){try{document.documentElement.classList.add('verix-starting');}catch(e){}})();</script>
+<script id="verix-mobile-route-capture">
+(function(){
+  'use strict';
+  var queryMobile=/(?:^|[?&])_mobile=1(?:&|$)/.test(String(window.location.search||''));
+  var ua=String(navigator.userAgent||'');
+  var handheld=queryMobile||/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(ua);
+  try{handheld=handheld||!!(window.matchMedia&&window.matchMedia('(pointer:coarse)').matches);}catch(e){}
+  window.__VERIX_MOBILE_ROUTE=!!handheld;
+  if(!handheld)return;
+  document.documentElement.classList.add('verix-handheld');
+  var css=document.querySelector('link[href*="verix-mobile.css"]');
+  if(css)css.media='all';
+})();
+</script>
 <script id="verix-startup-failsafe">
 (function(){
   'use strict';
-  var attempts=0;
+  if(!window.__VERIX_MOBILE_ROUTE)return;
   function recoverIfStuck(){
     var root=document.documentElement;
-    if(!root || !root.classList.contains('verix-starting')) return;
-    attempts++;
-    var menu=document.getElementById('mainMenuScreen');
-    if(!menu && attempts<8){
-      window.setTimeout(recoverIfStuck,1000);
-      return;
-    }
+    if(!root || !root.classList.contains('verix-starting'))return;
     root.classList.remove('verix-starting');
+    root.classList.add('verix-startup-recovered');
     var splash=document.getElementById('opsBootOverlay');
     if(splash){try{splash.remove();}catch(e){splash.style.display='none';}}
+    var menu=document.getElementById('mainMenuScreen');
     if(menu)menu.classList.add('show');
+    var notice=document.getElementById('verixAsfNoticeOverlay');
+    if(notice)notice.setAttribute('aria-hidden','false');
     if(document.body){
       document.body.classList.add('main-menu-active');
       document.body.classList.remove('fixed-workspace-active','consultation-screen-active','cinemometro-page-active','history-page-active');
     }
     try{document.dispatchEvent(new CustomEvent('verix:startup-recovered'));}catch(e){}
   }
-  /* Arm immediately in the head: do not depend on DOMContentLoaded,
-     which may never arrive if another startup script stalls. */
-  window.setTimeout(recoverIfStuck,8000);
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',function(){
-      window.setTimeout(recoverIfStuck,5000);
-    },{once:true});
-  }
+  // Arm immediately; do not wait for DOMContentLoaded or deferred scripts.
+  window.setTimeout(recoverIfStuck,6500);
 })();
 </script>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -19549,6 +19555,7 @@ html body .toast-notification {
   var main = document.querySelector('.main');
 
   function forceStartupState(){
+    if(document.documentElement.classList.contains('verix-startup-recovered')) return;
     try { document.documentElement.classList.add('verix-starting'); } catch(e) {}
     if (notice) notice.setAttribute('aria-hidden','true');
     if (menu) menu.classList.remove('show');
