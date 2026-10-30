@@ -55,7 +55,8 @@ html.vx-mobile-bootstrap body{
   margin:0!important;padding:0!important;
   overflow-x:hidden!important;overflow-y:auto!important;
 }
-html.vx-mobile-bootstrap body{visibility:visible!important}
+html.vx-mobile-bootstrap:not(.vx-mobile-ready) body{visibility:hidden!important}
+html.vx-mobile-bootstrap.vx-mobile-ready body{visibility:visible!important}
 html.vx-mobile-bootstrap body #opsBootOverlay{
   display:none!important;visibility:hidden!important;pointer-events:none!important;
 }
@@ -126,7 +127,12 @@ html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .verix-asf-notice-card{
   if(!window.__VERIX_MOBILE_ROUTE)return;
   function recoverIfStuck(){
     var root=document.documentElement;
-    if(!root || !root.classList.contains('verix-starting'))return;
+    if(!root)return;
+    var mobilePending=!!window.__VERIX_MOBILE_ROUTE &&
+      root.classList.contains('vx-mobile-bootstrap') &&
+      !root.classList.contains('vx-mobile-ready');
+    var desktopPending=root.classList.contains('verix-starting');
+    if(!mobilePending&&!desktopPending)return;
     root.classList.remove('verix-starting');
     root.classList.add('verix-startup-recovered');
     var splash=document.getElementById('opsBootOverlay');
@@ -139,6 +145,7 @@ html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .verix-asf-notice-card{
       document.body.classList.add('main-menu-active');
       document.body.classList.remove('fixed-workspace-active','consultation-screen-active','cinemometro-page-active','history-page-active');
     }
+    if(mobilePending)root.classList.add('vx-mobile-ready');
     try{document.dispatchEvent(new CustomEvent('verix:startup-recovered'));}catch(e){}
   }
   // Arm immediately; do not wait for DOMContentLoaded or deferred scripts.
@@ -19669,6 +19676,7 @@ html body .toast-notification {
         var overlay=document.getElementById('verixAsfNoticeOverlay');
         if(overlay)overlay.setAttribute('aria-hidden','true');
       };
+      root.classList.add('vx-mobile-ready');
       try{document.dispatchEvent(new CustomEvent('verix:boot-complete'));}catch(e){}
     }catch(e){}
     return;

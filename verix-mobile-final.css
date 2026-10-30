@@ -475,3 +475,44 @@ html.vx-handheld body.vx-mobile-mode canvas,
 html.vx-handheld body.vx-mobile-mode svg {
   max-width: 100%;
 }
+
+/* MOBILE NAVIGATION STATE CONTRACT
+   The body state is authoritative: the menu is visible only on the home
+   screen; operational workspaces and module windows always sit above it. */
+html.vx-handheld body #mainMenuScreen.vx-home-screen {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+html.vx-handheld body.main-menu-active #mainMenuScreen.vx-home-screen {
+  display: block !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  z-index: 2147482000 !important;
+}
+html.vx-handheld body:not(.main-menu-active) #mainMenuScreen.vx-home-screen {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+html.vx-handheld body.main-menu-active #mainMenuScreen.vx-home-screen .vx-home-action {
+  position: relative !important;
+  z-index: 1 !important;
+  display: flex !important;
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+}
+html.vx-handheld body.fixed-workspace-active #moduleOverlay.show,
+html.vx-handheld body.history-page-active #historyOverlay.show {
+  display: flex !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  z-index: 2147483000 !important;
+}
+html.vx-handheld body.fixed-workspace-active #mainMenuScreen.vx-home-screen,
+html.vx-handheld body.history-page-active #mainMenuScreen.vx-home-screen,
+html.vx-handheld body.consultation-screen-active #mainMenuScreen.vx-home-screen {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
