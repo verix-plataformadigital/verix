@@ -185,10 +185,24 @@ function writeSecureFile(relativeSource, relativeOutput) {
       "var BUILD_ID = '" + safeBuildId + "'"
     );
     source = source.replace(/1\.5-sec-20261008-a/g, BUILD_ID);
-    // Version the mobile adapter on every release so phones cannot retain an old layout.
-    source = source.replaceAll("verix-mobile.css?v=5", "verix-mobile.css?v=8");
-    source = source.replaceAll("verix-mobile.js?v=5", "verix-mobile.js?v=8");
-    if (!source.includes("verix-mobile.css?v=8") || !source.includes("verix-mobile.js?v=8")) {
+    // Use the current release identity for both mobile adapters. Match the
+    // existing version instead of assuming an old hard-coded value: source
+    // assets may already have been bumped independently of this builder.
+    const mobileAdapterVersion = encodeURIComponent(String(BUILD_ID));
+    function updateMobileAdapterReference(fileName) {
+      const pattern = fileName === "verix-mobile.css"
+        ? /verix-mobile\.css\?v=[^"'&\s<>]+/g
+        : /verix-mobile\.js\?v=[^"'&\s<>]+/g;
+      const matches = source.match(pattern) || [];
+      if (matches.length === 0) {
+        throw new Error("Mobile adapter reference not found in verix-app.html: " + fileName);
+      }
+      source = source.replace(pattern, fileName + "?v=" + mobileAdapterVersion);
+    }
+    updateMobileAdapterReference("verix-mobile.css");
+    updateMobileAdapterReference("verix-mobile.js");
+    if (!source.includes("verix-mobile.css?v=" + mobileAdapterVersion) ||
+        !source.includes("verix-mobile.js?v=" + mobileAdapterVersion)) {
       throw new Error("Mobile adapter cache version was not updated in the secure build");
     }
   }
@@ -348,18 +362,18 @@ adminPwaSource = adminPwaSource.replace(/(src="\.\.\/verix-presence-v1\.js\?v=)[
 function patchAdminPresenceUi(source) {
   const edits = [
     [
-      "let serverTelemetryBusy=false,serverTelemetryRun=0;",
-      "let serverTelemetryBusy=false,serverTelemetryRun=0,serverPresenceSnapshot=null;",
+      "let serverTelemetryBusy=false,serverTelemetryRun=0,serverTelemetryQueriesLastHour=null;",
+      "let serverTelemetryBusy=false,serverTelemetryRun=0,serverTelemetryQueriesLastHour=null,serverPresenceSnapshot=null;",
       "presence snapshot state"
     ],
     [
-      "function clearServerTelemetry(message){\n  setServerTelemetryCount('serverTelemetrySessions',null);",
-      "function clearServerTelemetry(message){\n  serverPresenceSnapshot=null;\n  setServerTelemetryCount('serverTelemetrySessions',null);",
+      "function clearServerTelemetry(message){\n  serverTelemetryQueriesLastHour=null;",
+      "function clearServerTelemetry(message){\n  serverPresenceSnapshot=null;\n  serverTelemetryQueriesLastHour=null;",
       "clear stale server snapshot"
     ],
     [
-      "  if(updated)updated.textContent=message||'Sem leitura confirmada no servidor; não são reutilizados números antigos.';\n}",
-      "  if(updated)updated.textContent=message||'Sem leitura confirmada no servidor; não são reutilizados números antigos.';\n  if(window.VERIX_LIVE_PRESENCE&&typeof window.VERIX_LIVE_PRESENCE.snapshot==='function')renderLivePresence(window.VERIX_LIVE_PRESENCE.snapshot());\n}",
+      "  if(dashboardData)renderAll();\n}",
+      "  if(dashboardData)renderAll();\n  if(window.VERIX_LIVE_PRESENCE&&typeof window.VERIX_LIVE_PRESENCE.snapshot==='function')renderLivePresence(window.VERIX_LIVE_PRESENCE.snapshot());\n}",
       "rerender after server telemetry clears"
     ],
     [
@@ -388,7 +402,7 @@ function patchAdminPresenceUi(source) {
       "server-based freshness label"
     ],
     [
-      "Instalações com ligação Realtime; não equivale a pessoas únicas.",
+      "Ligações Realtime ativas neste momento; não são pessoas únicas.",
       "Instalações com sinal do servidor nos últimos 90 s; não equivale a pessoas únicas.",
       "accurate live metric note"
     ],
