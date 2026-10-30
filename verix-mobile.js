@@ -1,9 +1,11 @@
 (function(){
 'use strict';
 
+const vxForcedMobileRoute = /(?:^|[?&])_mobile=1(?:&|$)/.test(String(window.location.search||''));
 const vxMobileViewport = (
+  vxForcedMobileRoute ||
   (window.matchMedia && window.matchMedia('(max-width:1199px)').matches) ||
-    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(navigator.userAgent||'')
+  /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(navigator.userAgent||'')
 );
 if(!vxMobileViewport) return;
 
