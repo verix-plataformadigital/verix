@@ -1,0 +1,477 @@
+/*
+ * VÉRIX — authoritative handheld layout
+ * State-scoped rules only. No viewport-width assumptions and no global
+ * element reflow. The desktop/legacy ASF and IMT engines remain untouched.
+ */
+
+html.vx-handheld,
+html.vx-handheld body {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 100% !important;
+  margin: 0 !important;
+  overflow-x: hidden !important;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+html.vx-handheld body.vx-mobile-mode {
+  padding: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+html.vx-handheld body.vx-mobile-mode *,
+html.vx-handheld body.vx-mobile-mode *::before,
+html.vx-handheld body.vx-mobile-mode *::after {
+  box-sizing: border-box !important;
+}
+
+/* HOME: the VÉRIX menu is the only visible application layer. */
+html.vx-handheld body:has(#mainMenuScreen.vx-home-screen.show) .command,
+html.vx-handheld body:has(#mainMenuScreen.vx-home-screen.show) .rail,
+html.vx-handheld body:has(#mainMenuScreen.vx-home-screen.show) .main,
+html.vx-handheld body:has(#mainMenuScreen.vx-home-screen.show) .bottom,
+html.vx-handheld body:has(#mainMenuScreen.vx-home-screen.show) .consulta-history-bottom-wrap,
+html.vx-handheld body:has(#mainMenuScreen.vx-home-screen.show) #consultaHistoryTopBtn,
+html.vx-handheld body:has(#mainMenuScreen.vx-home-screen.show) #consultationBackBtn,
+html.vx-handheld body:has(#mainMenuScreen.vx-home-screen.show) .operational-strip,
+html.vx-handheld body:has(#mainMenuScreen.vx-home-screen.show) #moduleOverlay,
+html.vx-handheld body:has(#mainMenuScreen.vx-home-screen.show) #historyOverlay,
+html.vx-handheld body.main-menu-active .command,
+html.vx-handheld body.main-menu-active .rail,
+html.vx-handheld body.main-menu-active .main,
+html.vx-handheld body.main-menu-active .bottom,
+html.vx-handheld body.main-menu-active .consulta-history-bottom-wrap,
+html.vx-handheld body.main-menu-active #consultaHistoryTopBtn,
+html.vx-handheld body.main-menu-active #consultationBackBtn,
+html.vx-handheld body.main-menu-active .operational-strip,
+html.vx-handheld body.main-menu-active #moduleOverlay,
+html.vx-handheld body.main-menu-active #historyOverlay {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+html.vx-handheld body #mainMenuScreen.vx-home-screen,
+html.vx-handheld body #mainMenuScreen.vx-home-screen.show {
+  position: fixed !important;
+  inset: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: auto !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  z-index: 2147482000 !important;
+  overflow: hidden !important;
+}
+
+html.vx-handheld body #mainMenuScreen.vx-home-screen .vx-home-shell,
+html.vx-handheld body #mainMenuScreen.vx-home-screen .vx-home-main {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+html.vx-handheld body #mainMenuScreen.vx-home-screen .vx-home-topbar.vx-home-masthead {
+  flex: 0 0 60px !important;
+  min-height: 60px !important;
+  padding: 0 14px !important;
+}
+
+html.vx-handheld body #mainMenuScreen.vx-home-screen .vx-home-brand-lockup {
+  gap: 9px !important;
+  min-width: 0 !important;
+}
+
+html.vx-handheld body #mainMenuScreen.vx-home-screen .vx-home-brand-line {
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+  min-width: 0 !important;
+  white-space: normal !important;
+}
+
+html.vx-handheld body #mainMenuScreen.vx-home-screen .vx-home-body {
+  display: flex !important;
+  flex: 1 1 auto !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 16px 12px 20px !important;
+  gap: 14px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+html.vx-handheld body #mainMenuScreen.vx-home-screen .vx-home-primary-grid,
+html.vx-handheld body #mainMenuScreen.vx-home-screen .vx-home-secondary-grid {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-auto-flow: row !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  gap: 9px !important;
+}
+
+html.vx-handheld body #mainMenuScreen.vx-home-screen .vx-home-action-primary {
+  min-height: 94px !important;
+  padding: 14px !important;
+  gap: 11px !important;
+}
+
+html.vx-handheld body #mainMenuScreen.vx-home-screen .vx-home-action-secondary {
+  min-height: 68px !important;
+  padding: 11px 12px !important;
+  gap: 10px !important;
+}
+
+html.vx-handheld body #mainMenuScreen.vx-home-screen .vx-home-footer {
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+}
+
+html.vx-handheld body #mainMenuScreen.vx-home-screen .vx-home-footer-brand {
+  flex-basis: 100% !important;
+}
+
+html.vx-handheld body #mainMenuScreen.vx-home-screen .vx-home-footer p {
+  flex: 1 1 100% !important;
+  text-align: left !important;
+}
+
+/* Initial information dialog: one column and its own scroll region. */
+html.vx-handheld body #verixAsfNoticeOverlay[aria-hidden="false"] {
+  position: fixed !important;
+  inset: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-width: none !important;
+  max-height: none !important;
+  padding: 10px !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  z-index: 2147483001 !important;
+}
+
+html.vx-handheld body #verixAsfNoticeOverlay[aria-hidden="true"] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+html.vx-handheld body #verixAsfNoticeOverlay .verix-asf-notice-window {
+  display: flex !important;
+  flex-direction: column !important;
+  width: min(560px, calc(100vw - 20px)) !important;
+  max-width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: calc(100dvh - 20px) !important;
+  margin: auto !important;
+  overflow: hidden !important;
+}
+
+html.vx-handheld body #verixAsfNoticeOverlay .verix-asf-notice-body {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  padding: 12px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+html.vx-handheld body #verixAsfNoticeOverlay .verix-asf-notice-grid,
+html.vx-handheld body #verixAsfNoticeOverlay .verix-notice-grid-three {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 10px !important;
+  width: 100% !important;
+}
+
+html.vx-handheld body #verixAsfNoticeOverlay .verix-asf-notice-card {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 15px 13px !important;
+}
+
+html.vx-handheld body #verixAsfNoticeOverlay .verix-asf-notice-footer {
+  flex: 0 0 auto !important;
+  padding: 9px 12px calc(9px + env(safe-area-inset-bottom, 0px)) !important;
+}
+
+html.vx-handheld body #verixAsfNoticeOverlay .verix-asf-notice-continue {
+  width: 100% !important;
+  min-height: 48px !important;
+}
+
+/* FISCALIZAÇÃO: explicitly switch the old three-column desktop workspace
+   into a single, vertical mobile workflow. */
+html.vx-handheld body.consultation-screen-active .command,
+html.vx-handheld body.fixed-workspace-active.consultation-screen-active .command {
+  position: relative !important;
+  inset: auto !important;
+  left: auto !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 8px 10px 10px !important;
+  overflow: visible !important;
+  border-radius: 0 0 12px 12px !important;
+  z-index: 2100 !important;
+}
+
+html.vx-handheld body.consultation-screen-active .command .brand,
+html.vx-handheld body.fixed-workspace-active.consultation-screen-active .command .brand,
+html.vx-handheld body.consultation-screen-active .command .time {
+  display: none !important;
+}
+
+html.vx-handheld body.consultation-screen-active .command .searchbar {
+  position: relative !important;
+  inset: auto !important;
+  left: auto !important;
+  right: auto !important;
+  top: auto !important;
+  transform: none !important;
+  display: block !important;
+  width: 100% !important;
+  max-width: none !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+html.vx-handheld body.consultation-screen-active .command .searchbar form {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  align-items: stretch !important;
+  width: 100% !important;
+  gap: 8px !important;
+}
+
+html.vx-handheld body.consultation-screen-active .command .field {
+  display: grid !important;
+  grid-template-columns: 78px minmax(0, 1fr) !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  gap: 7px !important;
+}
+
+html.vx-handheld body.consultation-screen-active .command .field label {
+  align-self: center !important;
+  font-size: 9px !important;
+}
+
+html.vx-handheld body.consultation-screen-active .command .field input {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: 44px !important;
+  font-size: 16px !important;
+}
+
+html.vx-handheld body.consultation-screen-active .command .consult {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 46px !important;
+  height: 46px !important;
+}
+
+html.vx-handheld body.consultation-screen-active .command .tools {
+  position: relative !important;
+  inset: auto !important;
+  left: auto !important;
+  right: auto !important;
+  top: auto !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  width: 100% !important;
+  max-width: none !important;
+  gap: 7px !important;
+  margin: 8px 0 0 !important;
+}
+
+html.vx-handheld body.consultation-screen-active .command .tool {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 42px !important;
+}
+
+html.vx-handheld body.consultation-screen-active #consultaHistoryTopBtn,
+html.vx-handheld body.consultation-screen-active #consultationBackBtn {
+  position: relative !important;
+  inset: auto !important;
+  left: auto !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: auto !important;
+  min-width: 0 !important;
+  min-height: 42px !important;
+  margin: 8px 10px 0 auto !important;
+  transform: none !important;
+  z-index: 2050 !important;
+}
+
+html.vx-handheld body.consultation-screen-active .main,
+html.vx-handheld body.fixed-workspace-active.consultation-screen-active .main,
+html.vx-handheld body.fixed-workspace-active .main.consultation-fixed-active {
+  position: relative !important;
+  inset: auto !important;
+  left: auto !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: auto !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: none !important;
+  grid-auto-flow: row !important;
+  grid-auto-rows: auto !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 10px 0 0 !important;
+  padding: 0 10px 12px !important;
+  gap: 11px !important;
+  overflow: visible !important;
+}
+
+html.vx-handheld body.consultation-screen-active .main > .panel,
+html.vx-handheld body.fixed-workspace-active.consultation-screen-active .main > .panel {
+  position: relative !important;
+  grid-column: 1 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  min-height: 380px !important;
+  height: clamp(380px, 58dvh, 520px) !important;
+  max-height: none !important;
+  margin: 0 !important;
+}
+
+html.vx-handheld body.consultation-screen-active .main > .panel.insurance,
+html.vx-handheld body.fixed-workspace-active.consultation-screen-active .main > .panel.insurance {
+  height: auto !important;
+  min-height: 280px !important;
+  overflow: visible !important;
+}
+
+html.vx-handheld body.consultation-screen-active .main > .panel .panel-body,
+html.vx-handheld body.fixed-workspace-active.consultation-screen-active .main > .panel .panel-body {
+  position: absolute !important;
+  top: 54px !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+html.vx-handheld body.consultation-screen-active .main > .panel iframe,
+html.vx-handheld body.fixed-workspace-active.consultation-screen-active .main > .panel iframe {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  border: 0 !important;
+}
+
+html.vx-handheld body.consultation-screen-active .main .verix-livrete-warning {
+  grid-column: 1 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  white-space: normal !important;
+}
+
+html.vx-handheld body.consultation-screen-active .rail,
+html.vx-handheld body.consultation-screen-active .bottom {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+html.vx-handheld body.fixed-workspace-active #moduleOverlay.show,
+html.vx-handheld body.fixed-workspace-active #historyOverlay.show {
+  position: fixed !important;
+  inset: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  padding: 10px !important;
+  overflow: auto !important;
+  z-index: 2147481000 !important;
+}
+
+html.vx-handheld body.fixed-workspace-active #moduleOverlay.show .module-window,
+html.vx-handheld body.fixed-workspace-active #historyOverlay.show .history-window {
+  width: 100% !important;
+  max-width: 760px !important;
+  max-height: calc(100dvh - 20px) !important;
+  margin: auto !important;
+  overflow: auto !important;
+}
+
+html.vx-handheld body.vx-mobile-mode input,
+html.vx-handheld body.vx-mobile-mode select,
+html.vx-handheld body.vx-mobile-mode textarea,
+html.vx-handheld body.vx-mobile-mode button {
+  max-width: 100%;
+  touch-action: manipulation;
+}
+
+html.vx-handheld body.vx-mobile-mode img,
+html.vx-handheld body.vx-mobile-mode video,
+html.vx-handheld body.vx-mobile-mode canvas,
+html.vx-handheld body.vx-mobile-mode svg {
+  max-width: 100%;
+}
