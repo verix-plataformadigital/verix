@@ -190,21 +190,14 @@ function writeSecureFile(relativeSource, relativeOutput) {
     // assets may already have been bumped independently of this builder.
     const mobileAdapterVersion = encodeURIComponent(String(BUILD_ID));
     function updateMobileAdapterReference(fileName) {
-      const escapedName = fileName.replace(/[.*+?^${}()|[]\\]/g, "\\    // Version the mobile adapter on every release so phones cannot retain an old layout.
-    source = source.replaceAll("verix-mobile.css?v=5", "verix-mobile.css?v=8");
-    source = source.replaceAll("verix-mobile.js?v=5", "verix-mobile.js?v=8");
-    if (!source.includes("verix-mobile.css?v=8") || !source.includes("verix-mobile.js?v=8")) {
-      throw new Error("Mobile adapter cache version was not updated in the secure build");
-    }");
-      const pattern = new RegExp("(" + escapedName + "\\?v=)[^"'&\\s<>]+", "g");
-      let replacements = 0;
-      source = source.replace(pattern, (_match, prefix) => {
-        replacements += 1;
-        return prefix + mobileAdapterVersion;
-      });
-      if (replacements === 0) {
+      const pattern = fileName === "verix-mobile.css"
+        ? /verix-mobile\.css\?v=[^"'&\s<>]+/g
+        : /verix-mobile\.js\?v=[^"'&\s<>]+/g;
+      const matches = source.match(pattern) || [];
+      if (matches.length === 0) {
         throw new Error("Mobile adapter reference not found in verix-app.html: " + fileName);
       }
+      source = source.replace(pattern, fileName + "?v=" + mobileAdapterVersion);
     }
     updateMobileAdapterReference("verix-mobile.css");
     updateMobileAdapterReference("verix-mobile.js");
