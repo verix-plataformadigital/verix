@@ -40,6 +40,10 @@ Do not shadow `pg_catalog.pg_timezone_names`, change the authenticator search pa
 
 The updated `admin_v2.html` is on this draft PR branch only. It has not been published to GitHub Pages or deployed as a new Admin release.
 
+- The secure builder now updates existing mobile CSS/JS cache references from their current source value to the active build ID. Its Admin presence patch was also aligned with the streamlined cards so server-authoritative live values are preserved.
+- Static source checks on the revised Admin HTML passed: all three inline scripts parse, there are no duplicate element IDs, and the removed card/chart IDs have no remaining markup or code references.
+- Latest CI state on the current branch: Telemetry Integrity passed; VÉRIX Security Audit and Admin telemetry v3 tests were queued at the time of this report update.
+
 ## Rate-limit optimization — applied
 
 Migration `remove_rate_limit_per_request_full_scan_20261030` was successfully applied in production. It removes the full-table DELETE from every `verix2_consume_rate_limit` invocation; the existing daily cleanup job remains responsible for expired rows.
