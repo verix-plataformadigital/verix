@@ -466,7 +466,11 @@ html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .verix-asf-notice-card{
   }
 
   function refreshTokenWhenAvailable() {
-    if (securityToken && securityTokenExp - Date.now() <= 180000) refreshTokenAhead();
+    if (!securityToken) {
+      getToken(false).catch(function(){});
+      return;
+    }
+    if (securityTokenExp - Date.now() <= 180000) refreshTokenAhead();
   }
 
   function getToken(force) {
@@ -1771,6 +1775,10 @@ function submitConjunto(event) {
 
       if (authCode === 'GATE_NETWORK' || authCode === 'GATE_TIMEOUT') {
         diag.asfMessage = 'Não foi possível contactar o serviço de autorização do VÉRIX. O pedido não foi enviado ao serviço ASF. Verifique a ligação e tente novamente.';
+      } else if (authCode === 'GATE_BUILD_MISMATCH') {
+        diag.asfMessage = 'O serviço de autorização devolveu uma autorização para uma versão diferente da aplicação. O pedido não foi enviado ao serviço ASF.';
+      } else if (authCode === 'GATE_INVALID_RESPONSE') {
+        diag.asfMessage = 'O serviço de autorização do VÉRIX devolveu uma resposta inválida. O pedido não foi enviado ao serviço ASF.';
       } else if (authStatus !== null) {
         diag.asfMessage = 'O serviço de autorização do VÉRIX respondeu com HTTP ' + authStatus + '. O pedido não foi enviado ao serviço ASF.';
       } else {
