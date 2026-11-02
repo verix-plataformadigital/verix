@@ -1193,6 +1193,7 @@ function renderAll(){
     ['Com seguro',fmt(insurance.insured),'Resultado positivo.','green'],
     ['Sem registo de seguro',fmt(insurance.uninsured),pct(insurance.uninsuredPct)+' das decisões válidas do período.','amber'],
     ['Consultas com erro técnico',fmt(insurance.errors),pct(insurance.errorPct)+' das consultas finais no período, excluindo entradas mal formatadas.','red'],
+    ['Formato PT não reconhecido',fmt(insurance.userInputInvalid),'Entradas rejeitadas por HTTP 400; não são falhas técnicas da ASF.','amber'],
     ['Instalações ativas',fmt(users.activeInstallations),'Instalações com ações reais.','blue'],
     ['Legislação copiada',fmt(legislation.copies),'Cópias confirmadas.','blue']
   ]);
@@ -1204,6 +1205,7 @@ function renderAll(){
     ['Com seguro',fmt(insurance.insured),'Resultado afirmativo no período selecionado.','green'],
     ['Sem registo',fmt(insurance.uninsured),pct(insurance.uninsuredPct)+' das decisões válidas do período.','amber'],
     ['Erros por consulta',fmt(insurance.errors),pct(insurance.errorPct)+' dos finais únicos no período.','red'],
+    ['Formato PT não reconhecido',fmt(insurance.userInputInvalid),'Entradas HTTP 400 excluídas dos erros técnicos.','amber'],
     ['Eventos de erro',fmt(insurance.errorEvents),'Eventos brutos; podem diferir do número de consultas concluídas.','red']
   ]);
   appendCards('activityCards',[
@@ -1228,7 +1230,7 @@ function renderAll(){
 }
 function renderQuality(insurance){
   const host=$('queryQuality');host.replaceChildren();
-  [['Pendentes',insurance.pending],['Incompletas',insurance.incomplete],['Contraditórias',insurance.contradictory],['Finais duplicados',insurance.duplicateFinals],['Eventos de erro',insurance.errorEvents],['Finais únicos',insurance.finals]].forEach(item=>{
+  [['Pendentes',insurance.pending],['Incompletas',insurance.incomplete],['Contraditórias',insurance.contradictory],['Finais duplicados',insurance.duplicateFinals],['Formato PT não reconhecido',insurance.userInputInvalid],['Eventos de erro',insurance.errorEvents],['Finais únicos',insurance.finals]].forEach(item=>{
     const box=document.createElement('div');box.className='quality-item';const label=document.createElement('span');label.textContent=item[0];const val=document.createElement('strong');val.textContent=fmt(item[1]);box.append(label,val);host.appendChild(box);
   });
 }
