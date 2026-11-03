@@ -179,6 +179,30 @@ function writeSecureFile(relativeSource, relativeOutput) {
   // Inject the exact build identity into the client security runtime. The
   // Pages workflow creates a new build ID on every release.
   if (relativeSource === "verix-app.html") {
+    // Touch input alone does not make a device a phone. Getac/Windows tablets
+    // and iPads must retain the desktop side-by-side consultation workspace.
+    // The explicit ?_mobile=1 switch remains available for forced phone layout.
+    const mobileRoutePattern = /<script\\b(?=[^>]*\\bid=["']verix-mobile-route-capture["'])[^>]*>[\\s\\S]*?<\\/script>/i;
+    const mobileRouteCapture = [
+      '<script id="verix-mobile-route-capture">',
+      '(function(){',
+      '  "use strict";',
+      '  var queryMobile=/(?:^|[?&])_mobile=1(?:&|$)/.test(String(window.location.search||""));',
+      '  var ua=String(navigator.userAgent||"");',
+      '  var mobilePhone=/iPhone|iPod|BlackBerry|IEMobile|Windows Phone|Opera Mini|Mobile/i.test(ua);',
+      '  var handheld=queryMobile||mobilePhone;',
+      '  window.__VERIX_MOBILE_ROUTE=!!handheld;',
+      '  if(!handheld)return;',
+      '  document.documentElement.classList.add("verix-handheld");',
+      '  var css=document.querySelector(\'link[href*="verix-mobile.css"]\');',
+      '  if(css)css.media="all";',
+      '})();',
+      '</script>'
+    ].join("\\n");
+    if (!mobileRoutePattern.test(source)) {
+      throw new Error("Mobile route capture block not found; refusing to publish ambiguous handheld detection.");
+    }
+    source = source.replace(mobileRoutePattern, mobileRouteCapture);
     const safeBuildId = String(BUILD_ID).replace(/\\/g, "\\\\").replace(/'/g, "\\'");
     source = source.replace(
       /var BUILD_ID = ['"][^'"]+['"]/,
