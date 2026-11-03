@@ -36,6 +36,9 @@ jobs:
       - name: Verify Supabase Edge Function inventory and JWT configuration
         run: node tools/verify-edge-function-config.mjs
 
+      - name: Verify patched Vercel configuration dependency
+        run: npm ls @vercel/cli-config zod --all
+
       - name: Audit installed dependencies
         run: npm audit --audit-level=high
 
