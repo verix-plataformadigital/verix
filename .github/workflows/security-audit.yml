@@ -22,11 +22,17 @@ jobs:
       - name: Install release tooling
         run: npm install --ignore-scripts --no-audit --no-fund
 
-      - name: Audit installed dependencies
-        run: npm audit --audit-level=high
+      - name: Diagnose vulnerable dependency paths
+        run: |
+          npm ls minimatch zod @vercel/blob @vercel/oidc --all || true
+          npm explain zod || true
+          npm explain minimatch || true
 
       - name: Verify Supabase Edge Function inventory and JWT configuration
         run: node tools/verify-edge-function-config.mjs
+
+      - name: Audit installed dependencies
+        run: npm audit --audit-level=high
 
       - name: Produce hardened build
         env:
