@@ -18,4 +18,17 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4258.31" />
   </ItemGroup>
+
+  <!-- WebView2's NuGet targets include its WPF wrapper even in WinForms-only
+       projects. That unused reference introduces a WindowsBase 5.0 dependency
+       which conflicts with the .NET 10 WinForms reference pack (MSB3277).
+       This host uses only Microsoft.Web.WebView2.WinForms and Core. -->
+  <Target Name="RemoveUnusedWebView2WpfReference"
+          BeforeTargets="ResolveAssemblyReferences"
+          Condition="'$(UseWPF)' != 'true'">
+    <ItemGroup>
+      <Reference Remove="@(Reference)"
+                 Condition="'%(Reference.Filename)' == 'Microsoft.Web.WebView2.Wpf'" />
+    </ItemGroup>
+  </Target>
 </Project>
