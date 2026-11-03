@@ -151,7 +151,7 @@ jobs:
         if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          repository: verix-plataformadigital/verix
+          repository: verix-plataformadigital/verix-plataformadigital.github.io
           ref: main
           token: ${{ secrets.VERIX_PAGES_TOKEN }}
           path: public-pages
@@ -165,14 +165,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p public-pages/site public-pages/.github/workflows
-          find public-pages/site -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
-          cp -a dist/. public-pages/site/
+          mkdir -p public-pages/verix public-pages/.github/workflows
+          find public-pages/verix -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
+          cp -a dist/. public-pages/verix/
           cp deployment/public-pages-workflow.yml public-pages/.github/workflows/pages.yml
-          touch public-pages/site/.nojekyll
+          touch public-pages/verix/.nojekyll
           git -C public-pages config user.name "github-actions[bot]"
           git -C public-pages config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git -C public-pages add --all -- site .github/workflows/pages.yml
+          git -C public-pages add --all -- verix .github/workflows/pages.yml
           if git -C public-pages diff --cached --quiet; then
             echo "Public site is already synchronized."
             exit 0
