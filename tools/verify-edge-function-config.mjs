@@ -48,23 +48,43 @@ const config = fs.readFileSync(configPath, "utf8");
 const configured = new Map();
 let currentFunction = null;
 
-for (const [index, line] of config.split(/\r?\n/).entries()) {
-  const section = line.match(/^\s*\[functions\.([a-z0-9-]+)\]\s*(?:#.*)?$/i);
+const seenJwtSettings = new Set();
+
+for (const line of config.split(/\r?\n/)) {
+  // Reset the function context for every TOML table, including array tables.
+  // This prevents a later unrelated section from inheriting the preceding function.
+  const section = line.match(/^\s*(\[{1,2})([^\]]+)(\]{1,2})\s*(?:#.*)?$/);
   if (section) {
-    currentFunction = section[1];
-    if (configured.has(currentFunction)) {
-      fail("duplicate config section for " + currentFunction);
+    currentFunction = null;
+    if (section[1].length !== section[3].length) {
+      fail("malformed TOML section header: " + line.trim());
+      continue;
     }
-    configured.set(currentFunction, null);
+
+    const functionSection = section[2].trim().match(/^functions\.([a-z0-9-]+)$/i);
+    if (section[1] === "[" && functionSection) {
+      currentFunction = functionSection[1];
+      if (configured.has(currentFunction)) {
+        fail("duplicate config section for " + currentFunction);
+      }
+      configured.set(currentFunction, null);
+    }
     continue;
   }
 
   if (!currentFunction || /^\s*(?:#.*)?$/.test(line)) continue;
 
-  const jwt = line.match(/^\s*verify_jwt\s*=\s*(true|false)\s*(?:#.*)?$/i);
-  if (jwt) {
-    if (configured.get(currentFunction) !== null) {
+  if (/^\s*verify_jwt\s*=/i.test(line)) {
+    if (seenJwtSettings.has(currentFunction)) {
       fail("duplicate verify_jwt setting for " + currentFunction);
+      continue;
+    }
+    seenJwtSettings.add(currentFunction);
+
+    const jwt = line.match(/^\s*verify_jwt\s*=\s*(true|false)\s*(?:#.*)?$/i);
+    if (!jwt) {
+      fail("malformed verify_jwt setting for " + currentFunction);
+      continue;
     }
     configured.set(currentFunction, jwt[1].toLowerCase() === "true");
   }
