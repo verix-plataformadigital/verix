@@ -18,3 +18,31 @@ verify_jwt = false
 
 [functions.verix-admin-pwa]
 verify_jwt = false
+
+# Retired diagnostics: JWT gate remains enabled to prevent anonymous probing.
+[functions.runtime-httpclient-probe]
+verify_jwt = true
+
+[functions.runtime-proxy-probe]
+verify_jwt = true
+
+[functions.tmp-egress-probe-9f4a7]
+verify_jwt = true
+
+[functions.asf-ab-test-7d3c9]
+verify_jwt = true
+
+[functions.asf-error-probe-13c9a]
+verify_jwt = true
+
+[functions.asf-url-encoding-ab-20261028]
+verify_jwt = true
+
+[functions.asf-egress-scope-probe-20261028]
+verify_jwt = true
+
+[functions.runtime-proxy-pool-probe]
+verify_jwt = true
+
+[functions.runtime-asf-proxy-single-probe]
+verify_jwt = true
