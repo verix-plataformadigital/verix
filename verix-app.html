@@ -1314,11 +1314,18 @@ function submitConjunto(event) {
  }
 
  // 3 — ASF / SEGURO
- // Disparado imediatamente, sem esperar pelos dois iframes.
- try {
-   consultarSeguroASF(placaInspecao);
- } catch (e) {
-   console.error('[ASF] Falha ao iniciar consulta:', e);
+ // A validação replica apenas o contrato de entrada do proxy (6–8 caracteres
+ // alfanuméricos). Não altera o motor ASF nem impede as consultas IMT.
+ var matriculaASF = sanitizarMatriculaASF(placaInspecao);
+ if (/^[A-Z0-9]{6,8}$/.test(matriculaASF)) {
+   // Disparado imediatamente, sem esperar pelos dois iframes.
+   try {
+     consultarSeguroASF(placaInspecao);
+   } catch (e) {
+     console.error('[ASF] Falha ao iniciar consulta:', e);
+   }
+ } else {
+   mostrarToast('Consulta ASF não iniciada: introduza uma matrícula completa (6 a 8 caracteres). As consultas IMT continuam normalmente.');
  }
 
  // Uma matrícula pesquisada = 1 resultado IMT no Admin,
