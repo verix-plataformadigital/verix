@@ -623,7 +623,7 @@ Deno.serve(async (req:Request) => {
           const delta = deltaResult.value;
           const deltaPeriods = delta?.periods || {};
           const insurance = { ...(metrics.insurance || {}) };
-          const countKeys = ["consultations", "finals", "insured", "uninsured", "errors", "errorEvents", "pending", "incomplete", "contradictory", "duplicateFinals"];
+          const countKeys = ["consultations", "finals", "insured", "uninsured", "errors", "userInputInvalid", "errorEvents", "userInputInvalidEvents", "pending", "incomplete", "contradictory", "duplicateFinals"];
           for (const period of ["today", "week", "total"]) {
             const base = insurance[period] || {};
             const change = deltaPeriods[period] || {};
@@ -633,7 +633,8 @@ Deno.serve(async (req:Request) => {
             }
             const validDecisions = row.insured + row.uninsured;
             row.uninsuredPct = validDecisions ? Math.round(1000 * row.uninsured / validDecisions) / 10 : null;
-            row.errorPct = row.finals ? Math.round(1000 * row.errors / row.finals) / 10 : null;
+            const technicalErrorDenominator = Math.max(0, row.finals - Number(row.userInputInvalid || 0));
+            row.errorPct = technicalErrorDenominator ? Math.round(1000 * row.errors / technicalErrorDenominator) / 10 : null;
             insurance[period] = row;
           }
           metrics.insurance = insurance;
