@@ -22,6 +22,11 @@ jobs:
       - name: Install release tooling
         run: npm install --ignore-scripts --no-audit --no-fund
 
+      - name: Inspect Vercel transitive package metadata
+        run: |
+          npm view @vercel/cli-config@0.3.6 version dependencies --json
+          npm view @vercel/oidc@3.8.10 version dependencies --json
+
       - name: Diagnose vulnerable dependency paths
         run: |
           npm ls minimatch zod @vercel/blob @vercel/oidc --all || true
