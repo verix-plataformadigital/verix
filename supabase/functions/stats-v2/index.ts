@@ -668,17 +668,24 @@ Deno.serve(async (req:Request) => {
       }
     }
 
-    // Admin daily trend: load only when the Usage page is opened; database and response are cached.
+    // Daily trend is computed by a staggered PostgreSQL job and persisted.
+    // The Admin reads only the last successful snapshot; an occasional failed
+    // refresh must never blank the four charts or block the Usage page.
     if(req.method === "GET" && detail === "daily-trend-30d") {
       const cached = getDetailCache("daily-trend-30d", USAGE_CACHE_MS, req, forceRefresh);
       if(cached) return cached;
-      const now = new Date().toISOString();
       try {
-        const trend = await rpc("verix2_admin_daily_trend_30d", { p_now: now });
+        const trend = await rpc("verix2_admin_daily_trend_cache_v1", {});
         if(!trend || !Array.isArray(trend.days) || trend.days.length !== 30) {
-          throw new Error("daily_trend_invalid_payload");
+          throw new Error("daily_trend_cache_not_ready");
         }
-        const body = JSON.stringify({ok:true,detail:"daily-trend-30d",generatedAt:now,data:trend});
+        const generatedAt = trend.cacheRefreshedAt || trend.generatedAt || new Date().toISOString();
+        const body = JSON.stringify({
+          ok:true,
+          detail:"daily-trend-30d",
+          generatedAt,
+          data:trend
+        });
         setDetailCache("daily-trend-30d",body);
         return new Response(body,{status:200,headers:{"Content-Type":"application/json",...corsHeaders(req),"X-Verix-Detail-Cache":"MISS"}});
       } catch(error) {
