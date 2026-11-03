@@ -604,8 +604,7 @@ SELECT jsonb_build_object(
     LEFT JOIN error_types_json et ON et.period = p.period
   )
 );
-$function$
-
+$function$;
 
 CREATE OR REPLACE FUNCTION public.verix2_admin_daily_trend_30d(p_now timestamp with time zone DEFAULT now())
  RETURNS jsonb
@@ -847,8 +846,7 @@ SELECT jsonb_build_object(
   )
 )
 FROM local_dates;
-$function$
-
+$function$;
 
 CREATE OR REPLACE FUNCTION public.verix2_admin_insurance_delta_v1(p_since timestamp with time zone, p_now timestamp with time zone, p_today_start timestamp with time zone, p_week_start timestamp with time zone, p_total_start timestamp with time zone)
  RETURNS jsonb
@@ -1173,7 +1171,7 @@ SELECT jsonb_build_object(
   )) FROM period_results)
 )
 FROM bounds b;
-$function$
+$function$;
 
 
 DO $admin_refresh_job$
