@@ -224,23 +224,29 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
 .daily-trend-insurance-charts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .daily-trend-asf-section .hourly-values{margin-top:12px}
 .daily-trend-note{margin:11px 0 0;color:var(--muted);font-size:11px;line-height:1.5}
-.daily-trend-table-wrap{overflow:hidden}
-.daily-trend-table-wrap .data-table{width:100%;min-width:0;table-layout:fixed;font-size:11.5px}
-.daily-trend-table-wrap .data-table th{font-size:9.5px;letter-spacing:.02em;line-height:1.4;overflow-wrap:anywhere}
-.daily-trend-table-wrap .data-table th:nth-child(1),.daily-trend-table-wrap .data-table td:nth-child(1){width:25%}
-.daily-trend-table-wrap .data-table th:nth-child(2),.daily-trend-table-wrap .data-table td:nth-child(2),.daily-trend-table-wrap .data-table th:nth-child(3),.daily-trend-table-wrap .data-table td:nth-child(3){width:37.5%}
-.daily-trend-table-wrap .data-table th,.daily-trend-table-wrap .data-table td{padding:8px 6px;vertical-align:middle}
+.daily-trend-table-wrap{width:100%;min-width:0;overflow-x:auto;overflow-y:hidden;border:1px solid #e2e9ec;border-radius:10px;background:#fff;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+.daily-trend-table-wrap .data-table{width:100%;min-width:760px;table-layout:fixed;font-size:12px}
+.daily-trend-table-wrap .data-table th{padding:11px 10px;color:#526873;background:#eef3f5;font-size:10px;letter-spacing:.025em;line-height:1.35;white-space:normal;overflow-wrap:anywhere}
+.daily-trend-table-wrap .data-table th:nth-child(1),.daily-trend-table-wrap .data-table td:nth-child(1){width:15%}
+.daily-trend-table-wrap .data-table th:nth-child(2),.daily-trend-table-wrap .data-table td:nth-child(2){width:17%}
+.daily-trend-table-wrap .data-table th:nth-child(3),.daily-trend-table-wrap .data-table td:nth-child(3){width:24%}
+.daily-trend-table-wrap .data-table th:nth-child(4),.daily-trend-table-wrap .data-table td:nth-child(4){width:17%}
+.daily-trend-table-wrap .data-table th:nth-child(5),.daily-trend-table-wrap .data-table td:nth-child(5){width:27%}
+.daily-trend-table-wrap .data-table td{padding:11px 10px;vertical-align:middle;border-bottom:1px solid #e9eef0}
+.daily-trend-table-wrap .data-table tbody tr:nth-child(even){background:#f8fafb}
 .daily-trend-table-wrap .data-table tbody tr:last-child{background:#f0f8f7}
-.daily-trend-day{font-weight:750;color:var(--ink);font-variant-numeric:tabular-nums}
-.daily-trend-today{display:inline-block;margin-top:3px;padding:2px 4px;color:#765316;background:#fff1cf;border-radius:4px;font-size:8.5px;font-weight:800;text-transform:uppercase}
-.daily-trend-valuecell{display:flex;flex-direction:column;gap:3px;min-width:0}
-.daily-trend-value{color:var(--ink);font-size:13px;font-weight:850;font-variant-numeric:tabular-nums}
-.daily-trend-delta{font-size:9.5px;line-height:1.3;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
-.daily-trend-delta.up{color:var(--green);font-weight:750}
-.daily-trend-delta.down{color:var(--red);font-weight:750}
-.daily-trend-delta.flat{color:var(--muted)}
-.daily-trend-delta.partial{color:var(--amber);font-weight:750}
-.daily-trend-delta.muted{color:var(--muted)}
+.daily-trend-table-wrap .data-table tbody tr:hover{background:#f0f6f8}
+.daily-trend-day{display:block;font-size:12px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+.daily-trend-today{display:inline-block;margin-top:5px;padding:3px 6px;color:#765316;background:#fff1cf;border:1px solid #f3dfaa;border-radius:5px;font-size:9px;font-weight:800;text-transform:uppercase;white-space:nowrap}
+.daily-trend-number-wrap,.daily-trend-change-wrap{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;min-width:0}
+.daily-trend-value{color:var(--ink);font-size:17px;line-height:1.15;font-weight:850;font-variant-numeric:tabular-nums}
+.daily-trend-unit{color:var(--muted);font-size:10px;line-height:1.2}
+.daily-trend-delta{display:inline-flex;align-items:center;max-width:100%;padding:5px 7px;border:1px solid transparent;border-radius:6px;font-size:10.5px;line-height:1.3;white-space:normal;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.daily-trend-delta.up{color:#176b49;background:#eaf6ef;border-color:#cdebd9;font-weight:800}
+.daily-trend-delta.down{color:#a3313b;background:#fff0f0;border-color:#f5d4d6;font-weight:800}
+.daily-trend-delta.flat{color:#52636d;background:#f0f3f5;border-color:#e2e8eb;font-weight:700}
+.daily-trend-delta.partial{color:#805a12;background:#fff6df;border-color:#f3e4b9;font-weight:750}
+.daily-trend-delta.muted{color:#667680;background:#f3f6f7;border-color:#e5ebee;font-weight:650}
 .table-wrap{width:100%;overflow:auto;border:1px solid var(--line);border-radius:9px}
 .data-table{width:100%;min-width:520px;border-collapse:collapse;font-size:12.5px}
 .data-table th{color:#51636c;background:#eef3f5;text-align:left;font-size:10.5px;font-weight:800;letter-spacing:.045em;text-transform:uppercase}
@@ -485,7 +491,7 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
     -webkit-overflow-scrolling:touch!important;overscroll-behavior-x:contain;
   }
   .data-table{min-width:520px!important}
-  .daily-trend-table-wrap .data-table{min-width:460px!important;table-layout:auto!important}
+  .daily-trend-table-wrap .data-table{min-width:760px!important;table-layout:fixed!important}
   .search-row{width:100%!important;display:flex!important}
   .search-row input,.search-row .text-input{width:100%!important;min-width:0!important;max-width:100%!important;font-size:16px!important}
   .pager{align-items:flex-start!important;flex-wrap:wrap!important;gap:9px!important}
@@ -521,7 +527,7 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
   .panel-head h2,.panel-head h3{font-size:14px!important;line-height:1.3!important}
   .quality-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
   .daily-trend-summary{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-  .daily-trend-table-wrap .data-table{min-width:440px!important}
+  .daily-trend-table-wrap .data-table{min-width:760px!important;table-layout:fixed!important}
   .footer-note{padding-bottom:5px!important;overflow-wrap:anywhere}
 }
 @media(max-width:380px){
@@ -648,7 +654,7 @@ html.verix-handheld .hourly-table-content{
   -webkit-overflow-scrolling:touch!important;overscroll-behavior-x:contain!important;
 }
 html.verix-handheld .data-table{min-width:520px!important}
-html.verix-handheld .daily-trend-table-wrap .data-table{min-width:460px!important;table-layout:auto!important}
+html.verix-handheld .daily-trend-table-wrap .data-table{min-width:760px!important;table-layout:fixed!important}
 html.verix-handheld .hourly-chart{min-width:540px!important}
 html.verix-handheld .panel:has(.hourly-chart){overflow-x:auto!important}
 html.verix-handheld .search-row{display:flex!important;width:100%!important}
@@ -1010,7 +1016,7 @@ function valueCell(value,cls){const el=document.createElement('td');el.textConte
 function cell(label,value){const d=document.createElement('div');d.className='metric-card '+(label.indexOf('erro')>=0?'red':label.indexOf('registo')>=0?'amber':'');const l=document.createElement('div');l.className='metric-label';l.textContent=label;const v=document.createElement('div');v.className='metric-value';v.textContent=escValue(value);d.append(l,v);return d;}
 function metricCard(label,value,note,tone){const el=document.createElement('article');el.className='metric-card '+(tone||'');const title=document.createElement('div');title.className='metric-label';title.textContent=label;const val=document.createElement('div');val.className='metric-value';val.textContent=escValue(value);const desc=document.createElement('div');desc.className='metric-note';desc.textContent=note||'';el.append(title,val,desc);return el;}
 function appendCards(hostId,cards){const host=$(hostId);host.replaceChildren();cards.forEach(c=>host.appendChild(metricCard(c[0],c[1],c[2],c[3])));}
-function makeTable(headers,rows){const wrap=document.createElement('div');wrap.className='table-wrap';const table=document.createElement('table');table.className='data-table';const thead=document.createElement('thead');const hr=document.createElement('tr');headers.forEach(h=>{const th=document.createElement('th');th.scope='col';th.textContent=h;hr.appendChild(th);});thead.appendChild(hr);table.appendChild(thead);const body=document.createElement('tbody');rows.forEach(r=>{const tr=document.createElement('tr');r.forEach(c=>{if(c instanceof Node)tr.appendChild(c);else tr.appendChild(valueCell(c));});body.appendChild(tr);});table.appendChild(body);wrap.appendChild(table);return wrap;}
+function makeTable(headers,rows){const wrap=document.createElement('div');wrap.className='table-wrap';const table=document.createElement('table');table.className='data-table';const thead=document.createElement('thead');const hr=document.createElement('tr');headers.forEach(h=>{const th=document.createElement('th');th.scope='col';th.textContent=h;hr.appendChild(th);});thead.appendChild(hr);table.appendChild(thead);const body=document.createElement('tbody');rows.forEach(r=>{const tr=document.createElement('tr');r.forEach(c=>{if(c instanceof HTMLTableCellElement){tr.appendChild(c);}else{const td=document.createElement('td');if(c instanceof Node)td.appendChild(c);else td.textContent=escValue(c);tr.appendChild(td);}});body.appendChild(tr);});table.appendChild(body);wrap.appendChild(table);return wrap;}
 function showEmpty(hostId,message){const host=$(hostId);host.replaceChildren();const el=document.createElement('div');el.className='empty-state';el.textContent=message;host.appendChild(el);}
 async function request(url,options){
   const opt=options||{},ac=new AbortController(),timer=setTimeout(()=>ac.abort(),15000);
@@ -1365,24 +1371,30 @@ function renderDailyTrendPlot(host,rows,key,seriesClass,ariaLabel){
   // Reapplying this after every render also preserves the intended default after refreshes.
   host.scrollLeft=Math.max(0,host.scrollWidth-host.clientWidth);
 }
-function trendDailyValueCell(value,delta,kind){
-  const wrap=document.createElement('div');wrap.className='daily-trend-valuecell';
+function trendDailyValueCell(value){
+  const wrap=document.createElement('div');wrap.className='daily-trend-number-wrap';
   const strong=document.createElement('strong');strong.className='daily-trend-value';strong.textContent=fmt(value);
-  const note=document.createElement('span');note.className='daily-trend-delta '+(kind||'muted');note.textContent=delta;
-  wrap.append(strong,note);
+  wrap.appendChild(strong);
   return wrap;
 }
-function trendDailyDelta(current,previous,isFirst,isPartial){
-  if(isPartial)return {label:'Dia em curso',tone:'partial'};
-  if(isFirst)return {label:'Sem dia anterior',tone:'muted'};
+function trendDailyChangeCell(change){
+  const wrap=document.createElement('div');wrap.className='daily-trend-change-wrap';
+  const note=document.createElement('span');note.className='daily-trend-delta '+(change.tone||'muted');note.textContent=change.label;
+  wrap.appendChild(note);
+  return wrap;
+}
+function trendDailyDelta(current,previous,isFirst,isPartial,higherIsBetter=true){
+  if(isPartial)return {label:'Dia em curso · parcial',tone:'partial'};
+  if(isFirst)return {label:'Sem comparação',tone:'muted'};
   const delta=current-previous;
   if(previous===0){
-    return delta>0?{label:'↑ +'+fmt(delta)+' · novo',tone:'up'}:{label:'→ 0 · 0%',tone:'flat'};
+    if(delta===0)return {label:'Sem alteração · 0%',tone:'flat'};
+    return {label:(delta>0?'+':'−')+fmt(Math.abs(delta))+' · novo',tone:((delta>0)===higherIsBetter?'up':'down')};
   }
   const pct=delta/previous*100;
-  if(delta>0)return {label:'↑ +'+fmt(delta)+' (+'+trendPercent(pct)+')',tone:'up'};
-  if(delta<0)return {label:'↓ −'+fmt(Math.abs(delta))+' (−'+trendPercent(pct)+')',tone:'down'};
-  return {label:'→ 0 (0%)',tone:'flat'};
+  if(delta>0)return {label:'+'+fmt(delta)+' (+'+trendPercent(pct)+')',tone:higherIsBetter?'up':'down'};
+  if(delta<0)return {label:'−'+fmt(Math.abs(delta))+' (−'+trendPercent(pct)+')',tone:higherIsBetter?'down':'up'};
+  return {label:'Sem alteração · 0%',tone:'flat'};
 }
 function renderDailyTrend(){
   const summary=$('dailyTrendSummary'),comparison=$('dailyTrendComparison'),
@@ -1509,15 +1521,17 @@ function renderDailyTrend(){
       const day=document.createElement('strong');day.className='daily-trend-day';day.textContent=trendLongDate(row.day);
       dateCell.appendChild(day);
       if(isPartial){const badge=document.createElement('span');badge.className='daily-trend-today';badge.textContent='Hoje · parcial';dateCell.appendChild(badge);}
-      const uninsuredDelta=trendDailyDelta(row.uninsuredDetections,previous?previous.uninsuredDetections:0,i===0,isPartial);
-      const errorDelta=trendDailyDelta(row.technicalErrorQueries,previous?previous.technicalErrorQueries:0,i===0,isPartial);
+      const uninsuredDelta=trendDailyDelta(row.uninsuredDetections,previous?previous.uninsuredDetections:0,i===0,isPartial,false);
+      const errorDelta=trendDailyDelta(row.technicalErrorQueries,previous?previous.technicalErrorQueries:0,i===0,isPartial,false);
       return [
         dateCell,
-        trendDailyValueCell(row.uninsuredDetections,uninsuredDelta.label,uninsuredDelta.tone),
-        trendDailyValueCell(row.technicalErrorQueries,errorDelta.label,errorDelta.tone)
+        trendDailyValueCell(row.uninsuredDetections),
+        trendDailyChangeCell(uninsuredDelta),
+        trendDailyValueCell(row.technicalErrorQueries),
+        trendDailyChangeCell(errorDelta)
       ];
     });
-    const insuranceValueTable=makeTable(['Dia','Veículos sem seguro / Δ dia anterior','Erros técnicos / Δ dia anterior'],insuranceTableRows);
+    const insuranceValueTable=makeTable(['Dia','Veículos sem seguro','Variação vs. dia anterior','Erros técnicos','Variação vs. dia anterior'],insuranceTableRows);
     insuranceValueTable.classList.add('daily-trend-table-wrap');
     insuranceTable.replaceChildren(insuranceValueTable);
   }
@@ -1529,15 +1543,17 @@ function renderDailyTrend(){
     const day=document.createElement('strong');day.className='daily-trend-day';day.textContent=trendLongDate(row.day);
     dateCell.appendChild(day);
     if(isPartial){const badge=document.createElement('span');badge.className='daily-trend-today';badge.textContent='Hoje · parcial';dateCell.appendChild(badge);}
-    const queryDelta=trendDailyDelta(row.consultations,previous?previous.consultations:0,i===0,isPartial);
-    const userDelta=trendDailyDelta(row.activeInstallations,previous?previous.activeInstallations:0,i===0,isPartial);
+    const queryDelta=trendDailyDelta(row.consultations,previous?previous.consultations:0,i===0,isPartial,true);
+    const userDelta=trendDailyDelta(row.activeInstallations,previous?previous.activeInstallations:0,i===0,isPartial,true);
     return [
       dateCell,
-      trendDailyValueCell(row.consultations,queryDelta.label,queryDelta.tone),
-      trendDailyValueCell(row.activeInstallations,userDelta.label,userDelta.tone)
+      trendDailyValueCell(row.consultations),
+      trendDailyChangeCell(queryDelta),
+      trendDailyValueCell(row.activeInstallations),
+      trendDailyChangeCell(userDelta)
     ];
   });
-  const valueTable=makeTable(['Dia','Pesquisas / Δ dia anterior','Utilizadores ativos* / Δ dia anterior'],tableRows);
+  const valueTable=makeTable(['Dia','Pesquisas iniciadas','Variação vs. dia anterior','Instalações ativas*','Variação vs. dia anterior'],tableRows);
   valueTable.classList.add('daily-trend-table-wrap');
   table.replaceChildren(valueTable);
 }
