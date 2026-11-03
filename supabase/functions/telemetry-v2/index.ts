@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.118.0";
 
 declare const Deno: any;
 
@@ -8,7 +8,7 @@ function isLegacyLocal(req: Request): boolean {
   const origin = req.headers.get("origin");
   if (origin) return false;
   const ua = req.headers.get("user-agent") || "";
-  return /Trident\\//i.test(ua) || /MSIE\\s/i.test(ua) || /MSHTA/i.test(ua);
+  return /Trident\//i.test(ua) || /MSIE\s/i.test(ua) || /MSHTA/i.test(ua);
 }
 
 function corsHeaders(req?: Request) {
@@ -108,7 +108,10 @@ function resolveSecretKey(): string {
 const secretKey = resolveSecretKey();
 const rateSecret = Deno.env.get("VERIX_TELEMETRY_RATE_SECRET") || "";
 const db = createClient(SUPABASE_URL, secretKey, {
-  auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+  auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+  // Telemetry is queued by the client and acknowledged by event ID.
+  // Disable hidden PostgREST retries; each write below has an explicit deadline.
+  db: { retry: false }
 });
 
 const ALLOWED_ORIGINS = new Set([
@@ -148,7 +151,7 @@ function finiteNumber(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
-// Used only for the restricted, short-lived "no record" operational register.
+// Used only for the restricted, 90-day "no record" operational register.
 function cleanOperationalPlate(value: unknown): string | null {
   const plate = String(value ?? "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
   return /^[A-Z0-9]{6,8}$/.test(plate) ? plate : null;
@@ -357,13 +360,30 @@ async function hmacHex(value: string): Promise<string> {
   return [...bytes].map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
+function isTimeoutOrAbort(error: unknown): boolean {
+  const value = error as any;
+  const name = String(value?.name || value?.cause?.name || "");
+  const message = String(value?.message || value?.cause?.message || "");
+  return name === "AbortError" ||
+    name === "TimeoutError" ||
+    String(value?.code || "") === "57014" ||
+    /abort(?:ed)?|timeout|timed out|statement timeout/i.test(message);
+}
+
 async function consumeRate(key: string, limit: number): Promise<boolean> {
   const { data, error } = await db.rpc("verix2_consume_rate_limit", {
     p_key: key,
     p_limit: limit,
     p_window_seconds: 60
-  });
-  if (error) throw new Error(`rate_limit:${error.message}`);
+  }).abortSignal(AbortSignal.timeout(5000));
+  if (error) {
+    if (isTimeoutOrAbort(error)) {
+      const timeout = new Error("rate_limit_timeout");
+      timeout.name = "TimeoutError";
+      throw timeout;
+    }
+    throw new Error(`rate_limit:${error.message}`);
+  }
   return data === true;
 }
 
@@ -515,7 +535,7 @@ Deno.serve(async (req: Request) => {
           event_id: eventId,
           matricula: operationalPlate,
           occurred_at: occurredAt
-          // created_at/expires_at use database defaults: receipt time + 24 hours.
+          // created_at/expires_at use database defaults: receipt time + 90 days.
         });
       }
 
@@ -598,8 +618,15 @@ Deno.serve(async (req: Request) => {
       p_events: events,
       p_installations: [...installations.values()],
       p_sessions: [...sessions.values()]
-    });
-    if (ingestError) throw new Error(`atomic_ingest:${ingestError.message}`);
+    }).abortSignal(AbortSignal.timeout(12000));
+    if (ingestError) {
+      if (isTimeoutOrAbort(ingestError)) {
+        const timeout = new Error("atomic_ingest_timeout");
+        timeout.name = "TimeoutError";
+        throw timeout;
+      }
+      throw new Error(`atomic_ingest:${ingestError.message}`);
+    }
 
     const receipt = Array.isArray(ingestData) ? ingestData[0] : ingestData;
     const inserted = Number(receipt?.events_inserted);
@@ -615,16 +642,32 @@ Deno.serve(async (req: Request) => {
       ).values()];
       const { error: casesError } = await db
         .from("verix_insurance_no_cases")
-        .upsert(uniqueCases, { onConflict: "event_id", ignoreDuplicates: true });
-      if (casesError) throw new Error("operational_no_case_write:" + casesError.message);
+        .upsert(uniqueCases, { onConflict: "event_id", ignoreDuplicates: true })
+        .abortSignal(AbortSignal.timeout(5000));
+      if (casesError) {
+        if (isTimeoutOrAbort(casesError)) {
+          const timeout = new Error("operational_no_case_write_timeout");
+          timeout.name = "TimeoutError";
+          throw timeout;
+        }
+        throw new Error("operational_no_case_write:" + casesError.message);
+      }
     }
 
     const duplicates = events.length - inserted;
+    const sessionsDetached = Number(receipt?.sessions_detached || 0);
+    if (sessionsDetached > 0) {
+      console.warn("telemetry_session_attribution_detached", JSON.stringify({
+        count: sessionsDetached,
+        inserted
+      }));
+    }
     return json({
       ok: true,
       accepted: inserted,
       inserted,
       duplicates,
+      sessions_detached: sessionsDetached,
       rejected,
       received: received.length,
       considered: events.length,
@@ -637,6 +680,9 @@ Deno.serve(async (req: Request) => {
     });
   } catch (error) {
     console.error("telemetry_write_failed", error);
-    return json({ ok: false, error: "telemetry_write_failed" }, 500);
+    if (isTimeoutOrAbort(error)) {
+      return json({ ok: false, error: "telemetry_backend_timeout", retryable: true }, 503, req);
+    }
+    return json({ ok: false, error: "telemetry_write_failed" }, 500, req);
   }
 });

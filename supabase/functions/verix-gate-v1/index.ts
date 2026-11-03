@@ -86,7 +86,16 @@ Deno.serve(async (req: Request) => {
   }
 
   const origin = req.headers.get("origin") || "";
-  if (!(isSupportedOrigin(origin) || legacyLocal(req))) {
+  // Aplicação portátil: alguns Chromium em file:// omitem Origin em vez de enviar "null".
+  // Só permitimos origem ausente para clientes Chromium conhecidos; origens web explícitas
+  // continuam sujeitas à lista permitida e nunca são refletidas indiscriminadamente.
+  const ua = req.headers.get("user-agent") || "";
+  const portableOriginlessChromium =
+    !origin &&
+    /(?:Chrome|Chromium|Edg|SamsungBrowser)\//i.test(ua) &&
+    !/(?:HeadlessChrome|Google-Read-Aloud|bot|crawler|spider)/i.test(ua);
+
+  if (!(isSupportedOrigin(origin) || legacyLocal(req) || portableOriginlessChromium)) {
     console.warn("verix_gate_origin_rejected", JSON.stringify({
       originType: origin === "null" ? "opaque" : (origin ? "web" : "missing"),
       origin: origin && origin !== "null" && ALLOWED_ORIGINS.has(origin) ? origin : undefined,

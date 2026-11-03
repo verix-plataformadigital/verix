@@ -26,5 +26,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check telemetry Edge Function
+        run: deno check --no-lock supabase/functions/telemetry-v2/index.ts
       - name: Verify telemetry integrity contract
         run: node tools/verify-telemetry-integrity.mjs
