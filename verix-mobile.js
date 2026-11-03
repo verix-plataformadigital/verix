@@ -8,13 +8,21 @@
  */
 var queryMobile=/(?:^|[?&])_mobile=1(?:&|$)/.test(String(window.location.search||''));
 var userAgent=String(navigator.userAgent||'');
-var coarsePointer=false;
-try{
-  coarsePointer=!!(window.matchMedia&&window.matchMedia('(pointer:coarse)').matches);
-}catch(e){}
-var handheld=!!window.__VERIX_MOBILE_ROUTE||queryMobile||coarsePointer||
-  /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(userAgent);
-if(!handheld)return;
+// Use the phone UA contract, not touch capability. Rugged Getac tablets,
+// iPads and other touch laptops must keep the desktop multi-panel workspace.
+var mobilePhoneUA=/iPhone|iPod|BlackBerry|IEMobile|Windows Phone|Opera Mini|Mobile/i.test(userAgent);
+var handheld=queryMobile||mobilePhoneUA;
+if(!handheld){
+  // The early HTML bootstrap in older source builds may have marked a tablet
+  // as handheld. Undo that state before the mobile stylesheet is activated.
+  window.__VERIX_MOBILE_ROUTE=false;
+  var desktopRoot=document.documentElement;
+  desktopRoot.classList.remove('verix-handheld','vx-handheld','vx-mobile-bootstrap');
+  var desktopStylesheet=document.querySelector('link[href*="verix-mobile.css"]');
+  if(desktopStylesheet)desktopStylesheet.media='(max-width:1199px)';
+  return;
+}
+window.__VERIX_MOBILE_ROUTE=true;
 
 var root=document.documentElement;
 root.classList.add('vx-handheld','vx-mobile-bootstrap');
@@ -83,7 +91,7 @@ if(document.readyState==='loading'){
 }
 
 window.VERIX_MOBILE_ADAPTER={
-  version:'2.0',
+  version:'2.1',
   navigation:false,
   layout:'state-scoped'
 };
