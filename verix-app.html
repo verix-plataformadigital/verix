@@ -318,7 +318,7 @@ html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .verix-asf-notice-card{
     }
 
     var expiresIn = Number(data && data.expires_in);
-    if (!data || !data.token || !Number.isFinite(expiresIn) || expiresIn <= 0) {
+    if (!data || !data.token || !isFinite(expiresIn) || expiresIn <= 0) {
       throw createGateError('GATE_INVALID_RESPONSE', 'Resposta incompleta do VÉRIX Gate', httpStatus);
     }
     if (String(data.build_id || '') !== BUILD_ID) {
