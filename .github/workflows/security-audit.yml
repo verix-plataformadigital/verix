@@ -6,7 +6,6 @@ on:
 
 permissions:
   contents: read
-  security-events: write
 
 jobs:
   audit:
@@ -15,13 +14,33 @@ jobs:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Build secure release
+      - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
 
       - name: Install release tooling
         run: npm install --ignore-scripts --no-audit --no-fund
+
+      - name: Inspect Vercel transitive package metadata
+        run: |
+          npm view @vercel/cli-config@0.3.6 version dependencies --json
+          npm view @vercel/oidc@3.8.10 version dependencies --json
+
+      - name: Diagnose vulnerable dependency paths
+        run: |
+          npm ls minimatch zod @vercel/blob @vercel/oidc --all || true
+          npm explain zod || true
+          npm explain minimatch || true
+
+      - name: Verify Supabase Edge Function inventory and JWT configuration
+        run: node tools/verify-edge-function-config.mjs
+
+      - name: Verify patched Vercel configuration dependency
+        run: npm ls @vercel/cli-config zod --all
+
+      - name: Audit installed dependencies
+        run: npm audit --audit-level=high
 
       - name: Produce hardened build
         env:
@@ -68,7 +87,7 @@ jobs:
               parser = Validator()
               parser.feed(path.read_text(encoding="utf-8"))
               if parser.errors:
-                  raise SystemExit(f"{path}:\\n" + "\\n".join(parser.errors[:20]))
+                  raise SystemExit(f"{path}:\n" + "\n".join(parser.errors[:20]))
               if parser.stack:
                   raise SystemExit(f"{path}: unclosed HTML tags: {parser.stack[-20:]}")
               print(f"HTML structural validation: OK — {path}")
