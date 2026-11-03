@@ -182,7 +182,7 @@ function writeSecureFile(relativeSource, relativeOutput) {
     // Touch input alone does not make a device a phone. Getac/Windows tablets
     // and iPads must retain the desktop side-by-side consultation workspace.
     // The explicit ?_mobile=1 switch remains available for forced phone layout.
-    const mobileRoutePattern = /<script\\b(?=[^>]*\\bid=["']verix-mobile-route-capture["'])[^>]*>[\\s\\S]*?<\\/script>/i;
+    const mobileRoutePattern = /<script\b(?=[^>]*\bid=["']verix-mobile-route-capture["'])[^>]*>[\s\S]*?<\/script>/i;
     const mobileRouteCapture = [
       '<script id="verix-mobile-route-capture">',
       '(function(){',
@@ -198,7 +198,7 @@ function writeSecureFile(relativeSource, relativeOutput) {
       '  if(css)css.media="all";',
       '})();',
       '</script>'
-    ].join("\\n");
+    ].join("\n");
     if (!mobileRoutePattern.test(source)) {
       throw new Error("Mobile route capture block not found; refusing to publish ambiguous handheld detection.");
     }
