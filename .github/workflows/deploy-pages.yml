@@ -179,17 +179,3 @@ jobs:
           fi
           git -C public-pages commit -m "deploy: publish VÉRIX build $SOURCE_RUN ($SOURCE_SHA)"
           git -C public-pages push origin HEAD:main
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
