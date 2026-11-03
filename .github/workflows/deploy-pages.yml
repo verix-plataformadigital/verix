@@ -3,6 +3,22 @@ name: Deploy VÉRIX (Secure) to GitHub Pages
 on:
   push:
     branches: ["main"]
+    # Server-only changes must not rebuild/reissue the portable client.
+    # Publish Pages only when an actual static application/Admin asset changes.
+    paths:
+      - "index.html"
+      - "verix-app.html"
+      - "verix-mobile*"
+      - "verix-depth-ui.css"
+      - "verix-mobile-final.css"
+      - "admin_v2.html"
+      - "admin/**"
+      - "assets/**"
+      - "verix-presence-v1.js"
+      - "AI-ACCESS-POLICY.md"
+      - "tools/build-secure-release.mjs"
+      - "package.json"
+      - "package-lock.json"
   workflow_dispatch:
 
 permissions:
