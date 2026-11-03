@@ -1450,7 +1450,13 @@ function renderDailyTrend(){
     metricCard('Média de pesquisas / dia',trendDecimal(avgConsultations),'Média apenas dos dias completos.',''),
     metricCard('Média de utilizadores ativos / dia',trendDecimal(avgActiveInstallations),'Instalações distintas com ação real, por dia completo.','')
   );
-  range.textContent='Desde '+trendShortDate(rows[0].day)+' até '+trendShortDate(rows[rows.length-1].day)+' · Lisboa';
+  const cacheTimestamp=dailyTrendData.cacheRefreshedAt||dailyTrendData.generatedAt||null;
+  const cacheTime=cacheTimestamp&&!Number.isNaN(Date.parse(cacheTimestamp))
+    ? new Date(cacheTimestamp).toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'})
+    : '';
+  const staleNote=dailyTrendData.cacheStale===true?' · atualização pendente':'';
+  range.textContent='Desde '+trendShortDate(rows[0].day)+' até '+trendShortDate(rows[rows.length-1].day)+' · Lisboa'
+    +(cacheTime?' · atualizado '+cacheTime:'')+staleNote;
   const recent7=completed.slice(-7),prior7=completed.slice(-14,-7);
   comparison.replaceChildren();
   comparison.hidden=true;
