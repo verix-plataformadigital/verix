@@ -67,6 +67,45 @@ function isPostgrestSchemaCacheFailure(status: number, body: string): boolean {
   );
 }
 
+type LocalRateWindow = { startedAt: number; count: number };
+const localLoginRateWindows = new Map<string, LocalRateWindow>();
+
+/*
+ * Emergency-only limiter used when PostgREST/Postgres is unavailable.
+ * The durable database limiter remains the primary path. This per-isolate
+ * fallback is deliberately bounded to the same 10 attempts / 5 minutes.
+ * Password verification and the signed 8-hour admin token are never skipped.
+ */
+function consumeLocalLoginRate(rateKey: string): boolean {
+  const now = Date.now();
+  let state = localLoginRateWindows.get(rateKey);
+
+  if (!state || now - state.startedAt >= 5 * 60 * 1000) {
+    state = { startedAt: now, count: 0 };
+    localLoginRateWindows.set(rateKey, state);
+  }
+
+  if (state.count >= 10) return false;
+  state.count += 1;
+
+  // Bound memory in a long-lived isolate and remove expired entries.
+  if (localLoginRateWindows.size > 4096) {
+    for (const [key, value] of localLoginRateWindows) {
+      if (now - value.startedAt >= 5 * 60 * 1000) {
+        localLoginRateWindows.delete(key);
+      }
+      if (localLoginRateWindows.size <= 3072) break;
+    }
+    while (localLoginRateWindows.size > 4096) {
+      const oldest = localLoginRateWindows.keys().next().value;
+      if (!oldest) break;
+      localLoginRateWindows.delete(oldest);
+    }
+  }
+
+  return true;
+}
+
 async function consumeLoginRate(req: Request, secret: string): Promise<boolean> {
   const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
@@ -101,8 +140,9 @@ async function consumeLoginRate(req: Request, secret: string): Promise<boolean> 
         }
       );
     } catch (_) {
-      // Do not mistake a backend/network failure for a rate-limit decision.
-      throw new Error("rate_limit_backend_unavailable");
+      // Postgres/network failure: preserve a bounded emergency login path.
+      console.error("admin_login_rate_limit_fallback", "network_unavailable");
+      return consumeLocalLoginRate(rateKey);
     }
 
     const body = await response.text();
@@ -112,14 +152,28 @@ async function consumeLoginRate(req: Request, secret: string): Promise<boolean> 
       throw new Error("rate_limit_invalid_response");
     }
 
-    // PGRST002 is returned before the RPC executes, so retrying this exact
-    // schema-cache failure is safe. Do not retry 57014/504 query timeouts.
+    // PGRST002 is returned before the RPC executes; retry this exact failure.
     if (
       isPostgrestSchemaCacheFailure(response.status, body) &&
       attempt < retryDelays.length
     ) {
       continue;
     }
+
+    // SQL statement timeouts (57014) and temporary server-side 5xx errors
+    // indicate infrastructure failure, not an exceeded user attempt limit.
+    // Do not retry an executed query; switch to the bounded local limiter.
+    if (response.status >= 500 && response.status <= 599) {
+      console.error(
+        "admin_login_rate_limit_fallback",
+        "database_unavailable",
+        response.status,
+        /57014|statement timeout/i.test(body) ? "statement_timeout" : "server_error"
+      );
+      return consumeLocalLoginRate(rateKey);
+    }
+
+    // Configuration/authentication errors (4xx) remain fail-closed.
     throw new Error("rate_limit_backend_unavailable");
   }
 
