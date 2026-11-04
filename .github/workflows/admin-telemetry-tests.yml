@@ -16,6 +16,7 @@ on:
       - "admin_v2.html"
       - "supabase/functions/stats-v2/**"
       - "supabase/functions/admin-telemetry-v3/**"
+      - "supabase/functions/admin-auth-v2/**"
       - "supabase/migrations/20261022104500_admin_authoritative_live_presence.sql"
       - "supabase/migrations/20261022115800_fix_portuguese_plate_zero_center_rule.sql"
       - ".github/workflows/admin-telemetry-tests.yml"
