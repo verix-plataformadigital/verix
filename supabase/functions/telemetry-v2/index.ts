@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.118.0";
+import { createLocalRateLimiter } from "./rate_limit.ts";
 
 declare const Deno: any;
 
@@ -107,6 +108,9 @@ function resolveSecretKey(): string {
 
 const secretKey = resolveSecretKey();
 const rateSecret = Deno.env.get("VERIX_TELEMETRY_RATE_SECRET") || "";
+// The collector must not query Postgres to decide whether it may query Postgres.
+// This bounded per-isolate guard protects bursts without adding DB round-trips.
+const consumeLocalRate = createLocalRateLimiter(5000);
 const db = createClient(SUPABASE_URL, secretKey, {
   auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
   // Telemetry is queued by the client and acknowledged by event ID.
@@ -370,53 +374,6 @@ function isTimeoutOrAbort(error: unknown): boolean {
     /abort(?:ed)?|timeout|timed out|statement timeout/i.test(message);
 }
 
-function wait(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-function isPostgrestSchemaCacheFailure(status: number, body: string): boolean {
-  return status === 503 && (
-    /"code"\s*:\s*"PGRST002"/i.test(body) ||
-    /could not query the database for the schema cache/i.test(body)
-  );
-}
-
-function isSchemaCacheFailure(error: unknown): boolean {
-  const value = error as any;
-  const code = String(value?.code || "");
-  const message = String(value?.message || value?.cause?.message || "");
-  return code === "PGRST002" ||
-    /could not query the database for the schema cache/i.test(message);
-}
-
-async function consumeRate(key: string, limit: number): Promise<boolean> {
-  const delays = [1000, 2000, 4000];
-
-  for (let attempt = 0; attempt <= delays.length; attempt++) {
-    const { data, error } = await db.rpc("verix2_consume_rate_limit", {
-      p_key: key,
-      p_limit: limit,
-      p_window_seconds: 60
-    }).abortSignal(AbortSignal.timeout(5000));
-
-    if (!error) return data === true;
-
-    // PGRST002 means PostgREST could not load the schema cache and the RPC
-    // was not executed. A bounded retry is safe. Do not retry 57014/timeouts.
-    if (isSchemaCacheFailure(error) && attempt < delays.length) {
-      await wait(delays[attempt]);
-      continue;
-    }
-    if (isTimeoutOrAbort(error)) {
-      const timeout = new Error("rate_limit_timeout");
-      timeout.name = "TimeoutError";
-      throw timeout;
-    }
-    throw new Error(`rate_limit:${error.message}`);
-  }
-
-  throw new Error("rate_limit_schema_cache_unavailable");
-}
 
 
 Deno.serve(async (req: Request) => {
@@ -439,7 +396,7 @@ Deno.serve(async (req: Request) => {
       return json({ ok: false, error: "payload_too_large" }, 413, req);
     }
 
-    if (!(await consumeRate(`all:${await hmacHex(clientIp(req))}`, 600))) {
+    if (!consumeLocalRate(`all:${await hmacHex(clientIp(req))}`, 600, 60)) {
       return json({ ok: false, error: "rate_limited" }, 429, req);
     }
 
@@ -545,7 +502,7 @@ Deno.serve(async (req: Request) => {
         if (!Number.isFinite(ts) || ts < now - 24 * 60 * 60 * 1000 || ts > now + 5 * 60 * 1000) { rejectEvent(x, "invalid_or_stale_timestamp"); continue; }
 
         const installationKey = await hmacHex(`installation:${installationId}`);
-        if (!(await consumeRate(`vehicle:${installationKey}`, 30))) { rejectEvent(x, "rate_limited", true); continue; }
+        if (!consumeLocalRate(`vehicle:${installationKey}`, 30, 60)) { rejectEvent(x, "rate_limited", true); continue; }
       }
 
       if (event === "imt_loaded") {
