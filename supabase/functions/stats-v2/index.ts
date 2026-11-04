@@ -112,7 +112,8 @@ async function rpc(name: string, body: Record<string,unknown>) {
         Authorization:`Bearer ${serviceKey}`,
         "Content-Type":"application/json"
       },
-      body:JSON.stringify(body)
+      body:JSON.stringify(body),
+      signal:AbortSignal.timeout(8000)
     });
 
     const t = await r.text();
@@ -520,6 +521,9 @@ async function loadCinemometerAnalytics24h(now:string){
 }
 
 let cachedStats: { at:number; body:string; key:string } | null = null;
+let cachedDashboardV3: { at:number; body:string } | null = null;
+const DASHBOARD_V3_EDGE_CACHE_MS = 20000;
+const DASHBOARD_V3_STALE_FALLBACK_MS = 5 * 60 * 1000;
 let cachedAnalytics: { at:number; body:string } | null = null;
 let cachedDiagnostics: { at:number; body:string } | null = null;
 const STATS_CACHE_MS = 15000;
@@ -594,102 +598,82 @@ Deno.serve(async (req:Request) => {
     // V3 dashboard contract: compact period aggregates are precomputed and cached in PostgreSQL.
     if(req.method === "GET" && detail === "dashboard-v3") {
       const now = new Date().toISOString();
+
+      // Reuse the last confirmed response briefly. This protects the mobile
+      // Admin from repeat refreshes while PostgreSQL is under pressure.
+      if (
+        !forceRefresh &&
+        cachedDashboardV3 &&
+        Date.now() - cachedDashboardV3.at < DASHBOARD_V3_EDGE_CACHE_MS
+      ) {
+        return new Response(cachedDashboardV3.body, {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+            ...corsHeaders(req),
+            "Cache-Control": "no-store",
+            "X-Verix-Dashboard-Cache": "EDGE-HIT"
+          }
+        });
+      }
+
       try {
-        // The Admin request only reads the shared dashboard snapshot.
-        // The scheduled PostgreSQL job is solely responsible for rebuilding it.
+        // Read only the latest complete snapshot. Live presence and the small
+        // insurance delta are supplementary and must never hold up the main
+        // historical dashboard when the database is saturated.
         const cachedMetrics = await rpc("verix2_admin_dashboard_v3", {
           p_now: now,
           p_force_refresh: false
         });
-        const metrics = { ...(cachedMetrics || {}) };
-        const cacheCutoff = metrics.generatedAt || metrics.ranges?.today?.end;
-        const canLoadDelta = Boolean(
-          cacheCutoff &&
-          metrics.ranges?.today?.start &&
-          metrics.ranges?.week?.start &&
-          metrics.ranges?.total?.start
-        );
+        const metrics = {
+          ...(cachedMetrics && typeof cachedMetrics === "object" ? cachedMetrics : {})
+        };
 
-        // Presence and the small insurance delta are independent supplements.
-        // Load them concurrently and keep the cached dashboard available if either fails.
-        const liveSummaryTask = rpc("verix2_admin_live_summary_v1", { p_now: now }).then(
-          value => ({ ok: true as const, value }),
-          error => ({ ok: false as const, error })
-        );
-        const deltaTask = canLoadDelta
-          ? rpc("verix2_admin_insurance_delta_v1", {
-              p_since: cacheCutoff,
-              p_now: now,
-              p_today_start: metrics.ranges.today.start,
-              p_week_start: metrics.ranges.week.start,
-              p_total_start: metrics.ranges.total.start
-            }).then(
-              value => ({ ok: true as const, value }),
-              error => ({ ok: false as const, error })
-            )
-          : Promise.resolve({ ok: true as const, value: null });
+        metrics.liveSummaryAvailable = false;
+        metrics.liveInsuranceDeltaAvailable = false;
 
-        const [liveSummaryResult, deltaResult] = await Promise.all([
-          liveSummaryTask,
-          deltaTask
-        ]);
-        const liveSummary = liveSummaryResult.ok &&
-            liveSummaryResult.value &&
-            typeof liveSummaryResult.value === "object"
-          ? liveSummaryResult.value
-          : null;
-        if (!liveSummaryResult.ok) {
-          console.error("Admin live summary unavailable:", String((liveSummaryResult.error as Error)?.message || liveSummaryResult.error));
-        }
+        const generatedAt = metrics.generatedAt || metrics.ranges?.today?.end || now;
+        const body = JSON.stringify({
+          ok: true,
+          detail: "dashboard-v3",
+          generatedAt,
+          data: metrics,
+          supplementsDeferred: true
+        });
 
-        let liveInsuranceDeltaApplied = false;
-        if (deltaResult.ok && deltaResult.value) {
-          const delta = deltaResult.value;
-          const deltaPeriods = delta?.periods || {};
-          const insurance = { ...(metrics.insurance || {}) };
-          const countKeys = ["consultations", "finals", "insured", "uninsured", "errors", "userInputInvalid", "errorEvents", "userInputInvalidEvents", "pending", "incomplete", "contradictory", "duplicateFinals"];
-          for (const period of ["today", "week", "total"]) {
-            const base = insurance[period] || {};
-            const change = deltaPeriods[period] || {};
-            const row = { ...base };
-            for (const key of countKeys) {
-              row[key] = Math.max(0, Math.trunc(Number(base[key] || 0) + Number(change[key] || 0)));
-            }
-            const validDecisions = row.insured + row.uninsured;
-            row.uninsuredPct = validDecisions ? Math.round(1000 * row.uninsured / validDecisions) / 10 : null;
-            const technicalErrorDenominator = Math.max(0, row.finals - Number(row.userInputInvalid || 0));
-            row.errorPct = technicalErrorDenominator ? Math.round(1000 * row.errors / technicalErrorDenominator) / 10 : null;
-            insurance[period] = row;
+        cachedDashboardV3 = { at: Date.now(), body };
+        return new Response(body, {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+            ...corsHeaders(req),
+            "Cache-Control": "no-store",
+            "X-Verix-Dashboard-Cache": "DB-SNAPSHOT"
           }
-          metrics.insurance = insurance;
-          liveInsuranceDeltaApplied = true;
-        } else if (!deltaResult.ok) {
-          console.error("Admin live insurance delta unavailable:", String((deltaResult.error as Error)?.message || deltaResult.error));
+        });
+      } catch (error) {
+        // If this isolate has a recent confirmed snapshot, keep the historical
+        // figures visible with their original generatedAt timestamp. Never
+        // fabricate new values or advance their freshness timestamp.
+        if (
+          cachedDashboardV3 &&
+          Date.now() - cachedDashboardV3.at <= DASHBOARD_V3_STALE_FALLBACK_MS
+        ) {
+          return new Response(cachedDashboardV3.body, {
+            status: 200,
+            headers: {
+              "Content-Type": "application/json",
+              ...corsHeaders(req),
+              "Cache-Control": "no-store",
+              "X-Verix-Dashboard-Cache": "STALE-FALLBACK"
+            }
+          });
         }
-
-        if (liveSummary) {
-          metrics.users = {
-            ...(metrics.users || {}),
-            ...liveSummary,
-            consultationsLast3Minutes: Number(liveSummary.consultationsLast3Minutes || 0),
-            installationsConsultedLastHour: Number(liveSummary.installationsConsultedLastHour || 0),
-            installationsSeenLastHour: Number(liveSummary.installationsSeenLastHour || 0),
-            registeredInstallations: Number(liveSummary.registeredInstallations || 0),
-            onlineInstallations: Number(liveSummary.onlineInstallations || 0),
-            onlineTabs: Number(liveSummary.onlineTabs || 0),
-            activeInstallations: Number(liveSummary.activeInstallations || 0),
-            activeTabs: Number(liveSummary.activeTabs || 0),
-            onlineProfiles: Array.isArray(liveSummary.onlineProfiles) ? liveSummary.onlineProfiles : [],
-            presenceObservedAt: liveSummary.presenceObservedAt || now,
-            presenceLeaseSeconds: Number(liveSummary.presenceLeaseSeconds || 150)
-          };
-        }
-        metrics.liveSummaryAvailable = Boolean(liveSummary);
-        if (liveInsuranceDeltaApplied) metrics.generatedAt = now;
-        metrics.liveInsuranceDeltaAvailable = liveInsuranceDeltaApplied;
-        return json({ok:true,detail:"dashboard-v3",generatedAt:now,data:metrics},200,req);
-      } catch(error) {
-        return json({ok:false,error:"dashboard_v3_failed",detail:String((error as Error)?.message||error)},500,req);
+        return json({
+          ok: false,
+          error: "dashboard_v3_unavailable",
+          detail: "O resumo histórico está temporariamente indisponível."
+        }, 503, req);
       }
     }
 
