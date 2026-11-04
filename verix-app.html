@@ -18056,8 +18056,14 @@ html body .leg-card-new .copy-all-new{
         keepalive: true,
         signal: controller ? controller.signal : undefined
       });
-      if (!response.ok) return null;
-      return parseReceipt(await response.text());
+      if (!response.ok) {
+        return { completed: true, receipt: null, status: response.status };
+      }
+      return {
+        completed: true,
+        receipt: parseReceipt(await response.text()),
+        status: response.status
+      };
     } catch (_) {
       return null;
     } finally {
@@ -18073,18 +18079,24 @@ html body .leg-card-new .copy-all-new{
           if (typeof X !== 'function') return resolve(null);
           var xhr = new X();
           var done = false;
-          var finish = function (receipt) {
+          var finish = function (result) {
             if (done) return;
             done = true;
             try { xhr.abort(); } catch (_) {}
-            resolve(receipt || null);
+            resolve(result || null);
           };
           xhr.open('POST', ENDPOINT, true);
           xhr.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
           xhr.timeout = TIMEOUT_MS;
           xhr.onreadystatechange = function () {
             if (xhr.readyState === 4) {
-              finish(xhr.status >= 200 && xhr.status < 300 ? parseReceipt(xhr.responseText) : null);
+              var status = Number(xhr.status || 0);
+              if (status === 0) return finish(null);
+              finish({
+                completed: true,
+                receipt: status >= 200 && status < 300 ? parseReceipt(xhr.responseText) : null,
+                status: status
+              });
             }
           };
           xhr.onerror = function () { finish(null); };
@@ -18122,7 +18134,11 @@ html body .leg-card-new .copy-all-new{
         xhr.setRequestHeader('Content-Type', 'text/plain; charset=UTF-8');
         xhr.send(JSON.stringify({ events: batch }));
         var status = Number(xhr.Status || 0);
-        resolve(status >= 200 && status < 300 ? parseReceipt(xhr.ResponseText || xhr.responseText) : null);
+        resolve({
+          completed: true,
+          receipt: status >= 200 && status < 300 ? parseReceipt(xhr.ResponseText || xhr.responseText) : null,
+          status: status
+        });
       } catch (_) {
         resolve(null);
       }
@@ -18131,12 +18147,15 @@ html body .leg-card-new .copy-all-new{
 
   async function send(batch) {
     if (typeof fetch === 'function') {
-      var receipt = await sendViaFetch(batch);
-      if (receipt) return receipt;
+      var fetchResult = await sendViaFetch(batch);
+      // An HTTP response (including 429/5xx) is final for this attempt.
+      // Never send the same batch again through another transport after 503.
+      if (fetchResult && fetchResult.completed) return fetchResult.receipt;
     }
-    var xhrReceipt = await sendViaXhr(batch);
-    if (xhrReceipt) return xhrReceipt;
-    return await sendViaActiveX(batch);
+    var xhrResult = await sendViaXhr(batch);
+    if (xhrResult && xhrResult.completed) return xhrResult.receipt;
+    var activeXResult = await sendViaActiveX(batch);
+    return activeXResult && activeXResult.completed ? activeXResult.receipt : null;
   }
 
   function schedule(delay) {
@@ -18172,8 +18191,12 @@ html body .leg-card-new .copy-all-new{
         retryStep = 0;
         if (queue.length) schedule(Object.keys(retryIds).length ? 2000 : 50);
       } else {
-        retryStep = Math.min(retryStep + 1, 4);
-        schedule([2000, 5000, 15000, 30000, 60000][retryStep]);
+        // Progressive backoff with jitter prevents clients retrying together.
+        var delays = [30000, 60000, 120000, 180000, 300000];
+        retryStep = Math.min(retryStep + 1, delays.length);
+        var baseDelay = delays[retryStep - 1];
+        var jitteredDelay = Math.round(baseDelay * (0.8 + Math.random() * 0.4));
+        schedule(jitteredDelay);
       }
     } finally {
       flushBusy = false;
