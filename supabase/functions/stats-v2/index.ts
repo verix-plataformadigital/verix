@@ -8,9 +8,12 @@ declare const Deno: any;
 function corsHeaders(_req: Request) {
   return {
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "authorization,content-type",
+    // Explicitly permit the headers used by the Admin browser/PWA fetch.
+    // Authorization must be listed by name; wildcard alone is not sufficient.
+    "Access-Control-Allow-Headers": "authorization,accept,apikey,content-type,x-client-info,x-verix-build-id",
     "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-    "Access-Control-Max-Age": "600",
+    // Force browsers to re-check this policy after deployments.
+    "Access-Control-Max-Age": "0",
     "Cache-Control": "no-store",
     "Vary": "Origin",
     "X-Content-Type-Options": "nosniff",
@@ -566,6 +569,12 @@ async function resetState() {
 
 Deno.serve(async (req:Request) => {
   if(req.method==="OPTIONS") {
+    console.log(
+      "stats_v2_preflight",
+      req.headers.get("origin") || "(no-origin)",
+      req.headers.get("access-control-request-method") || "(no-method)",
+      req.headers.get("access-control-request-headers") || "(no-headers)"
+    );
     return new Response(null,{status:204,headers:corsHeaders(req)});
   }
 
