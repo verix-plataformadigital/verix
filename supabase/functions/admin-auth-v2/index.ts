@@ -106,6 +106,30 @@ function consumeLocalLoginRate(rateKey: string): boolean {
   return true;
 }
 
+// Emergency per-isolate fallback: keeps the Admin login available if Postgres
+// is timing out. The durable database limiter remains primary whenever healthy.
+// This is deliberately stricter than the normal 10 attempts / 5 minutes.
+const localFallbackAttempts = new Map<string, number[]>();
+async function consumeLocalFallback(req: Request, secret: string): Promise<boolean> {
+  const key = await hmacHex("admin-login-fallback:" + clientIp(req), secret);
+  const now = Date.now();
+  const recent = (localFallbackAttempts.get(key) || []).filter(t => now - t < 300_000);
+  if (recent.length >= 5) {
+    localFallbackAttempts.set(key, recent);
+    return false;
+  }
+  recent.push(now);
+  localFallbackAttempts.set(key, recent);
+  // Bound memory growth in long-lived isolates.
+  if (localFallbackAttempts.size > 10_000) {
+    for (const [k, times] of localFallbackAttempts) {
+      if (!times.some(t => now - t < 300_000)) localFallbackAttempts.delete(k);
+      if (localFallbackAttempts.size <= 8_000) break;
+    }
+  }
+  return true;
+}
+
 async function consumeLoginRate(req: Request, secret: string): Promise<boolean> {
   const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
@@ -290,11 +314,14 @@ Deno.serve(async (req: Request) => {
     try {
       loginAllowed = await consumeLoginRate(req, secret);
     } catch (error) {
+      // Database timeouts must not lock the administrator out. Fall back to a
+      // stricter per-isolate limiter while retaining password verification,
+      // HMAC token signing, and the normal durable limiter when Postgres recovers.
       console.error(
-        "admin_login_rate_limit_unavailable",
+        "admin_login_rate_limit_fallback",
         String((error as Error)?.message || "unknown")
       );
-      return json({ ok: false, error: "temporarily_unavailable" }, 503, req);
+      loginAllowed = await consumeLocalFallback(req, secret);
     }
     if (!loginAllowed) {
       return json({ ok: false, error: "rate_limited" }, 429, req);
