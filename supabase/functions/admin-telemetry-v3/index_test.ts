@@ -71,14 +71,16 @@ Deno.test("admin telemetry v3 — authentication, CORS and response contract", a
         "https://edge.example.test/admin-telemetry-v3",
         {
           method: "OPTIONS",
-          headers: { origin: "https://verix-plataformadigital.github.io" },
+          headers: { origin: "https://verix-admin-preview.example" },
         },
       ));
       if (response.status !== 204) throw new Error("Expected 204 for OPTIONS");
       if (
-        response.headers.get("Access-Control-Allow-Origin") !==
-          "https://verix-plataformadigital.github.io"
+        response.headers.get("Access-Control-Allow-Origin") !== "*"
       ) throw new Error("Allowed origin was not reflected");
+      if (response.headers.get("Access-Control-Allow-Credentials") !== null) {
+        throw new Error("Admin CORS must not enable credentialed requests");
+      }
       if (!response.headers.get("Cache-Control")?.includes("no-store")) {
         throw new Error("Response must not be cached");
       }
