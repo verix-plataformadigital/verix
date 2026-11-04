@@ -1,19 +1,16 @@
 declare const Deno: any;
 
-const ALLOWED_ORIGINS = new Set([
-  "https://onilkakbgpklxvxuxmks.supabase.co",
-  "https://verix-plataformadigital.github.io",
-  "https://verix.vxops.workers.dev",
-  "http://localhost",
-  "http://127.0.0.1"
-]);
-
-function corsHeaders(req: Request) {
-  const origin = req.headers.get("origin") || "";
+/*
+ * Stats are protected by a signed admin bearer token; this endpoint does not
+ * use browser cookies or credentialed requests. CORS therefore permits the
+ * supported Admin/PWA distribution hosts without acting as an auth boundary.
+ */
+function corsHeaders(_req: Request) {
   return {
-    "Access-Control-Allow-Origin": ALLOWED_ORIGINS.has(origin) ? origin : "",
+    "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "authorization,content-type",
     "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+    "Access-Control-Max-Age": "600",
     "Cache-Control": "no-store",
     "Vary": "Origin",
     "X-Content-Type-Options": "nosniff",
@@ -91,24 +88,42 @@ async function verifyToken(req: Request) {
   }
 }
 
+function wait(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function isPostgrestSchemaCacheFailure(status: number, body: string): boolean {
+  return status === 503 && (
+    /"code"\s*:\s*"PGRST002"/i.test(body) ||
+    /could not query the database for the schema cache/i.test(body)
+  );
+}
+
 async function rpc(name: string, body: Record<string,unknown>) {
-  const r = await fetch(`${supabaseUrl}/rest/v1/rpc/${name}`, {
-    method:"POST",
-    headers:{
-      apikey:serviceKey,
-      Authorization:`Bearer ${serviceKey}`,
-      "Content-Type":"application/json"
-    },
-    body:JSON.stringify(body)
-  });
+  const delays = [1000, 2000, 4000];
+  for (let attempt = 0; attempt <= delays.length; attempt++) {
+    const r = await fetch(`${supabaseUrl}/rest/v1/rpc/${name}`, {
+      method:"POST",
+      headers:{
+        apikey:serviceKey,
+        Authorization:`Bearer ${serviceKey}`,
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify(body)
+    });
 
-  const t = await r.text();
+    const t = await r.text();
+    if (r.ok) return t ? JSON.parse(t) : null;
 
-  if(!r.ok) {
+    // PostgREST returns PGRST002 before executing the RPC. Retrying only this
+    // 503 is safe; SQL timeouts and all other errors are not retried.
+    if (isPostgrestSchemaCacheFailure(r.status, t) && attempt < delays.length) {
+      await wait(delays[attempt]);
+      continue;
+    }
     throw new Error(`${name}: ${t || r.status}`);
   }
-
-  return t ? JSON.parse(t) : null;
+  throw new Error(`${name}: postgrest_schema_cache_unavailable`);
 }
 
 
