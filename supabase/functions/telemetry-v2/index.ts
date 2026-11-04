@@ -370,13 +370,43 @@ function isTimeoutOrAbort(error: unknown): boolean {
     /abort(?:ed)?|timeout|timed out|statement timeout/i.test(message);
 }
 
+function wait(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function isPostgrestSchemaCacheFailure(status: number, body: string): boolean {
+  return status === 503 && (
+    /"code"\s*:\s*"PGRST002"/i.test(body) ||
+    /could not query the database for the schema cache/i.test(body)
+  );
+}
+
+function isSchemaCacheFailure(error: unknown): boolean {
+  const value = error as any;
+  const code = String(value?.code || "");
+  const message = String(value?.message || value?.cause?.message || "");
+  return code === "PGRST002" ||
+    /could not query the database for the schema cache/i.test(message);
+}
+
 async function consumeRate(key: string, limit: number): Promise<boolean> {
-  const { data, error } = await db.rpc("verix2_consume_rate_limit", {
-    p_key: key,
-    p_limit: limit,
-    p_window_seconds: 60
-  }).abortSignal(AbortSignal.timeout(5000));
-  if (error) {
+  const delays = [1000, 2000, 4000];
+
+  for (let attempt = 0; attempt <= delays.length; attempt++) {
+    const { data, error } = await db.rpc("verix2_consume_rate_limit", {
+      p_key: key,
+      p_limit: limit,
+      p_window_seconds: 60
+    }).abortSignal(AbortSignal.timeout(5000));
+
+    if (!error) return data === true;
+
+    // PGRST002 means PostgREST could not load the schema cache and the RPC
+    // was not executed. A bounded retry is safe. Do not retry 57014/timeouts.
+    if (isSchemaCacheFailure(error) && attempt < delays.length) {
+      await wait(delays[attempt]);
+      continue;
+    }
     if (isTimeoutOrAbort(error)) {
       const timeout = new Error("rate_limit_timeout");
       timeout.name = "TimeoutError";
@@ -384,8 +414,10 @@ async function consumeRate(key: string, limit: number): Promise<boolean> {
     }
     throw new Error(`rate_limit:${error.message}`);
   }
-  return data === true;
+
+  throw new Error("rate_limit_schema_cache_unavailable");
 }
+
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders(req) });
