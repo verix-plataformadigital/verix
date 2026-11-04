@@ -45,9 +45,6 @@ Deno.test("admin telemetry v3 — authentication, CORS and response contract", a
       if (shouldFailRpc) {
         return new Response("PRIVATE_UPSTREAM_DETAIL", { status: 500 });
       }
-      if (url.endsWith("/verix2_admin_dashboard_v3")) {
-        return Response.json({ total: 12 });
-      }
       if (url.endsWith("/verix2_admin_live_presence")) {
         return Response.json({
           observed_at: "2026-10-22T09:00:00.000Z",
@@ -139,15 +136,15 @@ Deno.test("admin telemetry v3 — authentication, CORS and response contract", a
       ));
       if (response.status !== 200) throw new Error("Expected 200");
       const data = await response.json();
-      if (data.ok !== true || data.dashboard?.total !== 12) {
-        throw new Error("Dashboard payload is missing");
+      if (data.ok !== true || data.dashboard !== undefined) {
+        throw new Error("The read-only presence endpoint must not perform a duplicate dashboard read");
       }
       if (
         data.presence?.online_sessions !== 4 ||
         data.presence?.consultations_in_progress !== 1 ||
         data.presence?.presence_lease_seconds !== 90
       ) throw new Error("Presence payload is not mapped correctly");
-      if (rpcCalls.length !== 2) throw new Error("Expected two RPC requests");
+      if (rpcCalls.length !== 1) throw new Error("Expected only the presence RPC request");
       if (response.headers.get("Cache-Control")?.includes("no-store") !== true) {
         throw new Error("Successful admin responses must be no-store");
       }
