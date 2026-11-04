@@ -7,6 +7,7 @@ on:
       - "supabase/functions/stats-v2/**"
       - "supabase/functions/admin-telemetry-v3/**"
       - "supabase/functions/admin-auth-v2/**"
+      - "supabase/functions/telemetry-v2/**"
       - "supabase/migrations/20261022104500_admin_authoritative_live_presence.sql"
       - "supabase/migrations/20261022115800_fix_portuguese_plate_zero_center_rule.sql"
       - ".github/workflows/admin-telemetry-tests.yml"
@@ -17,6 +18,7 @@ on:
       - "supabase/functions/stats-v2/**"
       - "supabase/functions/admin-telemetry-v3/**"
       - "supabase/functions/admin-auth-v2/**"
+      - "supabase/functions/telemetry-v2/**"
       - "supabase/migrations/20261022104500_admin_authoritative_live_presence.sql"
       - "supabase/migrations/20261022115800_fix_portuguese_plate_zero_center_rule.sql"
       - ".github/workflows/admin-telemetry-tests.yml"
@@ -35,6 +37,6 @@ jobs:
         with:
           deno-version: v2.x
       - name: Type-check Admin telemetry APIs
-        run: deno check supabase/functions/admin-auth-v2/index.ts supabase/functions/stats-v2/index.ts supabase/functions/admin-telemetry-v3/index.ts supabase/functions/admin-telemetry-v3/index_test.ts
+        run: deno check supabase/functions/admin-auth-v2/index.ts supabase/functions/stats-v2/index.ts supabase/functions/admin-telemetry-v3/index.ts supabase/functions/admin-telemetry-v3/index_test.ts supabase/functions/telemetry-v2/index.ts supabase/functions/telemetry-v2/rate_limit.ts supabase/functions/telemetry-v2/index_test.ts
       - name: Run Admin telemetry auth, CORS and response tests
-        run: deno test --allow-env supabase/functions/admin-telemetry-v3/index_test.ts
+        run: deno test --allow-env supabase/functions/admin-telemetry-v3/index_test.ts supabase/functions/telemetry-v2/index_test.ts
