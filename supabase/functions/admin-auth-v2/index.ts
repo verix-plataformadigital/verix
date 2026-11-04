@@ -1,21 +1,17 @@
 declare const Deno: any;
 
-const ALLOWED_ORIGINS = new Set([
-  "https://verix-plataformadigital.github.io",
-  "https://verix.vxops.workers.dev",
-  "http://localhost",
-  "http://127.0.0.1"
-]);
-
-function getCorsHeaders(req: Request) {
-  const origin = req.headers.get("origin") || "";
-  const allowed = origin && ALLOWED_ORIGINS.has(origin)
-    ? origin
-    : "";
+/*
+ * The Admin uses explicit bearer tokens and never ambient browser cookies.
+ * CORS is not the authorization boundary: the password, server-side rate limit,
+ * and signed admin token remain mandatory. This also supports the Pages/PWA
+ * entry points without coupling login to one distribution hostname.
+ */
+function getCorsHeaders(_req: Request) {
   return {
-    "Access-Control-Allow-Origin": allowed,
-    "Access-Control-Allow-Headers": "content-type",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "content-type,authorization,apikey,x-client-info",
     "Access-Control-Allow-Methods": "POST,OPTIONS",
+    "Access-Control-Max-Age": "600",
     "Vary": "Origin",
     "Cache-Control": "no-store"
   };
@@ -60,32 +56,74 @@ async function hmacHex(value: string, secret: string): Promise<string> {
   return [...bytes].map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
+function wait(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function isPostgrestSchemaCacheFailure(status: number, body: string): boolean {
+  return status === 503 && (
+    /"code"\s*:\s*"PGRST002"/i.test(body) ||
+    /could not query the database for the schema cache/i.test(body)
+  );
+}
+
 async function consumeLoginRate(req: Request, secret: string): Promise<boolean> {
   const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-  if (!supabaseUrl || !serviceKey) return false;
+  if (!supabaseUrl || !serviceKey) {
+    throw new Error("rate_limit_configuration_missing");
+  }
 
   const rateSecret = Deno.env.get("VERIX_ADMIN_RATE_SECRET") || secret;
   const rateKey = await hmacHex("admin-login:" + clientIp(req), rateSecret);
-  const response = await fetch(
-    supabaseUrl + "/rest/v1/rpc/verix2_consume_rate_limit",
-    {
-      method: "POST",
-      headers: {
-        apikey: serviceKey,
-        Authorization: "Bearer " + serviceKey,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        p_key: rateKey,
-        p_limit: 10,
-        p_window_seconds: 300
-      })
+  const retryDelays = [1000, 2000, 4000];
+
+  for (let attempt = 0; attempt <= retryDelays.length; attempt++) {
+    if (attempt > 0) await wait(retryDelays[attempt - 1]);
+
+    let response: Response;
+    try {
+      response = await fetch(
+        supabaseUrl + "/rest/v1/rpc/verix2_consume_rate_limit",
+        {
+          method: "POST",
+          headers: {
+            apikey: serviceKey,
+            Authorization: "Bearer " + serviceKey,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            p_key: rateKey,
+            p_limit: 10,
+            p_window_seconds: 300
+          }),
+          signal: AbortSignal.timeout(8000)
+        }
+      );
+    } catch (_) {
+      // Do not mistake a backend/network failure for a rate-limit decision.
+      throw new Error("rate_limit_backend_unavailable");
     }
-  );
-  if (!response.ok) return false;
-  const body = await response.text();
-  return body.trim() === "true";
+
+    const body = await response.text();
+    if (response.ok) {
+      if (body.trim() === "true") return true;
+      if (body.trim() === "false") return false;
+      throw new Error("rate_limit_invalid_response");
+    }
+
+    // PGRST002 is returned before the RPC executes, so retrying this exact
+    // schema-cache failure is safe. Do not retry 57014/504 query timeouts.
+    if (
+      isPostgrestSchemaCacheFailure(response.status, body) &&
+      attempt < retryDelays.length
+    ) {
+      continue;
+    }
+    throw new Error("rate_limit_backend_unavailable");
+  }
+
+  throw new Error("rate_limit_backend_unavailable");
 }
 
 function b64(bytes: Uint8Array) {
@@ -194,7 +232,17 @@ Deno.serve(async (req) => {
       return json({ ok: false, error: "payload_too_large" }, 413, req);
     }
 
-    if (!(await consumeLoginRate(req, secret))) {
+    let loginAllowed: boolean;
+    try {
+      loginAllowed = await consumeLoginRate(req, secret);
+    } catch (error) {
+      console.error(
+        "admin_login_rate_limit_unavailable",
+        String((error as Error)?.message || "unknown")
+      );
+      return json({ ok: false, error: "temporarily_unavailable" }, 503, req);
+    }
+    if (!loginAllowed) {
       return json({ ok: false, error: "rate_limited" }, 429, req);
     }
 
