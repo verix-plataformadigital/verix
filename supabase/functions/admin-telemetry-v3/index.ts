@@ -3,27 +3,22 @@
  * Read-only: does not ingest events, mutate data, or touch the ASF engine.
  */
 
-const ALLOWED_ORIGINS = new Set([
-  "https://onilkakbgpklxvxuxmks.supabase.co",
-  "https://verix-plataformadigital.github.io",
-  "https://verix.vxops.workers.dev",
-  "http://localhost",
-  "http://127.0.0.1",
-]);
-
-function corsHeaders(req: Request): HeadersInit {
-  const origin = req.headers.get("origin") ?? "";
-  const headers: Record<string, string> = {
+/*
+ * This read-only Admin API authorizes every request with a signed bearer token.
+ * It does not use cookies, so CORS is not an authorization boundary.
+ */
+function corsHeaders(_req: Request): HeadersInit {
+  return {
+    "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "authorization,content-type",
     "Access-Control-Allow-Methods": "GET,OPTIONS",
+    "Access-Control-Max-Age": "600",
     "Cache-Control": "no-store, max-age=0",
     "Vary": "Origin",
     "X-Content-Type-Options": "nosniff",
     "Referrer-Policy": "no-referrer",
     "X-Frame-Options": "DENY",
   };
-  if (ALLOWED_ORIGINS.has(origin)) headers["Access-Control-Allow-Origin"] = origin;
-  return headers;
 }
 
 function jsonResponse(req: Request, data: unknown, status = 200): Response {
@@ -84,6 +79,17 @@ async function isAdmin(req: Request): Promise<boolean> {
   }
 }
 
+function wait(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function isPostgrestSchemaCacheFailure(status: number, body: string): boolean {
+  return status === 503 && (
+    /"code"\s*:\s*"PGRST002"/i.test(body) ||
+    /could not query the database for the schema cache/i.test(body)
+  );
+}
+
 async function rpc<T>(
   name: string,
   body: Record<string, unknown>,
@@ -94,18 +100,34 @@ async function rpc<T>(
     throw new Error("server_configuration_missing");
   }
 
-  const result = await fetch(`${supabaseUrl}/rest/v1/rpc/${name}`, {
-    method: "POST",
-    headers: {
-      apikey: serviceKey,
-      Authorization: `Bearer ${serviceKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(8_000),
-  });
-  if (!result.ok) throw new Error(`rpc_failed:${name}:${result.status}`);
-  return await result.json() as T;
+  const delays = [1000, 2000, 4000];
+  for (let attempt = 0; attempt <= delays.length; attempt++) {
+    const result = await fetch(`${supabaseUrl}/rest/v1/rpc/${name}`, {
+      method: "POST",
+      headers: {
+        apikey: serviceKey,
+        Authorization: `Bearer ${serviceKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(8_000),
+    });
+    const responseBody = await result.text();
+
+    if (result.ok) return (responseBody ? JSON.parse(responseBody) : null) as T;
+
+    // Retry only the cache-rebuild failure that happens before the RPC runs.
+    if (
+      isPostgrestSchemaCacheFailure(result.status, responseBody) &&
+      attempt < delays.length
+    ) {
+      await wait(delays[attempt]);
+      continue;
+    }
+    throw new Error(`rpc_failed:${name}:${result.status}`);
+  }
+
+  throw new Error(`rpc_failed:${name}:postgrest_schema_cache_unavailable`);
 }
 
 function finiteCount(value: unknown, fallback = 0): number {
