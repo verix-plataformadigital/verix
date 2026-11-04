@@ -153,15 +153,10 @@ export async function handleRequest(req: Request): Promise<Response> {
 
   try {
     const now = new Date().toISOString();
-    const [dashboard, rawPresence] = await Promise.all([
-      rpc<Record<string, unknown>>("verix2_admin_dashboard_v3", {
-        p_now: now,
-        p_force_refresh: false,
-      }),
-      rpc<Record<string, unknown>>("verix2_admin_live_presence", {
-        p_now: now,
-      }),
-    ]);
+    const rawPresence = await rpc<Record<string, unknown>>(
+      "verix2_admin_live_presence",
+      { p_now: now },
+    );
 
     const presence = rawPresence && typeof rawPresence === "object" &&
         !Array.isArray(rawPresence)
@@ -194,7 +189,6 @@ export async function handleRequest(req: Request): Promise<Response> {
     return jsonResponse(req, {
       ok: true,
       generated_at: now,
-      dashboard,
       presence: livePresence,
     });
   } catch (error) {
