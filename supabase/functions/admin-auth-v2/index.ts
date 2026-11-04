@@ -238,7 +238,7 @@ async function makeToken(secret: string) {
   return `${payload}.${await sign(payload, secret)}`;
 }
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
 
   if (req.method === "OPTIONS") {
     return new Response(null, {
