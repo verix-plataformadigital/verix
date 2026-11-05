@@ -126,7 +126,7 @@ const ALLOWED_ORIGINS = new Set([
 ]);
 
 const allowedEvents = new Set([
-  "app_open","heartbeat","vehicle_lookup",
+  "app_open","vehicle_lookup",
   "vehicle_insurance_pending","vehicle_insurance_yes",
   "vehicle_insurance_no","vehicle_insurance_error",
   "imt_loaded","module_open","history_open","history_reopen",
@@ -415,9 +415,19 @@ Deno.serve(async (req: Request) => {
       return json({ ok: false, error: "invalid_payload" }, 400, req);
     }
     const received = Array.isArray(body?.events) ? body.events : [];
-    const input = received.slice(0, 100);
+    // Heartbeats are ephemeral presence signals. Live presence is handled by
+    // Supabase Realtime, so persisting each heartbeat duplicates that signal
+    // and adds avoidable writes to the constrained PostgreSQL instance.
+    // Acknowledge their IDs so already-deployed clients clear local queues.
+    const heartbeatEvents = received.filter((x: any) => cleanText(x?.event, 80) === "heartbeat");
+    const heartbeatAcknowledgedIds = [...new Set(
+      heartbeatEvents.map((x: any) => cleanText(x?.eventId, 120)).filter(Boolean)
+    )] as string[];
+    // Limit only durable events; heartbeat bursts must not starve consultations/errors.
+    const durableEvents = received.filter((x: any) => cleanText(x?.event, 80) !== "heartbeat");
+    const input = durableEvents.slice(0, 100);
     // The browser acknowledges events by stable event ID, never by HTTP status alone.
-    let rejected = received.length - input.length;
+    let rejected = durableEvents.length - input.length;
     const rejectedEventIds: string[] = [];
     const retryEventIds: string[] = [];
     const rejectionReasons: Record<string, string> = Object.create(null);
@@ -438,7 +448,7 @@ Deno.serve(async (req: Request) => {
       }
     }
     // Reject oversized tail entries explicitly; the normal client batch is 25.
-    for (const x of received.slice(100, 1100)) {
+    for (const x of durableEvents.slice(100, 1100)) {
       const id = cleanText(x?.eventId, 120);
       if (id && !rejectedIdSet.has(id)) {
         rejectedIdSet.add(id);
@@ -450,7 +460,8 @@ Deno.serve(async (req: Request) => {
       return json({
         ok: true, accepted: 0, inserted: 0, duplicates: 0, rejected,
         received: received.length, considered: 0,
-        acknowledged_event_ids: [],
+        acknowledged_event_ids: heartbeatAcknowledgedIds,
+        discarded_heartbeat: heartbeatEvents.length,
         rejected_event_ids: rejectedEventIds,
         retry_event_ids: retryEventIds,
         rejection_reasons: rejectionReasons
@@ -548,7 +559,8 @@ Deno.serve(async (req: Request) => {
       return json({
         ok: true, accepted: 0, inserted: 0, duplicates: 0,
         rejected, received: received.length, considered: 0,
-        acknowledged_event_ids: [],
+        acknowledged_event_ids: heartbeatAcknowledgedIds,
+        discarded_heartbeat: heartbeatEvents.length,
         rejected_event_ids: rejectedEventIds,
         retry_event_ids: retryEventIds,
         rejection_reasons: rejectionReasons
@@ -662,7 +674,11 @@ Deno.serve(async (req: Request) => {
       considered: events.length,
       // Every valid submitted ID is now represented by an insert or an
       // existing id/query unique-key row after this RPC committed successfully.
-      acknowledged_event_ids: events.map((event: any) => event.event_id),
+      acknowledged_event_ids: [...new Set([
+        ...events.map((event: any) => event.event_id),
+        ...heartbeatAcknowledgedIds
+      ])],
+      discarded_heartbeat: heartbeatEvents.length,
       rejected_event_ids: rejectedEventIds,
       retry_event_ids: retryEventIds,
       rejection_reasons: rejectionReasons
