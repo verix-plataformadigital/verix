@@ -524,6 +524,41 @@ let cachedStats: { at:number; body:string; key:string } | null = null;
 let cachedDashboardV3: { at:number; body:string } | null = null;
 const DASHBOARD_V3_EDGE_CACHE_MS = 20000;
 const DASHBOARD_V3_STALE_FALLBACK_MS = 5 * 60 * 1000;
+
+function dashboardSnapshotWithCurrentAge(body: string, cachedAt: number): string {
+  try {
+    const payload = JSON.parse(body);
+    const data = payload && typeof payload === "object" ? payload.data : null;
+    const freshness = data && typeof data === "object" ? data.freshness : null;
+    if (!freshness || typeof freshness !== "object") return body;
+
+    const elapsedSeconds = Math.max(0, Math.floor((Date.now() - cachedAt) / 1000));
+    const storedAge = Number(freshness.ageSeconds);
+    const refreshedAt = Date.parse(String(freshness.refreshedAt || data.generatedAt || ""));
+    const ageSeconds = Number.isFinite(storedAge)
+      ? Math.max(0, storedAge + elapsedSeconds)
+      : Number.isFinite(refreshedAt)
+        ? Math.max(0, Math.floor((Date.now() - refreshedAt) / 1000))
+        : null;
+
+    if (ageSeconds !== null) {
+      const maxAgeSeconds = Number(freshness.maxAgeSeconds);
+      const stale = Number.isFinite(maxAgeSeconds)
+        ? ageSeconds > maxAgeSeconds
+        : ageSeconds > 2100;
+      data.freshness = {
+        ...freshness,
+        ageSeconds,
+        isStale: stale,
+        status: stale ? "stale" : "fresh"
+      };
+      payload.data = data;
+    }
+    return JSON.stringify(payload);
+  } catch {
+    return body;
+  }
+}
 let cachedAnalytics: { at:number; body:string } | null = null;
 let cachedDiagnostics: { at:number; body:string } | null = null;
 const STATS_CACHE_MS = 15000;
@@ -606,15 +641,18 @@ Deno.serve(async (req:Request) => {
         cachedDashboardV3 &&
         Date.now() - cachedDashboardV3.at < DASHBOARD_V3_EDGE_CACHE_MS
       ) {
-        return new Response(cachedDashboardV3.body, {
-          status: 200,
-          headers: {
-            "Content-Type": "application/json",
-            ...corsHeaders(req),
-            "Cache-Control": "no-store",
-            "X-Verix-Dashboard-Cache": "EDGE-HIT"
+        return new Response(
+          dashboardSnapshotWithCurrentAge(cachedDashboardV3.body, cachedDashboardV3.at),
+          {
+            status: 200,
+            headers: {
+              "Content-Type": "application/json",
+              ...corsHeaders(req),
+              "Cache-Control": "no-store",
+              "X-Verix-Dashboard-Cache": "EDGE-HIT"
+            }
           }
-        });
+        );
       }
 
       try {
@@ -632,7 +670,24 @@ Deno.serve(async (req:Request) => {
         metrics.liveSummaryAvailable = false;
         metrics.liveInsuranceDeltaAvailable = false;
 
-        const generatedAt = metrics.generatedAt || metrics.ranges?.today?.end || now;
+        const generatedAt = metrics.generatedAt || metrics.ranges?.today?.end;
+        const requiredPeriods = ["today", "week", "total"];
+        const completeSnapshot =
+          typeof generatedAt === "string" &&
+          Number.isFinite(Date.parse(generatedAt)) &&
+          metrics.ranges?.today?.start &&
+          metrics.ranges?.today?.end &&
+          metrics.freshness?.refreshedAt &&
+          Number.isFinite(Date.parse(metrics.freshness.refreshedAt)) &&
+          requiredPeriods.every(period =>
+            metrics.insurance?.[period] &&
+            metrics.users?.periods?.[period] &&
+            metrics.legislation?.[period] &&
+            metrics.errors?.[period]
+          );
+        if (!completeSnapshot) {
+          throw new Error("dashboard_snapshot_contract_incomplete");
+        }
         const body = JSON.stringify({
           ok: true,
           detail: "dashboard-v3",
@@ -659,15 +714,18 @@ Deno.serve(async (req:Request) => {
           cachedDashboardV3 &&
           Date.now() - cachedDashboardV3.at <= DASHBOARD_V3_STALE_FALLBACK_MS
         ) {
-          return new Response(cachedDashboardV3.body, {
-            status: 200,
-            headers: {
-              "Content-Type": "application/json",
-              ...corsHeaders(req),
-              "Cache-Control": "no-store",
-              "X-Verix-Dashboard-Cache": "STALE-FALLBACK"
+          return new Response(
+            dashboardSnapshotWithCurrentAge(cachedDashboardV3.body, cachedDashboardV3.at),
+            {
+              status: 200,
+              headers: {
+                "Content-Type": "application/json",
+                ...corsHeaders(req),
+                "Cache-Control": "no-store",
+                "X-Verix-Dashboard-Cache": "STALE-FALLBACK"
+              }
             }
-          });
+          );
         }
         return json({
           ok: false,
