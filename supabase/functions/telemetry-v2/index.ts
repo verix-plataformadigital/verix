@@ -385,7 +385,7 @@ function isTimeoutOrAbort(error: unknown): boolean {
  */
 // Emergency global fail-closed mode while the Postgres/PostgREST backend recovers.
 // Durable event IDs remain unacknowledged; clients must retain them for retry.
-const TELEMETRY_DB_FAIL_CLOSED = true;
+const TELEMETRY_DB_FAIL_CLOSED = false;
 const TELEMETRY_DB_FAIL_CLOSED_RETRY_MS = 60_000;
 const TELEMETRY_DB_COOLDOWN_MS = 20_000;
 let telemetryDbUnavailableUntil = 0;
@@ -717,7 +717,7 @@ Deno.serve(async (req: Request) => {
       p_events: events,
       p_installations: [...installations.values()],
       p_sessions: [...sessions.values()]
-    }).abortSignal(AbortSignal.timeout(12000));
+    }).abortSignal(AbortSignal.timeout(5000));
     if (ingestError) {
       if (isTransientPostgrestFailure(ingestError)) {
         telemetryDbUnavailableUntil = Date.now() + TELEMETRY_DB_COOLDOWN_MS;
