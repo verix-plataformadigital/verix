@@ -56,56 +56,6 @@ async function hmacHex(value: string, secret: string): Promise<string> {
   return [...bytes].map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
-function wait(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-function isPostgrestSchemaCacheFailure(status: number, body: string): boolean {
-  return status === 503 && (
-    /"code"\s*:\s*"PGRST002"/i.test(body) ||
-    /could not query the database for the schema cache/i.test(body)
-  );
-}
-
-type LocalRateWindow = { startedAt: number; count: number };
-const localLoginRateWindows = new Map<string, LocalRateWindow>();
-
-/*
- * Emergency-only limiter used when PostgREST/Postgres is unavailable.
- * The durable database limiter remains the primary path. This per-isolate
- * fallback is deliberately bounded to the same 10 attempts / 5 minutes.
- * Password verification and the signed 8-hour admin token are never skipped.
- */
-function consumeLocalLoginRate(rateKey: string): boolean {
-  const now = Date.now();
-  let state = localLoginRateWindows.get(rateKey);
-
-  if (!state || now - state.startedAt >= 5 * 60 * 1000) {
-    state = { startedAt: now, count: 0 };
-    localLoginRateWindows.set(rateKey, state);
-  }
-
-  if (state.count >= 10) return false;
-  state.count += 1;
-
-  // Bound memory in a long-lived isolate and remove expired entries.
-  if (localLoginRateWindows.size > 4096) {
-    for (const [key, value] of localLoginRateWindows) {
-      if (now - value.startedAt >= 5 * 60 * 1000) {
-        localLoginRateWindows.delete(key);
-      }
-      if (localLoginRateWindows.size <= 3072) break;
-    }
-    while (localLoginRateWindows.size > 4096) {
-      const oldest = localLoginRateWindows.keys().next().value;
-      if (!oldest) break;
-      localLoginRateWindows.delete(oldest);
-    }
-  }
-
-  return true;
-}
-
 // Emergency per-isolate fallback: keeps the Admin login available if Postgres
 // is timing out. The durable database limiter remains primary whenever healthy.
 // This is deliberately stricter than the normal 10 attempts / 5 minutes.
@@ -139,68 +89,59 @@ async function consumeLoginRate(req: Request, secret: string): Promise<boolean> 
 
   const rateSecret = Deno.env.get("VERIX_ADMIN_RATE_SECRET") || secret;
   const rateKey = await hmacHex("admin-login:" + clientIp(req), rateSecret);
-  const retryDelays = [1000, 2000, 4000];
+  const startedAt = Date.now();
 
-  for (let attempt = 0; attempt <= retryDelays.length; attempt++) {
-    if (attempt > 0) await wait(retryDelays[attempt - 1]);
-
-    let response: Response;
-    try {
-      response = await fetch(
-        supabaseUrl + "/rest/v1/rpc/verix2_consume_rate_limit",
-        {
-          method: "POST",
-          headers: {
-            apikey: serviceKey,
-            Authorization: "Bearer " + serviceKey,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            p_key: rateKey,
-            p_limit: 10,
-            p_window_seconds: 300
-          }),
-          signal: AbortSignal.timeout(8000)
-        }
-      );
-    } catch (_) {
-      // Postgres/network failure: preserve a bounded emergency login path.
-      console.error("admin_login_rate_limit_fallback", "network_unavailable");
-      return consumeLocalLoginRate(rateKey);
-    }
-
-    const body = await response.text();
-    if (response.ok) {
-      if (body.trim() === "true") return true;
-      if (body.trim() === "false") return false;
-      throw new Error("rate_limit_invalid_response");
-    }
-
-    // PGRST002 is returned before the RPC executes; retry this exact failure.
-    if (
-      isPostgrestSchemaCacheFailure(response.status, body) &&
-      attempt < retryDelays.length
-    ) {
-      continue;
-    }
-
-    // SQL statement timeouts (57014) and temporary server-side 5xx errors
-    // indicate infrastructure failure, not an exceeded user attempt limit.
-    // Do not retry an executed query; switch to the bounded local limiter.
-    if (response.status >= 500 && response.status <= 599) {
-      console.error(
-        "admin_login_rate_limit_fallback",
-        "database_unavailable",
-        response.status,
-        /57014|statement timeout/i.test(body) ? "statement_timeout" : "server_error"
-      );
-      return consumeLocalLoginRate(rateKey);
-    }
-
-    // Configuration/authentication errors (4xx) remain fail-closed.
-    throw new Error("rate_limit_backend_unavailable");
+  let response: Response;
+  try {
+    response = await fetch(
+      supabaseUrl + "/rest/v1/rpc/verix2_consume_rate_limit",
+      {
+        method: "POST",
+        headers: {
+          apikey: serviceKey,
+          Authorization: "Bearer " + serviceKey,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          p_key: rateKey,
+          p_limit: 10,
+          p_window_seconds: 300
+        }),
+        // Do not let a saturated analytics database lock the Admin login.
+        // The strict per-isolate fallback takes over after this short deadline.
+        signal: AbortSignal.timeout(2000)
+      }
+    );
+  } catch (_) {
+    console.error(
+      "admin_login_rate_limit_fallback",
+      "database_timeout",
+      Date.now() - startedAt
+    );
+    return consumeLocalFallback(req, secret);
   }
 
+  const body = await response.text();
+  if (response.ok) {
+    if (body.trim() === "true") return true;
+    if (body.trim() === "false") return false;
+    throw new Error("rate_limit_invalid_response");
+  }
+
+  // Any PostgREST/SQL 5xx is infrastructure failure, not a bad password.
+  // Never retry PGRST002/statement timeouts in the same login request.
+  if (response.status >= 500 && response.status <= 599) {
+    console.error(
+      "admin_login_rate_limit_fallback",
+      "database_unavailable",
+      response.status,
+      /57014|statement timeout/i.test(body) ? "statement_timeout" : "server_error",
+      Date.now() - startedAt
+    );
+    return consumeLocalFallback(req, secret);
+  }
+
+  // Configuration/authentication errors (4xx) remain fail-closed.
   throw new Error("rate_limit_backend_unavailable");
 }
 
