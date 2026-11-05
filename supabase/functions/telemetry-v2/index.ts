@@ -126,7 +126,7 @@ const ALLOWED_ORIGINS = new Set([
 ]);
 
 const allowedEvents = new Set([
-  "app_open","vehicle_lookup",
+  "app_open","heartbeat","vehicle_lookup",
   "vehicle_insurance_pending","vehicle_insurance_yes",
   "vehicle_insurance_no","vehicle_insurance_error",
   "imt_loaded","module_open","history_open","history_reopen",
@@ -415,19 +415,36 @@ Deno.serve(async (req: Request) => {
       return json({ ok: false, error: "invalid_payload" }, 400, req);
     }
     const received = Array.isArray(body?.events) ? body.events : [];
-    // Heartbeats are ephemeral presence signals. Live presence is handled by
-    // Supabase Realtime, so persisting each heartbeat duplicates that signal
-    // and adds avoidable writes to the constrained PostgreSQL instance.
-    // Acknowledge their IDs so already-deployed clients clear local queues.
+    // Keep only the newest ephemeral heartbeat per installation/session in each batch.
+    // The SQL ingest RPC updates verix2_sessions.last_seen but deliberately does not
+    // insert heartbeat rows into verix2_events.
     const heartbeatEvents = received.filter((x: any) => cleanText(x?.event, 80) === "heartbeat");
     const heartbeatAcknowledgedIds = [...new Set(
-      heartbeatEvents.map((x: any) => cleanText(x?.eventId, 120)).filter(Boolean)
+      heartbeatEvents
+        .filter((x: any) => !!cleanText(x?.installationId, 120))
+        .map((x: any) => cleanText(x?.eventId, 120))
+        .filter(Boolean)
     )] as string[];
-    // Limit only durable events; heartbeat bursts must not starve consultations/errors.
+    const newestHeartbeatBySession = new Map<string, any>();
+    for (const heartbeat of heartbeatEvents) {
+      const installationId = cleanText(heartbeat?.installationId, 120);
+      if (!installationId) continue;
+      const sessionId = cleanText(heartbeat?.sessionId, 120);
+      const key = installationId + "|" + (sessionId || "no-session");
+      const old = newestHeartbeatBySession.get(key);
+      const nextTime = Date.parse(String(heartbeat?.occurredAt || ""));
+      const oldTime = old ? Date.parse(String(old?.occurredAt || "")) : Number.NEGATIVE_INFINITY;
+      if (!old || (Number.isFinite(nextTime) && (!Number.isFinite(oldTime) || nextTime >= oldTime))) {
+        newestHeartbeatBySession.set(key, heartbeat);
+      }
+    }
     const durableEvents = received.filter((x: any) => cleanText(x?.event, 80) !== "heartbeat");
-    const input = durableEvents.slice(0, 100);
-    // The browser acknowledges events by stable event ID, never by HTTP status alone.
-    let rejected = durableEvents.length - input.length;
+    const durableInput = durableEvents.slice(0, 100);
+    const heartbeatInput = [...newestHeartbeatBySession.values()].slice(0, Math.max(0, 100 - durableInput.length));
+    const input = [...durableInput, ...heartbeatInput];
+    // The browser acknowledges durable events by stable event ID; heartbeats are
+    // acknowledged in bulk after the newest per-session signal is processed.
+    let rejected = durableEvents.length - durableInput.length;
     const rejectedEventIds: string[] = [];
     const retryEventIds: string[] = [];
     const rejectionReasons: Record<string, string> = Object.create(null);
@@ -655,7 +672,7 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    const duplicates = events.length - inserted;
+    const duplicates = events.filter((event: any) => event.event !== "heartbeat").length - inserted;
     const sessionsDetached = Number(receipt?.sessions_detached || 0);
     if (sessionsDetached > 0) {
       console.warn("telemetry_session_attribution_detached", JSON.stringify({
