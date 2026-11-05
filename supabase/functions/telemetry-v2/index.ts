@@ -415,9 +415,36 @@ Deno.serve(async (req: Request) => {
       return json({ ok: false, error: "invalid_payload" }, 400, req);
     }
     const received = Array.isArray(body?.events) ? body.events : [];
-    const input = received.slice(0, 100);
-    // The browser acknowledges events by stable event ID, never by HTTP status alone.
-    let rejected = received.length - input.length;
+    // Keep only the newest ephemeral heartbeat per installation/session in each batch.
+    // The SQL ingest RPC updates verix2_sessions.last_seen but deliberately does not
+    // insert heartbeat rows into verix2_events.
+    const heartbeatEvents = received.filter((x: any) => cleanText(x?.event, 80) === "heartbeat");
+    const heartbeatAcknowledgedIds = [...new Set(
+      heartbeatEvents
+        .filter((x: any) => !!cleanText(x?.installationId, 120))
+        .map((x: any) => cleanText(x?.eventId, 120))
+        .filter(Boolean)
+    )] as string[];
+    const newestHeartbeatBySession = new Map<string, any>();
+    for (const heartbeat of heartbeatEvents) {
+      const installationId = cleanText(heartbeat?.installationId, 120);
+      if (!installationId) continue;
+      const sessionId = cleanText(heartbeat?.sessionId, 120);
+      const key = installationId + "|" + (sessionId || "no-session");
+      const old = newestHeartbeatBySession.get(key);
+      const nextTime = Date.parse(String(heartbeat?.occurredAt || ""));
+      const oldTime = old ? Date.parse(String(old?.occurredAt || "")) : Number.NEGATIVE_INFINITY;
+      if (!old || (Number.isFinite(nextTime) && (!Number.isFinite(oldTime) || nextTime >= oldTime))) {
+        newestHeartbeatBySession.set(key, heartbeat);
+      }
+    }
+    const durableEvents = received.filter((x: any) => cleanText(x?.event, 80) !== "heartbeat");
+    const durableInput = durableEvents.slice(0, 100);
+    const heartbeatInput = [...newestHeartbeatBySession.values()].slice(0, Math.max(0, 100 - durableInput.length));
+    const input = [...durableInput, ...heartbeatInput];
+    // The browser acknowledges durable events by stable event ID; heartbeats are
+    // acknowledged in bulk after the newest per-session signal is processed.
+    let rejected = durableEvents.length - durableInput.length;
     const rejectedEventIds: string[] = [];
     const retryEventIds: string[] = [];
     const rejectionReasons: Record<string, string> = Object.create(null);
@@ -438,7 +465,7 @@ Deno.serve(async (req: Request) => {
       }
     }
     // Reject oversized tail entries explicitly; the normal client batch is 25.
-    for (const x of received.slice(100, 1100)) {
+    for (const x of durableEvents.slice(100, 1100)) {
       const id = cleanText(x?.eventId, 120);
       if (id && !rejectedIdSet.has(id)) {
         rejectedIdSet.add(id);
@@ -450,7 +477,8 @@ Deno.serve(async (req: Request) => {
       return json({
         ok: true, accepted: 0, inserted: 0, duplicates: 0, rejected,
         received: received.length, considered: 0,
-        acknowledged_event_ids: [],
+        acknowledged_event_ids: heartbeatAcknowledgedIds,
+        discarded_heartbeat: heartbeatEvents.length,
         rejected_event_ids: rejectedEventIds,
         retry_event_ids: retryEventIds,
         rejection_reasons: rejectionReasons
@@ -548,7 +576,8 @@ Deno.serve(async (req: Request) => {
       return json({
         ok: true, accepted: 0, inserted: 0, duplicates: 0,
         rejected, received: received.length, considered: 0,
-        acknowledged_event_ids: [],
+        acknowledged_event_ids: heartbeatAcknowledgedIds,
+        discarded_heartbeat: heartbeatEvents.length,
         rejected_event_ids: rejectedEventIds,
         retry_event_ids: retryEventIds,
         rejection_reasons: rejectionReasons
@@ -643,7 +672,7 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    const duplicates = events.length - inserted;
+    const duplicates = events.filter((event: any) => event.event !== "heartbeat").length - inserted;
     const sessionsDetached = Number(receipt?.sessions_detached || 0);
     if (sessionsDetached > 0) {
       console.warn("telemetry_session_attribution_detached", JSON.stringify({
@@ -662,7 +691,11 @@ Deno.serve(async (req: Request) => {
       considered: events.length,
       // Every valid submitted ID is now represented by an insert or an
       // existing id/query unique-key row after this RPC committed successfully.
-      acknowledged_event_ids: events.map((event: any) => event.event_id),
+      acknowledged_event_ids: [...new Set([
+        ...events.map((event: any) => event.event_id),
+        ...heartbeatAcknowledgedIds
+      ])],
+      discarded_heartbeat: heartbeatEvents.length,
       rejected_event_ids: rejectedEventIds,
       retry_event_ids: retryEventIds,
       rejection_reasons: rejectionReasons
