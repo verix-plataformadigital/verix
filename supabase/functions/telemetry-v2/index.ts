@@ -376,6 +376,61 @@ function isTimeoutOrAbort(error: unknown): boolean {
 
 
 
+
+/*
+ * PostgREST outage circuit breaker.
+ * During schema-cache/DB timeouts, durable events remain unacknowledged in
+ * the client queue. Ephemeral heartbeats may be acknowledged because live
+ * presence is handled independently by the Realtime presence channel.
+ */
+// Emergency global fail-closed mode while the Postgres/PostgREST backend recovers.
+// Durable event IDs remain unacknowledged; clients must retain them for retry.
+const TELEMETRY_DB_FAIL_CLOSED = false;
+const TELEMETRY_DB_FAIL_CLOSED_RETRY_MS = 60_000;
+const TELEMETRY_DB_COOLDOWN_MS = 20_000;
+let telemetryDbUnavailableUntil = 0;
+
+function isTransientPostgrestFailure(error: unknown): boolean {
+  const message = error instanceof Error
+    ? error.message
+    : String((error as any)?.message || error || "");
+  return /PGRST002|Could not query the database for the schema cache|atomic_ingest_timeout|statement timeout|57014|connection terminated|ECONNRESET|server closed the connection/i.test(message);
+}
+
+function telemetryCircuitOpenResponse(
+  req: Request,
+  received: any[],
+  heartbeatAcknowledgedIds: string[],
+  retryAfterMs: number
+): Response {
+  const retryIds = [...new Set(
+    received
+      .filter((event: any) => cleanText(event?.event, 80) !== "heartbeat")
+      .map((event: any) => cleanText(event?.eventId, 120))
+      .filter(Boolean)
+  )] as string[];
+  const seconds = Math.max(1, Math.ceil(retryAfterMs / 1000));
+  return new Response(JSON.stringify({
+    ok: false,
+    error: "telemetry_backend_degraded",
+    retryable: true,
+    retry_after_ms: retryAfterMs,
+    received: received.length,
+    considered: 0,
+    acknowledged_event_ids: heartbeatAcknowledgedIds,
+    discarded_heartbeat: heartbeatAcknowledgedIds.length,
+    retry_event_ids: retryIds
+  }), {
+    status: 503,
+    headers: {
+      ...corsHeaders(req),
+      "Content-Type": "application/json; charset=utf-8",
+      "Retry-After": String(seconds),
+      "Cache-Control": "no-store"
+    }
+  });
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders(req) });
   if (req.method !== "POST") return json({ ok: false, error: "method_not_allowed" }, 405, req);
@@ -415,9 +470,62 @@ Deno.serve(async (req: Request) => {
       return json({ ok: false, error: "invalid_payload" }, 400, req);
     }
     const received = Array.isArray(body?.events) ? body.events : [];
-    const input = received.slice(0, 100);
-    // The browser acknowledges events by stable event ID, never by HTTP status alone.
-    let rejected = received.length - input.length;
+    // Keep only the newest ephemeral heartbeat per installation/session in each batch.
+    // The SQL ingest RPC updates verix2_sessions.last_seen but deliberately does not
+    // insert heartbeat rows into verix2_events.
+    const heartbeatEvents = received.filter((x: any) => cleanText(x?.event, 80) === "heartbeat");
+    const heartbeatAcknowledgedIds = [...new Set(
+      heartbeatEvents
+        .filter((x: any) => !!cleanText(x?.installationId, 120))
+        .map((x: any) => cleanText(x?.eventId, 120))
+        .filter(Boolean)
+    )] as string[];
+    const newestHeartbeatBySession = new Map<string, any>();
+    for (const heartbeat of heartbeatEvents) {
+      const installationId = cleanText(heartbeat?.installationId, 120);
+      if (!installationId) continue;
+      const sessionId = cleanText(heartbeat?.sessionId, 120);
+      const key = installationId + "|" + (sessionId || "no-session");
+      const old = newestHeartbeatBySession.get(key);
+      const nextTime = Date.parse(String(heartbeat?.occurredAt || ""));
+      const oldTime = old ? Date.parse(String(old?.occurredAt || "")) : Number.NEGATIVE_INFINITY;
+      if (!old || (Number.isFinite(nextTime) && (!Number.isFinite(oldTime) || nextTime >= oldTime))) {
+        newestHeartbeatBySession.set(key, heartbeat);
+      }
+    }
+    const durableEvents = received.filter((x: any) => cleanText(x?.event, 80) !== "heartbeat");
+
+    // Global fail-closed switch: every Edge isolate now rejects durable writes
+    // before contacting PostgREST, preventing cold isolates from each making
+    // a first 12-second database attempt during this incident.
+    // Durable event IDs are returned for retry and are never acknowledged here.
+    if (TELEMETRY_DB_FAIL_CLOSED) {
+      return telemetryCircuitOpenResponse(
+        req,
+        durableEvents,
+        heartbeatAcknowledgedIds,
+        TELEMETRY_DB_FAIL_CLOSED_RETRY_MS
+      );
+    }
+
+    // Do not fan out repeated PostgREST requests while its schema cache is unavailable.
+    // No durable event ID is acknowledged here, so the client retains and retries it.
+    const circuitRemaining = telemetryDbUnavailableUntil - Date.now();
+    if (circuitRemaining > 0) {
+      return telemetryCircuitOpenResponse(
+        req,
+        durableEvents,
+        heartbeatAcknowledgedIds,
+        circuitRemaining
+      );
+    }
+
+    const durableInput = durableEvents.slice(0, 100);
+    const heartbeatInput = [...newestHeartbeatBySession.values()].slice(0, Math.max(0, 100 - durableInput.length));
+    const input = [...durableInput, ...heartbeatInput];
+    // The browser acknowledges durable events by stable event ID; heartbeats are
+    // acknowledged in bulk after the newest per-session signal is processed.
+    let rejected = durableEvents.length - durableInput.length;
     const rejectedEventIds: string[] = [];
     const retryEventIds: string[] = [];
     const rejectionReasons: Record<string, string> = Object.create(null);
@@ -438,7 +546,7 @@ Deno.serve(async (req: Request) => {
       }
     }
     // Reject oversized tail entries explicitly; the normal client batch is 25.
-    for (const x of received.slice(100, 1100)) {
+    for (const x of durableEvents.slice(100, 1100)) {
       const id = cleanText(x?.eventId, 120);
       if (id && !rejectedIdSet.has(id)) {
         rejectedIdSet.add(id);
@@ -450,7 +558,8 @@ Deno.serve(async (req: Request) => {
       return json({
         ok: true, accepted: 0, inserted: 0, duplicates: 0, rejected,
         received: received.length, considered: 0,
-        acknowledged_event_ids: [],
+        acknowledged_event_ids: heartbeatAcknowledgedIds,
+        discarded_heartbeat: heartbeatEvents.length,
         rejected_event_ids: rejectedEventIds,
         retry_event_ids: retryEventIds,
         rejection_reasons: rejectionReasons
@@ -548,7 +657,8 @@ Deno.serve(async (req: Request) => {
       return json({
         ok: true, accepted: 0, inserted: 0, duplicates: 0,
         rejected, received: received.length, considered: 0,
-        acknowledged_event_ids: [],
+        acknowledged_event_ids: heartbeatAcknowledgedIds,
+        discarded_heartbeat: heartbeatEvents.length,
         rejected_event_ids: rejectedEventIds,
         retry_event_ids: retryEventIds,
         rejection_reasons: rejectionReasons
@@ -607,8 +717,11 @@ Deno.serve(async (req: Request) => {
       p_events: events,
       p_installations: [...installations.values()],
       p_sessions: [...sessions.values()]
-    }).abortSignal(AbortSignal.timeout(12000));
+    }).abortSignal(AbortSignal.timeout(5000));
     if (ingestError) {
+      if (isTransientPostgrestFailure(ingestError)) {
+        telemetryDbUnavailableUntil = Date.now() + TELEMETRY_DB_COOLDOWN_MS;
+      }
       if (isTimeoutOrAbort(ingestError)) {
         const timeout = new Error("atomic_ingest_timeout");
         timeout.name = "TimeoutError";
@@ -617,6 +730,8 @@ Deno.serve(async (req: Request) => {
       throw new Error(`atomic_ingest:${ingestError.message}`);
     }
 
+    // A confirmed commit closes the circuit for this Edge isolate.
+    telemetryDbUnavailableUntil = 0;
     const receipt = Array.isArray(ingestData) ? ingestData[0] : ingestData;
     const inserted = Number(receipt?.events_inserted);
     if (receipt?.ok !== true || !Number.isInteger(inserted) || inserted < 0 || inserted > events.length) {
@@ -643,7 +758,7 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    const duplicates = events.length - inserted;
+    const duplicates = events.filter((event: any) => event.event !== "heartbeat").length - inserted;
     const sessionsDetached = Number(receipt?.sessions_detached || 0);
     if (sessionsDetached > 0) {
       console.warn("telemetry_session_attribution_detached", JSON.stringify({
@@ -662,12 +777,19 @@ Deno.serve(async (req: Request) => {
       considered: events.length,
       // Every valid submitted ID is now represented by an insert or an
       // existing id/query unique-key row after this RPC committed successfully.
-      acknowledged_event_ids: events.map((event: any) => event.event_id),
+      acknowledged_event_ids: [...new Set([
+        ...events.map((event: any) => event.event_id),
+        ...heartbeatAcknowledgedIds
+      ])],
+      discarded_heartbeat: heartbeatEvents.length,
       rejected_event_ids: rejectedEventIds,
       retry_event_ids: retryEventIds,
       rejection_reasons: rejectionReasons
     });
   } catch (error) {
+    if (isTransientPostgrestFailure(error)) {
+      telemetryDbUnavailableUntil = Date.now() + TELEMETRY_DB_COOLDOWN_MS;
+    }
     console.error("telemetry_write_failed", error);
     if (isTimeoutOrAbort(error)) {
       return json({ ok: false, error: "telemetry_backend_timeout", retryable: true }, 503, req);
