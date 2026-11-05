@@ -383,6 +383,10 @@ function isTimeoutOrAbort(error: unknown): boolean {
  * the client queue. Ephemeral heartbeats may be acknowledged because live
  * presence is handled independently by the Realtime presence channel.
  */
+// Emergency global fail-closed mode while the Postgres/PostgREST backend recovers.
+// Durable event IDs remain unacknowledged; clients must retain them for retry.
+const TELEMETRY_DB_FAIL_CLOSED = true;
+const TELEMETRY_DB_FAIL_CLOSED_RETRY_MS = 60_000;
 const TELEMETRY_DB_COOLDOWN_MS = 20_000;
 let telemetryDbUnavailableUntil = 0;
 
@@ -490,6 +494,19 @@ Deno.serve(async (req: Request) => {
       }
     }
     const durableEvents = received.filter((x: any) => cleanText(x?.event, 80) !== "heartbeat");
+
+    // Global fail-closed switch: every Edge isolate now rejects durable writes
+    // before contacting PostgREST, preventing cold isolates from each making
+    // a first 12-second database attempt during this incident.
+    // Durable event IDs are returned for retry and are never acknowledged here.
+    if (TELEMETRY_DB_FAIL_CLOSED) {
+      return telemetryCircuitOpenResponse(
+        req,
+        durableEvents,
+        heartbeatAcknowledgedIds,
+        TELEMETRY_DB_FAIL_CLOSED_RETRY_MS
+      );
+    }
 
     // Do not fan out repeated PostgREST requests while its schema cache is unavailable.
     // No durable event ID is acknowledged here, so the client retains and retries it.
