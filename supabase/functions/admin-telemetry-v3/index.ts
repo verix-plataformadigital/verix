@@ -170,6 +170,8 @@ export async function handleRequest(req: Request): Promise<Response> {
       online_now: finiteCount(presence.online_now),
       online_sessions: finiteCount(presence.online_sessions),
       online_installations: finiteCount(presence.online_installations),
+      active_sessions_last_2m: finiteCount(presence.active_sessions_last_2m),
+      active_installations_last_2m: finiteCount(presence.active_installations_last_2m),
       sessions_seen_last_hour: finiteCount(presence.sessions_seen_last_hour),
       installations_seen_last_hour: finiteCount(
         presence.installations_seen_last_hour,
