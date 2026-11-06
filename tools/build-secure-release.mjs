@@ -362,7 +362,7 @@ adminManifest.id = "/verix/admin/";
 adminManifest.start_url = "./index.html?app=verix-admin-v5";
 adminManifest.scope = "./";
 adminManifest.icons = [{
-  src: "../assets/admin-icon.svg",
+  src: "../assets/admin-icon.svg?v=" + encodeURIComponent(String(BUILD_ID)),
   sizes: "any",
   type: "image/svg+xml",
   purpose: "any"
@@ -460,7 +460,7 @@ adminPwaSource = patchAdminPresenceUi(adminPwaSource);
 
 adminPwaSource = adminPwaSource.replace(/\.\/AI-ACCESS-POLICY\.md/g, "../AI-ACCESS-POLICY.md");
 const adminPwaHeadLinks = [
-  '  <link rel="icon" href="../assets/admin-icon.svg" type="image/svg+xml" sizes="any">',
+  '  <link rel="icon" href="../assets/admin-icon.svg?v=' + encodeURIComponent(String(BUILD_ID)) + '" type="image/svg+xml" sizes="any">',
   '  <link rel="manifest" href="./manifest.webmanifest?v=' + encodeURIComponent(String(BUILD_ID)) + '">'
 ];
 if (!/<\/head>/i.test(adminPwaSource)) throw new Error("Admin V3 source has no closing head");
