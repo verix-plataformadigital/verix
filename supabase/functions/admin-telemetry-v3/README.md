@@ -10,7 +10,7 @@ The release pipeline and mocked contract tests are green. Authenticated browser 
 
 - TypeScript/Deno Edge Function; read-only, no event ingestion and no database schema changes.
 - Calls `verix2_admin_dashboard_v3` and `verix2_admin_live_presence` in parallel.
-- Separates strict server-observed online sessions (90-second lease, receipt and occurrence timestamps) from hourly activity.
+- Separates server-observed online installations (90-second lease) from recent activity; the current activity count includes only non-heartbeat actions received and generated within 120 seconds in sessions still online.
 - Uses the existing signed admin-token contract and keeps the service-role key server-side.
 - Applies an 8-second timeout to each RPC, `Cache-Control: no-store`, restrictive CORS origins, safe count validation, and generic client-facing upstream errors.
 - Exposes a testable request handler and has automated Deno tests for missing, invalid and expired tokens; CORS; supported routes; payload contract; and upstream failures.
@@ -30,7 +30,7 @@ The dashboard polls the endpoint on the existing 10-second refresh cadence. On A
 ## Remaining acceptance work
 
 1. Log in on the deployed Admin page and confirm the server telemetry status becomes `API confirmada`.
-2. Compare `online_sessions` and `online_installations` shown by the API with the direct `verix2_admin_live_presence` RPC result.
+2. Compare `online_installations` and `active_installations_last_2m` shown by the API with the direct `verix2_admin_live_presence` RPC result.
 3. Inspect Supabase invocation logs for HTTP status, latency and RPC failures once the real Admin client calls the endpoint.
 4. Identify the source still calling the obsolete `/functions/v1/telemetry` path. No alias has been created, because its caller is not yet confirmed.
 5. Keep the ASF engine and operational app source outside this telemetry task.
