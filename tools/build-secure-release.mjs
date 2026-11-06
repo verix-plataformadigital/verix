@@ -407,22 +407,22 @@ function patchAdminPresenceUi(source) {
     ],
     [
       "  setValue('livePresenceOnline',ready?s.onlineInstallations:null);\n  setValue('livePresenceActive',ready?s.activeInstallations:null);",
-      "  const serverPresence=serverPresenceSnapshot&&typeof serverPresenceSnapshot==='object'?serverPresenceSnapshot:null;\n  const parsePresenceCount=value=>value!==null&&value!==undefined&&value!==''&&Number.isSafeInteger(Number(value))&&Number(value)>=0?Number(value):null;\n  const serverOnline=serverPresence?parsePresenceCount(serverPresence.online_now):null;\n  const users=dashboardData&&dashboardData.users&&typeof dashboardData.users==='object'?dashboardData.users:{};\n  const serverActive=parsePresenceCount(users.activeInstallations);\n  setValue('livePresenceOnline',serverOnline!==null?serverOnline:(ready?s.onlineInstallations:null));\n  setValue('livePresenceActive',serverActive!==null?serverActive:(ready?s.activeInstallations:null));",
+      "  const serverPresence=serverPresenceSnapshot&&typeof serverPresenceSnapshot==='object'?serverPresenceSnapshot:null;\n  const parsePresenceCount=value=>value!==null&&value!==undefined&&value!==''&&Number.isSafeInteger(Number(value))&&Number(value)>=0?Number(value):null;\n  const serverOnline=serverPresence?parsePresenceCount(serverPresence.online_installations):null;\n  const serverActive=serverPresence?parsePresenceCount(serverPresence.active_installations_last_2m):null;\n  setValue('livePresenceOnline',serverOnline);\n  setValue('livePresenceActive',serverActive);",
       "use server counts in live cards"
     ],
     [
-      "const cls=ready?'online':(s.status==='locked'?'loading':(s.status==='unavailable'?'offline':(s.status==='reconnecting'?'offline':'loading')));",
+      "const cls=serverOnline!==null?'online':(s.status==='locked'?'loading':'offline');",
       "const cls=(serverOnline!==null||ready)?'online':(s.status==='locked'?'loading':(s.status==='unavailable'?'offline':(s.status==='reconnecting'?'offline':'loading')));",
       "server status badge"
     ],
     [
       "const label=ready?'Ligado · tempo real':(s.status==='locked'?'Inicia sessão':(s.status==='unavailable'?'Indisponível':(s.status==='reconnecting'?'A recuperar ligação':'A ligar')));",
-      "const label=serverOnline!==null?'Ligado · servidor':(ready?'Ligado · tempo real':(s.status==='locked'?'Inicia sessão':(s.status==='unavailable'?'Indisponível':(s.status==='reconnecting'?'A recuperar ligação':'A ligar'))));",
+      "const label=serverOnline!==null?'Ligado · servidor':(s.status==='locked'?'Inicia sessão':'Servidor indisponível');",
       "server status label"
     ],
     [
       "    if(ready&&s.observedAt){\n      const time=new Date(s.observedAt);\n      updated.textContent='Presença sincronizada em tempo real · última sincronização '+time.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+'.';",
-      "    if(serverOnline!==null&&serverPresence&&serverPresence.observed_at){\n      const time=new Date(serverPresence.observed_at);\n      updated.textContent='Presença confirmada no servidor · última leitura '+time.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+' · janela de 90 s.';\n    }else if(ready&&s.observedAt){\n      const time=new Date(s.observedAt);\n      updated.textContent='Presença sincronizada em tempo real · última sincronização '+time.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+'.';",
+      "    if(serverOnline!==null&&serverPresence&&serverPresence.observed_at){\n      const time=new Date(serverPresence.observed_at);\n      updated.textContent='Presença confirmada no servidor · última leitura '+time.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+' · janela de 90 s.';\n    }else if(s.status==='locked'){\n      updated.textContent='Inicia sessão no Admin para estabelecer a ligação ao servidor.';\n    }else{\n      updated.textContent='Sem leitura confirmada do servidor. Os valores atuais são apresentados como indisponíveis, sem estimativas.';",
       "server-based freshness label"
     ],
     [
