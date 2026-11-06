@@ -52,6 +52,8 @@ Deno.test("admin telemetry v3 — authentication, CORS and response contract", a
           online_now: 4,
           online_sessions: 4,
           online_installations: 3,
+          active_sessions_last_2m: 4,
+          active_installations_last_2m: 3,
           sessions_seen_last_hour: 8,
           installations_seen_last_hour: 6,
           active_sessions_last_hour: 5,
@@ -141,6 +143,9 @@ Deno.test("admin telemetry v3 — authentication, CORS and response contract", a
       }
       if (
         data.presence?.online_sessions !== 4 ||
+        data.presence?.online_installations !== 3 ||
+        data.presence?.active_sessions_last_2m !== 4 ||
+        data.presence?.active_installations_last_2m !== 3 ||
         data.presence?.consultations_in_progress !== 1 ||
         data.presence?.presence_lease_seconds !== 90
       ) throw new Error("Presence payload is not mapped correctly");
