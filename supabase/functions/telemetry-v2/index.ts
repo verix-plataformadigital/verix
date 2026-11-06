@@ -633,7 +633,7 @@ Deno.serve(async (req: Request) => {
           event_id: eventId,
           matricula: operationalPlate,
           occurred_at: occurredAt
-          // created_at/expires_at use database defaults: receipt time + 90 days.
+          // created_at/expires_at use database defaults: receipt time + 5 days.
         });
       }
 
