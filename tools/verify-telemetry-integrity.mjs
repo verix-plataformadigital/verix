@@ -39,6 +39,12 @@ assert.doesNotMatch(migration, /SELECT DISTINCT ON\(query_id\)/);
 assert.equal((migration.match(/NOT EXISTS\(SELECT 1 FROM public\.verix2_events lookup_event WHERE lookup_event\.event='vehicle_lookup' AND lookup_event\.query_id=fc\.query_id\)/g) || []).length, 3, "orphan finals must be checked against all recorded lookups, not only the 30-day analytics slice");
 for (const metric of ["'pending'","'incomplete'","'contradictory'","'duplicate_finals'","'orphan_finals'"]) assert.ok(migration.includes(metric), "missing SQL metric "+metric);
 const lifetimeMigration = fs.readFileSync("supabase/migrations/20261109224456_counter_only_lifetime_metrics.sql", "utf8");
+const semanticMigration = fs.readFileSync("supabase/migrations/20261109231000_rename_no_record_counter_semantics.sql", "utf8");
+assert.match(semanticMigration, /RENAME COLUMN total_vehicles_without_insurance TO total_no_record_results/);
+assert.match(semanticMigration, /'no_record'/);
+assert.match(admin, /total_no_record_results/);
+assert.match(admin, /A ausência de registo não confirma, por si só, que o veículo não tem seguro/);
+
 assert.match(lifetimeMigration, /CREATE TABLE IF NOT EXISTS public\.verix_lifetime_counters/);
 assert.match(lifetimeMigration, /CREATE TABLE IF NOT EXISTS public\.verix_lifetime_query_state/);
 assert.match(lifetimeMigration, /pg_advisory_xact_lock/);
@@ -55,7 +61,7 @@ assert.match(endpoint, /event_id: eventId,[\s\S]*?query_id: queryId,[\s\S]*?even
 assert.doesNotMatch(endpoint, /installations\.values\(\)|sessions\.values\(\)/);
 assert.match(stats, /detail === "lifetime-counters"/);
 assert.match(admin, /Total de pesquisas efetuadas/);
-assert.match(admin, /Deteções confirmadas sem seguro/);
+assert.match(admin, /Resultados sem registo ASF/);
 assert.match(admin, /detail=lifetime-counters/);
 const dashboardLoadStart = admin.indexOf("async function loadDashboard(force){");
 const dashboardLoadEnd = admin.indexOf("async function loadInsuranceCases", dashboardLoadStart);
