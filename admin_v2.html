@@ -1562,7 +1562,7 @@ async function loadDashboard(force){
     const searches=data?Number(data.total_searches):NaN;
     const noRecordResults=data?Number(data.total_no_record_results):NaN;
     if(!data||!Number.isSafeInteger(searches)||searches<0||
-       !Number.isSafeInteger(withoutInsurance)||withoutInsurance<0){
+       !Number.isSafeInteger(noRecordResults)||noRecordResults<0){
       throw new Error('A resposta não contém os dois contadores permanentes válidos.');
     }
     dashboardData=res.data;renderAll();setStatus('online','Backend online');lastUpdated=Date.now();
