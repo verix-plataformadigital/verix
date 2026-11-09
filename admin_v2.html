@@ -1162,9 +1162,9 @@ function renderAll(){
       'accent'
     ],
     [
-      'Deteções confirmadas sem seguro',
-      fmt(dashboardData.total_vehicles_without_insurance),
-      'Resultados finais válidos sem seguro. Uma nova pesquisa do mesmo veículo conta como nova deteção.',
+      'Resultados sem registo ASF',
+      fmt(dashboardData.total_no_record_results),
+      'Consultas com resposta sem registo na ASF. A ausência de registo não confirma, por si só, que o veículo não tem seguro. Cada nova consulta conta novamente.',
       'amber'
     ]
   ]);
@@ -1560,7 +1560,7 @@ async function loadDashboard(force){
     const res=await request(url);
     const data=res&&res.data&&typeof res.data==='object'?res.data:null;
     const searches=data?Number(data.total_searches):NaN;
-    const withoutInsurance=data?Number(data.total_vehicles_without_insurance):NaN;
+    const noRecordResults=data?Number(data.total_no_record_results):NaN;
     if(!data||!Number.isSafeInteger(searches)||searches<0||
        !Number.isSafeInteger(withoutInsurance)||withoutInsurance<0){
       throw new Error('A resposta não contém os dois contadores permanentes válidos.');
