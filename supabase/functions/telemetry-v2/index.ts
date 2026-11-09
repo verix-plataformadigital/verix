@@ -694,7 +694,7 @@ Deno.serve(async (req: Request) => {
       p_events: events,
       p_installations: [...installations.values()],
       p_sessions: [...sessions.values()]
-    }).abortSignal(AbortSignal.timeout(5000));
+    }).abortSignal(AbortSignal.timeout(12000));
     if (ingestError) {
       if (isTransientPostgrestFailure(ingestError)) {
         telemetryDbUnavailableUntil = Date.now() + TELEMETRY_DB_COOLDOWN_MS;
