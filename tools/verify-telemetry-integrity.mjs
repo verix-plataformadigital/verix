@@ -65,6 +65,7 @@ assert.ok(scriptStart >= 0 && scriptEnd > scriptStart, "production telemetry scr
 const telemetryScript = app.slice(scriptStart + scriptOpen.length, scriptEnd);
 assert.doesNotThrow(() => new Function(telemetryScript), "production telemetry script must parse as JavaScript");
 assert.match(telemetryScript, /if \(event === 'vehicle_lookup' && meta && meta\.queryId\) \{\s*lastAction\['query:' \+ String\(meta\.queryId\)\] = Date\.now\(\);\s*\}/);
+assert.match(telemetryScript, /if \(event === 'app_open' \|\| event === 'heartbeat'\) \{\s*flushNow\(\);\s*\} else if \(event === 'vehicle_lookup'\) \{\s*flush\(\);\s*\}/);
 
 const parserMatch = clientTransport.match(/function parseReceipt\(text\) \{[\s\S]*?\n  \}/);
 assert.ok(parserMatch, "receipt parser must be independently testable");
