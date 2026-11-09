@@ -9,8 +9,11 @@ const admin = fs.readFileSync("admin_v2.html", "utf8");
 
 assert.match(endpoint, /@supabase\/supabase-js@2\.118\.0/);
 assert.match(endpoint, /db:\s*\{\s*retry:\s*false\s*\}/);
-assert.match(endpoint, /\.abortSignal\(AbortSignal\.timeout\(12000\)\)/);
-assert.match(endpoint, /\.abortSignal\(AbortSignal\.timeout\(5000\)\)/);
+assert.equal(
+  (endpoint.match(/\.abortSignal\(AbortSignal\.timeout\(5000\)\)/g) || []).length,
+  2,
+  "both telemetry persistence writes must have bounded 5-second deadlines"
+);
 assert.match(endpoint, /telemetry_backend_timeout/);
 assert.match(endpoint, /sessions_detached/);
 assert.match(endpoint, /db\.rpc\(\s*["']verix2_ingest_telemetry["']/);
