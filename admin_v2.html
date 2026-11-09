@@ -1212,7 +1212,7 @@ function renderAll(){
     [
       'Total de pesquisas efetuadas',
       fmt(dashboardData.total_searches),
-      'Total acumulado desde o primeiro registo do VÉRIX. Cada consulta é contabilizada uma vez.',
+      'Total acumulado desde o primeiro registo do VÉRIX. A ausência de registo não confirma, por si só, que o veículo não tem seguro. Cada consulta é contabilizada uma vez.',
       'accent'
     ],
     [
@@ -1624,7 +1624,6 @@ async function loadDashboard(force){
        !Number.isSafeInteger(noRecordResults)||noRecordResults<0){
       throw new Error('A resposta não contém os dois contadores permanentes válidos.');
     }
-    dashboardData=data;
     if(results[1].status==='fulfilled'){
       try{
         daily30Data=results[1].value.data;
@@ -1643,9 +1642,7 @@ async function loadDashboard(force){
       $('rolling30Updated').textContent='A leitura diária não foi confirmada pelo servidor.';
       showNotice('Os contadores permanentes estão disponíveis, mas a estatística de 30 dias falhou: '+results[1].reason.message,'warning');
     }
-    renderAll();
-    setStatus('online','Backend online');
-    lastUpdated=Date.now();
+    dashboardData=res.data;renderAll();setStatus('online','Backend online');lastUpdated=Date.now();
   }catch(e){
     setStatus('offline','Dados indisponíveis');
     showNotice('Não foi possível atualizar os contadores: '+e.message,'error');
