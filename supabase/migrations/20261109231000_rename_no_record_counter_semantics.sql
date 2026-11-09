@@ -148,6 +148,8 @@ AS $$
   SELECT jsonb_build_object(
     'total_searches', c.total_searches,
     'total_no_record_results', c.total_no_record_results,
+    -- Compatibility alias for older cached Admin clients; this is the same counter.
+    'total_vehicles_without_insurance', c.total_no_record_results,
     'history_started_at', c.history_started_at,
     'updated_at', c.updated_at
   )
