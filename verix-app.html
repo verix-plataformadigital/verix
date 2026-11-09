@@ -18474,13 +18474,13 @@ html body .leg-card-new .copy-all-new{
     });
 
     window.addEventListener('focus', function () {
-      push('heartbeat', null);
+      pushHeartbeat();
     });
 
     window.addEventListener('online', function () {
       retryStep = 0;
       flush();
-      push('heartbeat', null);
+      pushHeartbeat();
     });
 
     setTimeout(installWrappers, 500);
