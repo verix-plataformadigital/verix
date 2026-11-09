@@ -37,7 +37,22 @@ assert.match(migration, /WHERE event='vehicle_lookup' AND query_id IS NOT NULL/)
 assert.doesNotMatch(migration, /SELECT DISTINCT ON\(query_id\)/);
 assert.equal((migration.match(/NOT EXISTS\(SELECT 1 FROM public\.verix2_events lookup_event WHERE lookup_event\.event='vehicle_lookup' AND lookup_event\.query_id=fc\.query_id\)/g) || []).length, 3, "orphan finals must be checked against all recorded lookups, not only the 30-day analytics slice");
 for (const metric of ["'pending'","'incomplete'","'contradictory'","'duplicate_finals'","'orphan_finals'"]) assert.ok(migration.includes(metric), "missing SQL metric "+metric);
-for (const label of ["Incompletas","Contraditórias","Finais duplicados","Eventos de erro","Finais únicos","Instalações afetadas"]) assert.ok(admin.includes(label), "missing Admin V3 label "+label);
+const lifetimeMigration = fs.readFileSync("supabase/migrations/20261109224456_counter_only_lifetime_metrics.sql", "utf8");
+assert.match(lifetimeMigration, /CREATE TABLE IF NOT EXISTS public\.verix_lifetime_counters/);
+assert.match(lifetimeMigration, /CREATE TABLE IF NOT EXISTS public\.verix_lifetime_query_state/);
+assert.match(lifetimeMigration, /pg_advisory_xact_lock/);
+assert.match(lifetimeMigration, /interval '45 days'/);
+assert.match(lifetimeMigration, /SECURITY INVOKER/);
+assert.match(lifetimeMigration, /verix2_ingest_telemetry/);
+assert.match(lifetimeMigration, /verix_lifetime_metrics_read/);
+assert.match(lifetimeMigration, /REVOKE ALL ON FUNCTION/);
+assert.doesNotMatch(endpoint, /verix_insurance_no_cases|operationalInsuranceNoCases|cleanOperationalPlate/);
+assert.match(stats, /detail === "lifetime-counters"/);
+assert.match(admin, /Total de pesquisas efetuadas/);
+assert.match(admin, /Deteções confirmadas sem seguro/);
+assert.match(admin, /detail=lifetime-counters/);
+assert.doesNotMatch(admin, /loadInsuranceCases\(0,false\)/);
+assert.doesNotMatch(admin, /loadErrors\(\);/);
 
 const app = fs.readFileSync("verix-app.html", "utf8");
 const telemetryStart = app.indexOf("function parseReceipt(text)");
