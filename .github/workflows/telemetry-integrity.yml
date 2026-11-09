@@ -13,6 +13,7 @@ on:
       - "main"
       - "fix/telemetry-integrity-*"
     paths:
+      - ".github/workflows/telemetry-integrity.yml"
       - "supabase/functions/telemetry-v2/index.ts"
       - "supabase/migrations/**"
       - "admin_v2.html"
