@@ -166,8 +166,6 @@ function cleanMetadata(value: unknown): Record<string, unknown> {
   if (m.itemLabel) out.itemLabel = cleanText(m.itemLabel, 180);
   if (m.copyType) out.copyType = cleanText(m.copyType, 40);
   if (m.resultConfirmed === true) out.resultConfirmed = true;
-  if (m.matricula) out.matricula = cleanText(m.matricula, 30);
-  if (m.matriculaNormalizada) out.matriculaNormalizada = cleanText(m.matriculaNormalizada, 30);
   if (m.asfUserMessage) out.asfUserMessage = cleanText(m.asfUserMessage, 500);
   if (m.profile_id) out.profile_id = cleanText(m.profile_id, 120);
   if (m.operation_id) out.operation_id = cleanText(m.operation_id, 120);
@@ -259,7 +257,6 @@ function cleanMetadata(value: unknown): Record<string, unknown> {
       asfCaptureId: cleanText(a.asfCaptureId, 120),
       build_id: cleanText(a.build_id, 60),
       queryId: cleanText(a.queryId, 120),
-      matricula: cleanText(a.matricula, 30),
       asfHttpStatus: finiteNumber(a.asfHttpStatus),
       asfDurationMs: finiteNumber(a.asfDurationMs),
       asfTotalMs: finiteNumber(a.asfTotalMs),
@@ -578,17 +575,6 @@ Deno.serve(async (req: Request) => {
       // perde uma dessas chaves entre refresh/restore.
       if (!installationId) { rejectEvent(x, "missing_installation_id"); continue; }
 
-      // Data minimization: the plate is only needed for technical ASF error investigation.
-      // Correlation is done with query_id for all other outcomes.
-      if (event !== "vehicle_insurance_error") {
-        delete metadata.matricula;
-        delete metadata.matriculaNormalizada;
-        if (metadata.asfDiagnostic && typeof metadata.asfDiagnostic === "object") {
-          const diag = metadata.asfDiagnostic as Record<string, unknown>;
-          delete diag.matricula;
-        }
-      }
-
       if (event === "vehicle_lookup") {
         // Uma consulta precisa de instalação, query e versão; sessão/tab podem faltar.
         if (!queryId || !appVersion) { rejectEvent(x, "missing_query_id_or_version"); continue; }
@@ -616,19 +602,13 @@ Deno.serve(async (req: Request) => {
         : new Date().toISOString();
       const eventId = cleanText(x?.eventId, 120) || crypto.randomUUID();
 
+      // No plate, metadata, installation/session identity or client fingerprint
+      // is retained or forwarded. These three values are the complete DB payload.
       events.push({
         event_id: eventId,
-        installation_id: installationId,
-        session_id: sessionId,
-        tab_id: tabId,
         query_id: queryId,
         event,
-        module: cleanText(x?.module, 60),
-        occurred_at: occurredAt,
-        app_version: appVersion,
-        device_type: cleanText(x?.deviceType, 30),
-        browser: cleanText(x?.browser, 40),
-        metadata
+        occurred_at: occurredAt
       });
     }
 
@@ -644,58 +624,13 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    const installations = new Map<string, any>();
-    const sessions = new Map<string, any>();
-
-    for (const e of events) {
-      const client = e.metadata?.client && typeof e.metadata.client === "object"
-        ? e.metadata.client as Record<string, unknown>
-        : {};
-      const existingInstallation = installations.get(e.installation_id);
-      if (!existingInstallation) {
-        installations.set(e.installation_id, {
-          installation_id: e.installation_id,
-          first_seen: e.occurred_at,
-          last_seen: e.occurred_at,
-          app_version: e.app_version,
-          device_type: e.device_type,
-          browser: e.browser,
-          os: cleanText(client.osPlatform, 40)
-        });
-      } else {
-        if (e.occurred_at < existingInstallation.first_seen) existingInstallation.first_seen = e.occurred_at;
-        if (e.occurred_at > existingInstallation.last_seen) existingInstallation.last_seen = e.occurred_at;
-        if (e.app_version) existingInstallation.app_version = e.app_version;
-        if (e.device_type) existingInstallation.device_type = e.device_type;
-        if (e.browser) existingInstallation.browser = e.browser;
-        const clientOs = cleanText(client.osPlatform, 40);
-        if (clientOs) existingInstallation.os = clientOs;
-      }
-
-      if (e.session_id) {
-        const existingSession = sessions.get(e.session_id);
-        if (!existingSession) {
-          sessions.set(e.session_id, {
-            session_id: e.session_id,
-            installation_id: e.installation_id,
-            tab_id: e.tab_id,
-            started_at: e.occurred_at,
-            last_seen: e.occurred_at
-          });
-        } else {
-          if (e.occurred_at < existingSession.started_at) existingSession.started_at = e.occurred_at;
-          if (e.occurred_at > existingSession.last_seen) existingSession.last_seen = e.occurred_at;
-          if (e.tab_id) existingSession.tab_id = e.tab_id;
-        }
-      }
-    }
-
-    // One PostgreSQL RPC commits parent rows and events in the same transaction.
-    // INSERT ... RETURNING supplies the real inserted count; unique indexes settle races.
+    // Counter-only ingestion: the RPC accepts empty legacy arrays for wire compatibility.
+    // No installation/session aggregates or event metadata are sent to Postgres.
+    // The RPC only updates the two lifetime counters and short-lived hashed dedupe state.
     const { data: ingestData, error: ingestError } = await db.rpc("verix2_ingest_telemetry", {
       p_events: events,
-      p_installations: [...installations.values()],
-      p_sessions: [...sessions.values()]
+      p_installations: [],
+      p_sessions: []
     }).abortSignal(AbortSignal.timeout(5000));
     if (ingestError) {
       if (isTransientPostgrestFailure(ingestError)) {
