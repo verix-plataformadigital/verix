@@ -668,6 +668,21 @@ html.verix-handheld .login-shell{
 html.verix-handheld .login-card{width:100%!important;max-width:420px!important;padding:22px 17px!important}
 html.verix-handheld .login-card input,html.verix-handheld .login-card button{min-height:46px!important;font-size:16px!important}
 
+
+/* Counter-only Admin: no historical dashboards, activity or plate registers. */
+.period-bar,
+.nav-button[data-page="insurance"],
+.nav-button[data-page="activity"],
+.nav-button[data-page="legislation"],
+.nav-button[data-page="errors"],
+#page-insurance,#page-activity,#page-legislation,#page-errors,
+#livePresenceCards,#presenceConnection,#livePresenceUpdated,
+#overviewLiveCards,#serverTelemetryUpdated,#serverTelemetryStatus,
+#baseInstallationsNote,#queryQuality,#page-dashboard .content-grid,
+#page-dashboard .refresh-time:not(#counterLastUpdated){display:none!important}
+#overviewCards{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:10px}
+#counterLastUpdated{display:block!important;text-align:left;margin-top:-10px}
+@media(max-width:760px){#overviewCards{grid-template-columns:minmax(0,1fr)}}
 </style>
 <link rel="icon" href="./favicon.svg?v=20261019" type="image/svg+xml" sizes="any">
 <link rel="icon" href="./assets/icon-32.png?v=20261019" type="image/png" sizes="32x32">
@@ -735,7 +750,7 @@ html.verix-handheld .login-card input,html.verix-handheld .login-card button{min
 
     <section id="page-dashboard" class="page active" aria-labelledby="pageTitle">
       <div class="section-heading" style="margin-top:0">
-        <div><h2>Estado operacional</h2><p>Realtime e atividade recente.</p></div>
+        <div><h2>Contadores permanentes</h2><p>Totais acumulados desde o primeiro registo do VÉRIX.</p></div>
         <span class="status-pill loading" id="presenceConnection"><i class="status-dot" aria-hidden="true"></i><span>A ligar</span></span>
       </div>
       <div id="livePresenceCards" class="metric-grid live-presence-grid" aria-live="polite">
@@ -754,6 +769,7 @@ html.verix-handheld .login-card input,html.verix-handheld .login-card button{min
         <div><h2>Indicadores do período</h2></div>
       </div>
       <div id="overviewCards" class="metric-grid"></div>
+      <div id="counterLastUpdated" class="refresh-time" role="status" aria-live="polite">A carregar os contadores permanentes…</div>
       <div class="content-grid">
         <article class="panel wide">
           <div class="panel-head"><div><h2>Qualidade das consultas</h2></div></div>
@@ -960,7 +976,7 @@ const TOKEN_KEY='VERIX_ADMIN_V2_TOKEN';
 const REFRESH_MS=60000;
 const ERROR_LEDGER_REFRESH_MS=60000;
 const PAGE_TEXT={
- dashboard:['Visão geral','Estado operacional em tempo real separado dos indicadores do período selecionado.'],
+ dashboard:['Contadores permanentes','Totais acumulados desde o primeiro registo do VÉRIX.'],
  insurance:['Consultas de seguro','Resultados do período escolhido e lista operacional recente apresentada separadamente.'],
  activity:['Utilização','Histórico diário dos últimos 30 dias e distribuição horária de hoje.'],
  legislation:['Legislação copiada','Elementos mais copiados e utilização comprovada pelo evento de cópia, no período selecionado.'],
@@ -1138,81 +1154,28 @@ async function loadServerTelemetry(){
 
 function renderAll(){
   if(!dashboardData)return;
-  const resetPoint=$('historyResetPoint');
-  if(resetPoint)resetPoint.textContent=historyResetTimestamp();
-  periodCaption();
-  const aggregateFreshness=$('aggregateUpdatedAt');
-  if(aggregateFreshness){
-    const freshness=dashboardData.freshness&&typeof dashboardData.freshness==='object'?dashboardData.freshness:{};
-    const snapshotAt=freshness.refreshedAt||dashboardData.generatedAt||null;
-    const snapshotTime=snapshotAt?Date.parse(snapshotAt):NaN;
-    const serverAge=Number(freshness.ageSeconds);
-    const fallbackAge=Number.isFinite(snapshotTime)?Math.max(0,Math.floor((Date.now()-snapshotTime)/1000)):null;
-    const ageSeconds=Number.isFinite(serverAge)?Math.max(0,serverAge):fallbackAge;
-    const stale=freshness.isStale===true||(freshness.isStale!==false&&ageSeconds!==null&&ageSeconds>2100);
-    aggregateFreshness.classList.toggle('stale',stale);
-    if(!snapshotAt||!Number.isFinite(snapshotTime)){
-      aggregateFreshness.textContent='Sem data de atualização confirmada pelo servidor.';
-    }else if(stale){
-      const ageLabel=ageSeconds===null?'':ageSeconds<3600?Math.max(1,Math.floor(ageSeconds/60))+' min':Math.floor(ageSeconds/3600)+' h';
-      aggregateFreshness.textContent='⚠ DADOS DESATUALIZADOS · última atualização '+prettyDate(snapshotAt)+(ageLabel?' · há '+ageLabel:'')+'.';
-    }else{
-      aggregateFreshness.textContent='Dados históricos atualizados em '+prettyDate(snapshotAt)+'.';
-    }
-  }
-  const insurance=getPeriodData(dashboardData.insurance,currentPeriod);
-  const users=getPeriodData(dashboardData.users&&dashboardData.users.periods,currentPeriod);
-  const legislation=getPeriodData(dashboardData.legislation,currentPeriod);
-  const errors=getPeriodData(dashboardData.errors,currentPeriod);
-  const liveUsers=dashboardData.users||{};
-  const baseNote=$('baseInstallationsNote');
-  if(baseNote)baseNote.textContent='Base acumulada da aplicação: '+fmt(liveUsers.registeredInstallations)+' instalações registadas. Este total não depende do período selecionado.';
-  const activityHourlyPanel=$('activityHourlyPanel');
-  if(activityHourlyPanel)activityHourlyPanel.hidden=currentPeriod!=='today';
-  appendCards('overviewLiveCards',[
-    ['Consultas iniciadas · última hora',serverTelemetryQueriesLastHour===null?'—':fmt(serverTelemetryQueriesLastHour),'Pedidos registados e confirmados pelo servidor.','accent'],
-    ['Instalações com consulta · última hora',fmt(liveUsers.installationsConsultedLastHour),'Instalações distintas que consultaram veículos na última hora.','blue']
-  ]);
   appendCards('overviewCards',[
-    ['Consultas iniciadas',fmt(insurance.consultations),'Consultas iniciadas.','accent'],
-    ['Resultados finais únicos',fmt(insurance.finals),'Consultas com resultado final único.','green'],
-    ['Com seguro',fmt(insurance.insured),'Resultado positivo.','green'],
-    ['Sem registo de seguro',fmt(insurance.uninsured),pct(insurance.uninsuredPct)+' das decisões válidas do período.','amber'],
-    ['Consultas com erro técnico',fmt(insurance.errors),pct(insurance.errorPct)+' das consultas finais no período, excluindo entradas mal formatadas.','red'],
-    ['Formato PT não reconhecido',fmt(insurance.userInputInvalid),'Entradas rejeitadas por HTTP 400; não são falhas técnicas da ASF.','amber'],
-    ['Instalações ativas',fmt(users.activeInstallations),'Instalações com ações reais.','blue'],
-    ['Legislação copiada',fmt(legislation.copies),'Cópias confirmadas.','blue']
+    [
+      'Total de pesquisas efetuadas',
+      fmt(dashboardData.total_searches),
+      'Total acumulado desde o primeiro registo do VÉRIX. Cada consulta é contabilizada uma vez.',
+      'accent'
+    ],
+    [
+      'Deteções confirmadas sem seguro',
+      fmt(dashboardData.total_vehicles_without_insurance),
+      'Resultados finais válidos sem seguro. Uma nova pesquisa do mesmo veículo conta como nova deteção.',
+      'amber'
+    ]
   ]);
-  renderQuality(insurance);
-  appendCards('insuranceCards',[
-    ['Consultas iniciadas',fmt(insurance.consultations),'Pedidos de consulta enviados no período selecionado.','accent'],
-    ['Resultados finais únicos',fmt(insurance.finals),'Consultas com um só resultado final no período selecionado.','green'],
-    ['Com seguro',fmt(insurance.insured),'Resultado afirmativo no período selecionado.','green'],
-    ['Sem registo',fmt(insurance.uninsured),pct(insurance.uninsuredPct)+' das decisões válidas do período.','amber'],
-    ['Erros por consulta',fmt(insurance.errors),pct(insurance.errorPct)+' dos finais únicos no período.','red'],
-    ['Formato PT não reconhecido',fmt(insurance.userInputInvalid),'Entradas HTTP 400 excluídas dos erros técnicos.','amber'],
-    ['Eventos de erro',fmt(insurance.errorEvents),'Eventos brutos; podem diferir do número de consultas concluídas.','red']
-  ]);
-  appendCards('activityCards',[
-    ['Instalações ativas',fmt(users.activeInstallations),'Instalações distintas com utilização real no período selecionado.','blue'],
-    ['Consultas de seguro iniciadas',fmt(insurance.consultations),'Consultas iniciadas no período selecionado.','accent']
-  ]);
-  renderHourly('activityHourlyChart','activityHourlyTable',null);
-  renderDailyTrend();
-  appendCards('legislationCards',[
-    ['Cópias no período',fmt(legislation.copies),'Ação explícita de cópia registada pela telemetria.','accent'],
-    ['Instalações que copiaram',fmt(legislation.users),'Instalações distintas com pelo menos uma cópia.','blue'],
-    ['Período',periodLabel(currentPeriod),currentPeriod==='total'?'Acumulado desde o reset global registado.':currentPeriod==='week'?'Últimos sete dias.':'Hoje desde as 00:00.','']
-  ]);
-  renderLegislationItems(legislation.topItems||[]);
-  appendCards('errorCards',[
-    ['Eventos de erro técnico',fmt(errors.events),'Falhas técnicas; HTTP 400 por formato de matrícula inválido não entra neste total.','red'],
-    ['Consultas com falha técnica',fmt(errors.consultations),'Consultas distintas afetadas por falhas técnicas.','amber'],
-    ['Formato PT não reconhecido (excluído)',fmt(errors.userInputInvalidConsultations),'Consultas com HTTP 400 e matrícula capturada não reconhecida como série portuguesa.',''],
-    ['Instalações afetadas',fmt(errors.installations),'Instalações técnicas que enviaram erros.','blue']
-  ]);
-  if(currentPage==='errors')renderErrorLedger();
+  const updated=$('counterLastUpdated');
+  if(updated){
+    updated.textContent=dashboardData.updated_at
+      ? 'Contadores atualizados em '+prettyDate(dashboardData.updated_at)+'.'
+      : 'A aguardar confirmação da atualização.';
+  }
 }
+
 function renderQuality(insurance){
   const host=$('queryQuality');host.replaceChildren();
   [['Pendentes',insurance.pending],['Incompletas',insurance.incomplete],['Contraditórias',insurance.contradictory],['Finais duplicados',insurance.duplicateFinals],['Formato PT não reconhecido',insurance.userInputInvalid],['Eventos de erro',insurance.errorEvents],['Finais únicos',insurance.finals]].forEach(item=>{
@@ -1587,19 +1550,32 @@ function renderLegislationItems(items){
   $('legislationItems').replaceChildren(makeTable(['Elemento copiado','Tipo de cópia','Cópias','Instalações'],rows));
 }
 async function loadDashboard(force){
-  if(dashboardBusy||!token)return;dashboardBusy=true;clearNotice();setStatus('loading','A atualizar');
+  if(dashboardBusy||!token)return;
+  dashboardBusy=true;
+  clearNotice();
+  setStatus('loading','A atualizar');
   $('refreshBtn').disabled=true;
   try{
-    const url=STATS_API+'&detail=dashboard-v3'+(force?'&fresh=1':'');
+    const url=STATS_API+'&detail=lifetime-counters';
     const res=await request(url);
-    if(!res.data)throw new Error('A resposta do dashboard não contém métricas.');
+    const data=res&&res.data&&typeof res.data==='object'?res.data:null;
+    const searches=data?Number(data.total_searches):NaN;
+    const withoutInsurance=data?Number(data.total_vehicles_without_insurance):NaN;
+    if(!data||!Number.isSafeInteger(searches)||searches<0||
+       !Number.isSafeInteger(withoutInsurance)||withoutInsurance<0){
+      throw new Error('A resposta não contém os dois contadores permanentes válidos.');
+    }
     dashboardData=res.data;renderAll();setStatus('online','Backend online');lastUpdated=Date.now();
-    if(currentPage==='activity')await loadDailyTrend(force);
-    if(currentPage==='insurance')loadInsuranceCases(0,false);
-    if(currentPage==='errors'&&(force||Date.now()-lastErrorRefreshAt>=ERROR_LEDGER_REFRESH_MS)){errorOffset=0;loadErrors();}
-  }catch(e){setStatus('offline','Dados indisponíveis');showNotice('Não foi possível atualizar as métricas: '+e.message,'error');if(!dashboardData)showEmpty('overviewCards','Os dados não estão disponíveis. Tente atualizar novamente.');}
-  finally{dashboardBusy=false;$('refreshBtn').disabled=false;}
+  }catch(e){
+    setStatus('offline','Dados indisponíveis');
+    showNotice('Não foi possível atualizar os contadores: '+e.message,'error');
+    if(!dashboardData)showEmpty('overviewCards','Os contadores estão temporariamente indisponíveis. Tente atualizar novamente.');
+  }finally{
+    dashboardBusy=false;
+    $('refreshBtn').disabled=false;
+  }
 }
+
 async function loadInsuranceCases(offset,append){
   if(caseBusy||!token)return;caseBusy=true;$('insuranceCasesMore').disabled=true;
   try{
@@ -1698,16 +1674,16 @@ function renderErrorLedger(){
   });
   if(query)$('errorPageInfo').textContent+=' Filtro aplicado à página carregada: '+fmt(filtered.length)+' correspondências.';
 }
-async function scheduleRefresh(){if(!token)return;await Promise.allSettled([loadDashboard(false),loadServerTelemetry()]);}
+async function scheduleRefresh(){if(!token)return;await loadDashboard(false);}
 $('loginForm').addEventListener('submit',async function(e){
   e.preventDefault();$('loginError').textContent='';$('loginButton').disabled=true;
-  try{await login($('password').value);$('password').value='';$('loginScreen').hidden=true;$('app').hidden=false;setStatus('loading','A carregar');await Promise.all([loadDashboard(false),loadServerTelemetry()]);if(refreshTimer)clearInterval(refreshTimer);refreshTimer=setInterval(()=>{if(!document.hidden) scheduleRefresh();},REFRESH_MS);}
+  try{await login($('password').value);$('password').value='';$('loginScreen').hidden=true;$('app').hidden=false;setStatus('loading','A carregar');await loadDashboard(false);if(refreshTimer)clearInterval(refreshTimer);refreshTimer=setInterval(()=>{if(!document.hidden) scheduleRefresh();},REFRESH_MS);}
   catch(e){$('loginError').textContent=e.message||'Falha de autenticação.';}
   finally{$('loginButton').disabled=false;}
 });
 document.querySelectorAll('.nav-button').forEach(b=>b.addEventListener('click',()=>activePage(b.dataset.page)));
 document.querySelectorAll('.period-button').forEach(b=>b.addEventListener('click',()=>setPeriod(b.dataset.period)));
-$('refreshBtn').addEventListener('click',()=>{loadDashboard(true);loadServerTelemetry();});
+$('refreshBtn').addEventListener('click',()=>{loadDashboard(true);});
 $('logoutBtn').addEventListener('click',logout);
 $('insuranceCasesDisclosure').addEventListener('toggle',function(){if(this.open&&currentPage==='insurance')loadInsuranceCases(0,false);});
 $('insuranceCasesSearch').addEventListener('input',renderInsuranceNoCases);
@@ -1717,7 +1693,7 @@ $('errorPrev').addEventListener('click',()=>{errorOffset=Math.max(0,errorOffset-
 $('errorNext').addEventListener('click',()=>{errorOffset+=errorPageSize;loadErrors();});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&token)scheduleRefresh();});
 if(window.VERIX_LIVE_PRESENCE&&typeof window.VERIX_LIVE_PRESENCE.subscribe==='function')window.VERIX_LIVE_PRESENCE.subscribe(renderLivePresence);else window.addEventListener('verix-live-presence',function(e){renderLivePresence(e.detail);});
-if(token){$('loginScreen').hidden=true;$('app').hidden=false;loadDashboard(false);loadServerTelemetry();refreshTimer=setInterval(()=>{if(!document.hidden)scheduleRefresh();},REFRESH_MS);}
+if(token){$('loginScreen').hidden=true;$('app').hidden=false;loadDashboard(false);refreshTimer=setInterval(()=>{if(!document.hidden)scheduleRefresh();},REFRESH_MS);}
 })();
 </script>
 </body>
