@@ -17995,10 +17995,12 @@ html body .leg-card-new .copy-all-new{
 
     saveQueue();
 
-    // Eventos críticos (arranque, presença e consulta) não ficam dependentes
-    // de uma janela de flush posterior. Tentamos enviar logo.
-    if (event === 'app_open' || event === 'heartbeat' || event === 'vehicle_lookup') {
+    // Arranque e presença são imediatos. A consulta aguarda 50 ms para
+    // agrupar vehicle_lookup + insurance_pending + imt_loaded num só POST.
+    if (event === 'app_open' || event === 'heartbeat') {
       flushNow();
+    } else if (event === 'vehicle_lookup') {
+      flush();
     } else if (queue.length >= BATCH_SIZE) {
       flush();
     }
