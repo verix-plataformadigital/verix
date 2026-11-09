@@ -17970,6 +17970,12 @@ html body .leg-card-new .copy-all-new{
 
   function push(event, module, meta) {
     if (!event) return;
+    // submitConjunto já emite vehicle_lookup antes de chamar o ASF.
+    // Memoriza o query_id para o wrapper de consultarSeguroASF não emitir
+    // uma segunda invocação da telemetria para a mesma consulta.
+    if (event === 'vehicle_lookup' && meta && meta.queryId) {
+      lastAction['query:' + String(meta.queryId)] = Date.now();
+    }
     refreshClientInfo();
 
     queue.push({
