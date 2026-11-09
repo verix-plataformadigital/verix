@@ -213,29 +213,6 @@ function cleanMetadata(value: unknown): Record<string, unknown> {
   if (m.retry === true) out.retry = true;
   if (m.retryOf) out.retryOf = cleanText(m.retryOf, 120);
 
-  if (m.client && typeof m.client === "object" && !Array.isArray(m.client)) {
-    const c = m.client as Record<string, unknown>;
-    out.client = {
-      browser: cleanText(c.browser, 40),
-      browserVersion: cleanText(c.browserVersion, 40),
-      osPlatform: cleanText(c.osPlatform, 30),
-      osVersion: cleanText(c.osVersion, 40),
-      navigatorPlatform: cleanText(c.navigatorPlatform, 40),
-      uaMobile: typeof c.uaMobile === "boolean" ? c.uaMobile : null,
-      online: typeof c.online === "boolean" ? c.online : null,
-      connectionType: cleanText(c.connectionType, 30),
-      effectiveType: cleanText(c.effectiveType, 20),
-      downlinkMbps: finiteNumber(c.downlinkMbps),
-      rttMs: finiteNumber(c.rttMs),
-      saveData: typeof c.saveData === "boolean" ? c.saveData : null,
-      hardwareConcurrency: finiteNumber(c.hardwareConcurrency),
-      deviceMemoryGb: finiteNumber(c.deviceMemoryGb),
-      viewport: cleanText(c.viewport, 30),
-      devicePixelRatio: finiteNumber(c.devicePixelRatio),
-      uaDataAvailable: typeof c.uaDataAvailable === "boolean" ? c.uaDataAvailable : false
-    };
-  }
-
   if (m.asfDiagnostic && typeof m.asfDiagnostic === "object" && !Array.isArray(m.asfDiagnostic)) {
     const a = m.asfDiagnostic as Record<string, unknown>;
     const isErrorDiag =
@@ -590,15 +567,15 @@ Deno.serve(async (req: Request) => {
       // perde uma dessas chaves entre refresh/restore.
       if (!installationId) { rejectEvent(x, "missing_installation_id"); continue; }
 
-      // Data minimization: the plate is only needed for technical ASF error investigation.
-      // Correlation is done with query_id for all other outcomes.
+      // Data minimisation: keep registration plates and full ASF diagnostics only
+      // for technical error investigation. The separate 5-day no-record register
+      // receives its plate before this block; normal analytics needs only query_id.
+      // Browser/OS/network context is already represented by typed columns where
+      // required and is not duplicated in every event's JSON metadata.
       if (event !== "vehicle_insurance_error") {
         delete metadata.matricula;
         delete metadata.matriculaNormalizada;
-        if (metadata.asfDiagnostic && typeof metadata.asfDiagnostic === "object") {
-          const diag = metadata.asfDiagnostic as Record<string, unknown>;
-          delete diag.matricula;
-        }
+        delete metadata.asfDiagnostic;
       }
 
       if (event === "vehicle_lookup") {
