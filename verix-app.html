@@ -17701,7 +17701,9 @@ html body .leg-card-new .copy-all-new{
   var MAX_REJECTED_QUEUE = 50;
   var BATCH_SIZE = 25;
   var FLUSH_MS = 15000;
-  var HEARTBEAT_MS = 45000;
+  var HEARTBEAT_MS = 60000;
+  var HEARTBEAT_DEDUPE_MS = 15000;
+  var lastHeartbeatAt = 0;
   var TIMEOUT_MS = 10000;
 
   var localStore = null;
@@ -18426,8 +18428,18 @@ html body .leg-card-new .copy-all-new{
 
   }
 
-  function scheduleHeartbeat() {
+  // Evita chamadas de presença em duplicado quando focus/pageshow/online
+  // disparam quase em simultâneo. O heartbeat periódico mantém a presença.
+  function pushHeartbeat() {
+    var now = Date.now();
+    if (lastHeartbeatAt && (now - lastHeartbeatAt) < HEARTBEAT_DEDUPE_MS) return false;
+    lastHeartbeatAt = now;
     push('heartbeat', null);
+    return true;
+  }
+
+  function scheduleHeartbeat() {
+    pushHeartbeat();
     // Reagenda depois de executar a tentativa atual, evitando acumulação
     // de intervalos quando o browser está sob throttling.
     setTimeout(scheduleHeartbeat, HEARTBEAT_MS);
@@ -18448,7 +18460,7 @@ html body .leg-card-new .copy-all-new{
       if (document.visibilityState === 'hidden') {
         flushBeacon();
       } else {
-        push('heartbeat', null);
+        pushHeartbeat();
       }
     });
 
@@ -18457,17 +18469,17 @@ html body .leg-card-new .copy-all-new{
     });
 
     window.addEventListener('pageshow', function () {
-      push('heartbeat', null);
+      pushHeartbeat();
     });
 
     window.addEventListener('focus', function () {
-      push('heartbeat', null);
+      pushHeartbeat();
     });
 
     window.addEventListener('online', function () {
       retryStep = 0;
       flush();
-      push('heartbeat', null);
+      pushHeartbeat();
     });
 
     setTimeout(installWrappers, 500);
