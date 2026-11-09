@@ -2,6 +2,7 @@ name: Telemetry Integrity
 on:
   pull_request:
     paths:
+      - ".github/workflows/telemetry-integrity.yml"
       - "supabase/functions/telemetry-v2/index.ts"
       - "supabase/migrations/**"
       - "admin_v2.html"
@@ -9,6 +10,7 @@ on:
       - "verix-app.html"
   push:
     branches:
+      - "main"
       - "fix/telemetry-integrity-*"
     paths:
       - "supabase/functions/telemetry-v2/index.ts"
