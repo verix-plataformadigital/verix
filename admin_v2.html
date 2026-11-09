@@ -237,6 +237,12 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
 .daily-trend-table-wrap .data-table tbody tr:nth-child(even){background:#f8fafb}
 .daily-trend-table-wrap .data-table tbody tr:last-child{background:#f0f8f7}
 .daily-trend-table-wrap .data-table tbody tr:hover{background:#f0f6f8}
+.rolling30-panel{margin-top:2px}
+.rolling30-table-wrap{width:100%;min-width:0;max-height:430px;overflow:auto;border:1px solid #e2e9ec;border-radius:9px;-webkit-overflow-scrolling:touch}
+.rolling30-table-wrap .data-table{min-width:440px;font-variant-numeric:tabular-nums}
+.rolling30-table-wrap .data-table th:nth-child(n+2),.rolling30-table-wrap .data-table td:nth-child(n+2){text-align:right}
+.rolling30-table-wrap .data-table tbody tr:first-child{background:#f0f8f7}
+.rolling30-updated{margin:11px 0 0;color:var(--muted);font-size:11px;line-height:1.5}
 .daily-trend-day{display:block;font-size:12px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
 .daily-trend-today{display:inline-block;margin-top:5px;padding:3px 6px;color:#765316;background:#fff1cf;border:1px solid #f3dfaa;border-radius:5px;font-size:9px;font-weight:800;text-transform:uppercase;white-space:nowrap}
 .daily-trend-number-wrap,.daily-trend-change-wrap{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;min-width:0}
@@ -509,7 +515,7 @@ button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offse
   .top-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important}
   .top-actions>*{width:100%!important;min-width:0!important}
   .period-controls{grid-template-columns:repeat(3,minmax(0,1fr))!important}
-  #overviewCards,#insuranceCards,#legislationCards,#errorCards,#activityCards,#overviewLiveCards,#dailyTrendSummary{
+  #overviewCards,#insuranceCards,#legislationCards,#errorCards,#activityCards,#overviewLiveCards,#dailyTrendSummary,#rolling30Cards{
     grid-template-columns:repeat(2,minmax(0,1fr))!important
   }
   #livePresenceCards{grid-template-columns:repeat(2,minmax(0,1fr))!important}
@@ -615,6 +621,7 @@ html.verix-handheld .daily-trend-insurance-charts{
   width:100%!important;min-width:0!important;gap:11px!important;
 }
 html.verix-handheld #overviewCards,
+html.verix-handheld #rolling30Cards,
 html.verix-handheld #insuranceCards,
 html.verix-handheld #legislationCards,
 html.verix-handheld #errorCards,
@@ -678,7 +685,7 @@ html.verix-handheld .login-card input,html.verix-handheld .login-card button{min
 #page-insurance,#page-activity,#page-legislation,#page-errors,
 #livePresenceCards,#presenceConnection,#livePresenceUpdated,
 #overviewLiveCards,#serverTelemetryUpdated,#serverTelemetryStatus,
-#baseInstallationsNote,#queryQuality,#page-dashboard .content-grid,
+#baseInstallationsNote,#queryQuality,#page-dashboard .content-grid,#activityHeading,
 #page-dashboard .refresh-time:not(#counterLastUpdated){display:none!important}
 #overviewCards{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:10px}
 #counterLastUpdated{display:block!important;text-align:left;margin-top:-10px}
@@ -753,23 +760,35 @@ html.verix-handheld .login-card input,html.verix-handheld .login-card button{min
         <div><h2>Contadores permanentes</h2><p>Totais acumulados desde o primeiro registo do VÉRIX.</p></div>
         <span class="status-pill loading" id="presenceConnection"><i class="status-dot" aria-hidden="true"></i><span>A ligar</span></span>
       </div>
+      <div id="overviewCards" class="metric-grid" aria-live="polite"></div>
+      <div id="counterLastUpdated" class="refresh-time" role="status" aria-live="polite">A carregar os contadores permanentes…</div>
+
+      <div class="section-heading compact-heading" id="rolling30Heading">
+        <div><h2>Estatística dos últimos 30 dias</h2><p>Consultas, resultados ASF sem registo e erros confirmados.</p></div>
+        <span class="panel-tag">Retenção automática: 30 dias</span>
+      </div>
+      <div id="rolling30Cards" class="metric-grid" aria-live="polite">
+        <div class="empty-state">A carregar a estatística diária…</div>
+      </div>
+      <article class="panel rolling30-panel">
+        <div class="panel-head">
+          <div><h2>Detalhe diário</h2><p>Valores agregados por dia. Não são guardadas matrículas, nem o histórico individual das consultas.</p></div>
+        </div>
+        <div id="rolling30Table" class="rolling30-table-wrap"><div class="empty-state">A aguardar a primeira leitura.</div></div>
+        <p id="rolling30Updated" class="rolling30-updated" role="status" aria-live="polite">A recolha diária está a ser iniciada.</p>
+      </article>
       <div id="livePresenceCards" class="metric-grid live-presence-grid" aria-live="polite">
         <article class="metric-card blue"><div class="metric-label">Instalações online</div><div class="metric-value" id="livePresenceOnline">—</div><div class="metric-note">Ligações Realtime ativas neste momento; não são pessoas únicas.</div></article>
         <article class="metric-card green"><div class="metric-label">Com atividade</div><div class="metric-value" id="livePresenceActive">—</div><div class="metric-note">Instalações online com interação nos últimos 2 minutos.</div></article>
       </div>
       <div class="refresh-time" id="livePresenceUpdated">A aguardar ligação de presença.</div>
-      <div class="section-heading compact-heading">
+      <div class="section-heading compact-heading" id="activityHeading">
         <div><h2>Atividade recente</h2><p>Consultas confirmadas pelo servidor e instalações que pesquisaram na última hora.</p></div>
         <span class="status-pill loading" id="serverTelemetryStatus"><i class="status-dot" aria-hidden="true"></i><span>A ligar</span></span>
       </div>
       <div id="overviewLiveCards" class="metric-grid"></div>
       <div class="refresh-time" id="serverTelemetryUpdated">A aguardar a primeira leitura do servidor.</div>
       <p id="baseInstallationsNote" class="base-info">Instalações registadas: a carregar.</p>
-      <div class="section-heading compact-heading">
-        <div><h2>Indicadores do período</h2></div>
-      </div>
-      <div id="overviewCards" class="metric-grid"></div>
-      <div id="counterLastUpdated" class="refresh-time" role="status" aria-live="polite">A carregar os contadores permanentes…</div>
       <div class="content-grid">
         <article class="panel wide">
           <div class="panel-head"><div><h2>Qualidade das consultas</h2></div></div>
@@ -994,7 +1013,7 @@ const shortTimeFmt=new Intl.DateTimeFormat('pt-PT',{timeZone:'Europe/Lisbon',hou
 const prettyDate=v=>{if(!v)return '—';const d=new Date(v);return Number.isFinite(d.getTime())?timeFmt.format(d):'—';};
 const shortTime=v=>{if(!v)return '—';const d=new Date(v);return Number.isFinite(d.getTime())?shortTimeFmt.format(d):'—';};
 let token=sessionStorage.getItem(TOKEN_KEY)||'';
-let currentPeriod='today',currentPage='dashboard',dashboardData=null;
+let currentPeriod='today',currentPage='dashboard',dashboardData=null,daily30Data=null;
 let dashboardBusy=false,errorBusy=false,errorOffset=0,errorPageSize=50,errorLedger={items:[],totalEvents:0,uniqueConsultations:0,installations:0,excludedUserInputEvents:0,excludedUserInputConsultations:0,hasMore:false};
 let dailyTrendData=null,dailyTrendLoadedAt=0,dailyTrendBusy=false;
 let caseRows=[],caseOffset=0,caseHasMore=false,caseBusy=false;
@@ -1152,6 +1171,41 @@ async function loadServerTelemetry(){
   }
 }
 
+function renderDaily30(data){
+  if(!data||!Array.isArray(data.days)||data.days.length!==30||!data.totals) {
+    throw new Error('A resposta da estatística de 30 dias está incompleta.');
+  }
+  const safeCount=value=>{
+    const n=Number(value);
+    return Number.isSafeInteger(n)&&n>=0?n:null;
+  };
+  const consultations=safeCount(data.totals.consultations);
+  const noRecord=safeCount(data.totals.no_record_results);
+  const errors=safeCount(data.totals.errors);
+  if(consultations===null||noRecord===null||errors===null) {
+    throw new Error('A estatística de 30 dias contém totais inválidos.');
+  }
+  appendCards('rolling30Cards',[
+    ['Consultas',fmt(consultations),'Consultas de veículos iniciadas e confirmadas pelo motor de telemetria.','accent'],
+    ['Resultados ASF sem registo',fmt(noRecord),'Respostas sem registo. Cada nova consulta conta novamente; não são identificados veículos distintos.','amber'],
+    ['Erros de consulta',fmt(errors),'Consultas que terminaram com um erro reportado pelo motor.','red']
+  ]);
+  const dateLabel=value=>{
+    const d=new Date(String(value||'')+'T12:00:00');
+    return Number.isFinite(d.getTime())
+      ? new Intl.DateTimeFormat('pt-PT',{timeZone:'Europe/Lisbon',day:'2-digit',month:'2-digit',year:'numeric'}).format(d)
+      : '—';
+  };
+  const rows=data.days.slice().reverse().map(day=>[
+    dateLabel(day.date),
+    day.available?fmt(safeCount(day.consultations)): '—',
+    day.available?fmt(safeCount(day.no_record_results)): '—',
+    day.available?fmt(safeCount(day.errors)): '—'
+  ]);
+  $('rolling30Table').replaceChildren(makeTable(['Data','Consultas','Sem registo ASF','Erros'],rows));
+  const started=prettyDate(data.collecting_since);
+  $('rolling30Updated').textContent='Recolha iniciada em '+started+'. Os dias anteriores não podem ser reconstruídos porque o histórico individual foi eliminado. Os agregados são apagados automaticamente ao fim de 30 dias.';
+}
 function renderAll(){
   if(!dashboardData)return;
   appendCards('overviewCards',[
@@ -1164,7 +1218,7 @@ function renderAll(){
     [
       'Resultados sem registo ASF',
       fmt(dashboardData.total_no_record_results),
-      'Consultas com resposta sem registo na ASF. A ausência de registo não confirma, por si só, que o veículo não tem seguro. Cada nova consulta conta novamente.',
+      'Total acumulado de respostas sem registo ASF. Não representa matrículas distintas.',
       'amber'
     ]
   ]);
@@ -1174,6 +1228,7 @@ function renderAll(){
       ? 'Contadores atualizados em '+prettyDate(dashboardData.updated_at)+'.'
       : 'A aguardar confirmação da atualização.';
   }
+  if(daily30Data)renderDaily30(daily30Data);
 }
 
 function renderQuality(insurance){
@@ -1556,8 +1611,12 @@ async function loadDashboard(force){
   setStatus('loading','A atualizar');
   $('refreshBtn').disabled=true;
   try{
-    const url=STATS_API+'&detail=lifetime-counters';
-    const res=await request(url);
+    const results=await Promise.allSettled([
+      request(STATS_API+'&detail=lifetime-counters'),
+      request(STATS_API+'&detail=daily-metrics-30d')
+    ]);
+    if(results[0].status==='rejected')throw results[0].reason;
+    const res=results[0].value;
     const data=res&&res.data&&typeof res.data==='object'?res.data:null;
     const searches=data?Number(data.total_searches):NaN;
     const noRecordResults=data?Number(data.total_no_record_results):NaN;
@@ -1565,11 +1624,33 @@ async function loadDashboard(force){
        !Number.isSafeInteger(noRecordResults)||noRecordResults<0){
       throw new Error('A resposta não contém os dois contadores permanentes válidos.');
     }
-    dashboardData=res.data;renderAll();setStatus('online','Backend online');lastUpdated=Date.now();
+    dashboardData=data;
+    if(results[1].status==='fulfilled'){
+      try{
+        daily30Data=results[1].value.data;
+        renderDaily30(daily30Data);
+      }catch(error){
+        daily30Data=null;
+        showEmpty('rolling30Cards','A estatística de 30 dias recebeu dados inválidos.');
+        showEmpty('rolling30Table','Não foi possível validar a série diária.');
+        $('rolling30Updated').textContent='A leitura diária precisa de ser verificada.';
+        showNotice('Os contadores permanentes estão disponíveis, mas a estatística diária não passou a validação: '+error.message,'warning');
+      }
+    }else{
+      daily30Data=null;
+      showEmpty('rolling30Cards','Estatística de 30 dias temporariamente indisponível.');
+      showEmpty('rolling30Table','Não foi possível carregar os valores por dia.');
+      $('rolling30Updated').textContent='A leitura diária não foi confirmada pelo servidor.';
+      showNotice('Os contadores permanentes estão disponíveis, mas a estatística de 30 dias falhou: '+results[1].reason.message,'warning');
+    }
+    renderAll();
+    setStatus('online','Backend online');
+    lastUpdated=Date.now();
   }catch(e){
     setStatus('offline','Dados indisponíveis');
     showNotice('Não foi possível atualizar os contadores: '+e.message,'error');
     if(!dashboardData)showEmpty('overviewCards','Os contadores estão temporariamente indisponíveis. Tente atualizar novamente.');
+    showEmpty('rolling30Cards','Estatística de 30 dias temporariamente indisponível.');
   }finally{
     dashboardBusy=false;
     $('refreshBtn').disabled=false;
