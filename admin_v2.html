@@ -1054,7 +1054,7 @@ async function login(password){
 function logout(){
   serverTelemetryRun++;serverTelemetryBusy=false;setServerTelemetryStatus('loading','Inicia sessão');clearServerTelemetry('Inicia sessão para consultar a telemetria do servidor.');
   token='';sessionStorage.removeItem(TOKEN_KEY);if(refreshTimer)clearInterval(refreshTimer);refreshTimer=null;
-  dashboardData=null;caseRows=[];dailyTrendData=null;dailyTrendLoadedAt=0;errorLedger={items:[],totalEvents:0,uniqueConsultations:0,installations:0,excludedUserInputEvents:0,excludedUserInputConsultations:0,hasMore:false};
+  dashboardData=null;daily30Data=null;caseRows=[];dailyTrendData=null;dailyTrendLoadedAt=0;errorLedger={items:[],totalEvents:0,uniqueConsultations:0,installations:0,excludedUserInputEvents:0,excludedUserInputConsultations:0,hasMore:false};
   $('app').hidden=true;$('loginScreen').hidden=false;$('password').value='';$('loginError').textContent='';setStatus('','Sessão encerrada');
 }
 function periodLabel(key){const found=PERIODS.find(x=>x.key===key);return found?found.label:'Histórico Total';}

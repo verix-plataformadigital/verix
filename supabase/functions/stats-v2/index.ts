@@ -638,6 +638,21 @@ Deno.serve(async (req:Request) => {
       return json({ ok: true, detail: "lifetime-counters", data: counters }, 200, req);
     }
 
+    if(req.method === "GET" && detail === "daily-metrics-30d") {
+      const daily = await rpc("verix_daily_metrics_30d_read", {});
+      if(
+        !daily ||
+        typeof daily !== "object" ||
+        !Array.isArray(daily.days) ||
+        daily.days.length !== 30 ||
+        !daily.totals ||
+        typeof daily.totals !== "object"
+      ) {
+        throw new Error("daily_metrics_30d_contract_invalid");
+      }
+      return json({ ok: true, detail: "daily-metrics-30d", data: daily }, 200, req);
+    }
+
     // V3 dashboard contract: compact period aggregates are precomputed and cached in PostgreSQL.
     if(req.method === "GET" && detail === "dashboard-v3") {
       const now = new Date().toISOString();
