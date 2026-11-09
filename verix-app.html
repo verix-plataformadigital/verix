@@ -17701,7 +17701,9 @@ html body .leg-card-new .copy-all-new{
   var MAX_REJECTED_QUEUE = 50;
   var BATCH_SIZE = 25;
   var FLUSH_MS = 15000;
-  var HEARTBEAT_MS = 45000;
+  var HEARTBEAT_MS = 60000;
+  var HEARTBEAT_EVENT_MIN_GAP_MS = 20000;
+  var lastHeartbeatAt = 0;
   var TIMEOUT_MS = 10000;
 
   var localStore = null;
@@ -18426,8 +18428,15 @@ html body .leg-card-new .copy-all-new{
 
   }
 
-  function scheduleHeartbeat() {
+  function pushHeartbeat() {
+    var now = Date.now();
+    if (now - lastHeartbeatAt < HEARTBEAT_EVENT_MIN_GAP_MS) return;
+    lastHeartbeatAt = now;
     push('heartbeat', null);
+  }
+
+  function scheduleHeartbeat() {
+    pushHeartbeat();
     // Reagenda depois de executar a tentativa atual, evitando acumulação
     // de intervalos quando o browser está sob throttling.
     setTimeout(scheduleHeartbeat, HEARTBEAT_MS);
@@ -18441,6 +18450,10 @@ html body .leg-card-new .copy-all-new{
     push('app_open', null);
     flush();
 
+    // Flush periódico: agrupa eventos não críticos em lotes, sem atrasar
+    // arranque, presença, início de consulta ou lotes que atinjam BATCH_SIZE.
+    setInterval(flush, FLUSH_MS);
+
     // Heartbeat recursivo + eventos de ciclo de vida.
     setTimeout(scheduleHeartbeat, HEARTBEAT_MS);
 
@@ -18448,7 +18461,7 @@ html body .leg-card-new .copy-all-new{
       if (document.visibilityState === 'hidden') {
         flushBeacon();
       } else {
-        push('heartbeat', null);
+        pushHeartbeat();
       }
     });
 
@@ -18457,7 +18470,7 @@ html body .leg-card-new .copy-all-new{
     });
 
     window.addEventListener('pageshow', function () {
-      push('heartbeat', null);
+      pushHeartbeat();
     });
 
     window.addEventListener('focus', function () {
@@ -18481,8 +18494,9 @@ html body .leg-card-new .copy-all-new{
     installationId: installationId,
     newQueryId: newQueryId,
     track: function (event, module, meta) {
+      // push() envia imediatamente apenas eventos críticos e faz flush por
+      // lote quando necessário. Os restantes seguem no flush periódico.
       push(event, module || null, meta);
-      flush();
     },
     queueSize: function () { return queue.length; },
     rejectedQueueSize: function () {
