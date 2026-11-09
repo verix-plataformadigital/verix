@@ -6,10 +6,11 @@ const migration = fs.readFileSync("supabase/migrations/20261009034000_repair_tel
 const sessionIsolation = fs.readFileSync("supabase/migrations/20261103103629_telemetry_session_identity_conflict_isolation.sql", "utf8");
 const cacheCorrection = fs.readFileSync("supabase/migrations/20261103102940_correct_admin_cache_refresh_and_insurance_retention_comment.sql", "utf8");
 const admin = fs.readFileSync("admin_v2.html", "utf8");
+const stats = fs.readFileSync("supabase/functions/stats-v2/index.ts", "utf8");
 
 assert.match(endpoint, /@supabase\/supabase-js@2\.118\.0/);
 assert.match(endpoint, /db:\s*\{\s*retry:\s*false\s*\}/);
-assert.match(endpoint, /\.abortSignal\(AbortSignal\.timeout\(12000\)\)/);
+assert.match(endpoint, /\.abortSignal\(AbortSignal\.timeout\(5000\)\)/);
 assert.match(endpoint, /\.abortSignal\(AbortSignal\.timeout\(5000\)\)/);
 assert.match(endpoint, /telemetry_backend_timeout/);
 assert.match(endpoint, /sessions_detached/);
@@ -37,14 +38,33 @@ assert.match(migration, /WHERE event='vehicle_lookup' AND query_id IS NOT NULL/)
 assert.doesNotMatch(migration, /SELECT DISTINCT ON\(query_id\)/);
 assert.equal((migration.match(/NOT EXISTS\(SELECT 1 FROM public\.verix2_events lookup_event WHERE lookup_event\.event='vehicle_lookup' AND lookup_event\.query_id=fc\.query_id\)/g) || []).length, 3, "orphan finals must be checked against all recorded lookups, not only the 30-day analytics slice");
 for (const metric of ["'pending'","'incomplete'","'contradictory'","'duplicate_finals'","'orphan_finals'"]) assert.ok(migration.includes(metric), "missing SQL metric "+metric);
-for (const label of ["Incompletas","Contraditórias","Finais duplicados","Eventos de erro","Finais únicos","Instalações afetadas"]) assert.ok(admin.includes(label), "missing Admin V3 label "+label);
+const lifetimeMigration = fs.readFileSync("supabase/migrations/20261109224456_counter_only_lifetime_metrics.sql", "utf8");
+assert.match(lifetimeMigration, /CREATE TABLE IF NOT EXISTS public\.verix_lifetime_counters/);
+assert.match(lifetimeMigration, /CREATE TABLE IF NOT EXISTS public\.verix_lifetime_query_state/);
+assert.match(lifetimeMigration, /pg_advisory_xact_lock/);
+assert.match(lifetimeMigration, /interval '45 days'/);
+assert.match(lifetimeMigration, /SECURITY INVOKER/);
+assert.match(lifetimeMigration, /verix2_ingest_telemetry/);
+assert.match(lifetimeMigration, /verix_lifetime_metrics_read/);
+assert.match(lifetimeMigration, /REVOKE ALL ON FUNCTION/);
+assert.doesNotMatch(endpoint, /verix_insurance_no_cases|operationalInsuranceNoCases|cleanOperationalPlate/);
+assert.match(stats, /detail === "lifetime-counters"/);
+assert.match(admin, /Total de pesquisas efetuadas/);
+assert.match(admin, /Deteções confirmadas sem seguro/);
+assert.match(admin, /detail=lifetime-counters/);
+const dashboardLoadStart = admin.indexOf("async function loadDashboard(force){");
+const dashboardLoadEnd = admin.indexOf("async function loadInsuranceCases", dashboardLoadStart);
+assert.ok(dashboardLoadStart >= 0 && dashboardLoadEnd > dashboardLoadStart, "counter dashboard loader must remain defined");
+const counterDashboardLoader = admin.slice(dashboardLoadStart, dashboardLoadEnd);
+assert.match(counterDashboardLoader, /detail=lifetime-counters/);
+assert.doesNotMatch(counterDashboardLoader, /loadInsuranceCases|loadErrors/);
 
 const app = fs.readFileSync("verix-app.html", "utf8");
 const telemetryStart = app.indexOf("function parseReceipt(text)");
 const telemetryEnd = app.indexOf("function rateLimited", telemetryStart);
 assert.ok(telemetryStart >= 0 && telemetryEnd > telemetryStart, "production telemetry client must expose its receipt pipeline");
 const clientTransport = app.slice(telemetryStart, telemetryEnd);
-assert.match(clientTransport, /return parseReceipt\(await response\.text\(\)\)/);
+assert.match(clientTransport, /receipt:\s*parseReceipt\(await response\.text\(\)\)/);
 assert.match(clientTransport, /queue = queue\.filter\(function \(item\)/);
 assert.match(clientTransport, /!acknowledged\[item\.eventId\]/);
 assert.match(clientTransport, /recordRejectedEvents\(batch, receipt\)/);

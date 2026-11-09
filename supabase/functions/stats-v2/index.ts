@@ -630,6 +630,14 @@ Deno.serve(async (req:Request) => {
     const detail = url.searchParams.get("detail") || "";
     const forceRefresh = url.searchParams.get("fresh") === "1";
 
+    if(req.method === "GET" && detail === "lifetime-counters") {
+      const counters = await rpc("verix_lifetime_metrics_read", {});
+      if(!counters || typeof counters !== "object") {
+        throw new Error("lifetime_counters_unavailable");
+      }
+      return json({ ok: true, detail: "lifetime-counters", data: counters }, 200, req);
+    }
+
     // V3 dashboard contract: compact period aggregates are precomputed and cached in PostgreSQL.
     if(req.method === "GET" && detail === "dashboard-v3") {
       const now = new Date().toISOString();
