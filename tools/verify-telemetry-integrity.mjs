@@ -51,8 +51,12 @@ assert.match(stats, /detail === "lifetime-counters"/);
 assert.match(admin, /Total de pesquisas efetuadas/);
 assert.match(admin, /Deteções confirmadas sem seguro/);
 assert.match(admin, /detail=lifetime-counters/);
-assert.doesNotMatch(admin, /loadInsuranceCases\(0,false\)/);
-assert.doesNotMatch(admin, /loadErrors\(\);/);
+const dashboardLoadStart = admin.indexOf("async function loadDashboard(force){");
+const dashboardLoadEnd = admin.indexOf("\\nasync function loadInsuranceCases", dashboardLoadStart);
+assert.ok(dashboardLoadStart >= 0 && dashboardLoadEnd > dashboardLoadStart, "counter dashboard loader must remain defined");
+const counterDashboardLoader = admin.slice(dashboardLoadStart, dashboardLoadEnd);
+assert.match(counterDashboardLoader, /detail=lifetime-counters/);
+assert.doesNotMatch(counterDashboardLoader, /loadInsuranceCases|loadErrors/);
 
 const app = fs.readFileSync("verix-app.html", "utf8");
 const telemetryStart = app.indexOf("function parseReceipt(text)");
