@@ -624,7 +624,7 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // Counter-only ingestion: the RPC accepts empty legacy arrays for wire compatibility.
+    // Counter-only ingestion: send only event ID for acknowledgement plus query ID, event type and timestamp.
     // No installation/session aggregates or event metadata are sent to Postgres.
     // The RPC only updates the two lifetime counters and short-lived hashed dedupe state.
     const { data: ingestData, error: ingestError } = await db.rpc("verix2_ingest_telemetry", {
