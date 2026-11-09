@@ -44,7 +44,7 @@ const telemetryStart = app.indexOf("function parseReceipt(text)");
 const telemetryEnd = app.indexOf("function rateLimited", telemetryStart);
 assert.ok(telemetryStart >= 0 && telemetryEnd > telemetryStart, "production telemetry client must expose its receipt pipeline");
 const clientTransport = app.slice(telemetryStart, telemetryEnd);
-assert.match(clientTransport, /(?:return parseReceipt\\(await response\\.text\\(\\)\\)|receipt:\\s*parseReceipt\\(await response\\.text\\(\\)\\))/);
+assert.match(clientTransport, /(?:return parseReceipt\(await response\.text\(\)\)|receipt:\s*parseReceipt\(await response\.text\(\)\))/);
 assert.match(clientTransport, /queue = queue\.filter\(function \(item\)/);
 assert.match(clientTransport, /!acknowledged\[item\.eventId\]/);
 assert.match(clientTransport, /recordRejectedEvents\(batch, receipt\)/);
