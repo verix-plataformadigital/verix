@@ -155,12 +155,6 @@ function finiteNumber(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
-// Used only for the restricted, 90-day "no record" operational register.
-function cleanOperationalPlate(value: unknown): string | null {
-  const plate = String(value ?? "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
-  return /^[A-Z0-9]{6,8}$/.test(plate) ? plate : null;
-}
-
 function cleanMetadata(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};
   const m = value as Record<string, unknown>;
@@ -567,17 +561,11 @@ Deno.serve(async (req: Request) => {
     }
 
     const events: any[] = [];
-    const operationalInsuranceNoCases: any[] = [];
-
     for (const x of input) {
       const event = cleanText(x?.event, 80);
       if (!event || !allowedEvents.has(event)) { rejectEvent(x, "invalid_event"); continue; }
 
       const metadata = cleanMetadata(x?.metadata);
-      // Capture before analytics metadata minimisation; the plate is never kept in verix2_events.
-      const operationalPlate = event === "vehicle_insurance_no"
-        ? cleanOperationalPlate(metadata.matriculaNormalizada || metadata.matricula)
-        : null;
       const installationId = cleanText(x?.installationId, 120);
       const sessionId = cleanText(x?.sessionId, 120);
       const tabId = cleanText(x?.tabId, 120);
@@ -627,15 +615,6 @@ Deno.serve(async (req: Request) => {
         ? occurredAtDate.toISOString()
         : new Date().toISOString();
       const eventId = cleanText(x?.eventId, 120) || crypto.randomUUID();
-
-      if (event === "vehicle_insurance_no" && operationalPlate) {
-        operationalInsuranceNoCases.push({
-          event_id: eventId,
-          matricula: operationalPlate,
-          occurred_at: occurredAt
-          // created_at/expires_at use database defaults: receipt time + 5 days.
-        });
-      }
 
       events.push({
         event_id: eventId,
@@ -736,26 +715,6 @@ Deno.serve(async (req: Request) => {
     const inserted = Number(receipt?.events_inserted);
     if (receipt?.ok !== true || !Number.isInteger(inserted) || inserted < 0 || inserted > events.length) {
       throw new Error("atomic_ingest:invalid_receipt");
-    }
-
-    // Keep the registration plate out of analytics. Store it separately, with the table's
-    // database-enforced 24-hour expiry. Upsert makes retries idempotent by event_id.
-    if (operationalInsuranceNoCases.length) {
-      const uniqueCases = [...new Map(
-        operationalInsuranceNoCases.map((row: any) => [row.event_id, row])
-      ).values()];
-      const { error: casesError } = await db
-        .from("verix_insurance_no_cases")
-        .upsert(uniqueCases, { onConflict: "event_id", ignoreDuplicates: true })
-        .abortSignal(AbortSignal.timeout(5000));
-      if (casesError) {
-        if (isTimeoutOrAbort(casesError)) {
-          const timeout = new Error("operational_no_case_write_timeout");
-          timeout.name = "TimeoutError";
-          throw timeout;
-        }
-        throw new Error("operational_no_case_write:" + casesError.message);
-      }
     }
 
     const duplicates = events.filter((event: any) => event.event !== "heartbeat").length - inserted;
