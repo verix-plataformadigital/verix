@@ -6,6 +6,7 @@ const migration = fs.readFileSync("supabase/migrations/20261009034000_repair_tel
 const sessionIsolation = fs.readFileSync("supabase/migrations/20261103103629_telemetry_session_identity_conflict_isolation.sql", "utf8");
 const cacheCorrection = fs.readFileSync("supabase/migrations/20261103102940_correct_admin_cache_refresh_and_insurance_retention_comment.sql", "utf8");
 const admin = fs.readFileSync("admin_v2.html", "utf8");
+const stats = fs.readFileSync("supabase/functions/stats-v2/index.ts", "utf8");
 
 assert.match(endpoint, /@supabase\/supabase-js@2\.118\.0/);
 assert.match(endpoint, /db:\s*\{\s*retry:\s*false\s*\}/);
