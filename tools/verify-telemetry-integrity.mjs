@@ -53,7 +53,7 @@ assert.match(admin, /Total de pesquisas efetuadas/);
 assert.match(admin, /Deteções confirmadas sem seguro/);
 assert.match(admin, /detail=lifetime-counters/);
 const dashboardLoadStart = admin.indexOf("async function loadDashboard(force){");
-const dashboardLoadEnd = admin.indexOf("\\nasync function loadInsuranceCases", dashboardLoadStart);
+const dashboardLoadEnd = admin.indexOf("async function loadInsuranceCases", dashboardLoadStart);
 assert.ok(dashboardLoadStart >= 0 && dashboardLoadEnd > dashboardLoadStart, "counter dashboard loader must remain defined");
 const counterDashboardLoader = admin.slice(dashboardLoadStart, dashboardLoadEnd);
 assert.match(counterDashboardLoader, /detail=lifetime-counters/);
