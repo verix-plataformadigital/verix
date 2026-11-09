@@ -9,8 +9,11 @@ const admin = fs.readFileSync("admin_v2.html", "utf8");
 
 assert.match(endpoint, /@supabase\/supabase-js@2\.118\.0/);
 assert.match(endpoint, /db:\s*\{\s*retry:\s*false\s*\}/);
-assert.match(endpoint, /\.abortSignal\(AbortSignal\.timeout\(12000\)\)/);
-assert.match(endpoint, /\.abortSignal\(AbortSignal\.timeout\(5000\)\)/);
+assert.equal(
+  (endpoint.match(/\.abortSignal\(AbortSignal\.timeout\(5000\)\)/g) || []).length,
+  2,
+  "both telemetry persistence writes must have bounded 5-second deadlines"
+);
 assert.match(endpoint, /telemetry_backend_timeout/);
 assert.match(endpoint, /sessions_detached/);
 assert.match(endpoint, /db\.rpc\(\s*["']verix2_ingest_telemetry["']/);
@@ -44,7 +47,7 @@ const telemetryStart = app.indexOf("function parseReceipt(text)");
 const telemetryEnd = app.indexOf("function rateLimited", telemetryStart);
 assert.ok(telemetryStart >= 0 && telemetryEnd > telemetryStart, "production telemetry client must expose its receipt pipeline");
 const clientTransport = app.slice(telemetryStart, telemetryEnd);
-assert.match(clientTransport, /return parseReceipt\(await response\.text\(\)\)/);
+assert.match(clientTransport, /receipt:\s*parseReceipt\(await response\.text\(\)\)/);
 assert.match(clientTransport, /queue = queue\.filter\(function \(item\)/);
 assert.match(clientTransport, /!acknowledged\[item\.eventId\]/);
 assert.match(clientTransport, /recordRejectedEvents\(batch, receipt\)/);
@@ -61,6 +64,8 @@ const scriptEnd = app.indexOf("</script>", scriptStart + scriptOpen.length);
 assert.ok(scriptStart >= 0 && scriptEnd > scriptStart, "production telemetry script must have clear boundaries");
 const telemetryScript = app.slice(scriptStart + scriptOpen.length, scriptEnd);
 assert.doesNotThrow(() => new Function(telemetryScript), "production telemetry script must parse as JavaScript");
+assert.match(telemetryScript, /if \(event === 'vehicle_lookup' && meta && meta\.queryId\) \{\s*lastAction\['query:' \+ String\(meta\.queryId\)\] = Date\.now\(\);\s*\}/);
+assert.match(telemetryScript, /if \(event === 'app_open' \|\| event === 'heartbeat'\) \{\s*flushNow\(\);\s*\} else if \(event === 'vehicle_lookup'\) \{\s*flush\(\);\s*\}/);
 
 const parserMatch = clientTransport.match(/function parseReceipt\(text\) \{[\s\S]*?\n  \}/);
 assert.ok(parserMatch, "receipt parser must be independently testable");
