@@ -51,7 +51,7 @@ assert.doesNotMatch(endpoint, /verix_insurance_no_cases|operationalInsuranceNoCa
 assert.doesNotMatch(endpoint, /matricula|matriculaNormalizada/i);
 assert.match(endpoint, /p_installations:\s*\[\]/);
 assert.match(endpoint, /p_sessions:\s*\[\]/);
-assert.match(endpoint, /event_id: eventId,[\\s\\S]*?query_id: queryId,[\\s\\S]*?event,[\\s\\S]*?occurred_at: occurredAt/);
+assert.match(endpoint, /event_id: eventId,[\s\S]*?query_id: queryId,[\s\S]*?event,[\s\S]*?occurred_at: occurredAt/);
 assert.doesNotMatch(endpoint, /installations\.values\(\)|sessions\.values\(\)/);
 assert.match(stats, /detail === "lifetime-counters"/);
 assert.match(admin, /Total de pesquisas efetuadas/);
