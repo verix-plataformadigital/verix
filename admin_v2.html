@@ -54,6 +54,9 @@ button,input{font:inherit}
 button{cursor:pointer}
 button:focus-visible,input:focus-visible{outline:2px solid #68aeb1;outline-offset:2px}
 [hidden]{display:none!important}
+/* Hard authentication gate: the dashboard cannot render until the server confirms a session. */
+#app{display:none!important}
+body.admin-authenticated #app{display:grid!important}
 
 /* Sign-in */
 .login-shell{min-height:100dvh;display:grid;place-items:center;padding:22px;background:var(--canvas)}
@@ -1052,6 +1055,7 @@ async function login(password){
   finally{clearTimeout(tm);}
 }
 function logout(){
+  document.body.classList.remove('admin-authenticated');
   serverTelemetryRun++;serverTelemetryBusy=false;setServerTelemetryStatus('loading','Inicia sessão');clearServerTelemetry('Inicia sessão para consultar a telemetria do servidor.');
   token='';sessionStorage.removeItem(TOKEN_KEY);if(refreshTimer)clearInterval(refreshTimer);refreshTimer=null;
   dashboardData=null;daily30Data=null;caseRows=[];dailyTrendData=null;dailyTrendLoadedAt=0;errorLedger={items:[],totalEvents:0,uniqueConsultations:0,installations:0,excludedUserInputEvents:0,excludedUserInputConsultations:0,hasMore:false};
@@ -1762,6 +1766,7 @@ function showAuthenticatedApp(counterData){
     throw new Error('O servidor não confirmou uma sessão válida.');
   }
   dashboardData=counterData;
+  document.body.classList.add('admin-authenticated');
   $('loginScreen').hidden=true;
   $('app').hidden=false;
   renderAll();
@@ -1787,6 +1792,7 @@ async function restoreSession(){
       token='';
       sessionStorage.removeItem(TOKEN_KEY);
     }
+    document.body.classList.remove('admin-authenticated');
     $('app').hidden=true;
     $('loginScreen').hidden=false;
     $('loginError').textContent='A sessão anterior não pôde ser validada. Introduza novamente a password.';
@@ -1811,6 +1817,7 @@ $('loginForm').addEventListener('submit',async function(e){
   }catch(error){
     token='';
     sessionStorage.removeItem(TOKEN_KEY);
+    document.body.classList.remove('admin-authenticated');
     $('app').hidden=true;
     $('loginScreen').hidden=false;
     window.scrollTo(0,0);
