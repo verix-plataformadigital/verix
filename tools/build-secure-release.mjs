@@ -276,6 +276,20 @@ function writeSecureFile(relativeSource, relativeOutput) {
   if (relativeSource === "verix-app.html" && (!source.includes('id="verix-mobile-finalize"') || !source.includes('id="verix-mobile-final-ui"'))) {
     throw new Error("Handheld final style/reveal sequence is incomplete");
   }
+  // Publish the lightweight Realtime Presence client with the operational app.
+  // Admin already subscribes to this channel; without this client on user
+  // installations the Admin can connect successfully but will always report 0.
+  if (relativeSource === "verix-app.html") {
+    if (source.includes("verix-presence-v1.js")) {
+      throw new Error("Presence client is already referenced in verix-app.html; refusing duplicate injection");
+    }
+    const presenceClientTag = '<script id="verix-live-presence-client" defer src="./verix-presence-v1.js?v=' + encodeURIComponent(String(BUILD_ID)) + '"></script>';
+    if (!/<\/body>/i.test(source)) {
+      throw new Error("Cannot inject live presence client: closing </body> not found");
+    }
+    source = source.replace(/<\/body>/i, presenceClientTag + "\n</body>");
+  }
+
   const { html, scriptCount } = obfuscateHtml(source, relativeSource);
   const outPath = path.join(OUTPUT_DIR, relativeOutput);
 
