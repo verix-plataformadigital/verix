@@ -519,6 +519,10 @@ function verifyCriticalRuntime(outputPath) {
   if (!telemetry) throw new Error("Critical telemetry runtime block missing from secure build");
   if (!/telemetry-v2/i.test(telemetry)) throw new Error("Critical telemetry endpoint marker missing");
   if (!/heartbeat/i.test(telemetry)) throw new Error("Critical telemetry heartbeat marker missing");
+  const presenceClient = /<script\b(?=[^>]*\bid=["']verix-live-presence-client["'])(?=[^>]*\bsrc=["']\.\/verix-presence-v1\.js\?v=[^"']+["'])[^>]*><\/script>/i;
+  if (!presenceClient.test(html)) {
+    throw new Error("Realtime presence client missing from operational app build");
+  }
   if (!security) throw new Error("Critical security runtime block missing from secure build");
   if (!security.includes("var BUILD_ID = '" + BUILD_ID + "'")) {
     throw new Error("Client BUILD_ID does not match release BUILD_ID");
