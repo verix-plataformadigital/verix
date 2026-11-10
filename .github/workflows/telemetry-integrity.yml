@@ -3,7 +3,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/telemetry-integrity.yml"
-      - "supabase/functions/telemetry-v2/index.ts"
+      - "supabase/functions/telemetry-v2/**"
       - "supabase/migrations/**"
       - "admin_v2.html"
       - "tools/verify-telemetry-integrity.mjs"
@@ -14,7 +14,7 @@ on:
       - "fix/telemetry-integrity-*"
     paths:
       - ".github/workflows/telemetry-integrity.yml"
-      - "supabase/functions/telemetry-v2/index.ts"
+      - "supabase/functions/telemetry-v2/**"
       - "supabase/migrations/**"
       - "admin_v2.html"
       - "tools/verify-telemetry-integrity.mjs"
@@ -35,5 +35,7 @@ jobs:
           deno-version: v2.x
       - name: Type-check telemetry Edge Function
         run: deno check --no-lock supabase/functions/telemetry-v2/index.ts
+      - name: Run telemetry unit tests
+        run: deno test --no-lock supabase/functions/telemetry-v2/index_test.ts
       - name: Verify telemetry integrity contract
         run: node tools/verify-telemetry-integrity.mjs
