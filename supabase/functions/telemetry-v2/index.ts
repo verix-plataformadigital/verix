@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.118.0";
 import { createLocalRateLimiter } from "./rate_limit.ts";
+import { normalizeErrorCategory } from "./error_category.ts";
 
 declare const Deno: any;
 
@@ -602,13 +603,16 @@ Deno.serve(async (req: Request) => {
         : new Date().toISOString();
       const eventId = cleanText(x?.eventId, 120) || crypto.randomUUID();
 
-      // No plate, metadata, installation/session identity or client fingerprint
-      // is retained or forwarded. These three values are the complete DB payload.
+      // No plate, raw metadata, installation/session identity or client fingerprint
+      // is retained or forwarded. Errors add only an allow-listed category code.
       events.push({
         event_id: eventId,
         query_id: queryId,
         event,
-        occurred_at: occurredAt
+        occurred_at: occurredAt,
+        ...(event === "vehicle_insurance_error"
+          ? { error_type: normalizeErrorCategory(metadata) }
+          : {})
       });
     }
 

@@ -1,4 +1,5 @@
 import { createLocalRateLimiter } from "./rate_limit.ts";
+import { normalizeErrorCategory } from "./error_category.ts";
 
 Deno.test("telemetry local limiter — enforces the per-key window", () => {
   let now = 1_000;
@@ -39,4 +40,24 @@ Deno.test("telemetry local limiter — remains usable after bounded cleanup", ()
 
   now += 60_001;
   if (!limit("new-client", 10, 60)) throw new Error("Limiter should remain usable");
+});
+
+
+Deno.test("telemetry error categories — keeps known technical categories", () => {
+  const category = normalizeErrorCategory({
+    asfDiagnostic: { asfErrorType: "upstream_timeout" }
+  });
+  if (category !== "upstream_timeout") throw new Error("Known category was not preserved");
+});
+
+Deno.test("telemetry error categories — rejects free text into other", () => {
+  const category = normalizeErrorCategory({
+    asfDiagnostic: { asfErrorType: "timeout matrícula 00-AA-00 request body" }
+  });
+  if (category !== "other") throw new Error("Unrecognised/free text must be reduced to other");
+});
+
+Deno.test("telemetry error categories — missing category becomes unknown", () => {
+  const category = normalizeErrorCategory({});
+  if (category !== "unknown") throw new Error("Missing category must be unknown");
 });

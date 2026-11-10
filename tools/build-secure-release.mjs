@@ -456,7 +456,9 @@ function patchAdminPresenceUi(source) {
   }
   return source;
 }
-adminPwaSource = patchAdminPresenceUi(adminPwaSource);
+// Use the non-persistent Realtime Presence client. The former server-side
+// session query depends on retired event/session history tables.
+
 
 adminPwaSource = adminPwaSource.replace(/\.\/AI-ACCESS-POLICY\.md/g, "../AI-ACCESS-POLICY.md");
 const adminPwaHeadLinks = [

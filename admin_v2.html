@@ -686,10 +686,9 @@ html.verix-handheld .login-card input,html.verix-handheld .login-card button{min
 .nav-button[data-page="legislation"],
 .nav-button[data-page="errors"],
 #page-insurance,#page-activity,#page-legislation,#page-errors,
-#livePresenceCards,#presenceConnection,#livePresenceUpdated,
 #overviewLiveCards,#serverTelemetryUpdated,#serverTelemetryStatus,
 #baseInstallationsNote,#queryQuality,#page-dashboard .content-grid,#activityHeading,
-#page-dashboard .refresh-time:not(#counterLastUpdated){display:none!important}
+#page-dashboard .refresh-time:not(#counterLastUpdated):not(#livePresenceUpdated){display:none!important}
 #overviewCards{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:10px}
 #counterLastUpdated{display:block!important;text-align:left;margin-top:-10px}
 @media(max-width:760px){#overviewCards{grid-template-columns:minmax(0,1fr)}}
@@ -773,6 +772,14 @@ html.verix-handheld .login-card input,html.verix-handheld .login-card button{min
       <div id="rolling30Cards" class="metric-grid" aria-live="polite">
         <div class="empty-state">A carregar a estatística diária…</div>
       </div>
+      <article class="panel rolling30-panel">
+        <div class="panel-head">
+          <div><h2>Erros por tipo · últimos 30 dias</h2><p>Distribuição por categoria técnica. Apenas contagens agregadas; sem matrículas, consultas individuais ou mensagens.</p></div>
+          <span class="panel-tag">Retenção: 30 dias</span>
+        </div>
+        <div id="rolling30ErrorTypes"><div class="empty-state">A carregar categorias de erro…</div></div>
+        <p id="rolling30ErrorTypesUpdated" class="rolling30-updated" role="status" aria-live="polite">A aguardar classificação dos erros.</p>
+      </article>
       <article class="panel rolling30-panel">
         <div class="panel-head">
           <div><h2>Detalhe diário</h2><p>Valores agregados por dia. Não são guardadas matrículas, nem o histórico individual das consultas.</p></div>
@@ -1191,9 +1198,9 @@ function renderDaily30(data){
     throw new Error('A estatística de 30 dias contém totais inválidos.');
   }
   appendCards('rolling30Cards',[
-    ['Consultas',fmt(consultations),'Consultas de veículos iniciadas e confirmadas pelo motor de telemetria.','accent'],
-    ['Resultados ASF sem registo',fmt(noRecord),'Respostas sem registo. Cada nova consulta conta novamente; não são identificados veículos distintos.','amber'],
-    ['Erros de consulta',fmt(errors),'Consultas que terminaram com um erro reportado pelo motor.','red']
+    ['Consultas',fmt(consultations),'Base de cálculo das taxas do período.','accent'],
+    ['Resultados ASF sem registo',fmt(noRecord),consultations>0?(pct(noRecord,consultations)+' das consultas do período tiveram resposta sem registo ASF.'):'Sem base de cálculo: não houve consultas no período.','amber'],
+    ['Erros de consulta',fmt(errors),consultations>0?(pct(errors,consultations)+' das consultas do período terminaram com erro.'):'Sem base de cálculo: não houve consultas no período.','red']
   ]);
   const dateLabel=value=>{
     const d=new Date(String(value||'')+'T12:00:00');
@@ -1208,6 +1215,28 @@ function renderDaily30(data){
     day.available?fmt(safeCount(day.errors)): '—'
   ]);
   $('rolling30Table').replaceChildren(makeTable(['Data','Consultas','Sem registo ASF','Erros'],rows));
+
+  const errorTypes=Array.isArray(data.error_types)?data.error_types:[];
+  const validErrorTypes=errorTypes.map(item=>({
+    type:String(item&&item.error_type||'other'),
+    count:safeCount(item&&item.occurrences)
+  })).filter(item=>item.count!==null&&item.count>0);
+  const classifiedTotal=validErrorTypes.reduce((sum,item)=>sum+item.count,0);
+  if(validErrorTypes.length){
+    const typeRows=validErrorTypes.map(item=>[
+      errorLabel(item.type),
+      fmt(item.count),
+      pct(item.count,classifiedTotal)
+    ]);
+    $('rolling30ErrorTypes').replaceChildren(makeTable(['Tipo de erro','Ocorrências','% dos erros classificados'],typeRows));
+  }else{
+    showEmpty('rolling30ErrorTypes','Ainda não existem erros classificados desde o início desta recolha.');
+  }
+  const typeStarted=prettyDate(data.error_types_since);
+  $('rolling30ErrorTypesUpdated').textContent=classifiedTotal>0
+    ? 'Classificação agregada iniciada em '+typeStarted+'. A percentagem é calculada apenas sobre os erros já classificados; o detalhe individual não é guardado.'
+    : 'A classificação por tipo começou em '+typeStarted+'. As ocorrências anteriores a essa data não podem ser classificadas retroativamente.';
+
   const started=prettyDate(data.collecting_since);
   $('rolling30Updated').textContent='Recolha iniciada em '+started+'. Os dias anteriores não podem ser reconstruídos porque o histórico individual foi eliminado. Os agregados são apagados automaticamente ao fim de 30 dias.';
 }
@@ -1681,7 +1710,28 @@ function renderInsuranceNoCases(){
   host.appendChild(makeTable(['Matrícula','Data e hora','Fim da retenção'],rows));
 }
 function errorLabel(type){
-  const map={http_null:'Sem resposta HTTP',http_400:'Pedido rejeitado',security_auth:'Falha de autorização/cliente',upstream_timeout:'Tempo limite excedido',upstream_network:'Falha de ligação ao serviço',invalid_json:'Resposta inválida',parse_error:'Falha ao interpretar resposta',rate_limited:'Limite de pedidos atingido',network_error:'Erro de rede',timeout:'Tempo limite excedido',unknown:'Erro não classificado'};
+  const map={
+    http_null:'Sem resposta HTTP',
+    http_400:'Pedido rejeitado (HTTP 400)',
+    http_401:'Não autorizado (HTTP 401)',
+    http_403:'Acesso recusado (HTTP 403)',
+    http_404:'Recurso não encontrado (HTTP 404)',
+    http_429:'Limite do serviço (HTTP 429)',
+    http_5xx:'Erro do servidor ASF',
+    security_auth:'Falha de autorização/cliente',
+    upstream_timeout:'Tempo limite excedido no serviço ASF',
+    upstream_network:'Falha de ligação ao serviço ASF',
+    invalid_json:'Resposta JSON inválida',
+    parse_error:'Falha ao interpretar a resposta',
+    rate_limited:'Limite de pedidos atingido',
+    network_error:'Erro de rede',
+    timeout:'Tempo limite excedido',
+    graphql_error:'Erro GraphQL do serviço ASF',
+    service_unavailable:'Serviço ASF indisponível',
+    empty_response:'Resposta vazia',
+    other:'Outros / não classificados',
+    unknown:'Erro não classificado'
+  };
   return map[String(type||'unknown')]||String(type||'Erro não classificado');
 }
 async function loadErrors(){
