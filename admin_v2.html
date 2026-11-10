@@ -1047,7 +1047,7 @@ async function login(password){
     const r=await fetch(AUTH_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password}),mode:'cors',credentials:'omit',cache:'no-store',signal:ac.signal});
     const text=await r.text();let d;try{d=JSON.parse(text);}catch(_){d={ok:false};}
     if(!r.ok||d.ok!==true||!d.token)throw new Error(d.error==='rate_limited'?'Demasiadas tentativas. Aguarde antes de voltar a tentar.':'Credenciais inválidas ou serviço de autenticação indisponível.');
-    token=String(d.token);sessionStorage.setItem(TOKEN_KEY,token);
+    token=String(d.token);
   }catch(e){if(e&&e.name==='AbortError')throw new Error('Tempo de autenticação excedido.');throw e;}
   finally{clearTimeout(tm);}
 }
@@ -1056,6 +1056,7 @@ function logout(){
   token='';sessionStorage.removeItem(TOKEN_KEY);if(refreshTimer)clearInterval(refreshTimer);refreshTimer=null;
   dashboardData=null;daily30Data=null;caseRows=[];dailyTrendData=null;dailyTrendLoadedAt=0;errorLedger={items:[],totalEvents:0,uniqueConsultations:0,installations:0,excludedUserInputEvents:0,excludedUserInputConsultations:0,hasMore:false};
   $('app').hidden=true;$('loginScreen').hidden=false;$('password').value='';$('loginError').textContent='';setStatus('','Sessão encerrada');
+  window.scrollTo(0,0);
 }
 function periodLabel(key){const found=PERIODS.find(x=>x.key===key);return found?found.label:'Histórico Total';}
 function historyResetTimestamp(){
@@ -1753,11 +1754,68 @@ function renderErrorLedger(){
   if(query)$('errorPageInfo').textContent+=' Filtro aplicado à página carregada: '+fmt(filtered.length)+' correspondências.';
 }
 async function scheduleRefresh(){if(!token)return;await loadDashboard(false);}
+function showAuthenticatedApp(counterData){
+  const searches=counterData?Number(counterData.total_searches):NaN;
+  const noRecord=counterData?Number(counterData.total_no_record_results):NaN;
+  if(!counterData||!Number.isSafeInteger(searches)||searches<0||
+     !Number.isSafeInteger(noRecord)||noRecord<0){
+    throw new Error('O servidor não confirmou uma sessão válida.');
+  }
+  dashboardData=counterData;
+  $('loginScreen').hidden=true;
+  $('app').hidden=false;
+  renderAll();
+  setStatus('online','Backend online');
+  window.scrollTo(0,0);
+}
+async function restoreSession(){
+  if(!token)return;
+  const restoredToken=token;
+  try{
+    // Fail closed: never reveal the Admin using only a token read from sessionStorage.
+    // The server must confirm the token and the protected counters endpoint first.
+    const response=await request(STATS_API+'&detail=lifetime-counters');
+    if(token!==restoredToken)return;
+    showAuthenticatedApp(response&&response.data);
+    if(refreshTimer)clearInterval(refreshTimer);
+    await loadDashboard(false);
+    refreshTimer=setInterval(()=>{if(!document.hidden)scheduleRefresh();},REFRESH_MS);
+  }catch(error){
+    // A stale token may have triggered logout() inside request(). Network or
+    // backend failures also stay on the password screen; no protected DOM is shown.
+    if(token===restoredToken){
+      token='';
+      sessionStorage.removeItem(TOKEN_KEY);
+    }
+    $('app').hidden=true;
+    $('loginScreen').hidden=false;
+    $('loginError').textContent='A sessão anterior não pôde ser validada. Introduza novamente a password.';
+    setStatus('','Inicia sessão');
+    window.scrollTo(0,0);
+  }
+}
 $('loginForm').addEventListener('submit',async function(e){
   e.preventDefault();$('loginError').textContent='';$('loginButton').disabled=true;
-  try{await login($('password').value);$('password').value='';$('loginScreen').hidden=true;$('app').hidden=false;setStatus('loading','A carregar');await loadDashboard(false);if(refreshTimer)clearInterval(refreshTimer);refreshTimer=setInterval(()=>{if(!document.hidden) scheduleRefresh();},REFRESH_MS);}
-  catch(e){$('loginError').textContent=e.message||'Falha de autenticação.';}
-  finally{$('loginButton').disabled=false;}
+  try{
+    await login($('password').value);
+    $('password').value='';
+    // Validate the newly issued token against a protected endpoint before
+    // revealing the application, exactly as on session restoration.
+    const response=await request(STATS_API+'&detail=lifetime-counters');
+    showAuthenticatedApp(response&&response.data);
+    sessionStorage.setItem(TOKEN_KEY,token);
+    setStatus('loading','A carregar');
+    await loadDashboard(false);
+    if(refreshTimer)clearInterval(refreshTimer);
+    refreshTimer=setInterval(()=>{if(!document.hidden)scheduleRefresh();},REFRESH_MS);
+  }catch(error){
+    token='';
+    sessionStorage.removeItem(TOKEN_KEY);
+    $('app').hidden=true;
+    $('loginScreen').hidden=false;
+    window.scrollTo(0,0);
+    $('loginError').textContent=error.message||'Falha de autenticação.';
+  }finally{$('loginButton').disabled=false;}
 });
 document.querySelectorAll('.nav-button').forEach(b=>b.addEventListener('click',()=>activePage(b.dataset.page)));
 document.querySelectorAll('.period-button').forEach(b=>b.addEventListener('click',()=>setPeriod(b.dataset.period)));
@@ -1771,7 +1829,7 @@ $('errorPrev').addEventListener('click',()=>{errorOffset=Math.max(0,errorOffset-
 $('errorNext').addEventListener('click',()=>{errorOffset+=errorPageSize;loadErrors();});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&token)scheduleRefresh();});
 if(window.VERIX_LIVE_PRESENCE&&typeof window.VERIX_LIVE_PRESENCE.subscribe==='function')window.VERIX_LIVE_PRESENCE.subscribe(renderLivePresence);else window.addEventListener('verix-live-presence',function(e){renderLivePresence(e.detail);});
-if(token){$('loginScreen').hidden=true;$('app').hidden=false;loadDashboard(false);refreshTimer=setInterval(()=>{if(!document.hidden)scheduleRefresh();},REFRESH_MS);}
+if(token)restoreSession();
 })();
 </script>
 </body>
