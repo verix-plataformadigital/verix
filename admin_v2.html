@@ -1292,7 +1292,9 @@ function renderAll(){
     [
       'Resultados sem registo ASF',
       fmt(dashboardData.total_no_record_results),
-      'Total acumulado de respostas sem registo ASF. Não representa matrículas distintas.',
+      Number(dashboardData.total_searches)>0
+        ? pct(dashboardData.total_no_record_results,dashboardData.total_searches)+' das pesquisas acumuladas tiveram resposta sem registo ASF. Não representa matrículas distintas.'
+        : 'Ainda não há pesquisas suficientes para calcular a percentagem. Não representa matrículas distintas.',
       'amber'
     ]
   ]);

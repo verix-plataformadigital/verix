@@ -62,6 +62,8 @@ assert.doesNotMatch(endpoint, /installations\.values\(\)|sessions\.values\(\)/);
 assert.match(stats, /detail === "lifetime-counters"/);
 assert.match(admin, /Total de pesquisas efetuadas/);
 assert.match(admin, /Resultados sem registo ASF/);
+assert.match(admin, /pct\(dashboardData\.total_no_record_results,dashboardData\.total_searches\)/);
+assert.match(admin, /das pesquisas acumuladas tiveram resposta sem registo ASF/);
 assert.match(admin, /detail=lifetime-counters/);
 const dailyMetricsMigration = fs.readFileSync("supabase/migrations/20261109231356_rolling_30_day_daily_operational_metrics_20261109.sql", "utf8");
 assert.match(stats, /detail === "daily-metrics-30d"/);
