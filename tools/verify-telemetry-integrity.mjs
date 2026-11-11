@@ -67,9 +67,9 @@ const dailyMetricsMigration = fs.readFileSync("supabase/migrations/2026110923135
 assert.match(stats, /detail === "daily-metrics-30d"/);
 assert.match(stats, /verix_daily_metrics_30d_read/);
 assert.match(admin, /Estatísticas de hoje/);
-assert.match(admin, /desde as 00:00 \\(Europe\\/Lisbon\\)/);
-assert.match(admin, /const today=data\\.days\\[data\\.days\\.length-1\\]/);
-assert.match(admin, /pct\\(noRecord,consultations\\)/);
+assert.ok(admin.includes('desde as 00:00 (Europe/Lisbon)'));
+assert.ok(admin.includes('const today=data.days[data.days.length-1]'));
+assert.ok(admin.includes('pct(noRecord,consultations)'));
 assert.match(admin, /Histórico diário · últimos 30 dias/);
 assert.match(admin, /Sem recolha/);
 assert.match(admin, /detail=daily-metrics-30d/);
