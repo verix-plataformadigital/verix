@@ -692,6 +692,38 @@ html.verix-handheld .login-card input,html.verix-handheld .login-card button{min
 #overviewCards{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:10px}
 #counterLastUpdated{display:block!important;text-align:left;margin-top:-10px}
 @media(max-width:760px){#overviewCards{grid-template-columns:minmax(0,1fr)}}
+
+/* Compact operational dashboard: only lifetime totals and daily metrics remain visible. */
+.period-bar[hidden]{display:none!important}
+.dashboard-section-heading{margin:0 0 11px}
+.dashboard-section-heading:not(:first-child){margin-top:22px}
+.lifetime-metrics{grid-template-columns:repeat(2,minmax(0,1fr));max-width:760px;margin-bottom:6px}
+.today-metrics{grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:0}
+.dashboard-panel{margin-top:16px}
+.dashboard-panel .panel-head{margin-bottom:12px}
+.dashboard-panel .data-table{width:100%;min-width:0!important;table-layout:fixed;font-variant-numeric:tabular-nums}
+.dashboard-panel .data-table th,.dashboard-panel .data-table td{padding:10px 8px}
+.dashboard-panel .data-table th:first-child,.dashboard-panel .data-table td:first-child{text-align:left;width:38%}
+.dashboard-panel .data-table th:not(:first-child),.dashboard-panel .data-table td:not(:first-child){text-align:right}
+.rolling30-table-wrap{max-height:none;overflow:visible}
+.rolling30-table-wrap .data-table th:first-child,.rolling30-table-wrap .data-table td:first-child{width:28%}
+.rolling30-table-wrap .data-table th:nth-child(2),.rolling30-table-wrap .data-table td:nth-child(2){width:22%}
+.rolling30-table-wrap .data-table th:nth-child(3),.rolling30-table-wrap .data-table td:nth-child(3){width:29%}
+.rolling30-table-wrap .data-table th:nth-child(4),.rolling30-table-wrap .data-table td:nth-child(4){width:21%}
+.rolling30-table-wrap .data-table th,.rolling30-table-wrap .data-table td{padding:9px 6px;white-space:nowrap}
+.rolling30-table-wrap .data-table tbody tr:first-child{background:#f0f8f7}
+@media(max-width:760px){
+  .lifetime-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .today-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .dashboard-panel{padding:13px 10px 11px!important}
+  .dashboard-panel .data-table{font-size:10.5px}
+  .dashboard-panel .data-table th,.dashboard-panel .data-table td{padding:9px 5px}
+  .rolling30-table-wrap .data-table th:first-child,.rolling30-table-wrap .data-table td:first-child{width:27%}
+  .rolling30-table-wrap .data-table th:nth-child(2),.rolling30-table-wrap .data-table td:nth-child(2){width:22%}
+  .rolling30-table-wrap .data-table th:nth-child(3),.rolling30-table-wrap .data-table td:nth-child(3){width:30%}
+  .rolling30-table-wrap .data-table th:nth-child(4),.rolling30-table-wrap .data-table td:nth-child(4){width:21%}
+}
+@media(max-width:380px){.today-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 <link rel="icon" href="./favicon.svg?v=20261019" type="image/svg+xml" sizes="any">
 <link rel="icon" href="./assets/icon-32.png?v=20261019" type="image/png" sizes="32x32">
@@ -737,7 +769,7 @@ html.verix-handheld .login-card input,html.verix-handheld .login-card button{min
       <div>
         <div class="eyebrow">VÉRIX · Observabilidade operacional</div>
         <h1 id="pageTitle">Visão geral</h1>
-        <p id="pageSubtitle">Consultas concluídas, atividade real e integridade da telemetria num único ecrã.</p>
+        <p id="pageSubtitle">Contadores históricos, atividade de hoje e histórico diário dos últimos 30 dias.</p>
       </div>
       <div class="top-actions">
         <span id="backendStatus" class="status-pill"><span class="status-dot" aria-hidden="true"></span><span id="backendStatusText">A ligar</span></span>
@@ -758,50 +790,53 @@ html.verix-handheld .login-card input,html.verix-handheld .login-card button{min
     <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
 
     <section id="page-dashboard" class="page active" aria-labelledby="pageTitle">
-      <div class="section-heading" style="margin-top:0">
-        <div><h2>Contadores permanentes</h2><p>Totais acumulados desde o primeiro registo do VÉRIX.</p></div>
-        <span class="status-pill loading" id="presenceConnection"><i class="status-dot" aria-hidden="true"></i><span>A ligar</span></span>
+      <div class="section-heading dashboard-section-heading">
+        <div><h2>Histórico total da aplicação</h2><p>Contadores permanentes acumulados desde o primeiro registo do VÉRIX.</p></div>
+        <span id="presenceConnection" class="status-pill loading" hidden><i class="status-dot" aria-hidden="true"></i><span>A ligar</span></span>
       </div>
-      <div id="overviewCards" class="metric-grid" aria-live="polite"></div>
-      <div id="counterLastUpdated" class="refresh-time" role="status" aria-live="polite">A carregar os contadores permanentes…</div>
+      <div id="overviewCards" class="metric-grid lifetime-metrics" aria-live="polite"></div>
+      <div id="counterLastUpdated" class="refresh-time" role="status" aria-live="polite">A carregar os contadores históricos…</div>
 
-      <div class="section-heading compact-heading" id="rolling30Heading">
-        <div><h2>Estatísticas de hoje</h2><p>Consultas, resultados ASF sem registo e erros confirmados desde as 00:00 (Europe/Lisbon).</p></div>
-        <span class="panel-tag">00:00–agora</span>
+      <div class="section-heading dashboard-section-heading">
+        <div><h2>Estatísticas de hoje</h2><p>Valores contabilizados desde as 00:00, hora de Portugal continental.</p></div>
+        <span class="panel-tag">Hoje · 00:00 até agora</span>
       </div>
-      <div id="rolling30Cards" class="metric-grid" aria-live="polite">
-        <div class="empty-state">A carregar as estatísticas de hoje…</div>
+      <div id="rolling30Cards" class="metric-grid today-metrics" aria-live="polite">
+        <div class="empty-state">A carregar os dados de hoje…</div>
       </div>
-      <p id="todayMetricsUpdated" class="rolling30-updated" role="status" aria-live="polite">A aguardar a leitura diária do servidor.</p>
-      <article class="panel rolling30-panel">
+      <p id="todayMetricsUpdated" class="rolling30-updated" role="status" aria-live="polite">A aguardar leitura do servidor.</p>
+
+      <article class="panel dashboard-panel">
         <div class="panel-head">
-          <div><h2>Erros por tipo · últimos 30 dias</h2><p>Distribuição por categoria técnica. Apenas contagens agregadas; sem matrículas, consultas individuais ou mensagens.</p></div>
-          <span class="panel-tag">Retenção: 30 dias</span>
+          <div><h2>Registo de erros de hoje</h2><p>Contagem agregada por tipo de erro. Não são guardadas matrículas, mensagens ou consultas individuais.</p></div>
+          <span class="panel-tag">Hoje · Lisboa</span>
         </div>
-        <div id="rolling30ErrorTypes"><div class="empty-state">A carregar categorias de erro…</div></div>
-        <p id="rolling30ErrorTypesUpdated" class="rolling30-updated" role="status" aria-live="polite">A aguardar classificação dos erros.</p>
+        <div id="todayErrorTypes"><div class="empty-state">A carregar o registo de erros…</div></div>
+        <p id="todayErrorTypesUpdated" class="rolling30-updated" role="status" aria-live="polite">A aguardar leitura do servidor.</p>
       </article>
-      <article class="panel rolling30-panel">
+
+      <article class="panel dashboard-panel">
         <div class="panel-head">
-          <div><h2>Histórico diário · últimos 30 dias</h2><p>Uma linha por dia, com consultas, respostas ASF sem registo e erros. Não são guardadas matrículas nem consultas individuais.</p></div>
-          <span class="panel-tag">Retenção automática: 30 dias</span>
+          <div><h2>Histórico diário · últimos 30 dias</h2><p>Pesquisas, resultados ASF sem registo e erros, separados por dia.</p></div>
+          <span class="panel-tag">Retenção: 30 dias</span>
         </div>
         <div id="rolling30Table" class="rolling30-table-wrap"><div class="empty-state">A aguardar a primeira leitura.</div></div>
         <p id="rolling30Updated" class="rolling30-updated" role="status" aria-live="polite">A recolha diária está a ser iniciada.</p>
       </article>
-      <div id="livePresenceCards" class="metric-grid live-presence-grid" aria-live="polite">
-        <article class="metric-card blue"><div class="metric-label">Instalações online</div><div class="metric-value" id="livePresenceOnline">—</div><div class="metric-note">Ligações Realtime ativas neste momento; não são pessoas únicas.</div></article>
-        <article class="metric-card green"><div class="metric-label">Com atividade</div><div class="metric-value" id="livePresenceActive">—</div><div class="metric-note">Instalações online com interação nos últimos 2 minutos.</div></article>
+
+      <div id="livePresenceCards" class="metric-grid live-presence-grid" aria-live="polite" hidden>
+        <article class="metric-card blue"><div class="metric-label">Instalações online</div><div class="metric-value" id="livePresenceOnline">—</div><div class="metric-note">Ligações Realtime ativas.</div></article>
+        <article class="metric-card green"><div class="metric-label">Com atividade</div><div class="metric-value" id="livePresenceActive">—</div><div class="metric-note">Instalações com interação recente.</div></article>
       </div>
-      <div class="refresh-time" id="livePresenceUpdated">A aguardar ligação de presença.</div>
-      <div class="section-heading compact-heading" id="activityHeading">
-        <div><h2>Atividade recente</h2><p>Consultas confirmadas pelo servidor e instalações que pesquisaram na última hora.</p></div>
+      <div class="refresh-time" id="livePresenceUpdated" hidden>A aguardar ligação de presença.</div>
+      <div class="section-heading compact-heading" id="activityHeading" hidden>
+        <div><h2>Atividade recente</h2><p>Consultas confirmadas pelo servidor.</p></div>
         <span class="status-pill loading" id="serverTelemetryStatus"><i class="status-dot" aria-hidden="true"></i><span>A ligar</span></span>
       </div>
-      <div id="overviewLiveCards" class="metric-grid"></div>
-      <div class="refresh-time" id="serverTelemetryUpdated">A aguardar a primeira leitura do servidor.</div>
-      <p id="baseInstallationsNote" class="base-info">Instalações registadas: a carregar.</p>
-      <div class="content-grid">
+      <div id="overviewLiveCards" class="metric-grid" hidden></div>
+      <div class="refresh-time" id="serverTelemetryUpdated" hidden>A aguardar leitura.</div>
+      <p id="baseInstallationsNote" class="base-info" hidden>Instalações registadas.</p>
+      <div class="content-grid" hidden>
         <article class="panel wide">
           <div class="panel-head"><div><h2>Qualidade das consultas</h2></div></div>
           <div id="queryQuality" class="quality-grid"></div>
@@ -1196,24 +1231,19 @@ async function loadServerTelemetry(){
 
 function renderDaily30(data){
   if(!data||!Array.isArray(data.days)||data.days.length!==30||!data.totals) {
-    throw new Error('A resposta da estatística diária não contém os 30 dias esperados.');
+    throw new Error('A resposta diária não contém os 30 dias esperados.');
   }
   const safeCount=value=>{
     const n=Number(value);
     return Number.isSafeInteger(n)&&n>=0?n:null;
   };
-  // The database calendar is generated in Europe/Lisbon, so the final row is
-  // the current local day and includes activity from 00:00 until this read.
   const today=data.days[data.days.length-1];
-  if(!today||today.available!==true) {
-    throw new Error('A estatística de hoje ainda não está disponível.');
-  }
+  if(!today||today.available!==true)throw new Error('A estatística de hoje ainda não está disponível.');
   const consultations=safeCount(today.consultations);
   const noRecord=safeCount(today.no_record_results);
   const errors=safeCount(today.errors);
-  if(consultations===null||noRecord===null||errors===null) {
-    throw new Error('A estatística de hoje contém valores inválidos.');
-  }
+  if([consultations,noRecord,errors].some(value=>value===null))throw new Error('A estatística de hoje contém valores inválidos.');
+
   const dateLabel=value=>{
     const d=new Date(String(value||'')+'T12:00:00');
     return Number.isFinite(d.getTime())
@@ -1221,43 +1251,34 @@ function renderDaily30(data){
       : '—';
   };
   appendCards('rolling30Cards',[
-    ['Consultas de hoje',fmt(consultations),'Consultas confirmadas desde as 00:00 (hora de Lisboa).','accent'],
-    ['Resultados ASF sem registo',fmt(noRecord),consultations>0?(pct(noRecord,consultations)+' das consultas de hoje tiveram resposta sem registo ASF.'):'Sem base de cálculo: ainda não há consultas hoje.','amber'],
-    ['Erros de consulta',fmt(errors),consultations>0?(pct(errors,consultations)+' das consultas de hoje terminaram com erro.'):'Sem base de cálculo: ainda não há consultas hoje.','red']
+    ['Pesquisas de hoje',fmt(consultations),'Total de consultas desde as 00:00.','accent'],
+    ['Sem registo ASF',fmt(noRecord),consultations>0?(pct(noRecord,consultations)+' das pesquisas de hoje.'):'Sem pesquisas registadas hoje.','amber'],
+    ['Erros de hoje',fmt(errors),consultations>0?(pct(errors,consultations)+' das pesquisas de hoje.'):'Sem pesquisas registadas hoje.','red']
   ]);
-  $('todayMetricsUpdated').textContent='Dia '+dateLabel(today.date)+' · última leitura '+prettyDate(data.generated_at)+'. Os valores recomeçam às 00:00 em Europe/Lisbon.';
+  $('todayMetricsUpdated').textContent='Atualizado às '+new Intl.DateTimeFormat('pt-PT',{timeZone:'Europe/Lisbon',hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(new Date(data.generated_at))+' · '+dateLabel(today.date)+'.';
 
   const rows=data.days.slice().reverse().map(day=>[
     dateLabel(day.date),
-    day.available?fmt(safeCount(day.consultations)):'Sem recolha',
-    day.available?fmt(safeCount(day.no_record_results)):'Sem recolha',
-    day.available?fmt(safeCount(day.errors)):'Sem recolha'
+    day.available?fmt(safeCount(day.consultations)):'—',
+    day.available?fmt(safeCount(day.no_record_results)):'—',
+    day.available?fmt(safeCount(day.errors)):'—'
   ]);
-  $('rolling30Table').replaceChildren(makeTable(['Data','Consultas','Sem registo ASF','Erros'],rows));
+  $('rolling30Table').replaceChildren(makeTable(['Data','Pesquisas','Sem registo ASF','Erros'],rows));
 
-  const errorTypes=Array.isArray(data.error_types)?data.error_types:[];
-  const validErrorTypes=errorTypes.map(item=>({
+  const errorTypes=Array.isArray(data.today_error_types)?data.today_error_types:[];
+  const validTypes=errorTypes.map(item=>({
     type:String(item&&item.error_type||'other'),
     count:safeCount(item&&item.occurrences)
   })).filter(item=>item.count!==null&&item.count>0);
-  const classifiedTotal=validErrorTypes.reduce((sum,item)=>sum+item.count,0);
-  if(validErrorTypes.length){
-    const typeRows=validErrorTypes.map(item=>[
-      errorLabel(item.type),
-      fmt(item.count),
-      pct(item.count,classifiedTotal)
-    ]);
-    $('rolling30ErrorTypes').replaceChildren(makeTable(['Tipo de erro','Ocorrências','% dos erros classificados'],typeRows));
+  if(validTypes.length){
+    const typeRows=validTypes.map(item=>[errorLabel(item.type),fmt(item.count)]);
+    $('todayErrorTypes').replaceChildren(makeTable(['Tipo de erro','Ocorrências'],typeRows));
   }else{
-    showEmpty('rolling30ErrorTypes','Ainda não existem categorias de erro para apresentar. Os novos erros confirmados são agregados por tipo; os erros antigos não podem ser classificados retroativamente.');
+    showEmpty('todayErrorTypes','Ainda não existem erros classificados para hoje.');
   }
-  const typeStarted=prettyDate(data.error_types_since);
-  $('rolling30ErrorTypesUpdated').textContent=classifiedTotal>0
-    ? 'Classificação agregada desde '+typeStarted+'. A percentagem é calculada sobre os erros classificados nos últimos 30 dias; não é guardado detalhe individual.'
-    : 'A classificação por tipo iniciou-se em '+typeStarted+'. Como o detalhe antigo foi eliminado, os erros anteriores não podem ser separados por categoria.';
+  $('todayErrorTypesUpdated').textContent='As categorias são agregadas pelo servidor e não incluem dados de veículos. A classificação por tipo está ativa desde '+prettyDate(data.error_types_since)+'. O total de erros do dia inclui todas as ocorrências desde as 00:00.';
 
-  const started=prettyDate(data.collecting_since);
-  $('rolling30Updated').textContent='A recolha diária começou em '+started+'. Os dias anteriores surgem como “Sem recolha” porque os eventos antigos foram eliminados e não podem ser reconstruídos. Cada dia guarda apenas totais agregados; a retenção é de 30 dias.';
+  $('rolling30Updated').textContent='— indica que ainda não existia recolha diária nesse dia. Os valores antigos não podem ser reconstruídos porque os registos individuais foram eliminados. Os totais diários são apagados automaticamente após 30 dias.';
 }
 function renderAll(){
   if(!dashboardData)return;
