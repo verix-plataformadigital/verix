@@ -747,7 +747,7 @@ html.verix-handheld .login-card input,html.verix-handheld .login-card button{min
       </div>
     </header>
     <p class="install-help" role="status" aria-live="polite" hidden></p>
-    <section class="period-bar" aria-label="Período das métricas">
+    <section class="period-bar" aria-label="Período das métricas" hidden>
       <div class="period-description"><strong>Período</strong><br><span id="periodCaption">Hoje · desde as 00:00</span><small id="aggregateUpdatedAt" class="aggregate-freshness" role="status" aria-live="polite">À espera de uma leitura confirmada do servidor.</small></div>
       <div id="periodControls" class="period-controls">
         <button type="button" class="period-button" data-period="today" aria-pressed="true">Hoje</button>
@@ -766,12 +766,13 @@ html.verix-handheld .login-card input,html.verix-handheld .login-card button{min
       <div id="counterLastUpdated" class="refresh-time" role="status" aria-live="polite">A carregar os contadores permanentes…</div>
 
       <div class="section-heading compact-heading" id="rolling30Heading">
-        <div><h2>Estatística dos últimos 30 dias</h2><p>Consultas, resultados ASF sem registo e erros confirmados.</p></div>
-        <span class="panel-tag">Retenção automática: 30 dias</span>
+        <div><h2>Estatísticas de hoje</h2><p>Consultas, resultados ASF sem registo e erros confirmados desde as 00:00 (Europe/Lisbon).</p></div>
+        <span class="panel-tag">00:00–agora</span>
       </div>
       <div id="rolling30Cards" class="metric-grid" aria-live="polite">
-        <div class="empty-state">A carregar a estatística diária…</div>
+        <div class="empty-state">A carregar as estatísticas de hoje…</div>
       </div>
+      <p id="todayMetricsUpdated" class="rolling30-updated" role="status" aria-live="polite">A aguardar a leitura diária do servidor.</p>
       <article class="panel rolling30-panel">
         <div class="panel-head">
           <div><h2>Erros por tipo · últimos 30 dias</h2><p>Distribuição por categoria técnica. Apenas contagens agregadas; sem matrículas, consultas individuais ou mensagens.</p></div>
@@ -782,7 +783,8 @@ html.verix-handheld .login-card input,html.verix-handheld .login-card button{min
       </article>
       <article class="panel rolling30-panel">
         <div class="panel-head">
-          <div><h2>Detalhe diário</h2><p>Valores agregados por dia. Não são guardadas matrículas, nem o histórico individual das consultas.</p></div>
+          <div><h2>Histórico diário · últimos 30 dias</h2><p>Uma linha por dia, com consultas, respostas ASF sem registo e erros. Não são guardadas matrículas nem consultas individuais.</p></div>
+          <span class="panel-tag">Retenção automática: 30 dias</span>
         </div>
         <div id="rolling30Table" class="rolling30-table-wrap"><div class="empty-state">A aguardar a primeira leitura.</div></div>
         <p id="rolling30Updated" class="rolling30-updated" role="status" aria-live="polite">A recolha diária está a ser iniciada.</p>
@@ -1194,34 +1196,42 @@ async function loadServerTelemetry(){
 
 function renderDaily30(data){
   if(!data||!Array.isArray(data.days)||data.days.length!==30||!data.totals) {
-    throw new Error('A resposta da estatística de 30 dias está incompleta.');
+    throw new Error('A resposta da estatística diária não contém os 30 dias esperados.');
   }
   const safeCount=value=>{
     const n=Number(value);
     return Number.isSafeInteger(n)&&n>=0?n:null;
   };
-  const consultations=safeCount(data.totals.consultations);
-  const noRecord=safeCount(data.totals.no_record_results);
-  const errors=safeCount(data.totals.errors);
-  if(consultations===null||noRecord===null||errors===null) {
-    throw new Error('A estatística de 30 dias contém totais inválidos.');
+  // The database calendar is generated in Europe/Lisbon, so the final row is
+  // the current local day and includes activity from 00:00 until this read.
+  const today=data.days[data.days.length-1];
+  if(!today||today.available!==true) {
+    throw new Error('A estatística de hoje ainda não está disponível.');
   }
-  appendCards('rolling30Cards',[
-    ['Consultas',fmt(consultations),'Base de cálculo das taxas do período.','accent'],
-    ['Resultados ASF sem registo',fmt(noRecord),consultations>0?(pct(noRecord,consultations)+' das consultas do período tiveram resposta sem registo ASF.'):'Sem base de cálculo: não houve consultas no período.','amber'],
-    ['Erros de consulta',fmt(errors),consultations>0?(pct(errors,consultations)+' das consultas do período terminaram com erro.'):'Sem base de cálculo: não houve consultas no período.','red']
-  ]);
+  const consultations=safeCount(today.consultations);
+  const noRecord=safeCount(today.no_record_results);
+  const errors=safeCount(today.errors);
+  if(consultations===null||noRecord===null||errors===null) {
+    throw new Error('A estatística de hoje contém valores inválidos.');
+  }
   const dateLabel=value=>{
     const d=new Date(String(value||'')+'T12:00:00');
     return Number.isFinite(d.getTime())
       ? new Intl.DateTimeFormat('pt-PT',{timeZone:'Europe/Lisbon',day:'2-digit',month:'2-digit',year:'numeric'}).format(d)
       : '—';
   };
+  appendCards('rolling30Cards',[
+    ['Consultas de hoje',fmt(consultations),'Consultas confirmadas desde as 00:00 (hora de Lisboa).','accent'],
+    ['Resultados ASF sem registo',fmt(noRecord),consultations>0?(pct(noRecord,consultations)+' das consultas de hoje tiveram resposta sem registo ASF.'):'Sem base de cálculo: ainda não há consultas hoje.','amber'],
+    ['Erros de consulta',fmt(errors),consultations>0?(pct(errors,consultations)+' das consultas de hoje terminaram com erro.'):'Sem base de cálculo: ainda não há consultas hoje.','red']
+  ]);
+  $('todayMetricsUpdated').textContent='Dia '+dateLabel(today.date)+' · última leitura '+prettyDate(data.generated_at)+'. Os valores recomeçam às 00:00 em Europe/Lisbon.';
+
   const rows=data.days.slice().reverse().map(day=>[
     dateLabel(day.date),
-    day.available?fmt(safeCount(day.consultations)): '—',
-    day.available?fmt(safeCount(day.no_record_results)): '—',
-    day.available?fmt(safeCount(day.errors)): '—'
+    day.available?fmt(safeCount(day.consultations)):'Sem recolha',
+    day.available?fmt(safeCount(day.no_record_results)):'Sem recolha',
+    day.available?fmt(safeCount(day.errors)):'Sem recolha'
   ]);
   $('rolling30Table').replaceChildren(makeTable(['Data','Consultas','Sem registo ASF','Erros'],rows));
 
@@ -1239,15 +1249,15 @@ function renderDaily30(data){
     ]);
     $('rolling30ErrorTypes').replaceChildren(makeTable(['Tipo de erro','Ocorrências','% dos erros classificados'],typeRows));
   }else{
-    showEmpty('rolling30ErrorTypes','Ainda não existem erros classificados desde o início desta recolha.');
+    showEmpty('rolling30ErrorTypes','Ainda não existem categorias de erro para apresentar. Os novos erros confirmados são agregados por tipo; os erros antigos não podem ser classificados retroativamente.');
   }
   const typeStarted=prettyDate(data.error_types_since);
   $('rolling30ErrorTypesUpdated').textContent=classifiedTotal>0
-    ? 'Classificação agregada iniciada em '+typeStarted+'. A percentagem é calculada apenas sobre os erros já classificados; o detalhe individual não é guardado.'
-    : 'A classificação por tipo começou em '+typeStarted+'. As ocorrências anteriores a essa data não podem ser classificadas retroativamente.';
+    ? 'Classificação agregada desde '+typeStarted+'. A percentagem é calculada sobre os erros classificados nos últimos 30 dias; não é guardado detalhe individual.'
+    : 'A classificação por tipo iniciou-se em '+typeStarted+'. Como o detalhe antigo foi eliminado, os erros anteriores não podem ser separados por categoria.';
 
   const started=prettyDate(data.collecting_since);
-  $('rolling30Updated').textContent='Recolha iniciada em '+started+'. Os dias anteriores não podem ser reconstruídos porque o histórico individual foi eliminado. Os agregados são apagados automaticamente ao fim de 30 dias.';
+  $('rolling30Updated').textContent='A recolha diária começou em '+started+'. Os dias anteriores surgem como “Sem recolha” porque os eventos antigos foram eliminados e não podem ser reconstruídos. Cada dia guarda apenas totais agregados; a retenção é de 30 dias.';
 }
 function renderAll(){
   if(!dashboardData)return;

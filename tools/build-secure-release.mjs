@@ -270,11 +270,16 @@ function writeSecureFile(relativeSource, relativeOutput) {
       /<\/body>/i,
       '<style id="verix-depth-ui">\n' + depthCss + '\n</style>\n' +
       '<style id="verix-mobile-final-ui">\n' + mobileFinalCss + '\n</style>\n' +
-      mobileFinalizer + '\n</body>'
+      mobileFinalizer + '\n' +
+      '<script defer src="./verix-presence-v1.js?v=' + encodeURIComponent(String(BUILD_ID)) + '"></script>\n' +
+      '</body>'
     );  }
 
   if (relativeSource === "verix-app.html" && (!source.includes('id="verix-mobile-finalize"') || !source.includes('id="verix-mobile-final-ui"'))) {
     throw new Error("Handheld final style/reveal sequence is incomplete");
+  }
+  if (relativeSource === "verix-app.html" && !source.includes('src="./verix-presence-v1.js?v=' + encodeURIComponent(String(BUILD_ID)) + '"')) {
+    throw new Error("Realtime Presence client is missing from the operational application");
   }
   const { html, scriptCount } = obfuscateHtml(source, relativeSource);
   const outPath = path.join(OUTPUT_DIR, relativeOutput);
