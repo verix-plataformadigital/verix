@@ -121,4 +121,14 @@ assert.deepEqual(parseReceipt(JSON.stringify(validReceipt)), validReceipt);
 assert.equal(parseReceipt('{"ok":true}'), null, "HTTP 200 without an application receipt must not clear the queue");
 assert.equal(parseReceipt('not-json'), null, "malformed receipt must not clear the queue");
 
+const outOfOrderErrorMigration = fs.readFileSync("supabase/migrations/20261111112703_preserve_daily_error_type_for_out_of_order_telemetry.sql", "utf8");
+assert.match(outOfOrderErrorMigration, /final_state_at timestamptz/);
+assert.match(outOfOrderErrorMigration, /final_error_type text/);
+assert.match(outOfOrderErrorMigration, /error_type_counted boolean NOT NULL DEFAULT true/);
+assert.match(outOfOrderErrorMigration, /p_error_type text/);
+assert.match(outOfOrderErrorMigration, /v_new_error_type_counted/);
+assert.match(outOfOrderErrorMigration, /verix_daily_error_types/);
+assert.match(outOfOrderErrorMigration, /interval '30 days'/);
+assert.match(outOfOrderErrorMigration, /GRANT EXECUTE ON FUNCTION public\.verix2_ingest_telemetry/);
+
 console.log("PASS: atomic ingest receipt, ID-based client acknowledgement, loss-safe beacon queue, query-quality metrics and Admin labels.");
