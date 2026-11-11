@@ -132,7 +132,7 @@ assert.match(outOfOrderErrorMigration, /interval '30 days'/);
 assert.match(outOfOrderErrorMigration, /GRANT EXECUTE ON FUNCTION public\.verix2_ingest_telemetry/);
 
 const errorTypeWindowMigration = fs.readFileSync("supabase/migrations/20261111113251_restart_error_type_collection_after_ordered_aggregation_fix.sql", "utf8");
-assert.match(errorTypeWindowMigration, /NOT EXISTS \(SELECT 1 FROM public\\.verix_daily_error_types\)/);
+assert.ok(errorTypeWindowMigration.includes('IF NOT EXISTS (SELECT 1 FROM public.verix_daily_error_types)'));
 assert.match(errorTypeWindowMigration, /SET error_types_since = clock_timestamp\(\)/);
 
 console.log("PASS: atomic ingest receipt, ID-based client acknowledgement, loss-safe beacon queue, query-quality metrics and Admin labels.");
