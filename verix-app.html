@@ -9954,6 +9954,11 @@ html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-n
  const prefs=safeLoad();
  function applyAutoScale(){
  try{
+ var notice=document.getElementById('verixAsfNoticeOverlay');
+ if(notice&&notice.getAttribute('aria-hidden')==='false'){
+   document.body.style.zoom='1';
+   return;
+ }
  if(prefs.scale!=='auto'){document.body.style.zoom='';return;}
  var w=Math.max(document.documentElement.clientWidth||0,window.innerWidth||0);
  var h=Math.max(document.documentElement.clientHeight||0,window.innerHeight||0);
@@ -9962,6 +9967,11 @@ html body.fixed-workspace-active:not(.cinemometro-page-active) .command .brand-n
  z=Math.max(0.82,Math.min(1.08,z));
  document.body.style.zoom=z.toFixed(3);
  }catch(_){document.body.style.zoom='';}
+ }
+ var welcomeZoomTarget=document.getElementById('verixAsfNoticeOverlay');
+ if(welcomeZoomTarget&&window.MutationObserver&&!welcomeZoomTarget.__vxZoomObserver){
+   welcomeZoomTarget.__vxZoomObserver=new MutationObserver(function(){applyAutoScale();});
+   welcomeZoomTarget.__vxZoomObserver.observe(welcomeZoomTarget,{attributes:true,attributeFilter:['aria-hidden']});
  }
  function apply(){
  document.body.classList.toggle('theme-light',prefs.theme==='light');
@@ -20867,7 +20877,6 @@ html body #seguroResult > .asf-app-warn .asf-status-sub{
 
 <style id="verix-initial-welcome-final">
 /* Pop-up inicial VÉRIX — implementação única e substitutiva */
-html body:has(#verixAsfNoticeOverlay[aria-hidden="false"]){zoom:1!important}
 html body #verixAsfNoticeOverlay.verix-asf-notice-overlay{
  position:fixed!important;inset:0!important;z-index:2147483001!important;
  display:none;align-items:center!important;justify-content:center!important;
@@ -21037,26 +21046,35 @@ html body #verixAsfNoticeOverlay .vx-final-continue:focus-visible{outline:3px so
  html body #verixAsfNoticeOverlay .vx-final-thanks{padding-left:7px!important}
  html body #verixAsfNoticeOverlay .vx-final-thanks strong{font-size:11px!important}
  html body #verixAsfNoticeOverlay .vx-final-thanks span{font-size:7px!important}
- html body #verixAsfNoticeOverlay .vx-final-messages{grid-template-columns:repeat(3,minmax(0,1fr))!important;margin-bottom:12px!important}
- html body #verixAsfNoticeOverlay .vx-final-messages article{display:block!important;padding:3px 7px!important}
- html body #verixAsfNoticeOverlay .vx-final-messages article:first-child{padding-left:0!important}
- html body #verixAsfNoticeOverlay .vx-final-icon{display:block!important;width:27px!important;height:27px!important;margin-bottom:6px!important}
- html body #verixAsfNoticeOverlay .vx-final-messages p{font-size:9px!important;line-height:1.4!important}
+ html body #verixAsfNoticeOverlay .vx-final-messages{grid-template-columns:1fr!important;gap:0!important;margin-bottom:12px!important}
+ html body #verixAsfNoticeOverlay .vx-final-messages article{display:flex!important;align-items:center!important;gap:12px!important;padding:11px 5px!important;text-align:left!important}
+ html body #verixAsfNoticeOverlay .vx-final-messages article:first-child{padding-left:5px!important}
+ html body #verixAsfNoticeOverlay .vx-final-icon{display:block!important;flex:0 0 36px!important;width:36px!important;height:36px!important;margin:0!important}
+ html body #verixAsfNoticeOverlay .vx-final-messages p{font-size:13px!important;line-height:1.48!important}
  html body #verixAsfNoticeOverlay .vx-final-origin{gap:9px!important;padding:9px 10px!important}
  html body #verixAsfNoticeOverlay .vx-final-code-icon{flex-basis:31px!important;width:31px!important;height:27px!important}
- html body #verixAsfNoticeOverlay .vx-final-origin p{font-size:9px!important;line-height:1.4!important}
+ html body #verixAsfNoticeOverlay .vx-final-origin p{font-size:12.5px!important;line-height:1.48!important}
  html body #verixAsfNoticeOverlay .vx-final-footer{padding:0 12px 12px!important}
  html body #verixAsfNoticeOverlay .vx-final-continue{min-height:49px!important;font-size:15px!important}
 }
 @media(max-width:390px){
  html body #verixAsfNoticeOverlay .vx-final-brand-sub{display:none!important}
  html body #verixAsfNoticeOverlay .vx-final-brand-line{display:none!important}
- html body #verixAsfNoticeOverlay .vx-final-hero{height:195px!important;min-height:195px!important}
- html body #verixAsfNoticeOverlay .vx-final-messages p{font-size:8px!important}
+ html body #verixAsfNoticeOverlay .vx-final-hero{height:190px!important;min-height:190px!important}
+ html body #verixAsfNoticeOverlay .vx-final-messages p{font-size:12.5px!important}
  html body #verixAsfNoticeOverlay .vx-final-count strong{font-size:27px!important}
 }
 
 html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .vx-final-window{width:96vw!important;max-width:700px!important;max-height:calc(100dvh - 16px)!important;}
+html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .vx-final-messages{grid-template-columns:1fr!important;gap:0!important;}
+html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .vx-final-messages article{display:flex!important;align-items:center!important;gap:12px!important;padding:11px 5px!important;}
+html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .vx-final-messages article+article{border-left:0!important;border-top:1px solid rgba(92,225,148,.42)!important;}
+html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .vx-final-icon{flex:0 0 36px!important;width:36px!important;height:36px!important;margin:0!important;}
+html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .vx-final-messages p{font-size:13px!important;line-height:1.48!important;color:#f1f5f7!important;}
+html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .vx-final-origin p{font-size:12.5px!important;line-height:1.48!important;color:#edf4f4!important;}
+html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .vx-final-content{background:linear-gradient(180deg,#071a27,#03131e)!important;}
+html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .vx-final-scroll{background:#041521!important;}
+html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .vx-final-continue{min-height:54px!important;font-size:16px!important;}
 </style>
 </body>
 </html>
