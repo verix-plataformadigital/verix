@@ -107,7 +107,12 @@ jobs:
             exit 1
           fi
 
-      - name: Verify fiscalização support module is packaged\n        run: |\n          test -s dist/verix-apoio-fiscalizacao.html\n          grep -q "verix-operational-hub-launcher" dist/verix-app.html\n\n      - name: Verify required security markers
+      - name: Verify fiscalização support module is packaged
+        run: |
+          test -s dist/verix-apoio-fiscalizacao.html
+          grep -q "verix-operational-hub-launcher" dist/verix-app.html
+
+      - name: Verify required security markers
         shell: bash
         run: |
           grep -q "verix-gate-v1" dist/verix-app.html
