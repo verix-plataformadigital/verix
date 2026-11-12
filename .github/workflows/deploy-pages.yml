@@ -19,6 +19,8 @@ on:
       - "tools/build-secure-release.mjs"
       - "package.json"
       - "package-lock.json"
+      - "deployment/public-pages-workflow.yml"
+      - ".github/workflows/deploy-pages.yml"
   workflow_dispatch:
 
 permissions:
@@ -136,23 +138,45 @@ jobs:
       - name: Ensure .nojekyll in dist
         run: touch dist/.nojekyll
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
-        with:
-          path: dist
-          # v4+ excludes dotfiles by default; keep the required .nojekyll marker.
-          include-hidden-files: true
+      - name: Require cross-repository publishing token
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        env:
+          PAGES_TOKEN: ${{ secrets.VERIX_PAGES_TOKEN }}
+        run: |
+          if [ -z "$PAGES_TOKEN" ]; then
+            echo "::error::Missing VERIX_PAGES_TOKEN. Add a fine-grained token with Contents: Read and write access to the public deployment repository."
+            exit 1
+          fi
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+      - name: Checkout public Pages repository
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: verix-plataformadigital/verix-plataformadigital.github.io
+          ref: main
+          token: ${{ secrets.VERIX_PAGES_TOKEN }}
+          path: public-pages
+          persist-credentials: true
+
+      - name: Sync only the generated site to the public repository
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+          SOURCE_RUN: ${{ github.run_number }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public-pages/verix public-pages/.github/workflows
+          find public-pages/verix -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
+          cp -a dist/. public-pages/verix/
+          cp deployment/public-pages-workflow.yml public-pages/.github/workflows/pages.yml
+          touch public-pages/verix/.nojekyll
+          git -C public-pages config user.name "github-actions[bot]"
+          git -C public-pages config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C public-pages add --all -- verix .github/workflows/pages.yml
+          if git -C public-pages diff --cached --quiet; then
+            echo "Public site is already synchronized."
+            exit 0
+          fi
+          git -C public-pages commit -m "deploy: publish VÉRIX build $SOURCE_RUN ($SOURCE_SHA)"
+          git -C public-pages push origin HEAD:main
