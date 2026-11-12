@@ -7134,51 +7134,82 @@ html body #asfRateWidget .asf-rate-sub[data-window-state="ready"]{
 </div>
 
 <div id="verixAsfNoticeOverlay" class="verix-asf-notice-overlay" aria-hidden="true">
-  <div class="verix-asf-notice-window" role="dialog" aria-modal="true" aria-labelledby="verixAsfNoticeTitle">
-    <header class="verix-asf-notice-top">
-      <div>
-        <div id="verixAsfNoticeTitle" class="verix-asf-notice-title"><span class="verix-asf-notice-brand-dot"></span>NOVIDADES VÉRIX</div>
-        <p class="verix-asf-notice-sub">UMA NOVA ETAPA COMEÇA</p>
-      </div>
-      <span class="verix-asf-notice-badge">APOIO OPERACIONAL</span>
-    </header>
+  <div class="verix-asf-notice-window vx-welcome-window" role="dialog" aria-modal="true" aria-labelledby="verixAsfNoticeTitle">
+    <div class="vx-welcome-scroll">
+      <header class="vx-welcome-header">
+        <div class="vx-welcome-brand">
+          <span class="vx-welcome-mark" aria-hidden="true"><svg viewBox="0 0 64 48"><path d="M3 4h17l14 24L48 4h13L36 45h-8L3 4Z" fill="#18d66b"/><path d="M20 4h14L49 29l-8 13L20 4Z" fill="#06a94e"/></svg></span>
+          <span class="vx-welcome-wordmark">VÉRIX</span>
+          <span class="vx-welcome-divider"></span>
+          <span class="vx-welcome-tagline">APOIO À FISCALIZAÇÃO RODOVIÁRIA</span>
+        </div>
+        <span class="vx-welcome-status"><i></i> MENSAGEM AOS UTILIZADORES</span>
+      </header>
 
-    <div class="verix-asf-notice-body">
-      <div class="verix-asf-notice-grid verix-notice-grid-three">
-        <section class="verix-asf-notice-card verix-asf-notice-card-outage verix-notice-card-service" aria-labelledby="verixNoticeInfoTitle">
-          <span class="verix-notice-card-kicker">ATUALIZAÇÃO DO SERVIÇO</span>
-          <span class="verix-notice-status-pill"><span aria-hidden="true">●</span> LIMITE INTERNO REMOVIDO</span>
-          <h2 id="verixNoticeInfoTitle" class="verix-asf-notice-card-title">CONSULTAS ASF SEM LIMITE NO VÉRIX</h2>
-          <p class="verix-asf-alert-copy">O limite de pesquisas por minuto aplicado pelo VÉRIX foi removido. Pode voltar a consultar matrículas sem essa restrição.</p>
-          <div class="verix-notice-service-note">
-            <strong>NOTA DE DISPONIBILIDADE</strong>
-            <span>A disponibilidade continua dependente dos serviços externos ASF/RNSI. Faça apenas as pesquisas necessárias e evite consultas repetidas.</span>
-          </div>
-        </section>
+      <section class="vx-welcome-hero" aria-label="Viatura de serviço vista de cima, com sinalização luminosa azul">
+        <div class="vx-welcome-road-lines"></div>
+        <svg class="vx-welcome-car" viewBox="0 0 900 190" role="img" aria-label="Viatura de serviço vista de cima, sem identificação de força de segurança">
+          <defs>
+            <linearGradient id="vxCarBody" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7fafb"/><stop offset=".48" stop-color="#aebbc4"/><stop offset="1" stop-color="#e8eef1"/></linearGradient>
+            <linearGradient id="vxCarGlass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#182d3d"/><stop offset="1" stop-color="#06121e"/></linearGradient>
+            <filter id="vxBlueGlow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="9"/></filter>
+          </defs>
+          <g opacity=".26" stroke="#9cb5c3" stroke-width="2"><path d="M0 30H900M0 160H900"/><path d="M80 0V190M820 0V190" stroke-dasharray="18 22"/></g>
+          <g transform="translate(450 95)">
+            <ellipse cx="0" cy="5" rx="190" ry="77" fill="#000" opacity=".55"/>
+            <g fill="#050b12"><rect x="-137" y="-62" width="46" height="25" rx="9"/><rect x="91" y="-62" width="46" height="25" rx="9"/><rect x="-137" y="37" width="46" height="25" rx="9"/><rect x="91" y="37" width="46" height="25" rx="9"/></g>
+            <path d="M-166-37Q-156-68-112-72H112Q156-68 166-37L178-8V8L166 37Q156 68 112 72H-112Q-156 68-166 37L-178 8V-8Z" fill="url(#vxCarBody)" stroke="#dce7ec" stroke-width="3"/>
+            <path d="M-123-53Q-106-62-78-62H78Q106-62 123-53L140-27H-140Z" fill="url(#vxCarGlass)" stroke="#8ea5b2" stroke-width="2"/>
+            <path d="M-140 27H140L123 53Q106 62 78 62H-78Q-106 62-123 53Z" fill="url(#vxCarGlass)" stroke="#8ea5b2" stroke-width="2"/>
+            <path d="M-14-60V60M14-60V60" stroke="#6e818c" stroke-width="2" opacity=".75"/>
+            <path d="M-164-12H-145M145-12H164M-164 12H-145M145 12H164" stroke="#f9fbfc" stroke-width="5" stroke-linecap="round"/>
+            <rect x="-42" y="-8" width="84" height="16" rx="5" fill="#132b3d" stroke="#8da6b7" stroke-width="1.5"/>
+            <rect x="-36" y="-5" width="30" height="10" rx="3" fill="#087cff"/>
+            <rect x="6" y="-5" width="30" height="10" rx="3" fill="#087cff"/>
+            <rect x="-36" y="-5" width="30" height="10" rx="3" fill="#087cff" filter="url(#vxBlueGlow)" opacity=".9"/>
+            <rect x="6" y="-5" width="30" height="10" rx="3" fill="#087cff" filter="url(#vxBlueGlow)" opacity=".9"/>
+            <path d="M-95-72L-75-83H75L95-72" fill="none" stroke="#fff" stroke-width="3" opacity=".45"/>
+          </g>
+        </svg>
+      </section>
 
-        <section class="verix-asf-notice-card verix-asf-notice-card-thanks verix-notice-card-milestone" aria-labelledby="verixNoticeThanksTitle">
-          <span class="verix-asf-notice-thanks-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none"><path d="m12 2 2.1 6.2L20 10l-5.9 2.1L12 18l-2.1-5.9L4 10l5.9-1.8L12 2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="m19 15 .9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15Z" fill="currentColor"/></svg>
-          </span>
-          <p class="verix-asf-notice-thanks-kicker">OBRIGADO A TODOS</p>
-          <h2 id="verixNoticeThanksTitle" class="verix-asf-notice-thanks-number">250.000+</h2>
-          <p class="verix-asf-notice-thanks-label">PESQUISAS DESDE O INÍCIO DO PROJETO</p>
-          <p class="verix-notice-gratitude-copy">Este marco é possível graças aos profissionais que utilizam o VÉRIX e contribuem para que o projeto continue a crescer.</p>
-        </section>
+      <section class="vx-welcome-intro">
+        <h1 id="verixAsfNoticeTitle">O <em>VÉRIX</em> continua a evoluir.</h1>
+        <p>Uma ferramenta de apoio, criada para auxiliar os operacionais das <strong>forças de segurança</strong> no terreno.</p>
+      </section>
 
-        <section class="verix-asf-notice-card verix-notice-card-share" aria-labelledby="verixNoticeShareTitle">
-          <span class="verix-notice-share-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none"><circle cx="18" cy="5" r="3" stroke="currentColor" stroke-width="1.8"/><circle cx="6" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><circle cx="18" cy="19" r="3" stroke="currentColor" stroke-width="1.8"/><path d="m8.7 10.6 6.6-4.2M8.7 13.4l6.6 4.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-          </span>
-          <p class="verix-notice-share-kicker">DIVULGAÇÃO OPERACIONAL</p>
-          <h2 id="verixNoticeShareTitle" class="verix-notice-share-title">AJUDE A DIVULGAR O VÉRIX</h2>
-          <p class="verix-notice-share-message">Se considera esta ferramenta útil para o serviço, partilhe o acesso em grupos operacionais e redes profissionais relevantes, para que mais profissionais no terreno possam conhecer este recurso.</p>
-        </section>
-      </div>
+      <section class="vx-welcome-milestone" aria-label="350 mil consultas realizadas">
+        <div class="vx-welcome-stat-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M5 25V19M13 25V13M21 25V8M29 25V3" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></svg></div>
+        <div class="vx-welcome-stat">
+          <strong>350.000+</strong>
+          <span>CONSULTAS REALIZADAS</span>
+        </div>
+        <div class="vx-welcome-thanks"><span class="vx-welcome-laurel">❧</span><strong>OBRIGADO</strong><span>POR FAZER PARTE<br>DESTE PROJETO</span><span class="vx-welcome-laurel vx-welcome-laurel-right">❧</span></div>
+      </section>
+
+      <section class="vx-welcome-columns">
+        <article>
+          <span class="vx-welcome-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M5 6h22v16H13l-7 5v-5H5Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><circle cx="11" cy="14" r="1.4" fill="currentColor"/><circle cx="16" cy="14" r="1.4" fill="currentColor"/><circle cx="21" cy="14" r="1.4" fill="currentColor"/></svg></span>
+          <p>Obrigado pelo <strong>feedback recebido</strong>, que nos ajuda a melhorar continuamente.</p>
+        </article>
+        <article>
+          <span class="vx-welcome-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><circle cx="12" cy="10" r="5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M3 27v-3a9 9 0 0 1 18 0v3ZM23 8a5 5 0 0 1 0 10M25 21a7 7 0 0 1 4 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></span>
+          <p><strong>Ajude a divulgar o VÉRIX</strong> junto de outros operacionais, para que mais profissionais possam beneficiar desta ferramenta.</p>
+        </article>
+        <article>
+          <span class="vx-welcome-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M16 3 27 7v8c0 7-4.5 11.5-11 14C9.5 26.5 5 22 5 15V7Z" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="m10 16 4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <p>O VÉRIX é uma <strong>ferramenta de auxílio à atividade de trânsito</strong>, não substituindo os canais e sistemas oficiais.</p>
+        </article>
+      </section>
+
+      <section class="vx-welcome-origin">
+        <span class="vx-welcome-origin-icon" aria-hidden="true">⌘</span>
+        <p>O VÉRIX é um <strong>projeto independente</strong>, idealizado por iniciativa autodidata e desenvolvido em tempo livre pelos seus criadores, com dedicação à criação de ferramentas úteis aos profissionais no terreno.</p>
+      </section>
     </div>
 
-    <footer class="verix-asf-notice-footer">
-      <button type="button" class="verix-asf-notice-continue" onclick="fecharAvisoASFInicial()">CONTINUAR <span aria-hidden="true">→</span></button>
+    <footer class="vx-welcome-footer">
+      <button type="button" class="verix-asf-notice-continue vx-welcome-continue" onclick="fecharAvisoASFInicial()">CONTINUAR <span aria-hidden="true">→</span></button>
     </footer>
   </div>
 </div>
@@ -21613,6 +21644,130 @@ html body #verixAsfNoticeOverlay .verix-notice-share-message{
 }
 @media(prefers-reduced-motion:reduce){
   html body #verixAsfNoticeOverlay .verix-asf-notice-grid-three>.verix-asf-notice-card{transition:none!important;}
+}
+</style>
+
+
+<style id="verix-welcome-popup-replacement-v1">
+/* Substituição integral do pop-up inicial VÉRIX — sem overlays adicionais. */
+#verixAsfNoticeOverlay.verix-asf-notice-overlay{
+  position:fixed!important;inset:0!important;z-index:2147483001!important;
+  display:flex;align-items:center;justify-content:center;padding:12px!important;
+  background:rgba(1,7,13,.88)!important;backdrop-filter:blur(8px)!important;
+  -webkit-backdrop-filter:blur(8px)!important;box-sizing:border-box!important;
+}
+#verixAsfNoticeOverlay[aria-hidden="true"]{display:none!important}
+#verixAsfNoticeOverlay .vx-welcome-window{
+  width:min(960px,96vw)!important;height:auto!important;max-height:94dvh!important;
+  min-height:0!important;display:flex!important;flex-direction:column!important;
+  overflow:hidden!important;border:1px solid rgba(160,205,220,.5)!important;
+  border-radius:22px!important;background:linear-gradient(155deg,#071b2b 0%,#03111d 58%,#001018 100%)!important;
+  color:#f4f8fb!important;text-align:center!important;
+  box-shadow:0 28px 90px rgba(0,0,0,.65),0 0 36px rgba(0,105,255,.12)!important;
+  position:relative!important;
+}
+#verixAsfNoticeOverlay .vx-welcome-window:before{display:none!important}
+#verixAsfNoticeOverlay .vx-welcome-scroll{overflow-y:auto!important;min-height:0!important;overscroll-behavior:contain!important}
+#verixAsfNoticeOverlay .vx-welcome-header{
+  min-height:70px;display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding:14px 22px;border-bottom:1px solid rgba(255,255,255,.09);
+  background:linear-gradient(90deg,rgba(5,20,32,.98),rgba(8,32,48,.92));
+}
+#verixAsfNoticeOverlay .vx-welcome-brand{display:flex;align-items:center;gap:10px;min-width:0}
+#verixAsfNoticeOverlay .vx-welcome-mark{display:flex;width:38px;height:30px;flex:0 0 auto}
+#verixAsfNoticeOverlay .vx-welcome-mark svg{width:100%;height:100%}
+#verixAsfNoticeOverlay .vx-welcome-wordmark{font:900 27px/1 Arial,sans-serif;letter-spacing:-1.2px;color:#fff}
+#verixAsfNoticeOverlay .vx-welcome-divider{height:30px;width:1px;background:rgba(255,255,255,.4);margin:0 5px}
+#verixAsfNoticeOverlay .vx-welcome-tagline{font:800 9px/1.4 Arial,sans-serif;letter-spacing:2px;color:#d6e4eb;text-align:left}
+#verixAsfNoticeOverlay .vx-welcome-status{display:flex;align-items:center;gap:8px;border:1px solid rgba(31,214,123,.45);border-radius:99px;padding:8px 12px;color:#b8f7d3;font:800 8px/1 Arial,sans-serif;letter-spacing:1px;white-space:nowrap}
+#verixAsfNoticeOverlay .vx-welcome-status i{width:8px;height:8px;border-radius:50%;background:#20df7d;box-shadow:0 0 12px #20df7d}
+#verixAsfNoticeOverlay .vx-welcome-hero{
+  height:128px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;
+  background:radial-gradient(ellipse at 50% 52%,rgba(0,113,255,.22),transparent 34%),linear-gradient(90deg,#06192b,#0a2335 50%,#06192b);
+}
+#verixAsfNoticeOverlay .vx-welcome-hero:before,#verixAsfNoticeOverlay .vx-welcome-hero:after{
+  content:"";position:absolute;left:-5%;right:-5%;height:2px;background:linear-gradient(90deg,transparent,rgba(0,120,255,.8),transparent);filter:blur(2px)
+}
+#verixAsfNoticeOverlay .vx-welcome-hero:before{top:28px}
+#verixAsfNoticeOverlay .vx-welcome-hero:after{bottom:28px}
+#verixAsfNoticeOverlay .vx-welcome-road-lines{position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 13%,rgba(255,255,255,.025) 13.1% 13.25%,transparent 13.4% 25%)}
+#verixAsfNoticeOverlay .vx-welcome-car{position:relative;z-index:1;width:min(660px,88%);height:120px;filter:drop-shadow(0 0 18px rgba(0,110,255,.4))}
+#verixAsfNoticeOverlay .vx-welcome-intro{padding:7px 24px 14px;background:linear-gradient(180deg,rgba(2,15,25,.2),rgba(2,15,25,.9))}
+#verixAsfNoticeOverlay .vx-welcome-intro h1{margin:0 0 5px;color:#fff;font:900 clamp(22px,3vw,34px)/1.14 Arial,sans-serif;letter-spacing:-.7px}
+#verixAsfNoticeOverlay .vx-welcome-intro h1 em{color:#29e66f;font-style:normal}
+#verixAsfNoticeOverlay .vx-welcome-intro p{max-width:720px;margin:0 auto;color:#e1edf3;font:500 clamp(12px,1.4vw,16px)/1.45 Arial,sans-serif}
+#verixAsfNoticeOverlay .vx-welcome-intro strong{color:#fff}
+#verixAsfNoticeOverlay .vx-welcome-milestone{
+  margin:0 7% 14px;padding:12px 18px;min-height:94px;display:grid;grid-template-columns:70px minmax(0,1fr) minmax(150px,.65fr);
+  align-items:center;gap:15px;border:1px solid rgba(80,239,124,.85);border-radius:18px;
+  background:linear-gradient(100deg,rgba(0,48,39,.55),rgba(3,23,34,.88),rgba(0,48,39,.5));
+  box-shadow:0 0 20px rgba(20,229,103,.13),inset 0 0 24px rgba(16,175,93,.08);
+}
+#verixAsfNoticeOverlay .vx-welcome-stat-icon{width:54px;height:54px;border-radius:15px;background:linear-gradient(145deg,#0bbd57,#006b34);display:grid;place-items:center;color:#fff}
+#verixAsfNoticeOverlay .vx-welcome-stat-icon svg{width:30px;height:30px}
+#verixAsfNoticeOverlay .vx-welcome-stat{border-left:1px solid rgba(108,242,153,.7);padding-left:18px;text-align:left}
+#verixAsfNoticeOverlay .vx-welcome-stat strong{display:block;color:#fff;font:950 clamp(36px,5.4vw,58px)/.98 Arial,sans-serif;letter-spacing:-2px}
+#verixAsfNoticeOverlay .vx-welcome-stat span{display:block;margin-top:5px;color:#c9f8d9;font:900 clamp(10px,1.3vw,15px)/1.2 Arial,sans-serif;letter-spacing:1.1px}
+#verixAsfNoticeOverlay .vx-welcome-thanks{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-left:1px solid rgba(108,242,153,.7);padding:0 8px 0 18px;color:#fff}
+#verixAsfNoticeOverlay .vx-welcome-thanks strong{font:900 18px/1 Arial,sans-serif;letter-spacing:1px}
+#verixAsfNoticeOverlay .vx-welcome-thanks>span:not(.vx-welcome-laurel){font:700 10px/1.4 Arial,sans-serif;letter-spacing:.8px}
+#verixAsfNoticeOverlay .vx-welcome-laurel{position:absolute;left:3px;top:0;color:#67f17e;font:36px/1 Georgia,serif;transform:rotate(-38deg)}
+#verixAsfNoticeOverlay .vx-welcome-laurel-right{left:auto;right:0;transform:scaleX(-1) rotate(-38deg)}
+#verixAsfNoticeOverlay .vx-welcome-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:0 5% 14px}
+#verixAsfNoticeOverlay .vx-welcome-columns article{display:flex;align-items:flex-start;gap:10px;padding:4px 15px;text-align:left;min-width:0}
+#verixAsfNoticeOverlay .vx-welcome-columns article+article{border-left:1px solid rgba(88,211,144,.55)}
+#verixAsfNoticeOverlay .vx-welcome-icon{flex:0 0 36px;width:36px;height:36px;color:#a7f34b}
+#verixAsfNoticeOverlay .vx-welcome-icon svg{width:100%;height:100%}
+#verixAsfNoticeOverlay .vx-welcome-columns p{margin:0;color:#edf4f6;font:500 11px/1.48 Arial,sans-serif}
+#verixAsfNoticeOverlay .vx-welcome-columns strong{color:#fff;font-weight:850}
+#verixAsfNoticeOverlay .vx-welcome-origin{display:flex;align-items:center;gap:15px;margin:0 5% 16px;padding:12px 18px;border:1px solid #b3e842;border-radius:15px;background:rgba(1,24,26,.7);box-shadow:0 0 15px rgba(154,222,46,.08);text-align:left}
+#verixAsfNoticeOverlay .vx-welcome-origin-icon{flex:0 0 38px;color:#b6f348;font:900 31px/1 monospace;text-align:center}
+#verixAsfNoticeOverlay .vx-welcome-origin p{margin:0;color:#edf4f6;font:500 11px/1.5 Arial,sans-serif}
+#verixAsfNoticeOverlay .vx-welcome-origin strong{color:#c7f56a;font-weight:850}
+#verixAsfNoticeOverlay .vx-welcome-footer{flex:0 0 auto;padding:0 5% 18px;background:linear-gradient(180deg,rgba(2,17,27,0),rgba(2,17,27,.98) 22%)}
+#verixAsfNoticeOverlay .vx-welcome-continue{width:100%!important;min-height:56px!important;border:1px solid #4cf09a!important;border-radius:14px!important;background:linear-gradient(100deg,#14b95c,#00783c)!important;color:#fff!important;font:900 18px/1 Arial,sans-serif!important;letter-spacing:1.2px!important;box-shadow:0 7px 24px rgba(0,0,0,.3),0 0 18px rgba(0,216,105,.15)!important}
+#verixAsfNoticeOverlay .vx-welcome-continue span{margin-left:10px;font-size:24px}
+@media(max-width:700px){
+  #verixAsfNoticeOverlay.verix-asf-notice-overlay{padding:8px!important}
+  #verixAsfNoticeOverlay .vx-welcome-window{width:100%!important;max-height:96dvh!important;border-radius:17px!important}
+  #verixAsfNoticeOverlay .vx-welcome-header{min-height:58px;padding:10px 12px;gap:8px}
+  #verixAsfNoticeOverlay .vx-welcome-mark{width:29px;height:23px}
+  #verixAsfNoticeOverlay .vx-welcome-wordmark{font-size:21px}
+  #verixAsfNoticeOverlay .vx-welcome-divider{height:23px;margin:0 1px}
+  #verixAsfNoticeOverlay .vx-welcome-tagline{font-size:7px;letter-spacing:1px;max-width:125px}
+  #verixAsfNoticeOverlay .vx-welcome-status{font-size:6px;padding:7px 8px;letter-spacing:.45px}
+  #verixAsfNoticeOverlay .vx-welcome-hero{height:94px}
+  #verixAsfNoticeOverlay .vx-welcome-car{height:90px;width:94%}
+  #verixAsfNoticeOverlay .vx-welcome-intro{padding:5px 14px 12px}
+  #verixAsfNoticeOverlay .vx-welcome-intro h1{font-size:22px}
+  #verixAsfNoticeOverlay .vx-welcome-intro p{font-size:12px}
+  #verixAsfNoticeOverlay .vx-welcome-milestone{margin:0 12px 12px;padding:10px 9px;min-height:75px;grid-template-columns:40px minmax(0,1fr) minmax(80px,.58fr);gap:7px;border-radius:13px}
+  #verixAsfNoticeOverlay .vx-welcome-stat-icon{width:36px;height:36px;border-radius:10px}
+  #verixAsfNoticeOverlay .vx-welcome-stat-icon svg{width:22px;height:22px}
+  #verixAsfNoticeOverlay .vx-welcome-stat{padding-left:8px}
+  #verixAsfNoticeOverlay .vx-welcome-stat strong{font-size:clamp(27px,8vw,38px);letter-spacing:-1.5px}
+  #verixAsfNoticeOverlay .vx-welcome-stat span{font-size:8px;letter-spacing:.45px}
+  #verixAsfNoticeOverlay .vx-welcome-thanks{padding-left:10px}
+  #verixAsfNoticeOverlay .vx-welcome-thanks strong{font-size:12px}
+  #verixAsfNoticeOverlay .vx-welcome-thanks>span:not(.vx-welcome-laurel){font-size:7px}
+  #verixAsfNoticeOverlay .vx-welcome-laurel{font-size:23px;left:-1px}
+  #verixAsfNoticeOverlay .vx-welcome-laurel-right{right:-1px;left:auto}
+  #verixAsfNoticeOverlay .vx-welcome-columns{grid-template-columns:1fr;margin:0 15px 12px;gap:0}
+  #verixAsfNoticeOverlay .vx-welcome-columns article{padding:9px 4px;gap:12px;align-items:center}
+  #verixAsfNoticeOverlay .vx-welcome-columns article+article{border-left:0;border-top:1px solid rgba(88,211,144,.35)}
+  #verixAsfNoticeOverlay .vx-welcome-icon{flex-basis:31px;width:31px;height:31px}
+  #verixAsfNoticeOverlay .vx-welcome-columns p{font-size:10.5px;line-height:1.4}
+  #verixAsfNoticeOverlay .vx-welcome-origin{margin:0 13px 13px;padding:10px 12px;gap:9px}
+  #verixAsfNoticeOverlay .vx-welcome-origin-icon{flex-basis:29px;font-size:25px}
+  #verixAsfNoticeOverlay .vx-welcome-origin p{font-size:10px;line-height:1.42}
+  #verixAsfNoticeOverlay .vx-welcome-footer{padding:0 13px 13px}
+  #verixAsfNoticeOverlay .vx-welcome-continue{min-height:49px!important;font-size:15px!important}
+}
+@media(max-width:380px){
+  #verixAsfNoticeOverlay .vx-welcome-tagline{display:none}
+  #verixAsfNoticeOverlay .vx-welcome-divider{display:none}
+  #verixAsfNoticeOverlay .vx-welcome-stat strong{font-size:27px}
+  #verixAsfNoticeOverlay .vx-welcome-thanks strong{font-size:11px}
 }
 </style>
 
