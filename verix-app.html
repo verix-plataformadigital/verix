@@ -21771,5 +21771,32 @@ html body #verixAsfNoticeOverlay .verix-notice-share-message{
 }
 </style>
 
+
+<style id="verix-welcome-mobile-scale-fix-v2">
+/* O zoom automático da interface reduzia também o pop-up. Durante a abertura,
+   o aviso usa a escala nativa do ecrã; ao fechar, o zoom normal regressa. */
+html body:has(#verixAsfNoticeOverlay[aria-hidden="false"]){
+  zoom:1!important;
+}
+#verixAsfNoticeOverlay .vx-welcome-window{
+  width:min(960px,96vw)!important;
+  max-height:calc(100dvh - 16px)!important;
+}
+#verixAsfNoticeOverlay .vx-welcome-hero{height:170px!important}
+#verixAsfNoticeOverlay .vx-welcome-car{height:160px!important}
+#verixAsfNoticeOverlay .vx-welcome-columns p{font-size:13px!important;line-height:1.5!important}
+#verixAsfNoticeOverlay .vx-welcome-origin p{font-size:13px!important;line-height:1.5!important}
+#verixAsfNoticeOverlay .vx-welcome-intro p{font-size:15px!important;line-height:1.5!important}
+#verixAsfNoticeOverlay .vx-welcome-stat span{font-size:13px!important}
+@media(max-width:700px){
+  #verixAsfNoticeOverlay .vx-welcome-hero{height:128px!important}
+  #verixAsfNoticeOverlay .vx-welcome-car{height:122px!important}
+  #verixAsfNoticeOverlay .vx-welcome-columns p{font-size:12.5px!important;line-height:1.48!important}
+  #verixAsfNoticeOverlay .vx-welcome-origin p{font-size:12px!important;line-height:1.45!important}
+  #verixAsfNoticeOverlay .vx-welcome-intro p{font-size:13.5px!important;line-height:1.45!important}
+  #verixAsfNoticeOverlay .vx-welcome-stat span{font-size:9px!important}
+}
+</style>
+
 </body>
 </html>
