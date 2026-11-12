@@ -153,9 +153,15 @@ function obfuscateHtml(html, label, optionsOverride = null) {
 
     scriptCount++;
     try {
-      const options = optionsOverride || (trimmed.length >= 250_000
+      // The operational VÉRIX client runs on mixed Chromium/WebView hosts,
+      // including Android touch devices. Never apply control-flow flattening,
+      // anti-debug timers or self-defending wrappers to its UI/runtime scripts:
+      // these can leave the rendered menu visible while starving click handlers.
+      // Keep the lighter identifier/string-array obfuscation and domain lock.
+      // The dedicated Admin PWA keeps its explicit, separately tested profile.
+      const options = optionsOverride || (label === "verix-app.html"
         ? COMPATIBILITY_OPTIONS
-        : OBFUSCATOR_OPTIONS);
+        : (trimmed.length >= 250_000 ? COMPATIBILITY_OPTIONS : OBFUSCATOR_OPTIONS));
       const result = JavaScriptObfuscator.obfuscate(trimmed, options).getObfuscatedCode();
       return open + "\n" + result + "\n" + close;
     } catch (err) {
