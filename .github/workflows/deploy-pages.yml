@@ -8,6 +8,7 @@ on:
     paths:
       - "index.html"
       - "verix-app.html"
+      - "verix-apoio-fiscalizacao.html"
       - "verix-mobile*"
       - "verix-depth-ui.css"
       - "verix-mobile-final.css"
@@ -71,6 +72,8 @@ jobs:
           test -s dist/admin/manifest.webmanifest
           test -s dist/admin/sw.js
           test -s dist/verix-presence-v1.js
+          test -s dist/verix-apoio-fiscalizacao.html
+          grep -q "verix-apoio-fiscalizacao.html" dist/verix-app.html
           grep -q 'verix-presence-v1.js' dist/verix-app.html
           test -s dist/assets/admin-icon.svg
           test -s dist/AI-ACCESS-POLICY.md
@@ -120,7 +123,7 @@ jobs:
                   else:
                       self.stack.pop()
 
-          for path in (Path("dist/verix-app.html"), Path("dist/admin_v2.html"), Path("dist/admin/index.html")):
+          for path in (Path("dist/verix-app.html"), Path("dist/verix-apoio-fiscalizacao.html"), Path("dist/admin_v2.html"), Path("dist/admin/index.html")):
               if not path.is_file():
                   raise SystemExit(f"Required published HTML file missing: {path}")
               parser = Validator()
