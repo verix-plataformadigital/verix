@@ -7134,86 +7134,57 @@ html body #asfRateWidget .asf-rate-sub[data-window-state="ready"]{
 </div>
 
 <div id="verixAsfNoticeOverlay" class="verix-asf-notice-overlay" aria-hidden="true">
-  <div class="verix-asf-notice-window vx-welcome-window" role="dialog" aria-modal="true" aria-labelledby="verixAsfNoticeTitle">
-    <div class="vx-welcome-scroll">
-      <header class="vx-welcome-header">
-        <div class="vx-welcome-brand">
-          <span class="vx-welcome-mark" aria-hidden="true"><svg viewBox="0 0 64 48"><path d="M3 4h17l14 24L48 4h13L36 45h-8L3 4Z" fill="#18d66b"/><path d="M20 4h14L49 29l-8 13L20 4Z" fill="#06a94e"/></svg></span>
-          <span class="vx-welcome-wordmark">VÉRIX</span>
-          <span class="vx-welcome-divider"></span>
-          <span class="vx-welcome-tagline">APOIO À FISCALIZAÇÃO RODOVIÁRIA</span>
+  <section class="verix-asf-notice-window vx-final-window" role="dialog" aria-modal="true" aria-labelledby="vxFinalTitle">
+    <div class="vx-final-scroll">
+      <div class="vx-final-hero">
+        <img class="vx-final-photo" src="https://images.pexels.com/photos/4394366/pexels-photo-4394366.jpeg?auto=compress&amp;dpr=1&amp;h=750&amp;w=1260" alt="Viatura policial vista de cima, com luzes azuis de emergência ligadas" loading="eager" fetchpriority="high">
+        <div class="vx-final-photo-shade"></div>
+        <div class="vx-final-brand">
+          <span class="vx-final-vmark" aria-hidden="true">V</span>
+          <span class="vx-final-brand-name">VÉRIX</span>
+          <span class="vx-final-brand-line"></span>
+          <span class="vx-final-brand-sub">APOIO À FISCALIZAÇÃO RODOVIÁRIA</span>
         </div>
-        <span class="vx-welcome-status"><i></i> MENSAGEM AOS UTILIZADORES</span>
-      </header>
-
-      <section class="vx-welcome-hero" aria-label="Viatura de serviço vista de cima, com sinalização luminosa azul">
-        <div class="vx-welcome-road-lines"></div>
-        <svg class="vx-welcome-car" viewBox="0 0 900 190" role="img" aria-label="Viatura de serviço vista de cima, sem identificação de força de segurança">
-          <defs>
-            <linearGradient id="vxCarBody" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7fafb"/><stop offset=".48" stop-color="#aebbc4"/><stop offset="1" stop-color="#e8eef1"/></linearGradient>
-            <linearGradient id="vxCarGlass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#182d3d"/><stop offset="1" stop-color="#06121e"/></linearGradient>
-            <filter id="vxBlueGlow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="9"/></filter>
-          </defs>
-          <g opacity=".26" stroke="#9cb5c3" stroke-width="2"><path d="M0 30H900M0 160H900"/><path d="M80 0V190M820 0V190" stroke-dasharray="18 22"/></g>
-          <g transform="translate(450 95)">
-            <ellipse cx="0" cy="5" rx="190" ry="77" fill="#000" opacity=".55"/>
-            <g fill="#050b12"><rect x="-137" y="-62" width="46" height="25" rx="9"/><rect x="91" y="-62" width="46" height="25" rx="9"/><rect x="-137" y="37" width="46" height="25" rx="9"/><rect x="91" y="37" width="46" height="25" rx="9"/></g>
-            <path d="M-166-37Q-156-68-112-72H112Q156-68 166-37L178-8V8L166 37Q156 68 112 72H-112Q-156 68-166 37L-178 8V-8Z" fill="url(#vxCarBody)" stroke="#dce7ec" stroke-width="3"/>
-            <path d="M-123-53Q-106-62-78-62H78Q106-62 123-53L140-27H-140Z" fill="url(#vxCarGlass)" stroke="#8ea5b2" stroke-width="2"/>
-            <path d="M-140 27H140L123 53Q106 62 78 62H-78Q-106 62-123 53Z" fill="url(#vxCarGlass)" stroke="#8ea5b2" stroke-width="2"/>
-            <path d="M-14-60V60M14-60V60" stroke="#6e818c" stroke-width="2" opacity=".75"/>
-            <path d="M-164-12H-145M145-12H164M-164 12H-145M145 12H164" stroke="#f9fbfc" stroke-width="5" stroke-linecap="round"/>
-            <rect x="-42" y="-8" width="84" height="16" rx="5" fill="#132b3d" stroke="#8da6b7" stroke-width="1.5"/>
-            <rect x="-36" y="-5" width="30" height="10" rx="3" fill="#087cff"/>
-            <rect x="6" y="-5" width="30" height="10" rx="3" fill="#087cff"/>
-            <rect x="-36" y="-5" width="30" height="10" rx="3" fill="#087cff" filter="url(#vxBlueGlow)" opacity=".9"/>
-            <rect x="6" y="-5" width="30" height="10" rx="3" fill="#087cff" filter="url(#vxBlueGlow)" opacity=".9"/>
-            <path d="M-95-72L-75-83H75L95-72" fill="none" stroke="#fff" stroke-width="3" opacity=".45"/>
-          </g>
-        </svg>
-      </section>
-
-      <section class="vx-welcome-intro">
-        <h1 id="verixAsfNoticeTitle">O <em>VÉRIX</em> continua a evoluir.</h1>
-        <p>Uma ferramenta de apoio, criada para auxiliar os operacionais das <strong>forças de segurança</strong> no terreno.</p>
-      </section>
-
-      <section class="vx-welcome-milestone" aria-label="350 mil consultas realizadas">
-        <div class="vx-welcome-stat-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M5 25V19M13 25V13M21 25V8M29 25V3" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></svg></div>
-        <div class="vx-welcome-stat">
-          <strong>350.000+</strong>
-          <span>CONSULTAS REALIZADAS</span>
+        <span class="vx-final-kicker"><i></i> MENSAGEM AOS UTILIZADORES</span>
+        <div class="vx-final-hero-copy">
+          <h1 id="vxFinalTitle">O <em>VÉRIX</em> continua a evoluir.</h1>
+          <p>Uma ferramenta de apoio, criada para auxiliar os operacionais das forças de segurança no terreno.</p>
         </div>
-        <div class="vx-welcome-thanks"><span class="vx-welcome-laurel">❧</span><strong>OBRIGADO</strong><span>POR FAZER PARTE<br>DESTE PROJETO</span><span class="vx-welcome-laurel vx-welcome-laurel-right">❧</span></div>
-      </section>
+      </div>
 
-      <section class="vx-welcome-columns">
-        <article>
-          <span class="vx-welcome-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M5 6h22v16H13l-7 5v-5H5Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><circle cx="11" cy="14" r="1.4" fill="currentColor"/><circle cx="16" cy="14" r="1.4" fill="currentColor"/><circle cx="21" cy="14" r="1.4" fill="currentColor"/></svg></span>
-          <p>Obrigado pelo <strong>feedback recebido</strong>, que nos ajuda a melhorar continuamente.</p>
-        </article>
-        <article>
-          <span class="vx-welcome-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><circle cx="12" cy="10" r="5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M3 27v-3a9 9 0 0 1 18 0v3ZM23 8a5 5 0 0 1 0 10M25 21a7 7 0 0 1 4 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></span>
-          <p><strong>Ajude a divulgar o VÉRIX</strong> junto de outros operacionais, para que mais profissionais possam beneficiar desta ferramenta.</p>
-        </article>
-        <article>
-          <span class="vx-welcome-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M16 3 27 7v8c0 7-4.5 11.5-11 14C9.5 26.5 5 22 5 15V7Z" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="m10 16 4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-          <p>O VÉRIX é uma <strong>ferramenta de auxílio à atividade de trânsito</strong>, não substituindo os canais e sistemas oficiais.</p>
-        </article>
-      </section>
+      <div class="vx-final-content">
+        <section class="vx-final-milestone" aria-label="350 mil consultas realizadas">
+          <div class="vx-final-chart-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M5 25V19M13 25V13M21 25V8M29 25V3" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></svg></div>
+          <div class="vx-final-count"><strong>350.000+</strong><span>CONSULTAS REALIZADAS</span></div>
+          <div class="vx-final-thanks"><strong>OBRIGADO</strong><span>POR FAZER PARTE<br>DESTE PROJETO</span></div>
+        </section>
 
-      <section class="vx-welcome-origin">
-        <span class="vx-welcome-origin-icon" aria-hidden="true">⌘</span>
-        <p>O VÉRIX é um <strong>projeto independente</strong>, idealizado por iniciativa autodidata e desenvolvido em tempo livre pelos seus criadores, com dedicação à criação de ferramentas úteis aos profissionais no terreno.</p>
-      </section>
+        <section class="vx-final-messages">
+          <article>
+            <span class="vx-final-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M5 6h22v16H13l-7 5v-5H5Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><circle cx="11" cy="14" r="1.4" fill="currentColor"/><circle cx="16" cy="14" r="1.4" fill="currentColor"/><circle cx="21" cy="14" r="1.4" fill="currentColor"/></svg></span>
+            <p>Obrigado pelo <strong>feedback recebido</strong>, que nos ajuda a melhorar continuamente.</p>
+          </article>
+          <article>
+            <span class="vx-final-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><circle cx="12" cy="10" r="5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M3 27v-3a9 9 0 0 1 18 0v3ZM23 8a5 5 0 0 1 0 10M25 21a7 7 0 0 1 4 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></span>
+            <p><strong>Ajude a divulgar o VÉRIX</strong> junto de outros operacionais, para que mais profissionais possam beneficiar desta ferramenta.</p>
+          </article>
+          <article>
+            <span class="vx-final-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M16 3 27 7v8c0 7-4.5 11.5-11 14C9.5 26.5 5 22 5 15V7Z" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="m10 16 4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <p>O VÉRIX é uma <strong>ferramenta de auxílio à atividade de trânsito</strong>, não substituindo os canais e sistemas oficiais.</p>
+          </article>
+        </section>
+
+        <section class="vx-final-origin">
+          <span class="vx-final-code-icon" aria-hidden="true"><svg viewBox="0 0 40 32"><rect x="3" y="2" width="34" height="23" rx="3" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="m15 9-5 5 5 5m10-10 5 5-5 5m-3-8-4 9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 29h38" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></span>
+          <p>O VÉRIX é um <strong>projeto independente</strong>, idealizado por iniciativa autodidata e desenvolvido em tempo livre pelos seus criadores, com dedicação à criação de ferramentas úteis aos profissionais no terreno.</p>
+        </section>
+      </div>
     </div>
-
-    <footer class="vx-welcome-footer">
-      <button type="button" class="verix-asf-notice-continue vx-welcome-continue" onclick="fecharAvisoASFInicial()">CONTINUAR <span aria-hidden="true">→</span></button>
+    <footer class="vx-final-footer">
+      <button type="button" class="verix-asf-notice-continue vx-final-continue" aria-label="Continuar para a aplicação" onclick="fecharAvisoASFInicial()">CONTINUAR <span aria-hidden="true">→</span></button>
     </footer>
-  </div>
+  </section>
 </div>
-
 <div class="cinematic-bg"></div>
 <div class="command"> <div class="brand"><div class="brand-notice" role="group" aria-label="VÉRIX - Apoio Operacional">
   <div class="brand-lockup-line"><span class="brand-lockup-logo">VÉRIX</span><span class="brand-lockup-separator">-</span><span class="brand-lockup-label">Apoio Operacional</span></div>
@@ -20132,239 +20103,7 @@ html body .toast-notification {
 })();
 </script>
 
-<style id="verix-asf-notice-restored-ui">
-/* ===== AVISO ASF — apresentação inicial ===== */
-.verix-asf-notice-overlay{
-  position:fixed;
-  inset:0;
-  z-index:100000;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:24px;
-  background:radial-gradient(circle at center, rgba(19,54,65,.18), rgba(0,0,0,.78) 70%);
-  backdrop-filter:blur(9px);
-  -webkit-backdrop-filter:blur(9px);
-}
-.verix-asf-notice-overlay[aria-hidden="true"]{display:none;}
-.verix-asf-notice-window{
-  position:relative;
-  width:min(840px,94vw);
-  height:min(680px,88vh);
-  max-height:88vh;
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
-  box-sizing:border-box;
-  border:1px solid rgba(101,215,232,.28);
-  border-radius:18px;
-  background:linear-gradient(155deg,rgba(10,24,32,.99),rgba(4,11,16,.99));
-  box-shadow:0 32px 100px rgba(0,0,0,.62),0 0 0 1px rgba(255,255,255,.025) inset,0 0 42px rgba(47,171,191,.08);
-  color:#e8eef0;
-  text-align:center;
-}
-.verix-asf-notice-window:before{
-  content:"";
-  position:absolute;
-  left:0;
-  right:0;
-  top:0;
-  height:4px;
-  border-radius:18px 18px 0 0;
-  background:linear-gradient(90deg,#b21d38,#5fd5e6,#00b57c);
-  opacity:.95;
-}
-.verix-asf-notice-top{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:10px;
-  padding:26px 26px 20px;
-  border-bottom:1px solid rgba(255,255,255,.08);
-}
-.verix-asf-notice-title{
-  font:950 21px/1 Arial,sans-serif;
-  letter-spacing:2.2px;
-  color:#ffffff;
-  text-shadow:0 2px 12px rgba(0,0,0,.35);
-}
-.verix-asf-notice-sub{
-  margin-top:0;
-  font:800 8px/1.2 Arial,sans-serif;
-  letter-spacing:1.5px;
-  color:#8fa2aa;
-}
-.verix-asf-notice-badge{
-  flex:0 0 auto;
-  padding:7px 13px;
-  border:1px solid rgba(101,215,232,.30);
-  border-radius:999px;
-  background:rgba(101,215,232,.07);
-  color:#8de3ef;
-  font:900 8px/1 Arial,sans-serif;
-  letter-spacing:1.4px;
-}
-.verix-asf-notice-body{
-  padding:22px 24px 16px;
-  width:100%;
-  box-sizing:border-box;
-  margin:0 auto;
-  flex:1 1 auto;
-  min-height:0;
-  overflow-y:auto;
-  overscroll-behavior:contain;
-}
-.verix-asf-notice-grid{
-  display:grid;
-  grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr);
-  align-items:stretch;
-  gap:16px;
-  width:100%;
-  height:100%;
-}
-.verix-asf-notice-card{
-  box-sizing:border-box;
-  min-width:0;
-  padding:22px 20px;
-  border-radius:14px;
-  text-align:left;
-}
-.verix-asf-notice-card-info{
-  border:1px solid rgba(255,79,104,.48);
-  background:linear-gradient(155deg,rgba(116,24,43,.36),rgba(48,13,23,.32));
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 10px 26px rgba(64,5,20,.12);
-}
-.verix-asf-service-status{
-  margin:0 0 12px;
-  padding:14px 12px;
-  border:1px solid rgba(255,112,134,.72);
-  border-radius:11px;
-  background:linear-gradient(145deg,rgba(139,28,52,.62),rgba(76,17,31,.54));
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 0 22px rgba(255,61,92,.09);
-  text-align:center;
-}
-.verix-asf-service-status-title{
-  display:block;
-  color:#ffbdc7;
-  font:950 clamp(13px,1.6vw,16px)/1.35 Arial,sans-serif;
-  letter-spacing:.65px;
-  text-transform:uppercase;
-  text-shadow:0 1px 12px rgba(255,65,92,.16);
-}
-.verix-asf-service-status-detail{
-  display:block;
-  margin-top:6px;
-  color:#fff0f2;
-  font:800 12px/1.5 Arial,sans-serif;
-}
-.verix-asf-notice-card p.verix-asf-card-external-note{
-  margin:0 0 10px;
-  color:#c9afb4;
-  font:500 10px/1.55 Arial,sans-serif;
-}
-.verix-asf-notice-card-thanks{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
-  border:1px solid rgba(45,214,132,.42);
-  background:linear-gradient(155deg,rgba(10,95,60,.34),rgba(5,42,30,.34));
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 10px 26px rgba(0,64,39,.12);
-}
-.verix-asf-notice-card-title{
-  margin:0 0 16px;
-  font:950 12px/1.35 Arial,sans-serif;
-  letter-spacing:1.25px;
-  color:#ff9eac;
-}
-.verix-asf-notice-card-subtitle{
-  margin:20px 0 9px;
-  font:900 10px/1.4 Arial,sans-serif;
-  letter-spacing:1.1px;
-  color:#ff9eac;
-}
-.verix-asf-notice-card p{
-  margin:0 0 14px;
-  font:500 12px/1.65 Arial,sans-serif;
-  color:#e0d5d8;
-  max-width:none;
-}
-.verix-asf-notice-card p strong{color:#fff0f2;font-weight:850;}
-.verix-asf-notice-card .verix-asf-notice-card-note{
-  margin-bottom:0;
-  color:#c9afb4;
-  font-size:11px;
-}
-.verix-asf-notice-card-thanks .verix-asf-notice-card-title{
-  color:#79f0ad;
-  margin-bottom:14px;
-}
-.verix-asf-notice-thanks-number{
-  margin:2px 0 8px;
-  color:#83f2b2;
-  font:950 clamp(30px,4vw,43px)/1 Arial,sans-serif;
-  letter-spacing:-1.2px;
-  text-shadow:0 0 24px rgba(45,214,132,.12);
-}
-.verix-asf-notice-card p.verix-asf-notice-thanks-label{
-  margin:5px 0 14px;
-  color:#aff7ce;
-  font:900 10px/1.55 Arial,sans-serif;
-  letter-spacing:.85px;
-}
-.verix-asf-notice-card p.verix-asf-notice-thanks-copy{
-  margin:0;
-  color:#d1eadb;
-  font-size:12px;
-}
-.verix-asf-notice-footer{
-  position:relative;
-  z-index:2;
-  flex:0 0 auto;
-  display:flex;
-  justify-content:center;
-  padding:12px 24px 18px;
-  background:linear-gradient(180deg,rgba(4,11,16,.72),rgba(4,11,16,.99) 28%);
-  border-top:1px solid rgba(255,255,255,.07);
-  box-shadow:0 -10px 24px rgba(0,0,0,.18);
-}
-.verix-asf-notice-continue{
-  display:inline-flex !important;
-  align-items:center;
-  justify-content:center;
-  visibility:visible !important;
-  opacity:1 !important;
-  min-width:190px;
-  height:44px;
-  padding:0 22px;
-  border:1px solid rgba(101,215,232,.34);
-  border-radius:10px;
-  background:linear-gradient(135deg,#164450,#0d2831);
-  color:#edf8fa;
-  font:950 9px/1 Arial,sans-serif;
-  letter-spacing:1.3px;
-  cursor:pointer;
-  transition:transform .12s ease,filter .12s ease,border-color .12s ease,box-shadow .12s ease;
-  box-shadow:0 8px 22px rgba(0,0,0,.24);
-}
-.verix-asf-notice-continue:hover{filter:brightness(1.13);border-color:#6fe0ee;box-shadow:0 10px 28px rgba(0,0,0,.32),0 0 20px rgba(101,215,232,.08);}
-.verix-asf-notice-continue:active{transform:translateY(1px);}
-@media(max-width:720px){.verix-asf-notice-window{width:min(560px,94vw);height:min(760px,90vh);max-height:90vh;}
-.verix-asf-notice-body{padding:16px 16px 12px;}
-.verix-asf-notice-grid{grid-template-columns:minmax(0,1fr);height:auto;gap:12px;}
-.verix-asf-notice-card{padding:18px 17px;}
-.verix-asf-notice-card-thanks{min-height:180px;}
-.verix-asf-notice-thanks-number{font-size:34px;}}
-@media(max-width:640px){.verix-asf-notice-overlay{padding:14px;}
-.verix-asf-notice-top{padding:24px 18px 18px;}
-.verix-asf-notice-title{font-size:18px;}
-.verix-asf-notice-body{padding:20px 18px 8px;max-width:none;}
-.verix-asf-notice-body p{font-size:12px;}
-.verix-asf-notice-footer{padding:12px 18px 18px;}
-.verix-asf-notice-continue{width:100%;}}
-</style>
+
 <style id="verix-brand-lockup-centered">/* Cabeçalho VÉRIX — versão baseada na identificação operacional aprovada. */
 .command .brand{
   display:flex!important;
@@ -20836,332 +20575,10 @@ html body.fixed-workspace-active:not(.cinemometro-page-active) .main.consultatio
 </style>
 
 
-<style id="verix-asf-outage-notice-v2">
-/* Comunicado ASF — apresentação visual alinhada com o aviso aprovado. */
-.verix-asf-notice-overlay{padding:14px!important;background:radial-gradient(circle at 50% 35%,rgba(86,15,33,.28),rgba(0,0,0,.88) 72%)!important;}
-.verix-asf-notice-window{
-  width:min(700px,94vw)!important;height:min(900px,94vh)!important;max-height:94vh!important;
-  border:1px solid #d82a50!important;border-radius:19px!important;
-  background:linear-gradient(155deg,#210e16 0%,#10090d 72%,#0d080b 100%)!important;
-  box-shadow:0 30px 90px rgba(0,0,0,.72),0 0 0 1px rgba(255,255,255,.025) inset,0 0 36px rgba(226,35,74,.10)!important;
-  color:#f5e9ed!important;text-align:left!important;
-}
-.verix-asf-notice-window:before{height:3px!important;background:linear-gradient(90deg,#e52c53,#a91d3d,#e52c53)!important;}
-.verix-asf-notice-top{display:block!important;padding:28px 30px 14px!important;border:0!important;text-align:left!important;}
-.verix-asf-notice-title{color:#ff9aaa!important;font:950 clamp(17px,2.8vw,25px)/1.25 Arial,sans-serif!important;letter-spacing:1.35px!important;text-shadow:0 2px 12px rgba(255,58,91,.12)!important;}
-.verix-asf-notice-body{padding:10px 30px 18px!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;overflow-y:auto!important;}
-.verix-asf-notice-grid{display:block!important;height:auto!important;}
-.verix-asf-notice-card-outage{padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;}
-.verix-asf-alert-panel{
-  margin:0 0 22px!important;padding:20px 18px 18px!important;border:1px solid rgba(247,69,101,.82)!important;border-radius:16px!important;
-  background:linear-gradient(145deg,rgba(116,17,41,.70),rgba(49,12,24,.72))!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.055),0 0 24px rgba(238,41,79,.07)!important;
-}
-.verix-asf-alert-heading{display:grid!important;grid-template-columns:clamp(48px,9vw,80px) minmax(0,1fr)!important;align-items:center!important;gap:12px!important;margin:0 0 16px!important;}
-.verix-asf-alert-warning-icon{display:block!important;width:100%!important;height:auto!important;color:#ff304f!important;}
-.verix-asf-notice-card-outage .verix-asf-notice-card-title{margin:0!important;color:#ffd0d7!important;font:950 clamp(17px,2.8vw,29px)/1.2 Arial,sans-serif!important;letter-spacing:.15px!important;text-align:center!important;}
-.verix-asf-notice-card-outage p.verix-asf-alert-copy{margin:0 auto 14px!important;max-width:none!important;color:#fff1f3!important;font:800 clamp(12px,1.9vw,17px)/1.55 Arial,sans-serif!important;text-align:center!important;}
-.verix-asf-notice-card-outage p.verix-asf-alert-resolve{margin:0 auto!important;max-width:none!important;color:#ffe66b!important;font:900 clamp(13px,2vw,18px)/1.5 Arial,sans-serif!important;text-align:center!important;}
-.verix-asf-detail-row{display:grid!important;grid-template-columns:68px minmax(0,1fr)!important;align-items:start!important;gap:14px!important;margin:20px 0 25px!important;}
-.verix-asf-detail-icon{display:flex!important;width:62px!important;height:62px!important;align-items:center!important;justify-content:center!important;box-sizing:border-box!important;border:3px solid #f14b69!important;border-radius:50%!important;color:#ff5571!important;}
-.verix-asf-detail-icon svg{display:block!important;width:38px!important;height:38px!important;}
-.verix-asf-detail-content h3{margin:4px 0 8px!important;color:#ff8fa2!important;font:950 clamp(13px,2vw,19px)/1.3 Arial,sans-serif!important;letter-spacing:.4px!important;}
-.verix-asf-notice-card-outage .verix-asf-detail-content p{margin:0!important;max-width:none!important;color:#f4eaee!important;font:500 clamp(12px,1.8vw,16px)/1.6 Arial,sans-serif!important;}
-.verix-asf-notice-card-outage .verix-asf-detail-content p strong{color:#fff!important;font-weight:900!important;}
-.verix-asf-notice-card-outage p.verix-asf-card-external-note{max-width:none!important;margin:23px 0 0!important;padding:19px 0 0!important;border-top:1px solid rgba(230,45,82,.6)!important;color:#d5c2c8!important;font:500 clamp(11px,1.65vw,14px)/1.7 Arial,sans-serif!important;}
-.verix-asf-notice-footer{padding:10px 30px 20px!important;border-top:0!important;background:linear-gradient(180deg,rgba(16,9,13,.35),rgba(16,9,13,.98) 32%)!important;box-shadow:none!important;}
-.verix-asf-notice-continue{min-width:175px!important;height:39px!important;border:1px solid rgba(247,69,101,.72)!important;border-radius:8px!important;background:linear-gradient(135deg,#5e1227,#2d0d18)!important;color:#ffe8ec!important;font:900 9px/1 Arial,sans-serif!important;letter-spacing:1px!important;box-shadow:0 5px 16px rgba(0,0,0,.24)!important;}
-.verix-asf-notice-continue:hover{border-color:#ff8298!important;box-shadow:0 7px 20px rgba(0,0,0,.30),0 0 14px rgba(247,69,101,.10)!important;}
-@media(max-width:640px){
- .verix-asf-notice-overlay{padding:7px!important;}
- .verix-asf-notice-window{width:100%!important;height:min(900px,96vh)!important;max-height:96vh!important;border-radius:15px!important;}
- .verix-asf-notice-top{padding:20px 15px 10px!important;}
- .verix-asf-notice-title{font-size:16px!important;letter-spacing:1px!important;}
- .verix-asf-notice-body{padding:7px 15px 12px!important;}
- .verix-asf-alert-panel{padding:14px 12px 15px!important;margin-bottom:18px!important;}
- .verix-asf-alert-heading{grid-template-columns:45px minmax(0,1fr)!important;gap:8px!important;margin-bottom:12px!important;}
- .verix-asf-notice-card-outage .verix-asf-notice-card-title{font-size:clamp(15px,4.8vw,20px)!important;}
- .verix-asf-notice-card-outage p.verix-asf-alert-copy{font-size:12px!important;line-height:1.5!important;}
- .verix-asf-notice-card-outage p.verix-asf-alert-resolve{font-size:12px!important;line-height:1.48!important;}
- .verix-asf-detail-row{grid-template-columns:48px minmax(0,1fr)!important;gap:10px!important;margin:15px 0 19px!important;}
- .verix-asf-detail-icon{width:44px!important;height:44px!important;border-width:2px!important;}
- .verix-asf-detail-icon svg{width:27px!important;height:27px!important;}
- .verix-asf-detail-content h3{margin:2px 0 6px!important;font-size:13px!important;}
- .verix-asf-notice-card-outage .verix-asf-detail-content p{font-size:12px!important;line-height:1.52!important;}
- .verix-asf-notice-card-outage p.verix-asf-card-external-note{margin-top:17px!important;padding-top:14px!important;font-size:10.5px!important;line-height:1.55!important;}
- .verix-asf-notice-footer{padding:8px 15px 13px!important;}
- .verix-asf-notice-continue{height:34px!important;min-width:150px!important;}
-}
-@media(max-height:650px){
- .verix-asf-notice-window{height:94vh!important;max-height:94vh!important;}
- .verix-asf-notice-top{padding-top:16px!important;}
- .verix-asf-notice-body{padding-top:5px!important;}
- .verix-asf-alert-panel{padding-top:12px!important;padding-bottom:12px!important;margin-bottom:12px!important;}
- .verix-asf-detail-row{margin-top:10px!important;margin-bottom:13px!important;}
-}
-</style>
 
 
-<style id="verix-asf-notice-clean-v3">
-/* VÉRIX notice — clean dual-card layout */
-html body #verixAsfNoticeOverlay.verix-asf-notice-overlay {
-  box-sizing:border-box!important;
-  padding:18px!important;
-  background:rgba(15,23,42,.44)!important;
-  backdrop-filter:blur(7px)!important;
-  -webkit-backdrop-filter:blur(7px)!important;
-}
-html body #verixAsfNoticeOverlay .verix-asf-notice-window {
-  width:min(900px,96vw)!important;
-  height:auto!important;
-  min-height:0!important;
-  max-height:92vh!important;
-  display:flex!important;
-  flex-direction:column!important;
-  overflow:hidden!important;
-  border:1px solid #dce5e9!important;
-  border-radius:20px!important;
-  background:#ffffff!important;
-  box-shadow:0 28px 80px rgba(15,23,42,.22),0 2px 8px rgba(15,23,42,.06)!important;
-  color:#182832!important;
-  text-align:left!important;
-}
-html body #verixAsfNoticeOverlay .verix-asf-notice-window:before {
-  height:4px!important;
-  background:linear-gradient(90deg,#176b4a 0%,#54a780 52%,#d7eee1 100%)!important;
-  opacity:1!important;
-}
-html body #verixAsfNoticeOverlay .verix-asf-notice-top {
-  flex:0 0 auto!important;
-  display:flex!important;
-  flex-direction:row!important;
-  align-items:center!important;
-  justify-content:space-between!important;
-  gap:16px!important;
-  padding:24px 28px 18px!important;
-  border-bottom:1px solid #edf1f3!important;
-  text-align:left!important;
-}
-html body #verixAsfNoticeOverlay .verix-asf-notice-title {
-  display:flex!important;
-  align-items:center!important;
-  gap:9px!important;
-  margin:0!important;
-  color:#1c3440!important;
-  font:850 15px/1.25 Arial,sans-serif!important;
-  letter-spacing:.6px!important;
-  text-shadow:none!important;
-}
-html body #verixAsfNoticeOverlay .verix-asf-notice-brand-dot {
-  display:inline-block!important;
-  width:9px!important;
-  height:9px!important;
-  flex:0 0 9px!important;
-  border-radius:50%!important;
-  background:#228458!important;
-  box-shadow:0 0 0 4px #e4f4eb!important;
-}
-html body #verixAsfNoticeOverlay .verix-asf-notice-sub {
-  margin:6px 0 0 18px!important;
-  color:#70818a!important;
-  font:700 9px/1.35 Arial,sans-serif!important;
-  letter-spacing:1.15px!important;
-}
-html body #verixAsfNoticeOverlay .verix-asf-notice-badge {
-  display:inline-flex!important;
-  align-items:center!important;
-  padding:7px 10px!important;
-  border:1px solid #e1e9ed!important;
-  border-radius:999px!important;
-  background:#f7fafb!important;
-  color:#657780!important;
-  font:750 8px/1 Arial,sans-serif!important;
-  letter-spacing:.8px!important;
-  white-space:nowrap!important;
-}
-html body #verixAsfNoticeOverlay .verix-asf-notice-body {
-  flex:1 1 auto!important;
-  min-height:0!important;
-  width:100%!important;
-  max-width:none!important;
-  margin:0!important;
-  padding:22px 26px 24px!important;
-  box-sizing:border-box!important;
-  overflow-y:auto!important;
-  overscroll-behavior:contain!important;
-}
-html body #verixAsfNoticeOverlay .verix-asf-notice-grid {
-  display:grid!important;
-  grid-template-columns:minmax(0,1.08fr) minmax(250px,.92fr)!important;
-  align-items:stretch!important;
-  gap:16px!important;
-  width:100%!important;
-  height:auto!important;
-}
-html body #verixAsfNoticeOverlay .verix-asf-notice-card {
-  display:flex!important;
-  flex-direction:column!important;
-  justify-content:center!important;
-  box-sizing:border-box!important;
-  min-width:0!important;
-  padding:25px 25px!important;
-  border-radius:15px!important;
-  text-align:left!important;
-}
-html body #verixAsfNoticeOverlay .verix-asf-notice-card-info {
-  border:1px solid #e4ebef!important;
-  background:linear-gradient(145deg,#fbfcfd 0%,#f5f8fa 100%)!important;
-  box-shadow:none!important;
-}
-html body #verixAsfNoticeOverlay .verix-asf-notice-eyebrow {
-  display:block!important;
-  margin:0 0 12px!important;
-  color:#2b805a!important;
-  font:800 9px/1.3 Arial,sans-serif!important;
-  letter-spacing:1.35px!important;
-}
-html body #verixAsfNoticeOverlay .verix-asf-notice-card-outage .verix-asf-notice-card-title {
-  margin:0 0 13px!important;
-  color:#1d3440!important;
-  font:800 clamp(19px,2.4vw,25px)/1.22 Arial,sans-serif!important;
-  letter-spacing:-.45px!important;
-  text-align:left!important;
-}
-html body #verixAsfNoticeOverlay .verix-asf-notice-card-outage p.verix-asf-alert-copy {
-  margin:0!important;
-  max-width:none!important;
-  color:#465a64!important;
-  font:400 14px/1.7 Arial,sans-serif!important;
-  text-align:left!important;
-}
-html body #verixAsfNoticeOverlay .verix-asf-notice-divider {
-  width:42px!important;
-  height:3px!important;
-  margin:20px 0 15px!important;
-  border-radius:4px!important;
-  background:#a5d6ba!important;
-}
-html body #verixAsfNoticeOverlay .verix-asf-notice-card-outage p.verix-asf-card-external-note {
-  margin:0!important;
-  padding:0!important;
-  border:0!important;
-  max-width:none!important;
-  color:#71828a!important;
-  font:400 11px/1.65 Arial,sans-serif!important;
-}
-html body #verixAsfNoticeOverlay .verix-asf-notice-card-thanks {
-  align-items:flex-start!important;
-  justify-content:center!important;
-  border:1px solid #cbe9d6!important;
-  background:linear-gradient(150deg,#f0faf4 0%,#e3f5ea 100%)!important;
-  box-shadow:none!important;
-}
-html body #verixAsfNoticeOverlay .verix-asf-notice-thanks-icon {
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  width:38px!important;
-  height:38px!important;
-  margin:0 0 17px!important;
-  border:1px solid #c5e6d2!important;
-  border-radius:12px!important;
-  background:#ffffff!important;
-  color:#218251!important;
-}
-html body #verixAsfNoticeOverlay .verix-asf-notice-thanks-icon svg {
-  width:21px!important;
-  height:21px!important;
-}
-html body #verixAsfNoticeOverlay .verix-asf-notice-card-thanks p.verix-asf-notice-thanks-kicker {
-  margin:0 0 8px!important;
-  max-width:none!important;
-  color:#39825c!important;
-  font:800 9px/1.45 Arial,sans-serif!important;
-  letter-spacing:1.05px!important;
-}
-html body #verixAsfNoticeOverlay .verix-asf-notice-thanks-number {
-  margin:0 0 5px!important;
-  color:#176b43!important;
-  font:850 clamp(34px,4.6vw,48px)/1.05 Arial,sans-serif!important;
-  letter-spacing:-1.6px!important;
-  text-shadow:none!important;
-  white-space:nowrap!important;
-}
-html body #verixAsfNoticeOverlay .verix-asf-notice-card p.verix-asf-notice-thanks-label {
-  margin:0!important;
-  max-width:235px!important;
-  color:#2a714b!important;
-  font:800 10px/1.55 Arial,sans-serif!important;
-  letter-spacing:.35px!important;
-}
-html body #verixAsfNoticeOverlay .verix-asf-notice-card p.verix-asf-notice-thanks-copy {
-  margin:16px 0 0!important;
-  max-width:none!important;
-  color:#456b55!important;
-  font:500 12px/1.6 Arial,sans-serif!important;
-}
-html body #verixAsfNoticeOverlay .verix-asf-notice-footer {
-  position:relative!important;
-  z-index:2!important;
-  flex:0 0 auto!important;
-  display:flex!important;
-  justify-content:flex-end!important;
-  padding:14px 26px 20px!important;
-  border-top:1px solid #edf1f3!important;
-  background:#ffffff!important;
-  box-shadow:none!important;
-}
-html body #verixAsfNoticeOverlay .verix-asf-notice-continue {
-  display:inline-flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  gap:12px!important;
-  min-width:150px!important;
-  height:40px!important;
-  padding:0 17px!important;
-  border:1px solid #d7e3e8!important;
-  border-radius:9px!important;
-  background:#1e3440!important;
-  color:#ffffff!important;
-  font:750 10px/1 Arial,sans-serif!important;
-  letter-spacing:.65px!important;
-  box-shadow:none!important;
-  cursor:pointer!important;
-  transition:background .15s ease,border-color .15s ease,transform .15s ease!important;
-}
-html body #verixAsfNoticeOverlay .verix-asf-notice-continue span {font-size:15px!important;font-weight:400!important;}
-html body #verixAsfNoticeOverlay .verix-asf-notice-continue:hover {
-  border-color:#226b4d!important;
-  background:#245b43!important;
-  box-shadow:none!important;
-  filter:none!important;
-}
-html body #verixAsfNoticeOverlay .verix-asf-notice-continue:active {transform:translateY(1px)!important;}
-@media(max-width:720px) {
-  html body #verixAsfNoticeOverlay.verix-asf-notice-overlay {padding:10px!important;}
-  html body #verixAsfNoticeOverlay .verix-asf-notice-window {width:min(560px,96vw)!important;max-height:94vh!important;border-radius:16px!important;}
-  html body #verixAsfNoticeOverlay .verix-asf-notice-top {padding:18px 18px 15px!important;align-items:flex-start!important;}
-  html body #verixAsfNoticeOverlay .verix-asf-notice-title {font-size:14px!important;}
-  html body #verixAsfNoticeOverlay .verix-asf-notice-badge {font-size:7px!important;padding:6px 8px!important;}
-  html body #verixAsfNoticeOverlay .verix-asf-notice-body {padding:14px!important;}
-  html body #verixAsfNoticeOverlay .verix-asf-notice-grid {grid-template-columns:minmax(0,1fr)!important;gap:12px!important;}
-  html body #verixAsfNoticeOverlay .verix-asf-notice-card {padding:19px!important;}
-  html body #verixAsfNoticeOverlay .verix-asf-notice-card-thanks {min-height:0!important;}
-  html body #verixAsfNoticeOverlay .verix-asf-notice-thanks-icon {margin-bottom:12px!important;}
-  html body #verixAsfNoticeOverlay .verix-asf-notice-thanks-number {font-size:38px!important;}
-  html body #verixAsfNoticeOverlay .verix-asf-notice-footer {padding:12px 14px 15px!important;}
-  html body #verixAsfNoticeOverlay .verix-asf-notice-continue {width:100%!important;}
-}
-@media(max-height:650px) and (min-width:721px) {
-  html body #verixAsfNoticeOverlay .verix-asf-notice-body {padding-top:14px!important;padding-bottom:14px!important;}
-  html body #verixAsfNoticeOverlay .verix-asf-notice-card {padding:17px 20px!important;}
-  html body #verixAsfNoticeOverlay .verix-asf-notice-thanks-icon {margin-bottom:10px!important;}
-  html body #verixAsfNoticeOverlay .verix-asf-notice-card p.verix-asf-notice-thanks-copy {margin-top:10px!important;}
-}
-@media(prefers-reduced-motion:reduce) {
-  html body #verixAsfNoticeOverlay * {transition:none!important;}
-}
-</style>
+
+
 
 
 
@@ -21440,363 +20857,204 @@ html body #seguroResult > .asf-app-warn .asf-status-sub{
 </style>
 
 
-<style id="verix-notice-three-message-layout">
-/* Três mensagens autónomas, com cores suaves distintas e contraste legível. */
-html body #verixAsfNoticeOverlay .verix-asf-notice-window{
-  width:min(1100px,96vw)!important;
+
+
+
+
+
+
+
+
+<style id="verix-initial-welcome-final">
+/* Pop-up inicial VÉRIX — implementação única e substitutiva */
+html body:has(#verixAsfNoticeOverlay[aria-hidden="false"]){zoom:1!important}
+html body #verixAsfNoticeOverlay.verix-asf-notice-overlay{
+ position:fixed!important;inset:0!important;z-index:2147483001!important;
+ display:none;align-items:center!important;justify-content:center!important;
+ box-sizing:border-box!important;padding:12px!important;
+ background:rgba(2,9,17,.88)!important;
+ -webkit-backdrop-filter:blur(9px)!important;backdrop-filter:blur(9px)!important;
 }
-html body #verixAsfNoticeOverlay .verix-asf-notice-grid.verix-notice-grid-three{
-  display:grid!important;
-  grid-template-columns:repeat(3,minmax(0,1fr))!important;
-  align-items:stretch!important;
-  gap:13px!important;
-  height:auto!important;
+html body #verixAsfNoticeOverlay[aria-hidden="false"]{display:flex!important}
+html body #verixAsfNoticeOverlay .vx-final-window{
+ all:initial!important;display:flex!important;flex-direction:column!important;
+ position:relative!important;box-sizing:border-box!important;
+ width:min(700px,96vw)!important;max-height:calc(100dvh - 24px)!important;
+ margin:auto!important;overflow:hidden!important;
+ border:1px solid rgba(170,210,225,.62)!important;border-radius:18px!important;
+ background:#041521!important;color:#f5f8fa!important;
+ box-shadow:0 25px 80px rgba(0,0,0,.65),0 0 30px rgba(0,126,255,.12)!important;
+ text-align:left!important;
 }
-html body #verixAsfNoticeOverlay .verix-asf-notice-grid-three>.verix-asf-notice-card{
-  position:relative!important;
-  display:flex!important;
-  flex-direction:column!important;
-  justify-content:flex-start!important;
-  align-items:stretch!important;
-  min-width:0!important;
-  min-height:310px!important;
-  box-sizing:border-box!important;
-  padding:23px 18px 19px!important;
-  border-radius:15px!important;
-  overflow:hidden!important;
-  text-align:left!important;
-  box-shadow:0 7px 18px rgba(19,43,55,.045)!important;
+html body #verixAsfNoticeOverlay .vx-final-scroll{
+ display:block!important;min-height:0!important;overflow-y:auto!important;
+ overscroll-behavior:contain!important;background:#041521!important;
 }
-html body #verixAsfNoticeOverlay .verix-asf-notice-grid-three>.verix-asf-notice-card:before{
-  content:""!important;
-  position:absolute!important;
-  inset:0 0 auto 0!important;
-  height:4px!important;
-  background:var(--vx-card-accent)!important;
+html body #verixAsfNoticeOverlay .vx-final-hero{
+ position:relative!important;height:245px!important;min-height:245px!important;
+ overflow:hidden!important;background:#071b2c!important;
 }
-html body #verixAsfNoticeOverlay .verix-notice-card-service{
-  --vx-card-accent:#3679ad;
-  border:1px solid #c7dced!important;
-  background:linear-gradient(150deg,#f1f8fd 0%,#e9f3fb 100%)!important;
-  color:#213e52!important;
+html body #verixAsfNoticeOverlay .vx-final-photo{
+ position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+ display:block!important;object-fit:cover!important;object-position:center 48%!important;
+ opacity:.92!important;
 }
-html body #verixAsfNoticeOverlay .verix-notice-card-milestone{
-  --vx-card-accent:#278456;
-  border:1px solid #c0e3cd!important;
-  background:linear-gradient(150deg,#f0faf4 0%,#e4f5eb 100%)!important;
-  color:#244a36!important;
+html body #verixAsfNoticeOverlay .vx-final-photo-shade{
+ position:absolute!important;inset:0!important;
+ background:linear-gradient(180deg,rgba(2,12,23,.72) 0%,rgba(2,12,23,.1) 42%,rgba(2,12,23,.94) 100%)!important;
 }
-html body #verixAsfNoticeOverlay .verix-notice-card-share{
-  --vx-card-accent:#b27a22;
-  border:1px solid #ead8b7!important;
-  background:linear-gradient(150deg,#fffaf0 0%,#fff4df 100%)!important;
-  color:#59431f!important;
+html body #verixAsfNoticeOverlay .vx-final-brand{
+ position:absolute!important;top:15px!important;left:20px!important;right:20px!important;
+ display:flex!important;align-items:center!important;gap:9px!important;z-index:2!important;
 }
-html body #verixAsfNoticeOverlay .verix-notice-card-kicker,
-html body #verixAsfNoticeOverlay .verix-notice-share-kicker{
-  display:block!important;
-  margin:0 0 11px!important;
-  font:850 8px/1.45 Arial,sans-serif!important;
-  letter-spacing:1.05px!important;
+html body #verixAsfNoticeOverlay .vx-final-vmark{
+ color:#20d875!important;font:italic 900 32px/1 Arial,sans-serif!important;
+ text-shadow:0 0 16px rgba(30,220,112,.5)!important;
 }
-html body #verixAsfNoticeOverlay .verix-notice-card-service .verix-notice-card-kicker{color:#235e91!important;}
-html body #verixAsfNoticeOverlay .verix-notice-card-milestone .verix-asf-notice-thanks-kicker{color:#176b43!important;}
-html body #verixAsfNoticeOverlay .verix-notice-card-share .verix-notice-share-kicker{color:#80580c!important;}
-html body #verixAsfNoticeOverlay .verix-notice-status-pill{
-  display:inline-flex!important;
-  align-self:flex-start!important;
-  align-items:center!important;
-  gap:6px!important;
-  margin:0 0 15px!important;
-  padding:6px 8px!important;
-  border:1px solid #bfd8ed!important;
-  border-radius:999px!important;
-  background:#dcecf9!important;
-  color:#235579!important;
-  font:800 7.5px/1.2 Arial,sans-serif!important;
-  letter-spacing:.25px!important;
+html body #verixAsfNoticeOverlay .vx-final-brand-name{
+ color:#fff!important;font:900 26px/1 Arial,sans-serif!important;letter-spacing:-1px!important;
 }
-html body #verixAsfNoticeOverlay .verix-notice-status-pill span{color:#17804f!important;font-size:9px!important;}
-html body #verixAsfNoticeOverlay .verix-notice-card-service .verix-asf-notice-card-title{
-  margin:0 0 12px!important;
-  color:#19384f!important;
-  font:850 clamp(17px,1.65vw,21px)/1.22 Arial,sans-serif!important;
-  letter-spacing:-.35px!important;
-  text-align:left!important;
-  overflow-wrap:normal!important;
+html body #verixAsfNoticeOverlay .vx-final-brand-line{
+ height:28px!important;width:1px!important;background:rgba(255,255,255,.55)!important;margin:0 4px!important;
 }
-html body #verixAsfNoticeOverlay .verix-notice-card-service .verix-asf-alert-copy{
-  margin:0!important;
-  color:#314e62!important;
-  font:500 11.5px/1.65 Arial,sans-serif!important;
+html body #verixAsfNoticeOverlay .vx-final-brand-sub{
+ color:#e4edf2!important;font:800 8px/1.4 Arial,sans-serif!important;letter-spacing:1.5px!important;
 }
-html body #verixAsfNoticeOverlay .verix-notice-service-note{
-  display:flex!important;
-  flex-direction:column!important;
-  gap:5px!important;
-  margin:17px 0 0!important;
-  padding:11px 10px!important;
-  border-left:3px solid #4b86b5!important;
-  border-radius:0 8px 8px 0!important;
-  background:#deedf9!important;
-  color:#274b67!important;
-  font:500 9.5px/1.55 Arial,sans-serif!important;
+html body #verixAsfNoticeOverlay .vx-final-kicker{
+ position:absolute!important;top:19px!important;right:18px!important;z-index:2!important;
+ border:1px solid rgba(72,230,151,.65)!important;border-radius:99px!important;
+ padding:7px 10px!important;color:#d4f8e5!important;
+ font:800 8px/1 Arial,sans-serif!important;letter-spacing:.8px!important;
+ background:rgba(3,25,33,.5)!important;
 }
-html body #verixAsfNoticeOverlay .verix-notice-service-note strong{
-  color:#1d527e!important;
-  font:850 7.5px/1.4 Arial,sans-serif!important;
-  letter-spacing:.65px!important;
+html body #verixAsfNoticeOverlay .vx-final-kicker i{
+ display:inline-block!important;width:7px!important;height:7px!important;margin-right:5px!important;
+ border-radius:50%!important;background:#24df81!important;box-shadow:0 0 9px #24df81!important;
 }
-html body #verixAsfNoticeOverlay .verix-notice-card-milestone{
-  text-align:center!important;
+html body #verixAsfNoticeOverlay .vx-final-hero-copy{
+ position:absolute!important;z-index:2!important;left:20px!important;right:20px!important;bottom:17px!important;text-align:center!important;
 }
-html body #verixAsfNoticeOverlay .verix-notice-card-milestone .verix-asf-notice-thanks-icon{
-  width:36px!important;
-  height:36px!important;
-  align-self:center!important;
-  margin:1px 0 14px!important;
-  border-color:#c4e4d0!important;
-  background:#ffffff!important;
-  color:#176b43!important;
+html body #verixAsfNoticeOverlay .vx-final-hero-copy h1{
+ margin:0 0 7px!important;color:#fff!important;font:900 clamp(24px,4vw,34px)/1.12 Arial,sans-serif!important;letter-spacing:-.8px!important;
 }
-html body #verixAsfNoticeOverlay .verix-notice-card-milestone .verix-asf-notice-thanks-kicker{
-  margin:0 0 9px!important;
-  color:#176b43!important;
-  font:850 8px/1.4 Arial,sans-serif!important;
-  letter-spacing:.9px!important;
+html body #verixAsfNoticeOverlay .vx-final-hero-copy h1 em{color:#43ed83!important;font-style:normal!important}
+html body #verixAsfNoticeOverlay .vx-final-hero-copy p{
+ max-width:620px!important;margin:0 auto!important;color:#f1f5f7!important;
+ font:500 14px/1.45 Arial,sans-serif!important;
 }
-html body #verixAsfNoticeOverlay .verix-notice-card-milestone .verix-asf-notice-thanks-number{
-  margin:0 0 8px!important;
-  color:#145f3d!important;
-  font:900 clamp(29px,3vw,39px)/1.05 Arial,sans-serif!important;
-  letter-spacing:-1.2px!important;
-  white-space:nowrap!important;
+html body #verixAsfNoticeOverlay .vx-final-content{
+ padding:16px 20px 14px!important;background:linear-gradient(180deg,#071a27,#03131e)!important;
 }
-html body #verixAsfNoticeOverlay .verix-notice-card-milestone .verix-asf-notice-thanks-label{
-  margin:0!important;
-  color:#245e40!important;
-  font:850 8px/1.55 Arial,sans-serif!important;
-  letter-spacing:.35px!important;
+html body #verixAsfNoticeOverlay .vx-final-milestone{
+ display:grid!important;grid-template-columns:58px minmax(0,1fr) minmax(130px,.62fr)!important;
+ align-items:center!important;gap:13px!important;margin:0 0 16px!important;padding:13px 15px!important;
+ border:1px solid rgba(77,230,127,.85)!important;border-radius:15px!important;
+ background:linear-gradient(100deg,rgba(0,62,47,.8),rgba(3,28,37,.96),rgba(0,62,47,.65))!important;
+ box-shadow:0 0 20px rgba(25,221,111,.13),inset 0 0 22px rgba(23,183,91,.08)!important;
 }
-html body #verixAsfNoticeOverlay .verix-notice-gratitude-copy{
-  margin:18px 0 0!important;
-  color:#315a43!important;
-  font:500 10.5px/1.65 Arial,sans-serif!important;
+html body #verixAsfNoticeOverlay .vx-final-chart-icon{
+ display:grid!important;place-items:center!important;width:52px!important;height:52px!important;
+ border-radius:14px!important;background:linear-gradient(145deg,#16c965,#00783c)!important;color:#fff!important;
 }
-html body #verixAsfNoticeOverlay .verix-notice-share-icon{
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  width:37px!important;
-  height:37px!important;
-  margin:1px 0 17px!important;
-  border:1px solid #ead7b3!important;
-  border-radius:11px!important;
-  background:#ffffff!important;
-  color:#986512!important;
+html body #verixAsfNoticeOverlay .vx-final-chart-icon svg{width:29px!important;height:29px!important}
+html body #verixAsfNoticeOverlay .vx-final-count{
+ min-width:0!important;padding-left:14px!important;border-left:1px solid rgba(117,241,164,.72)!important;
 }
-html body #verixAsfNoticeOverlay .verix-notice-share-icon svg{
-  width:20px!important;height:20px!important;
+html body #verixAsfNoticeOverlay .vx-final-count strong{
+ display:block!important;color:#fff!important;font:950 clamp(36px,5.7vw,54px)/.95 Arial,sans-serif!important;letter-spacing:-2px!important;white-space:nowrap!important;
 }
-html body #verixAsfNoticeOverlay .verix-notice-share-title{
-  margin:0 0 12px!important;
-  color:#5c4216!important;
-  font:850 clamp(17px,1.65vw,21px)/1.22 Arial,sans-serif!important;
-  letter-spacing:-.25px!important;
+html body #verixAsfNoticeOverlay .vx-final-count span{
+ display:block!important;margin-top:6px!important;color:#d2f8df!important;font:900 12px/1.2 Arial,sans-serif!important;letter-spacing:1px!important;
 }
-html body #verixAsfNoticeOverlay .verix-notice-share-message{
-  margin:0!important;
-  color:#57472d!important;
-  font:500 11px/1.7 Arial,sans-serif!important;
+html body #verixAsfNoticeOverlay .vx-final-thanks{
+ display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;
+ padding-left:12px!important;border-left:1px solid rgba(117,241,164,.72)!important;text-align:center!important;
 }
-@media(max-width:860px){
-  html body #verixAsfNoticeOverlay .verix-asf-notice-window{
-    width:min(680px,96vw)!important;
-  }
-  html body #verixAsfNoticeOverlay .verix-asf-notice-grid.verix-notice-grid-three{
-    grid-template-columns:minmax(0,1fr)!important;
-    gap:12px!important;
-  }
-  html body #verixAsfNoticeOverlay .verix-asf-notice-grid-three>.verix-asf-notice-card{
-    min-height:0!important;
-    padding:20px 18px 19px!important;
-  }
-  html body #verixAsfNoticeOverlay .verix-notice-card-milestone{
-    text-align:left!important;
-  }
-  html body #verixAsfNoticeOverlay .verix-notice-card-milestone .verix-asf-notice-thanks-icon{
-    align-self:flex-start!important;
-  }
-  html body #verixAsfNoticeOverlay .verix-notice-card-milestone .verix-asf-notice-thanks-number{
-    font-size:36px!important;
-  }
+html body #verixAsfNoticeOverlay .vx-final-thanks strong{color:#fff!important;font:900 17px/1.1 Arial,sans-serif!important;letter-spacing:1px!important}
+html body #verixAsfNoticeOverlay .vx-final-thanks span{margin-top:4px!important;color:#f0f6f5!important;font:700 10px/1.35 Arial,sans-serif!important;letter-spacing:.7px!important}
+html body #verixAsfNoticeOverlay .vx-final-messages{
+ display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:0!important;margin:0 0 15px!important;
 }
-@media(max-width:640px){
-  html body #verixAsfNoticeOverlay .verix-asf-notice-window{
-    max-height:94vh!important;
-  }
-  html body #verixAsfNoticeOverlay .verix-asf-notice-body{
-    padding:13px!important;
-  }
-  html body #verixAsfNoticeOverlay .verix-asf-notice-grid-three>.verix-asf-notice-card{
-    padding:18px 15px!important;
-  }
+html body #verixAsfNoticeOverlay .vx-final-messages article{
+ display:flex!important;align-items:flex-start!important;gap:10px!important;min-width:0!important;padding:4px 12px!important;
 }
-@media(prefers-reduced-motion:reduce){
-  html body #verixAsfNoticeOverlay .verix-asf-notice-grid-three>.verix-asf-notice-card{transition:none!important;}
+html body #verixAsfNoticeOverlay .vx-final-messages article:first-child{padding-left:2px!important}
+html body #verixAsfNoticeOverlay .vx-final-messages article+article{border-left:1px solid rgba(92,225,148,.55)!important}
+html body #verixAsfNoticeOverlay .vx-final-icon{
+ flex:0 0 34px!important;width:34px!important;height:34px!important;color:#b9f34d!important;
+}
+html body #verixAsfNoticeOverlay .vx-final-icon svg{width:100%!important;height:100%!important}
+html body #verixAsfNoticeOverlay .vx-final-messages p{
+ margin:0!important;color:#f1f5f7!important;font:500 12px/1.48 Arial,sans-serif!important;
+}
+html body #verixAsfNoticeOverlay .vx-final-messages strong{color:#fff!important;font-weight:850!important}
+html body #verixAsfNoticeOverlay .vx-final-origin{
+ display:flex!important;align-items:center!important;gap:14px!important;margin:0!important;padding:12px 15px!important;
+ border:1px solid rgba(190,235,65,.85)!important;border-radius:13px!important;
+ background:rgba(4,28,31,.88)!important;text-align:left!important;
+}
+html body #verixAsfNoticeOverlay .vx-final-code-icon{
+ flex:0 0 42px!important;width:42px!important;height:34px!important;color:#baf04b!important;
+}
+html body #verixAsfNoticeOverlay .vx-final-code-icon svg{width:100%!important;height:100%!important}
+html body #verixAsfNoticeOverlay .vx-final-origin p{
+ margin:0!important;color:#edf4f4!important;font:500 12px/1.48 Arial,sans-serif!important;
+}
+html body #verixAsfNoticeOverlay .vx-final-origin strong{color:#d8f66b!important;font-weight:850!important}
+html body #verixAsfNoticeOverlay .vx-final-footer{
+ flex:0 0 auto!important;padding:0 20px 18px!important;background:#03131e!important;
+}
+html body #verixAsfNoticeOverlay .vx-final-continue{
+ display:flex!important;align-items:center!important;justify-content:center!important;gap:14px!important;
+ width:100%!important;min-height:58px!important;margin:0!important;padding:12px 18px!important;
+ border:1px solid #55f29c!important;border-radius:13px!important;
+ background:linear-gradient(100deg,#17c965,#00823d)!important;color:#fff!important;
+ font:900 18px/1 Arial,sans-serif!important;letter-spacing:1.2px!important;
+ box-shadow:0 7px 22px rgba(0,0,0,.32),0 0 18px rgba(0,218,105,.17)!important;
+ cursor:pointer!important;appearance:none!important;-webkit-appearance:none!important;
+}
+html body #verixAsfNoticeOverlay .vx-final-continue span{font-size:26px!important;line-height:1!important}
+html body #verixAsfNoticeOverlay .vx-final-continue:focus-visible{outline:3px solid #d5ff72!important;outline-offset:3px!important}
+@media(max-width:600px){
+ html body #verixAsfNoticeOverlay.verix-asf-notice-overlay{padding:8px!important}
+ html body #verixAsfNoticeOverlay .vx-final-window{width:96vw!important;max-height:calc(100dvh - 16px)!important;border-radius:15px!important}
+ html body #verixAsfNoticeOverlay .vx-final-hero{height:210px!important;min-height:210px!important}
+ html body #verixAsfNoticeOverlay .vx-final-brand{top:12px!important;left:13px!important;right:13px!important;gap:7px!important}
+ html body #verixAsfNoticeOverlay .vx-final-vmark{font-size:27px!important}
+ html body #verixAsfNoticeOverlay .vx-final-brand-name{font-size:22px!important}
+ html body #verixAsfNoticeOverlay .vx-final-brand-sub{font-size:7px!important;letter-spacing:1px!important}
+ html body #verixAsfNoticeOverlay .vx-final-kicker{top:14px!important;right:12px!important;font-size:6px!important;padding:6px 7px!important}
+ html body #verixAsfNoticeOverlay .vx-final-hero-copy{left:12px!important;right:12px!important;bottom:13px!important}
+ html body #verixAsfNoticeOverlay .vx-final-hero-copy h1{font-size:24px!important}
+ html body #verixAsfNoticeOverlay .vx-final-hero-copy p{font-size:12px!important}
+ html body #verixAsfNoticeOverlay .vx-final-content{padding:12px 12px 11px!important}
+ html body #verixAsfNoticeOverlay .vx-final-milestone{grid-template-columns:40px minmax(0,1fr) minmax(84px,.62fr)!important;gap:7px!important;padding:10px 8px!important;margin-bottom:12px!important}
+ html body #verixAsfNoticeOverlay .vx-final-chart-icon{width:36px!important;height:36px!important;border-radius:10px!important}
+ html body #verixAsfNoticeOverlay .vx-final-chart-icon svg{width:22px!important;height:22px!important}
+ html body #verixAsfNoticeOverlay .vx-final-count{padding-left:8px!important}
+ html body #verixAsfNoticeOverlay .vx-final-count strong{font-size:clamp(27px,7.7vw,38px)!important;letter-spacing:-1.4px!important}
+ html body #verixAsfNoticeOverlay .vx-final-count span{font-size:8px!important;letter-spacing:.35px!important}
+ html body #verixAsfNoticeOverlay .vx-final-thanks{padding-left:7px!important}
+ html body #verixAsfNoticeOverlay .vx-final-thanks strong{font-size:11px!important}
+ html body #verixAsfNoticeOverlay .vx-final-thanks span{font-size:7px!important}
+ html body #verixAsfNoticeOverlay .vx-final-messages{grid-template-columns:repeat(3,minmax(0,1fr))!important;margin-bottom:12px!important}
+ html body #verixAsfNoticeOverlay .vx-final-messages article{display:block!important;padding:3px 7px!important}
+ html body #verixAsfNoticeOverlay .vx-final-messages article:first-child{padding-left:0!important}
+ html body #verixAsfNoticeOverlay .vx-final-icon{display:block!important;width:27px!important;height:27px!important;margin-bottom:6px!important}
+ html body #verixAsfNoticeOverlay .vx-final-messages p{font-size:9px!important;line-height:1.4!important}
+ html body #verixAsfNoticeOverlay .vx-final-origin{gap:9px!important;padding:9px 10px!important}
+ html body #verixAsfNoticeOverlay .vx-final-code-icon{flex-basis:31px!important;width:31px!important;height:27px!important}
+ html body #verixAsfNoticeOverlay .vx-final-origin p{font-size:9px!important;line-height:1.4!important}
+ html body #verixAsfNoticeOverlay .vx-final-footer{padding:0 12px 12px!important}
+ html body #verixAsfNoticeOverlay .vx-final-continue{min-height:49px!important;font-size:15px!important}
+}
+@media(max-width:390px){
+ html body #verixAsfNoticeOverlay .vx-final-brand-sub{display:none!important}
+ html body #verixAsfNoticeOverlay .vx-final-brand-line{display:none!important}
+ html body #verixAsfNoticeOverlay .vx-final-hero{height:195px!important;min-height:195px!important}
+ html body #verixAsfNoticeOverlay .vx-final-messages p{font-size:8px!important}
+ html body #verixAsfNoticeOverlay .vx-final-count strong{font-size:27px!important}
 }
 </style>
-
-
-<style id="verix-welcome-popup-replacement-v1">
-/* Substituição integral do pop-up inicial VÉRIX — sem overlays adicionais. */
-#verixAsfNoticeOverlay.verix-asf-notice-overlay{
-  position:fixed!important;inset:0!important;z-index:2147483001!important;
-  display:flex;align-items:center;justify-content:center;padding:12px!important;
-  background:rgba(1,7,13,.88)!important;backdrop-filter:blur(8px)!important;
-  -webkit-backdrop-filter:blur(8px)!important;box-sizing:border-box!important;
-}
-#verixAsfNoticeOverlay[aria-hidden="true"]{display:none!important}
-#verixAsfNoticeOverlay .vx-welcome-window{
-  width:min(960px,96vw)!important;height:auto!important;max-height:94dvh!important;
-  min-height:0!important;display:flex!important;flex-direction:column!important;
-  overflow:hidden!important;border:1px solid rgba(160,205,220,.5)!important;
-  border-radius:22px!important;background:linear-gradient(155deg,#071b2b 0%,#03111d 58%,#001018 100%)!important;
-  color:#f4f8fb!important;text-align:center!important;
-  box-shadow:0 28px 90px rgba(0,0,0,.65),0 0 36px rgba(0,105,255,.12)!important;
-  position:relative!important;
-}
-#verixAsfNoticeOverlay .vx-welcome-window:before{display:none!important}
-#verixAsfNoticeOverlay .vx-welcome-scroll{overflow-y:auto!important;min-height:0!important;overscroll-behavior:contain!important}
-#verixAsfNoticeOverlay .vx-welcome-header{
-  min-height:70px;display:flex;align-items:center;justify-content:space-between;gap:14px;
-  padding:14px 22px;border-bottom:1px solid rgba(255,255,255,.09);
-  background:linear-gradient(90deg,rgba(5,20,32,.98),rgba(8,32,48,.92));
-}
-#verixAsfNoticeOverlay .vx-welcome-brand{display:flex;align-items:center;gap:10px;min-width:0}
-#verixAsfNoticeOverlay .vx-welcome-mark{display:flex;width:38px;height:30px;flex:0 0 auto}
-#verixAsfNoticeOverlay .vx-welcome-mark svg{width:100%;height:100%}
-#verixAsfNoticeOverlay .vx-welcome-wordmark{font:900 27px/1 Arial,sans-serif;letter-spacing:-1.2px;color:#fff}
-#verixAsfNoticeOverlay .vx-welcome-divider{height:30px;width:1px;background:rgba(255,255,255,.4);margin:0 5px}
-#verixAsfNoticeOverlay .vx-welcome-tagline{font:800 9px/1.4 Arial,sans-serif;letter-spacing:2px;color:#d6e4eb;text-align:left}
-#verixAsfNoticeOverlay .vx-welcome-status{display:flex;align-items:center;gap:8px;border:1px solid rgba(31,214,123,.45);border-radius:99px;padding:8px 12px;color:#b8f7d3;font:800 8px/1 Arial,sans-serif;letter-spacing:1px;white-space:nowrap}
-#verixAsfNoticeOverlay .vx-welcome-status i{width:8px;height:8px;border-radius:50%;background:#20df7d;box-shadow:0 0 12px #20df7d}
-#verixAsfNoticeOverlay .vx-welcome-hero{
-  height:128px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;
-  background:radial-gradient(ellipse at 50% 52%,rgba(0,113,255,.22),transparent 34%),linear-gradient(90deg,#06192b,#0a2335 50%,#06192b);
-}
-#verixAsfNoticeOverlay .vx-welcome-hero:before,#verixAsfNoticeOverlay .vx-welcome-hero:after{
-  content:"";position:absolute;left:-5%;right:-5%;height:2px;background:linear-gradient(90deg,transparent,rgba(0,120,255,.8),transparent);filter:blur(2px)
-}
-#verixAsfNoticeOverlay .vx-welcome-hero:before{top:28px}
-#verixAsfNoticeOverlay .vx-welcome-hero:after{bottom:28px}
-#verixAsfNoticeOverlay .vx-welcome-road-lines{position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 13%,rgba(255,255,255,.025) 13.1% 13.25%,transparent 13.4% 25%)}
-#verixAsfNoticeOverlay .vx-welcome-car{position:relative;z-index:1;width:min(660px,88%);height:120px;filter:drop-shadow(0 0 18px rgba(0,110,255,.4))}
-#verixAsfNoticeOverlay .vx-welcome-intro{padding:7px 24px 14px;background:linear-gradient(180deg,rgba(2,15,25,.2),rgba(2,15,25,.9))}
-#verixAsfNoticeOverlay .vx-welcome-intro h1{margin:0 0 5px;color:#fff;font:900 clamp(22px,3vw,34px)/1.14 Arial,sans-serif;letter-spacing:-.7px}
-#verixAsfNoticeOverlay .vx-welcome-intro h1 em{color:#29e66f;font-style:normal}
-#verixAsfNoticeOverlay .vx-welcome-intro p{max-width:720px;margin:0 auto;color:#e1edf3;font:500 clamp(12px,1.4vw,16px)/1.45 Arial,sans-serif}
-#verixAsfNoticeOverlay .vx-welcome-intro strong{color:#fff}
-#verixAsfNoticeOverlay .vx-welcome-milestone{
-  margin:0 7% 14px;padding:12px 18px;min-height:94px;display:grid;grid-template-columns:70px minmax(0,1fr) minmax(150px,.65fr);
-  align-items:center;gap:15px;border:1px solid rgba(80,239,124,.85);border-radius:18px;
-  background:linear-gradient(100deg,rgba(0,48,39,.55),rgba(3,23,34,.88),rgba(0,48,39,.5));
-  box-shadow:0 0 20px rgba(20,229,103,.13),inset 0 0 24px rgba(16,175,93,.08);
-}
-#verixAsfNoticeOverlay .vx-welcome-stat-icon{width:54px;height:54px;border-radius:15px;background:linear-gradient(145deg,#0bbd57,#006b34);display:grid;place-items:center;color:#fff}
-#verixAsfNoticeOverlay .vx-welcome-stat-icon svg{width:30px;height:30px}
-#verixAsfNoticeOverlay .vx-welcome-stat{border-left:1px solid rgba(108,242,153,.7);padding-left:18px;text-align:left}
-#verixAsfNoticeOverlay .vx-welcome-stat strong{display:block;color:#fff;font:950 clamp(36px,5.4vw,58px)/.98 Arial,sans-serif;letter-spacing:-2px}
-#verixAsfNoticeOverlay .vx-welcome-stat span{display:block;margin-top:5px;color:#c9f8d9;font:900 clamp(10px,1.3vw,15px)/1.2 Arial,sans-serif;letter-spacing:1.1px}
-#verixAsfNoticeOverlay .vx-welcome-thanks{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-left:1px solid rgba(108,242,153,.7);padding:0 8px 0 18px;color:#fff}
-#verixAsfNoticeOverlay .vx-welcome-thanks strong{font:900 18px/1 Arial,sans-serif;letter-spacing:1px}
-#verixAsfNoticeOverlay .vx-welcome-thanks>span:not(.vx-welcome-laurel){font:700 10px/1.4 Arial,sans-serif;letter-spacing:.8px}
-#verixAsfNoticeOverlay .vx-welcome-laurel{position:absolute;left:3px;top:0;color:#67f17e;font:36px/1 Georgia,serif;transform:rotate(-38deg)}
-#verixAsfNoticeOverlay .vx-welcome-laurel-right{left:auto;right:0;transform:scaleX(-1) rotate(-38deg)}
-#verixAsfNoticeOverlay .vx-welcome-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:0 5% 14px}
-#verixAsfNoticeOverlay .vx-welcome-columns article{display:flex;align-items:flex-start;gap:10px;padding:4px 15px;text-align:left;min-width:0}
-#verixAsfNoticeOverlay .vx-welcome-columns article+article{border-left:1px solid rgba(88,211,144,.55)}
-#verixAsfNoticeOverlay .vx-welcome-icon{flex:0 0 36px;width:36px;height:36px;color:#a7f34b}
-#verixAsfNoticeOverlay .vx-welcome-icon svg{width:100%;height:100%}
-#verixAsfNoticeOverlay .vx-welcome-columns p{margin:0;color:#edf4f6;font:500 11px/1.48 Arial,sans-serif}
-#verixAsfNoticeOverlay .vx-welcome-columns strong{color:#fff;font-weight:850}
-#verixAsfNoticeOverlay .vx-welcome-origin{display:flex;align-items:center;gap:15px;margin:0 5% 16px;padding:12px 18px;border:1px solid #b3e842;border-radius:15px;background:rgba(1,24,26,.7);box-shadow:0 0 15px rgba(154,222,46,.08);text-align:left}
-#verixAsfNoticeOverlay .vx-welcome-origin-icon{flex:0 0 38px;color:#b6f348;font:900 31px/1 monospace;text-align:center}
-#verixAsfNoticeOverlay .vx-welcome-origin p{margin:0;color:#edf4f6;font:500 11px/1.5 Arial,sans-serif}
-#verixAsfNoticeOverlay .vx-welcome-origin strong{color:#c7f56a;font-weight:850}
-#verixAsfNoticeOverlay .vx-welcome-footer{flex:0 0 auto;padding:0 5% 18px;background:linear-gradient(180deg,rgba(2,17,27,0),rgba(2,17,27,.98) 22%)}
-#verixAsfNoticeOverlay .vx-welcome-continue{width:100%!important;min-height:56px!important;border:1px solid #4cf09a!important;border-radius:14px!important;background:linear-gradient(100deg,#14b95c,#00783c)!important;color:#fff!important;font:900 18px/1 Arial,sans-serif!important;letter-spacing:1.2px!important;box-shadow:0 7px 24px rgba(0,0,0,.3),0 0 18px rgba(0,216,105,.15)!important}
-#verixAsfNoticeOverlay .vx-welcome-continue span{margin-left:10px;font-size:24px}
-@media(max-width:700px){
-  #verixAsfNoticeOverlay.verix-asf-notice-overlay{padding:8px!important}
-  #verixAsfNoticeOverlay .vx-welcome-window{width:100%!important;max-height:96dvh!important;border-radius:17px!important}
-  #verixAsfNoticeOverlay .vx-welcome-header{min-height:58px;padding:10px 12px;gap:8px}
-  #verixAsfNoticeOverlay .vx-welcome-mark{width:29px;height:23px}
-  #verixAsfNoticeOverlay .vx-welcome-wordmark{font-size:21px}
-  #verixAsfNoticeOverlay .vx-welcome-divider{height:23px;margin:0 1px}
-  #verixAsfNoticeOverlay .vx-welcome-tagline{font-size:7px;letter-spacing:1px;max-width:125px}
-  #verixAsfNoticeOverlay .vx-welcome-status{font-size:6px;padding:7px 8px;letter-spacing:.45px}
-  #verixAsfNoticeOverlay .vx-welcome-hero{height:94px}
-  #verixAsfNoticeOverlay .vx-welcome-car{height:90px;width:94%}
-  #verixAsfNoticeOverlay .vx-welcome-intro{padding:5px 14px 12px}
-  #verixAsfNoticeOverlay .vx-welcome-intro h1{font-size:22px}
-  #verixAsfNoticeOverlay .vx-welcome-intro p{font-size:12px}
-  #verixAsfNoticeOverlay .vx-welcome-milestone{margin:0 12px 12px;padding:10px 9px;min-height:75px;grid-template-columns:40px minmax(0,1fr) minmax(80px,.58fr);gap:7px;border-radius:13px}
-  #verixAsfNoticeOverlay .vx-welcome-stat-icon{width:36px;height:36px;border-radius:10px}
-  #verixAsfNoticeOverlay .vx-welcome-stat-icon svg{width:22px;height:22px}
-  #verixAsfNoticeOverlay .vx-welcome-stat{padding-left:8px}
-  #verixAsfNoticeOverlay .vx-welcome-stat strong{font-size:clamp(27px,8vw,38px);letter-spacing:-1.5px}
-  #verixAsfNoticeOverlay .vx-welcome-stat span{font-size:8px;letter-spacing:.45px}
-  #verixAsfNoticeOverlay .vx-welcome-thanks{padding-left:10px}
-  #verixAsfNoticeOverlay .vx-welcome-thanks strong{font-size:12px}
-  #verixAsfNoticeOverlay .vx-welcome-thanks>span:not(.vx-welcome-laurel){font-size:7px}
-  #verixAsfNoticeOverlay .vx-welcome-laurel{font-size:23px;left:-1px}
-  #verixAsfNoticeOverlay .vx-welcome-laurel-right{right:-1px;left:auto}
-  #verixAsfNoticeOverlay .vx-welcome-columns{grid-template-columns:1fr;margin:0 15px 12px;gap:0}
-  #verixAsfNoticeOverlay .vx-welcome-columns article{padding:9px 4px;gap:12px;align-items:center}
-  #verixAsfNoticeOverlay .vx-welcome-columns article+article{border-left:0;border-top:1px solid rgba(88,211,144,.35)}
-  #verixAsfNoticeOverlay .vx-welcome-icon{flex-basis:31px;width:31px;height:31px}
-  #verixAsfNoticeOverlay .vx-welcome-columns p{font-size:10.5px;line-height:1.4}
-  #verixAsfNoticeOverlay .vx-welcome-origin{margin:0 13px 13px;padding:10px 12px;gap:9px}
-  #verixAsfNoticeOverlay .vx-welcome-origin-icon{flex-basis:29px;font-size:25px}
-  #verixAsfNoticeOverlay .vx-welcome-origin p{font-size:10px;line-height:1.42}
-  #verixAsfNoticeOverlay .vx-welcome-footer{padding:0 13px 13px}
-  #verixAsfNoticeOverlay .vx-welcome-continue{min-height:49px!important;font-size:15px!important}
-}
-@media(max-width:380px){
-  #verixAsfNoticeOverlay .vx-welcome-tagline{display:none}
-  #verixAsfNoticeOverlay .vx-welcome-divider{display:none}
-  #verixAsfNoticeOverlay .vx-welcome-stat strong{font-size:27px}
-  #verixAsfNoticeOverlay .vx-welcome-thanks strong{font-size:11px}
-}
-</style>
-
-
-<style id="verix-welcome-mobile-scale-fix-v2">
-/* O zoom automático da interface reduzia também o pop-up. Durante a abertura,
-   o aviso usa a escala nativa do ecrã; ao fechar, o zoom normal regressa. */
-html body:has(#verixAsfNoticeOverlay[aria-hidden="false"]){
-  zoom:1!important;
-}
-#verixAsfNoticeOverlay .vx-welcome-window{
-  width:min(960px,96vw)!important;
-  max-height:calc(100dvh - 16px)!important;
-}
-#verixAsfNoticeOverlay .vx-welcome-hero{height:170px!important}
-#verixAsfNoticeOverlay .vx-welcome-car{height:160px!important}
-#verixAsfNoticeOverlay .vx-welcome-columns p{font-size:13px!important;line-height:1.5!important}
-#verixAsfNoticeOverlay .vx-welcome-origin p{font-size:13px!important;line-height:1.5!important}
-#verixAsfNoticeOverlay .vx-welcome-intro p{font-size:15px!important;line-height:1.5!important}
-#verixAsfNoticeOverlay .vx-welcome-stat span{font-size:13px!important}
-@media(max-width:700px){
-  #verixAsfNoticeOverlay .vx-welcome-hero{height:128px!important}
-  #verixAsfNoticeOverlay .vx-welcome-car{height:122px!important}
-  #verixAsfNoticeOverlay .vx-welcome-columns p{font-size:12.5px!important;line-height:1.48!important}
-  #verixAsfNoticeOverlay .vx-welcome-origin p{font-size:12px!important;line-height:1.45!important}
-  #verixAsfNoticeOverlay .vx-welcome-intro p{font-size:13.5px!important;line-height:1.45!important}
-  #verixAsfNoticeOverlay .vx-welcome-stat span{font-size:9px!important}
-}
-</style>
-
 </body>
 </html>
