@@ -81,7 +81,7 @@ jobs:
                   else:
                       self.stack.pop()
 
-          for path in (Path("dist/verix-app.html"), Path("dist/admin_v2.html")):
+          for path in (Path("dist/verix-app.html"), Path("dist/verix-apoio-fiscalizacao.html"), Path("dist/admin_v2.html")):
               if not path.is_file():
                   raise SystemExit(f"Required published HTML file missing: {path}")
               parser = Validator()
@@ -106,6 +106,11 @@ jobs:
             echo "Source-map directive found in dist"
             exit 1
           fi
+
+      - name: Verify fiscalização support module is packaged
+        run: |
+          test -s dist/verix-apoio-fiscalizacao.html
+          grep -q "verix-operational-hub-launcher" dist/verix-app.html
 
       - name: Verify required security markers
         shell: bash
