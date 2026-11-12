@@ -81,7 +81,7 @@ jobs:
                   else:
                       self.stack.pop()
 
-          for path in (Path("dist/verix-app.html"), Path("dist/admin_v2.html")):
+          for path in (Path("dist/verix-app.html"), Path("dist/verix-apoio-fiscalizacao.html"), Path("dist/admin_v2.html")):
               if not path.is_file():
                   raise SystemExit(f"Required published HTML file missing: {path}")
               parser = Validator()
@@ -107,7 +107,7 @@ jobs:
             exit 1
           fi
 
-      - name: Verify required security markers
+      - name: Verify fiscalização support module is packaged\n        run: |\n          test -s dist/verix-apoio-fiscalizacao.html\n          grep -q "verix-operational-hub-launcher" dist/verix-app.html\n\n      - name: Verify required security markers
         shell: bash
         run: |
           grep -q "verix-gate-v1" dist/verix-app.html
