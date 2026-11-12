@@ -144,7 +144,7 @@ function obfuscateHtml(html, label, optionsOverride = null) {
     // can interfere with browser lifecycle/telemetry code in legacy hosts.
     const idMatch = open.match(/\bid\s*=\s*["']([^"']+)["']/i);
     const scriptId = idMatch ? String(idMatch[1]).toLowerCase() : "";
-    if (scriptId === "verix-telemetry-v2" || scriptId === "verix-security-runtime" || scriptId === "verix-startup-controller" || scriptId === "verix-startup-failsafe" || scriptId === "verix-mobile-route-capture" || scriptId === "verix-startup-flag") {
+    if (scriptId === "verix-telemetry-v2" || scriptId === "verix-security-runtime" || scriptId === "verix-startup-controller" || scriptId === "verix-startup-failsafe" || scriptId === "verix-mobile-route-capture" || scriptId === "verix-startup-flag" || scriptId === "verix-operational-hub-launcher") {
       return full;
     }
 
@@ -272,11 +272,66 @@ function writeSecureFile(relativeSource, relativeOutput) {
       '})();',
       '</script>'
     ].join("\n");
+
+    const fiscalizacaoLauncher = `
+<style id="verix-fiscalizacao-launcher-style">
+.main-menu-screen.show .mm74-fiscalizacao-link{
+  order:3.5!important;width:min(900px,calc(100% - 36px))!important;height:64px!important;
+  min-height:64px!important;max-height:64px!important;margin:16px auto 0!important;padding:10px 18px!important;
+  display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;
+  gap:14px!important;text-align:left!important;border:1px solid rgba(91,218,164,.46)!important;
+  border-radius:11px!important;background:linear-gradient(100deg,rgba(12,68,54,.96),rgba(9,30,34,.98))!important;
+  color:#baf4d6!important;box-shadow:0 8px 24px rgba(0,0,0,.18),inset 0 0 0 1px rgba(103,221,173,.06)!important;
+}
+.main-menu-screen.show .mm74-fiscalizacao-link:hover{border-color:rgba(117,239,184,.8)!important;filter:brightness(1.08)}
+.main-menu-screen.show .mm74-fiscalizacao-link .mm74-icon{width:36px!important;height:36px!important;min-width:36px!important;
+  margin:0!important;display:grid!important;place-items:center!important;border:1px solid rgba(91,218,164,.28)!important;
+  border-radius:9px!important;background:rgba(67,180,132,.13)!important;color:#9aebc1!important;font-size:22px!important}
+.main-menu-screen.show .mm74-fiscalizacao-link .mm74-label{display:block!important;margin:0!important;color:#c4f5d9!important;
+  font-size:10px!important;line-height:1.2!important;letter-spacing:1.15px!important;font-weight:900!important}
+.main-menu-screen.show .mm74-fiscalizacao-link .mm74-caption{display:block!important;margin-top:4px!important;
+  color:#82b9a1!important;font-size:8px!important;letter-spacing:.8px!important;font-weight:700!important}
+@media(max-width:620px){.main-menu-screen.show .mm74-fiscalizacao-link{width:280px!important;height:62px!important;min-height:62px!important;max-height:62px!important;margin-top:12px!important;padding:9px 12px!important}}
+</style>
+<script id="verix-operational-hub-launcher">
+(function(){
+  "use strict";
+  var target="./verix-apoio-fiscalizacao.html";
+  function install(){
+    if(document.getElementById("verixOperationalHubButton"))return true;
+    var root=document.getElementById("mainMenuScreen");
+    if(!root)return false;
+    var big=root.querySelector(".main-menu-v74-grid-big");
+    var small=root.querySelector(".main-menu-v74-grid-small");
+    if(!big&&!small)return false;
+    var btn=document.createElement("button");
+    btn.type="button";
+    btn.id="verixOperationalHubButton";
+    btn.className="mm74-card mm74-fiscalizacao-link";
+    btn.setAttribute("aria-label","Abrir apoio à fiscalização rodoviária");
+    btn.innerHTML='<span class="mm74-icon" aria-hidden="true">⌖</span><span><span class="mm74-label">APOIO À FISCALIZAÇÃO</span><span class="mm74-caption">LEGISLAÇÃO · SINALIZAÇÃO · TÍTULOS · PROCEDIMENTOS</span></span>';
+    btn.addEventListener("click",function(){window.open(target,"_blank","noopener,noreferrer");});
+    if(small)small.parentNode.insertBefore(btn,small);
+    else big.parentNode.insertBefore(btn,big.nextSibling);
+    return true;
+  }
+  function start(){
+    if(install())return;
+    if(!document.body||typeof MutationObserver==="undefined")return;
+    var observer=new MutationObserver(function(){if(install())observer.disconnect();});
+    observer.observe(document.body,{childList:true,subtree:true});
+    window.setTimeout(function(){observer.disconnect();},12000);
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start,{once:true});
+  else start();
+})();
+</script>`;
     source = source.replace(
       /<\/body>/i,
       '<style id="verix-depth-ui">\n' + depthCss + '\n</style>\n' +
       '<style id="verix-mobile-final-ui">\n' + mobileFinalCss + '\n</style>\n' +
       mobileFinalizer + '\n' +
+      fiscalizacaoLauncher + '\n' +
       '<script defer src="./verix-presence-v1.js?v=' + encodeURIComponent(String(BUILD_ID)) + '"></script>\n' +
       '</body>'
     );  }
@@ -286,6 +341,9 @@ function writeSecureFile(relativeSource, relativeOutput) {
   }
   if (relativeSource === "verix-app.html" && !source.includes('src="./verix-presence-v1.js?v=' + encodeURIComponent(String(BUILD_ID)) + '"')) {
     throw new Error("Realtime Presence client is missing from the operational application");
+  }
+  if (relativeSource === "verix-app.html" && !source.includes('id="verix-operational-hub-launcher"')) {
+    throw new Error("Fiscalização launcher is missing from the operational application");
   }
   const { html, scriptCount } = obfuscateHtml(source, relativeSource);
   const outPath = path.join(OUTPUT_DIR, relativeOutput);
@@ -311,6 +369,24 @@ const results = [];
 // Main application
 const app = writeSecureFile("verix-app.html", "verix-app.html");
 if (app) results.push(app);
+
+// Standalone operational support module. Keep it separate from the legacy
+// vehicle/ASF runtime; the main menu only opens this page in a new tab.
+const fiscalizacaoSource = path.join(ROOT, "verix-apoio-fiscalizacao.html");
+if (!fs.existsSync(fiscalizacaoSource)) {
+  throw new Error("Required VÉRIX fiscalização support module is missing: verix-apoio-fiscalizacao.html");
+}
+const fiscalizacaoOutput = path.join(OUTPUT_DIR, "verix-apoio-fiscalizacao.html");
+const fiscalizacaoHtml = fs.readFileSync(fiscalizacaoSource, "utf8");
+if (!fiscalizacaoHtml.includes('id="view-home"') || !fiscalizacaoHtml.includes('verix_irfs_favourites')) {
+  throw new Error("Fiscalização support module failed its minimum structural checks");
+}
+fs.writeFileSync(fiscalizacaoOutput, fiscalizacaoHtml, "utf8");
+results.push({
+  source: "verix-apoio-fiscalizacao.html",
+  output: "dist/verix-apoio-fiscalizacao.html",
+  size_bytes: fs.statSync(fiscalizacaoOutput).size
+});
 
 // Admin panel
 const admin = writeSecureFile("admin_v2.html", "admin_v2.html");
