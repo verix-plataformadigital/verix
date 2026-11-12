@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#07151b">
 <meta name="referrer" content="strict-origin-when-cross-origin">
+<meta http-equiv="Cache-Control" content="no-store,no-cache,must-revalidate,max-age=0">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>VÉRIX — Apoio à Fiscalização</title>
 <style>
 :root{color-scheme:dark;--bg:#071319;--bg2:#0a1b22;--panel:#0d2028;--panel2:#102832;--panel3:#15343d;--line:#21424a;--line2:#315962;--text:#ecf5f4;--muted:#9ab2b3;--muted2:#718e91;--green:#65d5a5;--green2:#29ad80;--mint:#a3f0ce;--amber:#edc16d;--red:#e28b83;--blue:#7ec9e6;--shadow:0 20px 60px rgba(0,0,0,.28);--r:15px}
@@ -35,7 +38,7 @@
   </nav>
   <div class="side-spacer"></div>
   <div class="side-note"><strong>FERRAMENTA DE APOIO</strong><p>O VÉRIX não é um sistema oficial. Confirma sempre a redação em vigor e os procedimentos institucionais aplicáveis.</p></div>
-  <div class="side-footer"><span>VÉRIX / OPS</span><span>BUILD PREVIEW</span></div>
+  <div class="side-footer"><span>VÉRIX / OPS</span><span>APOIO OPERACIONAL</span></div>
 </aside>
 <main class="main">
   <header class="topbar">
@@ -43,14 +46,14 @@
     <div class="crumb">VÉRIX <span style="color:#42645f">/</span> <b id="crumb">Visão geral</b></div>
     <div class="top-actions">
       <label class="global-search"><span>⌕</span><input id="globalSearch" type="search" placeholder="Pesquisar legislação, títulos, sinalização…" autocomplete="off"><span style="font-size:9px;color:#71908b">↵</span></label>
-      <span class="status"><i class="dot"></i> MÓDULO LOCAL</span>
+      <span class="status"><i class="dot"></i> MÓDULO AUTÓNOMO</span>
       <a class="backlink" href="./index.html" title="Voltar à aplicação VÉRIX">← VÉRIX</a>
     </div>
   </header>
   <div class="page">
     <section class="view active" id="view-home">
       <div class="hero"><div><div class="eyebrow">CENTRO DE APOIO / 01</div><h1>Apoio à fiscalização rodoviária</h1><p>Consulta organizada de legislação, sinalização e habilitação legal para conduzir. A informação é encaminhada para fontes oficiais, com identificação da entidade responsável.</p></div><div class="hero-actions"><button class="btn primary" data-go="compendio">Abrir compêndio ↗</button><button class="btn" data-go="favoritos">Os meus favoritos ☆</button></div></div>
-      <div class="stats"><div class="stat"><span class="stat-icon">§</span><div><small>Diplomas de referência</small><strong>03</strong></div></div><div class="stat"><span class="stat-icon">◉</span><div><small>Famílias de sinalização</small><strong>05</strong></div></div><div class="stat"><span class="stat-icon">▤</span><div><small>Áreas de habilitação</small><strong>06</strong></div></div><div class="stat"><span class="stat-icon">↗</span><div><small>Fontes institucionais</small><strong>IMT / DRE</strong></div></div></div>
+      <div class="stats"><div class="stat"><span class="stat-icon">§</span><div><small>Diplomas de referência</small><strong>03</strong></div></div><div class="stat"><span class="stat-icon">◉</span><div><small>Famílias de sinalização</small><strong>07</strong></div></div><div class="stat"><span class="stat-icon">▤</span><div><small>Áreas de habilitação</small><strong>05</strong></div></div><div class="stat"><span class="stat-icon">↗</span><div><small>Fontes institucionais</small><strong>IMT / DRE</strong></div></div></div>
       <div class="section-head"><h2>Áreas principais</h2><span>ACESSO DIRETO</span></div>
       <div class="cards">
         <button class="module-card" data-go="regulamentacao"><div class="module-top"><span class="module-icon">§</span><span class="module-tag">LEGISLAÇÃO</span></div><h3>Regulamentação</h3><p>Código da Estrada, Regulamento de Sinalização do Trânsito e regime da habilitação legal para conduzir.</p><div class="module-foot"><span>CONSULTAR DIPLOMAS</span><span>↗</span></div></button>
@@ -188,7 +191,7 @@ const categories=[
 {group:'Veículos agrícolas',items:[['I','Tratores agrícolas — categoria I'],['II','Tratores agrícolas — categoria II'],['III','Tratores agrícolas — categoria III']]}
 ];
 const foreignGroups=[
-{key:'eu',title:'União Europeia / Espaço Económico Europeu',terms:'eu eee união europeia alemanha espanha frança itália suíça islandia liechtenstein noruega',desc:'Os títulos emitidos por Estados da UE/EEE são, em regra, reconhecidos até ao termo da validade indicada no documento. Quando não exista validade inscrita, há deveres específicos de registo junto do IMT após fixar residência.',condition:'Confirmar validade, categoria, códigos harmonizados, residência e obrigações de registo.'},
+{key:'eu',title:'União Europeia / Espaço Económico Europeu',terms:'eu eee união europeia alemanha espanha frança itália islandia liechtenstein noruega',desc:'Os títulos emitidos por Estados da UE/EEE são, em regra, reconhecidos até ao termo da validade indicada no documento. Quando não exista validade inscrita, há deveres específicos de registo junto do IMT após fixar residência.',condition:'Confirmar validade, categoria, códigos harmonizados, residência e obrigações de registo.'},
 {key:'cplp',title:'Países CPLP com regime indicado pelo IMT',terms:'cplp brasil brazil cabo verde angola mocambique moçambique sao tome são tomé principe',desc:'O IMT identifica Brasil e Cabo Verde como Estados CPLP signatários de convenções de trânsito e Angola, Cabo Verde, Moçambique e São Tomé e Príncipe como Estados com acordo bilateral com Portugal, nos termos e condições legais.',condition:'Verificar os requisitos cumulativos do regime: convenção/acordo, validade, data de emissão/renovação, idade e demais condições.'},
 {key:'oecd',title:'Países OECD / convenção',terms:'oecd ocde australia austrália canada chile coreia estados unidos islandia islândia israel japao japão nova zelandia reino unido suica suíça turquia',desc:'O IMT indica um conjunto de países OECD e Estados com convenções aplicáveis, designadamente Austrália, Canadá, Chile, Coreia do Sul, EUA, Islândia, Israel, Japão, Nova Zelândia, Reino Unido, Suíça e Turquia.',condition:'A lista não basta por si só: exige confirmação dos requisitos cumulativos e do título concreto.'},
 {key:'other',title:'Outros países / fora dos regimes anteriores',terms:'outros paises outros países africa asia america',desc:'O reconhecimento pode depender das convenções rodoviárias aplicáveis, reciprocidade e regras do RHLC. Alguns títulos não são válidos para conduzir em Portugal, embora possa existir procedimento de troca.',condition:'Consultar o IMT antes de concluir pela validade ou possibilidade de condução.'}
