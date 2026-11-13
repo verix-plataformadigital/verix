@@ -102,6 +102,49 @@ h1{margin:0;font-size:clamp(28px,4vw,38px);letter-spacing:-.045em;line-height:1.
 .refresh-time{margin-top:10px;color:var(--muted);font-size:13px}
 .install-help{margin:10px 0 0;color:#c3d4d9;font-size:12px}
 .footer-note{margin-top:34px;padding-top:17px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;line-height:1.7}
+:root{--canvas:#edf2f4;--accent:#087f83;--ink:#142a33;--nav:#10252e;--line:#dce5e8;--shadow:0 14px 38px rgba(15,39,49,.07)}
+.topbar{padding:20px 28px 22px;background:radial-gradient(900px 320px at 82% -45%,rgba(30,160,158,.25),transparent 60%),linear-gradient(120deg,#10252e,#193a45 72%,#0c3038)}
+.main-area{max-width:1320px;padding-top:38px}
+.main-area>.eyebrow{display:inline-flex;align-items:center;gap:9px;padding:7px 11px;border:1px solid #c8dddd;border-radius:99px;background:#e4f1f0;color:#087f83;font-size:11px;letter-spacing:.12em}
+h1{font-size:clamp(32px,4.3vw,48px);letter-spacing:-.055em}
+.page-description{margin:9px 0 30px;font-size:15px}
+.section-heading{margin-bottom:16px}
+.section-heading h2{font-size:20px}
+.metric-card{border:1px solid #e1e9eb;border-radius:16px;box-shadow:0 8px 26px rgba(18,44,53,.045);padding:21px 22px 18px}
+.metric-card:before{width:3px}
+.metric-value{font-size:clamp(34px,4vw,46px)}
+.history-grid{max-width:none;grid-template-columns:repeat(2,minmax(0,1fr))}
+.live-section{margin-top:28px;padding:23px;border:1px solid #dce6e8;border-radius:20px;background:linear-gradient(145deg,#f8fbfb,#eef4f5)}
+.live-grid .metric-card{background:#fff}
+.history-section{margin:32px 0 0;padding:26px;border:1px solid #dce6e8;border-radius:20px;background:#fff;box-shadow:0 12px 34px rgba(18,44,53,.045)}
+.history-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:22px}
+.history-kicker{color:#087f83;font-size:11px;font-weight:850;letter-spacing:.14em;text-transform:uppercase}
+.history-head h2{margin:5px 0 4px;font-size:25px;letter-spacing:-.04em}
+.history-head p{margin:0;color:var(--muted);font-size:13px}
+.history-window{padding:7px 11px;border-radius:99px;background:#eaf4f3;color:#087f83;font-size:12px;font-weight:750;white-space:nowrap}
+.history-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:20px}
+.summary-tile{padding:15px 16px;border:1px solid #e7edef;border-radius:13px;background:#f9fbfb}
+.summary-label{color:#6d7d84;font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase}
+.summary-value{margin-top:6px;color:#172f39;font-size:25px;font-weight:850;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.summary-tile.teal .summary-value{color:#087f83}.summary-tile.gold .summary-value{color:#a36b17}.summary-tile.red .summary-value{color:#b34e53}
+.chart-panel{padding:17px 18px 12px;border:1px solid #e6edef;border-radius:15px;background:linear-gradient(180deg,#fbfdfd,#f6f9fa)}
+.chart-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}
+.chart-title strong{font-size:13px}.chart-legend{display:flex;gap:13px;flex-wrap:wrap;color:#718087;font-size:11px}
+.legend-dot{display:inline-block;width:7px;height:7px;margin-right:5px;border-radius:50%;vertical-align:1px;background:#087f83}.legend-dot.gold{background:#d39a42}.legend-dot.red{background:#c45d61}
+.trend-svg{display:block;width:100%;height:auto;min-height:170px;overflow:visible}
+.history-table-wrap{margin-top:18px;overflow-x:auto;border:1px solid #e5edef;border-radius:14px}
+.history-table{width:100%;border-collapse:collapse;min-width:650px;font-size:12px}
+.history-table th{padding:12px 14px;background:#f4f8f8;color:#65767e;text-align:right;font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+.history-table th:first-child,.history-table td:first-child{text-align:left}
+.history-table td{padding:12px 14px;border-top:1px solid #edf1f2;text-align:right;font-variant-numeric:tabular-nums}
+.history-table tr:hover td{background:#f8fbfb}
+.history-table .day{font-weight:750;color:#203943}
+.rate{display:inline-block;min-width:48px;padding:4px 7px;border-radius:7px;background:#edf5f3;color:#087f83;font-weight:800;text-align:center}
+.rate.warn{background:#fff5e7;color:#a36b17}.rate.bad{background:#fceeee;color:#b34e53}
+.history-note{margin-top:12px;color:#718087;font-size:11px;line-height:1.6}
+.history-error{padding:22px;border:1px dashed #d7e1e4;border-radius:14px;color:#687982;text-align:center;font-size:13px}
+@media(max-width:760px){.history-section{padding:18px 14px;margin-top:22px}.history-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.history-head{flex-direction:column}.history-window{align-self:flex-start}.history-head h2{font-size:22px}.live-section{padding:17px 13px}.main-area{padding:25px 15px 30px}}
+@media(max-width:430px){.history-summary{gap:8px}.summary-tile{padding:12px}.summary-value{font-size:22px}.chart-panel{padding:12px 9px}.chart-legend{gap:8px}.history-head h2{font-size:20px}}
 @media(max-width:850px){
   .topbar-inner{align-items:flex-start;flex-direction:column;gap:13px}
   .topbar-actions{justify-content:flex-start}
@@ -191,6 +234,30 @@ h1{margin:0;font-size:clamp(28px,4vw,38px);letter-spacing:-.045em;line-height:1.
       </div>
     </section>
 
+    <section class="history-section" aria-labelledby="dailyHistoryTitle">
+      <div class="history-head">
+        <div><div class="history-kicker">Análise diária · 30 dias</div><h2 id="dailyHistoryTitle">Evolução das consultas</h2><p>Volume de atividade, respostas sem registo ASF e falhas técnicas, dia a dia.</p></div>
+        <span class="history-window" id="historyCoverage">A carregar período…</span>
+      </div>
+      <div class="history-summary" aria-live="polite">
+        <div class="summary-tile teal"><div class="summary-label">Consultas</div><div class="summary-value" id="historyTotalConsultations">—</div></div>
+        <div class="summary-tile gold"><div class="summary-label">Sem registo ASF</div><div class="summary-value" id="historyTotalNoRecord">—</div></div>
+        <div class="summary-tile"><div class="summary-label">% sem registo</div><div class="summary-value" id="historyNoRecordPct">—</div></div>
+        <div class="summary-tile red"><div class="summary-label">Erros técnicos</div><div class="summary-value" id="historyTotalErrors">—</div></div>
+      </div>
+      <div class="chart-panel">
+        <div class="chart-title"><strong>Atividade diária</strong><div class="chart-legend"><span><i class="legend-dot"></i>Consultas</span><span><i class="legend-dot gold"></i>Sem registo</span><span><i class="legend-dot red"></i>Erros</span></div></div>
+        <div id="historyChart" role="img" aria-label="Gráfico diário de consultas, resultados sem registo e erros"><div class="history-error">A carregar histórico…</div></div>
+      </div>
+      <div class="history-table-wrap">
+        <table class="history-table">
+          <thead><tr><th>Dia</th><th>Consultas</th><th>Sem registo</th><th>% sem registo</th><th>Erros</th><th>% erros</th></tr></thead>
+          <tbody id="historyRows"><tr><td colspan="6" class="history-error">A carregar dados diários…</td></tr></tbody>
+        </table>
+      </div>
+      <p class="history-note" id="historyFootnote">Os dias sem recolha são assinalados como indisponíveis, nunca apresentados como zero. As percentagens são calculadas sobre as consultas de cada dia. “Sem registo ASF” não confirma, por si só, ausência de seguro.</p>
+    </section>
+
     <section class="live-section" aria-labelledby="liveTitle">
       <div class="section-heading">
         <div><h2 id="liveTitle">Atividade em tempo real</h2><p>Indicadores operacionais partilhados entre computador e telemóvel.</p></div>
@@ -230,7 +297,7 @@ h1{margin:0;font-size:clamp(28px,4vw,38px);letter-spacing:-.045em;line-height:1.
 (function(){
 'use strict';
 const API_ORIGIN='https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/';
-const RELEASE='admin-v4-clean-20261113';
+const RELEASE='admin-v5-redesign-30d-20261113';
 const AUTH_API=API_ORIGIN+'admin-auth-v2?v='+encodeURIComponent(RELEASE);
 const STATS_API=API_ORIGIN+'stats-v2?v='+encodeURIComponent(RELEASE);
 const LIVE_API=API_ORIGIN+'admin-telemetry-v3?view=dashboard&v='+encodeURIComponent(RELEASE);
@@ -244,7 +311,7 @@ const shortTimeFmt=new Intl.DateTimeFormat('pt-PT',{timeZone:'Europe/Lisbon',hou
 let token=sessionStorage.getItem(TOKEN_KEY)||'';
 let counterTimer=null,liveTimer=null;
 let counterBusy=false,liveBusy=false,liveRun=0;
-let counterData=null;
+let counterData=null,historyTimer=null,historyBusy=false,historyData=null;
 
 function formatCount(value){
   const n=Number(value);
@@ -269,8 +336,10 @@ function showLoginError(message){
 function stopRefresh(){
   if(counterTimer)clearInterval(counterTimer);
   if(liveTimer)clearInterval(liveTimer);
+  if(historyTimer)clearInterval(historyTimer);
   counterTimer=null;
   liveTimer=null;
+  historyTimer=null;
   liveRun++;
   liveBusy=false;
 }
@@ -361,6 +430,56 @@ function renderCounters(data){
     ?'Contadores atualizados em '+formatDate(data.updated_at)+'.'
     :'Contadores confirmados pelo servidor.';
 }
+
+function pct(part,total){return total>0?(part*100/total):0;}
+function fmtPct(part,total){return total>0?pct(part,total).toLocaleString('pt-PT',{minimumFractionDigits:1,maximumFractionDigits:1})+'%':'—';}
+function dayLabel(value){const d=new Date(value+'T12:00:00');return new Intl.DateTimeFormat('pt-PT',{day:'2-digit',month:'2-digit'}).format(d);}
+function safeText(value){return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+function renderHistory(data){
+  if(!data||!Array.isArray(data.days)||!data.totals)throw new Error('Formato do histórico inválido.');
+  historyData=data;
+  const days=data.days, totals=data.totals;
+  const available=days.filter(d=>d.available===true);
+  const total=Number(totals.consultations)||0, noRecord=Number(totals.no_record_results)||0, errors=Number(totals.errors)||0;
+  $('historyTotalConsultations').textContent=formatCount(total);
+  $('historyTotalNoRecord').textContent=formatCount(noRecord);
+  $('historyNoRecordPct').textContent=fmtPct(noRecord,total);
+  $('historyTotalErrors').textContent=formatCount(errors);
+  const first=available[0]?.date;
+  $('historyCoverage').textContent=first?'Dados desde '+dayLabel(first)+' · '+available.length+' dias':'Sem dados disponíveis';
+  const max=Math.max(1,...available.map(d=>Number(d.consultations)||0));
+  const W=1000,H=210,L=34,R=16,T=12,B=30,plotH=H-T-B,plotW=W-L-R;
+  const x=i=>L+(days.length<=1?plotW/2:i*plotW/(days.length-1));
+  const y=v=>T+plotH-(Math.max(0,Number(v)||0)/max)*plotH;
+  const points=days.map((d,i)=>({d,i,x:x(i),c:y(d.consultations),n:y(d.no_record_results),e:y(d.errors)}));
+  const path=key=>points.filter(p=>p.d.available).map((p,j)=>(j?'L':'M')+p.x.toFixed(1)+' '+p[key].toFixed(1)).join(' ');
+  const grid=[0,.5,1].map(k=>{const yy=T+plotH*k;return '<line x1="'+L+'" y1="'+yy+'" x2="'+(W-R)+'" y2="'+yy+'" stroke="#e6edef" stroke-dasharray="4 6"/>';}).join('');
+  const labels=points.filter((p,i)=>i%5===0||i===points.length-1).map(p=>'<text x="'+p.x+'" y="'+(H-8)+'" text-anchor="middle" fill="#829097" font-size="11">'+dayLabel(p.d.date)+'</text>').join('');
+  const dots=points.filter(p=>p.d.available).map(p=>'<circle cx="'+p.x+'" cy="'+p.c+'" r="3.2" fill="#087f83"/><circle cx="'+p.x+'" cy="'+p.n+'" r="2.6" fill="#d39a42"/><circle cx="'+p.x+'" cy="'+p.e+'" r="2.6" fill="#c45d61"/>').join('');
+  $('historyChart').innerHTML='<svg class="trend-svg" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Tendência diária dos últimos 30 dias">'+grid+'<path d="'+path('c')+'" fill="none" stroke="#087f83" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><path d="'+path('n')+'" fill="none" stroke="#d39a42" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="'+path('e')+'" fill="none" stroke="#c45d61" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'+dots+labels+'</svg>';
+  $('historyRows').innerHTML=days.slice().reverse().map(d=>{
+    if(!d.available)return '<tr><td class="day">'+dayLabel(d.date)+'</td><td colspan="5" style="text-align:center;color:#89969b">Sem recolha neste dia</td></tr>';
+    const c=Number(d.consultations)||0,n=Number(d.no_record_results)||0,e=Number(d.errors)||0;
+    const np=fmtPct(n,c),ep=fmtPct(e,c);
+    const errorTypes=Array.isArray(d.error_types)?d.error_types:[];
+    const detail=errorTypes.length?'<details><summary style="cursor:pointer;color:#718087;margin-top:5px">Tipos de erro ('+errorTypes.length+')</summary><div>'+errorTypes.map(t=>safeText(t.error_type)+': '+formatCount(t.occurrences)).join('<br>')+'</div></details>':'';
+    return '<tr><td class="day">'+dayLabel(d.date)+'</td><td>'+formatCount(c)+'</td><td>'+formatCount(n)+'</td><td><span class="rate '+(pct(n,c)>=10?'warn':'')+'">'+np+'</span></td><td>'+formatCount(e)+detail+'</td><td><span class="rate '+(pct(e,c)>1?'bad':(e?'warn':''))+'">'+ep+'</span></td></tr>';
+  }).join('');
+  const errorStart=data.error_types_since?new Date(data.error_types_since):null;
+  $('historyFootnote').textContent='Percentagens calculadas sobre as consultas de cada dia. Os tipos de erro são discriminados quando disponíveis'+(errorStart?' (recolha de categorias desde '+new Intl.DateTimeFormat('pt-PT',{timeZone:'Europe/Lisbon',dateStyle:'short'}).format(errorStart)+')':'')+'. “Sem registo ASF” não confirma, por si só, ausência de seguro. Dias anteriores ao início da recolha são identificados como indisponíveis.';
+}
+async function loadHistory(){
+  if(historyBusy||!token)return;
+  historyBusy=true;
+  try{
+    const response=await request(LIVE_API);
+    if(!response||!response.history)throw new Error('O servidor não devolveu o histórico diário.');
+    renderHistory(response.history);
+  }catch(error){
+    if(!historyData)$('historyChart').innerHTML='<div class="history-error">Não foi possível carregar o histórico: '+safeText(error.message)+'</div>';
+  }finally{historyBusy=false;}
+}
+
 async function loadDashboard(){
   if(counterBusy||!token)return;
   counterBusy=true;
@@ -405,8 +524,10 @@ function startRefresh(){
   stopRefresh();
   loadDashboard();
   loadLiveQueries();
+  loadHistory();
   counterTimer=setInterval(()=>{if(!document.hidden)loadDashboard();},COUNTER_REFRESH_MS);
   liveTimer=setInterval(()=>{if(!document.hidden)loadLiveQueries();},LIVE_REFRESH_MS);
+  historyTimer=setInterval(()=>{if(!document.hidden)loadHistory();},300000);
 }
 function logout(){
   stopRefresh();
@@ -471,12 +592,14 @@ $('refreshBtn').addEventListener('click',function(){
   if(!token)return;
   loadDashboard();
   loadLiveQueries();
+  loadHistory();
 });
 $('logoutBtn').addEventListener('click',logout);
 document.addEventListener('visibilitychange',function(){
   if(!document.hidden&&token){
     loadDashboard();
     loadLiveQueries();
+    loadHistory();
   }
 });
 window.addEventListener('pagehide',stopRefresh);
