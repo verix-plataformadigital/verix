@@ -384,94 +384,19 @@ let adminPwaSource = fs.readFileSync(adminPwaSourcePath, "utf8");
 if (!adminPwaSource.includes("admin-telemetry-v3") || !adminPwaSource.includes("stats-v2")) {
   throw new Error("Admin V3 source does not reference its expected telemetry APIs");
 }
+for (const marker of ['id="totalSearches"', 'id="totalNoRecord"', 'id="livePresenceOnline"', 'id="livePresenceActive"', 'id="liveQueries5m"']) {
+  if (!adminPwaSource.includes(marker)) throw new Error("Admin dashboard metric missing: " + marker);
+}
+if (/data-period=|Histórico Total|>7 dias</i.test(adminPwaSource)) {
+  throw new Error("Obsolete Admin period controls remain in the production source");
+}
 adminPwaSource = adminPwaSource.replace(/<link rel="manifest" href="[^"]*admin\.webmanifest[^"]*">\s*/i, "");
 adminPwaSource = adminPwaSource.replace(/href="\.\/favicon\.svg/g, 'href="../assets/admin-icon.svg');
 adminPwaSource = adminPwaSource.replace(/\.\/assets\//g, "../assets/");
 adminPwaSource = adminPwaSource.replace(/src="\.\/verix-presence-v1\.js/g, 'src="../verix-presence-v1.js');
 adminPwaSource = adminPwaSource.replace(/(src="\.\.\/verix-presence-v1\.js\?v=)[^"]+/g, "$1" + encodeURIComponent(String(BUILD_ID)));
 
-// Fix the Admin live cards: browser Realtime presence is not populated by the
-// operational client, while the server-side heartbeat API has authoritative
-// short-lease presence data. Keep this patch Admin-only; do not touch verix-app
-// or the ASF runtime.
-function patchAdminPresenceUi(source) {
-  const edits = [
-    [
-      "let serverTelemetryBusy=false,serverTelemetryRun=0,serverTelemetryQueriesLastHour=null;",
-      "let serverTelemetryBusy=false,serverTelemetryRun=0,serverTelemetryQueriesLastHour=null,serverPresenceSnapshot=null;",
-      "presence snapshot state"
-    ],
-    [
-      "function clearServerTelemetry(message){\n  serverTelemetryQueriesLastHour=null;",
-      "function clearServerTelemetry(message){\n  serverPresenceSnapshot=null;\n  serverTelemetryQueriesLastHour=null;",
-      "clear stale server snapshot"
-    ],
-    [
-      "  if(dashboardData)renderAll();\n}",
-      "  if(dashboardData)renderAll();\n  if(window.VERIX_LIVE_PRESENCE&&typeof window.VERIX_LIVE_PRESENCE.snapshot==='function')renderLivePresence(window.VERIX_LIVE_PRESENCE.snapshot());\n}",
-      "rerender after server telemetry clears"
-    ],
-    [
-      "    if(!result||result.ok!==true||!p||typeof p!=='object')throw new Error('Resposta de telemetria inválida.');\n    const count=value=>",
-      "    if(!result||result.ok!==true||!p||typeof p!=='object')throw new Error('Resposta de telemetria inválida.');\n    serverPresenceSnapshot=p;\n    const count=value=>",
-      "store authoritative server presence"
-    ],
-    [
-      "  setValue('livePresenceOnline',ready?s.onlineInstallations:null);\n  setValue('livePresenceActive',ready?s.activeInstallations:null);",
-      "  const serverPresence=serverPresenceSnapshot&&typeof serverPresenceSnapshot==='object'?serverPresenceSnapshot:null;\n  const parsePresenceCount=value=>value!==null&&value!==undefined&&value!==''&&Number.isSafeInteger(Number(value))&&Number(value)>=0?Number(value):null;\n  const serverOnline=serverPresence?parsePresenceCount(serverPresence.online_installations):null;\n  const serverActive=serverPresence?parsePresenceCount(serverPresence.active_installations_last_2m):null;\n  setValue('livePresenceOnline',serverOnline);\n  setValue('livePresenceActive',serverActive);",
-      "use server counts in live cards"
-    ],
-    [
-      "const cls=ready?'online':(s.status==='locked'?'loading':(s.status==='unavailable'?'offline':(s.status==='reconnecting'?'offline':'loading')));",
-      "const cls=serverOnline!==null?'online':(s.status==='locked'?'loading':'offline');",
-      "server status badge"
-    ],
-    [
-      "const label=ready?'Ligado · tempo real':(s.status==='locked'?'Inicia sessão':(s.status==='unavailable'?'Indisponível':(s.status==='reconnecting'?'A recuperar ligação':'A ligar')));",
-      "const label=serverOnline!==null?'Ligado · servidor':(s.status==='locked'?'Inicia sessão':'Servidor indisponível');",
-      "server status label"
-    ],
-    [
-      "    if(ready&&s.observedAt){\n      const time=new Date(s.observedAt);\n      updated.textContent='Presença sincronizada em tempo real · última sincronização '+time.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+'.';",
-      "    if(serverOnline!==null&&serverPresence&&serverPresence.observed_at){\n      const time=new Date(serverPresence.observed_at);\n      updated.textContent='Presença confirmada no servidor · última leitura '+time.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+' · janela de 90 s.';",
-      "server-based freshness label"
-    ],
-    [
-      "      updated.textContent='A estabelecer ligação ao serviço de presença em tempo real…';",
-      "      updated.textContent='Sem leitura confirmada do servidor. Os valores atuais são apresentados como indisponíveis, sem estimativas.';",
-      "server-only unavailable state"
-    ],
-    [
-      "Ligações Realtime ativas neste momento; não são pessoas únicas.",
-      "Instalações com sinal do servidor nos últimos 90 s; não equivale a pessoas únicas.",
-      "accurate live metric note"
-    ],
-    [
-      "    setServerTelemetryStatus('online','API confirmada');",
-      "    setServerTelemetryStatus('online','API confirmada');\n    if(window.VERIX_LIVE_PRESENCE&&typeof window.VERIX_LIVE_PRESENCE.snapshot==='function')renderLivePresence(window.VERIX_LIVE_PRESENCE.snapshot());",
-      "rerender when server presence arrives"
-    ],
-    [
-      "    dashboardData=res.data;renderAll();setStatus('online','Backend online');lastUpdated=Date.now();",
-      "    dashboardData=res.data;renderAll();if(window.VERIX_LIVE_PRESENCE&&typeof window.VERIX_LIVE_PRESENCE.snapshot==='function')renderLivePresence(window.VERIX_LIVE_PRESENCE.snapshot());setStatus('online','Backend online');lastUpdated=Date.now();",
-      "refresh active count after dashboard data arrives"
-    ]
-  ];
-  for (const [before, after, label] of edits) {
-    const first = source.indexOf(before);
-    if (first < 0) throw new Error("Admin presence patch marker missing: " + label);
-    if (source.indexOf(before, first + before.length) >= 0) {
-      throw new Error("Admin presence patch marker duplicated: " + label);
-    }
-    source = source.slice(0, first) + after + source.slice(first + before.length);
-  }
-  return source;
-}
-// Use the non-persistent Realtime Presence client. The former server-side
-// session query depends on retired event/session history tables.
-
-
-adminPwaSource = adminPwaSource.replace(/\.\/AI-ACCESS-POLICY\.md/g, "../AI-ACCESS-POLICY.md");
+// The Admin uses one shared Realtime presence client and a server-only recent-query aggregate.\n\nadminPwaSource = adminPwaSource.replace(/\.\/AI-ACCESS-POLICY\.md/g, "../AI-ACCESS-POLICY.md");
 const adminPwaHeadLinks = [
   '  <link rel="icon" href="../assets/admin-icon.svg?v=' + encodeURIComponent(String(BUILD_ID)) + '" type="image/svg+xml" sizes="any">',
   '  <link rel="manifest" href="./manifest.webmanifest?v=' + encodeURIComponent(String(BUILD_ID)) + '">'
