@@ -313,6 +313,13 @@ body{background:linear-gradient(180deg,#f7faf7 0,#f3f7f3 420px,#f5f8f5 100%)}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 
+
+/* VÉRIX Admin V9 — live metrics semantics and zero-state clarity */
+.live-footer-stack{align-items:flex-start;flex-direction:column;gap:5px}
+#livePresenceExplanation{color:#d0e2d5;line-height:1.5}
+#liveQueryUpdatedVisible{color:#a9c2b0}
+.live-card-foot{line-height:1.45}
+@media(max-width:760px){.live-footer-stack{gap:6px}.live-card-foot{min-height:2.8em}}
 </style>
 </head>
 <body>
@@ -383,15 +390,15 @@ body{background:linear-gradient(180deg,#f7faf7 0,#f3f7f3 420px,#f5f8f5 100%)}
     </div>
     <div class="live-grid" aria-live="polite">
       <article class="live-card live-card-primary"><div class="live-card-label">Consultas · últimos 5 minutos</div>
-        <div class="live-card-value" id="liveQueries5mVisible">—</div><div class="live-card-foot">Consultas únicas iniciadas na janela móvel</div></article>
-      <article class="live-card"><div class="live-card-label">Instalações ativas</div>
-        <div class="live-card-value" id="livePresenceActiveVisible">—</div><div class="live-card-foot">Com atividade recente e separador visível</div></article>
+        <div class="live-card-value" id="liveQueries5mVisible">—</div><div class="live-card-foot" id="liveQueries5mNote">Consultas únicas iniciadas na janela móvel</div></article>
+      <article class="live-card"><div class="live-card-label">Instalações ativas · 2 min</div>
+        <div class="live-card-value" id="livePresenceActiveVisible">—</div><div class="live-card-foot">Com atividade recente e página visível</div></article>
       <article class="live-card"><div class="live-card-label">Instalações online</div>
-        <div class="live-card-value" id="livePresenceOnlineVisible">—</div><div class="live-card-foot">Browsers/dispositivos ligados ao canal</div></article>
-      <article class="live-card"><div class="live-card-label">Separadores ativos</div>
-        <div class="live-card-value" id="livePresenceActiveTabsVisible">—</div><div class="live-card-foot">Com atividade nos últimos 2 minutos</div></article>
+        <div class="live-card-value" id="livePresenceOnlineVisible">—</div><div class="live-card-foot">Ligações presentes no canal, mesmo sem atividade recente</div></article>
+      <article class="live-card"><div class="live-card-label">Separadores ativos · 2 min</div>
+        <div class="live-card-value" id="livePresenceActiveTabsVisible">—</div><div class="live-card-foot">Separadores com atividade recente e visíveis</div></article>
     </div>
-    <div class="live-footer"><span>Instalações e separadores não equivalem a pessoas únicas.</span><span id="liveQueryUpdatedVisible">Consultas: a aguardar leitura.</span></div>
+    <div class="live-footer live-footer-stack"><span id="livePresenceExplanation">Instalações e separadores não equivalem a pessoas únicas.</span><span id="liveQueryUpdatedVisible">Consultas: a aguardar leitura.</span></div>
   </section>
 
 <section class="today-section" id="todaySection" aria-labelledby="todayTitle">
@@ -558,7 +565,7 @@ body{background:linear-gradient(180deg,#f7faf7 0,#f3f7f3 420px,#f5f8f5 100%)}
 
 </div>
 
-<script defer src="./verix-presence-v1.js?v=admin-v8-ops-console-20261113"></script>
+<script defer src="./verix-presence-v1.js?v=admin-v9-live-metrics-20261113"></script>
 <script>
 
 (function(){
@@ -653,14 +660,24 @@ function renderLivePresence(snapshot){
   const s=snapshot||{},ready=s.ready===true&&s.status==='connected',status=s.status||'connecting';
   const mode=ready?'online':(status==='reconnecting'||status==='unavailable'?'offline':'waiting');
   const label=ready?'Presença ligada':(status==='locked'?'A aguardar autenticação':(status==='reconnecting'?'A recuperar ligação':(status==='unavailable'?'Presença indisponível':'A ligar presença')));
-  setLiveValue('livePresenceOnline',ready?s.onlineInstallations:null);setLiveValue('livePresenceActive',ready?s.activeInstallations:null);
-  setLiveValue('livePresenceOnlineTabs',ready?s.onlineTabs:null);setLiveValue('livePresenceActiveTabs',ready?s.activeTabs:null);
-  setLiveValue('livePresenceOnlineVisible',ready?s.onlineInstallations:null);setLiveValue('livePresenceActiveVisible',ready?s.activeInstallations:null);
-  setLiveValue('livePresenceActiveTabsVisible',ready?s.activeTabs:null);
+  const online=ready&&Number.isSafeInteger(s.onlineInstallations)?s.onlineInstallations:null;
+  const active=ready&&Number.isSafeInteger(s.activeInstallations)?s.activeInstallations:null;
+  const tabs=ready&&Number.isSafeInteger(s.activeTabs)?s.activeTabs:null;
+  setLiveValue('livePresenceOnline',online);setLiveValue('livePresenceActive',active);
+  setLiveValue('livePresenceOnlineTabs',ready?s.onlineTabs:null);setLiveValue('livePresenceActiveTabs',tabs);
+  setLiveValue('livePresenceOnlineVisible',online);setLiveValue('livePresenceActiveVisible',active);
+  setLiveValue('livePresenceActiveTabsVisible',tabs);
   const pill=$('presenceConnection');
   if(pill){pill.className='status-pill '+(ready?'online':(mode==='offline'?'offline':'loading'));const t=pill.querySelector('span:last-child');if(t)t.textContent=label+' · tempo real';}
   const visible=$('presenceStatus');
   if(visible){visible.className='presence-state '+mode;const t=visible.querySelector('span:last-child');if(t)t.textContent=label;}
+  const explanation=$('livePresenceExplanation');
+  if(explanation){
+    if(!ready)explanation.textContent='A contagem de atividade será apresentada quando a ligação de presença estiver confirmada.';
+    else if(online>0&&active===0)explanation.textContent=online+' instalações ligadas; nenhuma registou atividade nos últimos 2 minutos. Podem estar abertas em segundo plano ou inativas.';
+    else if(active>0)explanation.textContent=active+' de '+online+' instalações com atividade nos últimos 2 minutos. As contagens não representam pessoas únicas.';
+    else explanation.textContent='Sem instalações ligadas neste momento. As contagens não representam pessoas únicas.';
+  }
   if(ready&&s.observedAt){const stamp='Presença atualizada às '+formatTime(s.observedAt);$('livePresenceUpdated').textContent=stamp+'.';$('livePresenceUpdatedVisible').textContent=stamp;}
   else $('livePresenceUpdatedVisible').textContent=label+'.';
 }
@@ -937,6 +954,8 @@ async function loadDailyDashboard(){
     const recentValid=Number.isSafeInteger(recent)&&recent>=0;
     setLiveValue('liveQueries5m',recentValid?recent:null);
     setLiveValue('liveQueries5mVisible',recentValid?recent:null);
+    const recentNote=$('liveQueries5mNote');
+    if(recentNote)recentNote.textContent=!recentValid?'Não foi possível confirmar esta janela.':(recent===0?'Nenhuma consulta registada nesta janela; o total diário mantém-se no resumo abaixo.':recent+' consultas únicas registadas nos últimos 5 minutos.');
     const observed=response&&response.presence&&response.presence.observed_at;
     $('liveQueryUpdated').textContent=observed?'Consultas atualizadas às '+formatTime(observed)+'.':'';
     $('liveQueryUpdatedVisible').textContent=observed?'Consultas atualizadas às '+formatTime(observed):'Consultas: leitura sem timestamp.';
