@@ -133,7 +133,8 @@ h1{margin:0;color:#133526;font-size:clamp(29px,3.4vw,40px);letter-spacing:-.055e
 .today-card .metric-note strong{color:#fff;font-size:14px}
 .today-bottom{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-top:11px;padding-top:10px;border-top:1px solid rgba(255,255,255,.10)}
 .today-delta{display:inline-flex;align-items:center;gap:5px;color:#d7e8dc;font-size:10px;font-weight:750}
-.today-delta.good{color:#b8e4c8}.today-delta.bad{color:#ffd0d1}
+.today-delta.good{color:#b8e4c8}.today-delta.bad{color:#ffd0d1}.today-delta.attention{color:#f0d39a}
+.today-comparison-note{margin:11px 1px 0;color:#c0d4c6;font-size:10px}
 .today-delta.neutral{color:#b9ccc0}
 .today-delta svg{width:12px;height:12px}
 .today-updated{color:#a7c2b1;font-size:10px;text-align:right}
@@ -280,7 +281,7 @@ h1{margin:0;color:#133526;font-size:clamp(29px,3.4vw,40px);letter-spacing:-.055e
           <span class="metric-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4M8 11h6M11 8v6"/></svg></span>
         </div>
         <div class="metric-value" id="totalSearches">—</div>
-        <div class="metric-foot"><span>Consultas contabilizadas</span><strong>Acumulado</strong></div>
+        <div class="metric-foot"><span>Cada consulta é contabilizada uma vez</span><strong>Acumulado</strong></div>
       </article>
       <article class="metric-card amber">
         <div class="metric-top">
@@ -336,7 +337,8 @@ h1{margin:0;color:#133526;font-size:clamp(29px,3.4vw,40px);letter-spacing:-.055e
         <div class="today-bottom"><span class="today-delta neutral" id="todayErrorsDelta">A comparar com ontem</span><span class="today-updated">Percentagem diária</span></div>
       </article>
     </div>
-    <div id="todayUpdated" class="today-updated" style="margin-top:12px;text-align:right">A aguardar dados diários.</div>
+    <p class="today-comparison-note">A comparação é feita com o total do dia anterior (dia completo); o dia de hoje ainda está em curso.</p>
+    <div id="todayUpdated" class="today-updated" style="margin-top:8px;text-align:right">A aguardar dados diários.</div>
   </section>
 
   <section class="trend-section panel" aria-labelledby="trendTitle">
@@ -444,6 +446,7 @@ let counterBusy=false,dailyBusy=false;
 let counterData=null,dailyData=null;
 let currentMetric='consultations';
 let deferredInstallPrompt=null;
+let counterIssue='',dailyIssue='';
 
 const METRICS={
   consultations:{key:'consultations',label:'Consultas',labelLong:'Consultas nos últimos 30 dias',unit:'consultas no período',color:'#19784f',fill:'#e5f2e9',empty:'Sem consultas registadas no período.'},
@@ -488,10 +491,13 @@ function setBackendStatus(mode,label){
   $('backendStatusText').textContent=label;
 }
 function showLoginError(message){$('loginError').textContent=message||'';}
-function showNotice(message,visible){
+function renderNotice(){
+  const messages=[];
+  if(counterIssue)messages.push('Contador histórico: '+counterIssue);
+  if(dailyIssue)messages.push('Histórico diário: '+dailyIssue);
   const notice=$('dataNotice');
-  notice.textContent=message||'';
-  notice.hidden=!visible;
+  notice.textContent=messages.join(' ');
+  notice.hidden=messages.length===0;
 }
 function stopRefresh(){
   if(counterTimer)clearInterval(counterTimer);
@@ -575,7 +581,7 @@ function renderCounters(data){
   $('totalNoRecordPctInline').textContent=fmtPct(noRecord,searches);
   $('counterLastUpdated').textContent=data.updated_at?'Atualizado às '+formatTime(data.updated_at):'Contadores confirmados';
 }
-function deltaLabel(current,previous){
+function deltaLabel(current,previous,mode){
   if(!Number.isFinite(previous))return {text:'Sem base de comparação',tone:'neutral'};
   const difference=current-previous;
   if(difference===0)return {text:'Igual a ontem',tone:'neutral'};
@@ -583,13 +589,13 @@ function deltaLabel(current,previous){
   const amount=formatCount(Math.abs(difference));
   const percent=previous>0?Math.abs(difference)*100/previous:null;
   const percentText=percent===null?'':(' · '+percent.toLocaleString('pt-PT',{maximumFractionDigits:1})+'%');
-  const tone=difference>0?'bad':'good';
+  const tone=mode==='volume'?(difference>0?'good':'bad'):(mode==='error'?(difference>0?'bad':'good'):'attention');
   return {text:sign+amount+percentText+' vs. ontem',tone};
 }
-function setDelta(id,current,previous){
+function setDelta(id,current,previous,mode){
   const item=$(id);
   if(!item)return;
-  const delta=deltaLabel(current,previous);
+  const delta=deltaLabel(current,previous,mode);
   item.className='today-delta '+delta.tone;
   item.textContent=delta.text;
 }
@@ -697,7 +703,9 @@ function renderDailyDashboard(history,generatedAt){
   if(!today||today.available!==true){
     ['todayConsultations','todayNoRecord','todayNoRecordPct','todayErrors','todayErrorPct'].forEach(id=>$(id).textContent='—');
     $('todayUpdated').textContent='Os dados de hoje ainda não estão disponíveis.';
-    ['todayConsultationsDelta','todayNoRecordDelta','todayErrorsDelta'].forEach(id=>setDelta(id,0,NaN));
+    setDelta('todayConsultationsDelta',0,NaN,'volume');
+    setDelta('todayNoRecordDelta',0,NaN,'neutral');
+    setDelta('todayErrorsDelta',0,NaN,'error');
   }else{
     const c=Number(today.consultations)||0,n=Number(today.no_record_results)||0,e=Number(today.errors)||0;
     const pc=yesterday&&yesterday.available===true?Number(yesterday.consultations)||0:NaN;
@@ -708,10 +716,10 @@ function renderDailyDashboard(history,generatedAt){
     $('todayNoRecordPct').textContent=fmtPct(n,c);
     $('todayErrors').textContent=formatCount(e);
     $('todayErrorPct').textContent=fmtPct(e,c);
-    setDelta('todayConsultationsDelta',c,pc);
-    setDelta('todayNoRecordDelta',n,pn);
-    setDelta('todayErrorsDelta',e,pe);
-    $('todayConsultationsPct').textContent=fmtPct(c,pc);
+    setDelta('todayConsultationsDelta',c,pc,'volume');
+    setDelta('todayNoRecordDelta',n,pn,'neutral');
+    setDelta('todayErrorsDelta',e,pe,'error');
+    $('todayConsultationsPct').textContent=fmtPct(c,pc)+' do volume de ontem';
     $('todayUpdated').textContent='Última leitura às '+formatTime(history.generated_at||generatedAt||new Date().toISOString())+' · comparação com o dia anterior.';
   }
   const consultations=Number(history.totals.consultations)||0;
@@ -736,6 +744,7 @@ async function loadDashboard(){
     if(!response||!response.data)throw new Error('Resposta dos contadores inválida.');
     counterData=response.data;
     renderCounters(counterData);
+    counterIssue='';renderNotice();
     setBackendStatus('online','Backend online');
   }catch(error){
     setBackendStatus('offline','Backend indisponível');
@@ -743,7 +752,7 @@ async function loadDashboard(){
       $('totalSearches').textContent='—';$('totalNoRecord').textContent='—';$('totalNoRecordPct').textContent='—';$('totalNoRecordPctInline').textContent='—';
       $('counterLastUpdated').textContent='Não foi possível confirmar os contadores.';
     }
-    showNotice('Não foi possível atualizar o contador histórico. '+error.message,true);
+    counterIssue='não foi possível atualizar. '+error.message;renderNotice();
   }finally{counterBusy=false;}
 }
 async function loadDailyDashboard(){
@@ -755,13 +764,14 @@ async function loadDailyDashboard(){
     if(requestToken!==token)return;
     if(!response||!response.history)throw new Error('O servidor não devolveu o histórico diário.');
     renderDailyDashboard(response.history,response.generated_at);
+    dailyIssue='';renderNotice();
     const recent=response&&response.presence&&response.presence.consultations_started_last_5m;
     setLiveValue('liveQueries5m',Number.isSafeInteger(recent)&&recent>=0?recent:null);
     if(counterData)showNotice('',false);
     setBackendStatus('online','Backend online');
   }catch(error){
     if(requestToken===token){
-      showNotice(dailyData?'Os dados apresentados são da última atualização confirmada. Não foi possível obter uma leitura mais recente.':'Não foi possível carregar o histórico diário. '+error.message,true);
+      dailyIssue=dailyData?'os dados apresentados são da última leitura confirmada; não foi possível obter uma leitura mais recente.':'não foi possível carregar os dados. '+error.message;renderNotice();
       if(!dailyData){
         $('trendChart').innerHTML='<div class="daily-note">O histórico não está disponível. Utiliza «Atualizar» para tentar novamente.</div>';
         $('dailyRows').innerHTML='<tr><td colspan="6" class="missing">Sem dados disponíveis.</td></tr>';
@@ -782,7 +792,7 @@ function logout(){
   sessionStorage.removeItem(TOKEN_KEY);
   document.body.classList.remove('admin-authenticated');
   $('app').hidden=true;$('loginScreen').hidden=false;$('password').value='';
-  showLoginError('');showNotice('',false);setBackendStatus('','Sessão encerrada');setLiveValue('liveQueries5m',null);
+  showLoginError('');counterIssue='';dailyIssue='';renderNotice();setBackendStatus('','Sessão encerrada');setLiveValue('liveQueries5m',null);
 }
 async function restoreSession(){
   if(!token)return;
