@@ -200,14 +200,14 @@ h1{margin:0;color:#133526;font-size:clamp(30px,4vw,43px);letter-spacing:-.055em;
     </div>
     <div class="metric-grid" aria-live="polite">
       <article class="metric-card">
-        <div class="metric-label">Total de consultas</div>
+        <div class="metric-label">Total de pesquisas efetuadas</div>
         <div class="metric-value" id="totalSearches">—</div>
-        <div class="metric-note">Consultas únicas contabilizadas desde o início do contador.</div>
+        <div class="metric-note">Cada consulta é contabilizada uma vez. Total acumulado desde o início do contador.</div>
       </article>
       <article class="metric-card amber">
         <div class="metric-label">Resultados sem registo ASF</div>
         <div class="metric-value" id="totalNoRecord">—</div>
-        <div class="metric-note">Respostas sem registo devolvido pela ASF.</div>
+        <div class="metric-note">Respostas sem registo devolvido pela ASF. A ausência de registo ASF não confirma, por si só, que o veículo não tem seguro.</div>
       </article>
       <article class="metric-card">
         <div class="metric-label">Percentagem sem registo</div>
@@ -285,7 +285,8 @@ const AUTH_API=API_ORIGIN+'admin-auth-v2?v='+encodeURIComponent(RELEASE);
 const STATS_API=API_ORIGIN+'stats-v2?v='+encodeURIComponent(RELEASE);
 const LIVE_API=API_ORIGIN+'admin-telemetry-v3?view=dashboard&v='+encodeURIComponent(RELEASE);
 const TOKEN_KEY='VERIX_ADMIN_V2_TOKEN';
-const REFRESH_MS=60000;
+const COUNTER_REFRESH_MS=60000;
+const LIVE_REFRESH_MS=15000;
 const $=id=>document.getElementById(id);
 const nf=new Intl.NumberFormat('pt-PT');
 const timeFmt=new Intl.DateTimeFormat('pt-PT',{timeZone:'Europe/Lisbon',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});
@@ -548,8 +549,8 @@ function startRefresh(){
   stopRefresh();
   loadDashboard();
   loadDailyDashboard();
-  counterTimer=setInterval(()=>{if(!document.hidden)loadDashboard();},REFRESH_MS);
-  dailyTimer=setInterval(()=>{if(!document.hidden)loadDailyDashboard();},REFRESH_MS);
+  counterTimer=setInterval(()=>{if(!document.hidden)loadDashboard();},COUNTER_REFRESH_MS);
+  dailyTimer=setInterval(()=>{if(!document.hidden)loadDailyDashboard();},LIVE_REFRESH_MS);
 }
 function logout(){
   stopRefresh();
