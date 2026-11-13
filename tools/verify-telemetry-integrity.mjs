@@ -43,7 +43,7 @@ const semanticMigration = fs.readFileSync("supabase/migrations/20261109231000_re
 assert.match(semanticMigration, /RENAME COLUMN total_vehicles_without_insurance TO total_no_record_results/);
 assert.match(semanticMigration, /'no_record'/);
 assert.match(stats, /detail === "lifetime-counters"/);
-assert.match(stats, /total_no_record_results/);
+assert.match(admin, /total_no_record_results/);
 
 // Admin V4 clean contract: one responsive overview, two permanent counters,
 // three live indicators, existing authentication and shared Realtime presence.
