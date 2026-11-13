@@ -148,12 +148,15 @@ export async function handleRequest(req: Request): Promise<Response> {
 
   try {
     const now = new Date().toISOString();
-    const consultations = await rpc<number>(
-      "verix_admin_recent_consultations",
-      { p_now: now },
-    );
+    const [consultations, consultationsLastHour] = await Promise.all([
+      rpc<number>("verix_admin_recent_consultations", { p_now: now }),
+      rpc<number>("verix_admin_consultations_last_hour", { p_now: now }),
+    ]);
     if (!Number.isSafeInteger(consultations) || consultations < 0) {
       throw new Error("recent_consultation_count_invalid");
+    }
+    if (!Number.isSafeInteger(consultationsLastHour) || consultationsLastHour < 0) {
+      throw new Error("recent_hour_consultation_count_invalid");
     }
     const history = await rpc<Record<string, unknown>>(
       "verix_daily_metrics_30d_read",
@@ -165,6 +168,7 @@ export async function handleRequest(req: Request): Promise<Response> {
     const liveMetrics = {
       observed_at: now,
       consultations_started_last_5m: consultations,
+      consultations_started_last_1h: consultationsLastHour,
     };
 
     return jsonResponse(req, {
