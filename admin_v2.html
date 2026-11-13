@@ -178,6 +178,59 @@ h1{font-size:clamp(32px,4.3vw,48px);letter-spacing:-.055em}
   .metric-card{min-height:116px}
   .metric-value{font-size:30px}
 }
+
+/* Daily intelligence — VÉRIX Admin */
+.daily-section{margin-top:34px;padding:26px;background:linear-gradient(145deg,#172a33 0%,#203b45 100%);border:1px solid #29434d;border-radius:20px;color:#f4f8f9;box-shadow:0 14px 36px rgba(18,39,48,.12)}
+.daily-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:22px}
+.daily-kicker{margin:0 0 6px;color:#80c8c9;font-size:11px;font-weight:850;letter-spacing:.16em;text-transform:uppercase}
+.daily-head h2{margin:0;font-size:clamp(22px,3vw,29px);letter-spacing:-.04em}
+.daily-head p{margin:7px 0 0;color:#b5c7cc;font-size:13px}
+.daily-window{padding:8px 12px;border:1px solid #45616b;border-radius:999px;color:#d8e7e9;font-size:12px;font-weight:750;white-space:nowrap}
+.daily-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:22px}
+.daily-kpi{min-width:0;padding:15px 15px 13px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.11);border-radius:13px}
+.daily-kpi span{display:block;color:#b8cbd0;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.daily-kpi strong{display:block;margin-top:7px;color:#fff;font-size:clamp(23px,3vw,31px);font-weight:850;letter-spacing:-.045em;font-variant-numeric:tabular-nums}
+.daily-kpi small{display:block;margin-top:3px;color:#a7bec4;font-size:11px}
+.daily-chart-card{padding:18px 18px 13px;background:#f9fbfc;border:1px solid #e0e9ec;border-radius:14px;color:#17252d}
+.daily-chart-top{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:15px}
+.daily-chart-top strong{font-size:14px}
+.daily-chart-top span{font-size:11px;color:#6c7e86}
+.daily-bars{height:174px;display:grid;grid-template-columns:repeat(30,minmax(0,1fr));align-items:end;gap:4px;overflow:hidden}
+.daily-bar-col{height:100%;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px}
+.daily-bar-value{font-size:9px;color:#53666f;font-weight:750;font-variant-numeric:tabular-nums}
+.daily-bar{width:min(100%,17px);min-height:3px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;border-radius:5px 5px 2px 2px;background:#dbe5e8}
+.daily-bar .bar-yes{background:#087f83}
+.daily-bar .bar-no{background:#d49a35}
+.daily-bar .bar-error{background:#c65b62}
+.daily-bar-date{font-size:9px;color:#778891;white-space:nowrap;writing-mode:vertical-rl;transform:rotate(180deg);height:24px}
+.daily-legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:15px;color:#63757e;font-size:11px}
+.daily-legend i{display:inline-block;width:8px;height:8px;margin-right:5px;border-radius:2px}
+.daily-legend .yes{background:#087f83}.daily-legend .no{background:#d49a35}.daily-legend .err{background:#c65b62}
+.daily-table-wrap{margin-top:15px;overflow:auto;background:#fff;border:1px solid #e0e9ec;border-radius:14px}
+.daily-table{width:100%;min-width:690px;border-collapse:collapse;color:#20323a;font-size:12px}
+.daily-table th{padding:12px 14px;background:#f3f7f8;color:#647780;text-align:right;font-size:10px;letter-spacing:.07em;text-transform:uppercase}
+.daily-table th:first-child,.daily-table td:first-child{text-align:left}
+.daily-table td{padding:11px 14px;border-top:1px solid #edf1f2;text-align:right;font-variant-numeric:tabular-nums}
+.daily-table tbody tr:hover{background:#f7fafb}
+.daily-table .date-cell{font-weight:750;color:#263a43}
+.daily-table .pct{font-weight:800}
+.daily-table .no-pct{color:#9a6414}.daily-table .error-pct{color:#b44750}
+.daily-empty{padding:28px;text-align:center;color:#667981;font-size:13px}
+.daily-footnote{margin:13px 2px 0;color:#b3c6cb;font-size:11px;line-height:1.6}
+.daily-loading{color:#c5d5d9;font-size:13px;padding:16px 0}
+.daily-error{color:#ffc3c5;font-size:13px;padding:12px 0}
+@media(max-width:700px){
+ .daily-section{margin:26px -2px 0;padding:18px 13px;border-radius:15px}
+ .daily-head{flex-direction:column;gap:10px}
+ .daily-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .daily-kpi{padding:12px}
+ .daily-chart-card{padding:14px 10px 10px}
+ .daily-bars{height:145px;gap:2px}
+ .daily-bar{width:min(100%,12px)}
+ .daily-bar-value{font-size:8px}
+ .daily-bar-date{font-size:8px}
+}
+
 </style>
 </head>
 <body>
@@ -256,6 +309,15 @@ h1{font-size:clamp(32px,4.3vw,48px);letter-spacing:-.055em}
         </table>
       </div>
       <p class="history-note" id="historyFootnote">Os dias sem recolha são assinalados como indisponíveis, nunca apresentados como zero. As percentagens são calculadas sobre as consultas de cada dia. “Sem registo ASF” não confirma, por si só, ausência de seguro.</p>
+    </section>
+
+
+    <section class="daily-section" aria-labelledby="dailyHistoryTitle">
+      <div class="daily-head">
+        <div><p class="daily-kicker">Inteligência de utilização · 30 dias</p><h2 id="dailyHistoryTitle">Evolução diária</h2><p>Consultas, respostas sem registo ASF e falhas técnicas — dia a dia.</p></div>
+        <span class="daily-window">ÚLTIMOS 30 DIAS</span>
+      </div>
+      <div id="dailyHistoryContent" aria-live="polite"><div class="daily-loading">A carregar histórico diário...</div></div>
     </section>
 
     <section class="live-section" aria-labelledby="liveTitle">
@@ -500,6 +562,49 @@ async function loadDashboard(){
     counterBusy=false;
   }
 }
+
+function renderDailyHistory(history){
+  const root=$('dailyHistoryContent');
+  if(!history||!Array.isArray(history.days)||!history.totals){root.innerHTML='<div class="daily-error">O servidor não devolveu o histórico diário.</div>';return;}
+  const days=history.days;
+  const totals=history.totals;
+  const available=days.filter(d=>d.available===true);
+  const sum=key=>available.reduce((n,d)=>n+(Number(d[key])||0),0);
+  const consultations=Number(totals.consultations)||0;
+  const noRecord=Number(totals.no_record_results)||0;
+  const errors=Number(totals.errors)||0;
+  const pct=(v,total)=>total>0?(v*100/total):0;
+  const max=Math.max(1,...available.map(d=>Number(d.consultations)||0));
+  const dateLabel=s=>{const a=String(s||'').split('-');return a.length===3?a[2]+'/'+a[1]:'—';};
+  const moneyless=n=>nf.format(n);
+  const kpi=(label,value,sub)=>'<div class="daily-kpi"><span>'+label+'</span><strong>'+value+'</strong><small>'+sub+'</small></div>';
+  const bars=days.map(d=>{
+    if(!d.available)return '<div class="daily-bar-col" title="'+d.date+': sem dados recolhidos"><span class="daily-bar-value">—</span><div class="daily-bar" style="height:3px"></div><span class="daily-bar-date">'+dateLabel(d.date)+'</span></div>';
+    const c=Number(d.consultations)||0,n=Number(d.no_record_results)||0,e=Number(d.errors)||0;
+    const h=Math.max(3,Math.round(c/max*128));
+    const nh=c?Math.min(h,Math.round(h*n/c)):0, eh=c?Math.min(h-nh,Math.round(h*e/c)):0, yh=Math.max(0,h-nh-eh);
+    return '<div class="daily-bar-col" title="'+d.date+' · '+moneyless(c)+' consultas · '+pct(n,c).toFixed(1)+'% sem registo · '+pct(e,c).toFixed(1)+'% erros"><span class="daily-bar-value">'+moneyless(c)+'</span><div class="daily-bar" style="height:'+h+'px"><i class="bar-yes" style="height:'+yh+'px"></i><i class="bar-no" style="height:'+nh+'px"></i><i class="bar-error" style="height:'+eh+'px"></i></div><span class="daily-bar-date">'+dateLabel(d.date)+'</span></div>';
+  }).join('');
+  const rows=days.slice().reverse().map(d=>{
+    if(!d.available)return '<tr><td class="date-cell">'+d.date.split('-').reverse().join('/')+'</td><td colspan="5" style="text-align:center;color:#87969c">Sem recolha de dados neste dia</td></tr>';
+    const c=Number(d.consultations)||0,n=Number(d.no_record_results)||0,e=Number(d.errors)||0;
+    return '<tr><td class="date-cell">'+d.date.split('-').reverse().join('/')+'</td><td>'+moneyless(c)+'</td><td>'+moneyless(n)+'</td><td class="pct no-pct">'+pct(n,c).toFixed(1).replace('.',',')+'%</td><td>'+moneyless(e)+'</td><td class="pct error-pct">'+pct(e,c).toFixed(1).replace('.',',')+'%</td></tr>';
+  }).join('');
+  const since=history.collecting_since?formatDate(history.collecting_since):'';
+  root.innerHTML=
+    '<div class="daily-kpis">'+
+      kpi('Consultas no período',moneyless(consultations),'Total dos dias com recolha')+
+      kpi('Sem registo ASF',moneyless(noRecord),pct(noRecord,consultations).toFixed(1).replace('.',',')+'% das consultas')+
+      kpi('Erros técnicos',moneyless(errors),pct(errors,consultations).toFixed(1).replace('.',',')+'% das consultas')+
+      kpi('Dias com dados',available.length+'/30','Recolha desde '+(since||'data não indicada'))+
+    '</div>'+
+    '<div class="daily-chart-card"><div class="daily-chart-top"><strong>Volume de consultas por dia</strong><span>30 dias · escala diária</span></div>'+
+      '<div class="daily-bars">'+bars+'</div>'+
+      '<div class="daily-legend"><span><i class="yes"></i>Restantes consultas</span><span><i class="no"></i>Sem registo ASF</span><span><i class="err"></i>Erros</span></div></div>'+
+    '<div class="daily-table-wrap"><table class="daily-table"><thead><tr><th>Data</th><th>Consultas</th><th>Sem registo</th><th>% sem registo</th><th>Erros</th><th>% erros</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+    '<p class="daily-footnote">Percentagens calculadas sobre as consultas do respetivo dia. Os dias anteriores ao início da recolha surgem sem dados — nunca são apresentados como zero. Os totais refletem consultas únicas deduplicadas. Fuso horário: Europe/Lisbon.</p>';
+}
+
 async function loadLiveQueries(){
   if(liveBusy||!token)return;
   liveBusy=true;
@@ -508,12 +613,14 @@ async function loadLiveQueries(){
   try{
     const response=await request(LIVE_API);
     if(run!==liveRun||requestToken!==token)return;
+    renderDailyHistory(response.history);
     const value=response&&response.presence&&response.presence.consultations_started_last_5m;
     if(!Number.isSafeInteger(value)||value<0)throw new Error('Contador dos últimos 5 minutos inválido.');
     setLiveValue('liveQueries5m',value);
     $('liveQueryUpdated').textContent='Pesquisas confirmadas às '+formatTime(response.presence.observed_at||response.generated_at)+'.';
   }catch(error){
     if(run!==liveRun||requestToken!==token)return;
+    if(!$('dailyHistoryContent').querySelector('.daily-table')) $('dailyHistoryContent').innerHTML='<div class="daily-error">Não foi possível carregar o histórico: '+String(error.message||'erro de ligação')+'</div>';
     setLiveValue('liveQueries5m',null);
     $('liveQueryUpdated').textContent='Sem leitura confirmada: '+error.message;
   }finally{
