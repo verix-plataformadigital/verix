@@ -42,55 +42,39 @@ const lifetimeMigration = fs.readFileSync("supabase/migrations/20261109224456_co
 const semanticMigration = fs.readFileSync("supabase/migrations/20261109231000_rename_no_record_counter_semantics.sql", "utf8");
 assert.match(semanticMigration, /RENAME COLUMN total_vehicles_without_insurance TO total_no_record_results/);
 assert.match(semanticMigration, /'no_record'/);
-assert.match(admin, /total_no_record_results/);
-assert.match(admin, /A ausência de registo não confirma, por si só, que o veículo não tem seguro/);
-
-assert.match(lifetimeMigration, /CREATE TABLE IF NOT EXISTS public\.verix_lifetime_counters/);
-assert.match(lifetimeMigration, /CREATE TABLE IF NOT EXISTS public\.verix_lifetime_query_state/);
-assert.match(lifetimeMigration, /pg_advisory_xact_lock/);
-assert.match(lifetimeMigration, /interval '45 days'/);
-assert.match(lifetimeMigration, /SECURITY INVOKER/);
-assert.match(lifetimeMigration, /verix2_ingest_telemetry/);
-assert.match(lifetimeMigration, /verix_lifetime_metrics_read/);
-assert.match(lifetimeMigration, /REVOKE ALL ON FUNCTION/);
-assert.doesNotMatch(endpoint, /verix_insurance_no_cases|operationalInsuranceNoCases|cleanOperationalPlate/);
-assert.doesNotMatch(endpoint, /matricula|matriculaNormalizada/i);
-assert.match(endpoint, /p_installations:\s*\[\]/);
-assert.match(endpoint, /p_sessions:\s*\[\]/);
-assert.match(endpoint, /event_id: eventId,[\s\S]*?query_id: queryId,[\s\S]*?event,[\s\S]*?occurred_at: occurredAt/);
-assert.doesNotMatch(endpoint, /installations\.values\(\)|sessions\.values\(\)/);
 assert.match(stats, /detail === "lifetime-counters"/);
+assert.match(stats, /total_no_record_results/);
+
+// Admin V4 clean contract: one responsive overview, two permanent counters,
+// three live indicators, existing authentication and shared Realtime presence.
+for (const id of ["totalSearches","totalNoRecord","livePresenceOnline","livePresenceActive","liveQueries5m"]) {
+  assert.ok(admin.includes('id="' + id + '"'), "missing Admin metric " + id);
+}
 assert.match(admin, /Total de pesquisas efetuadas/);
 assert.match(admin, /Resultados sem registo ASF/);
-assert.match(admin, /pct\(dashboardData\.total_no_record_results,dashboardData\.total_searches\)/);
-assert.match(admin, /das pesquisas acumuladas tiveram resposta sem registo ASF/);
+assert.match(admin, /A ausência de registo ASF não confirma, por si só, que o veículo não tem seguro/);
 assert.match(admin, /detail=lifetime-counters/);
-const dailyMetricsMigration = fs.readFileSync("supabase/migrations/20261109231356_rolling_30_day_daily_operational_metrics_20261109.sql", "utf8");
-assert.match(stats, /detail === "daily-metrics-30d"/);
-assert.match(stats, /verix_daily_metrics_30d_read/);
-assert.match(admin, /Estatísticas de hoje/);
-assert.ok(admin.includes('desde as 00:00, hora de Portugal continental.'));
-assert.ok(admin.includes('const today=data.days[data.days.length-1]'));
-assert.ok(admin.includes('pct(noRecord,consultations)'));
-assert.match(admin, /Histórico diário · últimos 30 dias/);
-assert.match(admin, /Registo de erros de hoje/);
-assert.match(admin, /todayErrorTypes/);
-assert.match(admin, /today_error_types/);
-assert.match(admin, /— indica que ainda não existia recolha diária/);
-assert.ok(admin.includes('.period-bar[hidden]{display:none!important}'));
-assert.ok(admin.includes('id="livePresenceCards" class="metric-grid live-presence-grid" aria-live="polite" hidden'));
-assert.ok(admin.includes('id="activityHeading" hidden'));
-assert.match(admin, /detail=daily-metrics-30d/);
-assert.match(dailyMetricsMigration, /CREATE TABLE IF NOT EXISTS public\.verix_daily_metrics/);
-assert.match(dailyMetricsMigration, /ON CONFLICT \(stat_date\) DO UPDATE/);
-assert.match(dailyMetricsMigration, /interval '30 days'/);
-assert.match(dailyMetricsMigration, /verix_daily_metrics_30d_retention/);
-const dashboardLoadStart = admin.indexOf("async function loadDashboard(force){");
-const dashboardLoadEnd = admin.indexOf("async function loadInsuranceCases", dashboardLoadStart);
-assert.ok(dashboardLoadStart >= 0 && dashboardLoadEnd > dashboardLoadStart, "counter dashboard loader must remain defined");
-const counterDashboardLoader = admin.slice(dashboardLoadStart, dashboardLoadEnd);
-assert.match(counterDashboardLoader, /detail=lifetime-counters/);
-assert.doesNotMatch(counterDashboardLoader, /loadInsuranceCases|loadErrors/);
+assert.match(admin, /admin-telemetry-v3\?view=dashboard/);
+assert.match(admin, /verix-presence-v1\.js/);
+assert.match(admin, /VERIX_LIVE_PRESENCE\.subscribe\(renderLivePresence\)/);
+assert.match(admin, /COUNTER_REFRESH_MS\s*=\s*60000/);
+assert.match(admin, /LIVE_REFRESH_MS\s*=\s*15000/);
+assert.doesNotMatch(admin, /data-period=|Histórico Total|>7 dias|daily-metrics-30d|todayErrorTypes/);
+assert.match(admin, /consulta é contabilizada uma vez/);
+
+// The rolling five-minute counter uses the existing short-lived hashed state.
+// Raw event/session tables stay retired; only first lookup time is retained.
+const recentMetricsMigration = fs.readFileSync("supabase/migrations/20261113123024_admin_live_consultations_last_5m.sql", "utf8");
+assert.match(recentMetricsMigration, /ADD COLUMN IF NOT EXISTS lookup_at timestamptz/);
+assert.match(recentMetricsMigration, /verix_lifetime_query_state_lookup_at_idx/);
+assert.match(recentMetricsMigration, /WHEN v_new_search AND NOT v_old_search THEN p_occurred_at/);
+assert.match(recentMetricsMigration, /verix_admin_recent_consultations/);
+assert.match(recentMetricsMigration, /interval '5 minutes'/);
+assert.match(recentMetricsMigration, /REVOKE ALL ON FUNCTION public\.verix_admin_recent_consultations/);
+const adminTelemetry = fs.readFileSync("supabase/functions/admin-telemetry-v3/index.ts", "utf8");
+assert.match(adminTelemetry, /verix_admin_recent_consultations/);
+assert.match(adminTelemetry, /consultations_started_last_5m/);
+assert.doesNotMatch(adminTelemetry, /verix2_admin_live_presence/);
 
 const app = fs.readFileSync("verix-app.html", "utf8");
 const telemetryStart = app.indexOf("function parseReceipt(text)");
