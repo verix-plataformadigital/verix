@@ -48,6 +48,9 @@ Deno.test("admin telemetry v3 — authentication, CORS and response contract", a
       if (url.endsWith("/verix_admin_recent_consultations")) {
         return Response.json(7);
       }
+      if (url.endsWith("/verix_daily_metrics_30d_read")) {
+        return Response.json({ window_days: 30, days: [{ date: "2026-11-13", available: true, consultations: 12, no_record_results: 2, errors: 1, error_types: [] }], totals: { consultations: 12, no_record_results: 2, errors: 1 } });
+      }
       return new Response("Unexpected RPC", { status: 404 });
     }) as typeof fetch;
 
@@ -131,8 +134,14 @@ Deno.test("admin telemetry v3 — authentication, CORS and response contract", a
         data.presence?.consultations_started_last_5m !== 7 ||
         typeof data.presence?.observed_at !== "string"
       ) throw new Error("Five-minute consultation payload is not mapped correctly");
-      if (!rpcCalls[0].endsWith("/verix_admin_recent_consultations")) {
-        throw new Error("Expected only the dedicated recent-consultations RPC request");
+      if (data.history?.window_days !== 30 || data.history?.days?.length !== 1 ||
+          data.history?.totals?.consultations !== 12) {
+        throw new Error("Thirty-day history payload is not mapped correctly");
+      }
+      if (rpcCalls.length !== 2 ||
+          !rpcCalls[0].endsWith("/verix_admin_recent_consultations") ||
+          !rpcCalls[1].endsWith("/verix_daily_metrics_30d_read")) {
+        throw new Error("Expected recent-consultations and daily-history RPC requests");
       }
       if (response.headers.get("Cache-Control")?.includes("no-store") !== true) {
         throw new Error("Successful admin responses must be no-store");
