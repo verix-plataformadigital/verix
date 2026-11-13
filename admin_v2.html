@@ -221,6 +221,98 @@ h1{margin:0;color:#133526;font-size:clamp(29px,3.4vw,40px);letter-spacing:-.055e
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 
+
+/* VÉRIX Admin V8 — operational console refinement */
+:root{--canvas:#f5f8f5;--ink:#163626;--muted:#687c70;--line:#e0e9e2;--shadow:0 8px 26px rgba(14,48,29,.045);--radius:20px}
+html{scroll-behavior:smooth;scroll-padding-top:18px}
+body{background:linear-gradient(180deg,#f7faf7 0,#f3f7f3 420px,#f5f8f5 100%)}
+.topbar{padding:14px 30px 15px;background:radial-gradient(850px 300px at 90% -65%,rgba(83,181,125,.25),transparent 65%),linear-gradient(115deg,#09271b,#123d29 72%,#0b2d1e);box-shadow:0 8px 24px rgba(8,35,22,.12)}
+.topbar-inner{max-width:1440px}.topbar-brand .brand{font-size:26px}.topbar-actions{gap:9px}
+.main-area{width:min(100%,1440px);padding:27px 30px 56px}.page-intro{margin-bottom:16px}h1{font-size:clamp(32px,3.5vw,43px);letter-spacing:-.06em}
+.page-description{max-width:720px;font-size:13px}.eyebrow{background:#e6f2e9;border-color:#cfe3d4;color:#176b49}
+.section-nav{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:5px;width:max-content;max-width:100%;margin:0 0 20px;padding:5px;border:1px solid rgba(218,231,221,.96);border-radius:13px;background:rgba(255,255,255,.9);box-shadow:0 4px 16px rgba(19,55,34,.045);backdrop-filter:blur(12px)}
+.section-nav a{display:inline-flex;align-items:center;gap:7px;min-height:32px;padding:7px 11px;border-radius:9px;color:#5f7467;text-decoration:none;font-size:10px;font-weight:800;white-space:nowrap;transition:background .15s,color .15s}
+.section-nav a:hover,.section-nav a:focus-visible{background:#edf5ef;color:#175e3e}
+.nav-pulse,.live-kicker-dot{width:7px;height:7px;border-radius:50%;background:#42b678;box-shadow:0 0 0 3px rgba(66,182,120,.14)}
+.operational-section{position:relative;margin:0 0 23px;padding:21px 22px 16px;overflow:hidden;border:1px solid #244d36;border-radius:21px;background:radial-gradient(640px 250px at 100% -80%,rgba(104,197,139,.19),transparent 67%),linear-gradient(120deg,#0b2a1d,#123d29 66%,#164a32);box-shadow:0 16px 36px rgba(12,49,29,.13);color:#f5fbf6}
+.operational-header{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:17px}
+.live-kicker{display:flex;align-items:center;gap:8px;margin-bottom:6px;color:#a9d8ba;font-size:9px;font-weight:900;letter-spacing:.16em;text-transform:uppercase}
+.operational-header h2{margin:0;color:#f6fbf7;font-size:21px;font-weight:850;letter-spacing:-.045em}
+.operational-header p{margin:5px 0 0;color:#b6cfbf;font-size:11px}
+.live-state{display:flex;align-items:flex-end;flex-direction:column;gap:6px;flex:none}
+.presence-state{display:inline-flex;align-items:center;gap:7px;min-height:29px;padding:6px 9px;border:1px solid rgba(255,255,255,.15);border-radius:999px;background:rgba(255,255,255,.075);color:#d9eee0;font-size:9px;font-weight:800;white-space:nowrap}
+.presence-state .status-dot{width:7px;height:7px}.presence-state.online .status-dot{background:#6cdb9c;box-shadow:0 0 0 3px rgba(108,219,156,.13)}
+.presence-state.offline .status-dot{background:#ff8b91;box-shadow:0 0 0 3px rgba(255,139,145,.13)}.presence-state.waiting .status-dot{background:#e4bd69}
+.live-timestamp{color:#9cbaa8;font-size:9px}
+.live-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.live-card{min-width:0;min-height:111px;padding:13px 15px 12px;border:1px solid rgba(255,255,255,.13);border-radius:14px;background:rgba(255,255,255,.065)}
+.live-card-primary{border-color:rgba(126,208,157,.34);background:linear-gradient(140deg,rgba(76,166,109,.24),rgba(255,255,255,.075))}
+.live-card-label{min-height:27px;color:#c3d8c9;font-size:9px;font-weight:850;letter-spacing:.055em;text-transform:uppercase;line-height:1.4}
+.live-card-value{margin:8px 0 6px;color:#fff;font-size:clamp(27px,3vw,36px);font-weight:900;letter-spacing:-.06em;line-height:1;font-variant-numeric:tabular-nums}
+.live-card-primary .live-card-value{color:#a4e8bb}.live-card-foot{color:#a9c3b1;font-size:9px;line-height:1.4}
+.live-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.10);color:#a9c2b0;font-size:9px}
+.today-section{margin-top:22px;padding:20px 20px 17px;border:1px solid var(--line);border-radius:19px;background:#fff;box-shadow:var(--shadow)}
+.today-section .section-heading{margin-bottom:14px}.today-section .section-heading h2{color:#173b29}.today-section .section-heading p{color:#718177}
+.today-section .section-tag{border-color:#dce9df;background:#eff7f0;color:#276b49}.today-section .section-tag .status-dot{background:#43a971}
+.today-card{padding:15px 16px 13px;border-color:#e3ebe5;background:linear-gradient(180deg,#fff,#fbfdfb);box-shadow:0 3px 12px rgba(17,54,33,.025)}
+.today-card .metric-label{color:#5d7666}.today-card .metric-icon{background:#e9f4ec;color:#20734b}
+.today-card.amber .metric-icon{background:#fbf3e4;color:#a87520}.today-card.red .metric-icon{background:#fff0f0;color:#b9434d}
+.today-card .metric-value{color:#16432d}.today-card.amber .metric-value{color:#9b6a1c}.today-card.red .metric-value{color:#b9434d}
+.today-card .metric-note{color:#718177}.today-bottom{border-top-color:#e9efea}.today-delta{color:#536d5c}
+.today-delta.good{color:#20734b}.today-delta.bad{color:#bd4650}.today-delta.attention{color:#9a6b20}.today-delta.neutral{color:#708176}
+.today-updated{color:#829187}.today-comparison-note{color:#7e8d82}
+.lifetime-section{margin-top:24px}.panel,.metric-card{box-shadow:var(--shadow)}
+.metric-card{min-height:139px;border-color:#e2ebe4}.metric-card:hover,.insight-card:hover{border-color:#cbded0;box-shadow:0 10px 28px rgba(14,48,29,.07)}
+.trend-section{margin-top:24px;padding:22px 21px 18px}.trend-heading h2{font-size:20px}
+.chart-wrap{border-color:#e3ece5;background:linear-gradient(180deg,#fcfefc,#f7faf7)}.metric-tabs{background:#edf4ef;border-color:#dfe9e2}
+.metric-tab{min-height:34px}.metric-tab[aria-pressed="true"]{color:#145c3a;box-shadow:0 2px 9px rgba(16,55,32,.10)}
+.insight-card{background:#fbfdfb}.daily-table-wrap{border-color:#e1eae3}.daily-table th{background:#edf4ef}
+.daily-table tbody tr.today-row td{background:#f0f8f2}
+.error-breakdown{margin:19px 0 0;padding:17px 18px;border:1px solid #e3ebe5;border-radius:16px;background:linear-gradient(180deg,#fff,#fbfdfb)}
+.error-breakdown-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:14px}
+.error-breakdown-heading h3{margin:0;color:#183a29;font-size:15px;font-weight:850;letter-spacing:-.03em}
+.error-breakdown-heading p{margin:4px 0 0;color:#7a8980;font-size:10px}
+.error-data-window{flex:none;padding:6px 9px;border:1px solid #e3eae4;border-radius:999px;background:#f6f9f6;color:#728177;font-size:9px;font-weight:800}
+.error-breakdown-grid{display:grid;grid-template-columns:minmax(0,1fr) 210px;gap:20px}
+.error-types-list{display:grid;gap:10px}.error-type-row{display:grid;grid-template-columns:minmax(130px,190px) minmax(70px,1fr) 48px;align-items:center;gap:11px}
+.error-type-name{overflow:hidden;color:#4f6658;font-size:10px;font-weight:750;text-overflow:ellipsis;white-space:nowrap}
+.error-type-code{margin-left:5px;color:#94a096;font-size:8px;font-weight:600}
+.error-type-track{height:7px;overflow:hidden;border-radius:999px;background:#edf2ee}
+.error-type-track span{display:block;height:100%;min-width:2px;border-radius:999px;background:linear-gradient(90deg,#c68b35,#e4ba70)}
+.error-type-count{color:#3d5d49;font-size:10px;font-weight:850;text-align:right;font-variant-numeric:tabular-nums}
+.error-empty{margin:0;padding:11px 0;color:#849188;font-size:10px}
+.error-breakdown-summary{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-left:17px;border-left:1px solid #e8eee9}
+.error-summary-block{padding:10px;border:1px solid #e8eee9;border-radius:11px;background:#f8fbf8}
+.error-summary-block span{display:block;color:#74837a;font-size:8px;font-weight:800;line-height:1.4}
+.error-summary-block strong{display:block;margin-top:4px;color:#183f2c;font-size:21px;font-weight:900;letter-spacing:-.05em}
+.error-coverage-note{grid-column:1/-1;margin:0;color:#849188;font-size:9px;line-height:1.5}
+.counter-updated{margin-top:14px}
+@media(max-width:980px){.main-area{padding-left:22px;padding-right:22px}.live-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.error-breakdown-grid{grid-template-columns:minmax(0,1fr) 190px}}
+@media(max-width:760px){
+ .topbar{padding:13px 16px 14px}.main-area{padding:19px 14px 38px}
+ .section-nav{position:relative;top:auto;width:100%;overflow-x:auto;scrollbar-width:none;margin-bottom:16px}.section-nav::-webkit-scrollbar{display:none}
+ .section-nav a{padding:7px 9px;font-size:9px}
+ .operational-section{margin-bottom:18px;padding:16px 13px 13px;border-radius:17px}.operational-header{align-items:flex-start;flex-direction:column;gap:9px;margin-bottom:12px}
+ .operational-header h2{font-size:19px}.operational-header p{font-size:10px}.live-state{align-items:flex-start;flex-direction:row;flex-wrap:wrap;gap:8px}
+ .live-grid{gap:8px}.live-card{min-height:99px;padding:11px 12px 10px}.live-card-label{min-height:25px;font-size:8px}
+ .live-card-value{font-size:clamp(25px,7vw,32px);margin:7px 0 5px}.live-card-foot{font-size:8px}
+ .live-footer{align-items:flex-start;flex-direction:column;gap:4px}.today-section{padding:16px 12px 14px;border-radius:16px}
+ .today-grid{gap:8px}.today-card{padding:12px 11px}.lifetime-section{margin-top:19px}
+ .trend-section{padding:16px 12px 14px}.error-breakdown{margin-top:15px;padding:13px 11px}
+ .error-breakdown-heading{align-items:flex-start;flex-direction:column;gap:7px}
+ .error-breakdown-grid{grid-template-columns:minmax(0,1fr);gap:12px}
+ .error-type-row{grid-template-columns:minmax(110px,36%) minmax(60px,1fr) 40px;gap:8px}
+ .error-breakdown-summary{padding:11px 0 0;border-left:0;border-top:1px solid #e8eee9}
+}
+@media(max-width:430px){
+ .main-area{padding-left:12px;padding-right:12px}.live-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .live-card{min-height:98px}.live-card-value{font-size:27px}.today-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .today-card:last-child{grid-column:1/-1}.metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .error-type-row{grid-template-columns:minmax(0,116px) minmax(40px,1fr) 36px}
+ .error-type-name{font-size:9px}.error-type-code{display:block;margin:1px 0 0;font-size:7px}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
 </style>
 </head>
 <body>
@@ -272,41 +364,37 @@ h1{margin:0;color:#133526;font-size:clamp(29px,3.4vw,40px);letter-spacing:-.055e
 
   <div id="dataNotice" class="data-notice" role="status" aria-live="polite" hidden></div>
 
-  <section class="lifetime-section" aria-labelledby="counterTitle">
-    <div class="section-heading">
-      <div><h2 id="counterTitle">Contador histórico</h2><p>Totais permanentes desde o início do contador. Não são afetados pela retenção diária.</p></div>
-      <span id="counterLastUpdated" class="section-tag">A aguardar dados</span>
+  <nav class="section-nav" aria-label="Navegação do painel">
+    <a href="#operationalSection"><span class="nav-pulse" aria-hidden="true"></span>Em direto</a>
+    <a href="#todaySection">Hoje</a><a href="#historySection">Histórico</a><a href="#lifetimeSection">Contador histórico</a>
+  </nav>
+
+  
+
+    <section class="operational-section" id="operationalSection" aria-labelledby="operationalTitle">
+    <div class="operational-header">
+      <div><div class="live-kicker"><span class="live-kicker-dot" aria-hidden="true"></span>Monitorização em direto</div>
+        <h2 id="operationalTitle">Operação em tempo real</h2>
+        <p>Consultas recentes e atividade das instalações ligadas ao VÉRIX.</p></div>
+      <div class="live-state">
+        <span id="presenceStatus" class="presence-state waiting"><i class="status-dot" aria-hidden="true"></i><span>A ligar presença</span></span>
+        <span id="livePresenceUpdatedVisible" class="live-timestamp">A aguardar sinal</span>
+      </div>
     </div>
-    <div class="metric-grid" aria-live="polite">
-      <article class="metric-card">
-        <div class="metric-top">
-          <div class="metric-label">Total de pesquisas efetuadas</div>
-          <span class="metric-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4M8 11h6M11 8v6"/></svg></span>
-        </div>
-        <div class="metric-value" id="totalSearches">—</div>
-        <div class="metric-foot"><span>Cada consulta é contabilizada uma vez</span><strong>Acumulado</strong></div>
-      </article>
-      <article class="metric-card amber">
-        <div class="metric-top">
-          <div class="metric-label">Resultados sem registo ASF</div>
-          <span class="metric-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5h.01"/></svg></span>
-        </div>
-        <div class="metric-value" id="totalNoRecord">—</div>
-        <div class="metric-foot"><span>Respostas sem registo</span><strong id="totalNoRecordPctInline">—</strong></div>
-        <div class="metric-note">A ausência de registo ASF não confirma, por si só, que o veículo não tem seguro.</div>
-      </article>
-      <article class="metric-card">
-        <div class="metric-top">
-          <div class="metric-label">Taxa histórica sem registo</div>
-          <span class="metric-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16"/><path d="m7 15 4-4 3 2 5-6"/></svg></span>
-        </div>
-        <div class="metric-value" id="totalNoRecordPct">—</div>
-        <div class="metric-foot"><span>Sobre todas as pesquisas</span><strong>Histórico</strong></div>
-      </article>
+    <div class="live-grid" aria-live="polite">
+      <article class="live-card live-card-primary"><div class="live-card-label">Consultas · últimos 5 minutos</div>
+        <div class="live-card-value" id="liveQueries5mVisible">—</div><div class="live-card-foot">Consultas únicas iniciadas na janela móvel</div></article>
+      <article class="live-card"><div class="live-card-label">Instalações ativas</div>
+        <div class="live-card-value" id="livePresenceActiveVisible">—</div><div class="live-card-foot">Com atividade recente e separador visível</div></article>
+      <article class="live-card"><div class="live-card-label">Instalações online</div>
+        <div class="live-card-value" id="livePresenceOnlineVisible">—</div><div class="live-card-foot">Browsers/dispositivos ligados ao canal</div></article>
+      <article class="live-card"><div class="live-card-label">Separadores ativos</div>
+        <div class="live-card-value" id="livePresenceActiveTabsVisible">—</div><div class="live-card-foot">Com atividade nos últimos 2 minutos</div></article>
     </div>
+    <div class="live-footer"><span>Instalações e separadores não equivalem a pessoas únicas.</span><span id="liveQueryUpdatedVisible">Consultas: a aguardar leitura.</span></div>
   </section>
 
-  <section class="today-section" aria-labelledby="todayTitle">
+<section class="today-section" id="todaySection" aria-labelledby="todayTitle">
     <div class="section-heading">
       <div><h2 id="todayTitle">Resumo de hoje</h2><p>Atividade desde as 00:00 · hora de Portugal continental.</p></div>
       <span class="section-tag"><i class="status-dot" aria-hidden="true"></i><span>HOJE · EM ATUALIZAÇÃO</span></span>
@@ -344,7 +432,41 @@ h1{margin:0;color:#133526;font-size:clamp(29px,3.4vw,40px);letter-spacing:-.055e
     <div id="todayUpdated" class="today-updated" style="margin-top:8px;text-align:right">A aguardar dados diários.</div>
   </section>
 
-  <section class="trend-section panel" aria-labelledby="trendTitle">
+  <section class="lifetime-section" id="lifetimeSection" aria-labelledby="counterTitle">
+    <div class="section-heading">
+      <div><h2 id="counterTitle">Contador histórico</h2><p>Totais permanentes desde o início do contador. Não são afetados pela retenção diária.</p></div>
+      <span id="counterLastUpdated" class="section-tag">A aguardar dados</span>
+    </div>
+    <div class="metric-grid" aria-live="polite">
+      <article class="metric-card">
+        <div class="metric-top">
+          <div class="metric-label">Total de pesquisas efetuadas</div>
+          <span class="metric-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4M8 11h6M11 8v6"/></svg></span>
+        </div>
+        <div class="metric-value" id="totalSearches">—</div>
+        <div class="metric-foot"><span>Cada consulta é contabilizada uma vez</span><strong>Acumulado</strong></div>
+      </article>
+      <article class="metric-card amber">
+        <div class="metric-top">
+          <div class="metric-label">Resultados sem registo ASF</div>
+          <span class="metric-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5h.01"/></svg></span>
+        </div>
+        <div class="metric-value" id="totalNoRecord">—</div>
+        <div class="metric-foot"><span>Respostas sem registo</span><strong id="totalNoRecordPctInline">—</strong></div>
+        <div class="metric-note">A ausência de registo ASF não confirma, por si só, que o veículo não tem seguro.</div>
+      </article>
+      <article class="metric-card">
+        <div class="metric-top">
+          <div class="metric-label">Taxa histórica sem registo</div>
+          <span class="metric-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16"/><path d="m7 15 4-4 3 2 5-6"/></svg></span>
+        </div>
+        <div class="metric-value" id="totalNoRecordPct">—</div>
+        <div class="metric-foot"><span>Sobre todas as pesquisas</span><strong>Histórico</strong></div>
+      </article>
+    </div>
+  </section>
+
+  <section class="trend-section panel" id="historySection" aria-labelledby="trendTitle">
     <div class="trend-heading">
       <div><h2 id="trendTitle">Evolução dos últimos 30 dias</h2><p>Seleciona um indicador para analisar a sua evolução com escala própria.</p></div>
       <span class="chart-window">JANELA MÓVEL · 30 DIAS</span>
@@ -393,6 +515,20 @@ h1{margin:0;color:#133526;font-size:clamp(29px,3.4vw,40px);letter-spacing:-.055e
       </aside>
     </div>
 
+    <section class="error-breakdown" aria-labelledby="errorBreakdownTitle">
+      <div class="error-breakdown-heading"><div><h3 id="errorBreakdownTitle">Diagnóstico de erros</h3>
+        <p>Distribuição pelas categorias técnicas identificadas no histórico disponível.</p></div>
+        <span class="error-data-window" id="errorTypesSince">A aguardar dados</span></div>
+      <div class="error-breakdown-grid">
+        <div id="errorTypesList" class="error-types-list" aria-live="polite"><p class="error-empty">A carregar categorias de erro…</p></div>
+        <aside class="error-breakdown-summary">
+          <div class="error-summary-block"><span>Erros com categoria identificada</span><strong id="errorTypesTotal">—</strong></div>
+          <div class="error-summary-block"><span>Categorias registadas hoje</span><strong id="errorTypesToday">—</strong></div>
+          <p id="errorTypesCoverage" class="error-coverage-note">A aguardar confirmação da cobertura de dados.</p>
+        </aside>
+      </div>
+    </section>
+
     <div class="table-section">
       <div class="table-heading">
         <div><h2>Detalhe diário</h2><p>Comparação direta entre dias, do mais recente para o mais antigo.</p></div>
@@ -417,18 +553,18 @@ h1{margin:0;color:#133526;font-size:clamp(29px,3.4vw,40px);letter-spacing:-.055e
 <div hidden aria-hidden="true">
   <span id="presenceConnection" class="status-pill loading"><i class="status-dot" aria-hidden="true"></i><span>A ligar presença</span></span>
   <span id="livePresenceOnline">—</span><span id="livePresenceActive">—</span><span id="liveQueries5m">—</span>
-  <span id="livePresenceUpdated"></span><span id="liveQueryUpdated"></span>
+  <span id="livePresenceUpdated"></span><span id="liveQueryUpdated"></span><span id="livePresenceOnlineTabs">—</span><span id="livePresenceActiveTabs">—</span>
 </div>
 
 </div>
 
-<script defer src="./verix-presence-v1.js?v=admin-v7-dashboard-ux-20261113"></script>
+<script defer src="./verix-presence-v1.js?v=admin-v8-ops-console-20261113"></script>
 <script>
 
 (function(){
 'use strict';
 const API_ORIGIN='https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/';
-const RELEASE='admin-v7-dashboard-ux-20261113';
+const RELEASE='admin-v8-ops-console-20261113';
 const AUTH_API=API_ORIGIN+'admin-auth-v2?v='+encodeURIComponent(RELEASE);
 const STATS_API=API_ORIGIN+'stats-v2?v='+encodeURIComponent(RELEASE);
 const LIVE_API=API_ORIGIN+'admin-telemetry-v3?view=dashboard&v='+encodeURIComponent(RELEASE);
@@ -514,18 +650,19 @@ function setLiveValue(id,value){
   if(element)element.textContent=value===null||value===undefined?'—':formatCount(value);
 }
 function renderLivePresence(snapshot){
-  const s=snapshot||{};
-  const ready=s.ready===true&&s.status==='connected';
-  setLiveValue('livePresenceOnline',ready?s.onlineInstallations:null);
-  setLiveValue('livePresenceActive',ready?s.activeInstallations:null);
+  const s=snapshot||{},ready=s.ready===true&&s.status==='connected',status=s.status||'connecting';
+  const mode=ready?'online':(status==='reconnecting'||status==='unavailable'?'offline':'waiting');
+  const label=ready?'Presença ligada':(status==='locked'?'A aguardar autenticação':(status==='reconnecting'?'A recuperar ligação':(status==='unavailable'?'Presença indisponível':'A ligar presença')));
+  setLiveValue('livePresenceOnline',ready?s.onlineInstallations:null);setLiveValue('livePresenceActive',ready?s.activeInstallations:null);
+  setLiveValue('livePresenceOnlineTabs',ready?s.onlineTabs:null);setLiveValue('livePresenceActiveTabs',ready?s.activeTabs:null);
+  setLiveValue('livePresenceOnlineVisible',ready?s.onlineInstallations:null);setLiveValue('livePresenceActiveVisible',ready?s.activeInstallations:null);
+  setLiveValue('livePresenceActiveTabsVisible',ready?s.activeTabs:null);
   const pill=$('presenceConnection');
-  if(!pill)return;
-  const status=s.status||'connecting';
-  const mode=ready?'online':(status==='reconnecting'||status==='unavailable'?'offline':'loading');
-  pill.className='status-pill '+mode;
-  const textNode=pill.querySelector('span:last-child');
-  if(textNode)textNode.textContent=ready?'Presença ligada · tempo real':(status==='locked'?'Aguarda autenticação':(status==='reconnecting'?'A recuperar presença':(status==='unavailable'?'Presença indisponível':'A ligar presença')));
-  if(ready&&s.observedAt)$('livePresenceUpdated').textContent='Presença sincronizada às '+formatTime(s.observedAt)+'.';
+  if(pill){pill.className='status-pill '+(ready?'online':(mode==='offline'?'offline':'loading'));const t=pill.querySelector('span:last-child');if(t)t.textContent=label+' · tempo real';}
+  const visible=$('presenceStatus');
+  if(visible){visible.className='presence-state '+mode;const t=visible.querySelector('span:last-child');if(t)t.textContent=label;}
+  if(ready&&s.observedAt){const stamp='Presença atualizada às '+formatTime(s.observedAt);$('livePresenceUpdated').textContent=stamp+'.';$('livePresenceUpdatedVisible').textContent=stamp;}
+  else $('livePresenceUpdatedVisible').textContent=label+'.';
 }
 async function request(url,options){
   const opt=options||{};
@@ -697,6 +834,30 @@ function renderTable(days){
       '<td data-label="% erros" class="pct error-pct">'+fmtPct(e,c)+'</td></tr>';
   }).join('');
 }
+const ERROR_TYPE_LABELS={http_null:'Resposta HTTP vazia',http_400:'Pedido HTTP inválido',security_auth:'Falha de autenticação',upstream_timeout:'Timeout do serviço ASF',upstream_network:'Ligação ao serviço ASF',invalid_json:'Resposta JSON inválida',parse_error:'Erro de interpretação',rate_limited:'Limite de pedidos',network_error:'Erro de rede',timeout:'Tempo de resposta excedido',unknown:'Erro não classificado',http_401:'HTTP 401 · Não autorizado',http_403:'HTTP 403 · Acesso recusado',http_404:'HTTP 404 · Não encontrado',http_429:'HTTP 429 · Limite de pedidos',http_5xx:'HTTP 5xx · Erro do servidor',graphql_error:'Erro GraphQL',service_unavailable:'Serviço indisponível',empty_response:'Resposta vazia',other:'Outros erros'};
+function renderErrorBreakdown(history){
+ const totals=new Map(),days=Array.isArray(history&&history.days)?history.days:[];
+ days.forEach(day=>{if(!day||day.available!==true||!Array.isArray(day.error_types))return;day.error_types.forEach(item=>{const key=String(item&&item.error_type||'other'),count=Number(item&&item.occurrences);if(Number.isSafeInteger(count)&&count>0)totals.set(key,(totals.get(key)||0)+count);});});
+ const items=[...totals.entries()].map(([key,count])=>({key,count})).sort((a,b)=>b.count-a.count||a.key.localeCompare(b.key)),total=items.reduce((s,x)=>s+x.count,0);
+ const today=Array.isArray(history&&history.today_error_types)?history.today_error_types:[],todayTotal=today.reduce((s,x)=>s+(Number.isSafeInteger(Number(x&&x.occurrences))?Math.max(0,Number(x.occurrences)):0),0);
+ $('errorTypesTotal').textContent=formatCount(total);$('errorTypesToday').textContent=formatCount(todayTotal);
+ const since=history&&history.error_types_since?String(history.error_types_since).slice(0,10):'';
+ $('errorTypesSince').textContent=since?'Categorias desde '+formatDay(since):'Recolha de categorias';
+ $('errorTypesCoverage').textContent=since?'A classificação de erros começou em '+formatDay(since)+'. Os totais refletem apenas categorias recolhidas desde essa data.':'A data de início da classificação não foi devolvida pelo servidor.';
+ const root=$('errorTypesList');root.replaceChildren();
+ if(!items.length){const empty=document.createElement('p');empty.className='error-empty';empty.textContent='Não existem categorias de erro disponíveis nesta janela de recolha.';root.appendChild(empty);return;}
+ const max=items[0].count;
+ items.slice(0,6).forEach(item=>{
+  const row=document.createElement('div');row.className='error-type-row';
+  const name=document.createElement('div');name.className='error-type-name';name.textContent=ERROR_TYPE_LABELS[item.key]||'Categoria não reconhecida';
+  const code=document.createElement('span');code.className='error-type-code';code.textContent=item.key;name.appendChild(code);
+  const track=document.createElement('div');track.className='error-type-track';track.setAttribute('aria-hidden','true');
+  const fill=document.createElement('span');fill.style.width=Math.max(2,item.count/max*100)+'%';track.appendChild(fill);
+  const count=document.createElement('div');count.className='error-type-count';count.textContent=formatCount(item.count);
+  row.append(name,track,count);root.appendChild(row);
+ });
+ if(items.length>6){const rest=items.slice(6).reduce((s,x)=>s+x.count,0),row=document.createElement('p');row.className='error-empty';row.textContent='Outras '+(items.length-6)+' categorias: '+formatCount(rest)+' ocorrências.';root.appendChild(row);}
+}
 function renderDailyDashboard(history,generatedAt){
   if(!history||!Array.isArray(history.days)||history.days.length!==30||!history.totals){
     throw new Error('O servidor não devolveu os 30 dias de histórico esperados.');
@@ -737,6 +898,7 @@ function renderDailyDashboard(history,generatedAt){
   $('periodErrorPct').textContent=fmtPct(errors,consultations);
   $('periodErrors').textContent=formatCount(errors)+' erros técnicos';
   renderTrendChart(days);
+  renderErrorBreakdown(history);
   renderTable(days);
   const collecting=history.collecting_since?formatDate(history.collecting_since):'data não indicada';
   $('dailyFootnote').textContent='Recolha diária ativa desde '+collecting+'. A janela mantém os 30 dias mais recentes (Europe/Lisbon); os dias anteriores ao início da recolha surgem como indisponíveis, nunca como zero. As percentagens são calculadas sobre as consultas do respetivo dia. “Sem registo ASF” não confirma, por si só, ausência de seguro.';
@@ -772,9 +934,13 @@ async function loadDailyDashboard(){
     renderDailyDashboard(response.history,response.generated_at);
     dailyIssue='';renderNotice();syncBackendStatus();
     const recent=response&&response.presence&&response.presence.consultations_started_last_5m;
-    setLiveValue('liveQueries5m',Number.isSafeInteger(recent)&&recent>=0?recent:null);
-    if(counterData)showNotice('',false);
-    setBackendStatus('online','Backend online');
+    const recentValid=Number.isSafeInteger(recent)&&recent>=0;
+    setLiveValue('liveQueries5m',recentValid?recent:null);
+    setLiveValue('liveQueries5mVisible',recentValid?recent:null);
+    const observed=response&&response.presence&&response.presence.observed_at;
+    $('liveQueryUpdated').textContent=observed?'Consultas atualizadas às '+formatTime(observed)+'.':'';
+    $('liveQueryUpdatedVisible').textContent=observed?'Consultas atualizadas às '+formatTime(observed):'Consultas: leitura sem timestamp.';
+    syncBackendStatus();
   }catch(error){
     if(requestToken===token){
       dailyIssue=dailyData?'os dados apresentados são da última leitura confirmada; não foi possível obter uma leitura mais recente.':'não foi possível carregar os dados. '+error.message;renderNotice();syncBackendStatus();
