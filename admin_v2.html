@@ -407,11 +407,7 @@ h1{margin:0;color:#133526;font-size:clamp(29px,3.4vw,40px);letter-spacing:-.055e
   <div class="counter-updated" id="dashboardUpdated"></div>
 </main>
 
-<div hidden aria-hidden="true">
-  <span id="presenceConnection" class="status-pill loading"><i class="status-dot" aria-hidden="true"></i><span>A ligar presença</span></span>
-  <span id="livePresenceOnline">—</span><span id="livePresenceActive">—</span><span id="liveQueries5m">—</span>
-  <span id="livePresenceUpdated"></span><span id="liveQueryUpdated"></span>
-</div>
+
 
 
 <div hidden aria-hidden="true">
@@ -719,7 +715,7 @@ function renderDailyDashboard(history,generatedAt){
     setDelta('todayConsultationsDelta',c,pc,'volume');
     setDelta('todayNoRecordDelta',n,pn,'neutral');
     setDelta('todayErrorsDelta',e,pe,'error');
-    $('todayConsultationsPct').textContent=fmtPct(c,pc)+' do volume de ontem';
+    $('todayConsultationsPct').textContent=pc>0?fmtPct(c,pc)+' do volume de ontem':(Number.isFinite(pc)?'Sem volume ontem':'Sem base de ontem');
     $('todayUpdated').textContent='Última leitura às '+formatTime(history.generated_at||generatedAt||new Date().toISOString())+' · comparação com o dia anterior.';
   }
   const consultations=Number(history.totals.consultations)||0;
