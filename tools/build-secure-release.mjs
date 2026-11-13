@@ -396,7 +396,8 @@ adminPwaSource = adminPwaSource.replace(/\.\/assets\//g, "../assets/");
 adminPwaSource = adminPwaSource.replace(/src="\.\/verix-presence-v1\.js/g, 'src="../verix-presence-v1.js');
 adminPwaSource = adminPwaSource.replace(/(src="\.\.\/verix-presence-v1\.js\?v=)[^"]+/g, "$1" + encodeURIComponent(String(BUILD_ID)));
 
-// The Admin uses one shared Realtime presence client and a server-only recent-query aggregate.\n\nadminPwaSource = adminPwaSource.replace(/\.\/AI-ACCESS-POLICY\.md/g, "../AI-ACCESS-POLICY.md");
+// The Admin uses one shared Realtime presence client and a server-only recent-query aggregate.
+adminPwaSource = adminPwaSource.replace(/\.\/AI-ACCESS-POLICY\.md/g, "../AI-ACCESS-POLICY.md");
 const adminPwaHeadLinks = [
   '  <link rel="icon" href="../assets/admin-icon.svg?v=' + encodeURIComponent(String(BUILD_ID)) + '" type="image/svg+xml" sizes="any">',
   '  <link rel="manifest" href="./manifest.webmanifest?v=' + encodeURIComponent(String(BUILD_ID)) + '">'
