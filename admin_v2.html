@@ -244,7 +244,7 @@ body{background:linear-gradient(180deg,#f7faf7 0,#f3f7f3 420px,#f5f8f5 100%)}
 .presence-state .status-dot{width:7px;height:7px}.presence-state.online .status-dot{background:#6cdb9c;box-shadow:0 0 0 3px rgba(108,219,156,.13)}
 .presence-state.offline .status-dot{background:#ff8b91;box-shadow:0 0 0 3px rgba(255,139,145,.13)}.presence-state.waiting .status-dot{background:#e4bd69}
 .live-timestamp{color:#9cbaa8;font-size:9px}
-.live-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.live-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}
 .live-card{min-width:0;min-height:111px;padding:13px 15px 12px;border:1px solid rgba(255,255,255,.13);border-radius:14px;background:rgba(255,255,255,.065)}
 .live-card-primary{border-color:rgba(126,208,157,.34);background:linear-gradient(140deg,rgba(76,166,109,.24),rgba(255,255,255,.075))}
 .live-card-label{min-height:27px;color:#c3d8c9;font-size:9px;font-weight:850;letter-spacing:.055em;text-transform:uppercase;line-height:1.4}
@@ -391,11 +391,13 @@ body{background:linear-gradient(180deg,#f7faf7 0,#f3f7f3 420px,#f5f8f5 100%)}
     <div class="live-grid" aria-live="polite">
       <article class="live-card live-card-primary"><div class="live-card-label">Consultas · últimos 5 minutos</div>
         <div class="live-card-value" id="liveQueries5mVisible">—</div><div class="live-card-foot" id="liveQueries5mNote">Consultas únicas iniciadas na janela móvel</div></article>
-      <article class="live-card"><div class="live-card-label">Instalações ativas · 2 min</div>
-        <div class="live-card-value" id="livePresenceActiveVisible">—</div><div class="live-card-foot">Com atividade recente e página visível</div></article>
+      <article class="live-card"><div class="live-card-label">Instalações ativas · 10 min</div>
+        <div class="live-card-value" id="livePresenceActiveVisible">—</div><div class="live-card-foot">Com interação nos últimos 10 minutos e página visível</div></article>
       <article class="live-card"><div class="live-card-label">Instalações online</div>
         <div class="live-card-value" id="livePresenceOnlineVisible">—</div><div class="live-card-foot">Ligações presentes no canal, mesmo sem atividade recente</div></article>
-      <article class="live-card"><div class="live-card-label">Separadores ativos · 2 min</div>
+      <article class="live-card live-card-hour"><div class="live-card-label">Consultas · última hora</div>
+        <div class="live-card-value" id="liveQueries1hVisible">—</div><div class="live-card-foot" id="liveQueries1hNote">Consultas únicas registadas nos últimos 60 minutos</div></article>
+      <article class="live-card"><div class="live-card-label">Separadores ativos · 10 min</div>
         <div class="live-card-value" id="livePresenceActiveTabsVisible">—</div><div class="live-card-foot">Separadores com atividade recente e visíveis</div></article>
     </div>
     <div class="live-footer live-footer-stack"><span id="livePresenceExplanation">Instalações e separadores não equivalem a pessoas únicas.</span><span id="liveQueryUpdatedVisible">Consultas: a aguardar leitura.</span></div>
@@ -571,7 +573,7 @@ body{background:linear-gradient(180deg,#f7faf7 0,#f3f7f3 420px,#f5f8f5 100%)}
 (function(){
 'use strict';
 const API_ORIGIN='https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/';
-const RELEASE='admin-v8-ops-console-20261113';
+const RELEASE='admin-v9-live-activity-accuracy-20261113';
 const AUTH_API=API_ORIGIN+'admin-auth-v2?v='+encodeURIComponent(RELEASE);
 const STATS_API=API_ORIGIN+'stats-v2?v='+encodeURIComponent(RELEASE);
 const LIVE_API=API_ORIGIN+'admin-telemetry-v3?view=dashboard&v='+encodeURIComponent(RELEASE);
@@ -674,8 +676,8 @@ function renderLivePresence(snapshot){
   const explanation=$('livePresenceExplanation');
   if(explanation){
     if(!ready)explanation.textContent='A contagem de atividade será apresentada quando a ligação de presença estiver confirmada.';
-    else if(online>0&&active===0)explanation.textContent=online+' instalações ligadas; nenhuma registou atividade nos últimos 2 minutos. Podem estar abertas em segundo plano ou inativas.';
-    else if(active>0)explanation.textContent=active+' de '+online+' instalações com atividade nos últimos 2 minutos. As contagens não representam pessoas únicas.';
+    else if(online>0&&active===0)explanation.textContent=online+' instalações ligadas; nenhuma registou atividade nos últimos 10 minutos. Podem estar abertas em segundo plano ou inativas.';
+    else if(active>0)explanation.textContent=active+' de '+online+' instalações com atividade nos últimos 10 minutos. As contagens não representam pessoas únicas.';
     else explanation.textContent='Sem instalações ligadas neste momento. As contagens não representam pessoas únicas.';
   }
   if(ready&&s.observedAt){const stamp='Presença atualizada às '+formatTime(s.observedAt);$('livePresenceUpdated').textContent=stamp+'.';$('livePresenceUpdatedVisible').textContent=stamp;}
@@ -954,6 +956,11 @@ async function loadDailyDashboard(){
     const recentValid=Number.isSafeInteger(recent)&&recent>=0;
     setLiveValue('liveQueries5m',recentValid?recent:null);
     setLiveValue('liveQueries5mVisible',recentValid?recent:null);
+    const recentHour=response&&response.presence&&response.presence.consultations_started_last_1h;
+    const recentHourValid=Number.isSafeInteger(recentHour)&&recentHour>=0;
+    setLiveValue('liveQueries1hVisible',recentHourValid?recentHour:null);
+    const hourNote=$('liveQueries1hNote');
+    if(hourNote)hourNote.textContent=!recentHourValid?'Não foi possível confirmar esta janela.':(recentHour===0?'Nenhuma consulta registada nos últimos 60 minutos.':recentHour+' consultas únicas registadas nos últimos 60 minutos.');
     const recentNote=$('liveQueries5mNote');
     if(recentNote)recentNote.textContent=!recentValid?'Não foi possível confirmar esta janela.':(recent===0?'Nenhuma consulta registada nesta janela; o total diário mantém-se no resumo abaixo.':recent+' consultas únicas registadas nos últimos 5 minutos.');
     const observed=response&&response.presence&&response.presence.observed_at;
