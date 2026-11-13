@@ -84,6 +84,12 @@ jobs:
           if (!html.includes('./manifest.webmanifest?v=') || !html.includes('../verix-presence-v1.js')) {
             throw new Error('Admin V3 runtime or manifest link is missing');
           }
+          for (const id of ['totalSearches','totalNoRecord','livePresenceOnline','livePresenceActive','liveQueries5m']) {
+            if (!html.includes('id="' + id + '"')) throw new Error('Admin dashboard metric missing: ' + id);
+          }
+          if (/data-period=|Histórico Total|>7 dias</i.test(html)) {
+            throw new Error('Obsolete Admin period controls found in the production build');
+          }
           NODE
 
       - name: Validate HTML structure
