@@ -3,7 +3,7 @@ name: Admin telemetry v3 tests
 on:
   pull_request:
     paths:
-      - "admin_v2.html"
+      - "admin_v2.html"\n      - "tools/build-secure-release.mjs"\n      - "supabase/migrations/20261113123024_admin_live_consultations_last_5m.sql"\n      - "tools/build-secure-release.mjs"\n      - "supabase/migrations/20261113123024_admin_live_consultations_last_5m.sql"
       - "supabase/functions/stats-v2/**"
       - "supabase/functions/admin-telemetry-v3/**"
       - "supabase/functions/admin-auth-v2/**"
