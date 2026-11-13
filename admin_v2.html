@@ -162,6 +162,9 @@ h1{margin:0;color:#133526;font-size:clamp(29px,3.4vw,40px);letter-spacing:-.055e
 .chart-side-stat strong{display:block;color:#3d5e49;font-size:12px;font-weight:850;font-variant-numeric:tabular-nums}
 .chart-canvas{min-height:220px;position:relative}
 .trend-svg{display:block;width:100%;height:auto;min-height:180px;overflow:visible}
+.trend-svg circle[data-date]{cursor:pointer;transition:r .12s ease}
+.trend-svg circle[data-date]:focus{outline:none;stroke:#102f20;stroke-width:3}
+.chart-point-detail{min-height:17px;margin:6px 4px 0;color:#65786b;font-size:10px;font-weight:700}
 .chart-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:3px 4px 0;color:#839087;font-size:9px}
 .chart-aside{display:flex;flex-direction:column;gap:9px}
 .insight-card{padding:13px 14px;border:1px solid #e4ece6;border-radius:14px;background:#f9fbf9}
@@ -364,9 +367,10 @@ h1{margin:0;color:#133526;font-size:clamp(29px,3.4vw,40px);letter-spacing:-.055e
             <div class="chart-side-stat"><span>Máximo num dia</span><strong id="chartPeak">—</strong></div>
           </div>
         </div>
-        <div id="trendChart" class="chart-canvas" role="img" aria-label="Gráfico de evolução diária nos últimos 30 dias">
+        <div id="trendChart" class="chart-canvas" role="group" aria-label="Gráfico de evolução diária nos últimos 30 dias">
           <div class="daily-note">A carregar dados do histórico…</div>
         </div>
+        <p id="chartPointDetail" class="chart-point-detail" aria-live="polite">Seleciona um ponto do gráfico para consultar o valor desse dia.</p>
         <div class="chart-foot"><span>Os pontos representam o valor de cada dia. Toca ou passa o cursor para ver os detalhes.</span><span>Europe/Lisbon</span></div>
       </div>
 
@@ -485,6 +489,10 @@ function setBackendStatus(mode,label){
   const pill=$('backendStatus');
   pill.className='status-pill '+mode;
   $('backendStatusText').textContent=label;
+}
+function syncBackendStatus(){
+  if(counterIssue||dailyIssue)setBackendStatus('loading','Dados parciais');
+  else setBackendStatus('online','Backend online');
 }
 function showLoginError(message){$('loginError').textContent=message||'';}
 function renderNotice(){
@@ -653,7 +661,7 @@ function renderTrendChart(days){
     svg+='<path d="'+linePath+'" fill="none" stroke="'+metric.color+'" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>';
     points.forEach(point=>{
       const isToday=point.day.date===todayKey();
-      svg+='<circle cx="'+point.x.toFixed(1)+'" cy="'+point.y.toFixed(1)+'" r="'+(isToday?5.2:3.4)+'" fill="'+metric.color+'" stroke="#fff" stroke-width="2"><title>'+formatDay(point.day.date)+' · '+formatCount(point.value)+' '+metric.unit+'</title></circle>';
+      svg+='<circle cx="'+point.x.toFixed(1)+'" cy="'+point.y.toFixed(1)+'" r="'+(isToday?5.2:3.4)+'" fill="'+metric.color+'" stroke="#fff" stroke-width="2" data-date="'+point.day.date+'" data-value="'+point.value+'" tabindex="0" role="button" aria-label="'+formatDay(point.day.date)+': '+formatCount(point.value)+' '+metric.unit+'"><title>'+formatDay(point.day.date)+' · '+formatCount(point.value)+' '+metric.unit+'</title></circle>';
     });
   }
   const labelIndices=[0,5,10,15,20,25,29];
@@ -665,6 +673,8 @@ function renderTrendChart(days){
   });
   svg+='</svg>';
   $('trendChart').innerHTML=svg;
+  const lastPoint=points[points.length-1];
+  $('chartPointDetail').textContent=lastPoint?formatDay(lastPoint.day.date)+' — '+formatCount(lastPoint.value)+' '+metric.unit+'. Seleciona outro ponto para consultar outro dia.':'Seleciona um ponto do gráfico para consultar o valor desse dia.';
 }
 function renderTable(days){
   const today=todayKey(),yesterday=previousDayKey(today);
@@ -741,14 +751,14 @@ async function loadDashboard(){
     counterData=response.data;
     renderCounters(counterData);
     counterIssue='';renderNotice();
-    setBackendStatus('online','Backend online');
+    syncBackendStatus();
   }catch(error){
     setBackendStatus('offline','Backend indisponível');
     if(!counterData){
       $('totalSearches').textContent='—';$('totalNoRecord').textContent='—';$('totalNoRecordPct').textContent='—';$('totalNoRecordPctInline').textContent='—';
       $('counterLastUpdated').textContent='Não foi possível confirmar os contadores.';
     }
-    counterIssue='não foi possível atualizar. '+error.message;renderNotice();
+    counterIssue='não foi possível atualizar. '+error.message;renderNotice();syncBackendStatus();
   }finally{counterBusy=false;}
 }
 async function loadDailyDashboard(){
@@ -760,14 +770,14 @@ async function loadDailyDashboard(){
     if(requestToken!==token)return;
     if(!response||!response.history)throw new Error('O servidor não devolveu o histórico diário.');
     renderDailyDashboard(response.history,response.generated_at);
-    dailyIssue='';renderNotice();
+    dailyIssue='';renderNotice();syncBackendStatus();
     const recent=response&&response.presence&&response.presence.consultations_started_last_5m;
     setLiveValue('liveQueries5m',Number.isSafeInteger(recent)&&recent>=0?recent:null);
     if(counterData)showNotice('',false);
     setBackendStatus('online','Backend online');
   }catch(error){
     if(requestToken===token){
-      dailyIssue=dailyData?'os dados apresentados são da última leitura confirmada; não foi possível obter uma leitura mais recente.':'não foi possível carregar os dados. '+error.message;renderNotice();
+      dailyIssue=dailyData?'os dados apresentados são da última leitura confirmada; não foi possível obter uma leitura mais recente.':'não foi possível carregar os dados. '+error.message;renderNotice();syncBackendStatus();
       if(!dailyData){
         $('trendChart').innerHTML='<div class="daily-note">O histórico não está disponível. Utiliza «Atualizar» para tentar novamente.</div>';
         $('dailyRows').innerHTML='<tr><td colspan="6" class="missing">Sem dados disponíveis.</td></tr>';
@@ -859,6 +869,15 @@ if('serviceWorker' in navigator&&window.isSecureContext){
   navigator.serviceWorker.register('./sw.js?v='+encodeURIComponent(RELEASE),{scope:'./',updateViaCache:'none'}).catch(function(){});
 }
 $('todayDateLabel').textContent=dateFmt.format(new Date()).replace(/^./,character=>character.toLocaleUpperCase('pt-PT'));
+$('trendChart').addEventListener('click',function(event){
+  const point=event.target.closest('circle[data-date]');
+  if(point){$('chartPointDetail').textContent=formatDay(point.dataset.date)+' — '+formatCount(Number(point.dataset.value))+' '+METRICS[currentMetric].unit+'.';}
+});
+$('trendChart').addEventListener('keydown',function(event){
+  if(event.key!=='Enter'&&event.key!==' ')return;
+  const point=event.target.closest('circle[data-date]');
+  if(point){event.preventDefault();$('chartPointDetail').textContent=formatDay(point.dataset.date)+' — '+formatCount(Number(point.dataset.value))+' '+METRICS[currentMetric].unit+'.';}
+});
 updateInstallButton();
 if(window.VERIX_LIVE_PRESENCE&&typeof window.VERIX_LIVE_PRESENCE.subscribe==='function'){
   window.VERIX_LIVE_PRESENCE.subscribe(renderLivePresence);
