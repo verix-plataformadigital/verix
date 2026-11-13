@@ -130,11 +130,6 @@ async function rpc<T>(
   throw new Error(`rpc_failed:${name}:postgrest_schema_cache_unavailable`);
 }
 
-function finiteCount(value: unknown, fallback = 0): number {
-  const parsed = Number(value);
-  return Number.isSafeInteger(parsed) && parsed >= 0 ? parsed : fallback;
-}
-
 export async function handleRequest(req: Request): Promise<Response> {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: corsHeaders(req) });
@@ -153,45 +148,22 @@ export async function handleRequest(req: Request): Promise<Response> {
 
   try {
     const now = new Date().toISOString();
-    const rawPresence = await rpc<Record<string, unknown>>(
-      "verix2_admin_live_presence",
+    const consultations = await rpc<number>(
+      "verix_admin_recent_consultations",
       { p_now: now },
     );
-
-    const presence = rawPresence && typeof rawPresence === "object" &&
-        !Array.isArray(rawPresence)
-      ? rawPresence
-      : {};
-    const livePresence = {
-      observed_at: typeof presence.observed_at === "string"
-        ? presence.observed_at
-        : now,
-      presence_lease_seconds: finiteCount(presence.presence_lease_seconds, 90),
-      online_now: finiteCount(presence.online_now),
-      online_sessions: finiteCount(presence.online_sessions),
-      online_installations: finiteCount(presence.online_installations),
-      active_sessions_last_2m: finiteCount(presence.active_sessions_last_2m),
-      active_installations_last_2m: finiteCount(presence.active_installations_last_2m),
-      sessions_seen_last_hour: finiteCount(presence.sessions_seen_last_hour),
-      installations_seen_last_hour: finiteCount(
-        presence.installations_seen_last_hour,
-      ),
-      active_sessions_last_hour: finiteCount(presence.active_sessions_last_hour),
-      active_installations_last_hour: finiteCount(
-        presence.active_installations_last_hour,
-      ),
-      consultations_in_progress: finiteCount(
-        presence.consultations_in_progress,
-      ),
-      consultations_started_last_hour: finiteCount(
-        presence.consultations_started_last_hour,
-      ),
+    if (!Number.isSafeInteger(consultations) || consultations < 0) {
+      throw new Error("recent_consultation_count_invalid");
+    }
+    const liveMetrics = {
+      observed_at: now,
+      consultations_started_last_5m: consultations,
     };
 
     return jsonResponse(req, {
       ok: true,
       generated_at: now,
-      presence: livePresence,
+      presence: liveMetrics,
     });
   } catch (error) {
     console.error(
