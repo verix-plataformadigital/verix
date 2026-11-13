@@ -314,7 +314,8 @@ function formatDay(value){
   return parts.length===3?parts[2]+'/'+parts[1]+'/'+parts[0]:'—';
 }
 function todayKey(){
-  return todayDateFmt.format(new Date());
+  const parts=todayDateFmt.formatToParts(new Date()).reduce((out,part)=>{out[part.type]=part.value;return out;},{});
+  return parts.year+'-'+parts.month+'-'+parts.day;
 }
 function pct(part,total){
   return Number(total)>0?(Number(part)*100/Number(total)):0;
@@ -627,10 +628,13 @@ window.addEventListener('beforeinstallprompt',function(event){
 });
 function updateInstallButton(){
   const standalone=!!(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
-  $('installAdminApp').hidden=standalone;
+  let installedBefore=false;
+  try{installedBefore=localStorage.getItem('VERIX_ADMIN_PWA_INSTALLED_V5')==='1';}catch(_){ }
+  $('installAdminApp').hidden=standalone||installedBefore;
 }
 window.addEventListener('appinstalled',function(){
   deferredInstallPrompt=null;
+  try{localStorage.setItem('VERIX_ADMIN_PWA_INSTALLED_V5','1');}catch(_){ }
   $('installAdminApp').hidden=true;
   $('installHelp').hidden=false;
   $('installHelp').textContent='VÉRIX Admin instalado neste dispositivo.';
