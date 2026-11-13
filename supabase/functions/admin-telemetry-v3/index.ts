@@ -155,6 +155,13 @@ export async function handleRequest(req: Request): Promise<Response> {
     if (!Number.isSafeInteger(consultations) || consultations < 0) {
       throw new Error("recent_consultation_count_invalid");
     }
+    const history = await rpc<Record<string, unknown>>(
+      "verix_daily_metrics_30d_read",
+      {},
+    );
+    if (!history || !Array.isArray(history.days) || !history.totals) {
+      throw new Error("daily_history_invalid");
+    }
     const liveMetrics = {
       observed_at: now,
       consultations_started_last_5m: consultations,
@@ -164,6 +171,7 @@ export async function handleRequest(req: Request): Promise<Response> {
       ok: true,
       generated_at: now,
       presence: liveMetrics,
+      history,
     });
   } catch (error) {
     console.error(
