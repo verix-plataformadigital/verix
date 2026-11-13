@@ -45,22 +45,8 @@ Deno.test("admin telemetry v3 — authentication, CORS and response contract", a
       if (shouldFailRpc) {
         return new Response("PRIVATE_UPSTREAM_DETAIL", { status: 500 });
       }
-      if (url.endsWith("/verix2_admin_live_presence")) {
-        return Response.json({
-          observed_at: "2026-10-22T09:00:00.000Z",
-          presence_lease_seconds: 90,
-          online_now: 4,
-          online_sessions: 4,
-          online_installations: 3,
-          active_sessions_last_2m: 4,
-          active_installations_last_2m: 3,
-          sessions_seen_last_hour: 8,
-          installations_seen_last_hour: 6,
-          active_sessions_last_hour: 5,
-          active_installations_last_hour: 4,
-          consultations_in_progress: 1,
-          consultations_started_last_hour: 11,
-        });
+      if (url.endsWith("/verix_admin_recent_consultations")) {
+        return Response.json(7);
       }
       return new Response("Unexpected RPC", { status: 404 });
     }) as typeof fetch;
@@ -125,7 +111,7 @@ Deno.test("admin telemetry v3 — authentication, CORS and response contract", a
       if (rpcCalls.length !== before) throw new Error("Unsupported view called an RPC");
     });
 
-    await t.step("returns verified presence separately from dashboard data", async () => {
+    await t.step("returns the server-confirmed five-minute consultation count", async () => {
       rpcCalls.length = 0;
       const response = await handleRequest(new Request(
         "https://edge.example.test/admin-telemetry-v3?view=dashboard",
@@ -142,14 +128,12 @@ Deno.test("admin telemetry v3 — authentication, CORS and response contract", a
         throw new Error("The read-only presence endpoint must not perform a duplicate dashboard read");
       }
       if (
-        data.presence?.online_sessions !== 4 ||
-        data.presence?.online_installations !== 3 ||
-        data.presence?.active_sessions_last_2m !== 4 ||
-        data.presence?.active_installations_last_2m !== 3 ||
-        data.presence?.consultations_in_progress !== 1 ||
-        data.presence?.presence_lease_seconds !== 90
-      ) throw new Error("Presence payload is not mapped correctly");
-      if (rpcCalls.length !== 1) throw new Error("Expected only the presence RPC request");
+        data.presence?.consultations_started_last_5m !== 7 ||
+        typeof data.presence?.observed_at !== "string"
+      ) throw new Error("Five-minute consultation payload is not mapped correctly");
+      if (!rpcCalls[0].endsWith("/verix_admin_recent_consultations")) {
+        throw new Error("Expected only the dedicated recent-consultations RPC request");
+      }
       if (response.headers.get("Cache-Control")?.includes("no-store") !== true) {
         throw new Error("Successful admin responses must be no-store");
       }
