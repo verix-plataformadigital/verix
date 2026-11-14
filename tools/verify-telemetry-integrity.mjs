@@ -104,13 +104,6 @@ const beaconEnd = app.indexOf("function rateLimited", beaconStart);
 assert.ok(beaconStart >= 0 && beaconEnd > beaconStart, "sendBeacon handler must exist");
 assert.doesNotMatch(app.slice(beaconStart, beaconEnd), /queue\.splice\(/, "sendBeacon must never dequeue without a server receipt");
 assert.ok(app.includes("VERIX_T2_REJECTED_QUEUE"), "permanent rejections must have bounded non-sensitive local diagnostics");
-assert.match(telemetryScript, /var BATCH_SIZE = 100;/);
-assert.match(telemetryScript, /var FLUSH_MS = 86400000;/);
-assert.match(telemetryScript, /vehicle_insurance_error: true/);
-assert.doesNotMatch(telemetryScript, /push\('app_open', null\)/);
-assert.match(telemetryScript, /LAST_BEACON_DAY_KEY/);
-assert.match(telemetryScript, /queue = readQueue\(\)\.filter/);
-assert.match(telemetryScript, /if \(!event \|\| !COUNTED_EVENTS\[String\(event\)\]\) return;/);
 
 
 const scriptOpen = '<script id="verix-telemetry-v2">';
@@ -118,6 +111,13 @@ const scriptStart = app.indexOf(scriptOpen);
 const scriptEnd = app.indexOf("</script>", scriptStart + scriptOpen.length);
 assert.ok(scriptStart >= 0 && scriptEnd > scriptStart, "production telemetry script must have clear boundaries");
 const telemetryScript = app.slice(scriptStart + scriptOpen.length, scriptEnd);
+assert.match(telemetryScript, /var BATCH_SIZE = 100;/);
+assert.match(telemetryScript, /var FLUSH_MS = 86400000;/);
+assert.match(telemetryScript, /vehicle_insurance_error: true/);
+assert.doesNotMatch(telemetryScript, /push\('app_open', null\)/);
+assert.match(telemetryScript, /LAST_BEACON_DAY_KEY/);
+assert.match(telemetryScript, /queue = readQueue\(\)\.filter/);
+assert.match(telemetryScript, /if \(!event \|\| !COUNTED_EVENTS\[String\(event\)\]\) return;/);
 assert.doesNotThrow(() => new Function(telemetryScript), "production telemetry script must parse as JavaScript");
 
 const parserMatch = clientTransport.match(/function parseReceipt\(text\) \{[\s\S]*?\n  \}/);
