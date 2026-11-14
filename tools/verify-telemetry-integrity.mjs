@@ -103,10 +103,11 @@ assert.match(clientTransport, /receipt:\s*parseReceipt\(await response\.text\(\)
 assert.match(clientTransport, /queue = queue\.filter\(function \(item\)/);
 assert.match(clientTransport, /!acknowledged\[item\.eventId\]/);
 assert.match(clientTransport, /recordRejectedEvents\(batch, receipt\)/);
-const beaconStart = app.indexOf("function flushBeacon()", telemetryStart);
-const beaconEnd = app.indexOf("function rateLimited", beaconStart);
-assert.ok(beaconStart >= 0 && beaconEnd > beaconStart, "sendBeacon handler must exist");
-assert.doesNotMatch(app.slice(beaconStart, beaconEnd), /queue\.splice\(/, "sendBeacon must never dequeue without a server receipt");
+assert.doesNotMatch(clientTransport, /sendBeacon|flushBeacon|pagehide/, "partial batches must stay in local queue, not trigger an invocation per close");
+assert.match(clientTransport, /LAST_PARTIAL_UPLOAD_DAY_KEY/);
+assert.match(clientTransport, /partialBatch && Object\.keys\(retryIds\)\.length === 0/);
+assert.match(clientTransport, /if \(queue\.length\) flush\(0\)/);
+assert.match(clientTransport, /if \(queue\.length >= BATCH_SIZE\) flush\(0\)/);
 assert.ok(app.includes("VERIX_T2_REJECTED_QUEUE"), "permanent rejections must have bounded non-sensitive local diagnostics");
 
 
