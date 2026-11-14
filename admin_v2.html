@@ -222,104 +222,144 @@ h1{margin:0;color:#133526;font-size:clamp(29px,3.4vw,40px);letter-spacing:-.055e
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 
 
-/* VÉRIX Admin V8 — operational console refinement */
-:root{--canvas:#f5f8f5;--ink:#163626;--muted:#687c70;--line:#e0e9e2;--shadow:0 8px 26px rgba(14,48,29,.045);--radius:20px}
+
+/* VÉRIX Admin V10 — visual system, responsive density and low-noise operations */
+:root{
+  --canvas:#f5f8f6;--ink:#173a29;--muted:#6c7e73;--line:#e2ebe4;
+  --surface:#fff;--shadow:0 7px 24px rgba(16,52,31,.045);--radius:19px;
+}
 html{scroll-behavior:smooth;scroll-padding-top:18px}
-body{background:linear-gradient(180deg,#f7faf7 0,#f3f7f3 420px,#f5f8f5 100%)}
-.topbar{padding:14px 30px 15px;background:radial-gradient(850px 300px at 90% -65%,rgba(83,181,125,.25),transparent 65%),linear-gradient(115deg,#09271b,#123d29 72%,#0b2d1e);box-shadow:0 8px 24px rgba(8,35,22,.12)}
+body{background:linear-gradient(180deg,#f8faf8 0,#f3f7f4 460px,#f5f8f6 100%);color:#173a29}
+.topbar{padding:14px 30px 15px;background:radial-gradient(850px 300px at 90% -65%,rgba(83,181,125,.23),transparent 65%),linear-gradient(115deg,#09271b,#123d29 72%,#0b2d1e);box-shadow:0 8px 24px rgba(8,35,22,.10)}
 .topbar-inner{max-width:1440px}.topbar-brand .brand{font-size:26px}.topbar-actions{gap:9px}
-.main-area{width:min(100%,1440px);padding:27px 30px 56px}.page-intro{margin-bottom:16px}h1{font-size:clamp(32px,3.5vw,43px);letter-spacing:-.06em}
-.page-description{max-width:720px;font-size:13px}.eyebrow{background:#e6f2e9;border-color:#cfe3d4;color:#176b49}
-.section-nav{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:5px;width:max-content;max-width:100%;margin:0 0 20px;padding:5px;border:1px solid rgba(218,231,221,.96);border-radius:13px;background:rgba(255,255,255,.9);box-shadow:0 4px 16px rgba(19,55,34,.045);backdrop-filter:blur(12px)}
+.topbar .secondary-button,.topbar .ghost-button{min-height:38px;border-radius:10px}
+.main-area{width:min(100%,1440px);padding:27px 30px 54px}
+.page-intro{margin-bottom:17px}h1{font-size:clamp(32px,3.45vw,43px);letter-spacing:-.06em}
+.page-description{max-width:740px;font-size:13px}
+.eyebrow{border-color:#d2e5d7;background:#eaf4ed;color:#176b49}
+.section-nav{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:5px;width:max-content;max-width:100%;margin:0 0 19px;padding:5px;border:1px solid rgba(218,231,221,.96);border-radius:13px;background:rgba(255,255,255,.92);box-shadow:0 4px 16px rgba(19,55,34,.04);backdrop-filter:blur(12px)}
 .section-nav a{display:inline-flex;align-items:center;gap:7px;min-height:32px;padding:7px 11px;border-radius:9px;color:#5f7467;text-decoration:none;font-size:10px;font-weight:800;white-space:nowrap;transition:background .15s,color .15s}
 .section-nav a:hover,.section-nav a:focus-visible{background:#edf5ef;color:#175e3e}
 .nav-pulse,.live-kicker-dot{width:7px;height:7px;border-radius:50%;background:#42b678;box-shadow:0 0 0 3px rgba(66,182,120,.14)}
-.operational-section{position:relative;margin:0 0 23px;padding:21px 22px 16px;overflow:hidden;border:1px solid #244d36;border-radius:21px;background:radial-gradient(640px 250px at 100% -80%,rgba(104,197,139,.19),transparent 67%),linear-gradient(120deg,#0b2a1d,#123d29 66%,#164a32);box-shadow:0 16px 36px rgba(12,49,29,.13);color:#f5fbf6}
-.operational-header{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:17px}
-.live-kicker{display:flex;align-items:center;gap:8px;margin-bottom:6px;color:#a9d8ba;font-size:9px;font-weight:900;letter-spacing:.16em;text-transform:uppercase}
-.operational-header h2{margin:0;color:#f6fbf7;font-size:21px;font-weight:850;letter-spacing:-.045em}
-.operational-header p{margin:5px 0 0;color:#b6cfbf;font-size:11px}
-.live-state{display:flex;align-items:flex-end;flex-direction:column;gap:6px;flex:none}
-.presence-state{display:inline-flex;align-items:center;gap:7px;min-height:29px;padding:6px 9px;border:1px solid rgba(255,255,255,.15);border-radius:999px;background:rgba(255,255,255,.075);color:#d9eee0;font-size:9px;font-weight:800;white-space:nowrap}
-.presence-state .status-dot{width:7px;height:7px}.presence-state.online .status-dot{background:#6cdb9c;box-shadow:0 0 0 3px rgba(108,219,156,.13)}
-.presence-state.offline .status-dot{background:#ff8b91;box-shadow:0 0 0 3px rgba(255,139,145,.13)}.presence-state.waiting .status-dot{background:#e4bd69}
-.live-timestamp{color:#9cbaa8;font-size:9px}
-.live-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
-.live-card{min-width:0;min-height:111px;padding:13px 15px 12px;border:1px solid rgba(255,255,255,.13);border-radius:14px;background:rgba(255,255,255,.065)}
-.live-card-primary{border-color:rgba(126,208,157,.34);background:linear-gradient(140deg,rgba(76,166,109,.24),rgba(255,255,255,.075))}
-.live-card-label{min-height:27px;color:#c3d8c9;font-size:9px;font-weight:850;letter-spacing:.055em;text-transform:uppercase;line-height:1.4}
-.live-card-value{margin:8px 0 6px;color:#fff;font-size:clamp(27px,3vw,36px);font-weight:900;letter-spacing:-.06em;line-height:1;font-variant-numeric:tabular-nums}
-.live-card-primary .live-card-value{color:#a4e8bb}.live-card-foot{color:#a9c3b1;font-size:9px;line-height:1.4}
-.live-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.10);color:#a9c2b0;font-size:9px}
-.today-section{margin-top:22px;padding:20px 20px 17px;border:1px solid var(--line);border-radius:19px;background:#fff;box-shadow:var(--shadow)}
-.today-section .section-heading{margin-bottom:14px}.today-section .section-heading h2{color:#173b29}.today-section .section-heading p{color:#718177}
-.today-section .section-tag{border-color:#dce9df;background:#eff7f0;color:#276b49}.today-section .section-tag .status-dot{background:#43a971}
-.today-card{padding:15px 16px 13px;border-color:#e3ebe5;background:linear-gradient(180deg,#fff,#fbfdfb);box-shadow:0 3px 12px rgba(17,54,33,.025)}
-.today-card .metric-label{color:#5d7666}.today-card .metric-icon{background:#e9f4ec;color:#20734b}
-.today-card.amber .metric-icon{background:#fbf3e4;color:#a87520}.today-card.red .metric-icon{background:#fff0f0;color:#b9434d}
-.today-card .metric-value{color:#16432d}.today-card.amber .metric-value{color:#9b6a1c}.today-card.red .metric-value{color:#b9434d}
-.today-card .metric-note{color:#718177}.today-bottom{border-top-color:#e9efea}.today-delta{color:#536d5c}
-.today-delta.good{color:#20734b}.today-delta.bad{color:#bd4650}.today-delta.attention{color:#9a6b20}.today-delta.neutral{color:#708176}
+.panel,.metric-card,.insight-card{box-shadow:var(--shadow)}
+.operational-section{
+ position:relative;margin:0 0 22px;padding:19px 20px 15px;overflow:hidden;
+ border:1px solid #d9e7dc;border-radius:20px;
+ background:linear-gradient(135deg,#f4faf5,#edf6ef 70%,#f7fbf7);
+ box-shadow:0 11px 28px rgba(17,59,34,.06);color:#173a29;
+}
+.operational-section:before{position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#1b6b47,#58ad77,#c1dfca);content:""}
+.operational-header{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:14px}
+.live-kicker{display:flex;align-items:center;gap:8px;margin-bottom:5px;color:#3b805b;font-size:9px;font-weight:900;letter-spacing:.15em;text-transform:uppercase}
+.operational-header h2{margin:0;color:#173b29;font-size:21px;font-weight:875;letter-spacing:-.045em}
+.operational-header p{margin:5px 0 0;color:#687d70;font-size:11px}
+.live-state{display:flex;align-items:flex-end;flex-direction:column;gap:5px;flex:none}
+.presence-state{display:inline-flex;align-items:center;gap:7px;min-height:29px;padding:6px 10px;border:1px solid #d4e6d9;border-radius:999px;background:#fff;color:#35664a;font-size:9px;font-weight:850;white-space:nowrap}
+.presence-state .status-dot{width:7px;height:7px}
+.presence-state.online .status-dot{background:#43ad71;box-shadow:0 0 0 3px rgba(67,173,113,.14)}
+.presence-state.offline .status-dot{background:#d75d64;box-shadow:0 0 0 3px rgba(215,93,100,.14)}
+.presence-state.waiting .status-dot{background:#d6a64d}
+.live-timestamp{color:#708579;font-size:9px}
+.live-refresh-label{color:#8a9a90;font-size:8px;font-weight:700}
+.live-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}
+.live-card{
+ position:relative;min-width:0;min-height:108px;padding:12px 13px 11px;overflow:hidden;
+ border:1px solid #dfe9e2;border-radius:14px;background:rgba(255,255,255,.94);
+ box-shadow:0 3px 11px rgba(20,57,35,.025);
+}
+.live-card:before{position:absolute;left:0;top:0;bottom:0;width:3px;background:#c9decf;content:""}
+.live-card-primary{border-color:#b8d8c2;background:linear-gradient(145deg,#e9f5ec,#f8fcf8)}
+.live-card-primary:before{background:#24764e}
+.live-card-hour{background:#fff}
+.live-card-label{min-height:27px;color:#61776a;font-size:8px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;line-height:1.45}
+.live-card-value{margin:7px 0 5px;color:#173e2b;font-size:clamp(25px,2.5vw,33px);font-weight:900;letter-spacing:-.06em;line-height:1;font-variant-numeric:tabular-nums}
+.live-card-primary .live-card-value{color:#176b49}
+.live-card-foot{color:#7b8d81;font-size:8px;line-height:1.4;overflow-wrap:anywhere}
+.live-footer-stack{display:flex;align-items:flex-start;flex-direction:column;gap:5px;margin-top:11px;padding-top:9px;border-top:1px solid #dce9df}
+#livePresenceExplanation{color:#557363;font-size:9px;font-weight:650;line-height:1.5}
+#liveQueryUpdatedVisible{color:#819287;font-size:8px}
+.today-section{
+ margin-top:20px;padding:18px 19px 17px;border:1px solid #e1eae3;border-radius:18px;
+ background:#fff;box-shadow:var(--shadow)
+}
+.today-section .section-heading{margin-bottom:13px}
+.today-section .section-heading h2{color:#173b29}
+.today-section .section-heading p{color:#718177}
+.today-section .section-tag{border-color:#dce9df;background:#eff7f0;color:#276b49}
+.today-section .section-tag .status-dot{background:#43a971}
+.today-card{padding:14px 15px 12px;border-color:#e3ebe5;background:linear-gradient(180deg,#fff,#fbfdfb);box-shadow:0 3px 12px rgba(17,54,33,.025)}
+.today-card .metric-label{color:#5d7666}
+.today-card .metric-icon{background:#e9f4ec;color:#20734b}
+.today-card.amber .metric-icon{background:#fbf3e4;color:#a87520}
+.today-card.red .metric-icon{background:#fff0f0;color:#b9434d}
+.today-card .metric-value{color:#16432d}
+.today-card.amber .metric-value{color:#9b6a1c}
+.today-card.red .metric-value{color:#b9434d}
+.today-card .metric-note{color:#718177}
+.today-bottom{border-top-color:#e9efea}
+.today-delta{color:#536d5c}
+.today-delta.good{color:#20734b}.today-delta.bad{color:#bd4650}
+.today-delta.attention{color:#9a6b20}.today-delta.neutral{color:#708176}
 .today-updated{color:#829187}.today-comparison-note{color:#7e8d82}
-.lifetime-section{margin-top:24px}.panel,.metric-card{box-shadow:var(--shadow)}
-.metric-card{min-height:139px;border-color:#e2ebe4}.metric-card:hover,.insight-card:hover{border-color:#cbded0;box-shadow:0 10px 28px rgba(14,48,29,.07)}
-.trend-section{margin-top:24px;padding:22px 21px 18px}.trend-heading h2{font-size:20px}
-.chart-wrap{border-color:#e3ece5;background:linear-gradient(180deg,#fcfefc,#f7faf7)}.metric-tabs{background:#edf4ef;border-color:#dfe9e2}
-.metric-tab{min-height:34px}.metric-tab[aria-pressed="true"]{color:#145c3a;box-shadow:0 2px 9px rgba(16,55,32,.10)}
-.insight-card{background:#fbfdfb}.daily-table-wrap{border-color:#e1eae3}.daily-table th{background:#edf4ef}
+.lifetime-section{margin-top:22px}
+.metric-card{min-height:138px;border-color:#e2ebe4}
+.metric-card:hover,.insight-card:hover{border-color:#cbded0;box-shadow:0 9px 25px rgba(14,48,29,.06)}
+.trend-section{margin-top:22px;padding:21px 20px 17px;border-color:#e1eae3}
+.trend-heading h2{font-size:20px}
+.chart-wrap{border-color:#e3ece5;background:linear-gradient(180deg,#fcfefc,#f7faf7)}
+.metric-tabs{background:#edf4ef;border-color:#dfe9e2}
+.metric-tab{min-height:34px}
+.metric-tab[aria-pressed="true"]{color:#145c3a;box-shadow:0 2px 9px rgba(16,55,32,.09)}
+.insight-card{background:#fbfdfb}
+.daily-table-wrap{border-color:#e1eae3}
+.daily-table th{background:#edf4ef}
 .daily-table tbody tr.today-row td{background:#f0f8f2}
-.error-breakdown{margin:19px 0 0;padding:17px 18px;border:1px solid #e3ebe5;border-radius:16px;background:linear-gradient(180deg,#fff,#fbfdfb)}
-.error-breakdown-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:14px}
-.error-breakdown-heading h3{margin:0;color:#183a29;font-size:15px;font-weight:850;letter-spacing:-.03em}
-.error-breakdown-heading p{margin:4px 0 0;color:#7a8980;font-size:10px}
-.error-data-window{flex:none;padding:6px 9px;border:1px solid #e3eae4;border-radius:999px;background:#f6f9f6;color:#728177;font-size:9px;font-weight:800}
-.error-breakdown-grid{display:grid;grid-template-columns:minmax(0,1fr) 210px;gap:20px}
-.error-types-list{display:grid;gap:10px}.error-type-row{display:grid;grid-template-columns:minmax(130px,190px) minmax(70px,1fr) 48px;align-items:center;gap:11px}
-.error-type-name{overflow:hidden;color:#4f6658;font-size:10px;font-weight:750;text-overflow:ellipsis;white-space:nowrap}
-.error-type-code{margin-left:5px;color:#94a096;font-size:8px;font-weight:600}
-.error-type-track{height:7px;overflow:hidden;border-radius:999px;background:#edf2ee}
-.error-type-track span{display:block;height:100%;min-width:2px;border-radius:999px;background:linear-gradient(90deg,#c68b35,#e4ba70)}
-.error-type-count{color:#3d5d49;font-size:10px;font-weight:850;text-align:right;font-variant-numeric:tabular-nums}
-.error-empty{margin:0;padding:11px 0;color:#849188;font-size:10px}
-.error-breakdown-summary{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-left:17px;border-left:1px solid #e8eee9}
-.error-summary-block{padding:10px;border:1px solid #e8eee9;border-radius:11px;background:#f8fbf8}
-.error-summary-block span{display:block;color:#74837a;font-size:8px;font-weight:800;line-height:1.4}
-.error-summary-block strong{display:block;margin-top:4px;color:#183f2c;font-size:21px;font-weight:900;letter-spacing:-.05em}
-.error-coverage-note{grid-column:1/-1;margin:0;color:#849188;font-size:9px;line-height:1.5}
-.counter-updated{margin-top:14px}
-@media(max-width:980px){.main-area{padding-left:22px;padding-right:22px}.live-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.error-breakdown-grid{grid-template-columns:minmax(0,1fr) 190px}}
+.error-breakdown{margin-top:18px}
+.counter-updated{margin-top:13px}
+@media(max-width:1050px){
+ .live-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .live-card-hour{grid-column:auto}
+}
 @media(max-width:760px){
- .topbar{padding:13px 16px 14px}.main-area{padding:19px 14px 38px}
- .section-nav{position:relative;top:auto;width:100%;overflow-x:auto;scrollbar-width:none;margin-bottom:16px}.section-nav::-webkit-scrollbar{display:none}
+ .topbar{padding:13px 16px 14px}
+ .main-area{padding:19px 14px 36px}
+ .section-nav{position:relative;top:auto;width:100%;overflow-x:auto;scrollbar-width:none;margin-bottom:15px}
+ .section-nav::-webkit-scrollbar{display:none}
  .section-nav a{padding:7px 9px;font-size:9px}
- .operational-section{margin-bottom:18px;padding:16px 13px 13px;border-radius:17px}.operational-header{align-items:flex-start;flex-direction:column;gap:9px;margin-bottom:12px}
- .operational-header h2{font-size:19px}.operational-header p{font-size:10px}.live-state{align-items:flex-start;flex-direction:row;flex-wrap:wrap;gap:8px}
- .live-grid{gap:8px}.live-card{min-height:99px;padding:11px 12px 10px}.live-card-label{min-height:25px;font-size:8px}
- .live-card-value{font-size:clamp(25px,7vw,32px);margin:7px 0 5px}.live-card-foot{font-size:8px}
- .live-footer{align-items:flex-start;flex-direction:column;gap:4px}.today-section{padding:16px 12px 14px;border-radius:16px}
- .today-grid{gap:8px}.today-card{padding:12px 11px}.lifetime-section{margin-top:19px}
- .trend-section{padding:16px 12px 14px}.error-breakdown{margin-top:15px;padding:13px 11px}
+ .operational-section{margin-bottom:17px;padding:16px 12px 12px;border-radius:17px}
+ .operational-header{align-items:flex-start;flex-direction:column;gap:8px;margin-bottom:11px}
+ .operational-header h2{font-size:19px}.operational-header p{font-size:10px}
+ .live-state{align-items:flex-start;flex-direction:row;flex-wrap:wrap;gap:6px 10px}
+ .live-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .live-card{min-height:99px;padding:11px 11px 9px}
+ .live-card-label{min-height:25px;font-size:8px}
+ .live-card-value{font-size:clamp(25px,6.5vw,31px);margin:7px 0 5px}
+ .live-card-foot{font-size:8px;min-height:2.6em}
+ .live-card:last-child{grid-column:1/-1;min-height:82px}
+ .live-card:last-child .live-card-foot{min-height:0}
+ .live-footer-stack{gap:6px}
+ .today-section{padding:16px 12px 14px;border-radius:16px}
+ .today-grid{gap:8px}.today-card{padding:12px 11px}
+ .lifetime-section{margin-top:18px}
+ .trend-section{padding:16px 12px 14px}
+ .error-breakdown{margin-top:14px;padding:13px 11px}
  .error-breakdown-heading{align-items:flex-start;flex-direction:column;gap:7px}
  .error-breakdown-grid{grid-template-columns:minmax(0,1fr);gap:12px}
  .error-type-row{grid-template-columns:minmax(110px,36%) minmax(60px,1fr) 40px;gap:8px}
  .error-breakdown-summary{padding:11px 0 0;border-left:0;border-top:1px solid #e8eee9}
 }
 @media(max-width:430px){
- .main-area{padding-left:12px;padding-right:12px}.live-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
- .live-card{min-height:98px}.live-card-value{font-size:27px}.today-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
- .today-card:last-child{grid-column:1/-1}.metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .main-area{padding-left:12px;padding-right:12px}
+ .live-card-value{font-size:27px}
+ .live-card:last-child{grid-column:1/-1}
+ .today-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .today-card:last-child{grid-column:1/-1}
+ .metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
  .error-type-row{grid-template-columns:minmax(0,116px) minmax(40px,1fr) 36px}
  .error-type-name{font-size:9px}.error-type-code{display:block;margin:1px 0 0;font-size:7px}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 
-
-/* VÉRIX Admin V9 — live metrics semantics and zero-state clarity */
-.live-footer-stack{align-items:flex-start;flex-direction:column;gap:5px}
-#livePresenceExplanation{color:#d0e2d5;line-height:1.5}
-#liveQueryUpdatedVisible{color:#a9c2b0}
-.live-card-foot{line-height:1.45}
-@media(max-width:760px){.live-footer-stack{gap:6px}.live-card-foot{min-height:2.8em}}
 </style>
 </head>
 <body>
@@ -386,16 +426,19 @@ body{background:linear-gradient(180deg,#f7faf7 0,#f3f7f3 420px,#f5f8f5 100%)}
       <div class="live-state">
         <span id="presenceStatus" class="presence-state waiting"><i class="status-dot" aria-hidden="true"></i><span>A ligar presença</span></span>
         <span id="livePresenceUpdatedVisible" class="live-timestamp">A aguardar sinal</span>
+        <span id="liveRefreshLabel" class="live-refresh-label">Indicadores atualizados a cada 30 s</span>
       </div>
     </div>
     <div class="live-grid" aria-live="polite">
       <article class="live-card live-card-primary"><div class="live-card-label">Consultas · últimos 5 minutos</div>
         <div class="live-card-value" id="liveQueries5mVisible">—</div><div class="live-card-foot" id="liveQueries5mNote">Consultas únicas iniciadas na janela móvel</div></article>
-      <article class="live-card"><div class="live-card-label">Instalações ativas · 2 min</div>
-        <div class="live-card-value" id="livePresenceActiveVisible">—</div><div class="live-card-foot">Com atividade recente e página visível</div></article>
+      <article class="live-card"><div class="live-card-label">Instalações ativas · 10 min</div>
+        <div class="live-card-value" id="livePresenceActiveVisible">—</div><div class="live-card-foot">Com interação nos últimos 10 minutos e página visível</div></article>
       <article class="live-card"><div class="live-card-label">Instalações online</div>
         <div class="live-card-value" id="livePresenceOnlineVisible">—</div><div class="live-card-foot">Ligações presentes no canal, mesmo sem atividade recente</div></article>
-      <article class="live-card"><div class="live-card-label">Separadores ativos · 2 min</div>
+      <article class="live-card live-card-hour"><div class="live-card-label">Consultas · última hora</div>
+        <div class="live-card-value" id="liveQueries1hVisible">—</div><div class="live-card-foot" id="liveQueries1hNote">Consultas únicas registadas nos últimos 60 minutos</div></article>
+      <article class="live-card"><div class="live-card-label">Separadores ativos · 10 min</div>
         <div class="live-card-value" id="livePresenceActiveTabsVisible">—</div><div class="live-card-foot">Separadores com atividade recente e visíveis</div></article>
     </div>
     <div class="live-footer live-footer-stack"><span id="livePresenceExplanation">Instalações e separadores não equivalem a pessoas únicas.</span><span id="liveQueryUpdatedVisible">Consultas: a aguardar leitura.</span></div>
@@ -571,13 +614,13 @@ body{background:linear-gradient(180deg,#f7faf7 0,#f3f7f3 420px,#f5f8f5 100%)}
 (function(){
 'use strict';
 const API_ORIGIN='https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/';
-const RELEASE='admin-v8-ops-console-20261113';
+const RELEASE='admin-v10-optimized-command-20261114';
 const AUTH_API=API_ORIGIN+'admin-auth-v2?v='+encodeURIComponent(RELEASE);
 const STATS_API=API_ORIGIN+'stats-v2?v='+encodeURIComponent(RELEASE);
 const LIVE_API=API_ORIGIN+'admin-telemetry-v3?view=dashboard&v='+encodeURIComponent(RELEASE);
 const TOKEN_KEY='VERIX_ADMIN_V2_TOKEN';
 const COUNTER_REFRESH_MS=60000;
-const LIVE_REFRESH_MS=15000;
+const LIVE_REFRESH_MS=30000;
 const $=id=>document.getElementById(id);
 const nf=new Intl.NumberFormat('pt-PT');
 const timeFmt=new Intl.DateTimeFormat('pt-PT',{timeZone:'Europe/Lisbon',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});
@@ -674,8 +717,8 @@ function renderLivePresence(snapshot){
   const explanation=$('livePresenceExplanation');
   if(explanation){
     if(!ready)explanation.textContent='A contagem de atividade será apresentada quando a ligação de presença estiver confirmada.';
-    else if(online>0&&active===0)explanation.textContent=online+' instalações ligadas; nenhuma registou atividade nos últimos 2 minutos. Podem estar abertas em segundo plano ou inativas.';
-    else if(active>0)explanation.textContent=active+' de '+online+' instalações com atividade nos últimos 2 minutos. As contagens não representam pessoas únicas.';
+    else if(online>0&&active===0)explanation.textContent=online+' instalações ligadas; nenhuma registou atividade nos últimos 10 minutos. Podem estar abertas em segundo plano ou inativas.';
+    else if(active>0)explanation.textContent=active+' de '+online+' instalações com atividade nos últimos 10 minutos. As contagens não representam pessoas únicas.';
     else explanation.textContent='Sem instalações ligadas neste momento. As contagens não representam pessoas únicas.';
   }
   if(ready&&s.observedAt){const stamp='Presença atualizada às '+formatTime(s.observedAt);$('livePresenceUpdated').textContent=stamp+'.';$('livePresenceUpdatedVisible').textContent=stamp;}
@@ -954,6 +997,11 @@ async function loadDailyDashboard(){
     const recentValid=Number.isSafeInteger(recent)&&recent>=0;
     setLiveValue('liveQueries5m',recentValid?recent:null);
     setLiveValue('liveQueries5mVisible',recentValid?recent:null);
+    const recentHour=response&&response.presence&&response.presence.consultations_started_last_1h;
+    const recentHourValid=Number.isSafeInteger(recentHour)&&recentHour>=0;
+    setLiveValue('liveQueries1hVisible',recentHourValid?recentHour:null);
+    const hourNote=$('liveQueries1hNote');
+    if(hourNote)hourNote.textContent=!recentHourValid?'Não foi possível confirmar esta janela.':(recentHour===0?'Nenhuma consulta registada nos últimos 60 minutos.':recentHour+' consultas únicas registadas nos últimos 60 minutos.');
     const recentNote=$('liveQueries5mNote');
     if(recentNote)recentNote.textContent=!recentValid?'Não foi possível confirmar esta janela.':(recent===0?'Nenhuma consulta registada nesta janela; o total diário mantém-se no resumo abaixo.':recent+' consultas únicas registadas nos últimos 5 minutos.');
     const observed=response&&response.presence&&response.presence.observed_at;

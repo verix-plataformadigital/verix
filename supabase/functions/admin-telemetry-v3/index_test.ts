@@ -45,11 +45,21 @@ Deno.test("admin telemetry v3 — authentication, CORS and response contract", a
       if (shouldFailRpc) {
         return new Response("PRIVATE_UPSTREAM_DETAIL", { status: 500 });
       }
-      if (url.endsWith("/verix_admin_recent_consultations")) {
-        return Response.json(7);
-      }
-      if (url.endsWith("/verix_daily_metrics_30d_read")) {
-        return Response.json({ window_days: 30, days: [{ date: "2026-11-13", available: true, consultations: 12, no_record_results: 2, errors: 1, error_types: [] }], totals: { consultations: 12, no_record_results: 2, errors: 1 } });
+      if (url.endsWith("/verix_admin_dashboard_snapshot_v1")) {
+        const observedAt = "2026-11-14T10:25:00.000Z";
+        return Response.json({
+          generated_at: observedAt,
+          presence: {
+            observed_at: observedAt,
+            consultations_started_last_5m: 7,
+            consultations_started_last_1h: 42,
+          },
+          history: {
+            window_days: 30,
+            days: [{ date: "2026-11-13", available: true, consultations: 12, no_record_results: 2, errors: 1, error_types: [] }],
+            totals: { consultations: 12, no_record_results: 2, errors: 1 },
+          },
+        });
       }
       return new Response("Unexpected RPC", { status: 404 });
     }) as typeof fetch;
@@ -114,7 +124,7 @@ Deno.test("admin telemetry v3 — authentication, CORS and response contract", a
       if (rpcCalls.length !== before) throw new Error("Unsupported view called an RPC");
     });
 
-    await t.step("returns the server-confirmed five-minute consultation count", async () => {
+    await t.step("returns server-confirmed live counts and history through one snapshot RPC", async () => {
       rpcCalls.length = 0;
       const response = await handleRequest(new Request(
         "https://edge.example.test/admin-telemetry-v3?view=dashboard",
@@ -132,16 +142,16 @@ Deno.test("admin telemetry v3 — authentication, CORS and response contract", a
       }
       if (
         data.presence?.consultations_started_last_5m !== 7 ||
+        data.presence?.consultations_started_last_1h !== 42 ||
         typeof data.presence?.observed_at !== "string"
-      ) throw new Error("Five-minute consultation payload is not mapped correctly");
+      ) throw new Error("Live consultation payload is not mapped correctly");
       if (data.history?.window_days !== 30 || data.history?.days?.length !== 1 ||
           data.history?.totals?.consultations !== 12) {
         throw new Error("Thirty-day history payload is not mapped correctly");
       }
-      if (rpcCalls.length !== 2 ||
-          !rpcCalls[0].endsWith("/verix_admin_recent_consultations") ||
-          !rpcCalls[1].endsWith("/verix_daily_metrics_30d_read")) {
-        throw new Error("Expected recent-consultations and daily-history RPC requests");
+      if (rpcCalls.length !== 1 ||
+          !rpcCalls[0].endsWith("/verix_admin_dashboard_snapshot_v1")) {
+        throw new Error("Expected exactly one consolidated dashboard snapshot RPC");
       }
       if (response.headers.get("Cache-Control")?.includes("no-store") !== true) {
         throw new Error("Successful admin responses must be no-store");

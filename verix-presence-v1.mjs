@@ -6,7 +6,7 @@ import { createClient } from '@supabase/supabase-js';
   var SUPABASE_URL = 'https://onilkakbgpklxvxuxmks.supabase.co';
   var SUPABASE_KEY = 'sb_publishable_Rr9MItsNEhKPE-aSO3jI-Q_HYUXj-yU';
   var TOPIC = 'verix-live-presence-v1';
-  var ACTIVE_WINDOW_MS = 120000;
+  var ACTIVE_WINDOW_MS = 600000;
   var TRACK_MIN_INTERVAL_MS = 30000;
   var URGENT_TRACK_MIN_INTERVAL_MS = 2500;
   var currentPath = String(window.location.pathname || '');
