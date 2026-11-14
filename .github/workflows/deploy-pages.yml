@@ -81,11 +81,14 @@ jobs:
           if (manifest.id !== '/verix/admin/' || manifest.start_url !== './index.html?app=verix-admin-v5' || manifest.scope !== './') {
             throw new Error('Admin V3 manifest identity/start URL/scope is invalid');
           }
-          if (!html.includes('./manifest.webmanifest?v=') || !html.includes('../verix-presence-v1.js')) {
-            throw new Error('Admin V3 runtime or manifest link is missing');
+          if (!html.includes('./manifest.webmanifest?v=')) {
+            throw new Error('Admin V3 manifest link is missing');
           }
-          for (const id of ['totalSearches','totalNoRecord','livePresenceOnline','livePresenceActive','liveQueries5m']) {
-            if (!html.includes('id="' + id + '"')) throw new Error('Admin dashboard metric missing: ' + id);
+          for (const id of ['totalSearches','totalNoRecord','todayConsultations','todayNoRecord','todayErrors','dailyRows']) {
+            if (!html.includes('id="' + id + '"')) throw new Error('Admin daily metric missing: ' + id);
+          }
+          if (/VERIX_LIVE_PRESENCE|liveQueries5m|livePresenceOnline/.test(html)) {
+            throw new Error('Obsolete live-presence metrics found in daily Admin build');
           }
           if (/data-period=|Histórico Total|>7 dias</i.test(html)) {
             throw new Error('Obsolete Admin period controls found in the production build');
