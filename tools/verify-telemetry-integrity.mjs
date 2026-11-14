@@ -13,6 +13,8 @@ assert.match(endpoint, /db:\s*\{\s*retry:\s*false\s*\}/);
 assert.match(endpoint, /\.abortSignal\(AbortSignal\.timeout\(5000\)\)/);
 assert.match(endpoint, /\.abortSignal\(AbortSignal\.timeout\(5000\)\)/);
 assert.match(endpoint, /telemetry_backend_timeout/);
+assert.match(endpoint, /ts < now - 7 \\* 24 \\* 60 \\* 60 \\* 1000/);
+assert.doesNotMatch(endpoint, /now - 24 \\* 60 \\* 60 \\* 1000/);
 assert.match(endpoint, /sessions_detached/);
 assert.match(endpoint, /db\.rpc\(\s*["']verix2_ingest_telemetry["']/);
 assert.match(endpoint, /p_events:\s*events/);
@@ -102,6 +104,13 @@ const beaconEnd = app.indexOf("function rateLimited", beaconStart);
 assert.ok(beaconStart >= 0 && beaconEnd > beaconStart, "sendBeacon handler must exist");
 assert.doesNotMatch(app.slice(beaconStart, beaconEnd), /queue\.splice\(/, "sendBeacon must never dequeue without a server receipt");
 assert.ok(app.includes("VERIX_T2_REJECTED_QUEUE"), "permanent rejections must have bounded non-sensitive local diagnostics");
+assert.match(telemetryScript, /var BATCH_SIZE = 100;/);
+assert.match(telemetryScript, /var FLUSH_MS = 86400000;/);
+assert.match(telemetryScript, /vehicle_insurance_error: true/);
+assert.doesNotMatch(telemetryScript, /push\('app_open', null\)/);
+assert.match(telemetryScript, /LAST_BEACON_DAY_KEY/);
+assert.match(telemetryScript, /queue = readQueue\(\)\.filter/);
+assert.match(telemetryScript, /if \(!event \|\| !COUNTED_EVENTS\[String\(event\)\]\) return;/);
 
 
 const scriptOpen = '<script id="verix-telemetry-v2">';
@@ -140,3 +149,7 @@ assert.ok(errorTypeWindowMigration.includes('IF NOT EXISTS (SELECT 1 FROM public
 assert.match(errorTypeWindowMigration, /SET error_types_since = clock_timestamp\(\)/);
 
 console.log("PASS: atomic ingest receipt, ID-based client acknowledgement, loss-safe beacon queue, query-quality metrics and Admin labels.");
+
+const ttlMigration = fs.readFileSync("supabase/migrations/20261114114500_telemetry_daily_batches_seven_day_dedupe.sql", "utf8");
+assert.match(ttlMigration, /interval '7 days'/);
+assert.match(ttlMigration, /LEAST\(expires_at, updated_at \+ interval '7 days'\)/);

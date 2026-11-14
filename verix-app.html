@@ -17711,8 +17711,15 @@ html body .leg-card-new .copy-all-new{
   var REJECTED_QUEUE_KEY = 'VERIX_T2_REJECTED_QUEUE';
   var MAX_QUEUE = 300;
   var MAX_REJECTED_QUEUE = 50;
-  var BATCH_SIZE = 25;
-  var FLUSH_MS = 900000; // envia lotes parciais no máximo a cada 15 minutos
+  var BATCH_SIZE = 100; // limite máximo já aceite pela ingestão atómica
+  var FLUSH_MS = 86400000; // lote parcial temporizado: no máximo uma vez por dia
+  var LAST_BEACON_DAY_KEY = 'VERIX_T2_LAST_BEACON_DAY';
+  var COUNTED_EVENTS = {
+    vehicle_lookup: true,
+    vehicle_insurance_yes: true,
+    vehicle_insurance_no: true,
+    vehicle_insurance_error: true
+  };
   var TIMEOUT_MS = 10000;
 
   var localStore = null;
@@ -17757,6 +17764,30 @@ html body .leg-card-new .copy-all-new{
   var installationId = persistentId(localStore, INSTALL_KEY, 'i');
   var sessionId = persistentId(sessionStore, SESSION_KEY, 's');
   var tabId = persistentId(sessionStore, TAB_KEY, 't');
+
+  function lisbonDayKey() {
+    try {
+      var parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Europe/Lisbon',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).formatToParts(new Date());
+      var values = {};
+      parts.forEach(function (part) {
+        if (part.type === 'year' || part.type === 'month' || part.type === 'day') {
+          values[part.type] = part.value;
+        }
+      });
+      if (values.year && values.month && values.day) {
+        return values.year + '-' + values.month + '-' + values.day;
+      }
+    } catch (_) {}
+    var localDate = new Date();
+    return localDate.getFullYear() + '-' +
+      ('0' + (localDate.getMonth() + 1)).slice(-2) + '-' +
+      ('0' + localDate.getDate()).slice(-2);
+  }
 
   function deviceType() {
     var w = Math.min(window.innerWidth || 0, window.innerHeight || 0);
@@ -17913,7 +17944,10 @@ html body .leg-card-new .copy-all-new{
     storageSet(localStore, REJECTED_QUEUE_KEY, JSON.stringify(records.slice(-MAX_REJECTED_QUEUE)));
   }
 
-  queue = readQueue();
+  queue = readQueue().filter(function (item) {
+    return !!item && !!COUNTED_EVENTS[String(item.event)];
+  }).slice(-MAX_QUEUE);
+  saveQueue();
 
   function cleanMetadata(meta) {
     var m = meta && typeof meta === 'object' ? meta : {};
@@ -17978,7 +18012,9 @@ html body .leg-card-new .copy-all-new{
   }
 
   function push(event, module, meta) {
-    if (!event) return;
+    // Só são enviados os eventos que alimentam os contadores persistentes.
+    // app_open, menus, histórico e microinterações não geram dados na BD.
+    if (!event || !COUNTED_EVENTS[String(event)]) return;
     refreshClientInfo();
 
     queue.push({
@@ -17998,14 +18034,9 @@ html body .leg-card-new .copy-all-new{
 
     saveQueue();
 
-    // A abertura é enviada imediatamente; consultas e eventos restantes são agrupados.
-    if (event === 'app_open') {
-      flushNow();
-    } else if (queue.length >= BATCH_SIZE) {
-      flush(0);
-    } else {
-      flush();
-    }
+    // Lotes completos são enviados imediatamente; os restantes são acumulados.
+    if (queue.length >= BATCH_SIZE) flush(0);
+    else flush();
   }
 
   function parseReceipt(text) {
@@ -18230,10 +18261,17 @@ html body .leg-card-new .copy-all-new{
 
   function flushBeacon() {
     if (!queue.length || flushBusy) return false;
-    var batch = queue.slice(0, Math.min(BATCH_SIZE, 10));
+
+    // Um único lote parcial diário por instalação. Os lotes completos continuam
+    // a ser enviados imediatamente por fetch/XHR quando atingem 100 eventos.
+    var today = lisbonDayKey();
+    if (storageGet(localStore, LAST_BEACON_DAY_KEY) === today) return false;
+
+    var batch = queue.slice(0, BATCH_SIZE);
     if (!sendBeacon(batch)) return false;
-    // Keep the durable copy until fetch/XHR returns an application receipt.
-    // The server's idempotency keys make a resend safe.
+    storageSet(localStore, LAST_BEACON_DAY_KEY, today);
+
+    // sendBeacon não fornece recibo da aplicação: nunca retirar itens da fila.
     return true;
   }
 
@@ -18446,10 +18484,10 @@ html body .leg-card-new .copy-all-new{
     installWrappers();
     bindDom();
 
-    // Uma abertura por sessão. Consultas são agrupadas em lotes para reduzir invocações.
-    push('app_open', null);
+    // Reutiliza a fila persistida; app_open não é enviado porque não alimenta contadores.
+    if (queue.length) flush();
 
-    // Envia a fila existente quando a aplicação passa para segundo plano/fecha.
+    // Envia, no máximo uma vez por dia, um lote parcial ao fechar/minimizar.
     document.addEventListener('visibilitychange', function () {
       if (document.visibilityState === 'hidden') flushBeacon();
     });
@@ -18470,8 +18508,8 @@ html body .leg-card-new .copy-all-new{
     installationId: installationId,
     newQueryId: newQueryId,
     track: function (event, module, meta) {
+      if (!event || !COUNTED_EVENTS[String(event)]) return;
       push(event, module || null, meta);
-      flush();
     },
     queueSize: function () { return queue.length; },
     rejectedQueueSize: function () {
