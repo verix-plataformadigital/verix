@@ -82,10 +82,10 @@ assert.match(dashboardSnapshotMigration, /verix_admin_dashboard_snapshot_v1/);
 assert.match(dashboardSnapshotMigration, /verix_admin_recent_consultations/);
 assert.match(dashboardSnapshotMigration, /verix_admin_consultations_last_hour/);
 assert.match(dashboardSnapshotMigration, /verix_daily_metrics_30d_read/);
-assert.match(dashboardSnapshotMigration, /REVOKE ALL ON FUNCTION public\\.verix_admin_dashboard_snapshot_v1/);
-assert.match(dashboardSnapshotMigration, /GRANT EXECUTE ON FUNCTION public\\.verix_admin_dashboard_snapshot_v1/);
+assert.match(dashboardSnapshotMigration, /REVOKE ALL ON FUNCTION public\.verix_admin_dashboard_snapshot_v1/);
+assert.match(dashboardSnapshotMigration, /GRANT EXECUTE ON FUNCTION public\.verix_admin_dashboard_snapshot_v1/);
 const categoryGrantMigration = fs.readFileSync("supabase/migrations/20261114102343_grant_service_role_daily_error_type_access.sql", "utf8");
-assert.match(categoryGrantMigration, /GRANT SELECT, INSERT, UPDATE ON TABLE public\\.verix_daily_error_types TO service_role/);
+assert.match(categoryGrantMigration, /GRANT SELECT, INSERT, UPDATE ON TABLE public\.verix_daily_error_types TO service_role/);
 
 const app = fs.readFileSync("verix-app.html", "utf8");
 const telemetryStart = app.indexOf("function parseReceipt(text)");
