@@ -54,10 +54,10 @@ assert.match(admin, /Resultados sem registo ASF/);
 assert.match(admin, /A ausência de registo ASF não confirma, por si só, que o veículo não tem seguro/);
 assert.match(admin, /detail=lifetime-counters/);
 assert.match(admin, /admin-telemetry-v3\?view=dashboard/);
-assert.match(admin, /verix-presence-v1\.js/);
-assert.match(admin, /VERIX_LIVE_PRESENCE\.subscribe\(renderLivePresence\)/);
-assert.match(admin, /COUNTER_REFRESH_MS\s*=\s*60000/);
-assert.match(admin, /LIVE_REFRESH_MS\s*=\s*30000/);
+assert.doesNotMatch(admin, /verix-presence-v1\.js|VERIX_LIVE_PRESENCE/);
+assert.doesNotMatch(admin, /setInterval\(/);
+assert.doesNotMatch(admin, /response\.presence/);
+assert.match(admin, /id="refreshBtn"/);
 assert.doesNotMatch(admin, /data-period=|Histórico Total|>7 dias|daily-metrics-30d|todayErrorTypes/);
 assert.match(admin, /consulta é contabilizada uma vez/);
 
