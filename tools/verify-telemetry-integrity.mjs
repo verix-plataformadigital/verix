@@ -92,6 +92,9 @@ const categoryGrantMigration = fs.readFileSync("supabase/migrations/202611141023
 assert.match(categoryGrantMigration, /GRANT SELECT, INSERT, UPDATE ON TABLE public\.verix_daily_error_types TO service_role/);
 
 const app = fs.readFileSync("verix-app.html", "utf8");
+assert.doesNotMatch(app, /VERIX_SECURITY_WARMUP|scheduleTokenRenewal|refreshTokenWhenAvailable|scheduleTokenRenewalRetry|refreshTokenAhead|securityRenewalTimer/);
+assert.match(app, /window\.VERIX_SECURITY\.getToken\(false\)/, "ASF requests must acquire the token on demand");
+assert.match(app, /window\.VERIX_SECURITY\.getToken\(true\)/, "401 handling must retain the forced token refresh");
 const telemetryStart = app.indexOf("function parseReceipt(text)");
 const telemetryEnd = app.indexOf("function rateLimited", telemetryStart);
 assert.ok(telemetryStart >= 0 && telemetryEnd > telemetryStart, "production telemetry client must expose its receipt pipeline");
