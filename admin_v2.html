@@ -360,6 +360,28 @@ body{background:linear-gradient(180deg,#f8faf8 0,#f3f7f4 460px,#f5f8f6 100%);col
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 
+
+/* VÉRIX Admin V10.1 — complete error-category breakdown styling */
+.error-breakdown{margin-top:18px;padding:17px 18px;border:1px solid #e3ebe5;border-radius:16px;background:linear-gradient(180deg,#fff,#fbfdfb)}
+.error-breakdown-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:14px}
+.error-breakdown-heading h3{margin:0;color:#183a29;font-size:15px;font-weight:850;letter-spacing:-.03em}
+.error-breakdown-heading p{margin:4px 0 0;color:#7a8980;font-size:10px}
+.error-data-window{flex:none;padding:6px 9px;border:1px solid #e3eae4;border-radius:999px;background:#f6f9f6;color:#728177;font-size:9px;font-weight:800}
+.error-breakdown-grid{display:grid;grid-template-columns:minmax(0,1fr) 210px;gap:20px}
+.error-types-list{display:grid;gap:10px;min-width:0}
+.error-type-row{display:grid;grid-template-columns:minmax(130px,190px) minmax(70px,1fr) 48px;align-items:center;gap:11px;min-width:0}
+.error-type-name{overflow:hidden;color:#4f6658;font-size:10px;font-weight:750;text-overflow:ellipsis;white-space:nowrap}
+.error-type-code{margin-left:5px;color:#94a096;font-size:8px;font-weight:600}
+.error-type-track{height:7px;overflow:hidden;border-radius:999px;background:#edf2ee}
+.error-type-track span{display:block;height:100%;min-width:2px;border-radius:999px;background:linear-gradient(90deg,#c68b35,#e4ba70)}
+.error-type-count{color:#3d5d49;font-size:10px;font-weight:850;text-align:right;font-variant-numeric:tabular-nums}
+.error-empty{margin:0;padding:11px 0;color:#849188;font-size:10px;line-height:1.5}
+.error-breakdown-summary{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-left:17px;border-left:1px solid #e8eee9}
+.error-summary-block{padding:10px;border:1px solid #e8eee9;border-radius:11px;background:#f8fbf8}
+.error-summary-block span{display:block;color:#74837a;font-size:8px;font-weight:800;line-height:1.4}
+.error-summary-block strong{display:block;margin-top:4px;color:#183f2c;font-size:21px;font-weight:900;letter-spacing:-.05em}
+.error-coverage-note{grid-column:1/-1;margin:0;color:#849188;font-size:9px;line-height:1.5}
+
 </style>
 </head>
 <body>
@@ -614,7 +636,7 @@ body{background:linear-gradient(180deg,#f8faf8 0,#f3f7f4 460px,#f5f8f6 100%);col
 (function(){
 'use strict';
 const API_ORIGIN='https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/';
-const RELEASE='admin-v10-optimized-command-20261114';
+const RELEASE='admin-v10-1-error-breakdown-20261114';
 const AUTH_API=API_ORIGIN+'admin-auth-v2?v='+encodeURIComponent(RELEASE);
 const STATS_API=API_ORIGIN+'stats-v2?v='+encodeURIComponent(RELEASE);
 const LIVE_API=API_ORIGIN+'admin-telemetry-v3?view=dashboard&v='+encodeURIComponent(RELEASE);
