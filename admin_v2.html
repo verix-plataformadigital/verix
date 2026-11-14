@@ -642,7 +642,7 @@ const STATS_API=API_ORIGIN+'stats-v2?v='+encodeURIComponent(RELEASE);
 const LIVE_API=API_ORIGIN+'admin-telemetry-v3?view=dashboard&v='+encodeURIComponent(RELEASE);
 const TOKEN_KEY='VERIX_ADMIN_V2_TOKEN';
 const COUNTER_REFRESH_MS=60000;
-const LIVE_REFRESH_MS=30000;
+const LIVE_REFRESH_MS=60000;
 const $=id=>document.getElementById(id);
 const nf=new Intl.NumberFormat('pt-PT');
 const timeFmt=new Intl.DateTimeFormat('pt-PT',{timeZone:'Europe/Lisbon',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});
