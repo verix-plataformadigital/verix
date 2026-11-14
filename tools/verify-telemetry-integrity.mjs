@@ -45,20 +45,19 @@ assert.match(semanticMigration, /'no_record'/);
 assert.match(stats, /detail === "lifetime-counters"/);
 assert.match(admin, /total_no_record_results/);
 
-// Admin V4 clean contract: one responsive overview, two permanent counters,
-// three live indicators, existing authentication and shared Realtime presence.
-for (const id of ["totalSearches","totalNoRecord","livePresenceOnline","livePresenceActive","liveQueries5m","livePresenceActiveTabsVisible","liveQueries5mVisible","liveQueries1hVisible"]) {
-  assert.ok(admin.includes('id="' + id + '"'), "missing Admin metric " + id);
+// Daily-only Admin contract: lifetime counters and daily aggregates, no live presence client.
+for (const id of ["totalSearches","totalNoRecord","todayConsultations","todayNoRecord","todayErrors","dailyRows"]) {
+  assert.ok(admin.includes('id="' + id + '"'), "missing Admin daily metric " + id);
 }
 assert.match(admin, /Total de pesquisas efetuadas/);
 assert.match(admin, /Resultados sem registo ASF/);
 assert.match(admin, /A ausência de registo ASF não confirma, por si só, que o veículo não tem seguro/);
 assert.match(admin, /detail=lifetime-counters/);
 assert.match(admin, /admin-telemetry-v3\?view=dashboard/);
-assert.match(admin, /verix-presence-v1\.js/);
-assert.match(admin, /VERIX_LIVE_PRESENCE\.subscribe\(renderLivePresence\)/);
-assert.match(admin, /COUNTER_REFRESH_MS\s*=\s*60000/);
-assert.match(admin, /LIVE_REFRESH_MS\s*=\s*30000/);
+assert.doesNotMatch(admin, /verix-presence-v1\.js|VERIX_LIVE_PRESENCE/);
+assert.doesNotMatch(admin, /setInterval\(/);
+assert.doesNotMatch(admin, /response\.presence/);
+assert.match(admin, /id="refreshBtn"/);
 assert.doesNotMatch(admin, /data-period=|Histórico Total|>7 dias|daily-metrics-30d|todayErrorTypes/);
 assert.match(admin, /consulta é contabilizada uma vez/);
 
@@ -73,8 +72,7 @@ assert.match(recentMetricsMigration, /interval '5 minutes'/);
 assert.match(recentMetricsMigration, /REVOKE ALL ON FUNCTION public\.verix_admin_recent_consultations/);
 const adminTelemetry = fs.readFileSync("supabase/functions/admin-telemetry-v3/index.ts", "utf8");
 assert.match(adminTelemetry, /verix_admin_dashboard_snapshot_v1/);
-assert.match(adminTelemetry, /consultations_started_last_5m/);
-assert.match(adminTelemetry, /consultations_started_last_1h/);
+assert.doesNotMatch(adminTelemetry, /consultations_started_last_5m|consultations_started_last_1h/);
 assert.doesNotMatch(adminTelemetry, /verix_admin_recent_consultations|verix_admin_consultations_last_hour|verix_daily_metrics_30d_read/);
 assert.doesNotMatch(adminTelemetry, /verix2_admin_live_presence/);
 const dashboardSnapshotMigration = fs.readFileSync("supabase/migrations/20261114102619_verix_admin_dashboard_snapshot_rpc.sql", "utf8");
@@ -84,6 +82,9 @@ assert.match(dashboardSnapshotMigration, /verix_admin_consultations_last_hour/);
 assert.match(dashboardSnapshotMigration, /verix_daily_metrics_30d_read/);
 assert.match(dashboardSnapshotMigration, /REVOKE ALL ON FUNCTION public\.verix_admin_dashboard_snapshot_v1/);
 assert.match(dashboardSnapshotMigration, /GRANT EXECUTE ON FUNCTION public\.verix_admin_dashboard_snapshot_v1/);
+const dailyOnlySnapshotMigration = fs.readFileSync("supabase/migrations/20261114111500_admin_daily_snapshot_only.sql", "utf8");
+assert.match(dailyOnlySnapshotMigration, /verix_daily_metrics_30d_read/);
+assert.doesNotMatch(dailyOnlySnapshotMigration, /verix_admin_recent_consultations|verix_admin_consultations_last_hour/);
 const categoryGrantMigration = fs.readFileSync("supabase/migrations/20261114102343_grant_service_role_daily_error_type_access.sql", "utf8");
 assert.match(categoryGrantMigration, /GRANT SELECT, INSERT, UPDATE ON TABLE public\.verix_daily_error_types TO service_role/);
 

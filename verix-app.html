@@ -17712,8 +17712,7 @@ html body .leg-card-new .copy-all-new{
   var MAX_QUEUE = 300;
   var MAX_REJECTED_QUEUE = 50;
   var BATCH_SIZE = 25;
-  var FLUSH_MS = 15000;
-  var HEARTBEAT_MS = 45000;
+  var FLUSH_MS = 900000; // envia lotes parciais no máximo a cada 15 minutos
   var TIMEOUT_MS = 10000;
 
   var localStore = null;
@@ -17999,11 +17998,12 @@ html body .leg-card-new .copy-all-new{
 
     saveQueue();
 
-    // Eventos críticos (arranque, presença e consulta) não ficam dependentes
-    // de uma janela de flush posterior. Tentamos enviar logo.
-    if (event === 'app_open' || event === 'heartbeat' || event === 'vehicle_lookup') {
+    // A abertura é enviada imediatamente; consultas e eventos restantes são agrupados.
+    if (event === 'app_open') {
       flushNow();
     } else if (queue.length >= BATCH_SIZE) {
+      flush(0);
+    } else {
       flush();
     }
   }
@@ -18215,13 +18215,17 @@ html body .leg-card-new .copy-all-new{
     }
   }
 
-  function flush() {
+  function flush(delay) {
     if (!queue.length || flushBusy || retryTimer) return;
-    if (flushTimer) return;
+    if (flushTimer) {
+      if (delay == null || delay > 0) return;
+      clearTimeout(flushTimer);
+      flushTimer = null;
+    }
     flushTimer = setTimeout(function () {
       flushTimer = null;
       flushNow();
-    }, 50);
+    }, delay == null ? FLUSH_MS : Math.max(0, delay));
   }
 
   function flushBeacon() {
@@ -18438,48 +18442,21 @@ html body .leg-card-new .copy-all-new{
 
   }
 
-  function scheduleHeartbeat() {
-    push('heartbeat', null);
-    // Reagenda depois de executar a tentativa atual, evitando acumulação
-    // de intervalos quando o browser está sob throttling.
-    setTimeout(scheduleHeartbeat, HEARTBEAT_MS);
-  }
-
   function start() {
     installWrappers();
     bindDom();
 
-    // Presença imediata: a abertura da aplicação já marca o dispositivo ativo.
+    // Uma abertura por sessão. Consultas são agrupadas em lotes para reduzir invocações.
     push('app_open', null);
-    flush();
 
-    // Heartbeat recursivo + eventos de ciclo de vida.
-    setTimeout(scheduleHeartbeat, HEARTBEAT_MS);
-
+    // Envia a fila existente quando a aplicação passa para segundo plano/fecha.
     document.addEventListener('visibilitychange', function () {
-      if (document.visibilityState === 'hidden') {
-        flushBeacon();
-      } else {
-        push('heartbeat', null);
-      }
+      if (document.visibilityState === 'hidden') flushBeacon();
     });
-
-    window.addEventListener('pagehide', function () {
-      flushBeacon();
-    });
-
-    window.addEventListener('pageshow', function () {
-      push('heartbeat', null);
-    });
-
-    window.addEventListener('focus', function () {
-      push('heartbeat', null);
-    });
-
+    window.addEventListener('pagehide', function () { flushBeacon(); });
     window.addEventListener('online', function () {
       retryStep = 0;
-      flush();
-      push('heartbeat', null);
+      if (queue.length) flush(0);
     });
 
     setTimeout(installWrappers, 500);

@@ -148,8 +148,8 @@ export async function handleRequest(req: Request): Promise<Response> {
 
   try {
     const now = new Date().toISOString();
-    // One authenticated RPC returns the two rolling counters and the compact
-    // 30-day aggregate snapshot. This cuts three PostgREST round trips to one.
+    // One authenticated RPC returns only the compact 30-day daily aggregate.
+    // Presence and second-by-second activity are deliberately excluded.
     const snapshot = await rpc<Record<string, unknown>>(
       "verix_admin_dashboard_snapshot_v1",
       { p_now: now },
@@ -158,28 +158,13 @@ export async function handleRequest(req: Request): Promise<Response> {
       throw new Error("dashboard_snapshot_invalid");
     }
     const history = snapshot.history as Record<string, unknown> | undefined;
-    const presence = snapshot.presence as Record<string, unknown> | undefined;
-    const consultations = presence?.consultations_started_last_5m;
-    const consultationsLastHour = presence?.consultations_started_last_1h;
-    if (!Number.isSafeInteger(consultations) || Number(consultations) < 0) {
-      throw new Error("recent_consultation_count_invalid");
-    }
-    if (!Number.isSafeInteger(consultationsLastHour) || Number(consultationsLastHour) < 0) {
-      throw new Error("recent_hour_consultation_count_invalid");
-    }
     if (!history || !Array.isArray(history.days) || !history.totals) {
       throw new Error("daily_history_invalid");
     }
-    const liveMetrics = {
-      observed_at: String(presence?.observed_at || snapshot.generated_at || now),
-      consultations_started_last_5m: Number(consultations),
-      consultations_started_last_1h: Number(consultationsLastHour),
-    };
 
     return jsonResponse(req, {
       ok: true,
       generated_at: now,
-      presence: liveMetrics,
       history,
     });
   } catch (error) {
