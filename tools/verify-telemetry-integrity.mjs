@@ -45,10 +45,9 @@ assert.match(semanticMigration, /'no_record'/);
 assert.match(stats, /detail === "lifetime-counters"/);
 assert.match(admin, /total_no_record_results/);
 
-// Admin V4 clean contract: one responsive overview, two permanent counters,
-// three live indicators, existing authentication and shared Realtime presence.
-for (const id of ["totalSearches","totalNoRecord","livePresenceOnline","livePresenceActive","liveQueries5m","livePresenceActiveTabsVisible","liveQueries5mVisible","liveQueries1hVisible"]) {
-  assert.ok(admin.includes('id="' + id + '"'), "missing Admin metric " + id);
+// Daily-only Admin contract: lifetime counters and daily aggregates, no live presence client.
+for (const id of ["totalSearches","totalNoRecord","todayConsultations","todayNoRecord","todayErrors","dailyRows"]) {
+  assert.ok(admin.includes('id="' + id + '"'), "missing Admin daily metric " + id);
 }
 assert.match(admin, /Total de pesquisas efetuadas/);
 assert.match(admin, /Resultados sem registo ASF/);
@@ -84,6 +83,9 @@ assert.match(dashboardSnapshotMigration, /verix_admin_consultations_last_hour/);
 assert.match(dashboardSnapshotMigration, /verix_daily_metrics_30d_read/);
 assert.match(dashboardSnapshotMigration, /REVOKE ALL ON FUNCTION public\.verix_admin_dashboard_snapshot_v1/);
 assert.match(dashboardSnapshotMigration, /GRANT EXECUTE ON FUNCTION public\.verix_admin_dashboard_snapshot_v1/);
+const dailyOnlySnapshotMigration = fs.readFileSync("supabase/migrations/20261114111500_admin_daily_snapshot_only.sql", "utf8");
+assert.match(dailyOnlySnapshotMigration, /verix_daily_metrics_30d_read/);
+assert.doesNotMatch(dailyOnlySnapshotMigration, /verix_admin_recent_consultations|verix_admin_consultations_last_hour/);
 const categoryGrantMigration = fs.readFileSync("supabase/migrations/20261114102343_grant_service_role_daily_error_type_access.sql", "utf8");
 assert.match(categoryGrantMigration, /GRANT SELECT, INSERT, UPDATE ON TABLE public\.verix_daily_error_types TO service_role/);
 
