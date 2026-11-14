@@ -630,7 +630,7 @@ body{background:linear-gradient(180deg,#f8faf8 0,#f3f7f4 460px,#f5f8f6 100%);col
 
 </div>
 
-<script defer src="./verix-presence-v1.js?v=admin-v9-live-metrics-20261113"></script>
+<style>.operational-section{display:none!important}</style>
 <script>
 
 (function(){
@@ -641,8 +641,6 @@ const AUTH_API=API_ORIGIN+'admin-auth-v2?v='+encodeURIComponent(RELEASE);
 const STATS_API=API_ORIGIN+'stats-v2?v='+encodeURIComponent(RELEASE);
 const LIVE_API=API_ORIGIN+'admin-telemetry-v3?view=dashboard&v='+encodeURIComponent(RELEASE);
 const TOKEN_KEY='VERIX_ADMIN_V2_TOKEN';
-const COUNTER_REFRESH_MS=60000;
-const LIVE_REFRESH_MS=60000;
 const $=id=>document.getElementById(id);
 const nf=new Intl.NumberFormat('pt-PT');
 const timeFmt=new Intl.DateTimeFormat('pt-PT',{timeZone:'Europe/Lisbon',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});
@@ -1043,10 +1041,9 @@ async function loadDailyDashboard(){
 }
 function startRefresh(){
   stopRefresh();
+  // Daily mode: load once on login/session restore. Further reads are manual.
   loadDashboard();
   loadDailyDashboard();
-  counterTimer=setInterval(()=>{if(!document.hidden)loadDashboard();},COUNTER_REFRESH_MS);
-  dailyTimer=setInterval(()=>{if(!document.hidden)loadDailyDashboard();},LIVE_REFRESH_MS);
 }
 function logout(){
   stopRefresh();token='';counterData=null;dailyData=null;
@@ -1062,7 +1059,7 @@ async function restoreSession(){
     const response=await request(STATS_API+'&detail=lifetime-counters');
     if(token!==restored)return;
     if(!response||!response.data)throw new Error('Sessão não confirmada.');
-    counterData=response.data;showAuthenticatedApp();renderCounters(counterData);startRefresh();
+    counterData=response.data;showAuthenticatedApp();renderCounters(counterData);loadDailyDashboard();
   }catch(_){
     if(token===restored){token='';sessionStorage.removeItem(TOKEN_KEY);}
     document.body.classList.remove('admin-authenticated');$('app').hidden=true;$('loginScreen').hidden=false;
@@ -1094,9 +1091,6 @@ document.querySelectorAll('.metric-tab').forEach(button=>{
     currentMetric=metric;
     if(dailyData)renderTrendChart(dailyData.days);
   });
-});
-document.addEventListener('visibilitychange',function(){
-  if(!document.hidden&&token){loadDashboard();loadDailyDashboard();}
 });
 window.addEventListener('pagehide',stopRefresh);
 window.addEventListener('beforeinstallprompt',function(event){event.preventDefault();deferredInstallPrompt=event;});
