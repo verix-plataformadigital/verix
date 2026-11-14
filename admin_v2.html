@@ -1013,21 +1013,6 @@ async function loadDailyDashboard(){
     if(!response||!response.history)throw new Error('O servidor não devolveu o histórico diário.');
     renderDailyDashboard(response.history,response.generated_at);
     dailyIssue='';renderNotice();syncBackendStatus();
-    const recent=response&&response.presence&&response.presence.consultations_started_last_5m;
-    const recentValid=Number.isSafeInteger(recent)&&recent>=0;
-    setLiveValue('liveQueries5m',recentValid?recent:null);
-    setLiveValue('liveQueries5mVisible',recentValid?recent:null);
-    const recentHour=response&&response.presence&&response.presence.consultations_started_last_1h;
-    const recentHourValid=Number.isSafeInteger(recentHour)&&recentHour>=0;
-    setLiveValue('liveQueries1hVisible',recentHourValid?recentHour:null);
-    const hourNote=$('liveQueries1hNote');
-    if(hourNote)hourNote.textContent=!recentHourValid?'Não foi possível confirmar esta janela.':(recentHour===0?'Nenhuma consulta registada nos últimos 60 minutos.':recentHour+' consultas únicas registadas nos últimos 60 minutos.');
-    const recentNote=$('liveQueries5mNote');
-    if(recentNote)recentNote.textContent=!recentValid?'Não foi possível confirmar esta janela.':(recent===0?'Nenhuma consulta registada nesta janela; o total diário mantém-se no resumo abaixo.':recent+' consultas únicas registadas nos últimos 5 minutos.');
-    const observed=response&&response.presence&&response.presence.observed_at;
-    $('liveQueryUpdated').textContent=observed?'Consultas atualizadas às '+formatTime(observed)+'.':'';
-    $('liveQueryUpdatedVisible').textContent=observed?'Consultas atualizadas às '+formatTime(observed):'Consultas: leitura sem timestamp.';
-    syncBackendStatus();
   }catch(error){
     if(requestToken===token){
       dailyIssue=dailyData?'os dados apresentados são da última leitura confirmada; não foi possível obter uma leitura mais recente.':'não foi possível carregar os dados. '+error.message;renderNotice();syncBackendStatus();
