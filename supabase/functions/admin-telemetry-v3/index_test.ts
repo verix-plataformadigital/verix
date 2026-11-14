@@ -49,11 +49,6 @@ Deno.test("admin telemetry v3 — authentication, CORS and response contract", a
         const observedAt = "2026-11-14T10:25:00.000Z";
         return Response.json({
           generated_at: observedAt,
-          presence: {
-            observed_at: observedAt,
-            consultations_started_last_5m: 7,
-            consultations_started_last_1h: 42,
-          },
           history: {
             window_days: 30,
             days: [{ date: "2026-11-13", available: true, consultations: 12, no_record_results: 2, errors: 1, error_types: [] }],
@@ -124,7 +119,7 @@ Deno.test("admin telemetry v3 — authentication, CORS and response contract", a
       if (rpcCalls.length !== before) throw new Error("Unsupported view called an RPC");
     });
 
-    await t.step("returns server-confirmed live counts and history through one snapshot RPC", async () => {
+    await t.step("returns daily history only through one snapshot RPC", async () => {
       rpcCalls.length = 0;
       const response = await handleRequest(new Request(
         "https://edge.example.test/admin-telemetry-v3?view=dashboard",
@@ -140,11 +135,9 @@ Deno.test("admin telemetry v3 — authentication, CORS and response contract", a
       if (data.ok !== true || data.dashboard !== undefined) {
         throw new Error("The read-only presence endpoint must not perform a duplicate dashboard read");
       }
-      if (
-        data.presence?.consultations_started_last_5m !== 7 ||
-        data.presence?.consultations_started_last_1h !== 42 ||
-        typeof data.presence?.observed_at !== "string"
-      ) throw new Error("Live consultation payload is not mapped correctly");
+      if (data.presence !== undefined) {
+        throw new Error("Daily-only endpoint must not return live presence metrics");
+      }
       if (data.history?.window_days !== 30 || data.history?.days?.length !== 1 ||
           data.history?.totals?.consultations !== 12) {
         throw new Error("Thirty-day history payload is not mapped correctly");
