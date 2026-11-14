@@ -258,7 +258,6 @@ html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .verix-asf-notice-card{
   var securityTokenExp = 0;
   var securityTokenMonotonicExp = 0;
   var securityTokenPromise = null;
-  var securityRenewalTimer = null;
 
   function persistentId(store, key, prefix) {
     try {
@@ -328,7 +327,6 @@ html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .verix-asf-notice-card{
     securityToken = String(data.token);
     securityTokenExp = Date.now() + expiresIn * 1000;
     securityTokenMonotonicExp = monotonicNow() + expiresIn * 1000;
-    scheduleTokenRenewal();
     return securityToken;
   }
 
@@ -447,52 +445,6 @@ html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .verix-asf-notice-card{
     return run(1);
   }
 
-  function cancelTokenRenewal() {
-    if (securityRenewalTimer !== null) {
-      clearTimeout(securityRenewalTimer);
-      securityRenewalTimer = null;
-    }
-  }
-
-  function scheduleTokenRenewalRetry() {
-    cancelTokenRenewal();
-    if (!securityToken || !securityTokenExp) return;
-    var remaining = tokenRemainingMs();
-    if (remaining <= 60000) return;
-    var delayMs = Math.min(60000, remaining - 30000);
-    securityRenewalTimer = setTimeout(function(){
-      securityRenewalTimer = null;
-      refreshTokenAhead();
-    }, Math.max(1000, delayMs));
-  }
-
-  function refreshTokenAhead() {
-    if (!securityToken || !securityTokenExp) return;
-    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
-    getToken(true).catch(function(){
-      // The current token remains usable until its signed expiration time.
-      scheduleTokenRenewalRetry();
-    });
-  }
-
-  function scheduleTokenRenewal() {
-    cancelTokenRenewal();
-    if (!securityToken || !securityTokenExp) return;
-    var refreshIn = Math.max(1000, tokenRemainingMs() - 120000);
-    securityRenewalTimer = setTimeout(function(){
-      securityRenewalTimer = null;
-      refreshTokenAhead();
-    }, refreshIn);
-  }
-
-  function refreshTokenWhenAvailable() {
-    if (!securityToken) {
-      getToken(false).catch(function(){});
-      return;
-    }
-    if (tokenRemainingMs() <= 180000) refreshTokenAhead();
-  }
-
   function getToken(force) {
     // Keep a short safety margin while tracking expiry independently of wall-clock changes.
     if (!force && securityToken && tokenRemainingMs() > 5000) {
@@ -519,7 +471,6 @@ html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .verix-asf-notice-card{
       securityToken = null;
       securityTokenExp = 0;
       securityTokenMonotonicExp = 0;
-      cancelTokenRenewal();
     }
   };
 
@@ -544,16 +495,8 @@ html.vx-mobile-bootstrap body #verixAsfNoticeOverlay .verix-asf-notice-card{
     } catch (__) {}
   }
 
-  try {
-    window.addEventListener('online', refreshTokenWhenAvailable);
-    if (typeof document !== 'undefined') {
-      document.addEventListener('visibilitychange', function(){
-        if (document.visibilityState !== 'hidden') refreshTokenWhenAvailable();
-      });
-    }
-  } catch (_) {}
-
-  try { window.VERIX_SECURITY_WARMUP = getToken(false).catch(function(){ return null; }); } catch (_) {}
+  // Token adquirido sob pedido: apenas quando uma consulta ASF é iniciada.
+  // A renovação ocorre no próximo pedido após expiração ou num 401 de autenticação.
 })();
 </script><title>VÉRIX — Plataforma Digital 1.5</title>
 <meta name="description" content="VÉRIX — Plataforma Digital de apoio ao serviço operacional.">
