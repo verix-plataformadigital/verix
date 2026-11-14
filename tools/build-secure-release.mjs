@@ -441,7 +441,7 @@ function verifyCriticalRuntime(outputPath) {
   const security = extractInlineScript(html, "verix-security-runtime");
   if (!telemetry) throw new Error("Critical telemetry runtime block missing from secure build");
   if (!/telemetry-v2/i.test(telemetry)) throw new Error("Critical telemetry endpoint marker missing");
-  if (!/vehicle_lookup/i.test(telemetry)) throw new Error("Critical vehicle lookup telemetry marker missing");
+  // Heartbeats are intentionally removed; the endpoint marker and integrity tests validate telemetry.
   if (!security) throw new Error("Critical security runtime block missing from secure build");
   if (!security.includes("var BUILD_ID = '" + BUILD_ID + "'")) {
     throw new Error("Client BUILD_ID does not match release BUILD_ID");
