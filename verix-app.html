@@ -17656,7 +17656,7 @@ html body .leg-card-new .copy-all-new{
   var MAX_REJECTED_QUEUE = 50;
   var BATCH_SIZE = 100; // limite máximo já aceite pela ingestão atómica
   var FLUSH_MS = 86400000; // lote parcial temporizado: no máximo uma vez por dia
-  var LAST_BEACON_DAY_KEY = 'VERIX_T2_LAST_BEACON_DAY';
+  var LAST_PARTIAL_UPLOAD_DAY_KEY = 'VERIX_T2_LAST_PARTIAL_UPLOAD_DAY';
   var COUNTED_EVENTS = {
     vehicle_lookup: true,
     vehicle_insurance_yes: true,
@@ -17718,18 +17718,12 @@ html body .leg-card-new .copy-all-new{
       }).formatToParts(new Date());
       var values = {};
       parts.forEach(function (part) {
-        if (part.type === 'year' || part.type === 'month' || part.type === 'day') {
-          values[part.type] = part.value;
-        }
+        if (part.type === 'year' || part.type === 'month' || part.type === 'day') values[part.type] = part.value;
       });
-      if (values.year && values.month && values.day) {
-        return values.year + '-' + values.month + '-' + values.day;
-      }
+      if (values.year && values.month && values.day) return values.year + '-' + values.month + '-' + values.day;
     } catch (_) {}
-    var localDate = new Date();
-    return localDate.getFullYear() + '-' +
-      ('0' + (localDate.getMonth() + 1)).slice(-2) + '-' +
-      ('0' + localDate.getDate()).slice(-2);
+    var d = new Date();
+    return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
   }
 
   function deviceType() {
@@ -18095,21 +18089,6 @@ html body .leg-card-new .copy-all-new{
     });
   }
 
-  function sendBeacon(batch) {
-    try {
-      if (!navigator.sendBeacon) return false;
-      var payload = JSON.stringify({ events: batch });
-      // O browser apenas confirma que aceitou a transmissão; não existe recibo.
-      // Por isso a fila local nunca é removida com base no sendBeacon.
-      return navigator.sendBeacon(
-        ENDPOINT,
-        new Blob([payload], { type: 'text/plain;charset=UTF-8' })
-      );
-    } catch (_) {
-      return false;
-    }
-  }
-
   function sendViaActiveX(batch) {
     return new Promise(function (resolve) {
       try {
@@ -18154,9 +18133,14 @@ html body .leg-card-new .copy-all-new{
 
   async function flushNow() {
     if (flushBusy || !queue.length) return;
-    flushBusy = true;
-
     var batch = queue.slice(0, BATCH_SIZE);
+    var partialBatch = batch.length < BATCH_SIZE;
+    var today = lisbonDayKey();
+    if (partialBatch && storageGet(localStore, LAST_PARTIAL_UPLOAD_DAY_KEY) === today) {
+      schedule(FLUSH_MS);
+      return;
+    }
+    flushBusy = true;
 
     try {
       var receipt = await send(batch);
@@ -18175,6 +18159,9 @@ html body .leg-card-new .copy-all-new{
         });
         saveQueue();
         retryStep = 0;
+        if (partialBatch && Object.keys(retryIds).length === 0) {
+          storageSet(localStore, LAST_PARTIAL_UPLOAD_DAY_KEY, today);
+        }
         if (queue.length) schedule(Object.keys(retryIds).length ? 2000 : 50);
       } else {
         // Progressive backoff with jitter prevents clients retrying together.
@@ -18200,22 +18187,6 @@ html body .leg-card-new .copy-all-new{
       flushTimer = null;
       flushNow();
     }, delay == null ? FLUSH_MS : Math.max(0, delay));
-  }
-
-  function flushBeacon() {
-    if (!queue.length || flushBusy) return false;
-
-    // Um único lote parcial diário por instalação. Os lotes completos continuam
-    // a ser enviados imediatamente por fetch/XHR quando atingem 100 eventos.
-    var today = lisbonDayKey();
-    if (storageGet(localStore, LAST_BEACON_DAY_KEY) === today) return false;
-
-    var batch = queue.slice(0, BATCH_SIZE);
-    if (!sendBeacon(batch)) return false;
-    storageSet(localStore, LAST_BEACON_DAY_KEY, today);
-
-    // sendBeacon não fornece recibo da aplicação: nunca retirar itens da fila.
-    return true;
   }
 
   function rateLimited(key, ms) {
@@ -18427,17 +18398,13 @@ html body .leg-card-new .copy-all-new{
     installWrappers();
     bindDom();
 
-    // Reutiliza a fila persistida; app_open não é enviado porque não alimenta contadores.
-    if (queue.length) flush();
+    // Reenvia a fila persistida no arranque. Lotes parciais ficam limitados
+    // a um envio confirmado por dia; lotes de 100 seguem imediatamente.
+    if (queue.length) flush(0);
 
-    // Envia, no máximo uma vez por dia, um lote parcial ao fechar/minimizar.
-    document.addEventListener('visibilitychange', function () {
-      if (document.visibilityState === 'hidden') flushBeacon();
-    });
-    window.addEventListener('pagehide', function () { flushBeacon(); });
     window.addEventListener('online', function () {
       retryStep = 0;
-      if (queue.length) flush(0);
+      if (queue.length >= BATCH_SIZE) flush(0);
     });
 
     setTimeout(installWrappers, 500);
