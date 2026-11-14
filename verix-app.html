@@ -17998,8 +17998,7 @@ html body .leg-card-new .copy-all-new{
 
     saveQueue();
 
-    // Eventos críticos (arranque, presença e consulta) não ficam dependentes
-    // de uma janela de flush posterior. Tentamos enviar logo.
+    // A abertura é enviada imediatamente; consultas e eventos restantes são agrupados.
     if (event === 'app_open') {
       flushNow();
     } else if (queue.length >= BATCH_SIZE) {
