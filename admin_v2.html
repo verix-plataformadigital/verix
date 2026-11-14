@@ -1113,11 +1113,6 @@ $('trendChart').addEventListener('keydown',function(event){
   if(point){event.preventDefault();$('chartPointDetail').textContent=formatDay(point.dataset.date)+' — '+formatCount(Number(point.dataset.value))+' '+METRICS[currentMetric].unit+'.';}
 });
 updateInstallButton();
-if(window.VERIX_LIVE_PRESENCE&&typeof window.VERIX_LIVE_PRESENCE.subscribe==='function'){
-  window.VERIX_LIVE_PRESENCE.subscribe(renderLivePresence);
-}else{
-  window.addEventListener('verix-live-presence',function(event){renderLivePresence(event.detail);});
-}
 if(token)restoreSession();
 })();
 
