@@ -13,6 +13,8 @@ assert.match(endpoint, /db:\s*\{\s*retry:\s*false\s*\}/);
 assert.match(endpoint, /\.abortSignal\(AbortSignal\.timeout\(5000\)\)/);
 assert.match(endpoint, /\.abortSignal\(AbortSignal\.timeout\(5000\)\)/);
 assert.match(endpoint, /telemetry_backend_timeout/);
+assert.ok(endpoint.includes("ts < now - 7 * 24 * 60 * 60 * 1000"), "vehicle_lookup accepts queued events for seven days");
+assert.ok(!endpoint.includes("now - 24 * 60 * 60 * 1000"), "old 24-hour cutoff is removed");
 assert.match(endpoint, /sessions_detached/);
 assert.match(endpoint, /db\.rpc\(\s*["']verix2_ingest_telemetry["']/);
 assert.match(endpoint, /p_events:\s*events/);
@@ -109,6 +111,13 @@ const scriptStart = app.indexOf(scriptOpen);
 const scriptEnd = app.indexOf("</script>", scriptStart + scriptOpen.length);
 assert.ok(scriptStart >= 0 && scriptEnd > scriptStart, "production telemetry script must have clear boundaries");
 const telemetryScript = app.slice(scriptStart + scriptOpen.length, scriptEnd);
+assert.match(telemetryScript, /var BATCH_SIZE = 100;/);
+assert.match(telemetryScript, /var FLUSH_MS = 86400000;/);
+assert.match(telemetryScript, /vehicle_insurance_error: true/);
+assert.doesNotMatch(telemetryScript, /push\('app_open', null\)/);
+assert.match(telemetryScript, /LAST_BEACON_DAY_KEY/);
+assert.match(telemetryScript, /queue = readQueue\(\)\.filter/);
+assert.match(telemetryScript, /if \(!event \|\| !COUNTED_EVENTS\[String\(event\)\]\) return;/);
 assert.doesNotThrow(() => new Function(telemetryScript), "production telemetry script must parse as JavaScript");
 
 const parserMatch = clientTransport.match(/function parseReceipt\(text\) \{[\s\S]*?\n  \}/);
@@ -140,3 +149,7 @@ assert.ok(errorTypeWindowMigration.includes('IF NOT EXISTS (SELECT 1 FROM public
 assert.match(errorTypeWindowMigration, /SET error_types_since = clock_timestamp\(\)/);
 
 console.log("PASS: atomic ingest receipt, ID-based client acknowledgement, loss-safe beacon queue, query-quality metrics and Admin labels.");
+
+const ttlMigration = fs.readFileSync("supabase/migrations/20261114114500_telemetry_daily_batches_seven_day_dedupe.sql", "utf8");
+assert.match(ttlMigration, /interval '7 days'/);
+assert.match(ttlMigration, /LEAST\(expires_at, updated_at \+ interval '7 days'\)/);

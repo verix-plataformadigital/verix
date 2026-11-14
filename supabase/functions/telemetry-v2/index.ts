@@ -583,7 +583,7 @@ Deno.serve(async (req: Request) => {
         const d = x?.occurredAt ? new Date(x.occurredAt) : new Date();
         const now = Date.now();
         const ts = d.getTime();
-        if (!Number.isFinite(ts) || ts < now - 24 * 60 * 60 * 1000 || ts > now + 5 * 60 * 1000) { rejectEvent(x, "invalid_or_stale_timestamp"); continue; }
+        if (!Number.isFinite(ts) || ts < now - 7 * 24 * 60 * 60 * 1000 || ts > now + 5 * 60 * 1000) { rejectEvent(x, "invalid_or_stale_timestamp"); continue; }
 
         const installationKey = await hmacHex(`installation:${installationId}`);
         if (!consumeLocalRate(`vehicle:${installationKey}`, 30, 60)) { rejectEvent(x, "rate_limited", true); continue; }
