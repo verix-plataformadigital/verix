@@ -14,7 +14,6 @@ on:
       - "admin_v2.html"
       - "admin/**"
       - "assets/**"
-      - "verix-presence-v1.js"
       - "AI-ACCESS-POLICY.md"
       - "tools/build-secure-release.mjs"
       - "package.json"
@@ -70,8 +69,6 @@ jobs:
           test -s dist/admin/index.html
           test -s dist/admin/manifest.webmanifest
           test -s dist/admin/sw.js
-          test -s dist/verix-presence-v1.js
-          grep -q 'verix-presence-v1.js' dist/verix-app.html
           test -s dist/assets/admin-icon.svg
           test -s dist/AI-ACCESS-POLICY.md
           node - <<'NODE'

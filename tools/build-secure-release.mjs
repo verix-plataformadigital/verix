@@ -2,7 +2,6 @@ import fs from "node:fs";
 import path from "node:path";
 import { createHash } from "node:crypto";
 import JavaScriptObfuscator from "javascript-obfuscator";
-import { build as esbuildBuild } from "esbuild";
 
 const ROOT = process.cwd();
 const OUTPUT_DIR = path.join(ROOT, "dist");
@@ -277,15 +276,11 @@ function writeSecureFile(relativeSource, relativeOutput) {
       '<style id="verix-depth-ui">\n' + depthCss + '\n</style>\n' +
       '<style id="verix-mobile-final-ui">\n' + mobileFinalCss + '\n</style>\n' +
       mobileFinalizer + '\n' +
-      '<script defer src="./verix-presence-v1.js?v=' + encodeURIComponent(String(BUILD_ID)) + '"></script>\n' +
       '</body>'
     );  }
 
   if (relativeSource === "verix-app.html" && (!source.includes('id="verix-mobile-finalize"') || !source.includes('id="verix-mobile-final-ui"'))) {
     throw new Error("Handheld final style/reveal sequence is incomplete");
-  }
-  if (relativeSource === "verix-app.html" && !source.includes('src="./verix-presence-v1.js?v=' + encodeURIComponent(String(BUILD_ID)) + '"')) {
-    throw new Error("Realtime Presence client is missing from the operational application");
   }
   const { html, scriptCount } = obfuscateHtml(source, relativeSource);
   const outPath = path.join(OUTPUT_DIR, relativeOutput);
@@ -339,23 +334,6 @@ for (const f of ["verix-mobile.css", "verix-mobile.js"]) {
   }
 }
 
-// Dedicated Admin V3 bundle. This does not modify the operational app or its ASF runtime.
-const presenceEntry = path.join(ROOT, "verix-presence-v1.mjs");
-if (!fs.existsSync(presenceEntry)) throw new Error("Required Admin presence source missing: verix-presence-v1.mjs");
-const presenceOutput = path.join(OUTPUT_DIR, "verix-presence-v1.js");
-await esbuildBuild({
-  entryPoints: [presenceEntry],
-  outfile: presenceOutput,
-  bundle: true,
-  minify: true,
-  sourcemap: false,
-  legalComments: "none",
-  platform: "browser",
-  format: "iife",
-  target: ["es2020"]
-});
-results.push({ source: "verix-presence-v1.mjs", output: "dist/verix-presence-v1.js", size_bytes: fs.statSync(presenceOutput).size });
-
 const adminPolicySource = path.join(ROOT, "AI-ACCESS-POLICY.md");
 if (!fs.existsSync(adminPolicySource)) throw new Error("Required Admin policy document missing");
 fs.copyFileSync(adminPolicySource, path.join(OUTPUT_DIR, "AI-ACCESS-POLICY.md"));
@@ -384,7 +362,7 @@ let adminPwaSource = fs.readFileSync(adminPwaSourcePath, "utf8");
 if (!adminPwaSource.includes("admin-telemetry-v3") || !adminPwaSource.includes("stats-v2")) {
   throw new Error("Admin V3 source does not reference its expected telemetry APIs");
 }
-for (const marker of ['id="totalSearches"', 'id="totalNoRecord"', 'id="livePresenceOnline"', 'id="livePresenceActive"', 'id="liveQueries5m"']) {
+for (const marker of ['id="totalSearches"', 'id="totalNoRecord"', 'id="todayConsultations"', 'id="todayNoRecord"', 'id="todayErrors"', 'id="dailyRows"']) {
   if (!adminPwaSource.includes(marker)) throw new Error("Admin dashboard metric missing: " + marker);
 }
 if (/data-period=|Histórico Total|>7 dias</i.test(adminPwaSource)) {
@@ -393,10 +371,6 @@ if (/data-period=|Histórico Total|>7 dias</i.test(adminPwaSource)) {
 adminPwaSource = adminPwaSource.replace(/<link rel="manifest" href="[^"]*admin\.webmanifest[^"]*">\s*/i, "");
 adminPwaSource = adminPwaSource.replace(/href="\.\/favicon\.svg/g, 'href="../assets/admin-icon.svg');
 adminPwaSource = adminPwaSource.replace(/\.\/assets\//g, "../assets/");
-adminPwaSource = adminPwaSource.replace(/src="\.\/verix-presence-v1\.js/g, 'src="../verix-presence-v1.js');
-adminPwaSource = adminPwaSource.replace(/(src="\.\.\/verix-presence-v1\.js\?v=)[^"]+/g, "$1" + encodeURIComponent(String(BUILD_ID)));
-
-// The Admin uses one shared Realtime presence client and a server-only recent-query aggregate.
 adminPwaSource = adminPwaSource.replace(/\.\/AI-ACCESS-POLICY\.md/g, "../AI-ACCESS-POLICY.md");
 const adminPwaHeadLinks = [
   '  <link rel="icon" href="../assets/admin-icon.svg?v=' + encodeURIComponent(String(BUILD_ID)) + '" type="image/svg+xml" sizes="any">',
