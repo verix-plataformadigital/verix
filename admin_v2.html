@@ -240,44 +240,8 @@ body{background:linear-gradient(180deg,#f8faf8 0,#f3f7f4 460px,#f5f8f6 100%);col
 .section-nav{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:5px;width:max-content;max-width:100%;margin:0 0 19px;padding:5px;border:1px solid rgba(218,231,221,.96);border-radius:13px;background:rgba(255,255,255,.92);box-shadow:0 4px 16px rgba(19,55,34,.04);backdrop-filter:blur(12px)}
 .section-nav a{display:inline-flex;align-items:center;gap:7px;min-height:32px;padding:7px 11px;border-radius:9px;color:#5f7467;text-decoration:none;font-size:10px;font-weight:800;white-space:nowrap;transition:background .15s,color .15s}
 .section-nav a:hover,.section-nav a:focus-visible{background:#edf5ef;color:#175e3e}
-.nav-pulse,.live-kicker-dot{width:7px;height:7px;border-radius:50%;background:#42b678;box-shadow:0 0 0 3px rgba(66,182,120,.14)}
+
 .panel,.metric-card,.insight-card{box-shadow:var(--shadow)}
-.operational-section{
- position:relative;margin:0 0 22px;padding:19px 20px 15px;overflow:hidden;
- border:1px solid #d9e7dc;border-radius:20px;
- background:linear-gradient(135deg,#f4faf5,#edf6ef 70%,#f7fbf7);
- box-shadow:0 11px 28px rgba(17,59,34,.06);color:#173a29;
-}
-.operational-section:before{position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#1b6b47,#58ad77,#c1dfca);content:""}
-.operational-header{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:14px}
-.live-kicker{display:flex;align-items:center;gap:8px;margin-bottom:5px;color:#3b805b;font-size:9px;font-weight:900;letter-spacing:.15em;text-transform:uppercase}
-.operational-header h2{margin:0;color:#173b29;font-size:21px;font-weight:875;letter-spacing:-.045em}
-.operational-header p{margin:5px 0 0;color:#687d70;font-size:11px}
-.live-state{display:flex;align-items:flex-end;flex-direction:column;gap:5px;flex:none}
-.presence-state{display:inline-flex;align-items:center;gap:7px;min-height:29px;padding:6px 10px;border:1px solid #d4e6d9;border-radius:999px;background:#fff;color:#35664a;font-size:9px;font-weight:850;white-space:nowrap}
-.presence-state .status-dot{width:7px;height:7px}
-.presence-state.online .status-dot{background:#43ad71;box-shadow:0 0 0 3px rgba(67,173,113,.14)}
-.presence-state.offline .status-dot{background:#d75d64;box-shadow:0 0 0 3px rgba(215,93,100,.14)}
-.presence-state.waiting .status-dot{background:#d6a64d}
-.live-timestamp{color:#708579;font-size:9px}
-.live-refresh-label{color:#8a9a90;font-size:8px;font-weight:700}
-.live-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}
-.live-card{
- position:relative;min-width:0;min-height:108px;padding:12px 13px 11px;overflow:hidden;
- border:1px solid #dfe9e2;border-radius:14px;background:rgba(255,255,255,.94);
- box-shadow:0 3px 11px rgba(20,57,35,.025);
-}
-.live-card:before{position:absolute;left:0;top:0;bottom:0;width:3px;background:#c9decf;content:""}
-.live-card-primary{border-color:#b8d8c2;background:linear-gradient(145deg,#e9f5ec,#f8fcf8)}
-.live-card-primary:before{background:#24764e}
-.live-card-hour{background:#fff}
-.live-card-label{min-height:27px;color:#61776a;font-size:8px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;line-height:1.45}
-.live-card-value{margin:7px 0 5px;color:#173e2b;font-size:clamp(25px,2.5vw,33px);font-weight:900;letter-spacing:-.06em;line-height:1;font-variant-numeric:tabular-nums}
-.live-card-primary .live-card-value{color:#176b49}
-.live-card-foot{color:#7b8d81;font-size:8px;line-height:1.4;overflow-wrap:anywhere}
-.live-footer-stack{display:flex;align-items:flex-start;flex-direction:column;gap:5px;margin-top:11px;padding-top:9px;border-top:1px solid #dce9df}
-#livePresenceExplanation{color:#557363;font-size:9px;font-weight:650;line-height:1.5}
-#liveQueryUpdatedVisible{color:#819287;font-size:8px}
 .today-section{
  margin-top:20px;padding:18px 19px 17px;border:1px solid #e1eae3;border-radius:18px;
  background:#fff;box-shadow:var(--shadow)
@@ -316,28 +280,12 @@ body{background:linear-gradient(180deg,#f8faf8 0,#f3f7f4 460px,#f5f8f6 100%);col
 .daily-table tbody tr.today-row td{background:#f0f8f2}
 .error-breakdown{margin-top:18px}
 .counter-updated{margin-top:13px}
-@media(max-width:1050px){
- .live-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
- .live-card-hour{grid-column:auto}
-}
 @media(max-width:760px){
  .topbar{padding:13px 16px 14px}
  .main-area{padding:19px 14px 36px}
  .section-nav{position:relative;top:auto;width:100%;overflow-x:auto;scrollbar-width:none;margin-bottom:15px}
  .section-nav::-webkit-scrollbar{display:none}
  .section-nav a{padding:7px 9px;font-size:9px}
- .operational-section{margin-bottom:17px;padding:16px 12px 12px;border-radius:17px}
- .operational-header{align-items:flex-start;flex-direction:column;gap:8px;margin-bottom:11px}
- .operational-header h2{font-size:19px}.operational-header p{font-size:10px}
- .live-state{align-items:flex-start;flex-direction:row;flex-wrap:wrap;gap:6px 10px}
- .live-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
- .live-card{min-height:99px;padding:11px 11px 9px}
- .live-card-label{min-height:25px;font-size:8px}
- .live-card-value{font-size:clamp(25px,6.5vw,31px);margin:7px 0 5px}
- .live-card-foot{font-size:8px;min-height:2.6em}
- .live-card:last-child{grid-column:1/-1;min-height:82px}
- .live-card:last-child .live-card-foot{min-height:0}
- .live-footer-stack{gap:6px}
  .today-section{padding:16px 12px 14px;border-radius:16px}
  .today-grid{gap:8px}.today-card{padding:12px 11px}
  .lifetime-section{margin-top:18px}
@@ -350,8 +298,6 @@ body{background:linear-gradient(180deg,#f8faf8 0,#f3f7f4 460px,#f5f8f6 100%);col
 }
 @media(max-width:430px){
  .main-area{padding-left:12px;padding-right:12px}
- .live-card-value{font-size:27px}
- .live-card:last-child{grid-column:1/-1}
  .today-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
  .today-card:last-child{grid-column:1/-1}
  .metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -434,39 +380,12 @@ body{background:linear-gradient(180deg,#f8faf8 0,#f3f7f4 460px,#f5f8f6 100%);col
   <div id="dataNotice" class="data-notice" role="status" aria-live="polite" hidden></div>
 
   <nav class="section-nav" aria-label="Navegação do painel">
-    <a href="#operationalSection"><span class="nav-pulse" aria-hidden="true"></span>Em direto</a>
-    <a href="#todaySection">Hoje</a><a href="#historySection">Histórico</a><a href="#lifetimeSection">Contador histórico</a>
+<a href="#todaySection">Hoje</a><a href="#historySection">Histórico</a><a href="#lifetimeSection">Contador histórico</a>
   </nav>
 
   
 
-    <section class="operational-section" id="operationalSection" aria-labelledby="operationalTitle">
-    <div class="operational-header">
-      <div><div class="live-kicker"><span class="live-kicker-dot" aria-hidden="true"></span>Monitorização em direto</div>
-        <h2 id="operationalTitle">Operação em tempo real</h2>
-        <p>Consultas recentes e atividade das instalações ligadas ao VÉRIX.</p></div>
-      <div class="live-state">
-        <span id="presenceStatus" class="presence-state waiting"><i class="status-dot" aria-hidden="true"></i><span>A ligar presença</span></span>
-        <span id="livePresenceUpdatedVisible" class="live-timestamp">A aguardar sinal</span>
-        <span id="liveRefreshLabel" class="live-refresh-label">Indicadores atualizados a cada 30 s</span>
-      </div>
-    </div>
-    <div class="live-grid" aria-live="polite">
-      <article class="live-card live-card-primary"><div class="live-card-label">Consultas · últimos 5 minutos</div>
-        <div class="live-card-value" id="liveQueries5mVisible">—</div><div class="live-card-foot" id="liveQueries5mNote">Consultas únicas iniciadas na janela móvel</div></article>
-      <article class="live-card"><div class="live-card-label">Instalações ativas · 10 min</div>
-        <div class="live-card-value" id="livePresenceActiveVisible">—</div><div class="live-card-foot">Com interação nos últimos 10 minutos e página visível</div></article>
-      <article class="live-card"><div class="live-card-label">Instalações online</div>
-        <div class="live-card-value" id="livePresenceOnlineVisible">—</div><div class="live-card-foot">Ligações presentes no canal, mesmo sem atividade recente</div></article>
-      <article class="live-card live-card-hour"><div class="live-card-label">Consultas · última hora</div>
-        <div class="live-card-value" id="liveQueries1hVisible">—</div><div class="live-card-foot" id="liveQueries1hNote">Consultas únicas registadas nos últimos 60 minutos</div></article>
-      <article class="live-card"><div class="live-card-label">Separadores ativos · 10 min</div>
-        <div class="live-card-value" id="livePresenceActiveTabsVisible">—</div><div class="live-card-foot">Separadores com atividade recente e visíveis</div></article>
-    </div>
-    <div class="live-footer live-footer-stack"><span id="livePresenceExplanation">Instalações e separadores não equivalem a pessoas únicas.</span><span id="liveQueryUpdatedVisible">Consultas: a aguardar leitura.</span></div>
-  </section>
-
-<section class="today-section" id="todaySection" aria-labelledby="todayTitle">
+    <section class="today-section" id="todaySection" aria-labelledby="todayTitle">
     <div class="section-heading">
       <div><h2 id="todayTitle">Resumo de hoje</h2><p>Atividade desde as 00:00 · hora de Portugal continental.</p></div>
       <span class="section-tag"><i class="status-dot" aria-hidden="true"></i><span>HOJE · EM ATUALIZAÇÃO</span></span>
@@ -622,15 +541,9 @@ body{background:linear-gradient(180deg,#f8faf8 0,#f3f7f4 460px,#f5f8f6 100%);col
 
 
 
-<div hidden aria-hidden="true">
-  <span id="presenceConnection" class="status-pill loading"><i class="status-dot" aria-hidden="true"></i><span>A ligar presença</span></span>
-  <span id="livePresenceOnline">—</span><span id="livePresenceActive">—</span><span id="liveQueries5m">—</span>
-  <span id="livePresenceUpdated"></span><span id="liveQueryUpdated"></span><span id="livePresenceOnlineTabs">—</span><span id="livePresenceActiveTabs">—</span>
-</div>
 
 </div>
 
-<style>.operational-section{display:none!important}</style>
 <script>
 
 (function(){
@@ -639,7 +552,7 @@ const API_ORIGIN='https://onilkakbgpklxvxuxmks.supabase.co/functions/v1/';
 const RELEASE='admin-v10-1-error-breakdown-20261114';
 const AUTH_API=API_ORIGIN+'admin-auth-v2?v='+encodeURIComponent(RELEASE);
 const STATS_API=API_ORIGIN+'stats-v2?v='+encodeURIComponent(RELEASE);
-const LIVE_API=API_ORIGIN+'admin-telemetry-v3?view=dashboard&v='+encodeURIComponent(RELEASE);
+const DAILY_API=API_ORIGIN+'admin-telemetry-v3?view=dashboard&v='+encodeURIComponent(RELEASE);
 const TOKEN_KEY='VERIX_ADMIN_V2_TOKEN';
 const $=id=>document.getElementById(id);
 const nf=new Intl.NumberFormat('pt-PT');
@@ -714,35 +627,6 @@ function stopRefresh(){
   if(dailyTimer)clearInterval(dailyTimer);
   counterTimer=null;
   dailyTimer=null;
-}
-function setLiveValue(id,value){
-  const element=$(id);
-  if(element)element.textContent=value===null||value===undefined?'—':formatCount(value);
-}
-function renderLivePresence(snapshot){
-  const s=snapshot||{},ready=s.ready===true&&s.status==='connected',status=s.status||'connecting';
-  const mode=ready?'online':(status==='reconnecting'||status==='unavailable'?'offline':'waiting');
-  const label=ready?'Presença ligada':(status==='locked'?'A aguardar autenticação':(status==='reconnecting'?'A recuperar ligação':(status==='unavailable'?'Presença indisponível':'A ligar presença')));
-  const online=ready&&Number.isSafeInteger(s.onlineInstallations)?s.onlineInstallations:null;
-  const active=ready&&Number.isSafeInteger(s.activeInstallations)?s.activeInstallations:null;
-  const tabs=ready&&Number.isSafeInteger(s.activeTabs)?s.activeTabs:null;
-  setLiveValue('livePresenceOnline',online);setLiveValue('livePresenceActive',active);
-  setLiveValue('livePresenceOnlineTabs',ready?s.onlineTabs:null);setLiveValue('livePresenceActiveTabs',tabs);
-  setLiveValue('livePresenceOnlineVisible',online);setLiveValue('livePresenceActiveVisible',active);
-  setLiveValue('livePresenceActiveTabsVisible',tabs);
-  const pill=$('presenceConnection');
-  if(pill){pill.className='status-pill '+(ready?'online':(mode==='offline'?'offline':'loading'));const t=pill.querySelector('span:last-child');if(t)t.textContent=label+' · tempo real';}
-  const visible=$('presenceStatus');
-  if(visible){visible.className='presence-state '+mode;const t=visible.querySelector('span:last-child');if(t)t.textContent=label;}
-  const explanation=$('livePresenceExplanation');
-  if(explanation){
-    if(!ready)explanation.textContent='A contagem de atividade será apresentada quando a ligação de presença estiver confirmada.';
-    else if(online>0&&active===0)explanation.textContent=online+' instalações ligadas; nenhuma registou atividade nos últimos 10 minutos. Podem estar abertas em segundo plano ou inativas.';
-    else if(active>0)explanation.textContent=active+' de '+online+' instalações com atividade nos últimos 10 minutos. As contagens não representam pessoas únicas.';
-    else explanation.textContent='Sem instalações ligadas neste momento. As contagens não representam pessoas únicas.';
-  }
-  if(ready&&s.observedAt){const stamp='Presença atualizada às '+formatTime(s.observedAt);$('livePresenceUpdated').textContent=stamp+'.';$('livePresenceUpdatedVisible').textContent=stamp;}
-  else $('livePresenceUpdatedVisible').textContent=label+'.';
 }
 async function request(url,options){
   const opt=options||{};
@@ -1008,7 +892,7 @@ async function loadDailyDashboard(){
   dailyBusy=true;
   const requestToken=token;
   try{
-    const response=await request(LIVE_API);
+    const response=await request(DAILY_API);
     if(requestToken!==token)return;
     if(!response||!response.history)throw new Error('O servidor não devolveu o histórico diário.');
     renderDailyDashboard(response.history,response.generated_at);
@@ -1026,8 +910,10 @@ async function loadDailyDashboard(){
 }
 function startRefresh(){
   stopRefresh();
-  // Daily mode: load once on login/session restore. Further reads are manual.
-  loadDashboard();
+  // O login já trouxe os contadores históricos. Não repetir a mesma leitura.
+  if(counterData)renderCounters(counterData);
+  else loadDashboard();
+  // O histórico diário é carregado uma vez; leituras seguintes são manuais.
   loadDailyDashboard();
 }
 function logout(){
@@ -1035,7 +921,7 @@ function logout(){
   sessionStorage.removeItem(TOKEN_KEY);
   document.body.classList.remove('admin-authenticated');
   $('app').hidden=true;$('loginScreen').hidden=false;$('password').value='';
-  showLoginError('');counterIssue='';dailyIssue='';renderNotice();setBackendStatus('','Sessão encerrada');setLiveValue('liveQueries5m',null);
+  showLoginError('');counterIssue='';dailyIssue='';renderNotice();setBackendStatus('','Sessão encerrada');
 }
 async function restoreSession(){
   if(!token)return;
